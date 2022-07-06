@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,14 +40,14 @@ public class EntitiesProvider implements DebugInfoProvider {
 		return "entities";
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		Tx tx = Tx.get();
 		return Flowable.mergeArray(
-			rootElements(ac, tx::jobDao, "entities/jobs.json"),
-			rootElements(ac, tx::schemaDao, "entities/schemas.json"),
-			rootElements(ac, tx::microschemaDao, "entities/microschemas.json"),
-			rootElements(ac, tx::projectDao, "entities/projects.json"),
+			rootElements(ac, tx -> tx.jobDao(), "entities/jobs.json"),
+			rootElements(ac, tx -> tx.schemaDao(), "entities/schemas.json"),
+			rootElements(ac, tx -> tx.microschemaDao(), "entities/microschemas.json"),
+			rootElements(ac, tx -> tx.projectDao(), "entities/projects.json"),
 			branches(ac)
 		);
 	}
@@ -65,9 +65,9 @@ public class EntitiesProvider implements DebugInfoProvider {
 			T extends HibCoreElement<? extends RestModel>, 
 			D extends DaoGlobal<T> & DaoTransformable<T, ? extends RestModel>
 		> Flowable<DebugInfoEntry> rootElements(
-				InternalActionContext ac, Supplier<D> root, String filename
+				InternalActionContext ac, Function<Tx, D> root, String filename
 		) {
-		return db.singleTx(() -> rootToString(ac, root.get().findAll().stream(), root.get()))
+		return db.singleTx(tx -> rootToString(ac, root.apply(tx).findAll().stream(), root.apply(tx)))
 			.map(elementList -> DebugInfoBufferEntry.fromString(filename, elementList))
 			.toFlowable();
 	}

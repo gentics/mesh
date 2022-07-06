@@ -35,10 +35,8 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -68,22 +66,23 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private WorkerExecutor workerPool;
 
-    private S3BinaryStorage s3BinaryStorage;
+	private S3BinaryStorage s3BinaryStorage;
 
-    public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
-        this(vertx, options.getImageOptions(), s3BinaryStorage);
-    }
+	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
+		this(vertx, options.getImageOptions(), s3BinaryStorage);
+	}
 
-    ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, S3BinaryStorage s3BinaryStorage) {
-        super(vertx, options);
-        focalPointModifier = new FocalPointModifier(options);
-        // 10 seconds
-        workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
-        this.s3BinaryStorage = s3BinaryStorage;
-    }
+	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, S3BinaryStorage s3BinaryStorage) {
+		super(vertx, options);
+		focalPointModifier = new FocalPointModifier(options);
+		// 10 seconds
+		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
+		this.s3BinaryStorage = s3BinaryStorage;
+	}
 
 	/**
-	 * Crop the image if the request contains cropping parameters. Fail if the crop parameters are invalid or incomplete.
+	 * Crop the image if the request contains cropping parameters. Fail if the crop
+	 * parameters are invalid or incomplete.
 	 *
 	 * @param originalImage
 	 * @param cropArea
@@ -93,8 +92,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		if (cropArea != null) {
 			cropArea.validateCropBounds(originalImage.getWidth(), originalImage.getHeight());
 			try {
-				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(), cropArea.getWidth(),
-					cropArea.getHeight());
+				BufferedImage image = Scalr.crop(originalImage, cropArea.getStartX(), cropArea.getStartY(),
+						cropArea.getWidth(), cropArea.getHeight());
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -138,7 +137,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				return originalImage;
 			}
 			ResizeMode resizeMode = parameters.getResizeMode();
-			// if the mode used is smart, and one of the dimensions is auto then set this dimension to the original Value
+			// if the mode used is smart, and one of the dimensions is auto then set this
+			// dimension to the original Value
 			if (resizeMode == ResizeMode.SMART) {
 				if (parameters.getWidth() != null && parameters.getWidth().equals("auto")) {
 					pWidth = originalWidth;
@@ -150,8 +150,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			int width = pWidth == 0 ? (int) (pHeight * aspectRatio) : pWidth;
 			int height = pHeight == 0 ? (int) (width / aspectRatio) : pHeight;
 
-
-			// if we want to use smart resizing we need to crop the original image to the correct format before resizing to avoid distortion
+			// if we want to use smart resizing we need to crop the original image to the
+			// correct format before resizing to avoid distortion
 			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.SMART) {
 
 				double pAspectRatio = (double) pWidth / (double) pHeight;
@@ -170,7 +170,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				}
 			}
 
-			// if we want to use proportional resizing we need to make sure the destination dimension fits inside the provided dimensions
+			// if we want to use proportional resizing we need to make sure the destination
+			// dimension fits inside the provided dimensions
 			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.PROP) {
 				double pAspectRatio = (double) pWidth / (double) pHeight;
 				if (aspectRatio < pAspectRatio) {
@@ -183,14 +184,16 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					height = Math.max(1, (int) (pWidth / aspectRatio));
 				}
 
-				// Should the resulting format be the same as the original image we do not need to resize
+				// Should the resulting format be the same as the original image we do not need
+				// to resize
 				if (width == originalWidth && height == originalHeight) {
 					return originalImage;
 				}
 			}
 
 			try {
-				BufferedImage image = Scalr.apply(originalImage, new ResampleOp(width, height, options.getResampleFilter().getFilter()));
+				BufferedImage image = Scalr.apply(originalImage,
+						new ResampleOp(width, height, options.getResampleFilter().getFilter()));
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -225,18 +228,21 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	/**
-	 * Create an image writer from the same image format as the specified image reader writing to the given output stream.
-	 * When no respective writer to the given reader is available, a PNG writer will be created.
+	 * Create an image writer from the same image format as the specified image
+	 * reader writing to the given output stream. When no respective writer to the
+	 * given reader is available, a PNG writer will be created.
 	 *
 	 * @param reader The reader used to read the original image
 	 * @param out    The output stream the writer should use
-	 * @return An image writer for the same type as the specified reader, or a PNG writer if that is not available
+	 * @return An image writer for the same type as the specified reader, or a PNG
+	 *         writer if that is not available
 	 */
 	private ImageWriter getImageWriter(ImageReader reader, ImageOutputStream out) {
 		ImageWriter writer = ImageIO.getImageWriter(reader);
 
 		if (writer == null) {
-			// This would mean we have a reader but no writer plugin available for the image type, which is highly unlikely, but just to be sure.
+			// This would mean we have a reader but no writer plugin available for the image
+			// type, which is highly unlikely, but just to be sure.
 			log.debug("No suitable writer found for input image type");
 
 			Iterator<ImageWriter> pngWriters = ImageIO.getImageWritersByFormatName("png");
@@ -262,11 +268,13 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		if (params.canWriteProgressive()) {
 			// TODO Maybe make this configurable or read from metadata of original image.
-			// Note that it depends on the writer plugin used, if this setting is actually used.
+			// Note that it depends on the writer plugin used, if this setting is actually
+			// used.
 			params.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
 		}
 
-		// TODO Maybe make compression configurable or read from metadata of original image.
+		// TODO Maybe make compression configurable or read from metadata of original
+		// image.
 
 		return writer;
 	}
@@ -283,14 +291,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		boolean omitResize = false;
 		if (cropMode != null) {
 			switch (cropMode) {
-				case RECT:
-					image = crop(image, parameters.getRect());
-					break;
-				case FOCALPOINT:
-					image = focalPointModifier.apply(image, parameters);
-					// We don't need to resize the image again. The dimensions already match up with the target dimension
-					omitResize = true;
-					break;
+			case RECT:
+				image = crop(image, parameters.getRect());
+				break;
+			case FOCALPOINT:
+				image = focalPointModifier.apply(image, parameters);
+				// We don't need to resize the image again. The dimensions already match up with
+				// the target dimension
+				omitResize = true;
+				break;
 			}
 		}
 
@@ -307,204 +316,196 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
-		BinaryDao binaryDao = Tx.get().binaryDao();
-		Supplier<InputStream> stream = binaryDao.openBlockingStream(binary);
+		Supplier<InputStream> stream = binary.openBlockingStream();
 
-		return getCacheFilePath(binary.getSHA512Sum(), parameters)
-			.flatMap(cacheFileInfo -> {
-				if (cacheFileInfo.exists) {
-					return Single.just(cacheFileInfo.path);
-				} else {
-					// TODO handle execution timeout
-					// Make sure to run that code in the dedicated thread pool it may be CPU intensive for larger images and we don't want to exhaust the
-					// regular worker
-					// pool
-					return workerPool.<String>rxExecuteBlocking(bh -> {
-						try (
-							InputStream is = stream.get();
-							ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-							BufferedImage image;
-							ImageReader reader = getImageReader(ins);
+		return getCacheFilePath(binary.getSHA512Sum(), parameters).flatMap(cacheFileInfo -> {
+			if (cacheFileInfo.exists) {
+				return Single.just(cacheFileInfo.path);
+			} else {
+				// TODO handle execution timeout
+				// Make sure to run that code in the dedicated thread pool it may be CPU
+				// intensive for larger images and we don't want to exhaust the
+				// regular worker
+				// pool
+				return workerPool.<String>rxExecuteBlocking(bh -> {
+					try (InputStream is = stream.get(); ImageInputStream ins = ImageIO.createImageInputStream(is)) {
+						BufferedImage image;
+						ImageReader reader = getImageReader(ins);
 
-							try {
-								image = reader.read(0);
-							} catch (IOException e) {
-								log.error("Could not read input image", e);
+						try {
+							image = reader.read(0);
+						} catch (IOException e) {
+							log.error("Could not read input image", e);
 
-								throw error(BAD_REQUEST, "image_error_reading_failed");
-							}
-
-							if (log.isDebugEnabled()) {
-								log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
-							}
-
-							image = cropAndResize(image, parameters);
-
-							String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-							String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-							String cacheFilePath = cacheFileInfo.path + "." + extension;
-							File outCacheFile = new File(cacheFilePath);
-
-							// Write image
-							try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-								ImageWriteParam params = getImageWriteparams(extension);
-
-								// same as write(image), but with image parameters
-								getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-							} catch (Exception e) {
-								throw error(BAD_REQUEST, "image_error_writing_failed");
-							}
-
-							// Return buffer to written cache file
-							bh.complete(cacheFilePath);
-						} catch (Exception e) {
-							bh.fail(e);
+							throw error(BAD_REQUEST, "image_error_reading_failed");
 						}
-					}, false).toSingle();
-				}
-			});
+
+						if (log.isDebugEnabled()) {
+							log.debug("Read image from stream " + ins.hashCode() + " with reader "
+									+ reader.getClass().getName());
+						}
+
+						image = cropAndResize(image, parameters);
+
+						String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+						String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+						String cacheFilePath = cacheFileInfo.path + "." + extension;
+						File outCacheFile = new File(cacheFilePath);
+
+						// Write image
+						try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+							ImageWriteParam params = getImageWriteparams(extension);
+
+							// same as write(image), but with image parameters
+							getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+						} catch (Exception e) {
+							throw error(BAD_REQUEST, "image_error_writing_failed");
+						}
+
+						// Return buffer to written cache file
+						bh.complete(cacheFilePath);
+					} catch (Exception e) {
+						bh.fail(e);
+					}
+				}, false).toSingle();
+			}
+		});
 	}
 
-    @Override
-    public Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename, ImageManipulationParameters parameters) {
-        // Validate the resize parameters
-        parameters.validate();
-        parameters.validateLimits(options);
+	@Override
+	public Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename,
+			ImageManipulationParameters parameters) {
+		// Validate the resize parameters
+		parameters.validate();
+		parameters.validateLimits(options);
 
-        return s3BinaryStorage
-                .read(bucketName, s3ObjectKey)
-                .flatMapSingle(originalFile ->
-                        workerPool.<File>rxExecuteBlocking(bh -> {
-                            try (
-                                    InputStream is = new ByteArrayInputStream(originalFile.getBytes());
-                                    ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-                                BufferedImage image;
-                                ImageReader reader = getImageReader(ins);
+		return s3BinaryStorage.read(bucketName, s3ObjectKey)
+				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
+					try (InputStream is = new ByteArrayInputStream(originalFile.getBytes());
+							ImageInputStream ins = ImageIO.createImageInputStream(is)) {
+						BufferedImage image;
+						ImageReader reader = getImageReader(ins);
 
-                                try {
-                                    image = reader.read(0);
-                                } catch (IOException e) {
-                                    log.error("Could not read input image", e);
-                                    throw error(BAD_REQUEST, "image_error_reading_failed");
-                                }
+						try {
+							image = reader.read(0);
+						} catch (IOException e) {
+							log.error("Could not read input image", e);
+							throw error(BAD_REQUEST, "image_error_reading_failed");
+						}
 
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
-                                }
+						if (log.isDebugEnabled()) {
+							log.debug("Read image from stream " + ins.hashCode() + " with reader "
+									+ reader.getClass().getName());
+						}
 
-                                image = cropAndResize(image, parameters);
+						image = cropAndResize(image, parameters);
 
-                                String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-                                String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-                                String cacheFilePath = filename;
-                                File outCacheFile = new File(cacheFilePath);
+						String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+						String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+						String cacheFilePath = filename;
+						File outCacheFile = new File(cacheFilePath);
 
-                                // Write image
-                                try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-                                    ImageWriteParam params = getImageWriteparams(extension);
+						// Write image
+						try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+							ImageWriteParam params = getImageWriteparams(extension);
 
-                                    // same as write(image), but with image parameters
-                                    getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-                                } catch (Exception e) {
-                                    throw error(BAD_REQUEST, "image_error_writing_failed");
-                                }
-                                // Return buffer to written cache file
-                                bh.complete(outCacheFile);
-                            } catch (Exception e) {
-                                bh.fail(e);
-                            }
-                        }).toSingle()
-                )
-                .flatMapSingle(file ->
-                        //write cache to AWS
-                        s3BinaryStorage.uploadFile(bucketName, s3ObjectKey, file, true)
-                                .flatMap(
-                                ignoreElement -> Single.just(file)))
-                .singleOrError();
-    }
+							// same as write(image), but with image parameters
+							getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
+						} catch (Exception e) {
+							throw error(BAD_REQUEST, "image_error_writing_failed");
+						}
+						// Return buffer to written cache file
+						bh.complete(outCacheFile);
+					} catch (Exception e) {
+						bh.fail(e);
+					}
+				}).toSingle()).flatMapSingle(file ->
+				// write cache to AWS
+				s3BinaryStorage.uploadFile(bucketName, s3ObjectKey, file, true)
+						.flatMap(ignoreElement -> Single.just(file)))
+				.singleOrError();
+	}
 
-    @Override
-    public Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey, String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters) {
-        // Validate the resize parameters
-        parameters.validate();
-        parameters.validateLimits(options);
+	@Override
+	public Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey,
+			String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters) {
+		// Validate the resize parameters
+		parameters.validate();
+		parameters.validateLimits(options);
 
-        return s3BinaryStorage
-                .exists(cacheBucketName, cacheS3ObjectKey)
-                //read from aws and return buffer with data
-                .flatMapCompletable(res -> {
-                    if (res) return s3BinaryStorage.read(cacheBucketName, cacheS3ObjectKey)
-                            .flatMapCompletable(cacheFileInfo -> {
-                                if (nonNull(cacheFileInfo) || cacheFileInfo.getBytes().length > 0) {
-                                    return Completable.complete();
-                                } else {
-                                    log.error("Could not read input image");
-                                    return Completable.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
-                                }
-                            });
-                    else {
-                        return s3BinaryStorage
-                                .read(bucketName, s3ObjectKey)
-                                .flatMapSingle(originalFile ->
-                                        workerPool.<File>rxExecuteBlocking(bh -> {
-                                            try (
-                                                    InputStream is = new ByteArrayInputStream(originalFile.getBytes());
-                                                    ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-                                                BufferedImage image;
-                                                ImageReader reader = getImageReader(ins);
+		return s3BinaryStorage.exists(cacheBucketName, cacheS3ObjectKey)
+				// read from aws and return buffer with data
+				.flatMapCompletable(res -> {
+					if (res)
+						return s3BinaryStorage.read(cacheBucketName, cacheS3ObjectKey)
+								.flatMapCompletable(cacheFileInfo -> {
+									if (nonNull(cacheFileInfo) || cacheFileInfo.getBytes().length > 0) {
+										return Completable.complete();
+									} else {
+										log.error("Could not read input image");
+										return Completable
+												.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
+									}
+								});
+					else {
+						return s3BinaryStorage.read(bucketName, s3ObjectKey)
+								.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
+									try (InputStream is = new ByteArrayInputStream(originalFile.getBytes());
+											ImageInputStream ins = ImageIO.createImageInputStream(is)) {
+										BufferedImage image;
+										ImageReader reader = getImageReader(ins);
 
-                                                try {
-                                                    image = reader.read(0);
-                                                } catch (IOException e) {
-                                                    log.error("Could not read input image", e);
-                                                    throw error(BAD_REQUEST, "image_error_reading_failed");
-                                                }
+										try {
+											image = reader.read(0);
+										} catch (IOException e) {
+											log.error("Could not read input image", e);
+											throw error(BAD_REQUEST, "image_error_reading_failed");
+										}
 
-                                                if (log.isDebugEnabled()) {
-                                                    log.debug("Read image from stream " + ins.hashCode() + " with reader " + reader.getClass().getName());
-                                                }
+										if (log.isDebugEnabled()) {
+											log.debug("Read image from stream " + ins.hashCode() + " with reader "
+													+ reader.getClass().getName());
+										}
 
-                                                image = cropAndResize(image, parameters);
+										image = cropAndResize(image, parameters);
 
-                                                String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-                                                String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-                                                String cacheFilePath = filename;
-                                                File outCacheFile = new File(cacheFilePath);
+										String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
+										String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+										String cacheFilePath = filename;
+										File outCacheFile = new File(cacheFilePath);
 
-                                                // Write image
-                                                try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-                                                    ImageWriteParam params = getImageWriteparams(extension);
+										// Write image
+										try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+											ImageWriteParam params = getImageWriteparams(extension);
 
-                                                    // same as write(image), but with image parameters
-                                                    getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-                                                } catch (Exception e) {
-                                                    throw error(BAD_REQUEST, "image_error_writing_failed");
-                                                }
-                                                // Return buffer to written cache file
-                                                bh.complete(outCacheFile);
-                                            } catch (Exception e) {
-                                                bh.fail(e);
-                                            }
-                                        }).toSingle()
-                                )
-                                .flatMapSingle(file ->
-                                        //write cache to AWS
-                                        s3BinaryStorage.uploadFile(cacheBucketName, cacheS3ObjectKey, file,true))
-                                .ignoreElements();
-                    }
-                });
-    }
+											// same as write(image), but with image parameters
+											getImageWriter(reader, out).write(null, new IIOImage(image, null, null),
+													params);
+										} catch (Exception e) {
+											throw error(BAD_REQUEST, "image_error_writing_failed");
+										}
+										// Return buffer to written cache file
+										bh.complete(outCacheFile);
+									} catch (Exception e) {
+										bh.fail(e);
+									}
+								}).toSingle()).flatMapSingle(file ->
+						// write cache to AWS
+						s3BinaryStorage.uploadFile(cacheBucketName, cacheS3ObjectKey, file, true)).ignoreElements();
+					}
+				});
+	}
 
-    private ImageWriteParam getImageWriteparams(String extension) {
-        if (isJpeg(extension)) {
-            JPEGImageWriteParam params = new JPEGImageWriteParam(null);
-            params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            params.setCompressionQuality(options.getJpegQuality());
-            return params;
-        } else {
-            return null;
-        }
-    }
+	private ImageWriteParam getImageWriteparams(String extension) {
+		if (isJpeg(extension)) {
+			JPEGImageWriteParam params = new JPEGImageWriteParam(null);
+			params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			params.setCompressionQuality(options.getJpegQuality());
+			return params;
+		} else {
+			return null;
+		}
+	}
 
 	private boolean isJpeg(String extension) {
 		extension = extension.toLowerCase();

@@ -696,7 +696,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		HibNode parentNode = folder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 		HibNode noPermNode = tx(tx -> { return tx.nodeDao().create(parentNode, user(), schemaContainer("content").getLatestVersion(), project()); });
-		String noPermNodeUUID = noPermNode.getUuid();
+		String noPermNodeUUID = tx(() -> noPermNode.getUuid());
 
 		// Create 20 drafts
 		int nNodes = 20;
