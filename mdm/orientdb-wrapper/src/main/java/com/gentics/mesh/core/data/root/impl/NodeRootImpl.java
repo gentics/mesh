@@ -96,7 +96,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
-		UserDao userDao = mesh().boot().userDao();
+		UserDao userDao = tx.userDao();
 
 		return findAll(tx.getProject(ac).getUuid())
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
@@ -122,7 +122,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		HibBranch branch = Tx.get().getBranch(ac);
 		String branchUuid = branch.getUuid();
-		UserDao userDao = mesh().boot().userDao();
+		UserDao userDao = Tx.get().userDao();
 
 		return findAll(Tx.get().getProject(ac).getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped

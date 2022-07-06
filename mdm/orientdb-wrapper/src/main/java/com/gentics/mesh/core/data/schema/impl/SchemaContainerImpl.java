@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -49,7 +50,7 @@ public class SchemaContainerImpl extends
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		mesh().boot().schemaDao().delete(this, bac);
+		Tx.get().schemaDao().delete(this, bac);
 	}
 
 	@Override

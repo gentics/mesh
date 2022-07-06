@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -43,9 +42,9 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	UserMappingProvider mappingProvider;
 
 	@Inject
-	public UserIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public UserIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -92,7 +91,7 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Function<String, HibUser> elementLoader() {
-		return uuid -> boot.userDao().findByUuid(uuid);
+		return uuid -> Tx.get().userDao().findByUuid(uuid);
 	}
 
 	@Override

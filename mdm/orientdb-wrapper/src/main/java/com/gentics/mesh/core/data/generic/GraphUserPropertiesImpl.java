@@ -9,9 +9,9 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
 /**
@@ -22,11 +22,8 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 @Singleton
 public class GraphUserPropertiesImpl implements UserProperties {
 
-	private final BootstrapInitializer boot;
-
 	@Inject
-	public GraphUserPropertiesImpl(BootstrapInitializer boot) {
-		this.boot = boot;
+	public GraphUserPropertiesImpl() {
 	}
 
 	@Override
@@ -57,10 +54,11 @@ public class GraphUserPropertiesImpl implements UserProperties {
 		}
 	}
 
+	@SuppressWarnings("resource")
 	private HibUser getUser(MeshElement element, String propertyKey) {
 		return Optional.ofNullable(element)
 			.map(v -> v.<String>getProperty(propertyKey))
-			.map(boot.userDao()::findByUuid)
+			.map(GraphDBTx.getGraphTx().userDao()::findByUuid)
 			.orElse(null);
 	}
 

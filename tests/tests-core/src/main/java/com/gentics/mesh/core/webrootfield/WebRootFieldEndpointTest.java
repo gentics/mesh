@@ -116,7 +116,6 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 	public void testReadContentWithNodeRefByPath() throws Exception {
 		HibNode nodeRef = null;
 		try (Tx tx = tx()) {
-			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
 
@@ -137,7 +136,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), nodeRef, InternalPermission.values());
-			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(nodeRef, german(),
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(nodeRef, german(),
 					project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");

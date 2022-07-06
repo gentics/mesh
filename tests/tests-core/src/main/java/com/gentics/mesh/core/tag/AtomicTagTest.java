@@ -28,7 +28,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			TagDao tagDao = tx.tagDao();
 
 			HibUser user = userDao.create("test", null);
-			LanguageDao languageRoot = boot().languageDao();
+			LanguageDao languageRoot = tx.languageDao();
 			assertNotNull(languageRoot);
 
 			HibProject project = project();
@@ -41,7 +41,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			HibTag reloadedTag = boot().tagDao().findByUuid(uuid);
+			HibTag reloadedTag = tx.tagDao().findByUuid(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

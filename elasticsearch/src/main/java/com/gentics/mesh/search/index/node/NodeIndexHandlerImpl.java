@@ -25,7 +25,6 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBucketableElement;
@@ -94,9 +93,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	public NodeContainerMappingProviderImpl mappingProvider;
 
 	@Inject
-	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetersFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
 	}
 
 	@Override
@@ -132,8 +131,8 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			for (HibProject project : boot.projectDao().findAll()) {
-				for (HibBranch branch : boot.branchDao().findAll(project)) {
+			for (HibProject project : tx.projectDao().findAll()) {
+				for (HibBranch branch : tx.branchDao().findAll(project)) {
 					indexInfo.putAll(getIndices(project, branch).runInExistingTx(tx));
 				}
 			}

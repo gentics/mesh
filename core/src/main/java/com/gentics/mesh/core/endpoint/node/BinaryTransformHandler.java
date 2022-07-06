@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -129,8 +130,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 			return n;
 		});
 
-		db.tx(() -> {
-			HibNodeFieldContainer fieldContainer = loadTargetedContent(node, languageTag, fieldName);
+		db.tx(tx -> {
+			HibNodeFieldContainer fieldContainer = loadTargetedContent(tx, node, languageTag, fieldName);
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -201,7 +202,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
 
-			HibNodeFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
+			HibNodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
 			S3HibBinaryField field = loadS3BinaryField(container, fieldName);
 			// Use the focal point which is stored along with the s3 binary field if no custom point was included in the query parameters.
 			// Otherwise the query parameter focal point will be used and thus override the stored focal point.
@@ -286,7 +287,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 					throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 				}
 	
-				HibNodeFieldContainer container = loadTargetedContent(node, languageTag, fieldName);
+				HibNodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
 				HibBinaryField field = loadBinaryField(container, fieldName);
 				// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
 				// Otherwise the query parameter focal point will be used and thus override the stored focal point.
@@ -363,7 +364,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibProject project = tx.getProject(ac);
 
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
+			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(tx, node, languageTag, fieldName);
 			HibBranch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
@@ -425,7 +426,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 
-			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(node, languageTag, fieldName);
+			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(tx, node, languageTag, fieldName);
 
 			HibBranch branch = tx.getBranch(ac);
 
@@ -483,8 +484,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 	}
 
-	private HibNodeFieldContainer loadTargetedContent(HibNode node, String languageTag, String fieldName) {
-		ContentDao contentDao = boot.get().contentDao();
+	private HibNodeFieldContainer loadTargetedContent(Tx tx, HibNode node, String languageTag, String fieldName) {
+		ContentDao contentDao = tx.contentDao();
 		HibNodeFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);

@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
@@ -27,12 +28,10 @@ import io.reactivex.Flowable;
 @Singleton
 public class EntitiesProvider implements DebugInfoProvider {
 
-	private final BootstrapInitializer boot;
 	private final Database db;
 
 	@Inject
 	public EntitiesProvider(BootstrapInitializer boot, Database db) {
-		this.boot = boot;
 		this.db = db;
 	}
 
@@ -43,11 +42,12 @@ public class EntitiesProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
+		Tx tx = Tx.get();
 		return Flowable.mergeArray(
-			rootElements(ac, boot::jobDao, "entities/jobs.json"),
-			rootElements(ac, boot::schemaDao, "entities/schemas.json"),
-			rootElements(ac, boot::microschemaDao, "entities/microschemas.json"),
-			rootElements(ac, boot::projectDao, "entities/projects.json"),
+			rootElements(ac, tx::jobDao, "entities/jobs.json"),
+			rootElements(ac, tx::schemaDao, "entities/schemas.json"),
+			rootElements(ac, tx::microschemaDao, "entities/microschemas.json"),
+			rootElements(ac, tx::projectDao, "entities/projects.json"),
 			branches(ac)
 		);
 	}

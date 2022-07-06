@@ -176,10 +176,9 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 	public boolean repair(HibNodeFieldContainer hibContainer) {
 		NodeGraphFieldContainer container = toGraph(hibContainer);
 		MeshComponent mesh = container.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
-		BootstrapInitializer boot = mesh.boot();
 		// Pick the first project we find to fetch the initial branchUuid
-		HibProject project = boot.projectDao().findAll().iterator().next();
-		String branchUuid = boot.branchDao().getInitialBranch(project).getUuid();
+		HibProject project = Tx.get().projectDao().findAll().iterator().next();
+		String branchUuid = Tx.get().branchDao().getInitialBranch(project).getUuid();
 
 		HibSchemaVersion version = container.getSchemaContainerVersion();
 		if (version == null) {

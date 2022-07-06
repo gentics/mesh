@@ -160,7 +160,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		HibNode node = getTestNode();
 		String nodeUuid = tx(() -> node.getUuid());
 
-		HibNodeFieldContainer oldContainer = tx(() -> boot().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"));
+		HibNodeFieldContainer oldContainer = tx(tx -> { return tx.contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"); });
 		NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 		// Add micronode / string list
 		request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));

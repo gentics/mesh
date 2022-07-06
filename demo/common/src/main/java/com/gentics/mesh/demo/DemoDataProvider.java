@@ -87,13 +87,10 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
-	private BootstrapInitializer boot;
-
 	@Inject
-	public DemoDataProvider(Database database, MeshLocalClient client, BootstrapInitializer boot) {
+	public DemoDataProvider(Database database, MeshLocalClient client) {
 		this.db = database;
 		this.client = client;
-		this.boot = boot;
 	}
 
 	/**
@@ -106,8 +103,8 @@ public class DemoDataProvider {
 	 * @throws InterruptedException
 	 */
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		MeshAuthUser user = db.tx(() -> {
-			return boot.userDao().findMeshAuthUserByUsername("admin");
+		MeshAuthUser user = db.tx(tx -> {
+			return tx.userDao().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
 

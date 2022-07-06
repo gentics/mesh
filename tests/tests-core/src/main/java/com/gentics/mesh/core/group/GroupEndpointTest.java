@@ -82,7 +82,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
-			assertNotNull(boot().groupDao().findByUuid(restGroup.getUuid()));
+			assertNotNull(tx.groupDao().findByUuid(restGroup.getUuid()));
 		}
 	}
 
@@ -174,7 +174,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			assertNotNull(boot().groupDao().findByUuid(restGroup.getUuid()));
+			assertNotNull(tx.groupDao().findByUuid(restGroup.getUuid()));
 			call(() -> client().createGroup(request), CONFLICT, "group_conflicting_name", name);
 		}
 	}
@@ -501,7 +501,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertNull(boot().groupDao().findByUuid(uuid));
+			assertNull(tx.groupDao().findByUuid(uuid));
 		}
 	}
 
@@ -533,7 +533,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid(), DELETE_PERM.getRestPerm().getName());
-			assertNotNull(boot().groupDao().findByUuid(groupUuid()));
+			assertNotNull(tx.groupDao().findByUuid(groupUuid()));
 		}
 	}
 

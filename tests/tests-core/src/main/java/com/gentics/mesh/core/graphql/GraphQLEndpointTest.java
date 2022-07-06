@@ -237,12 +237,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			HibNode node = folder("2015");
 			HibNode folder = folder("news");
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
+			tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
+			tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
 
 			HibNode node2 = content();
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(node2, "en"), initialBranchUuid(), null);
-			boot().contentDao().updateWebrootPathInfo(boot().contentDao().getFieldContainer(node2, "de"), initialBranchUuid(), null);
+			tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(node2, "en"), initialBranchUuid(), null);
+			tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(node2, "de"), initialBranchUuid(), null);
 			HibNode node3 = folder("2014");
 
 			// Update the folder schema to contain all fields
@@ -337,7 +337,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			actions().updateSchemaVersion(schemaContainer("folder").getLatestVersion());
 
 			// Setup some test data
-			HibNodeFieldContainer container = boot().contentDao().createFieldContainer(node, "en", initialBranch(), user());
+			HibNodeFieldContainer container = tx.contentDao().createFieldContainer(node, "en", initialBranch(), user());
 
 			// node
 			container.createNode("nodeRef", node2);
@@ -433,7 +433,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				micronodeField.getMicronode().createString("address").setString("Somewhere");
 				micronodeField.getMicronode().createString("postcode").setString("1010");
 			}
-			boot().contentDao().updateWebrootPathInfo(container, initialBranchUuid(), null);
+			tx.contentDao().updateWebrootPathInfo(container, initialBranchUuid(), null);
 			tx.success();
 		}
 

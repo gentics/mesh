@@ -65,6 +65,6 @@ public interface TestGraphHelper extends TestHelper {
 	default Stream<HibNodeFieldContainer> getAllContents() {
 		return Tx.get().nodeDao().findAll(project()).stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
-			.flatMap(type -> boot().contentDao().getFieldContainers(node, type).stream()));
+			.flatMap(type -> Tx.get().contentDao().getFieldContainers(node, type).stream()));
 	}
 }

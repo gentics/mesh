@@ -100,9 +100,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		ExecutionException, TimeoutException {
 		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-				removeMicroschemaField(creator, dataProvider, fetcher);
+				removeMicroschemaField(tx, creator, dataProvider, fetcher);
 			} else {
-				removeSchemaField(creator, dataProvider, fetcher);
+				removeSchemaField(tx, creator, dataProvider, fetcher);
 			}
 		}
 	}
@@ -120,11 +120,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void removeSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
+	private void removeSchemaField(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) tx.schemaDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
@@ -161,7 +161,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibNode parentNode = folder("2015");
 		HibNode node = nodeDao.create(parentNode, user, versionA, project());
 		Tx.get().commit();
-		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
+		HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user);
 		dataProvider.set(englishContainer, persistentFieldName);
 		dataProvider.set(englishContainer, removedFieldName);
@@ -181,10 +181,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
-		assertThat(boot().contentDao().getFieldContainer(node, "en")).as("Migrated field container").isOf(versionB);
-		assertThat(fetcher.fetch(boot().contentDao().getFieldContainer(node, "en"), persistentFieldName))
+		assertThat(tx.contentDao().getFieldContainer(node, "en")).as("Migrated field container").isOf(versionB);
+		assertThat(fetcher.fetch(tx.contentDao().getFieldContainer(node, "en"), persistentFieldName))
 			.as("Field '" + persistentFieldName + "'").isNotNull();
-		assertThat(fetcher.fetch(boot().contentDao().getFieldContainer(node, "en"), removedFieldName)).as("Field '" + removedFieldName + "'")
+		assertThat(fetcher.fetch(tx.contentDao().getFieldContainer(node, "en"), removedFieldName)).as("Field '" + removedFieldName + "'")
 			.isNull();
 	}
 
@@ -201,11 +201,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void removeMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
+	private void removeMicroschemaField(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) boot().microschemaDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
@@ -234,9 +234,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a micronode based on the old microschema
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
 		Tx.get().commit();
-		HibMicronodeField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, persistentFieldName,
+		HibMicronodeField micronodeField = createMicronodefield(tx, node, micronodeFieldName, versionA, dataProvider, persistentFieldName,
 			removedFieldName);
-		HibNodeFieldContainer oldContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibNodeFieldContainer oldContainer = tx.contentDao().getFieldContainer(node, "en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the node
@@ -254,7 +254,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(micronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 
 		// assert that migration worked
-		HibNodeFieldContainer newContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibNodeFieldContainer newContainer = tx.contentDao().getFieldContainer(node, "en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		HibMicronodeField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
 		assertThat(newMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
@@ -283,9 +283,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		throws InterruptedException, ExecutionException, TimeoutException {
 		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-				renameMicroschemaField(creator, dataProvider, fetcher, asserter);
+				renameMicroschemaField(tx, creator, dataProvider, fetcher, asserter);
 			} else {
-				renameSchemaField(creator, dataProvider, fetcher, asserter);
+				renameSchemaField(tx, creator, dataProvider, fetcher, asserter);
 			}
 		}
 	}
@@ -307,11 +307,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	private void renameSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
+	private void renameSchemaField(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingSchemaDao schemaDao = ((PersistingSchemaDao) boot().schemaDao());
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingSchemaDao schemaDao = ((PersistingSchemaDao) tx.schemaDao());
 
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
@@ -353,7 +353,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String english = english();
 		HibNode parentNode = folder("2015");
 		HibNode node = nodeDao.create(parentNode, user, versionA, project());
-		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
+		HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user);
 		dataProvider.set(englishContainer, oldFieldName);
 
@@ -371,9 +371,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
-		assertThat(boot().contentDao().getFieldContainer(node, "en")).as("Migrated field container").isOf(versionB);
-		assertThat(fetcher.fetch(boot().contentDao().getFieldContainer(node, "en"), oldFieldName)).as("Field '" + oldFieldName + "'").isNull();
-		asserter.assertThat(boot().contentDao().getFieldContainer(node, "en"), newFieldName);
+		assertThat(tx.contentDao().getFieldContainer(node, "en")).as("Migrated field container").isOf(versionB);
+		assertThat(fetcher.fetch(tx.contentDao().getFieldContainer(node, "en"), oldFieldName)).as("Field '" + oldFieldName + "'").isNull();
+		asserter.assertThat(tx.contentDao().getFieldContainer(node, "en"), newFieldName);
 	}
 
 	/**
@@ -393,11 +393,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	private void renameMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
+	private void renameMicroschemaField(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 		throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) boot().microschemaDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 		String oldFieldName = "oldname";
 		String newFieldName = "newname";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -429,8 +429,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create a node based on the old schema
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
-		HibMicronodeField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, oldFieldName);
-		HibNodeFieldContainer oldContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibMicronodeField micronodeField = createMicronodefield(tx, node, micronodeFieldName, versionA, dataProvider, oldFieldName);
+		HibNodeFieldContainer oldContainer = tx.contentDao().getFieldContainer(node, "en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
@@ -453,7 +453,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(micronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 
 		// assert that migration worked
-		HibNodeFieldContainer newContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibNodeFieldContainer newContainer = tx.contentDao().getFieldContainer(node, "en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		HibMicronodeField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
 		assertThat(newMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
@@ -506,9 +506,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void changeSchemaType(Tx tx, FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) tx.schemaDao();
 
 		String fieldName = "changedfield";
 		String schemaName = "schema_" + System.currentTimeMillis();
@@ -549,7 +549,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibNode parentNode = folder("2015");
 		HibNode node = nodeDao.create(parentNode, user, versionA, project());
 		tx.commit();
-		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
+		HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user);
 		dataProvider.set(englishContainer, fieldName);
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
@@ -575,7 +575,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
-		HibNodeFieldContainer migratedContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibNodeFieldContainer migratedContainer = tx.contentDao().getFieldContainer(node, "en");
 		assertThat(migratedContainer).isOf(versionB).hasVersion("0.2");
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
 
@@ -608,8 +608,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	private void changeMicroschemaType(Tx tx, FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher,
 			FieldSchemaCreator newField, DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) boot().microschemaDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 		
 		String fieldName = "changedfield";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -643,8 +643,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		tx.commit();
 
 		// create a node based on the old schema
-		HibMicronodeField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, fieldName);
-		HibNodeFieldContainer oldContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibMicronodeField micronodeField = createMicronodefield(tx, node, micronodeFieldName, versionA, dataProvider, fieldName);
+		HibNodeFieldContainer oldContainer = tx.contentDao().getFieldContainer(node, "en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		if (dataProvider == FieldTestHelper.NOOP) {
@@ -667,7 +667,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(micronodeField.getMicronode()).as("Old micronode").isOf(versionA);
 
 		// assert that migration worked
-		HibNodeFieldContainer newContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibNodeFieldContainer newContainer = tx.contentDao().getFieldContainer(node, "en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		HibMicronodeField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
 		assertThat(newMicronodeField.getMicronode()).as("Migrated Micronode").isOf(versionB);
@@ -704,9 +704,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
 		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-				customMicroschemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
+				customMicroschemaMigrationScript(tx, creator, dataProvider, fetcher, migrationScript, asserter);
 			} else {
-				customSchemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
+				customSchemaMigrationScript(tx, creator, dataProvider, fetcher, migrationScript, asserter);
 			}
 		}
 	}
@@ -728,11 +728,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void customSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
+	private void customSchemaMigrationScript(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) tx.schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
@@ -768,7 +768,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String english = english();
 		HibNode parentNode = folder("2015");
 		HibNode node = nodeDao.create(parentNode, user, versionA, project());
-		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
+		HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user);
 		dataProvider.set(englishContainer, fieldName);
 
@@ -786,8 +786,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
-		assertThat(boot().contentDao().getFieldContainer(node, "en")).as("Migrated field container").isOf(versionB);
-		asserter.assertThat(boot().contentDao().getFieldContainer(node, "en"), fieldName);
+		assertThat(tx.contentDao().getFieldContainer(node, "en")).as("Migrated field container").isOf(versionB);
+		asserter.assertThat(tx.contentDao().getFieldContainer(node, "en"), fieldName);
 	}
 
 	/**
@@ -807,11 +807,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void customMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
+	private void customMicroschemaMigrationScript(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 		DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) boot().microschemaDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		NodeDao nodeDao = boot().nodeDao();
+		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		NodeDao nodeDao = tx.nodeDao();
 
 		String fieldName = "migratedField";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -840,8 +840,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// create a micronode based on the old schema
 		microschemaDao.assign(container, project(), user(), createBatch());
 		HibNode node = nodeDao.create(folder("2015"), user(), schemaContainer("content").getLatestVersion(), project());
-		HibMicronodeField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, fieldName);
-		HibNodeFieldContainer oldContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibMicronodeField micronodeField = createMicronodefield(tx, node, micronodeFieldName, versionA, dataProvider, fieldName);
+		HibNodeFieldContainer oldContainer = tx.contentDao().getFieldContainer(node, "en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
@@ -860,7 +860,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(micronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 
 		// assert that migration worked
-		HibNodeFieldContainer newContainer = boot().contentDao().getFieldContainer(node, "en");
+		HibNodeFieldContainer newContainer = tx.contentDao().getFieldContainer(node, "en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		HibMicronodeField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
 		asserter.assertThat(newMicronodeField.getMicronode(), fieldName);
@@ -881,9 +881,9 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		try (Tx tx = tx()) {
 			try {
 				if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
-					invalidMicroschemaMigrationScript(creator, dataProvider, script);
+					invalidMicroschemaMigrationScript(tx, creator, dataProvider, script);
 				} else {
-					invalidSchemaMigrationScript(creator, dataProvider, script);
+					invalidSchemaMigrationScript(tx, creator, dataProvider, script);
 				}
 			} catch (CompositeException e) {
 				Throwable firstError = e.getExceptions().get(0);
@@ -911,11 +911,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
+	private void invalidSchemaMigrationScript(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
-		NodeDao nodeDao = boot().nodeDao();
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingSchemaDao schemaDao = (PersistingSchemaDao) boot().schemaDao();
+		NodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingSchemaDao schemaDao = (PersistingSchemaDao) tx.schemaDao();
 
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
@@ -951,7 +951,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String english = english();
 		HibNode parentNode = folder("2015");
 		HibNode node = nodeDao.create(parentNode, user, versionA, project());
-		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
+		HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user);
 		dataProvider.set(englishContainer, fieldName);
 
@@ -980,13 +980,13 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void invalidMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
+	private void invalidMicroschemaMigrationScript(Tx tx, FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
 		ExecutionException, TimeoutException {
 		String fieldName = "migratedField";
 		String microschemaName = UUIDUtil.randomUUID();
 		String micronodeFieldName = "micronodefield";
-		PersistingBranchDao branchDao = (PersistingBranchDao) boot().branchDao();
-		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) boot().microschemaDao();
+		PersistingBranchDao branchDao = (PersistingBranchDao) tx.branchDao();
+		PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
@@ -1008,7 +1008,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a micronode based on the old schema
-		createMicronodefield(folder("2015"), micronodeFieldName, versionA, dataProvider, fieldName);
+		createMicronodefield(tx, folder("2015"), micronodeFieldName, versionA, dataProvider, fieldName);
 
 		// migrate the node
 		branchDao.assignMicroschemaVersion(project().getLatestBranch(), user(), versionB, createBatch());
@@ -1064,7 +1064,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 *            field names to fill
 	 * @return micronode field
 	 */
-	protected HibMicronodeField createMicronodefield(HibNode node, String micronodeFieldName, HibMicroschemaVersion schemaVersion,
+	protected HibMicronodeField createMicronodefield(Tx tx, HibNode node, String micronodeFieldName, HibMicroschemaVersion schemaVersion,
 		DataProvider dataProvider, String... fieldNames) {
 		String english = english();
 
@@ -1078,7 +1078,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		schema.getField(micronodeFieldName, MicronodeFieldSchema.class).setAllowedMicroSchemas(schemaVersion.getName());
 		latestVersion.setSchema(schema);
 
-		HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
+		HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english, node.getProject().getLatestBranch(),
 			user());
 		actions().updateSchemaVersion(englishContainer.getSchemaContainerVersion());
 		HibMicronodeField micronodeField = englishContainer.createMicronode(micronodeFieldName, schemaVersion);

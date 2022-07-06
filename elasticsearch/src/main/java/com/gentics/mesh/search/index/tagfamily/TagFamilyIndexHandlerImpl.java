@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -45,9 +44,9 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	TagFamilyMappingProvider mappingProvider;
 
 	@Inject
-	public TagFamilyIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public TagFamilyIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -79,9 +78,9 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		return db.tx(() -> {
+		return db.tx(tx -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
-			for (HibProject project : boot.projectDao().findAll()) {
+			for (HibProject project : tx.projectDao().findAll()) {
 				String indexName = HibTagFamily.composeIndexName(project.getUuid());
 				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "tagFamily");
 				indexInfo.put(indexName, info);
@@ -92,8 +91,8 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return Flowable.defer(() -> db.tx(() -> {
-			return boot.projectDao().findAll().stream()
+		return Flowable.defer(() -> db.tx(tx -> {
+			return tx.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
 					String indexName = HibTagFamily.composeIndexName(uuid);
@@ -132,7 +131,7 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 
 	@Override
 	public Function<String, HibTagFamily> elementLoader() {
-		return uuid -> boot.tagFamilyDao().findByUuid(uuid);
+		return uuid -> Tx.get().tagFamilyDao().findByUuid(uuid);
 	}
 
 	@Override

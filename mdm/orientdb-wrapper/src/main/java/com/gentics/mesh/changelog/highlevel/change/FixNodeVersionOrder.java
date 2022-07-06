@@ -16,7 +16,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -34,7 +33,6 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.EdgeFrame;
 
-import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -52,11 +50,8 @@ import io.vertx.core.logging.LoggerFactory;
 public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	public static final Logger log = LoggerFactory.getLogger(FixNodeVersionOrder.class);
 
-	private final Lazy<BootstrapInitializer> boot;
-
 	@Inject
-	public FixNodeVersionOrder(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public FixNodeVersionOrder() {
 	}
 
 	@Override
@@ -86,7 +81,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				if (count != 0 && count % 1000 == 0) {
 					log.info("Checked {} nodes. Found and fixed {} broken nodes", count, fixedNodes.get());
 				}
-				boot.get().contentDao().getFieldContainers(node, ContainerType.INITIAL).stream()
+				Tx.get().contentDao().getFieldContainers(node, ContainerType.INITIAL).stream()
 					.forEach(content -> {
 						boolean mutated = fixNodeVersionOrder(context, toGraph(node), toGraph(content));
 						if (mutated) {
@@ -106,7 +101,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 	}
 
 	private boolean fixNodeVersionOrder(NodeMigrationActionContext context, Node node, NodeGraphFieldContainer initialContent) {
-		ContentDao contentDao = boot.get().contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		Set<VersionNumber> seenVersions = new HashSet<>();
 		TreeSet<HibNodeFieldContainer> versions = new TreeSet<>(Comparator.comparing(HibNodeFieldContainer::getVersion));
 		HibNodeFieldContainer highestVersion = null;

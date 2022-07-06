@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -29,6 +28,7 @@ import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.ProjectEvent;
@@ -61,8 +61,6 @@ public class MeshEntities {
 	private static final Logger log = LoggerFactory.getLogger(MeshEntities.class);
 
 	private final MeshHelper helper;
-	private final BootstrapInitializer boot;
-	private final MeshOptions options;
 	private final ComplianceMode complianceMode;
 
 	public final MeshEntity<HibUser> user;
@@ -77,7 +75,7 @@ public class MeshEntities {
 	private final Map<ElementType, MeshEntity<?>> entities;
 
 	@Inject
-	public MeshEntities(MeshHelper helper, BootstrapInitializer boot, 
+	public MeshEntities(MeshHelper helper, 
 		MeshOptions options, 
 		UserTransformer userTransformer, 
 		RoleTransformer roleTransformer, 
@@ -89,16 +87,14 @@ public class MeshEntities {
 		MicroschemaTransformer microschemaTransformer, 
 		NodeContainerTransformer nodeTransformer) {
 		this.helper = helper;
-		this.boot = boot;
-		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 
-		schema = new SimpleMeshEntity<>(schemaTransformer, HibSchema.TYPE_INFO, byHibElementUuid(uuid -> boot.schemaDao().findByUuid(uuid)));
-		microschema = new SimpleMeshEntity<>(microschemaTransformer, HibMicroschema.TYPE_INFO, byHibElementUuid(uuid -> boot.microschemaDao().findByUuid(uuid)));
-		user = new SimpleMeshEntity<>(userTransformer, HibUser.TYPE_INFO, byHibElementUuid(uuid -> boot.userDao().findByUuid(uuid)));
-		group = new SimpleMeshEntity<>(groupTransformer, HibGroup.TYPE_INFO, byHibElementUuid(uuid -> boot.groupDao().findByUuid(uuid)));
-		role = new SimpleMeshEntity<>(roleTransformer, HibRole.TYPE_INFO, byHibElementUuid(uuid -> boot.roleDao().findByUuid(uuid)));
-		project = new SimpleMeshEntity<>(projectTransformer, HibProject.TYPE_INFO, byHibElementUuid(uuid -> boot.projectDao().findByUuid(uuid)));
+		schema = new SimpleMeshEntity<>(schemaTransformer, HibSchema.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().schemaDao().findByUuid(uuid)));
+		microschema = new SimpleMeshEntity<>(microschemaTransformer, HibMicroschema.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().microschemaDao().findByUuid(uuid)));
+		user = new SimpleMeshEntity<>(userTransformer, HibUser.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().userDao().findByUuid(uuid)));
+		group = new SimpleMeshEntity<>(groupTransformer, HibGroup.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().groupDao().findByUuid(uuid)));
+		role = new SimpleMeshEntity<>(roleTransformer, HibRole.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().roleDao().findByUuid(uuid)));
+		project = new SimpleMeshEntity<>(projectTransformer, HibProject.TYPE_INFO, byHibElementUuid(uuid -> Tx.get().projectDao().findByUuid(uuid)));
 		tagFamily = new SimpleMeshEntity<>(tagFamilyTransformer, HibTagFamily.TYPE_INFO, this::toTagFamily);
 		tag = new SimpleMeshEntity<>(tagTransformer, HibTag.TYPE_INFO, this::toTag);
 		nodeContent = new NodeMeshEntity(nodeTransformer, this::toNodeContent);
@@ -185,22 +181,22 @@ public class MeshEntities {
 
 	private Optional<HibTagFamily> toTagFamily(MeshElementEventModel eventModel) {
 		ProjectEvent event = Util.requireType(ProjectEvent.class, eventModel);
-		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(boot.tagFamilyDao(), project, eventModel.getUuid()));
+		return findElementByUuid(Tx.get().projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(Tx.get().tagFamilyDao(), project, eventModel.getUuid()));
 	}
 
 	private Optional<HibTag> toTag(MeshElementEventModel eventModel) {
 		TagElementEventModel event = Util.requireType(TagElementEventModel.class, eventModel);
-		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(boot.tagFamilyDao(), project, event.getTagFamily().getUuid()))
-			.flatMap(family -> findElementByUuid(boot.tagDao(), family, eventModel.getUuid()));
+		return findElementByUuid(Tx.get().projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(Tx.get().tagFamilyDao(), project, event.getTagFamily().getUuid()))
+			.flatMap(family -> findElementByUuid(Tx.get().tagDao(), family, eventModel.getUuid()));
 	}
 
 	private Optional<HibNodeFieldContainer> toNodeContent(MeshElementEventModel eventModel) {
-		ContentDao contentDao = boot.contentDao();
+		ContentDao contentDao = Tx.get().contentDao();
 		NodeMeshEventModel event = Util.requireType(NodeMeshEventModel.class, eventModel);
-		return findElementByUuid(boot.projectDao(), event.getProject().getUuid())
-			.flatMap(project -> findElementByUuid(boot.nodeDao(), project, eventModel.getUuid()))
+		return findElementByUuid(Tx.get().projectDao(), event.getProject().getUuid())
+			.flatMap(project -> findElementByUuid(Tx.get().nodeDao(), project, eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
 				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
 				contentDao.getFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
@@ -261,10 +257,6 @@ public class MeshEntities {
 		return findElementByUuid(dao, rootVertex, uuid).stream();
 	}
 
-	private <T extends HibCoreElement<? extends RestModel>> EventVertexMapper<T> byUuid(Function<String, T> elementLoader) {
-		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
-	}
-
 	private <T extends HibBaseElement> EventVertexMapper<T> byHibElementUuid(Function<String, T> elementLoader) {
 		return event -> Optional.ofNullable(elementLoader.apply(event.getUuid()));
 	}
@@ -316,9 +308,9 @@ public class MeshEntities {
 	 */
 	public Stream<CreateDocumentRequest> generateNodeRequests(String nodeUuid, HibProject project, HibBranch branch) {
 		NodeContainerTransformer transformer = (NodeContainerTransformer) nodeContent.getTransformer();
-		return findElementByUuidStream(boot.nodeDao(), project, nodeUuid)
+		return findElementByUuidStream(Tx.get().nodeDao(), project, nodeUuid)
 		.flatMap(node -> Util.latestVersionTypes()
-		.flatMap(type -> boot.contentDao().getFieldContainers(node, branch, type).stream()
+		.flatMap(type -> Tx.get().contentDao().getFieldContainers(node, branch, type).stream()
 		.map(container -> helper.createDocumentRequest(
 			ContentDao.composeIndexName(
 				project.getUuid(),

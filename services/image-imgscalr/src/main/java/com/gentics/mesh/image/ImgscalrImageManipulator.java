@@ -34,10 +34,11 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -46,7 +47,6 @@ import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.util.NumberUtils;
 import com.twelvemonkeys.image.ResampleOp;
 
@@ -70,18 +70,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
     private S3BinaryStorage s3BinaryStorage;
 
-    private final BootstrapInitializer boot;
-
-    public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BootstrapInitializer boot, S3BinaryStorage s3BinaryStorage) {
-        this(vertx, options.getImageOptions(), boot, s3BinaryStorage);
+    public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
+        this(vertx, options.getImageOptions(), s3BinaryStorage);
     }
 
-    ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, BootstrapInitializer boot, S3BinaryStorage s3BinaryStorage) {
+    ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, S3BinaryStorage s3BinaryStorage) {
         super(vertx, options);
         focalPointModifier = new FocalPointModifier(options);
         // 10 seconds
         workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
-        this.boot = boot;
         this.s3BinaryStorage = s3BinaryStorage;
     }
 
@@ -310,7 +307,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		parameters.validate();
 		parameters.validateLimits(options);
 
-		BinaryDao binaryDao = boot.binaryDao();
+		BinaryDao binaryDao = Tx.get().binaryDao();
 		Supplier<InputStream> stream = binaryDao.openBlockingStream(binary);
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters)

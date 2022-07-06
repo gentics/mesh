@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
@@ -21,11 +22,8 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 
 	private static final Logger log = LoggerFactory.getLogger(SetAdminUserFlag.class);
 
-	private final Lazy<BootstrapInitializer> boot;
-
 	@Inject
 	public SetAdminUserFlag(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
 	}
 
 	@Override
@@ -46,8 +44,8 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		log.info("Applying change: " + getName());
-		GroupDao groupDao = boot.get().groupDao();
-		for (HibRole role : boot.get().roleDao().findAll()) {
+		GroupDao groupDao = Tx.get().groupDao();
+		for (HibRole role : Tx.get().roleDao().findAll()) {
 			if (!"admin".equals(role.getName())) {
 				continue;
 			}

@@ -268,8 +268,8 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// Assert that the node was only deleted in the new branch
 		try (Tx tx = tx()) {
 			assertElement(tx.nodeDao(), project(), uuid, true);
-			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(boot().contentDao().getFieldContainers(node, newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(tx.contentDao().getFieldContainers(node, initialBranch(), DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(tx.contentDao().getFieldContainers(node, newBranch, DRAFT)).as("draft containers for new branch").isEmpty();
 		}
 
 	}
@@ -307,11 +307,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		// Assert deletion - nodes should only be deleted for new branch
 		try (Tx tx = tx()) {
 			assertElement(tx.nodeDao(), project(), uuid, true);
-			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
-			assertThat(boot().contentDao().getFieldContainers(node, initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
+			assertThat(tx.contentDao().getFieldContainers(node, initialBranch(), ContainerType.DRAFT)).as("draft containers for initial branch").isNotEmpty();
+			assertThat(tx.contentDao().getFieldContainers(node, initialBranch(), ContainerType.PUBLISHED)).as("published containers for initial branch")
 				.isNotEmpty();
-			assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
-			assertThat(boot().contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
+			assertThat(tx.contentDao().getFieldContainers(node, newBranch, ContainerType.DRAFT)).as("draft containers for new branch").isEmpty();
+			assertThat(tx.contentDao().getFieldContainers(node, newBranch, ContainerType.PUBLISHED)).as("published containers for new branch").isEmpty();
 		}
 	}
 
@@ -323,7 +323,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-			HibNode foundNode = boot().nodeDao().findByUuid(project(), uuid);
+			HibNode foundNode = tx.nodeDao().findByUuid(project(), uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
 	}

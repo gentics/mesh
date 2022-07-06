@@ -101,7 +101,7 @@ public abstract class AbstractDemoDumper<T extends MeshOptions> extends Abstract
 	public void dump() throws Exception {
 		// Initialise demo data
 		BootstrapInitializer boot = meshInternal.boot();
-		DemoDataProvider provider = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), boot);
+		DemoDataProvider provider = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl());
 		invokeDump(boot, provider);
 	}
 

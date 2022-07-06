@@ -408,7 +408,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
+			HibNode newNode = tx.nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -438,7 +438,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
+			HibNode newNode = tx.nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -468,7 +468,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
-			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
+			HibNode newNode = tx.nodeDao().findByUuid(project(), nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid(), type))
@@ -534,7 +534,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
-			HibNode node = boot().nodeDao().findByUuid(project(), restNode.getUuid());
+			HibNode node = tx.nodeDao().findByUuid(project(), restNode.getUuid());
 			assertNotNull(node);
 			assertThat(node).matches(request);
 
@@ -646,7 +646,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
 				HibNode node = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-				boot().contentDao().createFieldContainer(node, english(), initialBranch(), user());
+				tx.contentDao().createFieldContainer(node, english(), initialBranch(), user());
 				assertNotNull(node);
 				roleDao.grantPermissions(role(), node, READ_PERM);
 			}
@@ -1086,11 +1086,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	@Ignore("Multithreaded update is currently only possible for multiple nodes not a single node")
 	public void testUpdateMultithreaded() throws InterruptedException {
-		ContentDao contentDao = boot().contentDao();
 		final String newName = "english renamed name";
 		String uuid = tx(() -> folder("2015").getUuid());
-		assertEquals("2015", tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString()));
-		VersionNumber version = tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getVersion());
+		assertEquals("2015", tx(tx -> { return tx.contentDao().getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString(); }));
+		VersionNumber version = tx(tx -> { return tx.contentDao().getLatestDraftFieldContainer(folder("2015"), english()).getVersion(); });
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
@@ -1558,7 +1557,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibSchemaVersion version = tx.schemaDao().findByUuid(schemaContainer("content").getUuid()).getLatestVersion();
 			HibUser user = tx.userDao().findByUuid(user().getUuid());
 			node = nodeDao.create(parentNode, user, version, project);
-			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			HibSchemaVersion schemaVersion = englishContainer.getSchemaContainerVersion();
 			schemaVersion.getSchema().addField(new StringFieldSchemaImpl().setName("displayName"));
@@ -2105,7 +2104,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			assertNotNull(boot().nodeDao().findByUuid(project(), uuid));
+			assertNotNull(tx.nodeDao().findByUuid(project(), uuid));
 		}
 	}
 

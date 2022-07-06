@@ -146,7 +146,7 @@ public class TestDataProvider {
 			boot.initMandatoryData(meshOptions);
 			boot.initBasicData(meshOptions);
 			if (setAdminPassword) {
-				setAdminPassword();
+				setAdminPassword(tx);
 			}
 			boot.initOptionalData(true);
 			schemaContainers.clear();
@@ -161,15 +161,15 @@ public class TestDataProvider {
 
 			addBootstrappedData(tx);
 			addSchemaContainers();
-			addUserGroupRoleProject();
+			addUserGroupRoleProject(tx);
 			if (getSize() == FULL) {
 				addMicroschemaContainers();
 				addTagFamilies();
 				addTags();
 			}
-			addFolderStructure();
+			addFolderStructure(tx);
 			if (getSize() == FULL) {
-				addContents();
+				addContents(tx);
 			}
 
 			long startPerm = System.currentTimeMillis();
@@ -205,9 +205,9 @@ public class TestDataProvider {
 		log.debug("Setup took: {" + duration + "}");
 	}
 
-	private void setAdminPassword() {
+	private void setAdminPassword(Tx tx) {
 		String hash = "$2a$10$X7NA0kiqrFlyX0NUhPdW1e7jevHyoaoB4OyoxV1pdA7B3SLVSkx22";
-		UserDao userDao = boot.userDao();
+		UserDao userDao = tx.userDao();
 		userDao.updatePasswordHash(userDao.findByUsername("admin"), hash);
 	}
 
@@ -249,32 +249,32 @@ public class TestDataProvider {
 		}
 	}
 
-	private void addContents() {
-		TagDao tagDao = Tx.get().tagDao();
+	private void addContents(Tx tx) {
+		TagDao tagDao = tx.tagDao();
 
-		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
-		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
+		addContent(tx, folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
+		addContent(tx, folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
-		HibNode content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht",
+		HibNode content = addContent(tx, folders.get("news"), "News Overview", "News Overview", "News Übersicht",
 			CONTENT_UUID);
 		contentUuid = content.getUuid();
 
-		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!",
+		addContent(tx, folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!",
 			"Kauf zwei und nimm neun mit!");
-		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!",
+		addContent(tx, folders.get("deals"), "Special Deal June 2015", "Buy two get three!",
 			"Kauf zwei und nimm drei mit!");
 
-		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
-		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
+		addContent(tx, folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
+		addContent(tx, folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
 
-		HibNode concorde = addContent(folders.get("products"), "Concorde",
+		HibNode concorde = addContent(tx, folders.get("products"), "Concorde",
 			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
 		tagDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
 
-		HibNode hondaNR = addContent(folders.get("products"), "Honda NR",
+		HibNode hondaNR = addContent(tx, folders.get("products"), "Honda NR",
 			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
 		tagDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
@@ -283,25 +283,25 @@ public class TestDataProvider {
 
 	}
 
-	private void addFolderStructure() {
-		TagDao tagDao = Tx.get().tagDao();
+	private void addFolderStructure(Tx tx) {
+		TagDao tagDao = tx.tagDao();
 
 		HibNode baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
 
-		HibNode news = addFolder(baseNode, "News", "Neuigkeiten", NEWS_UUID);
-		HibNode news2015 = addFolder(news, "2015", null);
+		HibNode news = addFolder(tx, baseNode, "News", "Neuigkeiten", NEWS_UUID);
+		HibNode news2015 = addFolder(tx, news, "2015", null);
 		if (getSize() == FULL) {
 			tagDao.addTag(news2015, tags.get("car"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("bike"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("plane"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("jeep"), project.getLatestBranch());
 
-			HibNode news2014 = addFolder(news, "2014", null);
-			addFolder(news2014, "March", "März");
+			HibNode news2014 = addFolder(tx, news, "2014", null);
+			addFolder(tx, news2014, "March", "März");
 
-			addFolder(baseNode, "Products", "Produkte");
-			addFolder(baseNode, "Deals", "Angebote");
+			addFolder(tx, baseNode, "Products", "Produkte");
+			addFolder(tx, baseNode, "Deals", "Angebote");
 		}
 
 	}
@@ -372,12 +372,12 @@ public class TestDataProvider {
 		return new UserInfo(user, group, role, password);
 	}
 
-	private void addUserGroupRoleProject() {
-		UserDao userDao = Tx.get().userDao();
-		RoleDao roleDao = Tx.get().roleDao();
-		GroupDao groupDao = Tx.get().groupDao();
-		SchemaDao schemaDao = Tx.get().schemaDao();
-		ProjectDao projectDao = Tx.get().projectDao();
+	private void addUserGroupRoleProject(Tx tx) {
+		UserDao userDao = tx.userDao();
+		RoleDao roleDao = tx.roleDao();
+		GroupDao groupDao = tx.groupDao();
+		SchemaDao schemaDao = tx.schemaDao();
+		ProjectDao projectDao = tx.projectDao();
 
 		// User, Groups, Roles
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
@@ -417,7 +417,7 @@ public class TestDataProvider {
 		}
 		// Publish the project basenode
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		boot.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
+		tx.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
 			getUserInfo().getUser());
 		contentCount++;
 
@@ -540,13 +540,13 @@ public class TestDataProvider {
 		microschemaDao.assign(microschema, project, user(), createBatch());
 	}
 
-	public HibNode addFolder(HibNode rootNode, String englishName, String germanName) {
-		return addFolder(rootNode, englishName, germanName, null);
+	public HibNode addFolder(Tx tx, HibNode rootNode, String englishName, String germanName) {
+		return addFolder(tx, rootNode, englishName, germanName, null);
 	}
 
-	public HibNode addFolder(HibNode rootNode, String englishName, String germanName, String uuid) {
-		NodeDao nodeDao = boot.nodeDao();
-		ContentDao contentDao = boot.contentDao();
+	public HibNode addFolder(Tx tx, HibNode rootNode, String englishName, String germanName, String uuid) {
+		NodeDao nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
 		HibBranch branch = project.getLatestBranch();
@@ -599,14 +599,14 @@ public class TestDataProvider {
 		return tag;
 	}
 
-	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent) {
-		return addContent(parentNode, name, englishContent, germanContent, null);
+	private HibNode addContent(Tx tx, HibNode parentNode, String name, String englishContent, String germanContent) {
+		return addContent(tx, parentNode, name, englishContent, germanContent, null);
 	}
 
-	private HibNode addContent(HibNode parentNode, String name, String englishContent, String germanContent,
+	private HibNode addContent(Tx tx, HibNode parentNode, String name, String englishContent, String germanContent,
 		String uuid) {
-		NodeDao nodeDao = boot.nodeDao();
-		ContentDao contentDao = boot.contentDao();
+		NodeDao nodeDao = tx.nodeDao();
+		ContentDao contentDao = tx.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
 		HibBranch branch = project.getLatestBranch();
 		HibNode node;
@@ -652,8 +652,8 @@ public class TestDataProvider {
 	/**
 	 * Returns the path to the tag for the given language.
 	 */
-	public String getPathForNews2015Tag(String languageTag) {
-		ContentDao contentDao = boot.contentDao();
+	private String getPathForNews2015Tag(Tx tx, String languageTag) {
+		ContentDao contentDao = tx.contentDao();
 
 		String name = contentDao.getLatestDraftFieldContainer(folders.get("news"), languageTag).getString("name")
 			.getString();

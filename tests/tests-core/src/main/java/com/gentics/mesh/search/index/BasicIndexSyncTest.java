@@ -114,9 +114,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Ignore("Currently fails due to https://github.com/gentics/mesh/issues/606")
 	public void testUserSync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
 			for (int i = 0; i < 400; i++) {
-				boot().userDao().create("user_" + i, user(), null);
+				tx.userDao().create("user_" + i, user(), null);
 			}
 		});
 		syncIndex();
@@ -157,8 +157,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("group", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			HibGroup group3 = boot().groupDao().findByName("group_3");
+		tx(tx -> {
+			HibGroup group3 = tx.groupDao().findByName("group_3");
 			CommonTx.get().groupDao().deletePersisted(group3);
 		});
 		syncIndex();
@@ -168,24 +168,24 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	public void testRoleSync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
 			for (int i = 0; i < 400; i++) {
-				boot().roleDao().create("role_" + i, user(), null);
+				tx.roleDao().create("role_" + i, user(), null);
 			}
 		});
 		syncIndex();
 		assertMetrics("role", 400, 0, 0);
 
 		// Assert update
-		tx(() -> {
-			Tx.get().roleDao().findByUuid(role().getUuid()).setName("updated");
+		tx(tx -> {
+			tx.roleDao().findByUuid(role().getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("role", 0, 1, 0);
 
 		// Assert deletion
-		tx(() -> {
-			boot().roleDao().findByName("role_3").removeElement();
+		tx(tx -> {
+			tx.roleDao().findByName("role_3").removeElement();
 		});
 		syncIndex();
 		assertMetrics("role", 0, 0, 1);
@@ -298,9 +298,9 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	@Test
 	public void testNodeSync() throws Exception {
 		// Assert insert
-		tx(() -> {
+		tx(tx -> {
 			HibNode node = folder("2015");
-			boot().contentDao().createFieldContainer(node, german(), initialBranch(), user());
+			tx.contentDao().createFieldContainer(node, german(), initialBranch(), user());
 		});
 		syncIndex();
 		assertInsertedMetrics(call(() -> client().searchStatus()).getMetrics().get("node"), 1);
@@ -348,8 +348,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert update
 		SchemaResponse response = call(() -> client().createSchema(new SchemaCreateRequest().setName("dummy")));
 		waitForSearchIdleEvent();
-		tx(() -> {
-			boot().schemaDao().findByUuid(response.getUuid()).setName("updated");
+		tx(tx -> {
+			tx.schemaDao().findByUuid(response.getUuid()).setName("updated");
 		});
 		syncIndex();
 		assertMetrics("schema", 0, 1, 0);
@@ -379,8 +379,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		assertMetrics("microschema", 400, 0, 0);
 
 		// Assert update
-		tx(() -> {
-			boot().microschemaDao().findByName("microschema_100").setName("updated");
+		tx(tx -> {
+			tx.microschemaDao().findByName("microschema_100").setName("updated");
 		});
 		syncIndex();
 		assertMetrics("microschema", 0, 1, 0);

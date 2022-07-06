@@ -59,8 +59,7 @@ public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
 			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(),
-				new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(),
-					meshInternal.boot()));
+				new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl()));
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
 			// Add admin ui

@@ -73,7 +73,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		for (int i = 0; i < 20; i++) {
-			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(folder("2015"), "en").getVersion());
+			VersionNumber oldVersion = tx(tx -> { return tx.contentDao().getFieldContainer(folder("2015"), "en").getVersion(); });
 
 			String newValue = "content " + i;
 

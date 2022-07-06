@@ -115,7 +115,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 			List<Boolean> newValue;
 
 			try (Tx tx = tx()) {
-				container = boot().contentDao().getFieldContainer(node, "en");
+				container = tx.contentDao().getFieldContainer(node, "en");
 				oldValue = getListValues(container::getBooleanList, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
 

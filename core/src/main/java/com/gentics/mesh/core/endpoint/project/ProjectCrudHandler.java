@@ -74,9 +74,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 				ProjectDao projectDao = tx.projectDao();
 				HibProject project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				if (before.isPresent()) {
-					boot.jobDao().enqueueVersionPurge(user, project, before.get());
+					tx.jobDao().enqueueVersionPurge(user, project, before.get());
 				} else {
-					boot.jobDao().enqueueVersionPurge(user, project);
+					tx.jobDao().enqueueVersionPurge(user, project);
 				}
 				return message(ac, "project_version_purge_enqueued");
 			}, message -> {

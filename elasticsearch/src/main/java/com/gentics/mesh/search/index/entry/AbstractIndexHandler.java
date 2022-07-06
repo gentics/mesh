@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibBucketableElement;
@@ -60,8 +59,6 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final Database db;
 
-	protected final BootstrapInitializer boot;
-
 	protected final MeshHelper helper;
 
 	protected final MeshOptions options;
@@ -72,11 +69,10 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected final BucketManager bucketManager;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
 		this.searchProvider = searchProvider;
 		this.db = db;
-		this.boot = boot;
 		this.helper = helper;
 		this.options = options;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();

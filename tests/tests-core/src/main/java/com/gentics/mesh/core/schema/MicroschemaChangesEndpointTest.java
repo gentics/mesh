@@ -76,7 +76,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
-			HibNodeFieldContainer fieldContainer = boot().contentDao().getFieldContainer(node, "en");
+			HibNodeFieldContainer fieldContainer = tx.contentDao().getFieldContainer(node, "en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
 	}
@@ -179,10 +179,10 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode("micronodeField", micronode);
 
-		return tx(() -> {
-			HibNode node = boot().nodeDao().findByUuid(project(), response.getUuid());
+		return tx(tx -> {
+			HibNode node = tx.nodeDao().findByUuid(project(), response.getUuid());
 			assertNotNull("The node should have been created.", node);
-			assertNotNull("The node should have a micronode graph field", boot().contentDao().getFieldContainer(node, "en").getMicronode("micronodeField"));
+			assertNotNull("The node should have a micronode graph field", tx.contentDao().getFieldContainer(node, "en").getMicronode("micronodeField"));
 			return node;
 		});
 	}
