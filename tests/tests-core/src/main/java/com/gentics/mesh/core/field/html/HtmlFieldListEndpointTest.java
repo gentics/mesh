@@ -55,13 +55,11 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			HtmlFieldListImpl listField = new HtmlFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		HtmlFieldListImpl listField = new HtmlFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
@@ -124,7 +122,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 			List<String> oldValue;
 			List<String> newValue;

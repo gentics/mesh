@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
@@ -146,8 +145,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				ContainerType type = getNodeVersion(env);
 
 				HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-				container = gc.requiresReadPermSoft(container, env);
-				return new NodeContent(node, container, languageTags, type);
+				return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 			}));
 
 		return root.build();

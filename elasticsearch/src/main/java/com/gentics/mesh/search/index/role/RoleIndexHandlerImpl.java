@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -41,9 +40,9 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 	RoleMappingProvider mappingProvider;
 
 	@Inject
-	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -97,7 +96,7 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  impleme
 
 	@Override
 	public Function<String, HibRole> elementLoader() {
-		return (uuid) -> boot.roleDao().findByUuid(uuid);
+		return (uuid) -> Tx.get().roleDao().findByUuid(uuid);
 	}
 
 	@Override

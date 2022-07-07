@@ -245,15 +245,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<Node> getChildrenStream(InternalActionContext ac) {
+	public Stream<Node> getChildrenStream(InternalActionContext ac, InternalPermission perm) {
 		HibUser user = ac.getUser();
 		Tx tx = GraphDBTx.getGraphTx();
 		UserDao userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
-			.filter(node -> {
-				Object id = node.getId();
-				return userDao.hasPermissionForId(user, id, READ_PERM) || userDao.hasPermissionForId(user, id, READ_PUBLISHED_PERM);
-			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
+			.filter(node -> userDao.hasPermissionForId(user, node.getId(), perm))
+			.map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
 	@Override

@@ -16,7 +16,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -49,8 +48,6 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> {
 
-	private final BootstrapInitializer boot;
-
 	private final MeshOptions options;
 
 	private final PageTransformer pageTransformer;
@@ -58,11 +55,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 	private static final Logger log = LoggerFactory.getLogger(NodeCrudHandler.class);
 
 	@Inject
-	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, BootstrapInitializer boot, WriteLock writeLock,
+	public NodeCrudHandler(Database db, HandlerUtilities utils, MeshOptions options, WriteLock writeLock,
 		NodeDAOActions nodeActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, nodeActions);
 		this.options = options;
-		this.boot = boot;
 		this.pageTransformer = pageTransformer;
 	}
 
@@ -503,7 +499,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
-			return boot.nodeDao().transformToVersionList(node, ac);
+			return tx.nodeDao().transformToVersionList(node, ac);
 		}, model -> {
 			ac.send(model, OK);
 		});

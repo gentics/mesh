@@ -15,11 +15,11 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -87,10 +87,10 @@ public class TagEventHandler implements EventHandler {
 	}
 
 	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, HibTag tag) {
-		TagDao tagDao = helper.getBoot().tagDao();
-		return findElementByUuidStream(helper.getBoot().projectDao(), model.getProject().getUuid())
-			.flatMap(project -> helper.getBoot().branchDao().findAll(project).stream()
-			.flatMap(branch -> tagDao.getNodes(tag, branch).stream()
+		Tx tx = Tx.get();
+		return findElementByUuidStream(tx.projectDao(), model.getProject().getUuid())
+			.flatMap(project -> tx.branchDao().findAll(project).stream()
+			.flatMap(branch -> tx.tagDao().getNodes(tag, branch).stream()
 			.flatMap(node -> entities.generateNodeRequests(node.getUuid(), project, branch))));
 	}
 }

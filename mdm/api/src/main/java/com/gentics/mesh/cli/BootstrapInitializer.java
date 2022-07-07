@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
-import com.gentics.mesh.core.data.dao.*;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -22,51 +21,6 @@ import io.vertx.core.Vertx;
  * GroupDao, UserDao and various element such as the Admin User, Admin Group, Admin Role.
  */
 public interface BootstrapInitializer {
-
-	@Getter
-	ProjectDao projectDao();
-
-	@Getter
-	BranchDao branchDao();
-
-	@Getter
-	LanguageDao languageDao();
-
-	@Getter
-	GroupDao groupDao();
-
-	@Getter
-	UserDao userDao();
-
-	@Getter
-	JobDao jobDao();
-
-	@Getter
-	TagFamilyDao tagFamilyDao();
-
-	@Getter
-	TagDao tagDao();
-
-	@Getter
-	RoleDao roleDao();
-
-	@Getter
-	MicroschemaDao microschemaDao();
-
-	@Getter
-	SchemaDao schemaDao();
-
-	@Getter
-	NodeDao nodeDao();
-
-	@Getter
-	ContentDao contentDao();
-
-	@Getter
-	BinaryDao binaryDao();
-
-	@Getter
-	S3BinaryDao s3binaryDao();
 
 	@Getter
 	RootResolver rootResolver();

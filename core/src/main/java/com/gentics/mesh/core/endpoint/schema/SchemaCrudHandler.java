@@ -143,7 +143,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 						for (String microschemaName : allowedSchemas) {
 
 							// schema_error_microschema_reference_no_perm
-							HibMicroschema microschema = boot.get().microschemaDao().findByName(microschemaName);
+							HibMicroschema microschema = tx1.microschemaDao().findByName(microschemaName);
 							if (microschema == null) {
 								throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
 							}

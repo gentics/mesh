@@ -102,33 +102,6 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	HibNode getParentNode(String branchUuid);
 
 	/**
-	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
-	 * node's schema. It may be possible that no display name can be returned since new nodes may not have any values.
-	 *
-	 * @param ac
-	 * @return
-	 */
-	default String getDisplayName(InternalActionContext ac) {
-		NodeParameters nodeParameters = ac.getNodeParameters();
-		VersioningParameters versioningParameters = ac.getVersioningParameters();
-		ContentDao contentDao = Tx.get().contentDao();
-
-		HibNodeFieldContainer container = contentDao.findVersion(this, nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, getProject()).getUuid(),
-				versioningParameters
-						.getVersion());
-		if (container == null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Could not find any matching i18n field container for node {" + getUuid() + "}.");
-			}
-			return null;
-		} else {
-			// Determine the display field name and load the string value
-			// from that field.
-			return container.getDisplayFieldValue();
-		}
-	}
-
-	/**
 	 * Return the schema container for the node.
 	 *
 	 * @return

@@ -5,11 +5,15 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.data.user.HibUser;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -31,7 +35,6 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -39,6 +42,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
@@ -62,6 +66,37 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
 		return toGraph(node).getFieldContainer(languageTag, branchUuid, type);
+	}
+
+	@Override
+	public Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, getFieldEdges(node, branchUuid, type).stream().map(HibNodeFieldContainerEdge::getNodeContainer).collect(Collectors.toList())))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	@Override
+	public Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber) {
+		return nodes.stream()
+				.map(node -> Pair.of(node, getFieldContainersForVersion(node, branchUuid, versionNumber)))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	public List<HibNodeFieldContainer> getFieldContainersForVersion(HibNode node, String branchUuid, VersionNumber versionNumber) {
+		Result<? extends HibNodeFieldContainerEdge> edges = getFieldEdges(node, branchUuid, ContainerType.DRAFT);
+
+		return edges.stream().map(edge -> {
+			HibNodeFieldContainer container = edge.getNodeContainer();
+
+			if (container != null) {
+				while (container != null && !versionNumber.equals(container.getVersion())) {
+					container = container.getPreviousVersion();
+				}
+			}
+
+			return container;
+		}).filter(Objects::nonNull)
+		  .collect(Collectors.toList());
 	}
 
 	@Override
@@ -220,11 +255,16 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public HibNodeFieldContainer createPersisted(String nodeuuid, HibSchemaVersion version, String uuid) {
+	public HibNodeFieldContainer createPersisted(String nodeuuid, HibSchemaVersion version, String uuid, String languageTag, VersionNumber versionNumber, HibUser editor) {
 		NodeGraphFieldContainerImpl container = GraphDBTx.getGraphTx().getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (StringUtils.isNotBlank(uuid)) {
 			container.setUuid(uuid);
 		}
+		container.generateBucketId();
+		container.setEditor(editor);
+		container.setLastEditedTimestamp();
+		container.setLanguageTag(languageTag);
+		container.setVersion(versionNumber);
 		container.setSchemaContainerVersion(version);
 		return container;
 	}

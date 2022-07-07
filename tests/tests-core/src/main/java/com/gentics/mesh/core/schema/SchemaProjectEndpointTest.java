@@ -106,7 +106,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			ProjectDao projectRoot = boot().projectDao();
+			ProjectDao projectRoot = tx.projectDao();
 			HibProject extraProject = projectRoot.findByUuid(created.getUuid());
 			assertNotNull("The schema should be added to the extra project", schemaDao.findByUuid(extraProject, schemaUuid));
 		}

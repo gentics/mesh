@@ -164,8 +164,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		CommonTx ctx = CommonTx.get();
 		ContentDao contentDao = ctx.contentDao();
 		BranchDao branchDao = ctx.branchDao();
+		PersistingNodeDao nodeDao = ctx.nodeDao();
 		if (baseNode == null) {
-			baseNode = ctx.create(CommonTx.get().nodeDao().getPersistenceClass(project));
+			baseNode = nodeDao.createPersisted(project, null);
 			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
 			baseNode.setProject(project);
 			baseNode.setCreated(creator);

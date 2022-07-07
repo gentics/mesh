@@ -44,11 +44,11 @@ public class TxTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			UserDao userDao= tx.userDao();
 			assertNotNull(userDao.create("testuser" + e, user()));
-			assertNotNull(boot().userDao().findByUsername("testuser" + e));
+			assertNotNull(tx.userDao().findByUsername("testuser" + e));
 			tx.success();
 		}
 		try (Tx tx = tx()) {
-			assertNotNull(boot().userDao().findByUsername("testuser" + e));
+			assertNotNull(tx.userDao().findByUsername("testuser" + e));
 		}
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
@@ -58,14 +58,13 @@ public class TxTest extends AbstractMeshTest {
 				assertNotNull(userDao.findByUsername("testuser" + u));
 				tx.failure();
 			}
-			assertNull(boot().userDao().findByUsername("testuser" + u));
-
+			assertNull(tx(tx -> { return tx.userDao().findByUsername("testuser" + u); }));
 		};
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
 		try (Tx tx = tx()) {
-			assertNull(boot().userDao().findByUsername("testuser" + u));
+			assertNull(tx.userDao().findByUsername("testuser" + u));
 			System.out.println("RUN: " + i.get());
 		}
 
@@ -77,7 +76,7 @@ public class TxTest extends AbstractMeshTest {
 			try (Tx tx = tx()) {
 				HibUser user = tx.userDao().findByUuid(userUuid());
 				user.setUsername("test2");
-				assertNotNull(boot().userDao().findByUsername("test2"));
+				assertNotNull(tx.userDao().findByUsername("test2"));
 				tx.success();
 			}
 
@@ -85,7 +84,7 @@ public class TxTest extends AbstractMeshTest {
 				try (Tx tx = tx()) {
 					HibUser user = tx.userDao().findByUuid(userUuid());
 					user.setUsername("test3");
-					assertNotNull(boot().userDao().findByUsername("test3"));
+					assertNotNull(tx.userDao().findByUsername("test3"));
 					tx.failure();
 				}
 
@@ -102,8 +101,8 @@ public class TxTest extends AbstractMeshTest {
 		t2.start();
 		t2.join();
 		try (Tx tx = tx()) {
-			assertNull(boot().userDao().findByUsername("test3"));
-			assertNotNull("The user with username test2 could not be found.", boot().userDao().findByUsername("test2"));
+			assertNull(tx.userDao().findByUsername("test3"));
+			assertNotNull("The user with username test2 could not be found.", tx.userDao().findByUsername("test2"));
 		}
 
 	}

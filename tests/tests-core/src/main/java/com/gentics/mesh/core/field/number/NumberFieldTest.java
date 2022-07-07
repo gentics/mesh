@@ -99,7 +99,9 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			numberFieldSchema.setRequired(true);
 			prepareTypedSchema(node, numberFieldSchema, false);
 			tx.commit();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNumberField numberField = container.createNumber(NUMBER_FIELD);
 			numberField.setNumber(100.9f);
 			tx.success();

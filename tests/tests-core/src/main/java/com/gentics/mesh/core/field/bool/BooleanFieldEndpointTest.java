@@ -51,7 +51,9 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			HibNode node = folder("2015");
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}
@@ -70,7 +72,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			boolean flag = false;
-			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(node, "en").getVersion());
+			VersionNumber oldVersion = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en").getVersion(); });
 
 			NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);

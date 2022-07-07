@@ -14,7 +14,6 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.router.RouterStorage;
@@ -41,8 +40,6 @@ public class DistributedEventManager {
 
 	private final Lazy<Database> db;
 
-	private final Lazy<BootstrapInitializer> boot;
-
 	private final RouterStorageRegistryImpl routerStorageRegistry;
 
 	private final Lazy<PermissionCache> permCache;
@@ -50,12 +47,10 @@ public class DistributedEventManager {
 	private final CacheRegistry cacheRegistry;
 
 	@Inject
-	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, Lazy<BootstrapInitializer> boot,
-		RouterStorageRegistryImpl routerStorageRegistry,
+	public DistributedEventManager(Lazy<Vertx> vertx, Lazy<Database> db, RouterStorageRegistryImpl routerStorageRegistry,
 		Lazy<PermissionCache> permCache, CacheRegistry cacheRegistry) {
 		this.vertx = vertx;
 		this.db = db;
-		this.boot = boot;
 		this.routerStorageRegistry = routerStorageRegistry;
 		this.permCache = permCache;
 		this.cacheRegistry = cacheRegistry;
@@ -129,14 +124,13 @@ public class DistributedEventManager {
 	}
 
 	private void synchronizeProjectRoutes() throws InvalidNameException {
-		BootstrapInitializer cboot = boot.get();
 		Database cdb = db.get();
 
 		cdb.tx(tx -> {
 			for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
-				for (HibProject project : cboot.projectDao().findAll()) {
+				for (HibProject project : tx.projectDao().findAll()) {
 					if (registeredProjectRouters.containsKey(project.getName())) {
 						continue;
 					} else {

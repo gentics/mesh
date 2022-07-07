@@ -45,24 +45,6 @@ public class DevRunner {
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 
-		// options.setAdminPassword("admin");
-		// options.getStorageOptions().setStartServer(true);
-		// options.getHttpServerOptions().setCorsAllowCredentials(true);
-		// options.getHttpServerOptions().setEnableCors(true);
-		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
-		// options.setInitCluster(true);
-		// options.getAuthenticationOptions().setKeystorePassword("finger");
-		// options.getStorageOptions().setStartServer(true);
-		// options.getClusterOptions().setVertxPort(6152);
-		// options.getClusterOptions().setClusterName("test");
-		// options.setNodeName("node1");
-		// options.getClusterOptions().setEnabled(true);
-		// options.getHttpServerOptions().setPort(9999);
-		// options.getMonitoringOptions().setPort(9991);
-		// options.getMonitoringOptions().setHost("0.0.0.0");
-		// options.getSearchOptions().setUrl(null);
-		// options.getSearchOptions().setStartEmbedded(false);
-		// options.getSearchOptions().setMappingMode(MappingMode.STRICT);
 		options.getSearchOptions().disable();
 
 		Mesh mesh = Mesh.create(options);

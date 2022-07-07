@@ -72,7 +72,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		assertThat(adminCall(() -> client().findJobs()).getData()).hasSize(1);
 
 		tx((tx) -> {
-			boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+			tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 		});
 
 		assertThat(adminCall(() -> client().findJobs()).getData()).hasSize(2);
@@ -95,7 +95,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		});
 
 		tx((tx) -> {
-			boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+			tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 		});
 
 		String branchName = tx(() -> initialBranch().getName());
@@ -174,7 +174,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteFailedJob() {
 
-		String jobUuid = tx(() -> boot().jobDao().enqueueBranchMigration(user(), initialBranch()).getUuid());
+		String jobUuid = tx(tx -> { return tx.jobDao().enqueueBranchMigration(user(), initialBranch()).getUuid(); });
 
 		call(() -> client().deleteJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
@@ -195,8 +195,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testHandlingOfFailedJobs() {
 
-		String jobUuid = tx(() -> {
-			HibJob job = boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+		String jobUuid = tx(tx -> {
+			HibJob job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -221,7 +221,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testManualInvoke() {
-		String jobUuid = tx(() -> boot().jobDao().enqueueBranchMigration(user(), initialBranch()).getUuid());
+		String jobUuid = tx(tx -> { return tx.jobDao().enqueueBranchMigration(user(), initialBranch()).getUuid(); });
 
 		call(() -> client().invokeJobProcessing(), FORBIDDEN, "error_admin_permission_required");
 
@@ -236,20 +236,20 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadJob() {
-		String jobUuid = tx(() -> {
-			HibJob job = boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+		String jobUuid = tx(tx -> {
+			HibJob job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
-		tx(() -> {
+		tx(tx -> {
 			HibSchema schema = schemaContainer("content");
-			HibJob job = boot().jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibJob job = tx.jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
-		String job3Uuid = tx(() -> {
+		String job3Uuid = tx(tx -> {
 			HibSchema schema = schemaContainer("folder");
-			HibJob job = boot().jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibJob job = tx.jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
@@ -272,8 +272,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRetryJob() {
 
-		String jobUuid = tx(() -> {
-			HibJob job = boot().jobDao().enqueueBranchMigration(user(), initialBranch());
+		String jobUuid = tx(tx -> {
+			HibJob job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -294,7 +294,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testProcessJob() {
-		HibJob job = tx(() -> boot().jobDao().enqueueBranchMigration(user(), initialBranch()));
+		HibJob job = tx(tx -> { return tx.jobDao().enqueueBranchMigration(user(), initialBranch()); });
 		String jobUuid = tx(() -> job.getUuid());
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
@@ -312,7 +312,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		tx(tx -> {
 			BranchDao branchDao = tx.branchDao();
 			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
-			HibJob toUpdate = boot().jobDao().findByUuid(job.getUuid());
+			HibJob toUpdate = tx.jobDao().findByUuid(job.getUuid());
 			toUpdate.setBranch(branch);
 			CommonTx.get().jobDao().mergeIntoPersisted(toUpdate);
 		});

@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -148,11 +150,14 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 			HibNode node = content();
 			ContentDao contentDao = tx.contentDao();
 			// Inject the reference node field
-			SchemaVersionModel schema = contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).getSchema();
+			HibNodeFieldContainer original = contentDao.getFieldContainer(node, "en");
+			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(original);
+			SchemaVersionModel schema = schemaVersion.getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
-			contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")).setSchema(schema);
-			actions().updateSchemaVersion(contentDao.getSchemaContainerVersion(contentDao.getFieldContainer(node, "en")));
-			contentDao.getFieldContainer(node, "en").createNode("reference", folder("2015"));
+			schemaVersion.setSchema(schema);
+			actions().updateSchemaVersion(schemaVersion);
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
+			container.createNode("reference", folder("2015"));
 			tx.success();
 		}
 

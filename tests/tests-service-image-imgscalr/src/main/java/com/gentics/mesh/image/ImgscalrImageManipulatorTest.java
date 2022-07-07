@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.image.BufferedImage;
@@ -33,7 +32,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.image.ImageInfo;
@@ -60,7 +58,6 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulatorTest.class);
 
 	private ImgscalrImageManipulator manipulator;
-	private BootstrapInitializer boot;
 
 	@Before
 	public void setup() {
@@ -68,10 +65,8 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
 
-		boot = mock(BootstrapInitializer.class);
-		when(boot.binaryDao()).thenReturn(mockBinaryDao());
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, boot,null);
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, null);
 	}
 
 	@Test
@@ -80,7 +75,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			log.debug("Handling " + imageName);
 
 			HibBinary hb = createMockedBinary(path);
-			BinaryDao dao = boot.binaryDao();
+			BinaryDao dao = mockBinaryDao();
 			when(dao.openBlockingStream(any(HibBinary.class))).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(path));
 			Single<byte[]> obs = manipulator
 				.handleResize(hb, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))

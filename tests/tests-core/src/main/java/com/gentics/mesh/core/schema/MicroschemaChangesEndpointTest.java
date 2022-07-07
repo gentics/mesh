@@ -12,15 +12,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.gentics.mesh.core.db.CommonTx;
-import io.vertx.core.json.JsonObject;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -37,6 +33,9 @@ import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.parameter.client.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import io.vertx.core.json.JsonObject;
+import org.junit.Before;
+import org.junit.Test;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
@@ -50,15 +49,11 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveField() throws Exception {
 		// 1. Create node that uses the microschema
-		HibNode node;
 		HibMicroschema microschemaContainer = microschemaContainer("vcard");
-		HibMicroschemaVersion beforeVersion;
-		try (Tx tx = tx()) {
-			node = createMicronodeNode();
-			beforeVersion = microschemaContainer.getLatestVersion();
-			assertNull("The microschema should not yet have any changes", microschemaContainer.getLatestVersion().getNextChange());
-			tx.success();
-		}
+		HibNode node = createMicronodeNode();
+		HibMicroschemaVersion beforeVersion = tx(() -> microschemaContainer.getLatestVersion());
+		assertNull("The microschema should not yet have any changes", tx(() -> microschemaContainer.getLatestVersion().getNextChange()));
+
 		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
 		// 2. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
@@ -81,7 +76,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
-			HibNodeFieldContainer fieldContainer = boot().contentDao().getFieldContainer(node, "en");
+			HibNodeFieldContainer fieldContainer = tx.contentDao().getFieldContainer(node, "en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
 	}
@@ -165,13 +160,15 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	private HibNode createMicronodeNode() {
 
 		// 1. Update folder schema
-		SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
-		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
-		microschemaFieldSchema.setName("micronodeField");
-		microschemaFieldSchema.setLabel("Some label");
-		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
-		schema.addField(microschemaFieldSchema);
-		schemaContainer("folder").getLatestVersion().setSchema(schema);
+		tx(() -> {
+			SchemaVersionModel schema = tx(() -> schemaContainer("folder").getLatestVersion().getSchema());
+			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
+			microschemaFieldSchema.setName("micronodeField");
+			microschemaFieldSchema.setLabel("Some label");
+			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
+			schema.addField(microschemaFieldSchema);
+			schemaContainer("folder").getLatestVersion().setSchema(schema);
+		});
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
@@ -181,12 +178,13 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
 		NodeResponse response = createNode("micronodeField", micronode);
-		HibNode node = boot().nodeDao().findByUuid(project(), response.getUuid());
-		assertNotNull("The node should have been created.", node);
-		assertNotNull("The node should have a micronode graph field", boot().contentDao().getFieldContainer(node, "en").getMicronode("micronodeField"));
 
-		return node;
-
+		return tx(tx -> {
+			HibNode node = tx.nodeDao().findByUuid(project(), response.getUuid());
+			assertNotNull("The node should have been created.", node);
+			assertNotNull("The node should have a micronode graph field", tx.contentDao().getFieldContainer(node, "en").getMicronode("micronodeField"));
+			return node;
+		});
 	}
 
 }

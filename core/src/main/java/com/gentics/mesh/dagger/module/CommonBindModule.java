@@ -7,8 +7,6 @@ import com.gentics.mesh.auth.MeshOAuthService;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.CacheCollectionImpl;
-import com.gentics.mesh.cache.CacheRegistry;
-import com.gentics.mesh.cache.CacheRegistryImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
@@ -64,11 +62,7 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
 import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.MicronodeMigration;
-import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
-import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
@@ -169,9 +163,6 @@ public abstract class CommonBindModule {
 	abstract BulkActionContext bindActionContext(BulkActionContextImpl e);
 
 	@Binds
-	abstract CacheRegistry bindCacheRegistry(CacheRegistryImpl e);
-
-	@Binds
 	abstract S3BinaryStorage bindS3BinaryStorage(S3BinaryStorageImpl e);
 
 	@Binds
@@ -223,15 +214,6 @@ public abstract class CommonBindModule {
 	abstract TagFamilyIndexHandler tagFamilyIndexHandler(TagFamilyIndexHandlerImpl e);
 
 	@Binds
-	abstract BranchMigration branchMigration(BranchMigrationImpl e);
-
-	@Binds
-	abstract MicronodeMigration micronodeMigration(MicronodeMigrationImpl e);
-
-	@Binds
-	abstract NodeMigration nodeMigration(NodeMigrationImpl e);
-
-	@Binds
 	abstract LocalBinaryStorage localBinaryStorage(LocalBinaryStorageImpl e);
 
 	@Binds
@@ -242,9 +224,6 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract S3BinaryUploadHandler s3binaryUploadHandler(S3BinaryUploadHandlerImpl e);
-
-	@Binds
-	abstract ProjectVersionPurgeHandler projectVersionPurgeHandler(ProjectVersionPurgeHandlerImpl e);
 
 	@Binds
 	abstract ServerSchemaStorage serverSchemaStorage(ServerSchemaStorageImpl e);

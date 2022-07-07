@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.Timeout;
 
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -26,8 +27,6 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.shared.SharedKeys;
-import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.util.MeshAssert;
@@ -42,6 +41,8 @@ import okhttp3.OkHttpClient;
 public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper, WrapperHelper {
 
 	static {
+		// New OrientDBs have aggressive memory preallocation, which can eat the whole RAM with an eventual crash, so we disable it.
+		System.setProperty("memory.directMemory.preallocate", "false");
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
@@ -58,6 +59,13 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
+
+	/**
+	 * Add a global timeout of 44 minutes, which is slightly less than the timeout of 45 minutes, which is used for the surefire plugin
+	 * for the test execution
+	 */
+	@ClassRule
+	public static Timeout globalTimeout= new Timeout(44, TimeUnit.MINUTES);
 
 	@Rule
 	public ConsistencyRule consistency = new ConsistencyRule(getTestContext());
@@ -101,7 +109,6 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 
 	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
-		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return tx(tx -> {
 			return tx.nodeDao().transformToRestSync(node, ac, 0).toJson();
 		});

@@ -47,25 +47,28 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadPublishedNodesForTag() {
+		String colorsUuid = tx(() -> tagFamily("colors").getUuid());
+		String redUuid = tx(() -> tag("red").getUuid());
+		
+		call(() -> client().takeNodeOffline(PROJECT_NAME, tx(() -> project().getBaseNode().getUuid()), new PublishParametersImpl().setRecursive(true)));
+		NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, colorsUuid, redUuid,
+			new VersioningParametersImpl().published()));
+		assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
+
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
-			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-				new VersioningParametersImpl().published()));
-			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			// publish the node and its parent
 			InternalActionContext ac = mockActionContext();
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(nodeDao.getParentNode(content("concorde"), project().getLatestBranch().getUuid()), ac, bac);
 			nodeDao.publish(content("concorde"), ac, bac);
-
-			nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid()));
-			NodeResponse concorde = new NodeResponse();
-			concorde.setUuid(content("concorde").getUuid());
-			assertThat(nodeList.getData()).as("Tagged nodes").isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}
+
+		nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, colorsUuid, redUuid));
+		NodeResponse concorde = new NodeResponse();
+		concorde.setUuid(tx(() -> content("concorde").getUuid()));
+		assertThat(nodeList.getData()).as("Tagged nodes").isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
 	@Test
@@ -123,13 +126,13 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		TagListResponse list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 
 		List<String> names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());
-		assertThat(names).containsExactly("test1", "test3", "test2");
+		assertThat(names).containsExactlyInAnyOrder("test1", "test3", "test2");
 
 		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagResponse.getUuid()));
 
 		list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 		names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());
-		assertThat(names).containsExactly("test1", "test3", "test2", "test4");
+		assertThat(names).containsExactlyInAnyOrder("test1", "test3", "test2", "test4");
 
 	}
 }

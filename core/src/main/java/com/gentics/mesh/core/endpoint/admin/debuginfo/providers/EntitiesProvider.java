@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo.providers;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
@@ -27,12 +28,10 @@ import io.reactivex.Flowable;
 @Singleton
 public class EntitiesProvider implements DebugInfoProvider {
 
-	private final BootstrapInitializer boot;
 	private final Database db;
 
 	@Inject
 	public EntitiesProvider(BootstrapInitializer boot, Database db) {
-		this.boot = boot;
 		this.db = db;
 	}
 
@@ -41,13 +40,14 @@ public class EntitiesProvider implements DebugInfoProvider {
 		return "entities";
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return Flowable.mergeArray(
-			rootElements(ac, boot::jobDao, "entities/jobs.json"),
-			rootElements(ac, boot::schemaDao, "entities/schemas.json"),
-			rootElements(ac, boot::microschemaDao, "entities/microschemas.json"),
-			rootElements(ac, boot::projectDao, "entities/projects.json"),
+			rootElements(ac, tx -> tx.jobDao(), "entities/jobs.json"),
+			rootElements(ac, tx -> tx.schemaDao(), "entities/schemas.json"),
+			rootElements(ac, tx -> tx.microschemaDao(), "entities/microschemas.json"),
+			rootElements(ac, tx -> tx.projectDao(), "entities/projects.json"),
 			branches(ac)
 		);
 	}
@@ -65,9 +65,9 @@ public class EntitiesProvider implements DebugInfoProvider {
 			T extends HibCoreElement<? extends RestModel>, 
 			D extends DaoGlobal<T> & DaoTransformable<T, ? extends RestModel>
 		> Flowable<DebugInfoEntry> rootElements(
-				InternalActionContext ac, Supplier<D> root, String filename
+				InternalActionContext ac, Function<Tx, D> root, String filename
 		) {
-		return db.singleTx(() -> rootToString(ac, root.get().findAll().stream(), root.get()))
+		return db.singleTx(tx -> rootToString(ac, root.apply(tx).findAll().stream(), root.apply(tx)))
 			.map(elementList -> DebugInfoBufferEntry.fromString(filename, elementList))
 			.toFlowable();
 	}

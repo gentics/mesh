@@ -206,8 +206,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			// TODO add users to group?
 			BulkActionContext bac = createBulkContext();
 			groupDao.delete(group, bac);
-			assertElement(boot().groupDao(), uuid, false);
-			assertElement(boot().userDao(), userUuid, true);
+			assertElement(tx.groupDao(), uuid, false);
+			assertElement(tx.userDao(), userUuid, true);
 			assertEquals(1, bac.batch().getEntries().size());
 		}
 

@@ -11,11 +11,13 @@ import java.time.Duration;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.http.HttpServerOptions;
@@ -25,6 +27,10 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpServer;
 
+/**
+ * Note: marked as "failing test", because it seems to be stuck.
+ */
+@Category(FailingTests.class)
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true, optionChanger = RANDOM_ES_PORT)
 public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 

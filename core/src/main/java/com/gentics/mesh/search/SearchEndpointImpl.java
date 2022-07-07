@@ -10,11 +10,11 @@ import java.util.function.Function;
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -42,14 +42,10 @@ import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
-import dagger.Lazy;
-
 /**
  * @see SearchEndpoint
  */
 public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
-
-	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
 	AdminIndexHandler adminHandler;
@@ -85,9 +81,8 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	Database db;
 
 	@Inject
-	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
+	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler) {
 		super("search", chain);
-		this.boot = boot;
 	}
 
 	public SearchEndpointImpl() {
@@ -110,32 +105,32 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", (uuid) -> boot.get().userDao().findByUuid(uuid), UserListResponse.class, userSearchHandler,
+		registerHandler("users", (uuid) -> Tx.get().userDao().findByUuid(uuid), UserListResponse.class, userSearchHandler,
 			userExamples.getUserListResponse(), false);
-		registerHandler("groups", (uuid) -> boot.get().groupDao().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
+		registerHandler("groups", (uuid) -> Tx.get().groupDao().findByUuid(uuid), GroupListResponse.class, groupSearchHandler,
 			groupExamples.getGroupListResponse(), false);
-		registerHandler("roles", (uuid) -> boot.get().roleDao().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
+		registerHandler("roles", (uuid) -> Tx.get().roleDao().findByUuid(uuid), RoleListResponse.class, roleSearchHandler,
 			roleExamples.getRoleListResponse(), false);
 
 		registerHandler("nodes", (uuid) -> {
-			HibNode node = boot.get().nodeDao().findByUuidGlobal(uuid);
+			HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
-		registerHandler("tags", (uuid) -> boot.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
+		registerHandler("tags", (uuid) -> Tx.get().tagDao().findByUuid(uuid), TagListResponse.class, tagSearchHandler, tagExamples
 			.createTagListResponse(), false);
-		registerHandler("tagFamilies", (uuid) -> boot.get().tagFamilyDao().findByUuid(uuid), TagFamilyListResponse.class,
+		registerHandler("tagFamilies", (uuid) -> Tx.get().tagFamilyDao().findByUuid(uuid), TagFamilyListResponse.class,
 			tagFamilySearchHandler,
 			tagFamilyExamples.getTagFamilyListResponse(), false);
 
-		registerHandler("projects", (uuid) -> boot.get().projectDao().findByUuid(uuid), ProjectListResponse.class,
+		registerHandler("projects", (uuid) -> Tx.get().projectDao().findByUuid(uuid), ProjectListResponse.class,
 			projectSearchHandler, projectExamples
 				.getProjectListResponse(),
 			false);
-		registerHandler("schemas", (uuid) -> boot.get().schemaDao().findByUuid(uuid), SchemaListResponse.class,
+		registerHandler("schemas", (uuid) -> Tx.get().schemaDao().findByUuid(uuid), SchemaListResponse.class,
 			schemaContainerSearchHandler,
 			schemaExamples.getSchemaListResponse(), false);
-		registerHandler("microschemas", (uuid) -> boot.get().microschemaDao().findByUuid(uuid), MicroschemaListResponse.class,
+		registerHandler("microschemas", (uuid) -> Tx.get().microschemaDao().findByUuid(uuid), MicroschemaListResponse.class,
 			microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse(), false);
 		addAdminHandlers();
 	}

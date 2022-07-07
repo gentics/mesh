@@ -31,6 +31,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -129,7 +130,7 @@ public class OrientDBAdminHandler extends AdminHandler {
 			routerStorage.root().apiRouter().projectsRouter().getProjectRouters().clear();
 		}).andThen(db.asyncTx(() -> {
 			// Update the routes by loading the projects
-			initProjects();
+			initProjects(Tx.get());
 			return Single.just(message(ac, "restore_finished"));
 		})).doFinally(() -> {
 			mesh.setStatus(oldStatus);
@@ -184,8 +185,8 @@ public class OrientDBAdminHandler extends AdminHandler {
 	 *
 	 * @throws InvalidNameException
 	 */
-	private void initProjects() throws InvalidNameException {
-		for (HibProject project : boot.projectDao().findAll()) {
+	private void initProjects(Tx tx) throws InvalidNameException {
+		for (HibProject project : tx.projectDao().findAll()) {
 			routerStorageRegistry.addProject(project.getName());
 			if (log.isDebugEnabled()) {
 				log.debug("Initalized project {" + project.getName() + "}");

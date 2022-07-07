@@ -46,6 +46,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 public interface HibFieldContainer extends HibBasicFieldContainer {
 
@@ -223,6 +224,15 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields);
 
 	/**
+	 * Use the given map of rest fields to set the data from the map to this container.
+	 * @param ac
+	 * @param restFields
+	 */
+	default void createFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
+		updateFieldsFromRest(ac, restFields);
+	}
+
+	/**
 	 * Gets the HibNodeFieldContainers connected to this FieldContainer. 
 	 * For HibNodeFieldContainers this is simply the same object. 
 	 * For Micronodes this will return all contents that use this micronode.
@@ -249,12 +259,28 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	HibBinaryField getBinary(String key);
 
 	/**
+	 * Return the binary file name for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	String getBinaryFileName(String key);
+
+	/**
 	 * Return the s3 binary  field for the given key.
 	 *
 	 * @param key
 	 * @return
 	 */
 	S3HibBinaryField getS3Binary(String key);
+
+	/**
+	 * Return the s3 binary file name for the given key.
+	 *
+	 * @param key
+	 * @return
+	 */
+	String getS3BinaryFileName(String key);
 
 	/**
 	 * Return the node field for the given key.

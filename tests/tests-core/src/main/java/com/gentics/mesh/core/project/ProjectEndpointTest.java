@@ -169,8 +169,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			assertNotNull("The project should have been created.", boot().projectDao().findByName(name));
-			HibProject project = boot().projectDao().findByUuid(restProject.getUuid());
+			assertNotNull("The project should have been created.", tx.projectDao().findByName(name));
+			HibProject project = tx.projectDao().findByUuid(restProject.getUuid());
 			assertNotNull(project);
 			assertTrue(userDao.hasPermission(user(), project, CREATE_PERM));
 			assertTrue(userDao.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
@@ -749,7 +749,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;
-		long nProjectsBefore = boot().projectDao().count();
+		long nProjectsBefore = tx(tx -> { return tx.projectDao().count(); });
 
 		validateCreation(nJobs, i -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();

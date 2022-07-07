@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -57,12 +58,12 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
-		return mesh().boot().roleDao().getRolePermissions(element, ac, roleUuid);
+		return Tx.get().roleDao().getRolePermissions(element, ac, roleUuid);
 	}
 
 	@Override
 	public Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm) {
-		return mesh().boot().roleDao().getRolesWithPerm(vertex, perm);
+		return Tx.get().roleDao().getRolesWithPerm(vertex, perm);
 	}
 
 	/**
@@ -96,8 +97,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	 * @return
 	 */
 	public final String getETag(T element, InternalActionContext ac) {
-		UserDao userDao = mesh().boot().userDao();
-		RoleDao roleDao = mesh().boot().roleDao();
+		UserDao userDao = Tx.get().userDao();
+		RoleDao roleDao = Tx.get().roleDao();
 
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(getUuid());

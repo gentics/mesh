@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -110,11 +111,11 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	public Page<? extends Node> findTaggedNodes(Tag tag, HibUser user, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(tag, branch, languageTags, type);
-		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PUBLISHED_PERM, NodeImpl.class);
+		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, NodeImpl.class);
 	}
 
 	@Override
-	public Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac) {
+	public Result<? extends Node> findTaggedNodes(HibTag tag, InternalActionContext ac, InternalPermission perm) {
 		HibUser user = ac.getUser();
 		Tx tx = Tx.get();
 		HibBranch branch = tx.getBranch(ac);
@@ -126,19 +127,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
 				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
 			})
-			.filter(item -> {
-				boolean hasRead = userRoot.hasPermissionForId(user, item.getId(), READ_PERM);
-				if (hasRead) {
-					return true;
-				} else {
-					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
-					if (isPublishedForBranch) {
-						return userRoot.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
-					}
-				}
-				return false;
-			});
+			.filter(item -> userRoot.hasPermissionForId(user, item.getId(), perm));
 
 		return new TraversalResult<>(() -> s.iterator());
 	}

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Test;
 
@@ -26,7 +25,6 @@ import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -81,8 +79,8 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
-		tx(tx -> {
-			content.setBucketId(Integer.MAX_VALUE);
+		HibNodeFieldContainer bucketMax = tx(tx -> {
+			return createContentWithBuckedId(content, Integer.MAX_VALUE);
 		});
 
 		long before = tx(tx -> {
@@ -91,42 +89,46 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			return schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 		});
 
-		// Now alter the bucketId
-		tx(tx -> {
-			content.setBucketId(100);
+		// Now create a new container
+		HibNodeFieldContainer bucket100 = tx(tx -> {
+			return createContentWithBuckedId(bucketMax, 100);
 		});
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should find one more content.", before + 1, after);
 		});
 
 		// Now set the bucketId on the end of the bucket to ensure we include the last element in the range
-		tx(tx -> {
-			content.setBucketId(bucket.end());
+		HibNodeFieldContainer bucketEnd = tx(tx -> {
+			return createContentWithBuckedId(bucket100, bucket.end());
 		});
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should still find the altered element ", before + 1, after);
 		});
 
 		// Now exceed the bucket
 		tx(tx -> {
-			content.setBucketId(bucket.end() + 1);
+			return createContentWithBuckedId(bucketEnd, bucket.end() + 1);
 		});
 
 		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			// Now set the bucketId so that the content is within the bounds of the bucket / range query
 			long after = schemaDao.getFieldContainers(version, initialBranchUuid(), bucket).count();
 			assertEquals("We should still find the altered element ", before, after);
 		});
 
+	}
+
+	private HibNodeFieldContainer createContentWithBuckedId(HibNodeFieldContainer container, int bucketId) {
+		HibNodeFieldContainer newContainer = Tx.get().contentDao().createFieldContainer(container.getNode(), english(), project().getLatestBranch(), user(), container, true);
+		newContainer.setBucketId(bucketId);
+
+		return newContainer;
 	}
 
 	@Test
@@ -379,11 +381,11 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		folders.add(tx(() -> getDisplayName(project().getBaseNode(), initialBranchUuid)));
 
 		// revoke permission to read folder("news")
-		tx(tx -> {
+		String news = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			HibNode newsFolder = data().getFolder("news");
 			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PERM);
-			return newsFolder.getUuid();
+			return getDisplayName(newsFolder, initialBranchUuid);
 		});
 
 		// revoke permission to read published  folder("deals")
@@ -442,6 +444,10 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			Set<String> expected = new HashSet<>(folders);
 			if (testCase.getRight() != null) {
 				expected.add(testCase.getRight());
+			}
+			// testuser is not allowed to view draft of "news" folder
+			if (testCase.getMiddle() == ContainerType.DRAFT) {
+				expected.remove(news);
 			}
 
 			try (Tx tx = tx()) {

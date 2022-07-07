@@ -291,12 +291,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			actions().updateSchemaVersion(schemaVersion);
 			// Create some dummy content
 			HibNode content = nodeDao.create(parentNode, user(), schemaVersion, project());
-			HibNodeFieldContainer germanContainer = boot().contentDao().createFieldContainer(content, german, content.getProject().getLatestBranch(), user());
+			HibNodeFieldContainer germanContainer = tx.contentDao().createFieldContainer(content, german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
 			HibNode content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
@@ -349,7 +349,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
 			S3HibBinary binary = tx.s3binaries().create(UUIDUtil.randomUUID(), s3Bucket, fileName).runInExistingTx(tx);
-			contentDao.getLatestDraftFieldContainer(node, english()).createS3Binary("s3binary", binary).setFileName(fileName);
+			HibNodeFieldContainer original = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer newBinary = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
+			newBinary.createS3Binary("s3binary", binary).setFileName(fileName);
 
 			// uploading
 			File tempFile = createTempFile();

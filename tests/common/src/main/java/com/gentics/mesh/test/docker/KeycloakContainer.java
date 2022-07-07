@@ -67,7 +67,8 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig, String version) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("keycloak-mesh", true);
 		StringBuilder dockerFile = new StringBuilder();
-		dockerFile.append("FROM jboss/keycloak:" + version + "\n");
+		dockerFile.append(
+				"FROM " + System.getProperty("mesh.container.image.prefix", "") + "jboss/keycloak:" + version + "\n");
 
 		if (realmConfig != null) {
 			dockerFile.append("ADD /realm.json " + REALM_CONFIG_PATH + "\n");

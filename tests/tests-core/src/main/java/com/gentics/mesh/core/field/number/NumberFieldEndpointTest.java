@@ -12,7 +12,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -63,7 +62,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
+			HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 			Number oldValue;
 			Number newValue;
 			try (Tx tx = tx()) {
@@ -151,17 +150,19 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createNumberFieldSchema(PROJECT_NAME), false);
-			tx.commit();
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
+
 			HibNumberField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(100.9f);
 			tx.success();
 		}
-		NodeResponse response = readNode(node);
+		NodeResponse response = readNode(folder("2015"));
 		NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(FIELD_NAME);
 		assertNotNull(deserializedNumberField);
 		assertEquals(Double.valueOf(100.9), deserializedNumberField.getNumber().doubleValue(), 0.001);
