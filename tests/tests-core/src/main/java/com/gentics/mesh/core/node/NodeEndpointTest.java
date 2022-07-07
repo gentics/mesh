@@ -695,8 +695,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadMultiple() throws Exception {
 		HibNode parentNode = folder("2015");
 		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-		HibNode noPermNode = tx(tx -> { return tx.nodeDao().create(parentNode, user(), schemaContainer("content").getLatestVersion(), project()); });
-		String noPermNodeUUID = tx(() -> noPermNode.getUuid());
+		String noPermNodeUUID = tx(tx -> {
+			HibBranch initialBranch = reloadBranch(initialBranch());
+
+			HibNode noPermNode = tx.nodeDao().create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
+			tx.contentDao().createFieldContainer(noPermNode, english(), initialBranch, user());
+			return noPermNode.getUuid();
+		});
+		assertThat(noPermNodeUUID).as("UUID of the new node").isNotNull();
 
 		// Create 20 drafts
 		int nNodes = 20;
@@ -710,7 +716,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
 
-		assertNotNull(noPermNode.getUuid());
 		long perPage = 11;
 		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage),
 			new VersioningParametersImpl().draft()));
