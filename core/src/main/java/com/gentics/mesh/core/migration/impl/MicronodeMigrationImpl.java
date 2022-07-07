@@ -46,6 +46,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
+
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
