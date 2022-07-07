@@ -55,7 +55,7 @@ public abstract class AbstractDemoRunner<T extends MeshOptions> extends Abstract
 
 			// Add demo content provider
 			registry.register(DemoAppEndpoint.class);
-			DemoDataProvider data = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot());
+			DemoDataProvider data = new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl());
 			DemoVerticle demoVerticle = new DemoVerticle(meshInternal.boot(), data);
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 

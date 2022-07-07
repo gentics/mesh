@@ -56,7 +56,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			VersionNumber oldVersion = tx(() -> boot().contentDao().getFieldContainer(node, "en").getVersion());
+			VersionNumber oldVersion = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en").getVersion(); });
 			String newValue = "some<b>html <i>" + i + "</i>";
 
 			NodeResponse response = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML(newValue));

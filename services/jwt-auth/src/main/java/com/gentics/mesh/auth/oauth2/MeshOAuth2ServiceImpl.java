@@ -21,7 +21,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.AuthHandlerContainer;
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.auth.MeshOAuthService;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -34,6 +33,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -50,6 +50,7 @@ import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
@@ -80,7 +81,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 	protected AuthServicePluginRegistry authPluginRegistry;
 	protected Database db;
-	protected BootstrapInitializer boot;
 	protected PermissionRoots permissionRoots;
 	private final AuthenticationOptions authOptions;
 	private final Provider<EventQueueBatch> batchProvider;
@@ -91,11 +91,10 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	private final RequestDelegator delegator;
 
 	@Inject
-	public MeshOAuth2ServiceImpl(Database db, BootstrapInitializer boot, MeshOptions meshOptions,
+	public MeshOAuth2ServiceImpl(Database db, MeshOptions meshOptions,
 		Provider<EventQueueBatch> batchProvider, AuthServicePluginRegistry authPluginRegistry,
 		AuthHandlerContainer authHandlerContainer, LocalConfigApi localConfigApi, RequestDelegator delegator, PermissionRoots permissionRoots) {
 		this.db = db;
-		this.boot = boot;
 		this.batchProvider = batchProvider;
 		this.authPluginRegistry = authPluginRegistry;
 		this.authOptions = meshOptions.getAuthenticationOptions();
@@ -227,15 +226,15 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		String cachingId = currentTokenId;
 
 		EventQueueBatch batch = batchProvider.get();
-		return db.maybeTx(tx -> boot.userDao().findMeshAuthUserByUsername(username))
+		return db.maybeTx(tx -> tx.userDao().findMeshAuthUserByUsername(username))
 			.flatMapSingleElement(user -> db.singleTx(user.getDelegate()::getUuid).flatMap(uuid -> {
 				// Compare the stored and current token id to see whether the current token is different.
 				// In that case a sync must be invoked.
 				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getDelegate().getUuid());
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
-					return assertReadOnlyDeactivated().andThen(db.singleTx(() -> {
-						HibUser admin = boot.userDao().findByUsername("admin");
-						runPlugins(rc, batch, admin, user, uuid, token);
+					return assertReadOnlyDeactivated().andThen(db.singleTx(tx -> {
+						HibUser admin = tx.userDao().findByUsername("admin");
+						runPlugins(tx, rc, batch, admin, user, uuid, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
 						return user;
 					}));
@@ -259,7 +258,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						String uuid = user.getDelegate().getUuid();
 						batch.add(user.getDelegate().onCreated());
 						// Not setting uuid since the user has not yet been committed.
-						runPlugins(rc, batch, admin, user, null, token);
+						runPlugins(tx, rc, batch, admin, user, null, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
 						return user;
 					})))
@@ -338,6 +337,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * Runs all {@link AuthServicePlugin} to detect and apply any changes that are returned from
 	 * {@link AuthServicePlugin#mapToken(HttpServerRequest, String, JsonObject)}.
 	 *
+	 * @param tx
 	 * @param rc
 	 * @param batch
 	 * @param admin
@@ -348,14 +348,14 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 *             If a change is required but this instance cannot be written to because of cluster coordination.
 	 * @return
 	 */
-	private void runPlugins(RoutingContext rc, EventQueueBatch batch, HibUser admin, MeshAuthUser user, String userUuid,
+	private void runPlugins(Tx tx, RoutingContext rc, EventQueueBatch batch, HibUser admin, MeshAuthUser user, String userUuid,
 		JsonObject token) throws CannotWriteException {
 		List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 		// Only load the needed data for plugins if there are any plugins
 		if (!plugins.isEmpty()) {
-			RoleDao roleDao = boot.roleDao();
-			GroupDao groupDao = boot.groupDao();
-			UserDao userDao = boot.userDao();
+			RoleDao roleDao = tx.roleDao();
+			GroupDao groupDao = tx.groupDao();
+			UserDao userDao = tx.userDao();
 
 			HibBaseElement groupRoot = permissionRoots.group();
 			HibBaseElement roleRoot = permissionRoots.role();

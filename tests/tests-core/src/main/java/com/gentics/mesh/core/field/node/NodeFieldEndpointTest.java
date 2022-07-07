@@ -82,7 +82,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			HibNodeFieldContainer container = null;
 
 			try (Tx tx = tx()) {					
-				container = boot().contentDao().getFieldContainer(node, "en");
+				container = tx.contentDao().getFieldContainer(node, "en");
 				oldValue = getNodeValue(container, FIELD_NAME);
 			}
 

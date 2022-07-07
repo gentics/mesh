@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 
@@ -66,7 +65,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			Long oldValue;
 
 			try (Tx tx = tx()) {
-				container = boot().contentDao().getFieldContainer(node, "en");
+				container = tx.contentDao().getFieldContainer(node, "en");
 				oldValue = getDateValue(container, FIELD_NAME);
 			}
 

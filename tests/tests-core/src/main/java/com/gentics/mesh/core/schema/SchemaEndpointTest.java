@@ -201,7 +201,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
-			assertElement(boot().schemaDao(), restSchema.getUuid(), true);
+			assertElement(tx.schemaDao(), restSchema.getUuid(), true);
 		}		
 		call(() -> client().findSchemaByUuid(restSchema.getUuid()));
 		trackingSearchProvider().reset();
@@ -630,7 +630,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			call(() -> client().updateSchema(uuid, request));
 		}, COMPLETED, 1);
 
-		String jobUuid = tx(() -> boot().schemaDao().findByUuid(uuid).getLatestVersion().referencedJobsViaTo().iterator().next().getUuid());
+		String jobUuid = tx(tx -> { return tx.schemaDao().findByUuid(uuid).getLatestVersion().referencedJobsViaTo().iterator().next().getUuid(); });
 
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
@@ -688,7 +688,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid(),
 				DELETE_PERM.getRestPerm().getName());
-			assertElement(boot().schemaDao(), schema.getUuid(), true);
+			assertElement(tx.schemaDao(), schema.getUuid(), true);
 		}
 	}
 

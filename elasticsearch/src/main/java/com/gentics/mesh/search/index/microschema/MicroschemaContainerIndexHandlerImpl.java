@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -44,9 +43,9 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 	SyncMetersFactory syncMetersFactory;
 
 	@Inject
-	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper,
+	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper,
 		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetricsFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
 	}
 
 	@Override
@@ -93,7 +92,7 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<H
 
 	@Override
 	public Function<String, HibMicroschema> elementLoader() {
-		return (uuid) -> boot.microschemaDao().findByUuid(uuid);
+		return (uuid) -> Tx.get().microschemaDao().findByUuid(uuid);
 	}
 
 	@Override

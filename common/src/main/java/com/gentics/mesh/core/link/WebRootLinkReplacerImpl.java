@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -25,6 +24,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
@@ -32,7 +32,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -48,15 +47,12 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacerImpl.class);
 
-	private final BootstrapInitializer boot;
-
 	private final MeshOptions options;
 
 	private S3BinaryStorage s3BinaryStorage;
 
 	@Inject
-	public WebRootLinkReplacerImpl(BootstrapInitializer boot, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
-		this.boot = boot;
+	public WebRootLinkReplacerImpl(MeshOptions options, S3BinaryStorage s3BinaryStorage) {
 		this.options = options;
 		this.s3BinaryStorage = s3BinaryStorage;
 	}
@@ -140,7 +136,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		HibNode node = boot.nodeDao().findByUuidGlobal(uuid);
+		HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 		String language;
 		// check for null
 		if (node == null) {

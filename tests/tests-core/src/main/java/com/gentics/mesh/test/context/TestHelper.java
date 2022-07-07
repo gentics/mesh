@@ -430,7 +430,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default int upload(HibNode node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = tx(() -> node.getUuid());
-		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(node, languageTag).getVersion());
+		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(node, languageTag).getVersion(); });
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
 			new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 			filename, contentType));
@@ -658,7 +658,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		String fileName) {
 
 		String uuid = tx(() -> node.getUuid());
-		VersionNumber version = tx(() -> boot().contentDao().getFieldContainer(boot().nodeDao().findByUuidGlobal(uuid), "en").getVersion());		
+		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(tx.nodeDao().findByUuidGlobal(uuid), "en").getVersion(); });		
 
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey,

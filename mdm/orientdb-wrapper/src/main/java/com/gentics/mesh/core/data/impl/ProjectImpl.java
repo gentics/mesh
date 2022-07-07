@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -153,7 +154,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 	@Override
 	@Deprecated
 	public void delete(BulkActionContext bac) {
-		ProjectDao projectDao = mesh().boot().projectDao();
+		ProjectDao projectDao = Tx.get().projectDao();
 		projectDao.delete(this, bac);
 	}
 
@@ -184,7 +185,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		ProjectDao projectRoot = mesh().boot().projectDao();
+		ProjectDao projectRoot = Tx.get().projectDao();
 		return projectRoot.getSubETag(this, ac);
 	}
 

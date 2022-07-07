@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
@@ -60,13 +61,13 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		RoleDao roleDao = mesh().boot().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 		roleDao.delete(this, bac);
 	}
 
 	@Override
 	public boolean update(InternalActionContext ac, EventQueueBatch batch) {
-		RoleDao roleDao = mesh().boot().roleDao();
+		RoleDao roleDao = Tx.get().roleDao();
 		return roleDao.update(this, ac, batch);
 	}
 

@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
@@ -40,9 +39,9 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	GroupMappingProvider mappingProvider;
 
 	@Inject
-	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, BootstrapInitializer boot, MeshHelper helper, MeshOptions options,
+	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
 		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
-		super(searchProvider, db, boot, helper, options, syncMetersFactory, bucketManager);
+		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
 	}
 
 	@Override
@@ -86,7 +85,7 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Function<String, HibGroup> elementLoader() {
-		return (uuid) -> boot.groupDao().findByUuid(uuid);
+		return (uuid) -> Tx.get().groupDao().findByUuid(uuid);
 	}
 
 	@Override

@@ -164,7 +164,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse request = call(() -> client().findNodeByUuid(projectName(), content("concorde").getUuid()));
 		for (int i = 0; i < numAdditionalNodes; i++) {
 			NodeCreateRequest createRequest = new NodeCreateRequest();
-			createRequest.setSchema(schemaVersion.transformToReference());
+			createRequest.setSchema(tx(() -> schemaVersion.transformToReference()));
 			MicronodeResponse micronodeField = new MicronodeResponse();
 			micronodeField.getFields().putAll(
 					Map.of("firstName", new StringFieldImpl().setString("Mickey"),
@@ -209,7 +209,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// Create tags:
 		int tagCount = 20;
 		for (int i = 0; i < tagCount; i++) {
-			TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
+			TagResponse tagResponse = createTag(PROJECT_NAME, tx(() -> tagFamily("colors").getUuid()), "tag" + i);
 			// Add tags to node:
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParametersImpl().draft()));
 		}

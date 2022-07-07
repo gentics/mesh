@@ -145,13 +145,13 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
 		HibUser user = ac.getUser();
 		return nodes.stream()
-				.map(node -> Pair.of(node, getContentFromNode(user, node, branchUuid, languageTags, type)))
+				.map(node -> Pair.of(node, getContentFromNode(Tx.get(), user, node, branchUuid, languageTags, type)))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	private List<NodeContent> getContentFromNode(HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
-		UserDao userDao = Tx.get().userDao();
-		ContentDao contentDao = boot.get().contentDao();
+	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+		UserDao userDao = tx.userDao();
+		ContentDao contentDao = tx.contentDao();
 		return toGraph(sourceNode).getChildren(branchUuid)
 				.stream()
 				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))

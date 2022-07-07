@@ -3,7 +3,6 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
@@ -33,14 +32,14 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
+import org.dataloader.DataLoader;
+
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -83,7 +82,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
-import org.dataloader.DataLoader;
 
 /**
  * Type provider for the node type. Internally this will map partially to {@link HibNode} and {@link NodeGraphFieldContainer} vertices.
@@ -109,9 +107,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public TagTypeProvider tagTypeProvider;
 
 	@Inject
-	public BootstrapInitializer boot;
-
-	@Inject
 	public FieldDefinitionProvider fields;
 
 	@Inject
@@ -131,7 +126,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public CompletableFuture<DataFetcherResult<NodeContent>> parentNodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
-		ContentDao contentDao = tx.contentDao();
 
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -178,8 +172,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
-		ContentDao contentDao = Tx.get().contentDao();
-		NodeDao nodeDao = Tx.get().nodeDao();
 		GraphQLContext gc = env.getContext();
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -347,7 +339,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						HibNodeFieldContainer containerFromPath = ((PathSegmentImpl)lastSegment).getContainer();
 						HibNode nodeFromPath = null;
 						if (containerFromPath != null) {
-							nodeFromPath = boot.contentDao().getNode(containerFromPath);
+							nodeFromPath = tx.contentDao().getNode(containerFromPath);
 							gc.requiresPerm(nodeFromPath, READ_PERM, READ_PUBLISHED_PERM);
 							List<String> langs = Collections.singletonList(containerFromPath.getLanguageTag());
 							return createNodeContentWithSoftPermissions(env, gc, nodeFromPath, langs, type, containerFromPath);
@@ -360,11 +352,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .children
 			newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
-				ContentDao contentDao = Tx.get().contentDao();
-				NodeDao nodeDao = Tx.get().nodeDao();
-				UserDao userDao = Tx.get().userDao();
 				GraphQLContext gc = env.getContext();
-				HibUser user = gc.getUser();
 				NodeContent content = env.getSource();
 				if (content == null) {
 					return null;
@@ -580,7 +568,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				if (container == null) {
 					return null;
 				}
-				return boot.contentDao().getDisplayFieldValue(container);
+				return Tx.get().contentDao().getDisplayFieldValue(container);
 			}).build());
 
 		Supplier<List<GraphQLFieldDefinition>> withNodeFieldsSupplier = () -> {

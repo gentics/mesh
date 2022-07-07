@@ -13,15 +13,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
-import com.gentics.mesh.core.data.dao.PersistingGroupDao;
-import com.gentics.mesh.core.db.CommonTx;
 import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -30,6 +28,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -64,7 +63,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			HibRole createdRole = roleDao.create(roleName, user());
 			assertNotNull(createdRole);
 			String uuid = createdRole.getUuid();
-			HibRole role = boot().roleDao().findByUuid(uuid);
+			HibRole role = tx.roleDao().findByUuid(uuid);
 			assertNotNull(role);
 			assertEquals(roleName, role.getName());
 		}
@@ -270,8 +269,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			assertNotNull(boot().roleDao().findByName(role().getName()));
-			assertNull(boot().roleDao().findByName("bogus"));
+			assertNotNull(tx.roleDao().findByName(role().getName()));
+			assertNull(tx.roleDao().findByName("bogus"));
 		}
 	}
 
@@ -281,7 +280,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			HibRole role = tx.roleDao().findByUuid(role().getUuid());
 			assertNotNull(role);
-			role = boot().roleDao().findByUuid("bogus");
+			role = tx.roleDao().findByUuid("bogus");
 			assertNull(role);
 		}
 	}
@@ -342,7 +341,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			long size = Iterators.size(boot().roleDao().findAll().iterator());
+			long size = Iterators.size(tx.roleDao().findAll().iterator());
 			assertEquals(roles().size(), size);
 		}
 	}
@@ -376,7 +375,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				roleDao.delete(role, context);
 				tx2.success();
 			}
-			assertNull(boot().roleDao().findByUuid(uuid));
+			assertNull(tx.roleDao().findByUuid(uuid));
 			assertEquals("The role event was not included in the batch", 1, context.batch().getEntries().size());
 		}
 	}

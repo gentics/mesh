@@ -108,14 +108,14 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
-				HibMicroschema container = boot().microschemaDao().findByName(name);
+				HibMicroschema container = tx.microschemaDao().findByName(name);
 				assertNotNull("Could not find microschema container for name " + name, container);
 				MicroschemaModel microschemaModel = container.getLatestVersion().getSchema();
 				assertNotNull("Container for microschema " + name + " did not contain a microschema", microschemaModel);
 				assertEquals("Check microschema name", name, microschemaModel.getName());
 			}
 
-			assertNull("Must not find microschema with name " + invalidName, boot().microschemaDao().findByName(invalidName));
+			assertNull("Must not find microschema with name " + invalidName, tx.microschemaDao().findByName(invalidName));
 		}
 	}
 
@@ -125,7 +125,7 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			String invalidUUID = UUIDUtil.randomUUID();
 
-			MicroschemaDao root = boot().microschemaDao();
+			MicroschemaDao root = tx.microschemaDao();
 			for (HibMicroschema container : microschemaContainers().values()) {
 				String uuid = container.getUuid();
 				assertNotNull("Could not find microschema with uuid " + uuid, root.findByUuid(uuid));
@@ -309,20 +309,20 @@ public class MicroschemaModelTest extends AbstractMeshTest implements BasicObjec
 		try (Tx tx = tx()) {
 			HibMicroschemaVersion newVCard = microschemaContainer("vcard").getLatestVersion();
 
-			HibNodeFieldContainer containerWithBoth = boot().contentDao().getFieldContainer(folder("2015"), "en");
+			HibNodeFieldContainer containerWithBoth = tx.contentDao().getFieldContainer(folder("2015"), "en");
 			containerWithBoth.createMicronode("single", vcard);
 			containerWithBoth.createMicronodeList("list").createMicronode(vcard);
 			containerUuids.add(containerWithBoth.getUuid());
 
-			HibNodeFieldContainer containerWithField = boot().contentDao().getFieldContainer(folder("news"), "en");
+			HibNodeFieldContainer containerWithField = tx.contentDao().getFieldContainer(folder("news"), "en");
 			containerWithField.createMicronode("single", vcard);
 			containerUuids.add(containerWithField.getUuid());
 
-			HibNodeFieldContainer containerWithList = boot().contentDao().getFieldContainer(folder("products"), "en");
+			HibNodeFieldContainer containerWithList = tx.contentDao().getFieldContainer(folder("products"), "en");
 			containerWithList.createMicronodeList("list").createMicronode(vcard);
 			containerUuids.add(containerWithList.getUuid());
 
-			HibNodeFieldContainer containerWithOtherVersion = boot().contentDao().getFieldContainer(folder("deals"), "en");
+			HibNodeFieldContainer containerWithOtherVersion = tx.contentDao().getFieldContainer(folder("deals"), "en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 			tx.success();
 		}
