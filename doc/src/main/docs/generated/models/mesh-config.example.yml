@@ -42,6 +42,7 @@ pluginTimeout: 120
 nodeName: null
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
+migrationMaxBatchSize: 50
 httpServer:
   port: 8080
   sslPort: 8443
