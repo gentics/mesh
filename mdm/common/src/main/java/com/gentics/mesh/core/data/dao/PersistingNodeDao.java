@@ -1050,7 +1050,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		bac.process();
 	}
 
-	private NodeMeshEventModel onDeleted(HibNode node, String branchUuid, ContainerType type, String languageTag) {
+	default NodeMeshEventModel onDeleted(HibNode node, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(node.getTypeInfo().getOnDeleted());
 		event.setUuid(node.getUuid());
