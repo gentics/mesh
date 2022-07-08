@@ -9,11 +9,11 @@ include::content/docs/variables.adoc-include[]
 [options="header"]
 |======
 | Component                                                    | Type                 | Version
-| https://orientdb.com/[OrientDB]                              | Graph Database       | 3.0.x
+| https://orientdb.com/[OrientDB]                              | Graph Database       | 3.1.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.7.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.10.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.12.x
 | https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======
 
@@ -44,6 +44,8 @@ docker run \
 ----
 
 === Volumes / Locations
+
+CAUTION: The `/graphdb` volume is irrelevant, if link:content/premium-features/sql-db/documentation/[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation instead.
 
 [options="header"]
 |======
