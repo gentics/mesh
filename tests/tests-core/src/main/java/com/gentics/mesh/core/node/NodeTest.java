@@ -18,6 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.context.impl.DummyEventQueueBatch;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
+import com.gentics.mesh.core.db.CommonTx;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -416,8 +420,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
 			// 4. assert for initial branch
-			List<String> nodeUuids = new ArrayList<>();
-			nodeDao.findAll(project).forEach(node -> nodeUuids.add(node.getUuid()));
+			List<String> nodeUuids = nodeDao.findAll(project).stream().map(HibNode::getUuid).collect(Collectors.toList());
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
 		}
 	}
@@ -614,6 +617,64 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 		}
+	}
+
+	@Test
+	public void testDeletePublishedFromBranch2() {
+		HibProject project = project();
+		HibBranch initialBranch = tx(() -> project.getInitialBranch());
+		HibSchemaVersion folderSchema = tx(() -> schemaContainer("folder").getLatestVersion());
+		PersistingNodeDao nodeDao = tx(() -> CommonTx.get().nodeDao());
+
+		// creates two container for the initial branch
+		HibNode node = tx(tx -> {
+			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+			boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("1");
+			boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("2");
+			RoleDao roleDao = tx.roleDao();
+			roleDao.applyPermissions(folder, new DummyEventQueueBatch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+			return folder;
+		});
+
+		// create a new branch
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
+		mesh().branchCache().clear();
+
+		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
+		context.setNewBranch(newBranch);
+		context.setOldBranch(initialBranch);
+		meshDagger().branchMigrationHandler().migrateBranch(context).blockingAwait();
+
+		// create 2 more containers for the initial branch
+		tx(tx -> {
+			HibNode reAttachedNode = nodeDao.mergeIntoPersisted(project, node);
+			boot().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("3");
+			boot().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("4");
+		});
+
+		tx(() -> assertVersions(node.getUuid(), "en", "D(0.4)=>(0.3)=>I(0.2)=>I(0.1)", initialBranch.getName()));
+
+		// create 3 more containers for the new branch
+		tx(tx -> {
+			HibNode reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
+			boot().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("3");
+			boot().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("4");
+			boot().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("5");
+			return node.getUuid();
+		});
+		tx(() -> assertVersions(node.getUuid(), "en", "D(0.5)=>(0.4)=>(0.3)=>I(0.2)=>I(0.1)", newBranch.getName()));
+
+		// delete node from new branch
+		tx((tx) -> {
+			HibNode reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
+			tx.nodeDao().deleteFromBranch(reAttachedNode, mockActionContext(""), newBranch, new DummyBulkActionContext(), true);
+		});
+
+		// assert the versions for the old branch
+		tx(() -> assertVersions(node.getUuid(), "en", "D(0.4)=>(0.3)=>(0.2)=>I(0.1)", initialBranch.getName()));
+
+		// assert the versions for the new branch
+		tx(() -> assertVersions(node.getUuid(), "en", "", newBranch.getName()));
 	}
 
 	/**
