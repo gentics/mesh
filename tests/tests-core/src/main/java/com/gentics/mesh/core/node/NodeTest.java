@@ -629,8 +629,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		// creates two container for the initial branch
 		HibNode node = tx(tx -> {
 			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
-			boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("1");
-			boot().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("2");
+			tx().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("1");
+			tx().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("2");
 			RoleDao roleDao = tx.roleDao();
 			roleDao.applyPermissions(folder, new DummyEventQueueBatch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 			return folder;
@@ -648,8 +648,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		// create 2 more containers for the initial branch
 		tx(tx -> {
 			HibNode reAttachedNode = nodeDao.mergeIntoPersisted(project, node);
-			boot().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("3");
-			boot().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("4");
+			tx().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("3");
+			tx().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("4");
 		});
 
 		tx(() -> assertVersions(node.getUuid(), "en", "D(0.4)=>(0.3)=>I(0.2)=>I(0.1)", initialBranch.getName()));
@@ -657,9 +657,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		// create 3 more containers for the new branch
 		tx(tx -> {
 			HibNode reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
-			boot().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("3");
-			boot().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("4");
-			boot().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("5");
+			tx().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("3");
+			tx().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("4");
+			tx().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("5");
 			return node.getUuid();
 		});
 		tx(() -> assertVersions(node.getUuid(), "en", "D(0.5)=>(0.4)=>(0.3)=>I(0.2)=>I(0.1)", newBranch.getName()));
