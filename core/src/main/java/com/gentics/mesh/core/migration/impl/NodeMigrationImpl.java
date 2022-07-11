@@ -161,7 +161,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					prepareMigration(fromVersion, touchedFields);
+					prepareMigration(reloadVersion(fromVersion), touchedFields);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
@@ -273,9 +273,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
 		}
 
-		HibBranch branch = ac.getBranch();
-		HibSchemaVersion toVersion = ac.getToVersion();
-		HibSchemaVersion fromVersion = ac.getFromVersion();
+		HibBranch branch = reloadBranch(ac.getBranch());
+		HibSchemaVersion toVersion = reloadVersion(ac.getToVersion());
+		HibSchemaVersion fromVersion = reloadVersion(ac.getFromVersion());
 		try {
 			String languageTag = container.getLanguageTag();
 			ac.getNodeParameters().setLanguages(languageTag);
