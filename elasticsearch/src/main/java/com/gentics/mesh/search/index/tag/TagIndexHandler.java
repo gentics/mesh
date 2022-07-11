@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,8 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.root.ProjectRoot;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -29,9 +29,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 
-import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 
 /**
  * Handler for the tag specific search index.
@@ -77,28 +75,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeDocumentId(entry.getElementUuid());
-	}
-
-	@Override
-	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeIndexName(entry.getContext().getProjectUuid());
-	}
-
-	@Override
-	public Completable store(Tag tag, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tag.getProject().getUuid());
-		return super.store(tag, entry);
-	}
-
-	@Override
-	public Observable<IndexBulkEntry> storeForBulk(Tag tag, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tag.getProject().getUuid());
-		return super.storeForBulk(tag, entry);
-	}
-
-	@Override
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
@@ -116,12 +92,12 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Flowable<SearchRequest> syncIndices() {
+	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
 		return Flowable.defer(() -> db.tx(() -> {
 			return boot.meshRoot().getProjectRoot().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
-					return diffAndSync(Tag.composeIndexName(uuid), uuid);
+					return diffAndSync(Tag.composeIndexName(uuid), uuid, indexPattern);
 				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}

@@ -26,7 +26,7 @@ public class FieldSchemaComparator {
 			return change;
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
 			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType(),
-					fieldSchemaB.getLabel());
+					fieldSchemaB.getLabel(), fieldSchemaB.getElasticsearch());
 		}
 
 		return null;

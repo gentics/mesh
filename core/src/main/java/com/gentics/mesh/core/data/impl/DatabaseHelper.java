@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
 import com.gentics.mesh.core.data.job.impl.VersionPurgeJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -44,6 +45,7 @@ import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.root.impl.UserRootImpl;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.data.schema.impl.AddFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.FieldTypeChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.RemoveFieldChangeImpl;
@@ -106,6 +108,7 @@ public final class DatabaseHelper {
 
 		// Binary
 		BinaryImpl.init(type, index);
+		S3BinaryImpl.init(type, index);
 
 		// Nodes
 		ProjectImpl.init(type, index);
@@ -122,6 +125,7 @@ public final class DatabaseHelper {
 		NodeGraphFieldListImpl.init(type, index);
 		MicronodeGraphFieldListImpl.init(type, index);
 		BinaryGraphFieldImpl.init(type, index);
+		S3BinaryGraphFieldImpl.init(type, index);
 
 		LanguageImpl.init(type, index);
 		GroupImpl.init(type, index);

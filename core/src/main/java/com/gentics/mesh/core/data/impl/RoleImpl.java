@@ -95,16 +95,20 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public void grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
+	public boolean grantPermissions(MeshVertex vertex, GraphPermission... permissions) {
+		boolean permissionGranted = false;
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.property(permission.propertyKey());
 			if (allowedRoles == null) {
 				vertex.property(permission.propertyKey(), Collections.singleton(getUuid()));
+				permissionGranted = true;
 			} else {
-				allowedRoles.add(getUuid());
+				permissionGranted = allowedRoles.add(getUuid()) || permissionGranted;
 				vertex.property(permission.propertyKey(), allowedRoles);
 			}
 		}
+
+		return permissionGranted;
 	}
 
 	@Override
@@ -134,7 +138,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
+	public boolean revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
 		boolean permissionRevoked = false;
 		for (GraphPermission permission : permissions) {
 			Set<String> allowedRoles = vertex.property(permission.propertyKey());
@@ -147,6 +151,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		if (permissionRevoked) {
 			mesh().permissionCache().clear();
 		}
+		return permissionRevoked;
 	}
 
 	@Override

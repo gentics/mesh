@@ -51,19 +51,20 @@ public class ProjectVersionPurgeHandler {
 	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
+				BulkActionContext bac = bulkProvider.get();
 				for (Node node : project.findNodes()) {
-					purgeNode(tx, node, maxAge);
+					purgeNode(tx, node, maxAge, bac);
 				}
-				return null;
+				bac.process(true);
 			});
 		});
 	}
 
-	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge) {
+	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge, BulkActionContext bac) {
 		Iterable<? extends NodeGraphFieldContainer> initials = node.getGraphFieldContainers(ContainerType.INITIAL);
 		for (NodeGraphFieldContainer initial : initials) {
 			Long counter = 0L;
-			purgeVersion(tx, counter, bulkProvider.get(), initial, initial, false, maxAge);
+			purgeVersion(tx, counter, bac, initial, initial, false, maxAge);
 		}
 	}
 

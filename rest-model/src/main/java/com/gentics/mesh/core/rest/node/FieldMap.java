@@ -11,6 +11,7 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -128,6 +129,14 @@ public interface FieldMap extends RestModel {
 	 * @return
 	 */
 	BinaryField getBinaryField(String fieldKey);
+
+	/**
+	 * Return the s3 binary field with the given key.
+	 *
+	 * @param fieldKey
+	 * @return
+	 */
+	S3BinaryField getS3BinaryField(String fieldKey);
 
 	/**
 	 * Return the boolean field with the given key.

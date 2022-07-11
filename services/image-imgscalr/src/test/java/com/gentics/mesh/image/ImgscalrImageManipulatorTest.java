@@ -63,7 +63,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, null);
 	}
 
 	@Test

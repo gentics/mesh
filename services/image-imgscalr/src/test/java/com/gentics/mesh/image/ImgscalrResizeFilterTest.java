@@ -35,7 +35,7 @@ public class ImgscalrResizeFilterTest extends AbstractImageTest {
 		options.setResampleFilter(filter);
 
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options);
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, null);
 	}
 
 	@Parameterized.Parameters(name = "filter={0}")

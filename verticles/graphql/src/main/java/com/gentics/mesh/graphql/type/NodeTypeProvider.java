@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.graphql.filter.NodeReferenceFilter.nodeReferenceFilter;
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
@@ -59,6 +60,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 import graphql.GraphQLException;
 import graphql.schema.DataFetchingEnvironment;
@@ -98,6 +100,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public FieldDefinitionProvider fields;
+
+	@Inject
+	public SearchWaitUtil waitUtil;
 
 	@Inject
 	public NodeTypeProvider(MeshOptions options) {
@@ -325,7 +330,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
 
-				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc)
+				Stream<NodeContent> nodes = content.getNode().getChildrenStream(gc, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)
 					.map(item -> new NodeContent(item, item.findVersion(gc, languageTags, type), languageTags, type))
 					.filter(item -> item.getContainer() != null)
 					.filter(item -> gc.hasReadPerm(item.getContainer()));
@@ -621,6 +626,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends NodeContent> handleContentSearch(GraphQLContext gc, String query, PagingParameters pagingInfo, ContainerType type) {
 		try {
+			// Wait for the search to be resolved before attempting to load from it
+			if (this.waitUtil.delayRequested(gc)) {
+				this.waitUtil.awaitSync(gc).blockingAwait();
+			}
+
 			return nodeSearchHandler.handleContainerSearch(gc, query, pagingInfo, type, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
 			throw new RuntimeException(e);
@@ -638,6 +648,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
+			// Wait for the search to be resolved before attempting to load from it
+			if (this.waitUtil.delayRequested(gc)) {
+				this.waitUtil.awaitSync(gc).blockingAwait();
+			}
+
 			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -715,6 +730,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BINARY:
 					root.field(fields.createBinaryDef(fieldSchema));
 					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
+					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					root.field(fields.createListDef(context, listFieldSchema));
@@ -774,6 +792,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				case BINARY:
 					fieldsType.field(fields.createBinaryDef(fieldSchema));
 					break;
+				case S3BINARY:
+					root.field(fields.createS3BinaryDef(fieldSchema));
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					fieldsType.field(fields.createListDef(context, listFieldSchema));

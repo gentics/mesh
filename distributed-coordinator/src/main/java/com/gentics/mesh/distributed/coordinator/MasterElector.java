@@ -305,6 +305,10 @@ public class MasterElector {
 		return hazelcast.get().getCluster().getLocalMember();
 	}
 
+	/**
+	 * Get the server, which is currently the master, may be null
+	 * @return current master, may be null
+	 */
 	public MasterServer getMasterMember() {
 		if (masterMember == null) {
 			return null;

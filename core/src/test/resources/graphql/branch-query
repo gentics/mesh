@@ -6,6 +6,14 @@
 		name
 		# [$.data.branch.latest=true]
 		latest
+		# [$.data.branch.migrated=true]
+		migrated
+		# [$.data.branch.hostname=getmesh.io]
+		hostname
+		# [$.data.branch.ssl=false]
+		ssl
+		# [$.data.branch.pathPrefix=/base/path]
+		pathPrefix
 		tags {
 			# [$.data.branch.tags.totalCount=0]
 			totalCount

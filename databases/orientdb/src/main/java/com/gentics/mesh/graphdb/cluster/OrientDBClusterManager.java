@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb.cluster;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -71,6 +72,8 @@ public class OrientDBClusterManager implements ClusterManager {
 	private static final String ORIENTDB_SECURITY_SERVER_CONFIG = "security.json";
 
 	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
+
+	private static final String MESH_MEMBER_DISK_QUOTA_EXCEEDED = "mesh.instance.disk-quota-exceeded";
 
 	private OServer server;
 
@@ -439,10 +442,10 @@ public class OrientDBClusterManager implements ClusterManager {
 	 */
 	private void joinCluster() throws InterruptedException {
 		// Wait until another node joined the cluster
-		int timeout = 500;
-		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
-		if (!topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
-			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
+		int timeout = options.getStorageOptions().getClusterJoinTimeout();
+		log.info("Waiting {" + timeout + "} milliseconds for other nodes in the cluster.");
+		if (!topologyEventBridge.waitForMainGraphDB(timeout, MILLISECONDS)) {
+			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} milliseconds.");
 		}
 	}
 
@@ -454,7 +457,6 @@ public class OrientDBClusterManager implements ClusterManager {
 			server.shutdown();
 		}
 	}
-
 
 	public boolean isServerActive() {
 		return server != null && server.isActive();
@@ -492,31 +494,66 @@ public class OrientDBClusterManager implements ClusterManager {
 	 * @see TopologyEventBridge#isClusterTopologyLocked()
 	 * @return
 	 */
+	@Override
 	public boolean isClusterTopologyLocked() {
+		return isClusterTopologyLocked(true);
+	}
+
+	/**
+	 * Checks if the cluster storage is locked cluster-wide.
+	 * @param doLog true if log messages shall be created, false if not
+	 * @return true iff cluster storage is locked
+	 */
+	protected boolean isClusterTopologyLocked(boolean doLog) {
 		if (topologyEventBridge == null) {
 			return false;
 		} else {
-			return topologyEventBridge.isClusterTopologyLocked();
+			return topologyEventBridge.isClusterTopologyLocked(doLog);
 		}
 	}
 
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
 		return Completable.defer(() -> {
-			if (writeQuorumReached()) {
+			if (isWriteQuorumReached() && !isClusterTopologyLocked(false)) {
 				return Completable.complete();
 			}
 			return Observable.using(
 				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
 				TimeoutStream::toObservable,
 				TimeoutStream::cancel).takeUntil(ignore -> {
-					return writeQuorumReached();
+					return isWriteQuorumReached() && !isClusterTopologyLocked(false);
 				})
 				.ignoreElements();
 		});
 	}
 
-	private boolean writeQuorumReached() {
+	@Override
+	public boolean isLocalNodeOnline() {
+		if (isClusteringEnabled) {
+			if (server != null && server.getDistributedManager() != null) {
+				ODistributedServerManager distributedManager = server.getDistributedManager();
+				String localNodeName = distributedManager.getLocalNodeName();
+				boolean online = distributedManager.isNodeOnline(localNodeName, GraphStorage.DB_NAME);
+				if (log.isDebugEnabled()) {
+					log.debug("State of DB {} in local node {} is {}", GraphStorage.DB_NAME, localNodeName, online);
+				}
+				return online;
+			} else {
+				log.error("Could not check DB state of local node {}");
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+
+	@Override
+	public boolean isWriteQuorumReached() {
+		if (!isClusteringEnabled) {
+			return true;
+		}
+
 		try {
 			// The server and manager may not yet be initialized. We need to wait until those are ready
 			if (server != null && server.getDistributedManager() != null) {
@@ -527,6 +564,31 @@ public class OrientDBClusterManager implements ClusterManager {
 		} catch (Throwable e) {
 			log.error("Error while checking write quorum", e);
 			return false;
+		}
+	}
+
+	/**
+	 * Check whether any of the cluster members is set to have exceeded the disk quota
+	 * @return Optional name of the (first found) instance having the disk quota exceeded
+	 */
+	public Optional<String> getInstanceDiskQuotaExceeded() {
+		if (!isClusteringEnabled || hazelcastPlugin == null) {
+			return Optional.empty();
+		} else {
+			return hazelcastPlugin.getHazelcastInstance().getCluster().getMembers().stream()
+					.filter(m -> m.getBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED) == Boolean.TRUE)
+					.map(m -> hazelcastPlugin.getNodeName(m)).findFirst();
+		}
+	}
+
+	/**
+	 * Set the disk-quota-exceeded status of the local cluster member (if clustering enabled) 
+	 * @param diskQuotaExceeded disk-quota-exceeded status
+	 */
+	public void setLocalMemberDiskQuotaExceeded(boolean diskQuotaExceeded) {
+		if (hazelcastPlugin != null) {
+			hazelcastPlugin.getHazelcastInstance().getCluster().getLocalMember()
+					.setBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED, diskQuotaExceeded);
 		}
 	}
 }

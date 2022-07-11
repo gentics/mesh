@@ -122,10 +122,4 @@ public class PluginClusterTest extends AbstractClusterTest {
 
 		latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
 	}
-
-	private void login(MeshContainer server) {
-		server.client().setLogin("admin", "admin");
-		server.client().login().blockingGet();
-	}
-
 }

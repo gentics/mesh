@@ -6,8 +6,10 @@ import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -65,9 +67,9 @@ public class BranchMigrationHandler extends AbstractMigrationHandler {
 				}
 			});
 
-			List<? extends Node> nodes = db.tx(() -> {
+			Queue<? extends Node> nodes = db.tx(() -> {
 				Project project = oldBranch.getProject();
-				return project.findNodes().list();
+				return new ArrayDeque<>(project.findNodes().list());
 			});
 
 			List<Exception> errorsDetected = new ArrayList<>();

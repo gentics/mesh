@@ -1,16 +1,15 @@
 package com.gentics.mesh.core.data.search;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
-import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
@@ -18,7 +17,6 @@ import com.gentics.mesh.search.BucketableElement;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 
 /**
  * Index handlers are used to interact with the search provider index on a type specific level. Each domain model in mesh which is indexable needs to implement
@@ -27,6 +25,7 @@ import io.reactivex.Observable;
  * @param <T>
  */
 public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
+	public final static Pattern MATCH_ALL = Pattern.compile(".*");
 
 	/**
 	 * Initialise the search index by creating the index first and setting the mapping afterwards.
@@ -64,27 +63,12 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Class<? extends BucketableElement> getElementClass();
 
 	/**
-	 * Process the entry and generate bulk entries.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry);
-
-	/**
-	 * Process the update entry into bulk entries which can be used form a bulk update request.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	Observable<IndexBulkEntry> storeForBulk(UpdateDocumentEntry entry);
-
-	/**
 	 * Diff the elements within all indices that are handled by the index handler and synchronize the data.
 	 * 
+	 * @param indexPattern optional index pattern to restrict synchronized indices
 	 * @return
 	 */
-	Flowable<SearchRequest> syncIndices();
+	Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern);
 
 	/**
 	 * Filter the given list and return only indices which match the type of the handler but are no longer in use or unknown.
@@ -135,16 +119,6 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	boolean accepts(Class<?> clazzOfElement);
 
 	/**
-	 * Create the index, if it is one of the indices handled by this index handler. If the index name is not handled by this index handler, an error will be
-	 * thrown.
-	 * 
-	 * @param entry
-	 *            Search queue entry for create index action
-	 * @return
-	 */
-	Completable createIndex(CreateIndexEntry entry);
-
-	/**
 	 * Generate the version for the given element.
 	 * 
 	 * @param element
@@ -160,11 +134,8 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	EntityMetrics getMetrics();
 
 	/**
-	 * Process the entry and generate the bulk entry.
-	 * 
-	 * @param entry
-	 * @return
+	 * Check indices handled by this handler for existence and correctness (mapping)
+	 * @return completable
 	 */
-	Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry);
-
+	Completable check();
 }

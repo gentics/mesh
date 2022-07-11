@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -96,7 +97,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
 
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel", new JsonObject().put("test", "test"));
 		listOfChanges.getChanges().add(change);
 
 		// 2. Invoke migration

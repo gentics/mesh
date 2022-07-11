@@ -459,7 +459,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), branch
-									.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
+									.getUuid(), schema.getUuid(), containerType, null), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
 										fieldContainer.getLanguageTag()));
 							}
 						}

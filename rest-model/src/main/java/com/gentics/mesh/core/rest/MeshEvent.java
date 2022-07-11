@@ -30,6 +30,8 @@ import com.gentics.mesh.core.rest.event.project.ProjectBranchEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
+import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
+import com.gentics.mesh.core.rest.event.search.SearchIndexSyncEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
 
@@ -184,6 +186,20 @@ public enum MeshEvent {
 		"Emitted when the database status changes. (e.g. offline, online, backup, syncing)"),
 
 	/**
+	 * Event, which is emitted regularly to check whether local eventbus works
+	 */
+	PING_LOCAL("mesh.ping.local",
+		null,
+		"Event, which is emitted regularly to check whether local eventbus works"),
+
+	/**
+	 * Event, which is emitted regularly to check whether clustered eventbus works
+	 */
+	PING_CLUSTER("mesh.ping.cluster",
+		null,
+		"Event, which is emitted regularly to check whether clustered eventbus works"),
+
+	/**
 	 * Event which is send to update the permission stores.
 	 */
 	CLEAR_PERMISSION_STORE("mesh.clear-permission-store",
@@ -196,6 +212,13 @@ public enum MeshEvent {
 	CLEAR_PATH_STORE("mesh.clear-path-store",
 		null,
 		"Event which will clear the path stores."),
+
+	/**
+	 * Event which is sent to clear all internal caches
+	 */
+	CLEAR_CACHES("mesh.clear-caches",
+		null,
+		"Event which will clear the internal caches."),
 
 	/* User */
 
@@ -468,7 +491,7 @@ public enum MeshEvent {
 	 * Address for the handler which will process index sync requests.
 	 */
 	INDEX_SYNC_REQUEST("mesh.search.index.sync.request",
-		null,
+		SearchIndexSyncEventModel.class,
 		"Event address which can be used to trigger the sync process."),
 
 	/**
@@ -507,6 +530,27 @@ public enum MeshEvent {
 	INDEX_CLEAR_FINISHED("mesh.search.index.clear.finished",
 		null,
 		"Emitted when the index clear process finishes."),
+
+	/**
+	 * Event address which will trigger an index check.
+	 */
+	INDEX_CHECK_REQUEST("mesh.search.index.check.request",
+		null,
+		"Event address which will trigger an index check."),
+
+	/**
+	 * Emitted when an index check process starts.
+	 */
+	INDEX_CHECK_START("mesh.search.index.check.start",
+		null,
+		"Emitted when the index check process starts."),
+
+	/**
+	 * Address to which index check results will be published (failed, succeeded)
+	 */
+	INDEX_CHECK_FINISHED("mesh.search.index.check.finished",
+		null,
+		"Emitted when the index check process finishes."),
 
 	/**
 	 * Event that is emitted when the search verticle has been working and is now idle.
@@ -602,7 +646,21 @@ public enum MeshEvent {
 
 	PLUGIN_UNDEPLOYED("mesh.plugin.undeployed",
 		null,
-		"Emitted once a plugin has been undeployed.");
+		"Emitted once a plugin has been undeployed."),
+
+	/* S3 Binary */
+
+	S3BINARY_CREATED("mesh.s3binary.created",
+			S3BinaryEventModel.class,
+		"Emitted when a S3 binary field was created."),
+
+	S3BINARY_DELETED("mesh.s3binary.deleted",
+			S3BinaryEventModel.class,
+		"Emitted when a S3 binary field gets deleted."),
+
+	S3BINARY_METADATA_EXTRACTED("mesh.s3binary.metadata.extracted",
+			S3BinaryEventModel.class,
+		"Emitted when the metadata of a S3 binary field is extracted.");
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;

@@ -81,8 +81,9 @@ public class DemoDumpGeneratorTest {
 				String projectUuid = node.getProject().getUuid();
 				String branchUuid = node.getProject().getInitialBranch().getUuid();
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
+				String microSchemaVersionHash = container.getSchemaContainerVersion().getMicroschemaVersionHash(node.getProject().getInitialBranch());
 				ContainerType type = PUBLISHED;
-				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type);
+				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, microSchemaVersionHash);
 				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag

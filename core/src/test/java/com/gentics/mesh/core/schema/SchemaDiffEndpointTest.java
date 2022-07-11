@@ -47,8 +47,8 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
-	private Schema getSchema() {
-		Schema schema = new SchemaModelImpl();
+	private SchemaModel getSchema() {
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema for blogposts");
 		schema.setDisplayField("title");
@@ -255,6 +255,23 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		assertThat(changes.getChanges()).hasSize(1);
 		SchemaChangeModel change = changes.getChanges().get(0);
 		assertThat(change).is(UPDATEFIELD).forField("slug").hasProperty("elasticsearch", setting);
+	}
+
+	@Test
+	public void testESFieldDiffOnNewField() {
+		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
+
+		SchemaModel request = getSchema();
+		StringFieldSchemaImpl testField = new StringFieldSchemaImpl();
+		testField.setName("test");
+		JsonObject setting = new JsonObject().put("test", "123");
+		testField.setElasticsearch(setting);
+		request.getFields().add(testField);
+
+		SchemaChangesListModel changes = call(() -> client().diffSchema(schemaUuid, request));
+		assertThat(changes.getChanges()).hasSize(2);
+		SchemaChangeModel change = changes.getChanges().get(0);
+		assertThat(change).is(ADDFIELD).forField("test").hasProperty("elasticsearch", setting);
 	}
 
 	/**

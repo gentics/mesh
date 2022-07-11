@@ -10,14 +10,7 @@ import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.DateGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.HtmlGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.NumberGraphFieldImpl;
-import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.*;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.DateGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -79,7 +72,10 @@ public enum GraphFieldTypes {
 		NodeGraphFieldListImpl.NODE_LIST_GETTER),
 
 	BINARY("binary", BinaryGraphFieldImpl.class, BinaryGraphFieldImpl.BINARY_TRANSFORMER, BinaryGraphFieldImpl.BINARY_UPDATER,
-		BinaryGraphFieldImpl.BINARY_GETTER);
+		BinaryGraphFieldImpl.BINARY_GETTER),
+
+	S3BINARY("s3binary",S3BinaryGraphFieldImpl.class, S3BinaryGraphFieldImpl.S3_BINARY_TRANSFORMER, S3BinaryGraphFieldImpl.S3_BINARY_UPDATER,
+			 S3BinaryGraphFieldImpl.S3_BINARY_GETTER);
 
 	private String combinedType;
 	private FieldTransformer transformer;

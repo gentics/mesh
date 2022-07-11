@@ -12,6 +12,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
+import io.vertx.core.json.JsonObject;
 
 /**
  * POJO for a schema change.
@@ -190,22 +191,36 @@ public class SchemaChangeModel implements RestModel {
 		change.getProperties().put(SchemaChangeModel.NAME_KEY, newFieldName);
 		return change;
 	}
+	
+	/**
+	 * Create an update field change to rename a field.
+	 * 
+	 * @param fieldName
+	 * @param newFieldName
+	 * @return
+	 */
+	public static SchemaChangeModel createFieldRestrictionChange(String fieldName, String[] restrictions) {
+		SchemaChangeModel change = new SchemaChangeModel(UPDATEFIELD, fieldName);
+		change.getProperties().put(SchemaChangeModel.ALLOW_KEY, restrictions);
+		return change;
+	}
 
 	/**
 	 * Create a add field change.
 	 * 
-	 * @param fieldName
-	 *            Field key
-	 * @param type
-	 *            Field type
-	 * @param label
-	 *            Field label
+	 * @param fieldName Field key
+	 * @param type Field type
+	 * @param label Field label
+	 * @param elasticSearch Field elastic search properties
 	 * @return
 	 */
-	public static SchemaChangeModel createAddFieldChange(String fieldName, String type, String label) {
+	public static SchemaChangeModel createAddFieldChange(String fieldName, String type, String label, JsonObject elasticSearch) {
 		SchemaChangeModel change = new SchemaChangeModel(ADDFIELD, fieldName);
 		change.getProperties().put(SchemaChangeModel.TYPE_KEY, type);
 		change.getProperties().put(SchemaChangeModel.LABEL_KEY, label);
+		if (elasticSearch != null) {
+			change.getProperties().put(SchemaChangeModel.ELASTICSEARCH_KEY, elasticSearch.encode());
+		}
 		return change;
 	}
 

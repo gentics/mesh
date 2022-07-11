@@ -12,6 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -110,6 +111,13 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 */
 	Project getProject();
 
-	TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac);
+	/**
+	 * Get all nodes, which are tagged with this tag.
+	 * This will also check for the required permission
+	 * @param ac action context
+	 * @param perm permission to check
+	 * @return result
+	 */
+	TraversalResult<? extends Node> findTaggedNodes(InternalActionContext ac, GraphPermission perm);
 
 }

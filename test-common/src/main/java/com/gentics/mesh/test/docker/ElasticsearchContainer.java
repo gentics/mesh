@@ -60,7 +60,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		execRootInContainer("iptables", "-P", "FORWARD", policy);
 	}
 
-	public ExecResult execRootInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
+	public void execRootInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
 		Charset outputCharset = UTF8;
 
 		if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
@@ -72,10 +72,10 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 			throw new IllegalStateException("Container is not running so exec cannot be run");
 		}
 
-		this.dockerClient.execCreateCmd(this.containerId).withCmd(command);
+		this.dockerClient.execCreateCmd(getContainerId()).withCmd(command);
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
-		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
+		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId()).withAttachStdout(true).withAttachStderr(true)
 			.withUser("root")
 			.withPrivileged(true)
 			.withCmd(command).exec();
@@ -89,11 +89,8 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 
 		dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
 
-		final ExecResult result = new ExecResult(stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
-
-		logger().debug("stdout: " + result.getStdout());
-		logger().debug("stderr: " + result.getStderr());
-		return result;
+		logger().debug("stdout: " + stdoutConsumer.toString(outputCharset));
+		logger().debug("stderr: " + stderrConsumer.toString(outputCharset));
 	}
 
 	@Override

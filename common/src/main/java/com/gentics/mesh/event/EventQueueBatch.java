@@ -12,6 +12,10 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
  * A batch of event queue entries.
  */
 public interface EventQueueBatch {
+	/**
+	 * Name of the event header identifying the Mesh instance, which is sending the event
+	 */
+	public final static String SENDER_HEADER = "mesh.sender";
 
 	/**
 	 * Return the id of the batch.

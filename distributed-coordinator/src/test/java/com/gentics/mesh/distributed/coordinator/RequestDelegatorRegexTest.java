@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.mesh.distributed.DistributionUtils;
 import com.gentics.mesh.distributed.coordinator.proxy.RequestDelegatorImpl;
 
 public class RequestDelegatorRegexTest {
@@ -36,7 +37,7 @@ public class RequestDelegatorRegexTest {
 	}
 
 	private void assertReadOnly(String path) {
-		assertEquals("The path {" + path + "} is not read only.", true, RequestDelegatorImpl.isReadOnly(path));
+		assertEquals("The path {" + path + "} is not read only.", true, DistributionUtils.isReadOnly(path));
 	}
 
 }

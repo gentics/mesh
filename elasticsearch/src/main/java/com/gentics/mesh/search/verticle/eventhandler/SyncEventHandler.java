@@ -9,15 +9,23 @@ import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_START;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.search.SearchIndexSyncEventModel;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.metric.SyncMetersFactory;
@@ -28,6 +36,7 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -46,16 +55,20 @@ public class SyncEventHandler implements EventHandler {
 
 	private final SyncMetersFactory syncMetersFactory;
 
+	private final MeshOptions options;
+
 	/**
 	 * Send the index sync event which will trigger the index sync job.
+	 * @param indexPattern optional index pattern
 	 */
-	public static void invokeSync(Vertx vertx) {
-		log.info("Sending sync event");
-		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, null);
+	public static void invokeSync(Vertx vertx, String indexPattern) {
+		SearchIndexSyncEventModel eventModel = new SearchIndexSyncEventModel().setIndexPattern(indexPattern);
+		log.info("Sending sync event for index pattern {}", eventModel.getIndexPattern());
+		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(eventModel)));
 	}
 
 	public static Completable invokeSyncCompletable(Vertx vertx) {
-		return MeshEvent.doAndWaitForEvent(vertx, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx));
+		return MeshEvent.doAndWaitForEvent(vertx, INDEX_SYNC_FINISHED, () -> SyncEventHandler.invokeSync(vertx, null));
 	}
 
 	public static Completable invokeSyncCompletable(Mesh mesh) {
@@ -75,22 +88,27 @@ public class SyncEventHandler implements EventHandler {
 	}
 
 	@Inject
-	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory) {
+	public SyncEventHandler(Lazy<IndexHandlerRegistry> registry, SearchProvider provider, Vertx vertx, SyncMetersFactory syncMetersFactory, MeshOptions options) {
 		this.registry = registry;
 		this.provider = provider;
 		this.vertx = vertx;
 		this.syncMetersFactory = syncMetersFactory;
+		this.options = options;
 	}
 
 	@Override
 	public Flowable<SearchRequest> handle(MessageEvent messageEvent) {
-		return generateSyncRequests();
+		String indexPattern = ".*";
+		if (messageEvent.message instanceof SearchIndexSyncEventModel) {
+			indexPattern = ((SearchIndexSyncEventModel) messageEvent.message).getIndexPattern();
+		}
+		return generateSyncRequests(indexPattern);
 	}
 
-	public Flowable<SearchRequest> generateSyncRequests() {
+	public Flowable<SearchRequest> generateSyncRequests(String indexPattern) {
 		return Flowable.concatArray(
 			purgeOldIndices(),
-			syncIndices(),
+			syncIndices(indexPattern),
 			publishSyncEndEvent()
 		).doOnSubscribe(ignore -> {
 			log.info("Processing index sync job.");
@@ -116,13 +134,23 @@ public class SyncEventHandler implements EventHandler {
 		return Collections.singletonList(INDEX_SYNC_REQUEST);
 	}
 
-	private Flowable<SearchRequest> syncIndices() {
+	private Flowable<SearchRequest> syncIndices(String indexPattern) {
+		Pattern pattern = null;
+		if (indexPattern != null) {
+			indexPattern = StringUtils.removeStartIgnoreCase(indexPattern, options.getSearchOptions().getPrefix());
+			try {
+				pattern = Pattern.compile(indexPattern);
+			} catch (PatternSyntaxException e) {
+				log.warn("Index pattern {} is not valid, synchronizing all indices", e, indexPattern);
+			}
+		}
+		Optional<Pattern> optPattern = Optional.ofNullable(pattern);
 		return Flowable.fromIterable(registry.get().getHandlers())
 			.flatMap(handler ->
 				handler.init()
 					.doOnSubscribe(ignore -> log.debug("Init for {}", handler.getClass()))
 					.doOnComplete(() -> log.debug("Init for {} complete", handler.getClass()))
-				.andThen(handler.syncIndices()
+				.andThen(handler.syncIndices(optPattern)
 					.doOnSubscribe(ignore -> log.debug("Syncing for {}", handler.getClass()))
 			));
 	}

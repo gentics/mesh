@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import java.io.IOException;
 import java.util.List;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -47,11 +48,11 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 	/**
 	 * Test adding a field to a schema and assert that the expected change was generated.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
-	public void testAddField() throws IOException {
+	public void testAddField() {
 		C containerA = createContainer();
 		containerA.setName("test");
 		containerA.addField(FieldUtil.createStringFieldSchema("first"));
@@ -62,14 +63,17 @@ public abstract class AbstractSchemaComparatorTest<T extends FieldSchema, C exte
 
 		// Add new field in B
 		T field = createField("test");
+		JsonObject indexSettings = new JsonObject().put("settings", "test");
+		field.setElasticsearch(indexSettings);
 		containerB.addField(field);
 
 		List<SchemaChangeModel> changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(2);
-		assertThat(changes.get(0)).is(ADDFIELD).forField("test").hasProperty("type", field.getType()).hasProperty("after", "first");
+		assertThat(changes.get(0)).is(ADDFIELD).forField("test")
+				.hasProperty("type", field.getType())
+				.hasProperty("after", "first")
+				.hasProperty("elasticsearch", indexSettings);
 		assertThat(changes.get(1)).isUpdateOperation(containerA);
-		//.hasProperty("order", new String[] { "first", "test" });
-
 	}
 
 	/**

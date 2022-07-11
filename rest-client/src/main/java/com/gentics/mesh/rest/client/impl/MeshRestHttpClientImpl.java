@@ -56,6 +56,9 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -997,13 +1000,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeIndexClear() {
-		return prepareRequest(POST, "/search/clear", GenericMessageResponse.class);
+	public MeshRequest<GenericMessageResponse> invokeIndexClear(ParameterProvider... parameters) {
+		return prepareRequest(POST, "/search/clear" + getQuery(parameters), GenericMessageResponse.class);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeIndexSync() {
-		return prepareRequest(POST, "/search/sync", GenericMessageResponse.class);
+	public MeshRequest<GenericMessageResponse> invokeIndexSync(ParameterProvider... parameters) {
+		return prepareRequest(POST, "/search/sync" + getQuery(parameters), GenericMessageResponse.class);
 	}
 
 	@Override
@@ -1117,6 +1120,24 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
 			NodeResponse.class, completeStream, fileSize, bodyContentType);
+	}
+
+	@Override
+	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, S3BinaryUploadRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/s3binary/" + fieldKey + getQuery(parameters),
+				S3RestResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> extractMetadataNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, S3BinaryMetadataRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/s3binary/" + fieldKey + "/parseMetadata" + getQuery(parameters),
+				NodeResponse.class, request);
 	}
 
 	@Override
@@ -1421,7 +1442,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
+	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
 		return prepareRequest(GET, "/admin/jobs" + getQuery(parameters), JobListResponse.class);
 	}
 
@@ -1508,6 +1529,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
+		return prepareRequest(DELETE, "/admin/cache", GenericMessageResponse.class);
+	}
+
+	@Override
 	public MeshRequest<EmptyResponse> ready() {
 		return prepareRequest(GET, "/health/ready", EmptyResponse.class);
 	}
@@ -1515,6 +1541,11 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	@Override
 	public MeshRequest<EmptyResponse> live() {
 		return prepareRequest(GET, "/health/live", EmptyResponse.class);
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> writable() {
+		return prepareRequest(GET, "/health/writable", EmptyResponse.class);
 	}
 
 	@Override

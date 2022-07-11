@@ -1,12 +1,10 @@
 package com.gentics.mesh.search.index.entry;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
@@ -14,13 +12,7 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.data.search.bulk.DeleteBulkEntry;
-import com.gentics.mesh.core.data.search.bulk.IndexBulkEntry;
-import com.gentics.mesh.core.data.search.bulk.UpdateBulkEntry;
-import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
@@ -31,8 +23,8 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.BucketableElement;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.Bucket;
+import com.gentics.mesh.search.index.BucketManager;
 import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.gentics.mesh.search.index.metric.SyncMeters;
@@ -108,83 +100,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	abstract protected MappingProvider getMappingProvider();
 
 	/**
-	 * Compose the index name using the batch entry data.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	abstract protected String composeIndexNameFromEntry(UpdateDocumentEntry entry);
-
-	/**
-	 * Compose the document id using the batch entry data.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
-
-	/**
-	 * Store the given object within the search index.
-	 * 
-	 * @param element
-	 * @param entry
-	 *            search queue entry
-	 * @return
-	 */
-	public Completable store(T element, UpdateDocumentEntry entry) {
-		String indexName = composeIndexNameFromEntry(entry);
-		String documentId = composeDocumentIdFromEntry(entry);
-		return searchProvider.storeDocument(indexName, documentId, getTransformer().toDocument(element)).doOnComplete(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Stored object in index.");
-			}
-		});
-	}
-
-	public Observable<IndexBulkEntry> storeForBulk(T element, UpdateDocumentEntry entry) {
-		String indexName = composeIndexNameFromEntry(entry);
-		String documentId = composeDocumentIdFromEntry(entry);
-		return Observable
-			.just(new IndexBulkEntry(indexName, documentId, getTransformer().toDocument(element), complianceMode));
-	}
-
-	@Override
-	public Observable<UpdateBulkEntry> updatePermissionForBulk(UpdateDocumentEntry entry) {
-		String uuid = entry.getElementUuid();
-		T element = elementLoader().apply(uuid);
-		if (element == null) {
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, getType());
-		} else {
-			String indexName = composeIndexNameFromEntry(entry);
-			String documentId = composeDocumentIdFromEntry(entry);
-			return Observable.just(
-				new UpdateBulkEntry(indexName, documentId, getTransformer().toPermissionPartial(element), complianceMode));
-		}
-	}
-
-	@Override
-	public Observable<DeleteBulkEntry> deleteForBulk(UpdateDocumentEntry entry) {
-		String indexName = composeIndexNameFromEntry(entry);
-		String documentId = composeDocumentIdFromEntry(entry);
-		return Observable.just(new DeleteBulkEntry(indexName, documentId, complianceMode));
-	}
-
-	@Override
-	public Observable<IndexBulkEntry> storeForBulk(UpdateDocumentEntry entry) {
-		return Observable.defer(() -> {
-			return db.tx(() -> {
-				String uuid = entry.getElementUuid();
-				T element = elementLoader().apply(uuid);
-				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, getType());
-				} else {
-					return storeForBulk(element, entry);
-				}
-			});
-		});
-	}
-
-	/**
 	 * Check whether the search provider is available. Some tests are not starting an search provider and thus we must be able to determine whether we can use
 	 * the search provider.
 	 * 
@@ -194,14 +109,18 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return searchProvider != null;
 	}
 
-	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid) {
-		// Sync each bucket individually
-		Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
-		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {" + bucket + "}");
-			return diffAndSync(indexName, projectUuid, bucket);
-		}, 1);
+	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Optional<Pattern> indexPattern) {
+		if (indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()) {
+			// Sync each bucket individually
+			Flowable<Bucket> buckets = bucketManager.getBuckets(getElementClass());
+			log.info("Handling index sync on handler {" + getClass().getName() + "}");
+			return buckets.flatMap(bucket -> {
+				log.info("Handling sync of {" + bucket + "}");
+				return diffAndSync(indexName, projectUuid, bucket);
+			}, 1);
+		} else {
+			return Flowable.empty();
+		}
 	}
 
 	/**
@@ -359,27 +278,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	@Override
-	public Completable createIndex(CreateIndexEntry entry) {
-		String indexName = entry.getIndexName();
-		Map<String, IndexInfo> indexInfo = getIndices();
-		IndexInfo info = indexInfo.get(indexName);
-		// Only create indices which we know of
-		if (info != null) {
-			// Create the index - Note that dedicated index settings are only configurable for nodes, micronodes (via schema, microschema)
-			return searchProvider.createIndex(info);
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Only found indices:");
-				for (String idx : indexInfo.keySet()) {
-					log.debug("Index name {" + idx + "}");
-				}
-			}
-			log.warn("Entry references an unknown index: {}", indexName);
-			return Completable.complete();
-		}
-	}
-
-	@Override
 	public Completable init() {
 		// Create the indices
 		return Observable.defer(() -> Observable.fromIterable(getIndices().values()))
@@ -411,6 +309,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public EntityMetrics getMetrics() {
 		return meters.createSnapshot();
+	}
+
+	@Override
+	public Completable check() {
+		// check the indices
+		return Observable.defer(() -> Observable.fromIterable(getIndices().values()))
+				.flatMap(info -> searchProvider.check(info).toObservable()
+					.doOnSubscribe(ignore -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Checking index {" + info + "}");
+						}
+					}), 1)
+				.ignoreElements();
 	}
 
 	/**

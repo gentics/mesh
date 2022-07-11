@@ -298,12 +298,12 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	public void killContainer() {
-		dockerClient.killContainerCmd(containerId).withSignal("SIGTERM").exec();
+		dockerClient.killContainerCmd(getContainerId()).withSignal("SIGTERM").exec();
 		super.stop();
 	}
 
 	public void killHardContainer() {
-		dockerClient.killContainerCmd(containerId).withSignal("SIGKILL").exec();
+		dockerClient.killContainerCmd(getContainerId()).withSignal("SIGKILL").exec();
 		super.stop();
 	}
 
@@ -491,7 +491,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		return this;
 	}
 
-	public ExecResult execRootInContainer(String... command) throws Exception {
+	public void execRootInContainer(String... command) throws Exception {
 		Charset outputCharset = UTF8;
 
 		if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
@@ -503,10 +503,10 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			throw new IllegalStateException("Container is not running so exec cannot be run");
 		}
 
-		this.dockerClient.execCreateCmd(this.containerId).withCmd(command);
+		this.dockerClient.execCreateCmd(getContainerId()).withCmd(command);
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
-		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
+		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(getContainerId()).withAttachStdout(true).withAttachStderr(true)
 			.withUser("root")
 			.withPrivileged(true)
 			.withCmd(command).exec();
@@ -520,11 +520,8 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 
 		dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
 
-		final ExecResult result = new ExecResult(stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
-
-		logger().trace("stdout: " + result.getStdout());
-		logger().trace("stderr: " + result.getStderr());
-		return result;
+		logger().trace("stdout: " + stdoutConsumer.toString(outputCharset));
+		logger().trace("stderr: " + stderrConsumer.toString(outputCharset));
 	}
 
 	public MeshContainer login() {

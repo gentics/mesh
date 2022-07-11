@@ -45,6 +45,17 @@ public class UpdateFieldChangeImpl extends AbstractSchemaFieldChange implements 
 	}
 
 	@Override
+	public void setRestProperty(String key, Object value) {
+		// What a restriction removal request comes from the REST API,
+		// it gives null instead of an empty array, so the request 
+		// gets eventually lost. In this case we give the empty array back.
+		if (SchemaChangeModel.ALLOW_KEY.equals(key) && value == null) {
+			value = new String[0];
+		}
+		super.setRestProperty(key, value);
+	}
+
+	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 		FieldSchema fieldSchema = container.getField(getFieldName());
 

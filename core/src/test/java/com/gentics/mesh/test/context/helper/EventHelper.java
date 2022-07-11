@@ -2,6 +2,8 @@ package com.gentics.mesh.test.context.helper;
 
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -11,6 +13,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import com.gentics.elasticsearch.client.ElasticsearchClient;
+import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -27,6 +31,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 
 public interface EventHelper extends BaseHelper {
 
@@ -49,17 +54,39 @@ public interface EventHelper extends BaseHelper {
 	 * 
 	 * @param address
 	 * @param code
-	 * @throws TimeoutException
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
 	 */
 	default void waitForEvent(String address, Action code) {
 		waitForEvent(address, code, 10_000);
 	}
 
+	/**
+	 * Wait until the given event has been received.
+	 * 
+	 * @param event
+	 * @param timeoutMs
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
+	 */
 	default void waitForEvent(MeshEvent event, int timeoutMs) {
 		waitForEvent(event.getAddress(), () -> {
 		}, timeoutMs);
 	}
 
+	/**
+	 * Wait for the event to be fired. Because this method has to first add the event handler
+	 * (which is done after the code, which will fire the event has been executed)
+	 * it may be, that the expected event has already been fired. In this case
+	 * (or when the event is never fired), this method will wait for the timeout and then succeed.<br>
+	 * It is therefore recommended to refactor all tests, which currently use this method to use {@link #expectEvent(String, Action, int)}
+	 * instead.
+	 * 
+	 * @param address event address
+	 * @param code code that is executed when the event has been fired
+	 * @param timeoutMs timeout in milliseconds
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 */
 	default void waitForEvent(String address, Action code, int timeoutMs) {
 		CountDownLatch latch = new CountDownLatch(1);
 		MessageConsumer<Object> consumer = vertx().eventBus().consumer(address);
@@ -81,6 +108,54 @@ public interface EventHelper extends BaseHelper {
 			throw new RuntimeException(e);
 		}
 		consumer.unregister();
+	}
+
+	/**
+	 * Variant of {@link #expectEvent(String, Action, int)}
+	 * @param event mesh event
+	 * @param timeoutMs timeout in milliseconds
+	 * @return AutoClosable instance
+	 */
+	default ExpectedEvent expectEvent(MeshEvent event, int timeoutMs) {
+		return expectEvent(event.getAddress(), () -> {
+		}, timeoutMs);
+	}
+
+	/**
+	 * Create an {@link AutoCloseable} which will register an event handler for the event with given address (when created) and
+	 * will wait for the event to be fired (at least once) in {@link AutoCloseable#close()}.<br>
+	 * This method should be used like this:
+	 * <blockquote><pre>
+	 * try (ExpectEvent ee = expectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+	 * 	// code, which is expected to fire the event
+	 * 	...
+	 * }
+	 * </pre></blockquote>
+	 * @param address event address
+	 * @param code action code, which is executed when the event was fired
+	 * @param timeoutMs timeout in milliseconds
+	 * @return AutoClosable instance
+	 */
+	default ExpectedEvent expectEvent(String address, Action code, int timeoutMs) {
+		return new ExpectedEvent(vertx(), address, code, timeoutMs);
+	}
+
+	/**
+	 * Create an {@link AutoCloseable} which will register an event handler for the event (when created) and
+	 * will wait for the event to be fired in {@link AutoCloseable#close()}. If the event is fired, it will throw an Exception.<br>
+	 * This method should be used like this:
+	 * <blockquote><pre>
+	 * try (UnexpectedEvent ue = notExpectEvent(MeshEvent.PLUGIN_REGISTERED, 10_000)) {
+	 *   // code, which is expected to not fire the event
+	 *   ...
+	 * }
+	 * </pre></blockquote>
+	 * @param event event
+	 * @param timeoutMs timeout in milliseconds. The timeout should not be set too high, because successful test execution will be blocked for the length of the timeout.
+	 * @return AutoClosable instance
+	 */
+	default UnexpectedEvent notExpectEvent(MeshEvent event, int timeoutMs) {
+		return new UnexpectedEvent(vertx(), event.getAddress(), timeoutMs);
 	}
 
 	default void waitForSearchIdleEvent() {
@@ -120,7 +195,8 @@ public interface EventHelper extends BaseHelper {
 	 *
 	 * @param event
 	 * @param code
-	 * @throws TimeoutException
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
 	 */
 	default void waitForEvent(MeshEvent event, Action code) {
 		waitForEvent(event.address, code);
@@ -130,13 +206,18 @@ public interface EventHelper extends BaseHelper {
 	 * Wait until the given event has been received.
 	 *
 	 * @param event
-	 * @throws TimeoutException
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
 	 */
 	default void waitForEvent(MeshEvent event) {
 		waitForEvent(event.address, () -> {
 		});
 	}
 
+	/**
+	 * @deprecated use {@link #expectEvent(String, Action, int)} instead
+	 * @see {@link #waitForEvent(String, Action, int)}
+	 */
 	default void waitForPluginRegistration() {
 		waitForEvent(MeshEvent.PLUGIN_REGISTERED, 20_000);
 	}
@@ -173,6 +254,44 @@ public interface EventHelper extends BaseHelper {
 		action.run();
 		if (!isAdmin) {
 			revokeAdmin();
+		}
+	}
+
+	/**
+	 * Run the given action without admin permissions enabled.
+	 * 
+	 * @param action
+	 * @return result
+	 * @throws Exception
+	 */
+	default <T> T runAsNonAdmin(Supplier<T> action) {
+		boolean isAdmin = tx(() -> user().isAdmin());
+		// Revoke perms to check the job
+		if (isAdmin) {
+			revokeAdmin();
+		}
+		T t = action.get();
+		if (isAdmin) {
+			grantAdmin();
+		}
+		return t;
+	}
+
+	/**
+	 * Run the given action without admin permissions enabled.
+	 * 
+	 * @param action
+	 * @throws Exception
+	 */
+	default void runAsNonAdmin(Runnable action) {
+		boolean isAdmin = tx(() -> user().isAdmin());
+		// Revoke perms to check the job
+		if (isAdmin) {
+			revokeAdmin();
+		}
+		action.run();
+		if (isAdmin) {
+			grantAdmin();
 		}
 	}
 
@@ -396,4 +515,42 @@ public interface EventHelper extends BaseHelper {
 		eventAsserter().await();
 	}
 
+	default void assertDocumentExists(String indexName, String documentId) {
+		getProvider().getDocument(indexName, documentId).blockingGet();
+	}
+
+	default void assertDocumentDoesNotExist(String indexName, String documentId) {
+		try {
+			getProvider().getDocument(indexName, documentId).blockingGet();
+			fail("Fetching document " + documentId + " from index " + indexName + " is expected to fail");
+		} catch (Exception e) {
+			HttpErrorException error = (HttpErrorException) e.getCause();
+			assertEquals(404, error.getStatusCode());
+		}
+	}
+
+	default void syncIndex() throws TimeoutException {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_SYNC_FINISHED, 10_000)) {
+			SyncEventHandler.invokeSync(vertx(), null);
+		}
+		refreshIndices();
+	}
+
+	default void clearIndex() throws TimeoutException {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.INDEX_CLEAR_FINISHED, 10_000)) {
+			SyncEventHandler.invokeClear(vertx());
+		}
+	}
+
+	/**
+	 * Get the index mappings for the index with given name. Method will fail, if index does not exist
+	 * @param indexName elasticsearch index name (including prefix)
+	 * @return index mappings
+	 */
+	default JsonObject getIndexMappings(String indexName) {
+		ElasticsearchClient<JsonObject> client = searchProvider().getClient();
+		return client.readIndex(indexName).async().map(response -> {
+			return response.getJsonObject(indexName).getJsonObject("mappings");
+		}).blockingGet();
+	}
 }

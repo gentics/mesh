@@ -5,8 +5,10 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.job.JobStatus.RUNNING;
 
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -86,8 +88,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			// Get the containers, that need to be transformed
-			List<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> {
-				return fromVersion.getDraftFieldContainers(branch.getUuid()).list();
+			Queue<? extends NodeGraphFieldContainer> fieldContainersResult = db.tx(() -> {
+				return new ArrayDeque<>(fromVersion.getDraftFieldContainers(branch.getUuid()).list());
 			});
 
 			// No field containers, migration is done
@@ -203,7 +205,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 				VersionNumber nextDraftVersion = null;
 				// 1. Check whether there is any other published container which we need to handle separately
 				if (oldPublished != null && !oldPublished.equals(container)) {
-					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, container, fromVersion, toVersion, touchedFields);
+					nextDraftVersion = migratePublishedContainer(ac, batch, branch, node, oldPublished, fromVersion, toVersion, touchedFields);
 					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 

@@ -17,15 +17,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.handler.TypeConverter;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.*;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
@@ -38,15 +30,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.*;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -121,6 +105,9 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			case "binary":
 				field = new BinaryFieldSchemaImpl();
 				break;
+			case "s3binary":
+				field = new S3BinaryFieldSchemaImpl();
+				break;
 			case "list":
 				ListFieldSchema listField = new ListFieldSchemaImpl();
 				listField.setListType(getListType());
@@ -175,6 +162,8 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			return Collections.singletonMap(getFieldName(), changeToString(oldSchema, oldContent));
 		case "binary":
 			return Collections.singletonMap(getFieldName(), changeToBinary(oldSchema, oldContent));
+		case "s3binary":
+			return Collections.singletonMap(getFieldName(), changeToS3Binary(oldSchema, oldContent));
 		case "list":
 			return Collections.singletonMap(getFieldName(), changeToList(oldSchema, oldContent));
 		case "micronode":
@@ -269,6 +258,19 @@ public class FieldTypeChangeImpl extends AbstractSchemaFieldChange implements Fi
 			return oldContent.getFields().getBinaryField(fieldName);
 		default:
 			return null;
+		}
+	}
+
+	private S3BinaryField changeToS3Binary(FieldSchemaContainer oldSchema, FieldContainer oldContent) {
+		String fieldName = getFieldName();
+		FieldSchema fieldSchema = oldSchema.getField(fieldName);
+
+		String oldType = fieldSchema.getType();
+		switch (oldType) {
+			case "s3binary":
+				return oldContent.getFields().getS3BinaryField(fieldName);
+			default:
+				return null;
 		}
 	}
 

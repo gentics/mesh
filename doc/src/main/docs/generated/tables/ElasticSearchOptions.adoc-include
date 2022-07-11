@@ -62,6 +62,16 @@
 | boolean
 | If true, the content and metadata of binary fields will be included in the search index. Default: true
 
+| indexCheckInterval
+| false
+| integer
+| Set the interval of index checks in ms. Default: 60000
+
+| indexMappingCacheTimeout
+| false
+| integer
+| Set the timeout for the cache of index mappings in ms. Default: 3600000
+
 | mappingMode
 | false
 | string

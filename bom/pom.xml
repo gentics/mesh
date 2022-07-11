@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.6.11-SNAPSHOT</version>
+		<version>1.6.31-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -20,16 +20,16 @@
 		<graphql.version>10.0</graphql.version>
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
-		<spring.security.version>4.2.13.RELEASE</spring.security.version>
+		<spring.security.version>4.2.16.RELEASE</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.2.8</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
 		<jackson.version>2.9.9</jackson.version>
-		<jackson-databind.version>2.9.10</jackson-databind.version>
+		<jackson-databind.version>2.9.10.8</jackson-databind.version>
 		<netty.version>4.1.42.Final</netty.version>
 		<tika.version>1.26</tika.version>
-		<aws.sdk.version>2.1.0</aws.sdk.version>
+		<aws.sdk.version>2.16.83</aws.sdk.version>
 	</properties>
 
 	<dependencyManagement>
@@ -84,7 +84,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>25.0-jre</version>
+				<version>29.0-jre</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-cli</groupId>
@@ -99,12 +99,12 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.4</version>
+				<version>2.7</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.10</version>
+				<version>1.15</version>
 			</dependency>
 
 			<!-- HTTP Client -->
@@ -177,6 +177,12 @@
 				<artifactId>jackson-module-jsonSchema</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<!-- Default storage provider -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-service-aws-s3-storage</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- YAML -->
 			<dependency>
@@ -194,7 +200,7 @@
 			<dependency>
 				<groupId>com.hazelcast</groupId>
 				<artifactId>hazelcast-kubernetes</artifactId>
-				<version>1.2.2</version>
+				<version>1.5.6</version>
 			</dependency>
 
 			<!-- Test dependencies -->
@@ -533,7 +539,7 @@
 			<dependency>
 				<groupId>org.jsoup</groupId>
 				<artifactId>jsoup</artifactId>
-				<version>1.11.2</version>
+				<version>1.14.2</version>
 			</dependency>
 
 			<!-- GraphQL -->

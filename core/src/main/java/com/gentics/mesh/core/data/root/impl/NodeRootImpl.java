@@ -100,22 +100,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Stream<? extends Node> findAllStream(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
-		String branchUuid = ac.getBranch().getUuid();
 
 		return findAll(ac.getProject().getUuid())
-			.filter(item -> {
-				boolean hasRead = user.hasPermissionForId(item.getId(), READ_PERM);
-				if (hasRead) {
-					return true;
-				} else {
-					// Check whether the node is published. In this case we need to check the read publish perm.
-					boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
-					if (isPublishedForBranch) {
-						return user.hasPermissionForId(item.getId(), READ_PUBLISHED_PERM);
-					}
-				}
-				return false;
-			})
+			.filter(item -> user.hasPermissionForId(item.getId(), perm))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
@@ -342,17 +329,19 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
+	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
 			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		boolean permissionChanged = false;
 		if (recursive) {
 			for (Node node : findAll()) {
 				// We don't need to recursively handle the permissions for each node again since
 				// this call will already affect all nodes.
-				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
+				permissionChanged = node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
 
-		applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+		permissionChanged = applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		return permissionChanged;
 	}
 
 }

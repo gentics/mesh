@@ -808,4 +808,57 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		deleteRole(role.getUuid());
 		createProject("testProject");
 	}
+
+	/**
+	 * Test that the endpoints for /api/v[x]/projects is unaffected from deleting a project named "project"
+	 */
+	@Test
+	public void testDeleteProjectNamedProject() {
+		// create project named "project"
+		ProjectResponse project = createProject("project");
+
+		// get all projects
+		ProjectListResponse list = call(() -> client().findProjects());
+		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy", "project");
+
+		// delete project
+		deleteProject(project.getUuid());
+
+		// get the list of projects
+		list = call(() -> client().findProjects());
+		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy");
+	}
+
+	/**
+	 * Test renaming, deleting and re-creating a project (together with project name cache)
+	 */
+	@Test
+	public void testRenameDeleteCreateProject() {
+		// create project named "project"
+		ProjectResponse project = createProject("project");
+
+		// get tag families of project (this will put project into cache)
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// rename project to "newproject"
+		project = updateProject(project.getUuid(), "newproject");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// get tag families of newproject (this will put project into cache)
+		call(() -> client().findTagFamilies("newproject"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// delete "newproject"
+		deleteProject(project.getUuid());
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// create (again)
+		project = createProject("project");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// get tag families of project
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+	}
 }

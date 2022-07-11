@@ -8,10 +8,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.Lock;
+import io.vertx.reactivex.RxHelper;
 
 /**
  * Basic implementation for a job verticle. These kinds of verticles can be used to process specific tasks in a modular fashion. Jobs can be triggered via a
  * specified eventbus address. Each job action is executed synchronously thus a global lock needs to be acquired for each action.
+ * 
+ * Although the jobs are running in a worker pool thread, the verticle itself is not a worker verticle (any more), because if it were, this would cause eventbus messages,
+ * which are published during the job execution (e.g. "node.updated" during a node migration) to not call the handlers immediately (e.g. causing the updated node to be indexed in ES), but would cause
+ * all events to be stored in memory and published after the job execution. This causes both an increased memory consumption and delayed index synchronization.
  */
 public abstract class AbstractJobVerticle extends AbstractVerticle {
 
@@ -38,7 +43,14 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 
 	private void registerJobHandler() {
 		jobConsumer = vertx.eventBus().consumer(getJobAdress(), (message) -> {
-			invokeJobAction(message);
+			// execute blocking, because the verticle itself is not a worker verticle (any more)
+			vertx.executeBlocking(prom -> {
+				invokeJobAction(message);
+			}, rh -> {
+				if (rh.failed()) {
+					log.error(message);
+				}
+			});
 		});
 	}
 
@@ -106,7 +118,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 					}).doFinally(() -> {
 						log.debug("Releasing lock {" + lockName + "}");
 						lock.release();
-					}).subscribe(() -> {
+					}).subscribeOn(RxHelper.blockingScheduler(vertx)).subscribe(() -> {
 						log.debug("Action completed");
 					}, error -> {
 						log.error("Error while executing locked action", error);

@@ -22,6 +22,8 @@ public abstract class AbstractRestException extends RuntimeException {
 	protected String translatedMessage;
 	protected Map<String, Object> properties = new HashMap<>();
 
+	protected boolean logStackTrace = true;
+
 	public AbstractRestException() {
 	}
 
@@ -186,4 +188,21 @@ public abstract class AbstractRestException extends RuntimeException {
 		this.properties.put(key, value);
 	}
 
+	/**
+	 * Check whether the stack trace shall be logged in the failure handler
+	 * @return true to log the stack trace
+	 */
+	public boolean isLogStackTrace() {
+		return logStackTrace;
+	}
+
+	/**
+	 * Set flag to log the stack trace
+	 * @param logStackTrace flag
+	 * @return fluent API
+	 */
+	public AbstractRestException setLogStackTrace(boolean logStackTrace) {
+		this.logStackTrace = logStackTrace;
+		return this;
+	}
 }

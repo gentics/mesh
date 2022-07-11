@@ -4,8 +4,6 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
@@ -18,6 +16,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.generic.PermissionProperties;
 import com.gentics.mesh.core.data.generic.UserProperties;
+import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.endpoint.migration.branch.BranchMigrationHandler;
@@ -36,10 +35,14 @@ import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.dagger.module.MicrometerModule;
 import com.gentics.mesh.dagger.module.PluginModule;
 import com.gentics.mesh.dagger.module.SearchProviderModule;
+import com.gentics.mesh.dagger.module.SearchWaitUtilProviderModule;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.event.MeshEventSender;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
@@ -62,16 +65,18 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
 
 import dagger.BindsInstance;
 import dagger.Component;
 import io.vertx.core.Vertx;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
+@Component(modules = { MeshModule.class, PluginModule.class, SearchProviderModule.class, SearchWaitUtilProviderModule.class, BindModule.class, DebugInfoProviderModule.class, MicrometerModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();
@@ -86,6 +91,8 @@ public interface MeshComponent {
 
 	Provider<RouterStorage> routerStorageProvider();
 
+	S3BinaryStorage s3binaryStorage();
+	
 	BinaryStorage binaryStorage();
 
 	default TrackingSearchProvider trackingSearchProvider() {
@@ -165,6 +172,8 @@ public interface MeshComponent {
 	RouterStorageRegistry routerStorageRegistry();
 
 	Binaries binaries();
+	
+	S3Binaries s3binaries();
 
 	UserProperties userProperties();
 
@@ -177,6 +186,12 @@ public interface MeshComponent {
 	RoleCrudHandler roleCrudHandler();
 
 	BucketManager bucketManager();
+
+	MeshEventSender eventSender();
+
+	LivenessManager livenessManager();
+
+	EventBusLivenessManager eventbusLivenessManager();
 
 	@Component.Builder
 	interface Builder {

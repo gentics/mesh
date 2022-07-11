@@ -21,6 +21,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 import com.gentics.mesh.storage.LocalBinaryStorage;
+import com.gentics.mesh.storage.S3BinaryStorage;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.context.MeshTestContext;
 
@@ -117,6 +118,10 @@ public interface BaseHelper {
 
 	default LocalBinaryStorage localBinaryStorage() {
 		return mesh().localBinaryStorage();
+	}
+
+	default S3BinaryStorage s3BinaryStorage() {
+		return mesh().s3binaryStorage();
 	}
 
 	default MeshComponent meshDagger() {

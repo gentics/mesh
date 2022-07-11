@@ -21,22 +21,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.POJONode;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.node.field.*;
+import com.gentics.mesh.core.rest.node.field.impl.*;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
@@ -91,6 +77,8 @@ public class FieldMapImpl implements FieldMap {
 				return (T) transformStringFieldJsonNode(jsonNode, key);
 			case BINARY:
 				return (T) transformBinaryFieldJsonNode(jsonNode, key);
+			case S3BINARY:
+				return (T) transformS3BinaryFieldJsonNode(jsonNode, key);
 			case NUMBER:
 				return (T) transformNumberFieldJsonNode(jsonNode, key);
 			case BOOLEAN:
@@ -374,6 +362,14 @@ public class FieldMapImpl implements FieldMap {
 		return JsonUtil.getMapper().treeToValue(jsonNode, BinaryFieldImpl.class);
 	}
 
+	private S3BinaryField transformS3BinaryFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
+		// Unwrap stored pojos
+		if (jsonNode.isPojo()) {
+			return pojoNodeToValue(jsonNode, S3BinaryField.class, key);
+		}
+		return JsonUtil.getMapper().treeToValue(jsonNode, S3BinaryFieldImpl.class);
+	}
+
 	private StringField transformStringFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
@@ -454,6 +450,11 @@ public class FieldMapImpl implements FieldMap {
 	@Override
 	public BinaryField getBinaryField(String key) {
 		return getField(key, FieldTypes.BINARY);
+	}
+
+	@Override
+	public S3BinaryField getS3BinaryField(String key) {
+		return getField(key, FieldTypes.S3BINARY);
 	}
 
 	@Override

@@ -112,7 +112,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -125,7 +125,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 	}
 
 	private void addDeleteHandler() {

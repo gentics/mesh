@@ -92,6 +92,7 @@ public class FieldFilter extends MainFilter<GraphFieldContainer> {
 				node -> getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
 		// TODO correctly implement other types
 		case BINARY:
+		case S3BINARY:
 		case LIST:
 		case NODE:
 		case MICRONODE:

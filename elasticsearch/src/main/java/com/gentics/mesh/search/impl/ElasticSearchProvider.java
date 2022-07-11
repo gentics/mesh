@@ -5,31 +5,41 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isConflictError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isNotFoundError;
 import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isResourceAlreadyExistsError;
+import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.isTimeoutError;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
-import com.gentics.mesh.core.data.search.bulk.BulkEntry;
+import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
+import com.gentics.mesh.search.SearchMappingsCache;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import dagger.Lazy;
@@ -70,12 +80,15 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final ComplianceMode complianceMode;
 
+	private final Lazy<SearchMappingsCache> searchMappingsCache;
+
 	@Inject
-	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject> client) {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject> client, Lazy<SearchMappingsCache> searchMappingsCache) {
 		this.vertx = vertx;
 		this.options = options;
 		this.client = client;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
+		this.searchMappingsCache = searchMappingsCache;
 	}
 
 	/**
@@ -143,7 +156,18 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable clear() {
+	public Completable clear(String indexPattern) {
+		Pattern pattern = null;
+		if (indexPattern != null) {
+			indexPattern = StringUtils.removeStartIgnoreCase(indexPattern, options.getSearchOptions().getPrefix());
+			try {
+				pattern = Pattern.compile(indexPattern);
+			} catch (PatternSyntaxException e) {
+				log.warn("Index pattern {} is not valid, synchronizing all indices", e, indexPattern);
+			}
+		}
+		Optional<Pattern> optPattern = Optional.ofNullable(pattern);
+
 		String prefix = installationPrefix();
 		// Read all indices and locate indices which have been created for/by mesh.
 		Completable clearIndices = client.readIndex("_all").async()
@@ -163,6 +187,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 				}
 				return Observable.fromIterable(indices);
+			}).filter(index -> {
+				return optPattern.orElse(IndexHandler.MATCH_ALL).matcher(index).matches();
 			}).flatMapCompletable(index -> {
 				// Now delete the found indices
 				log.debug("Deleting index {" + index + "}");
@@ -367,23 +393,6 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable processBulkOld(List<? extends BulkEntry> entries) {
-		if (entries.isEmpty()) {
-			return Completable.complete();
-		}
-
-		String bulkData = entries.stream()
-			.map(e -> e.toBulkString(installationPrefix()))
-			.collect(Collectors.joining("\n")) + "\n";
-		if (log.isTraceEnabled()) {
-			log.trace("Using bulk payload:");
-			log.trace(bulkData);
-		}
-
-		return processBulk(bulkData);
-	}
-
-	@Override
 	public Completable storeDocument(String index, String uuid, JsonObject document) {
 		String fullIndex = installationPrefix() + index;
 		long start = System.currentTimeMillis();
@@ -412,9 +421,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				if (log.isDebugEnabled()) {
 					log.debug("Deleted index {" + indices + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
-			}).ignoreElement()
-			.onErrorResumeNext(ignore404)
-			.compose(withTimeoutAndLog("Deletion of indices " + indices, true));
+			}).ignoreElement();
+
+		if (!failOnMissingIndex) {
+			deleteIndex = deleteIndex.onErrorResumeNext(ignore404);
+		}
+		deleteIndex = deleteIndex.compose(withTimeoutAndLog("Deletion of indices " + indices, !failOnMissingIndex));
 
 		return deleteIndex;
 	}
@@ -468,13 +480,17 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public String getVersion() {
+	public String getVersion(boolean failIfNotAvailable) {
 		try {
 			JsonObject info = client.info().sync();
 			return info.getJsonObject("version").getString("number");
 		} catch (HttpErrorException e) {
 			log.error("Unable to fetch node information.", e);
-			throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
+			if (failIfNotAvailable) {
+				throw error(INTERNAL_SERVER_ERROR, "Error while fetching version info from elasticsearch.");
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -556,6 +572,153 @@ public class ElasticSearchProvider implements SearchProvider {
 	@Override
 	public boolean isActive() {
 		return client != null;
+	}
+
+	@Override
+	public Completable check(IndexInfo info) {
+		String indexName = installationPrefix() + info.getIndexName();
+
+		return client.readIndex(indexName).async().flatMapCompletable(response -> {
+			JsonObject existing = response.getJsonObject(indexName).getJsonObject("mappings");
+			cleanMappings(existing);
+
+			return getExpectedMapping(info).flatMapCompletable(expected -> {
+				// make a copy to not change the original expected (which is cached and will be used again)
+				expected = expected.copy();
+				cleanMappings(expected);
+
+				// merge the existing mapping into the expected mapping, because ES may have added things (dynamic mapping) when documents were stored
+				expected.mergeIn(existing, true);
+				if (expected.equals(existing)) {
+					log.debug(indexName + ": Mapping is ok");
+					return Completable.complete();
+				} else {
+					log.warn(indexName + ": Mapping is NOT OK. Index will be dropped and re-created.");
+					if (log.isDebugEnabled()) {
+						log.debug(indexName + ": Expected mapping " + expected + ", but found mapping " + existing);
+					}
+					// trigger resync for the index
+					return client.deleteIndex(indexName).async().ignoreElement().andThen(createIndex(info)).andThen(resync(info.getIndexName()));
+				}
+			});
+		}).onErrorResumeNext(error -> {
+			if (isNotFoundError(error)) {
+				return createIndex(info).andThen(resync(info.getIndexName()));
+			} else {
+				log.error("Error while checking index " + indexName, error);
+				return Completable.complete();
+			}
+		}).compose(withTimeoutAndLog("Check mappings of index {" + indexName + "}", false));
+	}
+
+	@Override
+	public Completable reIndex(String source, String dest, JsonObject query) {
+		String sourceIndexName = installationPrefix() + source;
+		String destIndexName = installationPrefix() + dest;
+
+		JsonObject reIndex = new JsonObject()
+				.put("source", new JsonObject().put("index", sourceIndexName).put("query", query))
+				.put("dest", new JsonObject().put("index", destIndexName));
+
+		// start the reindex operation, but do not wait for completion.
+		return client.postBuilder("_reindex", reIndex).addQueryParameter("wait_for_completion", "false").async()
+				.doOnSubscribe(ignore -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Start reindex of {} into {}", source, dest);
+					}
+				}).doOnSuccess(ignore -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Successfully started reindex {} into {}", source, dest);
+					}
+				}).map(response -> response.getString("task")).flatMapCompletable(task -> {
+					// now wait for completion (up to 10s), if this fails with a timeout error, retry.
+					return client.getBuilder("_tasks/" + task).addQueryParameter("wait_for_completion", "true")
+							.addQueryParameter("timeout", "10s").async().doOnSubscribe(ignore -> {
+								if (log.isDebugEnabled()) {
+									log.debug("Wait for completion of task {}", task);
+								}
+							}).doOnSuccess(ignore -> {
+								if (log.isDebugEnabled()) {
+									log.debug("Task {} completed", task);
+								}
+							}).retry((count, error) -> isTimeoutError(error)).ignoreElement();
+				});
+	}
+
+	/**
+	 * Initiate (but do not wait for end of) resync of the given index and complete
+	 * @param indexName index name (without the installation prefix)
+	 * @return completable
+	 */
+	protected Completable resync(String indexName) {
+		return Completable.fromAction(() -> {
+			SyncEventHandler.invokeSync(vertx.get(), indexName);
+		});
+	}
+
+	/**
+	 * Get the expected mapping for the index.
+	 * If the expected mapping is not found in the cache, it will be determined like this:
+	 * <ol>
+	 * <li>A temporary index with the settings and mappings is created</li>
+	 * <li>The mappings are read from ES for that temporary index</li>
+	 * <li>The temporary index is deleted</li>
+	 * </ol>
+	 * The reason for this is that ES will not store the index mapping exactly like the mapping was POSTed when creating the index.
+	 * @param info index info
+	 * @return single mappings as JsonObject
+	 */
+	protected Single<JsonObject> getExpectedMapping(IndexInfo info) {
+		String cacheKey = info.getIndexName();
+
+		JsonObject cachedMappings = searchMappingsCache.get().get(cacheKey);
+		if (cachedMappings != null) {
+			return Single.just(cachedMappings);
+		}
+
+		JsonObject json = createIndexSettings(info);
+
+		String randomName = installationPrefix() + info.getIndexName() + UUIDUtil.randomUUID();
+		String tempIndexName = randomName.toLowerCase();
+
+		return client.createIndex(tempIndexName, json).async()
+			.doOnSuccess(response -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Created temporary index {" + tempIndexName + "} response: {" + response.toString() + "}");
+				}
+			})
+			.doOnError(error -> {
+				log.error("Error getting index mapping for index " + cacheKey, error);
+			})
+			.flatMap(response -> client.readIndex(tempIndexName).async())
+			.flatMap(response -> {
+				JsonObject mappings = response.getJsonObject(tempIndexName).getJsonObject("mappings");
+				searchMappingsCache.get().put(cacheKey, mappings);
+				return client.deleteIndex(tempIndexName).async().ignoreElement()
+						.andThen(Single.just(mappings));
+			});
+	}
+
+	/**
+	 * Clean mappings, so that they can be compared
+	 * <ul>
+	 * <li>Remove entries completely that contain the attribute "dynamic": "true", because those mappings are likely to be changed by ES when documents are indexed (e.g. the attribute "type": "object" is removed from the mapping)</li>
+	 * </ul>
+	 * @param mapping mappings to be cleaned (will be modified)
+	 */
+	protected void cleanMappings(JsonObject mapping) {
+		Set<String> fieldNames = new HashSet<>(mapping.fieldNames());
+		for (String field : fieldNames) {
+			Object value = mapping.getValue(field);
+			if (value instanceof JsonObject) {
+				JsonObject object = (JsonObject) value;
+				if (Objects.equals(object.getValue("dynamic"), "true")) {
+					mapping.remove(field);
+				} else {
+					cleanMappings(object);
+				}
+			}
+		}
 	}
 
 	private String getType() {

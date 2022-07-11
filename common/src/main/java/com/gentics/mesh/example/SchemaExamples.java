@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import io.vertx.core.json.JsonObject;
 
 public class SchemaExamples extends AbstractExamples {
 
@@ -121,7 +122,7 @@ public class SchemaExamples extends AbstractExamples {
 	public SchemaChangesListModel getSchemaChangesListModel() {
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		// Add field
-		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("listFieldToBeAddedField", "list", "Field Label Value");
+		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("listFieldToBeAddedField", "list", "Field Label Value", new JsonObject().put("key", "value"));
 		addFieldChange.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
 		model.getChanges().add(addFieldChange);
 

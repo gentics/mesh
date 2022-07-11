@@ -36,4 +36,9 @@ public class HealthEndpointTest extends AbstractMeshTest {
 	public void testLivenessProbe() {
 		call(() -> client().live());
 	}
+
+	@Test
+	public void testWritableProbe() {
+		call(() -> client().writable());
+	}
 }

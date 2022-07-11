@@ -10,14 +10,24 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.madl.tx.TxAction;
@@ -36,6 +46,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.check.DiskQuotaChecker;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
@@ -99,6 +110,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String RIDBAG_PARAM_KEY = "ridBag.embeddedToSbtreeBonsaiThreshold";
 
+	private static final String DISK_QUOTA_CHECKER_THREAD_NAME = "mesh-disk-quota-checker";
+
 	private TypeResolver resolver;
 
 	private OrientStorage txProvider;
@@ -131,6 +144,36 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private WriteLock writeLock;
 
+	/**
+	 * Executor service for running the disk quota check
+	 */
+	private ScheduledExecutorService diskQuotaCheckerService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+		@Override
+		public Thread newThread(Runnable r) {
+			return new Thread(r, DISK_QUOTA_CHECKER_THREAD_NAME);
+		}
+	});
+
+	/**
+	 * scheduled disk quota check
+	 */
+	private ScheduledFuture<?> diskQuotaChecker;
+
+	/**
+	 * Local disk-quota-exceeded status (will be set to "true" if the local disk gets full)
+	 */
+	private boolean diskQuotaExceeded = false;
+
+	/**
+	 * Long Gauge Metric for the total disk space
+	 */
+	private AtomicLong totalDiskSpace;
+
+	/**
+	 * Long Gauge Metric for usable disk space
+	 */
+	private AtomicLong usableDiskSpace;
+
 	@Inject
 	public OrientDBDatabase(Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, MetricsService metrics, OrientDBTypeHandler typeHandler,
 		OrientDBIndexHandler indexHandler,
@@ -146,6 +189,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			topologyLockTimer = metrics.timer(TOPOLOGY_LOCK_WAITING_TIME);
 			topologyLockTimeoutCounter = metrics.counter(TOPOLOGY_LOCK_TIMEOUT_COUNT);
 			commitTimer = metrics.timer(COMMIT_TIME);
+			totalDiskSpace = metrics.longGauge(OrientDBStorageMetric.DISK_TOTAL);
+			usableDiskSpace = metrics.longGauge(OrientDBStorageMetric.DISK_USABLE);
 		}
 		this.typeHandler = typeHandler;
 		this.indexHandler = indexHandler;
@@ -204,6 +249,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (storageOptions.getTxCommitTimeout() != 0) {
 			startTxCleanupTask();
 		}
+
+		startDiskQuotaChecker();
 	}
 
 	/**
@@ -258,6 +305,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	@Override
 	public void setupConnectionPool() throws Exception {
+		startDiskQuotaChecker();
 		Orient.instance().startup();
 		// The mesh shutdown hook manages OrientDB shutdown.
 		// We need to manage this ourself since hazelcast is otherwise shutdown before closing vert.x
@@ -286,6 +334,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void shutdown() {
+		stopDiskQuotaChecker();
 		Orient.instance().shutdown();
 	}
 
@@ -443,6 +492,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		T handlerResult = null;
 		boolean handlerFinished = false;
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
+		Throwable cause = null;
 		for (int retry = 0; retry < maxRetry; retry++) {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
@@ -452,11 +502,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerFinished = true;
 				tx.success();
 			} catch (OSchemaException e) {
+				cause = e;
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (InterruptedException | ONeedRetryException | FastNoSuchElementException e) {
+				cause = e;
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
@@ -500,7 +552,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				return handlerResult;
 			}
 		}
-		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
+		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded", cause);
 	}
 
 	private void checkStatus() {
@@ -659,6 +711,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 				newCfg.getDocument().setProperty("readQuorum", newReadQuorum);
 			}
 
+			// force hazelcast plugin to increase version of the distributed configuration.
+			// This is needed because if there are changes only in document properties (e.g. writeQuorum or readQuorum)
+			// the plugin won't detect them
+			// see https://github.com/orientechnologies/orientdb/blob/3.1.x/distributed/src/main/java/com/orientechnologies/orient/server/distributed/impl/ODistributedAbstractPlugin.java#L441
+			newCfg.override(newCfg.getDocument());
 			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
@@ -687,4 +744,72 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return writeLock;
 	}
 
+	@Override
+	public boolean isReadOnly(boolean logError) {
+		if (diskQuotaExceeded) {
+			if (logError) {
+				log.error("Local instance is read-only due to limited disk space.");
+			} else {
+				log.warn("Local instance is read-only due to limited disk space.");
+			}
+			return true;
+		} else {
+			Optional<String> readOnlyInstance = clusterManager.getInstanceDiskQuotaExceeded();
+			if (readOnlyInstance.isPresent()) {
+				if (logError) {
+					log.error("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
+				} else {
+					log.warn("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
+				}
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * Start the disk quota checker, if configured to do so and not started before
+	 */
+	private void startDiskQuotaChecker() {
+		if (diskQuotaChecker == null && options.getStorageOptions() != null
+				&& options.getStorageOptions().getDirectory() != null
+				&& options.getStorageOptions().getDiskQuotaOptions().getCheckInterval() > 0) {
+			if (log.isDebugEnabled()) {
+				log.debug("Starting disk quota checker");
+			}
+			diskQuotaChecker = diskQuotaCheckerService.scheduleAtFixedRate(
+					new DiskQuotaChecker(new File(options.getStorageOptions().getDirectory()),
+							options.getStorageOptions().getDiskQuotaOptions(), this::setDiskQuotaExceededStatus),
+					0, options.getStorageOptions().getDiskQuotaOptions().getCheckInterval(), TimeUnit.MILLISECONDS);
+		}
+	}
+
+	/**
+	 * Set the disk-quota-exceeded status locally and in the cluster (if clustering is enabled)
+	 * @param result result of the disk quota checker as triple of disk-quota-exceeded status, total space and usable space
+	 */
+	private void setDiskQuotaExceededStatus(Triple<Boolean, Long, Long> result) {
+		this.diskQuotaExceeded = result.getLeft();
+		this.clusterManager.setLocalMemberDiskQuotaExceeded(diskQuotaExceeded);
+		if (this.totalDiskSpace != null) {
+			this.totalDiskSpace.set(result.getMiddle());
+		}
+		if (this.usableDiskSpace != null) {
+			this.usableDiskSpace.set(result.getRight());
+		}
+	}
+
+	/**
+	 * Stop the disk quota checker (if started before)
+	 */
+	private void stopDiskQuotaChecker() {
+		if (diskQuotaChecker != null) {
+			if (log.isDebugEnabled()) {
+				log.debug("Stopping disk quota checker");
+			}
+			diskQuotaChecker.cancel(true);
+			diskQuotaChecker = null;
+		}
+	}
 }

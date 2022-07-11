@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLEAR_CACHES;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
 import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
@@ -29,6 +30,7 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -91,10 +93,12 @@ public class AdminHandler extends AbstractHandler {
 
 	private final ConsistencyCheckHandler consistencyCheckHandler;
 
+	private final CacheRegistry cacheRegistry;
+
 	@Inject
 	public AdminHandler(Vertx vertx, Database db, RouterStorage routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,
-		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock writeLock, ConsistencyCheckHandler consistencyCheckHandler) {
+		MeshOptions options, RouterStorageRegistry routerStorageRegistry, Coordinator coordinator, WriteLock writeLock, ConsistencyCheckHandler consistencyCheckHandler, CacheRegistry cacheRegistry) {
 		this.vertx = vertx;
 		this.db = db;
 		this.routerStorage = routerStorage;
@@ -106,6 +110,7 @@ public class AdminHandler extends AbstractHandler {
 		this.coordinator = coordinator;
 		this.writeLock = writeLock;
 		this.consistencyCheckHandler = consistencyCheckHandler;
+		this.cacheRegistry = cacheRegistry;
 	}
 
 	public void handleMeshStatus(InternalActionContext ac) {
@@ -305,7 +310,7 @@ public class AdminHandler extends AbstractHandler {
 			info.setDatabaseVendor(db.getVendorName());
 			info.setSearchVendor(searchProvider.getVendorName());
 			info.setDatabaseVersion(db.getVersion());
-			info.setSearchVersion(searchProvider.getVersion());
+			info.setSearchVersion(searchProvider.getVersion(false));
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setVertxVersion(VersionCommand.getVersion());
 			info.setDatabaseRevision(db.getDatabaseRevision());
@@ -409,5 +414,23 @@ public class AdminHandler extends AbstractHandler {
 				return coordinator.loadConfig();
 			}, model -> ac.send(model, OK));
 		}
+	}
+
+	/**
+	 * Clear all internal caches locally and trigger an event to clear the caches cluster wide.
+	 * @param ac
+	 */
+	public void handleCacheClear(InternalActionContext ac) {
+		utils.syncTx(ac, tx -> {
+			User user = ac.getUser();
+			if (user != null && !user.isAdmin()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+
+			cacheRegistry.clear();
+			vertx.eventBus().publish(CLEAR_CACHES.address, null);
+
+			return message(ac, "cache_clear_invoked");
+		}, model -> ac.send(model, OK));
 	}
 }

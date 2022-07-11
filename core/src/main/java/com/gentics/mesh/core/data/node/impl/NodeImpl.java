@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -82,6 +83,7 @@ import com.gentics.mesh.core.data.impl.TagEdgeImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -278,31 +280,40 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			Collections.reverse(segments);
 
 			// Finally construct the path from all segments
-			StringBuilder builder = new StringBuilder();
-
-			// Append the prefix first
-			Branch branch = getProject().getBranchRoot().findByUuid(branchUuid);
-			if (branch != null) {
-				String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
-				if (!prefix.isEmpty()) {
-					String[] prefixSegments = prefix.split("/");
-					for (String prefixSegment : prefixSegments) {
-						if (prefixSegment.isEmpty()) {
-							continue;
-						}
-						builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
-					}
+			return getWithSanitizedPathPrefix(branchUuid, builder -> {
+				Iterator<String> it = segments.iterator();
+				while (it.hasNext()) {
+					String currentSegment = it.next();
+					builder.append("/").append(URIUtils.encodeSegment(currentSegment));
 				}
-			}
-
-			Iterator<String> it = segments.iterator();
-			while (it.hasNext()) {
-				String currentSegment = it.next();
-				builder.append("/").append(URIUtils.encodeSegment(currentSegment));
-			}
-			return builder.toString();
+			});
 		});
 
+	}
+
+	/**
+	 * Get the Path, which is appended by the given pathBuilder optionally prepended with the pathPrefix of the branch
+	 * @param branchUuid branch UUID
+	 * @param pathBuilder consumer, which will get a stringbuilder and should append the path
+	 * @return complete path
+	 */
+	protected String getWithSanitizedPathPrefix(String branchUuid, Consumer<StringBuilder> pathBuilder) {
+		StringBuilder builder = new StringBuilder();
+		Branch branch = getProject().getBranchRoot().findByUuid(branchUuid);
+		if (branch != null) {
+			String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
+			if (!prefix.isEmpty()) {
+				String[] prefixSegments = prefix.split("/");
+				for (String prefixSegment : prefixSegments) {
+					if (prefixSegment.isEmpty()) {
+						continue;
+					}
+					builder.append("/").append(URIUtils.encodeSegment(prefixSegment));
+				}
+			}
+		}
+		pathBuilder.accept(builder);
+		return builder.toString();
 	}
 
 	/**
@@ -318,6 +329,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.flatMap(language -> Optional.ofNullable(getGraphFieldContainer(language, branchUuid, type)).map(Stream::of).orElseGet(Stream::empty))
 			.flatMap(NodeGraphFieldContainer::getUrlFieldValues)
 			.findFirst()
+			.map(path -> getWithSanitizedPathPrefix(branchUuid, builder -> builder.append(path)))
 			.orElse(null);
 	}
 
@@ -564,13 +576,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<Node> getChildrenStream(InternalActionContext ac) {
+	public Stream<Node> getChildrenStream(InternalActionContext ac, GraphPermission perm) {
 		MeshAuthUser user = ac.getUser();
 		return toStream(getUnframedChildren(ac.getBranch().getUuid()))
-			.filter(node -> {
-				Object id = node.getId();
-				return user.hasPermissionForId(id, READ_PERM) || user.hasPermissionForId(id, READ_PUBLISHED_PERM);
-			}).map(node -> graph.frameElementExplicit(node, NodeImpl.class));
+			.filter(node -> user.hasPermissionForId(node.getId(), perm))
+			.map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}
 
 	@Override
@@ -995,8 +1005,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				throw error(BAD_REQUEST, "navigation_error_no_container");
 			}
+			List<String> languageList = ac.getNodeParameters().getLanguageList(options());
+
 			String etagKey = buildNavigationEtagKey(ac, this, parameters.getMaxDepth(), 0, ac.getBranch(getProject()).getUuid(), forVersion(ac
-				.getVersioningParameters().getVersion()));
+				.getVersioningParameters().getVersion()), languageList);
 			String etag = ETag.hash(etagKey);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {
@@ -1004,7 +1016,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				NavigationResponse response = new NavigationResponse();
 				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getBranch(getProject()).getUuid(),
-					forVersion(ac.getVersioningParameters().getVersion()));
+					forVersion(ac.getVersioningParameters().getVersion()), languageList);
 			}
 		});
 	}
@@ -1036,14 +1048,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @param branchUuid
 	 *            Branch uuid used to extract selected tree structure
 	 * @param type
+	 * @param languages list of languages
 	 * @return
 	 */
-	private String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String branchUuid, ContainerType type) {
+	private String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String branchUuid, ContainerType type, List<String> languages) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
@@ -1052,9 +1065,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		for (Node child : nodes) {
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
-				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type, languages));
 			} else if (parameters.isIncludeAll()) {
-				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type));
+				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level, branchUuid, type, languages));
 			}
 		}
 		return builder.toString();
@@ -1079,11 +1092,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            Branch uuid to be used for loading children of nodes
 	 * @param type
 	 *            container type to be used for transformation
+	 * @param languages languages
 	 * @return
 	 */
 	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
-		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type) {
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, null, type).collect(Collectors.toList());
+		NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type, List<String> languages) {
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
 		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		obsResponses.add(node.transformToRest(ac, 0).map(response -> {
@@ -1111,7 +1125,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					currentElement.setChildren(new ArrayList<>());
 				}
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, branchUuid, type));
+				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level + 1, navigation, childElement, branchUuid, type, languages));
 			} else if (parameters.isIncludeAll()) {
 				// We found at least one child so lets create the array
 				if (currentElement.getChildren() == null) {
@@ -1119,7 +1133,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				}
 				NavigationElement childElement = new NavigationElement();
 				currentElement.getChildren().add(childElement);
-				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, branchUuid, type));
+				obsResponses.add(buildNavigationResponse(ac, child, maxDepth, level, navigation, childElement, branchUuid, type, languages));
 			}
 		}
 		List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
@@ -1596,15 +1610,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 		Set<GraphPermission> permissionsToRevoke) {
+		boolean permissionChanged = false;
 		if (recursive) {
 			// We don't need to filter by branch. Branch nodes can't have dedicated perms
 			for (Node child : getChildren()) {
-				child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+				permissionChanged = child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		return permissionChanged;
 	}
 
 	@Override
@@ -1958,6 +1974,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
 					return new PathSegment(container, binaryField, container.getLanguageTag(), segment);
+				}
+			}
+			// No luck yet - lets check whether a S3 binary field matches the segmentField
+			S3BinaryGraphField s3Binary = container.getS3Binary(segmentFieldName);
+			if (s3Binary == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
+			} else {
+				String s3binaryFilename = s3Binary.getS3Binary().getFileName();
+				if (segment.equals(s3binaryFilename)) {
+					return new PathSegment(container, s3Binary, container.getLanguageTag(), segment);
 				}
 			}
 		}

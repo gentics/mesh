@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jre-11.0.5_10
+FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.12_7
 
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
@@ -25,6 +25,7 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
     chmod 770 /mesh -R
+ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
 
 USER mesh
@@ -37,4 +38,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+CMD [ "java", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]

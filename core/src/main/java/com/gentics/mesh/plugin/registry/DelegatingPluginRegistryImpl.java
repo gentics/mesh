@@ -136,7 +136,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 			} else {
 				log.error("Plugin init and register failed for plugin {" + id + "}", err);
 			}
-			manager.get().setStatus(id, FAILED);
+			manager.get().setPluginFailed(id);
 			eb.publish(MeshEvent.PLUGIN_DEPLOY_FAILED.getAddress(), payload);
 		});
 
@@ -145,7 +145,9 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 	private Completable registerAndInitializePlugin(MeshPlugin plugin) {
 		long timeout = getPluginTimeout().getSeconds();
 		String id = plugin.id();
-		return plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnComplete(() -> {
+		return plugin.initialize().timeout(timeout, TimeUnit.SECONDS).doOnSubscribe(ignore -> {
+			log.trace("Start initialization of plugin {}", id);
+		}).doOnComplete(() -> {
 			manager.get().setStatus(id, INITIALIZED);
 			log.debug("Plugin initialization of plugin {} completed", id);
 		}).andThen(register(plugin).doOnComplete(() -> {

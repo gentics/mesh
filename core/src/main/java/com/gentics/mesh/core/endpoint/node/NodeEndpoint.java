@@ -21,16 +21,7 @@ import org.raml.model.Resource;
 
 import javax.inject.Inject;
 
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
-import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.*;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
@@ -59,18 +50,25 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private BinaryDownloadHandler binaryDownloadHandler;
 
+	private S3BinaryUploadHandlerImpl s3binaryUploadHandler;
+
+	private S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
+
 	public NodeEndpoint() {
 		super("nodes", null, null);
 	}
 
 	@Inject
 	public NodeEndpoint(MeshAuthChain chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
-		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler) {
+		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler,
+						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler) {
 		super("nodes", chain, boot);
 		this.crudHandler = crudHandler;
 		this.binaryUploadHandler = binaryUploadHandler;
 		this.binaryTransformHandler = binaryTransformHandler;
 		this.binaryDownloadHandler = binaryDownloadHandler;
+		this.s3binaryUploadHandler = s3binaryUploadHandler;
+		this.s3BinaryMetadataExtractionHandler = s3BinaryMetadataExtractionHandler;
 	}
 
 	@Override
@@ -95,6 +93,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTagsHandler();
 		addMoveHandler();
 		addBinaryHandlers();
+		addS3BinaryHandlers();
 		addLanguageHandlers();
 		addNavigationHandlers();
 		addPublishHandlers();
@@ -124,7 +123,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleNavigation(ac, uuid);
-		});
+		}, false);
 	}
 
 	private void addVersioningHandlers() {
@@ -141,7 +140,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleListVersions(ac, uuid);
-		});
+		}, false);
 	}
 
 	private void addLanguageHandlers() {
@@ -198,7 +197,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		imageTransform.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryTransformHandler.handleTransformImage(rc, uuid, fieldName);
+			binaryTransformHandler.handle(rc, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldGet = createRoute();
@@ -214,8 +213,46 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
+		}, false);
+
+	}
+
+	private void addS3BinaryHandlers() {
+		InternalEndpointRoute fieldUpdate = createRoute();
+		fieldUpdate.path("/:nodeUuid/s3binary/:fieldName");
+		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.method(POST);
+		fieldUpdate.produces(APPLICATION_JSON);
+		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldUpdate.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldUpdate.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldUpdate.description("Create the s3 binaryfield with the given name.");
+		fieldUpdate.events(NODE_UPDATED, S3BINARY_CREATED);
+		fieldUpdate.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = wrap(rc);
+			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName);
 		});
 
+		InternalEndpointRoute fieldMetadataExtraction = createRoute();
+		fieldMetadataExtraction.path("/:nodeUuid/s3binary/:fieldName/parseMetadata");
+		fieldMetadataExtraction.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldMetadataExtraction.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldMetadataExtraction.method(POST);
+		fieldMetadataExtraction.produces(APPLICATION_JSON);
+		fieldMetadataExtraction.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());
+		fieldMetadataExtraction.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "The response contains the updated node.");
+		fieldMetadataExtraction.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldMetadataExtraction.description("Parse metadata of s3 binaryfield with the given name.");
+		fieldMetadataExtraction.events(S3BINARY_METADATA_EXTRACTED);
+		fieldMetadataExtraction.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = wrap(rc);
+			s3BinaryMetadataExtractionHandler.handleMetadataExtraction(ac, uuid, fieldName);
+		});
 	}
 
 	private void addMoveHandler() {
@@ -255,7 +292,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.handleReadChildren(ac, uuid);
-		});
+		}, false);
 	}
 
 	// TODO filtering, sorting
@@ -274,7 +311,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("nodeUuid");
 			crudHandler.readTags(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute bulkUpdate = createRoute();
 		bulkUpdate.path("/:nodeUuid/tags");
@@ -368,7 +405,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 				InternalActionContext ac = wrap(rc);
 				crudHandler.handleRead(ac, uuid);
 			}
-		});
+		}, false);
 
 		InternalEndpointRoute readAll = createRoute();
 		readAll.path("/");
@@ -384,7 +421,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleReadList(ac);
-		});
+		}, false);
 
 	}
 
@@ -446,7 +483,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handleGetPublishStatus(ac, uuid);
-		});
+		}, false);
 
 		InternalEndpointRoute putEndpoint = createRoute();
 		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
@@ -496,7 +533,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String lang = rc.request().getParam("language");
 			crudHandler.handleGetPublishStatus(ac, uuid, lang);
-		});
+		}, false);
 
 		InternalEndpointRoute putLanguageRoute = createRoute();
 		putLanguageRoute.path("/:nodeUuid/languages/:language/published").method(POST).produces(APPLICATION_JSON);
