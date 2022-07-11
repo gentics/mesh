@@ -6,7 +6,7 @@ include::content/docs/variables.adoc-include[]
 
 == Basics
 
-CAUTION: This section is irrelevant, if link:content/premium-features/sql-db/documentation/[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation, as well as the clustering documentation for the chosen RDBMS.
+CAUTION: This section is irrelevant, if link:/premium-features/sql-db/#docs[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation, as well as the clustering documentation for the chosen RDBMS.
 
 It is possible to run Gentics Mesh in a cluster mode. 
 When done so all changes to your data with one exception are automatically being distributed to other instances. 
