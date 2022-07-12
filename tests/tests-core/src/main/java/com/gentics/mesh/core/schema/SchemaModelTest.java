@@ -264,6 +264,17 @@ public class SchemaModelTest {
 		expectErrorOnValidate(schema, "schema_error_duplicate_field_name", "name");
 	}
 
+	@Test
+	public void testCaseSensitivityDuplicateSchemaName() {
+		SchemaModel schema = new SchemaModelImpl();
+		schema.setName("test");
+		schema.setSegmentField("name");
+		schema.setDisplayField("name");
+		schema.addField(FieldUtil.createStringFieldSchema("name"));
+		schema.addField(FieldUtil.createStringFieldSchema("Name"));
+		schema.validate();
+	}
+
 	/**
 	 * The display field must always point to a string field.
 	 */
