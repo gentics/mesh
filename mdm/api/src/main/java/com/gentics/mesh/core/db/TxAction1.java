@@ -16,8 +16,16 @@
 package com.gentics.mesh.core.db;
 
 @FunctionalInterface
-public interface TxAction1<T> {
+public interface TxAction1<T> extends Supplier<T> {
 
     T handle() throws Exception;
 
+    @Override
+    default T get() {
+    	try {
+			return handle();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+    }
 }

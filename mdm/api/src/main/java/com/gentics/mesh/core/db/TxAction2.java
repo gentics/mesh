@@ -15,9 +15,19 @@
  */
 package com.gentics.mesh.core.db;
 
+import java.util.function.Consumer;
+
 @FunctionalInterface
-public interface TxAction2 {
+public interface TxAction2 extends Consumer<Tx> {
 
     void handle(Tx tx) throws Exception;
 
+    @Override
+    default void accept(Tx tx) {
+    	try {
+			handle(tx);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+    }
 }
