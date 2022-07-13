@@ -90,7 +90,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 	}
 
 	/**
-	 * Acquire a cluster wide exclusive lock. By default the method will try to acquire the lock within 10s. The errorAction is invoked if the lock could not be
+	 * Acquire a cluster wide exclusive lock. By default the method will try to acquire the lock within 1s. The errorAction is invoked if the lock could not be
 	 * acquired by then.
 	 * 
 	 * @param action

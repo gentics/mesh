@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -404,6 +405,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		eventbusLiveness.startRegularChecks();
+		MeshEvent.triggerJobWorker(mesh);
 	}
 
 	/**

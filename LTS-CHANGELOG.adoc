@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.31]]
+== 1.6.31 (TBD)
+
+icon:check[] Core: Mesh will now trigger job executions on startup.
+
 [[v1.6.30]]
 == 1.6.30 (06.07.2022)
 
