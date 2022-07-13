@@ -272,7 +272,7 @@ public class SchemaModelTest {
 		schema.setDisplayField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.addField(FieldUtil.createStringFieldSchema("Name"));
-		schema.validate();
+		expectErrorOnValidate(schema, "schema_error_duplicate_field_name", "Name");
 	}
 
 	/**
