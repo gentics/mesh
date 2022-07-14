@@ -405,7 +405,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		eventbusLiveness.startRegularChecks();
-		MeshEvent.triggerJobWorker(mesh);
+		db.clusterManager().waitUntilWriteQuorumReached().andThen(Completable.fromAction(() -> MeshEvent.triggerJobWorker(mesh))).subscribe();
 	}
 
 	/**
