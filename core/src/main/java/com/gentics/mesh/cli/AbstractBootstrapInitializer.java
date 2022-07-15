@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.rest.MeshEvent;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -410,6 +411,11 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		}
 
 		eventbusLiveness.startRegularChecks();
+		db.clusterManager().waitUntilWriteQuorumReached().andThen(Completable.fromAction(() -> {
+			if (!isClustered || coordinatorMasterElector.isMaster()) {
+				MeshEvent.triggerJobWorker(mesh);
+			}
+		})).subscribe();
 	}
 
 	/**
