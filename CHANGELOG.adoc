@@ -31,6 +31,8 @@ icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` ca
 
 icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
 
+icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
+
 [[v1.8.6]]
 == 1.8.6 (06.07.2022)
 
