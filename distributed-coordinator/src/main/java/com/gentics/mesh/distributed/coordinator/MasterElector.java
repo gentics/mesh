@@ -8,6 +8,8 @@ import java.util.regex.PatternSyntaxException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
@@ -28,6 +30,7 @@ import com.hazelcast.core.MessageListener;
 import com.hazelcast.util.function.Consumer;
 
 import dagger.Lazy;
+import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -57,6 +60,7 @@ public class MasterElector {
 	private final ClusterOptions clusterOptions;
 
 	private final Database database;
+	private final Mesh mesh;
 
 	private final Lazy<HazelcastInstance> hazelcast;
 
@@ -71,11 +75,12 @@ public class MasterElector {
 	private boolean merging = false;
 
 	@Inject
-	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options, Database database) {
+	public MasterElector(Lazy<HazelcastInstance> hazelcast, MeshOptions options, Database database, Mesh mesh) {
 		this.hazelcast = hazelcast;
 		this.options = options;
 		this.clusterOptions = options.getClusterOptions();
 		this.database = database;
+		this.mesh = mesh;
 
 		// Setup regex for master election
 		String regexStr = clusterOptions.getCoordinatorRegex();
@@ -106,7 +111,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the instance that runs this code is the elected master.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isMaster() {
@@ -132,6 +137,17 @@ public class MasterElector {
 	}
 
 	/**
+	 * Acquire the master flag and trigger job worker
+	 */
+	private void acquireMasterFlag() {
+		localMember().setBooleanAttribute(MASTER, true);
+		log.info("Cluster node was elected as new master");
+		database.clusterManager().waitUntilWriteQuorumReached().andThen(Completable.fromAction(() -> {
+			MeshEvent.triggerJobWorker(mesh);
+		})).subscribe();
+	}
+
+	/**
 	 * Each instance in the cluster will call the elect master method when the structure of the cluster changes. The master election runs in a locked manner and
 	 * is terminated as soon as one node in the cluster got elected.
 	 * 
@@ -153,8 +169,7 @@ public class MasterElector {
 				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
 					database.setToMaster();
 				}
-				localMember().setBooleanAttribute(MASTER, true);
-				log.info("Cluster node was elected as new master");
+				acquireMasterFlag();
 			} else if (cluster.getMembers().stream()
 				.filter(m -> isMaster(m))
 				.count() > 1) {
@@ -170,7 +185,7 @@ public class MasterElector {
 	/**
 	 * Check whether the member is allowed to be elected as master
 	 * 
-	 * @param m
+	 * @param member
 	 * @return
 	 */
 	private boolean isElectable(Member member) {
@@ -260,8 +275,7 @@ public class MasterElector {
 				if (clusterOptions.getCoordinatorTopology() == CoordinationTopology.MASTER_REPLICA) {
 					database.setToMaster();
 				}
-				Member localMember = localMember();
-				localMember.setBooleanAttribute(MASTER, true);
+				acquireMasterFlag();
 			});
 		};
 
@@ -307,7 +321,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the given instance is the local instance.
-	 * 
+	 *
 	 * @param member
 	 * @return
 	 */
@@ -317,7 +331,7 @@ public class MasterElector {
 
 	/**
 	 * Return the hazelcast member for this instance.
-	 * 
+	 *
 	 * @return
 	 */
 	public Member localMember() {
