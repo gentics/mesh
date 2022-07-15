@@ -20,7 +20,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.31]]
 == 1.6.31 (TBD)
 
-icon:check[] Core: Mesh will now trigger job executions on startup.
+icon:check[] Core: Mesh will now trigger job executions on startup or when a new master is elected.
 
 [[v1.6.30]]
 == 1.6.30 (06.07.2022)
