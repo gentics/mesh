@@ -47,6 +47,13 @@ public interface ClusterManager {
 	Completable waitUntilWriteQuorumReached();
 
 	/**
+	 * Returns a completable which will complete once the local node is online and fully usable.
+	 * 
+	 * @return
+	 */
+	Completable waitUntilLocalNodeOnline();
+
+	/**
 	 * Checks if the cluster storage is locked cluster-wide.
 	 * 
 	 * @return
