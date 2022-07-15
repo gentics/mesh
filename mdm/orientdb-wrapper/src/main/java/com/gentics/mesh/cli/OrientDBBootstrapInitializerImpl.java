@@ -298,7 +298,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		}
 
 		// wait for writeQuorum, then raise a global lock and execute changelog
-		db.clusterManager().waitUntilWriteQuorumReached()
+		db.clusterManager().waitUntilDistributedDatabaseReady()
 				.andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY, "executing changelog", executeChangelog(flags, configuration), 60 * 1000)).subscribe();
 	}
 

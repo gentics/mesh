@@ -181,7 +181,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 
 	private Completable optionalDatabaseReadyCheck() {
 		if (options.getClusterOptions().isEnabled()) {
-			return db.clusterManager().waitUntilWriteQuorumReached().andThen(db.clusterManager().waitUntilLocalNodeOnline());
+			return db.clusterManager().waitUntilDistributedDatabaseReady();
 		} else {
 			return Completable.complete();
 		}

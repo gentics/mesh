@@ -72,4 +72,13 @@ public interface ClusterManager {
 	 * @return
 	 */
 	boolean isWriteQuorumReached();
+
+	/**
+	 * Returns a completable which will complete once the database is ready for serving requests.
+	 * 
+	 * @return
+	 */
+	default Completable waitUntilDistributedDatabaseReady() {
+		return waitUntilWriteQuorumReached().andThen(waitUntilLocalNodeOnline());
+	}
 }
