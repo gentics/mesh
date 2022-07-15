@@ -27,7 +27,7 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: Possible errors during node migrations in branches have been fixed.
 
-icon:check[] Core: Mesh will now trigger job executions on startup.
+icon:check[] Core: Mesh will now trigger job executions on startup or when a new master is elected.
 
 [[v1.8.6]]
 == 1.8.6 (06.07.2022)
