@@ -405,11 +405,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		eventbusLiveness.startRegularChecks();
-		db.clusterManager().waitUntilWriteQuorumReached().andThen(Completable.fromAction(() -> {
-			if (!isClustered || coordinatorMasterElector.isMaster()) {
-				MeshEvent.triggerJobWorker(mesh);
-			}
-		})).subscribe();
+		if (!isClustered) {
+			// It is safe to trigger the job worker, since we don't need to wait for a quorum and we are the only writer.
+			// If mesh is clustered, the job worker will be triggered by the MasterElector on master election.
+			MeshEvent.triggerJobWorker(mesh);
+		}
 	}
 
 	/**
