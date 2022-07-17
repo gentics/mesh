@@ -21,6 +21,8 @@ public class MeshRestClientConfig {
 	private final byte[] clientCert;
 	private final byte[] clientKey;
 	private final boolean hostnameVerification;
+	private final int maxRetries;
+	private final int retryDelayMs;
 
 	public MeshRestClientConfig(Builder builder) {
 		this.host = Objects.requireNonNull(builder.host);
@@ -33,6 +35,8 @@ public class MeshRestClientConfig {
 		this.trustedCAs = builder.trustedCAs;
 		this.clientCert = builder.clientCert;
 		this.clientKey = builder.clientKey;
+		this.maxRetries = builder.maxRetries;
+		this.retryDelayMs = builder.retryDelayMs;
 	}
 
 	/**
@@ -89,6 +93,14 @@ public class MeshRestClientConfig {
 		return trustedCAs;
 	}
 
+	public int getMaxRetries() {
+		return maxRetries;
+	}
+
+	public int getRetryDelayMs() {
+		return retryDelayMs;
+	}
+
 	public static Builder newConfig() {
 		return new Builder();
 	}
@@ -104,6 +116,11 @@ public class MeshRestClientConfig {
 		private final Set<byte[]> trustedCAs;
 		private byte[] clientCert;
 		private byte[] clientKey;
+		private int maxRetries = 5;
+		// Delay < 0 automatically calculates a delay value, such that the
+		// maximum number of retries with the chosen delay fit inside the
+		// max call timeout.
+		private int retryDelayMs = -1;
 
 		public Builder() {
 			trustedCAs = new HashSet<>();
@@ -130,6 +147,8 @@ public class MeshRestClientConfig {
 			if (config.getClientKey() != null) {
 				setClientKey(config.getClientKey().clone());
 			}
+			setMaxRetries(config.getMaxRetries());
+			setRetryDelayMs(config.getRetryDelayMs());
 		}
 
 		public MeshRestClientConfig build() {
@@ -181,7 +200,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the hostname verification flag.
-		 * 
+		 *
 		 * @param flag
 		 * @return
 		 */
@@ -233,7 +252,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the filesystem path to the client SSL key which is formatted in PEM format.
-		 * 
+		 *
 		 * @param path
 		 */
 		public Builder setClientKey(String path) {
@@ -243,7 +262,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the InputStream from which the client SSL key in PEM format will be read.
-		 * 
+		 *
 		 * @param ins
 		 * @return
 		 */
@@ -258,7 +277,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the client key in PEM format.
-		 * 
+		 *
 		 * @param data
 		 * @return
 		 */
@@ -269,7 +288,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the filesystem path to the client SSL cert which is formatted in PEM format.
-		 * 
+		 *
 		 * @param path
 		 * @return
 		 */
@@ -280,7 +299,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the InputStream from which the client SSL cert in PEM format will be read.
-		 * 
+		 *
 		 * @param ins
 		 * @return
 		 */
@@ -295,7 +314,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Set the client cert in PEM format.
-		 * 
+		 *
 		 * @param data
 		 * @return
 		 */
@@ -306,7 +325,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Add CA cert from the filesystem path to the CAs that will be trusted by the client.
-		 * 
+		 *
 		 * @param path
 		 * @return
 		 */
@@ -317,7 +336,7 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Add CA cert from the stream to the CAs that will be trusted by the client.
-		 * 
+		 *
 		 * @param ins
 		 * @return
 		 */
@@ -332,12 +351,34 @@ public class MeshRestClientConfig {
 
 		/**
 		 * Add CA cert in PEM format to the CAs that will be trusted by the client.
-		 * 
+		 *
 		 * @param data
 		 * @return
 		 */
 		public Builder addTrustedCA(byte[] data) {
 			this.trustedCAs.add(data);
+			return this;
+		}
+
+		/**
+		 * Set maximum number of retries after network errors.
+		 * @see #setRetryDelayMs(int)
+		 * @param maxRetries
+		 * @return
+		 */
+		public Builder setMaxRetries(int maxRetries) {
+			this.maxRetries = maxRetries;
+			return this;
+		}
+
+		/**
+		 * Set delay in milliseconds for retries after network errors.
+		 * @see #setMaxRetries(int)
+		 * @param retryDelayMs
+		 * @return
+		 */
+		public Builder setRetryDelayMs(int retryDelayMs) {
+			this.retryDelayMs = retryDelayMs;
 			return this;
 		}
 

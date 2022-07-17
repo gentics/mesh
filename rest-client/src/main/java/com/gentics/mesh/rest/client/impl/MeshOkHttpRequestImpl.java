@@ -2,12 +2,19 @@ package com.gentics.mesh.rest.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -33,9 +40,11 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
+import org.reactivestreams.Publisher;
 
 public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final OkHttpClient client;
+	private final MeshRestClientConfig config;
 	private final Class<? extends T> resultClass;
 
 	private final String method;
@@ -43,9 +52,10 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final Map<String, String> headers;
 	private final RequestBody requestBody;
 
-	private MeshOkHttpRequestImpl(OkHttpClient client, Class<? extends T> resultClass, String method, String url, Map<String, String> headers,
+	private MeshOkHttpRequestImpl(OkHttpClient client, MeshRestClientConfig config, Class<? extends T> resultClass, String method, String url, Map<String, String> headers,
 		RequestBody requestBody) {
 		this.client = client;
+		this.config = config;
 		this.resultClass = resultClass;
 		this.method = method;
 		this.url = url;
@@ -53,9 +63,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		this.requestBody = requestBody;
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
-		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, new RequestBody() {
+		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, new RequestBody() {
 			@Override
 			public MediaType contentType() {
 				return MediaType.get(contentType);
@@ -72,19 +82,19 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		});
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String json) {
-		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
+		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String text) {
-		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
+		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 	}
 
-	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT) {
-		return new MeshOkHttpRequestImpl<>(client, classOfT, method, url, headers, RequestBody.create(null, ""));
+		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, RequestBody.create(null, ""));
 	}
 
 	@Override
@@ -110,14 +120,14 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	private Single<Response> getOkResponse() {
-		return Single.create(sub -> {
+		Single<Response> response = Single.create(sub -> {
 			Call call = client.newCall(createRequest());
 			call.enqueue(new Callback() {
 				@Override
 				public void onFailure(Call call, IOException e) {
 					if (!sub.isDisposed()) {
 						sub.onError(new IOException(String.format("I/O Error in %s %s : %s (%s)",
-								HttpMethod.valueOf(method.toUpperCase()), url, e.getClass().getSimpleName(), e.getLocalizedMessage()), e));
+							HttpMethod.valueOf(method.toUpperCase()), url, e.getClass().getSimpleName(), e.getLocalizedMessage()), e));
 					}
 				}
 
@@ -131,6 +141,27 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 				}
 			});
 		});
+
+		if (config == null) {
+			return response;
+		}
+
+		int retries = config.getMaxRetries();
+		int delay = config.getRetryDelayMs();
+
+		if (retries <= 0) {
+			return response;
+		}
+
+		// Setting the delay < 0 means auto-delay, which is set so that all
+		// retries happen within the configured overall call timeout. If no
+		// delay is desired, set it to 0. Then retryOnNetworkErrors() will
+		// ignore it.
+		if (delay < 0) {
+			delay = client.callTimeoutMillis() / retries;
+		}
+
+		return response.retryWhen(retryOnNetworkErrors(retries, delay));
 	}
 
 	@Override
@@ -262,5 +293,60 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 				return body.get();
 			}
 		});
+	}
+
+	/**
+	 * Notification handler for {@link Observable#retryWhen(io.reactivex.functions.Function) retryWhen()} which causes
+	 * retries for network related exceptions up to {@code maxRetries}, with an optional {@code delay} in milliseconds.
+	 *
+	 * <p>
+	 *     <strong>TODO:</strong> This should probably be moved to a generic utility class, but I did not want to
+	 *     introduce a dependency to mesh-common for the rest client.
+	 * </p>
+	 *
+	 * @see #isNotNetworkError(Throwable)
+	 *
+	 * @param maxRetries The maximum number of retries
+	 * @param delay The delay in milliseconds for each retry, ignored when &lt; 0.
+	 * @return A notification handler for {@code retryWhen()} which makes at most {@code maxRetries} retries on
+	 * 		network problems
+	 */
+	private io.reactivex.functions.Function<Flowable<Throwable>, Publisher<Object>> retryOnNetworkErrors(int maxRetries, int delay) {
+		AtomicInteger retryCount = new AtomicInteger(0);
+
+		return errors -> errors.flatMap(err -> {
+			if (isNotNetworkError(err) || retryCount.getAndIncrement() > maxRetries) {
+				// Not a network problem or max retries reached, forward the error to stop retrying.
+				return Flowable.error(err);
+			}
+
+			Flowable<Object> ret = Flowable.just(new Object());
+
+			if (delay > 0) {
+				ret = ret.delay(delay, TimeUnit.MILLISECONDS);
+			}
+
+			return ret;
+		});
+	}
+
+	/**
+	 * Check if the given throwable or its cause is a {@link SocketException},
+	 * or a {@link SocketTimeoutException}.
+	 *
+	 * @param t The error to check
+	 * @return {@code true} if the given error is a {@code SocketException} or
+	 * 		a {@code SocketTimeoutException}, and {@code false} otherwise.
+	 */
+	private boolean isNotNetworkError(Throwable t) {
+		if (t == null) {
+			return true;
+		}
+
+		if (t instanceof SocketException || t instanceof SocketTimeoutException) {
+			return false;
+		}
+
+		return isNotNetworkError(t.getCause());
 	}
 }
