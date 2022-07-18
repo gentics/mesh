@@ -61,7 +61,6 @@ import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.cluster.ClusterManager;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.MeshPluginDescriptor;
 import com.gentics.mesh.plugin.impl.MeshPluginDescriptorFinderImpl;
@@ -210,9 +209,12 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		for (PluginWrapper pluginWrapper : resolvedPlugins) {
 			PluginState pluginState = pluginWrapper.getPluginState();
 			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
+				Plugin plugin = null;
+
 				try {
 					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
-					Plugin plugin = pluginWrapper.getPlugin();
+
+					plugin = pluginWrapper.getPlugin();
 					plugin.start();
 					// Set state for PF4J
 					pluginWrapper.setPluginState(PluginState.STARTED);
@@ -226,6 +228,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
 				} catch (Throwable e) {
+					if (plugin instanceof MeshPlugin) {
+						setPluginFailed(((MeshPlugin) plugin).id());
+						// We still need to add the plugin to the list of started plugins, or else the monitoring will
+						// not be aware of the failed plugin start.
+						startedPlugins.add(pluginWrapper);
+					}
+
 					log.error("Error while starting plugins " + e.getMessage(), e);
 				}
 			}
@@ -332,9 +341,8 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 	/**
 	 * Try to unload the plugin with the id.
-	 * 
+	 *
 	 * @param id
-	 * @param true
 	 *            if the plugin was unloaded - Otherwise false
 	 */
 	private boolean rollback(String id) {

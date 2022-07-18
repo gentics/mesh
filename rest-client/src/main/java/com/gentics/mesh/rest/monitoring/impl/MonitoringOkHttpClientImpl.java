@@ -36,7 +36,7 @@ public class MonitoringOkHttpClientImpl implements MonitoringRestClient {
 
 	/**
 	 * We need a long timeout per default since some requests take a long time. For all tests a 1 minute timeout works fine.
-	 * 
+	 *
 	 * @return
 	 */
 	private static OkHttpClient defaultClient() {
@@ -56,7 +56,7 @@ public class MonitoringOkHttpClientImpl implements MonitoringRestClient {
 	}
 
 	private <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
-		return MeshOkHttpRequestImpl.EmptyRequest(client, method.name(), getUrl(path), Collections.emptyMap(), classOfT);
+		return MeshOkHttpRequestImpl.EmptyRequest(client, null, method.name(), getUrl(path), Collections.emptyMap(), classOfT);
 	}
 
 	@Override
