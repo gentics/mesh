@@ -641,8 +641,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
-			// wait for writeQuorum, then update/create the admin user
-			db.clusterManager().waitUntilWriteQuorumReached().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+			// wait for DB being ready, then update/create the admin user
+			db.clusterManager().waitUntilDistributedDatabaseReady().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
 					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
 		}
 
@@ -765,7 +765,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// wait for writeQuorum, then raise a global lock and execute changelog
-		db.clusterManager().waitUntilWriteQuorumReached()
+		db.clusterManager().waitUntilDistributedDatabaseReady()
 				.andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY, "executing changelog", executeChangelog(flags, configuration), 60 * 1000)).subscribe();
 	}
 
