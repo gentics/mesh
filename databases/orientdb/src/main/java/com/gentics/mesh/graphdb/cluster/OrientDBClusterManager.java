@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -514,18 +515,12 @@ public class OrientDBClusterManager implements ClusterManager {
 
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
-		return Completable.defer(() -> {
-			if (isWriteQuorumReached() && !isClusterTopologyLocked(false)) {
-				return Completable.complete();
-			}
-			return Observable.using(
-				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
-				TimeoutStream::toObservable,
-				TimeoutStream::cancel).takeUntil(ignore -> {
-					return isWriteQuorumReached() && !isClusterTopologyLocked(false);
-				})
-				.ignoreElements();
-		});
+		return waitUntilTrue(() -> isWriteQuorumReached() && !isClusterTopologyLocked(false));
+	}
+
+	@Override
+	public Completable waitUntilLocalNodeOnline() {
+		return waitUntilTrue(this::isLocalNodeOnline);
 	}
 
 	@Override
@@ -590,5 +585,19 @@ public class OrientDBClusterManager implements ClusterManager {
 			hazelcastPlugin.getHazelcastInstance().getCluster().getLocalMember()
 					.setBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED, diskQuotaExceeded);
 		}
+	}
+
+	private Completable waitUntilTrue(BooleanSupplier predicate) {
+		return Completable.defer(() -> {
+			if (predicate.getAsBoolean()) {
+				return Completable.complete();
+			}
+			return Observable.using(
+				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
+				TimeoutStream::toObservable,
+				TimeoutStream::cancel).takeUntil(ignore -> {
+					return predicate.getAsBoolean();
+				}).ignoreElements();
+		});
 	}
 }
