@@ -116,7 +116,7 @@ public class MeshRestClientConfig {
 		private final Set<byte[]> trustedCAs;
 		private byte[] clientCert;
 		private byte[] clientKey;
-		private int maxRetries = 5;
+		private int maxRetries = 0;
 		// Delay < 0 automatically calculates a delay value, such that the
 		// maximum number of retries with the chosen delay fit inside the
 		// max call timeout.
