@@ -87,10 +87,7 @@ public class AbstractPluginTest extends AbstractMeshTest {
 	}
 
 	public void copy(String sourcePath, String name) throws IOException {
-		new File(pluginDir()).mkdirs();
-		try (InputStream sourceRes = getClass().getResourceAsStream(sourcePath)) {
-			Files.copy(sourceRes, new File(pluginDir(), name).toPath(), StandardCopyOption.REPLACE_EXISTING);
-		}
+		copyFromResources(getClass(), sourcePath, pluginDir(), name);
 	}
 
 	public PluginResponse copyAndDeploy(String sourcePath, String name) throws IOException {
@@ -103,5 +100,12 @@ public class AbstractPluginTest extends AbstractMeshTest {
 		copy(sourcePath, name);	
 		PluginDeploymentRequest request = new PluginDeploymentRequest().setPath(name);
 		call(() -> client().deployPlugin(request), status, key, params);
+	}
+
+	public static void copyFromResources(Class<?> cls, String sourcePath, String targetPath, String name) throws IOException {
+		new File(targetPath).mkdirs();
+		try (InputStream sourceRes = cls.getResourceAsStream(sourcePath)) {
+			Files.copy(sourceRes, new File(targetPath, name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 	}
 }
