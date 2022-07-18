@@ -229,7 +229,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
 				} catch (Throwable e) {
 					if (plugin instanceof MeshPlugin) {
-						setStatus(((MeshPlugin) plugin).id(), PluginStatus.FAILED);
+						setPluginFailed(((MeshPlugin) plugin).id());
 						// We still need to add the plugin to the list of started plugins, or else the monitoring will
 						// not be aware of the failed plugin start.
 						startedPlugins.add(pluginWrapper);
