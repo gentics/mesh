@@ -39,7 +39,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 
 	private static final String BASIC_PLUGIN_NAME = "basic.jar";
 
-	private static final String BASIC_PLUGIN = "../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+	private static final String BASIC_PLUGIN = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
 
 	private static String clusterPostFix = randomUUID();
 
