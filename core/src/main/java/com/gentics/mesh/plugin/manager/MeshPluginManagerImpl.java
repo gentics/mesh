@@ -211,9 +211,11 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		for (PluginWrapper pluginWrapper : resolvedPlugins) {
 			PluginState pluginState = pluginWrapper.getPluginState();
 			if ((PluginState.DISABLED != pluginState) && (PluginState.STARTED != pluginState)) {
+				Plugin plugin = null;
+
 				try {
 					log.info("Start plugin '{}'", getPluginLabel(pluginWrapper.getDescriptor()));
-					Plugin plugin = pluginWrapper.getPlugin();
+					plugin = pluginWrapper.getPlugin();
 					plugin.start();
 					// Set state for PF4J
 					pluginWrapper.setPluginState(PluginState.STARTED);
@@ -227,6 +229,13 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 
 					firePluginStateEvent(new PluginStateEvent(this, pluginWrapper, pluginState));
 				} catch (Throwable e) {
+					if (plugin instanceof MeshPlugin) {
+						setPluginFailed(((MeshPlugin) plugin).id());
+						// We still need to add the plugin to the list of started plugins, or else the monitoring will
+						// not be aware of the failed plugin start.
+						startedPlugins.add(pluginWrapper);
+					}
+
 					log.error("Error while starting plugins " + e.getMessage(), e);
 				}
 			}
