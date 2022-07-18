@@ -17,6 +17,13 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.31]]
+== 1.6.31 (TBD)
+
+icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` can be used to configure automatic retries for requests to Mesh which failed due to a network error. By default retries are disabled. A value of -1 for `retryDelayMs` will automatically calculate a delay such that all tries are performed in the timespan of the call timeout configured for the Ok HTTP client.
+
+icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
+
 [[v1.6.30]]
 == 1.6.30 (06.07.2022)
 
