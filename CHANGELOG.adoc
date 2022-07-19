@@ -33,6 +33,9 @@ icon:check[] Plugins: Fixes plugin initialization such that plugins that failed 
 
 icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
 
+icon:check[] Core: Schema field names are now checked for uniqueness regardless of case sensitivity. This behavior was already
+enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
+
 [[v1.8.6]]
 == 1.8.6 (06.07.2022)
 
