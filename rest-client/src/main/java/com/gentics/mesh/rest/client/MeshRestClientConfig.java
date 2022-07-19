@@ -25,6 +25,8 @@ public class MeshRestClientConfig {
 	private final byte[] clientCert;
 	private final byte[] clientKey;
 	private final boolean hostnameVerification;
+	private final int maxRetries;
+	private final int retryDelayMs;
 
 	public MeshRestClientConfig(Builder builder) {
 		this.host = Objects.requireNonNull(builder.host);
@@ -37,6 +39,8 @@ public class MeshRestClientConfig {
 		this.trustedCAs = builder.trustedCAs;
 		this.clientCert = builder.clientCert;
 		this.clientKey = builder.clientKey;
+		this.maxRetries = builder.maxRetries;
+		this.retryDelayMs = builder.retryDelayMs;
 	}
 
 	/**
@@ -94,6 +98,14 @@ public class MeshRestClientConfig {
 		return trustedCAs;
 	}
 
+	public int getMaxRetries() {
+		return maxRetries;
+	}
+
+	public int getRetryDelayMs() {
+		return retryDelayMs;
+	}
+
 	/**
 	 * Create a fresh config builder.
 	 * 
@@ -117,6 +129,11 @@ public class MeshRestClientConfig {
 		private final Set<byte[]> trustedCAs;
 		private byte[] clientCert;
 		private byte[] clientKey;
+		private int maxRetries = 0;
+		// Delay < 0 automatically calculates a delay value, such that the
+		// maximum number of retries with the chosen delay fit inside the
+		// max call timeout.
+		private int retryDelayMs = -1;
 
 		public Builder() {
 			trustedCAs = new HashSet<>();
@@ -144,6 +161,8 @@ public class MeshRestClientConfig {
 			if (config.getClientKey() != null) {
 				setClientKey(config.getClientKey().clone());
 			}
+			setMaxRetries(config.getMaxRetries());
+			setRetryDelayMs(config.getRetryDelayMs());
 		}
 
 		/**
@@ -357,6 +376,28 @@ public class MeshRestClientConfig {
 		 */
 		public Builder addTrustedCA(byte[] data) {
 			this.trustedCAs.add(data);
+			return this;
+		}
+
+		/**
+		 * Set maximum number of retries after network errors.
+		 * @see #setRetryDelayMs(int)
+		 * @param maxRetries
+		 * @return
+		 */
+		public Builder setMaxRetries(int maxRetries) {
+			this.maxRetries = maxRetries;
+			return this;
+		}
+
+		/**
+		 * Set delay in milliseconds for retries after network errors.
+		 * @see #setMaxRetries(int)
+		 * @param retryDelayMs
+		 * @return
+		 */
+		public Builder setRetryDelayMs(int retryDelayMs) {
+			this.retryDelayMs = retryDelayMs;
 			return this;
 		}
 

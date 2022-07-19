@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -25,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.util.VersionNumber;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
@@ -107,6 +109,9 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	@Override
+	@Category(FailingTests.class)
+	@Deprecated(forRemoval = true)
+	// We should not tell apart the empty and null strings
 	public void testUpdateSetEmpty() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 		String oldVersion = firstResponse.getVersion();
