@@ -46,6 +46,7 @@ public class ProjectEndpointDeleteTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteAfterPurge() {
+		adminCall(() -> client().purgeProject(projectUuid()));
 		call(() -> client().deleteProject(projectUuid()));
 		call(() -> client().findProjectByUuid(projectUuid()), HttpResponseStatus.NOT_FOUND);
 		JobListResponse response = adminCall(() -> client().findJobs(new JobParametersImpl().setType(JobType.versionpurge)));
