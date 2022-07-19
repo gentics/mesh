@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.job;
 
 import java.time.ZonedDateTime;
 
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -75,6 +76,12 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @return
 	 */
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
+
+	/**
+	 * Delete all the jobs referencing the provided project.
+	 * @param project
+	 */
+	void deleteByProject(Project project);
 
 	/**
 	 * Purge all failed jobs from the job root.

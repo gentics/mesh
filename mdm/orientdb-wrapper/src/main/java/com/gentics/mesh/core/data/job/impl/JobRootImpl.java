@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
@@ -12,6 +13,7 @@ import java.util.Iterator;
 import java.util.Stack;
 import java.util.function.Predicate;
 
+import com.gentics.mesh.core.data.Project;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
@@ -222,6 +224,14 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, extraFilter, false);
+	}
+
+	@Override
+	public void deleteByProject(Project project) {
+		Result<? extends VersionPurgeJobImpl> in = project.in(HAS_PROJECT, VersionPurgeJobImpl.class);
+		for (VersionPurgeJobImpl versionPurgeJob : in.iterable()) {
+			versionPurgeJob.delete();
+		}
 	}
 
 	@Override

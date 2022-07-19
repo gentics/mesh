@@ -285,6 +285,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		MicroschemaDao microschemaDao = CommonTx.get().microschemaDao();
 		TagFamilyDao tagFamilyDao = CommonTx.get().tagFamilyDao();
 		BranchDao branchDao = CommonTx.get().branchDao();
+		PersistingJobDao jobDao = CommonTx.get().jobDao();
 
 		// Remove the nodes in the project hierarchy
 		HibNode base = project.getBaseNode();
@@ -320,6 +321,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Remove the project from the index
 		bac.add(project.onDeleted());
+
+		// Remove the jobs referencing the job
+		jobDao.deleteByProject(project);
 
 		// Finally remove the project node
 		deletePersisted(project);

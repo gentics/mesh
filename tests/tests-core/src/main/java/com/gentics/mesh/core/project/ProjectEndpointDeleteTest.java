@@ -4,6 +4,11 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobType;
+import com.gentics.mesh.parameter.impl.JobParametersImpl;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -37,6 +42,14 @@ public class ProjectEndpointDeleteTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().deleteProject(uuid));
+	}
+
+	@Test
+	public void testDeleteAfterPurge() {
+		call(() -> client().deleteProject(projectUuid()));
+		call(() -> client().findProjectByUuid(projectUuid()), HttpResponseStatus.NOT_FOUND);
+		JobListResponse response = adminCall(() -> client().findJobs(new JobParametersImpl().setType(JobType.versionpurge)));
+		Assertions.assertThat(response.getData()).isEmpty();
 	}
 
 }
