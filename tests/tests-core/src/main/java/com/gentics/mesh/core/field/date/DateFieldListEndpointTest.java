@@ -123,7 +123,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			HibNodeFieldContainer container;
 			List<Long> oldValue;
 			try (Tx tx = tx()) {
-				container = boot().contentDao().getFieldContainer(node, "en");
+				container = tx.contentDao().getFieldContainer(node, "en");
 				oldValue = getListValues(container::getDateList, FIELD_NAME);
 				List<String> newValue = valueCombinations.get(i % valueCombinations.size());
 				for (String value : newValue) {

@@ -37,11 +37,9 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNodeWithField();
-			StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("Only valid values should be stored").containsExactly("A", "B");
-		}
+		NodeResponse response = createNodeWithField();
+		StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
+		assertThat(field.getItems()).as("Only valid values should be stored").containsExactly("A", "B");
 	}
 
 	@Test
@@ -57,101 +55,85 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add(null);
-			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
-		}
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add(null);
+		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.add("A");
-			listField.add("B");
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 	}
 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = tx()) {
-			// 1. Update an existing node
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
+		// 1. Update an existing node
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			// 2. Read the node
-			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
-			StringFieldListImpl deserializedField = response.getFields().getStringFieldList(FIELD_NAME);
-			assertNotNull(deserializedField);
-			assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B");
-		}
+		// 2. Read the node
+		NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
+		StringFieldListImpl deserializedField = response.getFields().getStringFieldList(FIELD_NAME);
+		assertNotNull(deserializedField);
+		assertThat(deserializedField.getItems()).as("List field values from updated node").containsExactly("A", "B");
 	}
 
 	@Test
 	public void testCreateNodeWithNullFieldValue() throws IOException {
-		try (Tx tx = tx()) {
-			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
-			assertNull("No string field should have been created.", nodeField);
-		}
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
+		assertNull("No string field should have been created.", nodeField);
 	}
 
 	@Test
 	public void testCreateEmptyStringList() throws IOException {
-		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			NodeResponse response = createNode(FIELD_NAME, listField);
-			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-			assertEquals(0, listFromResponse.getItems().size());
-		}
+		StringFieldListImpl listField = new StringFieldListImpl();
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
+		assertEquals(0, listFromResponse.getItems().size());
 	}
 
 	@Test
 	public void testCreateNullStringList() throws IOException {
-		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.setItems(null);
-			NodeResponse response = createNode(FIELD_NAME, listField);
-			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-			assertNull("The string list should be null since the request was sending null instead of an array.", listFromResponse);
-		}
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.setItems(null);
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
+		assertNull("The string list should be null since the request was sending null instead of an array.", listFromResponse);
 	}
 
 	@Test
 	public void testStringList() throws IOException {
-		try (Tx tx = tx()) {
-			StringFieldListImpl listField = new StringFieldListImpl();
-			listField.add("A");
-			listField.add("B");
-			listField.add("C");
+		StringFieldListImpl listField = new StringFieldListImpl();
+		listField.add("A");
+		listField.add("B");
+		listField.add("C");
 
-			NodeResponse response = createNode(FIELD_NAME, listField);
-			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
-			assertEquals(3, listFromResponse.getItems().size());
-			assertEquals(Arrays.asList("A", "B", "C").toString(), listFromResponse.getItems().toString());
-		}
+		NodeResponse response = createNode(FIELD_NAME, listField);
+		StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
+		assertEquals(3, listFromResponse.getItems().size());
+		assertEquals(Arrays.asList("A", "B", "C").toString(), listFromResponse.getItems().toString());
 	}
 
 	@Test
@@ -163,7 +145,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 			StringFieldListImpl list = new StringFieldListImpl();
 			List<String> oldValue;

@@ -11,13 +11,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.reactivex.Observable;
@@ -43,6 +41,7 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 
 	/**
 	 * Should the test enable the synchronization writes for the Mesh instance?
+	 * This setting requires the whole Mesh being cold restarted, hence the abstract method, forcing the impls distinction, and not the runtime parameter.
 	 * 
 	 * @return
 	 */
@@ -54,7 +53,6 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 	 * @throws IOException
 	 */
 	@Test
-	@Category({FailingTests.class})
 	public void testParallelDupUpload() throws IOException {
 		testParallelUpload(true);
 	}
@@ -65,12 +63,11 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 	 * @throws IOException
 	 */
 	@Test
-	@Category({FailingTests.class})
 	public void testParallelDiffUpload() throws IOException {
 		testParallelUpload(false);
 	}
 
-	private void testParallelUpload(boolean useSameName) throws IOException {
+	protected void testParallelUpload(boolean useSameName) throws IOException {
 		String folderUuid = tx(() -> folder("news").getUuid());
 
 		// Prepare schema

@@ -108,13 +108,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	@Override
 	public Tag create(InternalActionContext ac, EventQueueBatch batch) {
-		return toGraph(mesh().boot().tagDao().create(this, ac, batch));
+		return toGraph(Tx.get().tagDao().create(this, ac, batch));
 	}
 
 	@Override
 	@Deprecated
 	public Tag create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		return toGraph(mesh().boot().tagDao().create(this, ac, batch, uuid));
+		return toGraph(Tx.get().tagDao().create(this, ac, batch, uuid));
 	}
 
 	@Override

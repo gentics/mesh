@@ -8,6 +8,7 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,7 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
 import com.gentics.mesh.core.rest.plugin.PluginResponse;
+import com.gentics.mesh.plugin.AbstractPluginTest;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.category.PluginTests;
@@ -35,11 +37,23 @@ import io.vertx.core.logging.LoggerFactory;
 @Category({ClusterTests.class, PluginTests.class})
 public class PluginClusterTest extends AbstractClusterTest {
 
+	private static final String BASIC_PLUGIN_NAME = "basic.jar";
+
+	private static final String BASIC_PLUGIN = "target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar";
+
 	private static String clusterPostFix = randomUUID();
 
 	private static final int STARTUP_TIMEOUT = 500;
 
 	private static final Logger log = LoggerFactory.getLogger(PluginClusterTest.class);
+
+	static {
+		try {
+			AbstractPluginTest.copyFromResources(PluginClusterTest.class, AbstractPluginTest.BASIC_PATH, BASIC_PLUGIN, BASIC_PLUGIN_NAME);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 
 	@ClassRule
 	public static MeshContainer serverA = createDefaultMeshContainer()
@@ -49,7 +63,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 		.withInitCluster()
 		.waitForStartup()
 		.withWriteQuorum(2)
-		.withPlugin(new File("../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), "basic.jar")
+		.withPlugin(new File(BASIC_PLUGIN), BASIC_PLUGIN_NAME)
 		.withClearFolders();
 
 	@BeforeClass
@@ -92,7 +106,7 @@ public class PluginClusterTest extends AbstractClusterTest {
 
 	private MeshContainer addSlave(String nodeName) throws InterruptedException {
 		MeshContainer server = prepareSlave(clusterPostFix, nodeName, randomToken(), true, 2)
-			.withPlugin(new File("../../core/target/test-plugins/basic/target/basic-plugin-0.0.1-SNAPSHOT.jar"), "basic.jar");
+			.withPlugin(new File(BASIC_PLUGIN), BASIC_PLUGIN_NAME);
 		server.start();
 		server.awaitStartup(STARTUP_TIMEOUT);
 		login(server);

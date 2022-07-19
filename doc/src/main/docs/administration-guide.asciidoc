@@ -255,6 +255,10 @@ By default all specified directories are relative to the installation directory.
 
 include::content/docs/generated/tables/GraphStorageOptions.adoc-include[]
 
+==== Disk Quota Check Options
+
+include::content/docs/generated/tables/DiskQuotaOptions.adoc-include[]
+
 ==== OrientDB parameters
 
 [options="header"]

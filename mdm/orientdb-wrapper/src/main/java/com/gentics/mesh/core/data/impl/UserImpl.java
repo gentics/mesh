@@ -284,7 +284,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public User addGroup(Group group) {
 		// Redirect to group implementation
-		mesh().boot().groupDao().addUser(group, this);
+		Tx.get().groupDao().addUser(group, this);
 		return this;
 	}
 
@@ -301,7 +301,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		UserDao userDao = mesh().boot().userDao();
+		UserDao userDao = Tx.get().userDao();
 		userDao.delete(this, bac);
 	}
 

@@ -34,7 +34,6 @@ import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
-import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -113,7 +112,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		List<List<HibNode>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-		HibNodeFieldContainer container = tx(() -> boot().contentDao().getFieldContainer(node, "en"));
+		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 			List<HibNode> oldValue;
 			List<HibNode> newValue;
@@ -280,19 +279,17 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		HibNode node = folder("2015");
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createListFieldSchema(FIELD_NAME, FieldTypes.NODE.toString()), false);
-			tx.commit();
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(folder("news"));
 			tx.success();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
-		NodeResponse response = readNode(node);
+		NodeResponse response = readNode(folder("2015"));
 		NodeFieldList deserializedListField = response.getFields().getNodeFieldList(FIELD_NAME);
 		assertNotNull(deserializedListField);
 		assertEquals(1, deserializedListField.getItems().size());
@@ -300,31 +297,31 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() throws IOException {
-		HibNode node = folder("2015");
 		HibNode referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createListFieldSchema(FIELD_NAME, FieldTypes.NODE.toString()), false);
-			tx.commit();
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
 			// Create node list
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(referencedNode);
 			tx.success();
 		}
 		// 1. Read node with collapsed fields and check that the collapsed node list item can be read
-		NodeResponse responseCollapsed = readNode(node);
+		NodeResponse responseCollapsed = readNode(folder("2015"));
 		NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 		assertNotNull(deserializedNodeListField);
 		assertEquals("The newsNode should not be within in the list thus the list should be empty.", 0,
 			deserializedNodeListField.getItems().size());
 
 		// 2. Read node with expanded fields
-		NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
+		NodeResponse responseExpanded = readNode(folder("2015"), FIELD_NAME, "bogus");
 
 		// Check collapsed node field
 		deserializedNodeListField = responseExpanded.getFields().getNodeFieldList(FIELD_NAME);
@@ -336,20 +333,20 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
 		HibNode newsNode = folder("news");
-		HibNode node = folder("2015");
 
 		// Create node list
 		try (Tx tx = tx()) {
-			prepareTypedSchema(node, FieldUtil.createListFieldSchema(FIELD_NAME, FieldTypes.NODE.toString()), false);
-			tx.commit();
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(newsNode);
 			tx.success();
 		}
 		// 1. Read node with collapsed fields and check that the collapsed node list item can be read
-		NodeResponse responseCollapsed = readNode(node);
+		NodeResponse responseCollapsed = readNode(folder("2015"));
 		NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 		assertNotNull(deserializedNodeListField);
 		assertEquals("The newsNode should be the first item in the list.", newsNode.getUuid(),
@@ -360,7 +357,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		assertNotNull(nodeListItem);
 
 		// 2. Read node with expanded fields
-		NodeResponse responseExpanded = readNode(node, FIELD_NAME, "bogus");
+		NodeResponse responseExpanded = readNode(folder("2015"), FIELD_NAME, "bogus");
 
 		// Check collapsed node field
 		deserializedNodeListField = responseExpanded.getFields().getNodeFieldList(FIELD_NAME);

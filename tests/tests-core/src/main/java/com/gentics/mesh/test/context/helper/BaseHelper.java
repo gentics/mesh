@@ -57,11 +57,17 @@ public interface BaseHelper {
 	}
 
 	default void grantAdmin() {
-		modifyUser((user) -> user.setAdmin(true));
+		modifyUser((user) -> {
+			user.setAdmin(true);
+			Tx.get().permissionCache().clear();
+		});
 	}
 
 	default void revokeAdmin() {
-		modifyUser((user) -> user.setAdmin(false));
+		modifyUser((user) -> {
+			user.setAdmin(false);
+			Tx.get().permissionCache().clear();
+		});
 	}
 
 	/**

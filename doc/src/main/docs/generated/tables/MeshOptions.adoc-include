@@ -52,6 +52,11 @@
 | string
 | Optional path to a JSON file containing additional languages
 
+| migrationMaxBatchSize
+| false
+| integer
+| The maximum amount of entities to be migrated in a single transaction. This setting affects schema, microschema and branch migrations
+
 | monitoring
 | false
 | object

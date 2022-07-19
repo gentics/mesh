@@ -17,6 +17,52 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.31]]
+== 1.6.31 (TBD)
+
+icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` can be used to configure automatic retries for requests to Mesh which failed due to a network error. By default retries are disabled. A value of -1 for `retryDelayMs` will automatically calculate a delay such that all tries are performed in the timespan of the call timeout configured for the Ok HTTP client.
+
+icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
+
+icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
+
+[[v1.6.30]]
+== 1.6.30 (06.07.2022)
+
+icon:check[] GraphQL: The behaviour for getting lists of nodes with `version`=`draft` using the REST API or GraphQL was inconsistent for nodes,
+for which the requesting user only had the `read published` permission.
+When using the REST API, those nodes were never returned, using GraphQL, those nodes were returned, if they were published and the draft version
+happened to be identical to the published version.
+The behaviour when using GraphQL has been changed to be identical to the REST API now.
+
+icon:check[] Rest: The endpoint `GET /api/v2/{project}/tagFamilies/{tagFamilyUuid}/tags/{tagUuid}/nodes` did not correctly check for the `read`
+when called with `version`=`draft`, but returned all tagged nodes with `read published` permission. This has been fixed.
+
+icon:check[] Rest: The endpoint `GET /api/v2/{project}/navroot/{path}` failed with a 404 error if called with `version`=`published` and at least
+one of the nodes in the node structure was not published. This has been fixed.
+
+icon:check[] Core: If a link to a node was rendered from a url field, the path prefix of the used branch was ignored. This has been changed now,
+so that links to nodes will always contain the path prefix, regardless of whether the link is rendered from a url field or from segment fields.
+
+icon:check[] Core: When the pathPrefix of a branch was changed, node could possibly still be access using the old pathPrefix due to an internal
+cache, which was not invalidated. The cache will now be cleared when a branch is modified.
+
+icon:check[] GraphQL: The fields `hostname`, `ssl` and `pathPrefix` have been added to the type `branch`.
+
+[[v1.6.29]]
+== 1.6.29 (31.05.2022)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.1.18`.
+
+icon:check[] Search: When a schema contained a field of type "micronode" or "list" of "micronode" and no "allow", generating the microschema version
+hash as part of the search index name failed with a NullPointerException.
+This has been fixed, so that the microschema version hash will now be null in such cases (like if "allow" was set to an empty array).
+
+icon:check[] Core: The default values for the periodic disk quota check have been changed to absolute values:
+the default for `storage.diskQuota.warnThreshold` is now `3G` and the default for `storage.diskQuota.readOnlyThreshold` is `1G`.
+
+icon:check[] Server: Fixed defined Health-Check in docker container and added a startup-grace period of 60s.
+
 [[v1.6.28]]
 == 1.6.28 (10.05.2022)
 

@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.type;
 import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
@@ -555,7 +556,6 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		ContentDao contentDao = tx.contentDao();
 		NodeDao nodeDao = tx.nodeDao();
 		GraphQLContext gc = env.getContext();
 		HibProject project = tx.getProject(gc);
@@ -563,12 +563,7 @@ public abstract class AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 
-		Stream<NodeContent> contents = nodeDao.findAllStream(project, gc, READ_PUBLISHED_PERM)
-			// Now lets try to load the containers for those found nodes - apply the language fallback
-			.map(node -> new NodeContent(node, contentDao.findVersion(node, gc, languageTags, type), languageTags, type))
-			// Filter nodes without a container
-			.filter(content -> content.getContainer() != null)
-			.filter(gc::hasReadPerm);
+		Stream<NodeContent> contents = nodeDao.findAllContent(project, gc, languageTags, type);
 
 		return applyNodeFilter(env, contents);
 	}

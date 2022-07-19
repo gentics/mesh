@@ -32,10 +32,10 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 			try (Tx tx = tx()) {
 				// fg.getEdges();
 				runAndWait(() -> {
-					HibUser user = boot().userDao().findByUsername("test");
+					HibUser user = tx.userDao().findByUsername("test");
 					assertNotNull(user);
 				});
-				HibUser user = boot().userDao().findByUsername("test");
+				HibUser user = tx.userDao().findByUsername("test");
 				assertNotNull(user);
 				System.out.println("Read user");
 
@@ -43,7 +43,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			HibUser user = boot().userDao().findByUsername("test");
+			HibUser user = tx.userDao().findByUsername("test");
 			assertNotNull(user);
 		}
 	}

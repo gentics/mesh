@@ -19,37 +19,23 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
-import ch.qos.logback.core.util.FileSize;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.cache.CacheRegistryImpl;
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibMeshVersion;
-import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.LanguageDao;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -88,6 +74,13 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
+import ch.qos.logback.core.util.FileSize;
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -101,9 +94,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * @see BootstrapInitializer
@@ -144,7 +134,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	public HighLevelChangelogSystem highlevelChangelogSystem;
 
 	@Inject
-	public CacheRegistryImpl cacheRegistry;
+	public CacheRegistry cacheRegistry;
 
 	@Inject
 	public MeshPluginManager pluginManager;
@@ -166,9 +156,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Inject
 	public MasterElector coordinatorMasterElector;
-
-	@Inject
-	public DaoCollection daoCollection;
 
 	@Inject
 	public LivenessManager liveness;
@@ -240,10 +227,10 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Override
 	public void initBasicData(MeshOptions config) {
 		db().tx(tx -> {
-			UserDao userDao = userDao();
-			SchemaDao schemaDao = schemaDao();
-			GroupDao groupDao = groupDao();
-			RoleDao roleDao = roleDao();
+			UserDao userDao = tx.userDao();
+			SchemaDao schemaDao = tx.schemaDao();
+			GroupDao groupDao = tx.groupDao();
+			RoleDao roleDao = tx.roleDao();
 
 			// Verify that an admin user exists
 			HibUser adminUser = userDao.findByUsername(ADMIN_USERNAME);
@@ -392,11 +379,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
-		try {
-			db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 
 		if (isClustered) {
 			initCluster(options, flags, isInitMode);
@@ -621,8 +604,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		// Handle admin password reset
 		String password = configuration.getAdminPassword();
 		if (password != null) {
-			// wait for writeQuorum, then update/create the admin user
-			db().clusterManager().waitUntilWriteQuorumReached().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
+			// wait for DB being ready, then update/create the admin user
+			db().clusterManager().waitUntilDistributedDatabaseReady().andThen(doWithLock(GLOBAL_CHANGELOG_LOCK_KEY,
 					"setting admin password", ensureAdminUser(password), 60 * 1000)).subscribe();
 		}
 
@@ -780,7 +763,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		if (anonymousRole == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
-				anonymousRole = roleDao().findByName("anonymous");
+				anonymousRole = Tx.get().roleDao().findByName("anonymous");
 			}
 		}
 		return anonymousRole;
@@ -802,7 +785,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			throw new NullPointerException("Languages could not be loaded from classpath file {" + filename + "}");
 		}
 		LanguageSet languageSet = new ObjectMapper().readValue(ins, LanguageSet.class);
-		initLanguageSet(languageSet);
+		db().tx(tx -> { initLanguageSet(tx, languageSet); });
 	}
 
 	@Override
@@ -813,7 +796,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			db().tx(tx -> {
 				try {
 					LanguageSet languageSet = new ObjectMapper().readValue(languagesFile, LanguageSet.class);
-					initLanguageSet(languageSet);
+					initLanguageSet(tx, languageSet);
 					tx.success();
 				} catch (IOException e) {
 					log.error("Error while initializing optional languages from {" + languagesFilePath + "}", e);
@@ -826,7 +809,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (HibLanguage l : languageDao().findAll()) {
+			for (HibLanguage l : Tx.get().languageDao().findAll()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}
@@ -910,7 +893,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			HibLanguage language = languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
 			if (language == null) {
 				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);
@@ -956,8 +939,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 *
 	 * @param languageSet
 	 */
-	protected void initLanguageSet(LanguageSet languageSet) {
-		initLanguageSet(languageDao(), languageSet);
+	protected void initLanguageSet(Tx tx, LanguageSet languageSet) {
+		initLanguageSet(tx.languageDao(), languageSet);
 	}
 
 	/**
@@ -1057,79 +1040,4 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * @throws Exception
 	 */
 	protected abstract void initCluster(MeshOptions options, PostProcessFlags flags, boolean isInitMode) throws Exception;
-
-	@Override
-	public SchemaDao schemaDao() {
-		return daoCollection.schemaDao();
-	}
-
-	@Override
-	public MicroschemaDao microschemaDao() {
-		return daoCollection.microschemaDao();
-	}
-
-	@Override
-	public RoleDao roleDao() {
-		return daoCollection.roleDao();
-	}
-
-	@Override
-	public TagDao tagDao() {
-		return daoCollection.tagDao();
-	}
-
-	@Override
-	public TagFamilyDao tagFamilyDao() {
-		return daoCollection.tagFamilyDao();
-	}
-
-	@Override
-	public LanguageDao languageDao() {
-		return daoCollection.languageDao();
-	}
-
-	@Override
-	public UserDao userDao() {
-		return daoCollection.userDao();
-	}
-
-	@Override
-	public GroupDao groupDao() {
-		return daoCollection.groupDao();
-	}
-
-	@Override
-	public JobDao jobDao() {
-		return daoCollection.jobDao();
-	}
-
-	@Override
-	public ProjectDao projectDao() {
-		return daoCollection.projectDao();
-	}
-
-	@Override
-	public NodeDao nodeDao() {
-		return daoCollection.nodeDao();
-	}
-
-	@Override
-	public ContentDao contentDao() {
-		return daoCollection.contentDao();
-	}
-
-	@Override
-	public BranchDao branchDao() {
-		return daoCollection.branchDao();
-	}
-
-	@Override
-	public BinaryDao binaryDao() {
-		return daoCollection.binaryDao();
-	}
-
-	@Override
-	public S3BinaryDao s3binaryDao() {
-		return daoCollection.s3binaryDao();
-	}
 }

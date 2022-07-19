@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.8.5-SNAPSHOT</version>
+	<version>1.8.7-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -240,7 +240,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<skip>${skip.unit.tests}</skip>
-					<jvm>${env.JAVA_1_11_HOME}/bin/java</jvm>
+					<jvm>${env.JAVA_HOME}/bin/java</jvm>
 					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
 						-Dstorage.diskCache.bufferSize=128 ${jacoco.env}</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>

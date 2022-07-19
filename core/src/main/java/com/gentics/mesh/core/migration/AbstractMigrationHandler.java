@@ -35,8 +35,10 @@ import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
@@ -57,12 +59,15 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected final Provider<EventQueueBatch> batchProvider;
 
+	private final MeshOptions options;
+
 	public AbstractMigrationHandler(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
-		Provider<EventQueueBatch> batchProvider) {
+									Provider<EventQueueBatch> batchProvider, MeshOptions options) {
 		this.db = db;
 		this.binaryFieldHandler = binaryFieldHandler;
 		this.metrics = metrics;
 		this.batchProvider = batchProvider;
+		this.options = options;
 	}
 
 	/**
@@ -123,27 +128,28 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 */
 	@ParametersAreNonnullByDefault
 	protected <T> List<Exception> migrateLoop(Queue<T> containers, EventCauseInfo cause, MigrationStatusHandler status,
-		TriConsumer<EventQueueBatch, T, List<Exception>> migrator) {
+		TriConsumer<EventQueueBatch, List<T>, List<Exception>> migrator) {
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
 		EventQueueBatch sqb = batchProvider.get();
 		sqb.setCause(cause);
+		int pollCount = options.getMigrationMaxBatchSize();
 		while (!containers.isEmpty()) {
-			T container = containers.poll();
+			List<T> containerList = CollectionUtil.pollMany(containers, pollCount);
 			try {
 				// Each container migration has its own search queue batch which is then combined with other batch entries.
 				// This prevents adding partial entries from failed migrations.
 				EventQueueBatch containerBatch = batchProvider.get();
 				db.tx(() -> {
-					migrator.accept(containerBatch, container, errorsDetected);
+					migrator.accept(containerBatch, containerList, errorsDetected);
 				});
 				sqb.addAll(containerBatch);
-				status.incCompleted();
+				status.incCompleted(containerList.size());
+				count += containerList.size();
 				if (count % 50 == 0) {
 					log.info("Migrated containers: " + count);
 				}
-				count++;
 			} catch (Exception e) {
 				errorsDetected.add(e);
 			}

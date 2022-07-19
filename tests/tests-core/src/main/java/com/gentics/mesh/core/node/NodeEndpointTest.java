@@ -408,7 +408,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
+			HibNode newNode = tx.nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -438,7 +438,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
+			HibNode newNode = tx.nodeDao().findByUuid(project(), nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid, type)).as(type + " Field container for initial branch")
 					.isNotNull().hasVersion("0.1");
@@ -468,7 +468,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
-			HibNode newNode = boot().nodeDao().findByUuid(project(), nodeResponse.getUuid());
+			HibNode newNode = tx.nodeDao().findByUuid(project(), nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(contentDao.getFieldContainer(newNode, "en", initialBranchUuid(), type))
@@ -534,7 +534,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(trackingSearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
-			HibNode node = boot().nodeDao().findByUuid(project(), restNode.getUuid());
+			HibNode node = tx.nodeDao().findByUuid(project(), restNode.getUuid());
 			assertNotNull(node);
 			assertThat(node).matches(request);
 
@@ -545,8 +545,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() -> client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			HibNode deletedNode = boot().nodeDao().findByUuid(project(), restNode2.getUuid());
-			assertNull("The node should have been deleted.", deletedNode);
+			call(() -> client().findNodeByUuid(projectUuid(), restNode2.getUuid()), NOT_FOUND);
 		}
 	}
 
@@ -647,7 +646,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
 				HibNode node = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-				boot().contentDao().createFieldContainer(node, english(), initialBranch(), user());
+				tx.contentDao().createFieldContainer(node, english(), initialBranch(), user());
 				assertNotNull(node);
 				roleDao.grantPermissions(role(), node, READ_PERM);
 			}
@@ -694,70 +693,72 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (Tx tx = tx()) {
-			NodeDao nodeDao = tx.nodeDao();
-			HibNode parentNode = folder("2015");
-			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
-			HibNode noPermNode = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			String noPermNodeUUID = noPermNode.getUuid();
+		HibNode parentNode = folder("2015");
+		// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
+		String noPermNodeUUID = tx(tx -> {
+			HibBranch initialBranch = reloadBranch(initialBranch());
 
-			// Create 20 drafts
-			int nNodes = 20;
-			for (int i = 0; i < nNodes; i++) {
-				NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-				nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
-				nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("test"));
-				nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("test" + i));
-				nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
-				nodeCreateRequest.setLanguage("en");
-				call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
-			}
+			HibNode noPermNode = tx.nodeDao().create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
+			tx.contentDao().createFieldContainer(noPermNode, english(), initialBranch, user());
+			return noPermNode.getUuid();
+		});
+		assertThat(noPermNodeUUID).as("UUID of the new node").isNotNull();
 
-			assertNotNull(noPermNode.getUuid());
-			long perPage = 11;
-			NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage),
-				new VersioningParametersImpl().draft()));
-			assertEquals(perPage, restResponse.getData().size());
-
-			// Extra Nodes + permitted nodes
-			int totalNodes = getNodeCount() + nNodes;
-			int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
-			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
-
-			List<NodeResponse> allNodes = new ArrayList<>();
-			for (int page = 1; page <= totalPages; page++) {
-				restResponse = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
-					new VersioningParametersImpl().draft()).blockingGet();
-				allNodes.addAll(restResponse.getData());
-			}
-			assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
-
-			// Verify that the no_perm_node is not part of the response
-			List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID)).collect(
-				Collectors.toList());
-			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)),
-				BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)),
-				BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
-
-			call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)),
-				BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-			NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25L), new VersioningParametersImpl()
-				.draft()));
-			assertEquals(4242, list.getMetainfo().getCurrentPage());
-			assertEquals(0, list.getData().size());
-			assertEquals(25L, list.getMetainfo().getPerPage().longValue());
-			assertEquals(2, list.getMetainfo().getPageCount());
-			assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
+		// Create 20 drafts
+		int nNodes = 20;
+		for (int i = 0; i < nNodes; i++) {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
+			nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("test"));
+			nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("test" + i));
+			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+			nodeCreateRequest.setLanguage("en");
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
+
+		long perPage = 11;
+		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage),
+			new VersioningParametersImpl().draft()));
+		assertEquals(perPage, restResponse.getData().size());
+
+		// Extra Nodes + permitted nodes
+		int totalNodes = getNodeCount() + nNodes;
+		int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
+		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage().longValue());
+
+		List<NodeResponse> allNodes = new ArrayList<>();
+		for (int page = 1; page <= totalPages; page++) {
+			restResponse = client().findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage),
+				new VersioningParametersImpl().draft()).blockingGet();
+			allNodes.addAll(restResponse.getData());
+		}
+		assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
+
+		// Verify that the no_perm_node is not part of the response
+		List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID)).collect(
+			Collectors.toList());
+		assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25L)),
+			BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+
+		call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25L)),
+			BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
+
+		call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1L)),
+			BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+		NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25L), new VersioningParametersImpl()
+			.draft()));
+		assertEquals(4242, list.getMetainfo().getCurrentPage());
+		assertEquals(0, list.getData().size());
+		assertEquals(25L, list.getMetainfo().getPerPage().longValue());
+		assertEquals(2, list.getMetainfo().getPageCount());
+		assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 	}
 
 	@Test
@@ -1090,11 +1091,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	@Ignore("Multithreaded update is currently only possible for multiple nodes not a single node")
 	public void testUpdateMultithreaded() throws InterruptedException {
-		ContentDao contentDao = boot().contentDao();
 		final String newName = "english renamed name";
 		String uuid = tx(() -> folder("2015").getUuid());
-		assertEquals("2015", tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString()));
-		VersionNumber version = tx(() -> contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getVersion());
+		assertEquals("2015", tx(tx -> { return tx.contentDao().getLatestDraftFieldContainer(folder("2015"), english()).getString("slug").getString(); }));
+		VersionNumber version = tx(tx -> { return tx.contentDao().getLatestDraftFieldContainer(folder("2015"), english()).getVersion(); });
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
@@ -1562,7 +1562,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibSchemaVersion version = tx.schemaDao().findByUuid(schemaContainer("content").getUuid()).getLatestVersion();
 			HibUser user = tx.userDao().findByUuid(user().getUuid());
 			node = nodeDao.create(parentNode, user, version, project);
-			HibNodeFieldContainer englishContainer = boot().contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, languageNl.getLanguageTag(),
 				node.getProject().getLatestBranch(), user());
 			HibSchemaVersion schemaVersion = englishContainer.getSchemaContainerVersion();
 			schemaVersion.getSchema().addField(new StringFieldSchemaImpl().setName("displayName"));
@@ -1668,7 +1668,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 1. Load Ids / Objects
 		String uuid = tx(() -> content("concorde").getUuid());
-		final HibNode node = tx(() -> content("concorde"));
 		HibNodeFieldContainer origContainer = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			GroupDao groupDao = tx.groupDao();
@@ -1714,7 +1713,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(content("concorde"), english()).getSchemaContainerVersion().getUuid();
 		});
 
 		waitForSearchIdleEvent();
@@ -1732,7 +1731,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(content("concorde"), english());
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1759,7 +1758,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateCreateLanguage() {
 		final String germanName = "Zweitausendfünfzehn";
-		final HibNode node = tx(() -> folder("2015"));
 		final String uuid = tx(() -> folder("2015").getUuid());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
@@ -1771,7 +1769,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String branchUuid = tx(() -> project().getLatestBranch().getUuid());
 		String schemaContainerVersionUuid = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			return contentDao.getLatestDraftFieldContainer(node, english()).getSchemaContainerVersion().getUuid();
+			return contentDao.getLatestDraftFieldContainer(folder("2015"), english()).getSchemaContainerVersion().getUuid();
 		});
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 
@@ -2053,51 +2051,48 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateInBranchSameUUIDWithoutParent() throws Exception {
-		HibBranch initialBranch;
-		HibBranch newBranch;
+		String initialBranch = null;
+		String newBranch = "newbranch";
 
 		waitForJobs(() -> {
 			// create a new branch
-			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName("newbranch")));
+			call(() -> client().createBranch(PROJECT_NAME, new BranchCreateRequest().setName(newBranch)));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
 			HibProject project = project();
-			initialBranch = reloadBranch(project.getInitialBranch());
-			newBranch = tx.branchDao().findByName(project, "newbranch");
+			initialBranch = project.getInitialBranch().getName();
+			assertNotNull(tx.branchDao().findByName(project, newBranch));
 		}
 
-		try (Tx tx = tx()) {
-			// create node in one branch
-			HibNode node = content("concorde");
-			NodeCreateRequest parentRequest = new NodeCreateRequest();
-			parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			parentRequest.setLanguage("en");
-			parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			parentRequest.setParentNodeUuid(node.getUuid());
-			NodeResponse parentNode = call(
-				() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+		// create node in one branch
+		String nodeUuid = tx(() -> content("concorde").getUuid());
+		NodeCreateRequest parentRequest = new NodeCreateRequest();
+		parentRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		parentRequest.setLanguage("en");
+		parentRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		parentRequest.setParentNodeUuid(nodeUuid);
+		NodeResponse parentNode = call(
+			() -> client().createNode(PROJECT_NAME, parentRequest, new VersioningParametersImpl().setBranch(newBranch)));
 
-			// create child in same branch
-			NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
-			sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			sameBranchChildRequest.setLanguage("en");
-			sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
-			NodeResponse sameBranchChildResponse = call(
-				() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch.getName())));
+		// create child in same branch
+		NodeCreateRequest sameBranchChildRequest = new NodeCreateRequest();
+		sameBranchChildRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		sameBranchChildRequest.setLanguage("en");
+		sameBranchChildRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		sameBranchChildRequest.setParentNodeUuid(parentNode.getUuid());
+		NodeResponse sameBranchChildResponse = call(
+			() -> client().createNode(PROJECT_NAME, sameBranchChildRequest, new VersioningParametersImpl().setBranch(newBranch)));
 
-			// try to create node with same uuid in other branch with first node as parent
-			NodeCreateRequest childRequest = new NodeCreateRequest();
-			childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
-			childRequest.setLanguage("en");
-			childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
-			childRequest.setParentNodeUuid(parentNode.getUuid());
-			call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
-				new VersioningParametersImpl().setBranch(initialBranch.getName())), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
-
-			tx.success();
-		}
+		// try to create node with same uuid in other branch with first node as parent
+		NodeCreateRequest childRequest = new NodeCreateRequest();
+		childRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
+		childRequest.setLanguage("en");
+		childRequest.getFields().put("slug", FieldUtil.createStringField("some slug"));
+		childRequest.setParentNodeUuid(parentNode.getUuid());
+		String branch = initialBranch;
+		call(() -> client().createNode(sameBranchChildResponse.getUuid(), PROJECT_NAME, childRequest,
+			new VersioningParametersImpl().setBranch(branch)), NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
 	}
 
 	@Test
@@ -2114,7 +2109,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().deleteNode(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, DELETE_PERM.getRestPerm().getName());
 		try (Tx tx = tx()) {
-			assertNotNull(boot().nodeDao().findByUuid(project(), uuid));
+			assertNotNull(tx.nodeDao().findByUuid(project(), uuid));
 		}
 	}
 

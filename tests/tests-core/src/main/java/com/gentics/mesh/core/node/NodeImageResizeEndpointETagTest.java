@@ -18,12 +18,11 @@ public class NodeImageResizeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResize() throws Exception {
+		// 1. Upload image
+		uploadImage(tx(() -> folder("news")), "en", "image");
 
 		try (Tx tx = tx()) {
 			HibNode node = folder("news");
-
-			// 1. Upload image
-			uploadImage(node, "en", "image");
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);

@@ -9,9 +9,9 @@ import com.gentics.mesh.core.field.FieldFetcher;
  */
 public interface NumberListFieldTestHelper {
 
-	static final int NUMBERVALUE = 4711;
+	static final double NUMBERVALUE = 4711.0;
 
-	static final int OTHERNUMBERVALUE = 8150;
+	static final double OTHERNUMBERVALUE = 8150.0;
 
 	static final long ONE = 1L;
 

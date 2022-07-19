@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.cxf.jaxrs.utils.ExceptionUtils;
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class JobTest extends AbstractMeshTest {
 	@Test
 	public void testJob() {
 		try (Tx tx = tx()) {
-			JobDao root = boot().jobDao();
+			JobDao root = tx.jobDao();
 			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			// Disabled in order to apply to contention fix
 			assertNull("The creator should not be set.",job.getCreator());
@@ -52,7 +53,7 @@ public class JobTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			JobDao root = boot().jobDao();
+			JobDao root = tx.jobDao();
 			List<? extends HibJob> list = TestUtils.toList(root.findAll());
 			assertThat(list).hasSize(1);
 			HibJob job = list.get(0);
@@ -80,7 +81,7 @@ public class JobTest extends AbstractMeshTest {
 	@Test
 	public void testJobErrorDetailTruncate() {
 		try (Tx tx = tx()) {
-			JobDao root = boot().jobDao();
+			JobDao root = tx.jobDao();
 			HibJob job = root.enqueueBranchMigration(user(), initialBranch());
 			assertNull("The job error detail should be null since it has not yet been marked as failed.", job.getErrorDetail());
 			Exception ex = buildExceptionStackTraceLongerThan(HibJob.ERROR_DETAIL_MAX_LENGTH * 2);
@@ -93,7 +94,7 @@ public class JobTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			JobDao root = boot().jobDao();
+			JobDao root = tx.jobDao();
 			List<? extends HibJob> list = TestUtils.toList(root.findAll());
 			assertThat(list).hasSize(1);
 			HibJob job = list.get(0);
@@ -115,10 +116,8 @@ public class JobTest extends AbstractMeshTest {
 			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema, v -> {}), createMicroschemaVersion(tx, microschema, v -> {}));
 			dao.enqueueBranchMigration(user(), latestBranch());
 
-			List<? extends HibJob> list = dao.findAll().list();
-			assertThat(list.get(0).getType()).isEqualTo(JobType.schema);
-			assertThat(list.get(1).getType()).isEqualTo(JobType.microschema);
-			assertThat(list.get(2).getType()).isEqualTo(JobType.branch);
+			List<JobType> list = dao.findAll().stream().map(HibJob::getType).collect(Collectors.toList());
+			assertThat(list).containsExactlyInAnyOrder(JobType.schema, JobType.microschema, JobType.branch);
 			assertThat(list.size()).isEqualTo(3);
 		}
 	}

@@ -40,7 +40,7 @@ public class ContextDataRegistryImpl implements ContextDataRegistry {
 
 	@Override
 	public HibBranch getBranch(InternalActionContext ac, HibProject project) {
-		if (ac instanceof NodeMigrationActionContext && project == null) {
+		if (ac instanceof NodeMigrationActionContext) {
 			return ((NodeMigrationActionContext) ac).getBranch();
 		}
 		if (project == null) {

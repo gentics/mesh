@@ -10,6 +10,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +27,6 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 
@@ -36,12 +37,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (Tx tx = tx()) {
-			SchemaVersionModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 			dateFieldSchema.setName(FIELD_NAME);
 			dateFieldSchema.setLabel("Some label");
-			schema.addField(dateFieldSchema);
-			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			prepareTypedSchema(schemaContainer("folder"), List.of(dateFieldSchema), Optional.empty());
 			tx.success();
 		}
 	}
@@ -66,7 +65,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			Long oldValue;
 
 			try (Tx tx = tx()) {
-				container = boot().contentDao().getFieldContainer(node, "en");
+				container = tx.contentDao().getFieldContainer(node, "en");
 				oldValue = getDateValue(container, FIELD_NAME);
 			}
 
@@ -171,23 +170,21 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		HibNode node = folder("2015");
 		Long nowEpoch;
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			prepareTypedSchema(node, new DateFieldSchemaImpl().setName(FIELD_NAME), false);
-			tx.commit();
 
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 
-		NodeResponse response = readNode(node);
+		NodeResponse response = readNode(folder("2015"));
 		DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
 		assertNotNull(deserializedDateField);
 		assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());

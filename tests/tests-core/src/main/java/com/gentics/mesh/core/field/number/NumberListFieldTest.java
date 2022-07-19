@@ -54,7 +54,9 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNode node = folder("2015");
 			prepareNode(node, NUMBER_LIST, "number");
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibNumberFieldList numberList = container.createNumberList(NUMBER_LIST);
 			numberList.createNumber(1);
 			numberList.createNumber(1.11);

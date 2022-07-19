@@ -30,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static java.lang.Math.ceil;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -168,8 +169,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			assertNotNull("The project should have been created.", boot().projectDao().findByName(name));
-			HibProject project = boot().projectDao().findByUuid(restProject.getUuid());
+			assertNotNull("The project should have been created.", tx.projectDao().findByName(name));
+			HibProject project = tx.projectDao().findByUuid(restProject.getUuid());
 			assertNotNull(project);
 			assertTrue(userDao.hasPermission(user(), project, CREATE_PERM));
 			assertTrue(userDao.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
@@ -748,7 +749,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;
-		long nProjectsBefore = boot().projectDao().count();
+		long nProjectsBefore = tx(tx -> { return tx.projectDao().count(); });
 
 		validateCreation(nJobs, i -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -837,38 +838,5 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// get the list of projects
 		list = call(() -> client().findProjects());
 		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy");
-	}
-
-	/**
-	 * Test renaming, deleting and re-creating a project (together with project name cache)
-	 */
-	@Test
-	public void testRenameDeleteCreateProject() {
-		// create project named "project"
-		ProjectResponse project = createProject("project");
-
-		// get tag families of project (this will put project into cache)
-		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
-
-		// rename project to "newproject"
-		project = updateProject(project.getUuid(), "newproject");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-
-		// get tag families of newproject (this will put project into cache)
-		call(() -> client().findTagFamilies("newproject"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
-
-		// delete "newproject"
-		deleteProject(project.getUuid());
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-
-		// create (again)
-		project = createProject("project");
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
-
-		// get tag families of project
-		call(() -> client().findTagFamilies("project"));
-		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
 	}
 }

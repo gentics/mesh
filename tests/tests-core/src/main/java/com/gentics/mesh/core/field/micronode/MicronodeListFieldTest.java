@@ -61,7 +61,9 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			prepareNode(node, MICRONODE_LIST, "micronode");
 			InternalActionContext ac = mockActionContext("");
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 
 			MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 			MicronodeResponse micronodeA = new MicronodeResponse();

@@ -5,7 +5,6 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -21,19 +20,14 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import dagger.Lazy;
-
 /**
  * @see TagDAOActions
  */
 @Singleton
 public class TagDAOActionsImpl implements TagDAOActions {
 
-	private Lazy<BootstrapInitializer> boot;
-
 	@Inject
-	public TagDAOActionsImpl(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public TagDAOActionsImpl() {
 	}
 
 	@Override
@@ -65,7 +59,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	@Override
 	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		HibTagFamily hibTagFamily = ctx.parent();
-		TagDao tagDao = boot.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		if (hibTagFamily != null) {
 			return tagDao.findAll(hibTagFamily, ctx.ac(), pagingInfo);
 		} else {
@@ -76,7 +70,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	@Override
 	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibTag> extraFilter) {
 		HibTagFamily hibTagFamily = ctx.parent();
-		TagDao tagDao = boot.get().tagDao();
+		TagDao tagDao = Tx.get().tagDao();
 		if (hibTagFamily != null) {
 			return ctx.tx().tagDao().findAll(hibTagFamily, ctx.ac(), pagingInfo, extraFilter);
 		} else {

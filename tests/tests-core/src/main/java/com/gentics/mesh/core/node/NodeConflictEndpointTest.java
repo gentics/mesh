@@ -160,7 +160,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		HibNode node = getTestNode();
 		String nodeUuid = tx(() -> node.getUuid());
 
-		HibNodeFieldContainer oldContainer = tx(() -> boot().contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"));
+		HibNodeFieldContainer oldContainer = tx(tx -> { return tx.contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"); });
 		NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 		// Add micronode / string list
 		request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));
@@ -168,12 +168,6 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			"test-firstname")), Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en", "de");
-
-		tx(() -> {
-			HibSchemaVersion latestVersion = getTestNode().getSchemaContainer().getLatestVersion();
-			latestVersion.getSchema().addField(new ListFieldSchemaImpl().setListType("string").setName("stringList"));
-			actions().updateSchemaVersion(latestVersion);
-		});
 
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request, parameters));
 		assertThat(restNode).hasVersion("1.1");
@@ -297,6 +291,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		mesh().serverSchemaStorage().addSchema(schema);
+		actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 	}
 
 	/**

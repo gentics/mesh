@@ -1,23 +1,25 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<artifactId>mesh-demos</artifactId>
 
-	<artifactId>mesh-demo</artifactId>
-	<packaging>jar</packaging>
-	<name>Mesh - Java Demo</name>
+	<packaging>pom</packaging>
+	<name>Mesh - Demo modules</name>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.8.5-SNAPSHOT</version>
+		<version>1.8.7-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<skip.demodump>false</skip.demodump>
 	</properties>
+	<modules>
+		<module>common</module>
+		<module>default</module>
+	</modules>
 
 	<dependencyManagement>
 		<dependencies>
@@ -34,192 +36,20 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-server</artifactId>
+			<artifactId>mesh-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.lingala.zip4j</groupId>
-			<artifactId>zip4j</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-tests-api</artifactId>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.3.2</version>
-				<executions>
-					<execution>
-						<id>github-demo-clone</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<executable>git</executable>
-							<arguments>
-								<argument>clone</argument>
-								<argument>-b</argument>
-								<argument>demo</argument>
-								<argument>https://github.com/gentics/mesh-angular-example.git</argument>
-								<argument>target/mesh-angular-demo</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>generate-demo-dump</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>process-classes</phase>
-						<configuration>
-							<skip>${skip.demodump}</skip>
-							<executable>${env.JAVA_HOME}/bin/java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath/>
-								<argument>com.gentics.mesh.demo.DemoDumpGenerator</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>dist-demo-package</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<attach>false</attach>
-							<appendAssemblyId>false</appendAssemblyId>
-							<descriptors>
-								<descriptor>src/main/assembly/demo-zip.xml</descriptor>
-							</descriptors>
-							<outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
-							<finalName>mesh-demo</finalName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>dist-dump-package</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<skipAssembly>${skip.demodump}</skipAssembly>
-							<attach>true</attach>
-							<appendAssemblyId>true</appendAssemblyId>
-							<descriptors>
-								<descriptor>src/main/assembly/dump-zip.xml</descriptor>
-							</descriptors>
-							<outputDirectory>${project.basedir}/target/classes</outputDirectory>
-							<finalName>mesh</finalName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<executions>
-					<!-- Run shade goal on package phase -->
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
-								</transformer>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
+				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											exec-maven-plugin
-										</artifactId>
-										<versionRange>
-											[1.3.2,)
-										</versionRange>
-										<goals>
-											<goal>exec</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-assembly-plugin
-										</artifactId>
-										<versionRange>
-											[2.2-beta-5,)
-										</versionRange>
-										<goals>
-											<goal>single</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore/>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
 </project>

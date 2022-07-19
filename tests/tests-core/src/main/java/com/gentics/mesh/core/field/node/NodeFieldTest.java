@@ -91,23 +91,25 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testFieldTransformation() throws Exception {
 		HibNode newsNode = folder("news");
-		HibNode node = folder("2015");
 
 		try (Tx tx = tx()) {
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 
 			// 1. Create the node field schema and add it to the schema of the node
 			prepareTypedSchema(node, createFieldSchema(true), false);
 			tx.commit();
 			// 2. Add the node reference to the node fields
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createNode(NODE_FIELD, newsNode);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			// 3. Transform the node to json and examine the data
-			String json = getJson(node);
+			String json = getJson(folder("2015"));
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 			assertNotNull(response);

@@ -87,7 +87,7 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 		}
 		nodes.forEach(node -> {
 			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-				assertThat(tx(() -> boot().contentDao().getFieldContainers(node, newBranch, type).list()))
+				assertThat(tx(() -> Tx.get().contentDao().getFieldContainers(node, newBranch, type).list()))
 					.as(type + " Field Containers before Migration").isNotNull()
 					.isEmpty();
 			});
@@ -101,17 +101,17 @@ public class BranchMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(newBranchReloaded.isMigrated()).as("Branch migration status").isEqualTo(true);
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
-					assertThat(boot().contentDao().getFieldContainers(node, newBranchReloaded, type)).as(type + " Field Containers after Migration")
+					assertThat(tx.contentDao().getFieldContainers(node, newBranchReloaded, type)).as(type + " Field Containers after Migration")
 						.isNotNull()
 						.isNotEmpty();
 				});
 
 				if (published.contains(node)) {
-					assertThat(boot().contentDao().getFieldContainers(node, newBranchReloaded, ContainerType.PUBLISHED))
+					assertThat(tx.contentDao().getFieldContainers(node, newBranchReloaded, ContainerType.PUBLISHED))
 						.as("Published field containers after migration")
 						.isNotNull().isNotEmpty();
 				} else {
-					assertThat(boot().contentDao().getFieldContainers(node, newBranchReloaded, ContainerType.PUBLISHED))
+					assertThat(tx.contentDao().getFieldContainers(node, newBranchReloaded, ContainerType.PUBLISHED))
 						.as("Published field containers after migration")
 						.isNotNull().isEmpty();
 				}

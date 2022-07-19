@@ -48,7 +48,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 		// Now add the perm
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibGroup group = boot().groupDao().findByUuid(response.getUuid());
+			HibGroup group = tx.groupDao().findByUuid(response.getUuid());
 			System.out.println("Group Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), group, InternalPermission.READ_PERM);
 			tx.success();

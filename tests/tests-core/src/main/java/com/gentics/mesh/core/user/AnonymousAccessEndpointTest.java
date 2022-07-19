@@ -9,11 +9,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import com.gentics.mesh.core.data.user.HibUser;
 import org.junit.Test;
 
 import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -53,6 +53,14 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		// Verify that anonymous access does not work if the anonymous user is deleted
 		try (Tx tx = tx()) {
 			HibUser anonymousUser = tx.userDao().findByUuid(users().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME).getUuid());
+			tx.groupDao().findAll().stream().forEach(g -> {
+				g.setEditor(null);
+				g.setCreator(null);
+			});
+			tx.roleDao().findAll().stream().forEach(r -> {
+				r.setEditor(null);
+				r.setCreator(null);
+			});
 			((CommonTx) tx).userDao().deletePersisted(anonymousUser);
 			tx.success();
 		}

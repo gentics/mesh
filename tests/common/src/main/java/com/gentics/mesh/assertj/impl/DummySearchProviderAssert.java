@@ -268,7 +268,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 
 	private <T> T requireType(Class<T> clazz, Object obj) {
 		if (clazz.isAssignableFrom(obj.getClass())) {
-			return (T) obj;
+			return clazz.cast(obj);
 		} else {
 			throw new RuntimeException(String.format("Unexpected type. Required {%s}, but got {%s}", clazz.getSimpleName(), obj.getClass().getSimpleName()));
 		}

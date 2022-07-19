@@ -19,6 +19,7 @@ import static com.gentics.mesh.core.field.FieldTestHelper.NOOP;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -99,7 +100,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
 			// Internally timestamps are stored in miliseconds
-			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE * 1000);
+			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(new BigDecimal(NUMBERVALUE * 1000).longValue());
 		});
 	}
 
@@ -136,7 +137,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEHTML, (container, name) -> {
 			assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE)
-				.isEqualTo(Long.toString(NUMBERVALUE) + "," + Long.toString(OTHERNUMBERVALUE));
+				.isEqualTo(Double.toString(NUMBERVALUE) + "," + Double.toString(OTHERNUMBERVALUE));
 		});
 	}
 
@@ -153,8 +154,8 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELD).containsExactly(Long.toString(NUMBERVALUE),
-				Long.toString(OTHERNUMBERVALUE));
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELD).containsExactly(Double.toString(NUMBERVALUE),
+				Double.toString(OTHERNUMBERVALUE));
 		});
 	}
 
@@ -235,7 +236,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumber(name).getNumber().intValue()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
+			assertThat(container.getNumber(name).getNumber().doubleValue()).as(NEWFIELDVALUE).isEqualTo(NUMBERVALUE);
 		});
 	}
 
@@ -252,7 +253,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getNumberList(name).getValues().stream().map(Number::intValue).collect(Collectors.toList()))
+			assertThat(container.getNumberList(name).getValues().stream().map(Number::doubleValue).collect(Collectors.toList()))
 				.as(NEWFIELDVALUE).containsExactly(NUMBERVALUE, OTHERNUMBERVALUE);
 		});
 	}
@@ -272,7 +273,7 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
 			assertThat(container.getString(name).getString()).as(NEWFIELDVALUE)
-				.isEqualTo(Long.toString(NUMBERVALUE) + "," + Long.toString(OTHERNUMBERVALUE));
+				.isEqualTo(Double.toString(NUMBERVALUE) + "," + Double.toString(OTHERNUMBERVALUE));
 		});
 	}
 
@@ -289,8 +290,8 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATENUMBERLIST, FILLNUMBERS, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Long.toString(NUMBERVALUE),
-				Long.toString(OTHERNUMBERVALUE));
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly(Double.toString(NUMBERVALUE),
+				Double.toString(OTHERNUMBERVALUE));
 		});
 	}
 

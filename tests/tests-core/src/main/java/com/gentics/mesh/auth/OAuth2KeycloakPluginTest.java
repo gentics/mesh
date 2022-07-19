@@ -81,10 +81,10 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		assertNotNull(tx(tx -> {
 			return tx.groupDao().findByName("group1");
 		}));
-		assertNotNull(tx(() -> boot().groupDao().findByName("group2")));
+		assertNotNull(tx(tx -> { return tx.groupDao().findByName("group2"); }));
 
-		assertNotNull(tx(() -> boot().roleDao().findByName("role1")));
-		assertNotNull(tx(() -> boot().roleDao().findByName("role2")));
+		assertNotNull(tx(tx -> { return tx.roleDao().findByName("role1"); }));
+		assertNotNull(tx(tx -> { return tx.roleDao().findByName("role2"); }));
 
 		// Invoke request without token
 		JsonObject meJson = new JsonObject(get(MeshVersion.CURRENT_API_BASE_PATH + "/auth/me"));
@@ -241,12 +241,12 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		setAdminToken();
 
 		// Apply permissions
-		String role1Uuid = tx(() -> boot().roleDao().findByName("role1").getUuid());
+		String role1Uuid = tx(tx -> { return tx.roleDao().findByName("role1").getUuid(); });
 		RolePermissionRequest updateRequest = new RolePermissionRequest().setRecursive(true);
 		updateRequest.getPermissions().setRead(true);
 		call(() -> client().updateRolePermissions(role1Uuid, "projects/" + projectUuid(), updateRequest));
 		// Assign the role to the group
-		String groupUuid = tx(() -> boot().groupDao().findByName("group1").getUuid());
+		String groupUuid = tx(tx -> { return tx.groupDao().findByName("group1").getUuid(); });
 		call(() -> client().addRoleToGroup(groupUuid, role1Uuid));
 
 		// Reset the keycloak token

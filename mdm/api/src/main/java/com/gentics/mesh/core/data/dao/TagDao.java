@@ -108,12 +108,13 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 
 	/**
 	 * Return the tagged nodes.
-	 * 
-	 * @param tag
-	 * @param ac
-	 * @return
+	 * This will also check for the required permission
+	 * @param tag tag
+	 * @param ac action context
+	 * @param perm permission to check
+	 * @return result
 	 */
-	Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac);
+	Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Unassign the the node from the tag.

@@ -153,7 +153,9 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			prepareTypedSchema(node, new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"), false);
 			tx.commit();
 
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+					node.getProject().getLatestBranch(), user(),
+					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			HibMicronodeField micronodeField = container.createMicronode("micronodefield", microschema.getLatestVersion());
 			HibMicronode micronode = micronodeField.getMicronode();
 			assertNotNull("Micronode must not be null", micronode);

@@ -42,6 +42,7 @@ pluginTimeout: 120
 nodeName: null
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
+migrationMaxBatchSize: 50
 httpServer:
   port: 8080
   sslPort: 8443
@@ -142,5 +143,5 @@ storage:
   clusterJoinTimeout: 500000
   diskQuota:
     checkInterval: 10000
-    warnThreshold: "10%"
-    readOnlyThreshold: "2%"
+    warnThreshold: "3G"
+    readOnlyThreshold: "1G"

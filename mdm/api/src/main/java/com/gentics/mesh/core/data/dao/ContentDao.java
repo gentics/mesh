@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.VersionNumber;
@@ -265,6 +267,26 @@ public interface ContentDao {
 	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type);
 
 	/**
+	 * Return a map with node as a key and all its field containers as values, filtering for the provided parameters.
+	 * This method does not check permission
+	 * @param nodes
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type);
+
+	/**
+	 * Return a map with node as a key and all its field containers as values, filtering for the provided parameters.
+	 * This method does not check permission
+	 * @param nodes
+	 * @param branchUuid
+	 * @param versionNumber
+	 * @return
+	 */
+	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber);
+
+	/**
 	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be
 	 * the (only) DRAFT version for the language/branch. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
 	 * container will be a clone of the last draft and will have the next version number.
@@ -277,6 +299,20 @@ public interface ContentDao {
 	 * @return
 	 */
 	HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user);
+
+	/**
+	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be
+	 * the (only) DRAFT version for the language/branch. This method should only be called when it is known for a fact
+	 * that this will be the first field container
+	 *
+	 * @param languageTag
+	 * @param branch
+	 *            branch
+	 * @param user
+	 *            user
+	 * @return
+	 */
+	HibNodeFieldContainer createFirstFieldContainerForNode(HibNode node, String languageTag, HibBranch branch, HibUser user);
 
 	/**
 	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
@@ -950,4 +986,15 @@ public interface ContentDao {
 	 * @return
 	 */
 	NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags);
+
+	/**
+	 * Get a {@link FieldMap} from the provided container
+	 * @param fieldContainer
+	 * @param ac
+	 * @param schema
+	 * @param level
+	 * @param containerLanguageTags
+	 * @return
+	 */
+	FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags);
 }

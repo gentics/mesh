@@ -88,7 +88,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		TagDao tagRoot = mesh().boot().tagDao();
+		TagDao tagRoot = Tx.get().tagDao();
 		return tagRoot.getSubETag(this, ac);
 	}
 

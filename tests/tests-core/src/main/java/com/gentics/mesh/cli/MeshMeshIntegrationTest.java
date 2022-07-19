@@ -45,11 +45,11 @@ public abstract class MeshMeshIntegrationTest<T extends MeshOptions> implements 
 		MeshComponent meshInternalB = meshB.internal();
 		assertNotEquals(meshInternalA, meshInternalB);
 		assertNotEquals(meshInternalA.boot(), meshInternalB.boot());
-		meshInternalA.database().tx(() -> {
-			System.out.println("Admin in A: " + meshInternalA.boot().userDao().findByName("admin").getUuid());
+		meshInternalA.database().tx(tx -> {
+			System.out.println("Admin in A: " + tx.userDao().findByName("admin").getUuid());
 		});
-		meshInternalB.database().tx(() -> {
-			System.out.println("Admin in B: " + meshInternalB.boot().userDao().findByName("admin").getUuid());
+		meshInternalB.database().tx(tx -> {
+			System.out.println("Admin in B: " + tx.userDao().findByName("admin").getUuid());
 		});
 
 		meshA.shutdown();
