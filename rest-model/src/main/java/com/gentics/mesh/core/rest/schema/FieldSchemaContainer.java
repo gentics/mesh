@@ -208,7 +208,7 @@ public interface FieldSchemaContainer extends RestModel {
 		Set<String> fieldNames = new HashSet<>();
 		for (FieldSchema field : getFields()) {
 			if (field.getName() != null) {
-				if (!fieldNames.add(field.getName())) {
+				if (!fieldNames.add(field.getName().toLowerCase())) {
 					throw error(BAD_REQUEST, "schema_error_duplicate_field_name", field.getName());
 				}
 			}

@@ -6,6 +6,9 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -90,7 +93,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("teaser", createStringField("some name"));
 			create.getFields().put("slug", createStringField(conflictingName));
 			create.getFields().put("content", createStringField("Blessed mealtime!"));
-			client().createNode(PROJECT_NAME, create).blockingGet();
+			call(() -> client().createNode(PROJECT_NAME, create));
 
 			// try to create the new content with same slug
 			NodeCreateRequest create2 = new NodeCreateRequest();
@@ -103,6 +106,44 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create2.getFields().put("content", createStringField("Blessed mealtime again!"));
 			call(() -> client().createNode(PROJECT_NAME, create2), CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
+		});
+	}
+
+	@Test
+	public void testCreateCaseSensitivityOfWebrootPath() {
+		String conflictingName = "filename.html";
+		HibNode parent = tx(() -> folder("2015"));
+		HibSchema contentSchema = tx(() -> schemaContainer("content"));
+
+		tx(() -> {
+			// create the initial content
+			NodeCreateRequest create = new NodeCreateRequest();
+			create.setParentNodeUuid(parent.getUuid());
+			create.setLanguage("en");
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.getFields().put("title", createStringField("some title"));
+			create.getFields().put("teaser", createStringField("some name"));
+			create.getFields().put("slug", createStringField(conflictingName));
+			create.getFields().put("content", createStringField("Blessed mealtime!"));
+			NodeResponse response1 = call(() -> client().createNode(PROJECT_NAME, create));
+
+			// create the new content with same slug but different casing
+			NodeCreateRequest create2 = new NodeCreateRequest();
+			create2.setParentNodeUuid(parent.getUuid());
+			create2.setLanguage("en");
+			create2.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create2.getFields().put("title", createStringField("some other title"));
+			create2.getFields().put("teaser", createStringField("some other name"));
+			create2.getFields().put("slug", createStringField(conflictingName.toUpperCase()));
+			create2.getFields().put("content", createStringField("Blessed mealtime again!"));
+			NodeResponse response2 = call(() -> client().createNode(PROJECT_NAME, create2));
+
+			// check that both nodes can be retrieved via webroot path
+			MeshWebrootResponse webrootResponse1 = call(() -> client().webroot(PROJECT_NAME, "/News/2015/" + conflictingName));
+			Assertions.assertThat(webrootResponse1.getNodeResponse()).isEqualTo(response1);
+
+			MeshWebrootResponse webrootResponse2 = call(() -> client().webroot(PROJECT_NAME, "/News/2015/" + conflictingName.toUpperCase()));
+			Assertions.assertThat(webrootResponse2.getNodeResponse()).isEqualTo(response2);
 		});
 	}
 

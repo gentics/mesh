@@ -16,13 +16,12 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -55,7 +54,9 @@ import io.reactivex.Observable;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.reactivex.core.TimeoutStream;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * Manager for OrientDB cluster and server features.
@@ -528,18 +529,12 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	@Override
 	public Completable waitUntilWriteQuorumReached() {
-		return Completable.defer(() -> {
-			if (isWriteQuorumReached() && !isClusterTopologyLocked(false)) {
-				return Completable.complete();
-			}
-			return Observable.using(
-				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
-				TimeoutStream::toObservable,
-				TimeoutStream::cancel).takeUntil(ignore -> {
-					return isWriteQuorumReached() && !isClusterTopologyLocked(false);
-				})
-				.ignoreElements();
-		});
+		return waitUntilTrue(() -> isWriteQuorumReached() && !isClusterTopologyLocked(false));
+	}
+
+	@Override
+	public Completable waitUntilLocalNodeOnline() {
+		return waitUntilTrue(this::isLocalNodeOnline);
 	}
 
 	@Override
@@ -604,5 +599,19 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 			hazelcastPlugin.getHazelcastInstance().getCluster().getLocalMember()
 					.setBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED, diskQuotaExceeded);
 		}
+	}
+
+	private Completable waitUntilTrue(BooleanSupplier predicate) {
+		return Completable.defer(() -> {
+			if (predicate.getAsBoolean()) {
+				return Completable.complete();
+			}
+			return Observable.using(
+				() -> new io.vertx.reactivex.core.Vertx(vertx.get()).periodicStream(1000),
+				TimeoutStream::toObservable,
+				TimeoutStream::cancel).takeUntil(ignore -> {
+					return predicate.getAsBoolean();
+				}).ignoreElements();
+		});
 	}
 }

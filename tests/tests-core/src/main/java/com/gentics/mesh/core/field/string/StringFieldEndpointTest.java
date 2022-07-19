@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -124,6 +126,9 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	@Override
+	@Category(FailingTests.class)
+	@Deprecated(forRemoval = true)
+	// We should not tell apart the empty and null strings
 	public void testUpdateSetEmpty() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 		StringField emptyField = new StringFieldImpl();
