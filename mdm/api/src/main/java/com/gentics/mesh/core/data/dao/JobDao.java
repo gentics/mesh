@@ -143,6 +143,12 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	void purgeFailed();
 
 	/**
+	 * Delete the jobs referencing the project.
+	 * @param project
+	 */
+	void deleteByProject(HibProject project);
+
+	/**
 	 * Delete all jobs.
 	 */
 	void clear();

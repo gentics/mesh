@@ -148,6 +148,11 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	}
 
 	@Override
+	public void deleteByProject(HibProject project) {
+		boot.get().meshRoot().getJobRoot().deleteByProject(toGraph(project));
+	}
+
+	@Override
 	protected RootVertex<Job> getRoot() {
 		return boot.get().meshRoot().getJobRoot();
 	}
