@@ -30,6 +30,8 @@ User passwords are not stored within this index.
 
 NOTE: Search queries can be submitted via the `{apiLatest}/:project/search/:type` endpoints. These endpoints are secured by Gentics Mesh.
 
+CAUTION: The following sections are irrelevant, if link:content/premium-features/sql-db/documentation/[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation instead.
+
 The *storage.startServer* setting can be used to start the OrientDB server on port 2424 and 2480. 
 This server will automatically be started if the *cluster.enabled* setting is enabled. It is advised to not expose this service.
 

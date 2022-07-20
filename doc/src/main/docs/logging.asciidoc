@@ -162,6 +162,8 @@ NOTE: The link:http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolic
 
 == OrientDB
 
+CAUTION: This section is irrelevant, if link:/premium-features/sql-db/#docs[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation instead.
+
 The OrientDB server logging can be configured using the `orientdb-server-config.xml` and `orientdb-server-log.properties` files.
 
 More detailed information can be found in the https://orientdb.com/docs/3.0.x/admin/Logging.html[OrientDB Docs].
