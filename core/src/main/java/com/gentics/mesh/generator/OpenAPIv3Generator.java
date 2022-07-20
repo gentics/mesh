@@ -174,7 +174,6 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			log.debug("Class: " + tclass.getCanonicalName());
 			generics.clear();
 			generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(cls) ? ParameterizedType.class.cast(cls).getActualTypeArguments() : new Type[0]));
-			System.err.println(Arrays.toString(generics.toArray()));
 			while (tclass != null) {
 				fieldStreams.add(Arrays.stream(tclass.getDeclaredFields()));
 				generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(tclass.getGenericSuperclass()) ? ParameterizedType.class.cast(tclass.getGenericSuperclass()).getActualTypeArguments() : new Type[0]));
@@ -279,9 +278,6 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				break;
 			default:
 				break;
-			}
-			if (fullPath.indexOf("binary") > 0) {
-				System.out.println(fullPath);
 			}
 			List<Stream<Parameter>> params = List.of(
 					endpoint.getQueryParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.QUERY)),
@@ -389,7 +385,8 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				Class<?> itemClass = Class.class.cast(generics.get(0));
 				fillType(components, itemClass, itemSchema, null);
 			} else {
-				System.err.println(t + " / " + Arrays.toString(generics.toArray()));
+				// TODO
+				log.error("Unknown array type" + t + " / " + Arrays.toString(generics.toArray()));
 			}
 			fieldSchema.setItems(itemSchema);
 //		} else if (t.isEnum()) {
