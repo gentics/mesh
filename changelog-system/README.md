@@ -22,6 +22,6 @@ Each change is implemented using a java class. These classes are located within 
 
 * Some schema model changes must also be applied to the JSON data which is stored within the schema / microschemaModel versions graph elements.
 
-## MDM
+## Database support
 
 Only to be used by OrientDB.

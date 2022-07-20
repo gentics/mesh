@@ -242,7 +242,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/graphdb/export");
 		endpoint.method(POST);
 		endpoint.setMutating(false);
-		endpoint.description("Invoke a orientdb graph database export.");
+		endpoint.description("Invoke a orientdb graph database export. Irrelevant for non-OrientDB server.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
 		endpoint.events(GRAPH_EXPORT_START, GRAPH_EXPORT_FINISHED);
@@ -256,7 +256,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/graphdb/import");
 		endpoint.method(POST);
 		endpoint.description(
-			"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
+			"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation. Irrelevant for non-OrientDB server.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
 		endpoint.events(GRAPH_IMPORT_START, GRAPH_IMPORT_FINISHED);
@@ -269,7 +269,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/graphdb/restore");
 		endpoint.description(
-			"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data.");
+			"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data. Irrelevant for non-OrientDB server.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
@@ -286,7 +286,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.setMutating(false);
 		endpoint.addQueryParameters(BackupParametersImpl.class);
 		endpoint.description(
-			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
+			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation. Irrelevant for non-OrientDB server.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
 		endpoint.events(GRAPH_BACKUP_START, GRAPH_BACKUP_FINISHED);
