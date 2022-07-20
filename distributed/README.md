@@ -1,3 +1,3 @@
 # Gentics Mesh - Distributed
 
-This module contains code which is needed for cluster support. OrientDB-specific implementation.
+This module contains code which is needed for cluster support.
