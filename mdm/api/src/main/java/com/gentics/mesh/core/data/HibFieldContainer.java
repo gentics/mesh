@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -547,6 +548,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	private Stream<HibNode> getNodeFromNodeField(FieldSchema field) {
 		return Optional.ofNullable(getNode(field.getName()))
 			.map(HibNodeField::getNode)
+			.filter(Objects::nonNull)
 			.map(Stream::of)
 			.orElseGet(Stream::empty);
 	}
@@ -577,7 +579,8 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 			return Optional.ofNullable(getNodeList(list.getName()))
 				.map(listField -> listField.getList().stream())
 				.orElseGet(Stream::empty)
-				.map(HibNodeField::getNode);
+				.map(HibNodeField::getNode)
+				.filter(n -> n != null);
 		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
 			return Optional.ofNullable(getMicronodeList(list.getName()))
 				.map(listField -> listField.getList().stream())

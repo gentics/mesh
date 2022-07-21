@@ -17,6 +17,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -399,6 +400,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					HibNode node = item.getNode();
+					if (node == null) {
+						return null;
+					}
 					List<String> languageTags;
 					if (container instanceof HibNodeFieldContainer) {
 						languageTags = Arrays.asList(container.getLanguageTag());
@@ -411,7 +415,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					HibNodeFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
 					return new NodeContent(node, itemContainer, languageTags, nodeType);
-				});
+				}).filter(Objects::nonNull);
 				if (filterArgument != null) {
 					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
 				}

@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -280,7 +281,9 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 			case NODE:
 				HibNodeField nodeField = container.getNode(name);
 				if (nodeField != null) {
-					fieldsMap.put(name, nodeField.getNode().getUuid());
+					Optional.ofNullable(nodeField.getNode()).ifPresent(referenced -> {
+						fieldsMap.put(name, referenced.getUuid());
+					});
 				}
 				break;
 			case LIST:
