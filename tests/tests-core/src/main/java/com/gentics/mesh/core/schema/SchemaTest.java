@@ -205,7 +205,8 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (Tx tx = tx()) {
+		// delete all nodes of the schema
+		tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
@@ -214,9 +215,15 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			for (HibNode node : schemaDao.getNodes(schema)) {
 				nodeDao.delete(node, context, false, true);
 			}
+		});
+		tx(tx -> {
+			SchemaDao schemaDao = tx.schemaDao();
+			BulkActionContext context = createBulkContext();
+			String uuid = getSchemaContainer().getUuid();
+			HibSchema schema = tx.schemaDao().findByUuid(uuid);
 			schemaDao.delete(schema, context);
 			assertNull("The schema should have been deleted", tx.schemaDao().findByUuid(uuid));
-		}
+		});
 	}
 
 	@Test

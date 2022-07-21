@@ -11,11 +11,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
+import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -574,5 +575,23 @@ public interface EventHelper extends BaseHelper {
 		return client.readIndex(indexName).async().map(response -> {
 			return response.getJsonObject(indexName).getJsonObject("mappings");
 		}).blockingGet();
+	}
+
+	/**
+	 * Wait for the given supplier to return true, but not longer than timeout milliseconds
+	 * @param booleanSupplier boolean supplier
+	 * @param timeout timeout
+	 * @return true if the boolean supplier returned true within the timeout or false otherwise
+	 */
+	default boolean waitFor(BooleanSupplier booleanSupplier, int timeout) {
+		long sleep = 100;
+		long startWait = System.currentTimeMillis();
+		boolean result = false;
+
+		while(!(result = booleanSupplier.getAsBoolean()) && (System.currentTimeMillis() - startWait) < timeout) {
+			sleep(sleep);
+		}
+
+		return result;
 	}
 }

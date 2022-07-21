@@ -2,9 +2,12 @@ package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +17,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class ActionContextBranchCacheTest extends AbstractMeshTest {
@@ -28,7 +32,7 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testBranchCache() {
+	public void testBranchCache() throws TimeoutException {
 		if (cache().isDisabled()) {
 			// Cache is disabled by default - no sane testing possible
 			return;
@@ -43,13 +47,12 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 
 		// Update the branch
 		BranchUpdateRequest request1 = new BranchUpdateRequest().setName(newName);
-		waitForEvent(MeshEvent.BRANCH_UPDATED, () -> {
+		try (ExpectedEvent ee = expectEvent(MeshEvent.BRANCH_UPDATED, 10_000)) {
 			call(() -> client().updateBranch(projectName(), initialBranchUuid(), request1));
-		});
-		// Event is processed async and thus the cache clear is also done async
-		sleep(100);
+		}
 
-		assertFalse("The cache should have been invalidated.", hasBranchInCache());
+		// Event is processed async and thus the cache clear is also done async
+		assertThat(waitFor(() -> !hasBranchInCache(), 10_000)).as("Cache has been invalidated within given timeout").isTrue();
 		assertEquals(0, branchCacheSize());
 
 		// Disable the cache and check caching
