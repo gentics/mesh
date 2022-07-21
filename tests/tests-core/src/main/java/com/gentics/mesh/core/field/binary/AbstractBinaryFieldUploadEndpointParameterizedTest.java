@@ -31,7 +31,7 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 
 	@Parameterized.Parameters
 	public static Collection<Object> paramData() {
-		return IntStream.of(1,2,5,10,25,50,100,200).boxed().collect(Collectors.toList());
+		return IntStream.of(1, 2, 5, 10, 25, 50, 100).boxed().collect(Collectors.toList());
 	}
 
 	@Parameterized.Parameter
