@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.8.6"
+version: "1.8.7"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -8398,7 +8398,7 @@ mediaType: application/json
                     example: "-backup,consistencyCheck"
     /graphdb/backup: 
         post: 
-            description: Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.
+            description: Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation. Irrelevant for non-OrientDB server.
             queryParameters: 
                 consistencyCheck: 
                     description: Specify whether the consistency check should be run before running the backup.
@@ -8443,7 +8443,7 @@ mediaType: application/json
                                 }
     /graphdb/export: 
         post: 
-            description: Invoke a orientdb graph database export.
+            description: Invoke a orientdb graph database export. Irrelevant for non-OrientDB server.
             responses: 
                 "200": 
                     description: Export process was invoked.
@@ -8480,7 +8480,7 @@ mediaType: application/json
                                 }
     /graphdb/import: 
         post: 
-            description: Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.
+            description: Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation. Irrelevant for non-OrientDB server.
             responses: 
                 "200": 
                     description: Database import command was invoked.
@@ -8517,7 +8517,7 @@ mediaType: application/json
                                 }
     /graphdb/restore: 
         post: 
-            description: Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data.
+            description: Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data. Irrelevant for non-OrientDB server.
             responses: 
                 "200": 
                     description: Database restore command was invoked.
@@ -13852,7 +13852,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.8.6",
+                                  "meshVersion" : "1.8.7",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
