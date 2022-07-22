@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATU
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	 * before putting them into the cache. With 6 permission bits, there are only 2^6=64 possible combinations and we will
 	 * keep only unique instances in the cache instead of up to 100_000 different instances.
 	 */
-	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = new HashMap<>();
+	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
 	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
