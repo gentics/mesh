@@ -25,6 +25,8 @@ include::content/docs/variables.adoc-include[]
 [[v1.9.0]]
 == 1.9.0 (22.07.2022)
 
+This version contains OrientDB version `3.1.18`.
+
 icon:plus[] It is now possible to use an external SQL database for data storage as alternative to the embedded OrientDB by using the commercially available `Gentics Mesh SQL`.
 
 icon:check[] Core: Possible errors during node migrations in branches have been fixed.
