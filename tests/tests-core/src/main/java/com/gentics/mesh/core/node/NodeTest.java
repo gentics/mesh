@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
@@ -393,36 +394,53 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testDeleteWithChildren() {
 		BulkActionContext bac = createBulkContext();
-		try (Tx tx = tx()) {
+		AtomicReference<String> folderUuid = new AtomicReference<>();
+		AtomicReference<String> subFolderUuid = new AtomicReference<>();
+		AtomicReference<String> subSubFolderUuid = new AtomicReference<>();
+
+		// 1. create folder with subfolder and subsubfolder
+		tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = project();
 			HibBranch initialBranch = project.getInitialBranch();
 			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
-			// 1. create folder with subfolder and subsubfolder
 			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
-			String folderUuid = folder.getUuid();
+			folderUuid.set(folder.getUuid());
 			HibNode subFolder = nodeDao.create(folder, user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
-			String subFolderUuid = subFolder.getUuid();
+			subFolderUuid.set(subFolder.getUuid());
 			HibNode subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
 				.setString("SubSubFolder");
-			String subSubFolderUuid = subSubFolder.getUuid();
+			subSubFolderUuid.set(subSubFolder.getUuid());
+		});
 
-			// 2. delete folder for initial release
+		// 2. delete folder for initial release
+		tx(tx -> {
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibNode subFolder = tx.nodeDao().findByUuid(project, subFolderUuid.get());
+
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
 			tx.nodeDao().deleteFromBranch(subFolder, ac, initialBranch, bac, false);
+		});
 
-			// 3. assert for new branch
+		// 3. assert that subfolder and subsubfolder were deleted
+		tx(tx -> {
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibNode folder = tx.nodeDao().findByUuid(project, folderUuid.get());
+
+			// assert that folder does not have children
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
-			// 4. assert for initial branch
-			List<String> nodeUuids = nodeDao.findAll(project).stream().map(HibNode::getUuid).collect(Collectors.toList());
-			assertThat(nodeUuids).as("All nodes").contains(folderUuid).doesNotContain(subFolderUuid, subSubFolderUuid);
-		}
+			// assert that folders are gone
+			List<String> nodeUuids = tx.nodeDao().findAll(project).stream().map(HibNode::getUuid).collect(Collectors.toList());
+			assertThat(nodeUuids).as("All nodes").contains(folderUuid.get()).doesNotContain(subFolderUuid.get(), subSubFolderUuid.get());
+		});
 	}
 
 	@Test
