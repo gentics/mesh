@@ -40,7 +40,7 @@ icon:check[] Cluster: The plugin initialization now waits not only for the write
 icon:check[] Core: Schema field names are now checked for uniqueness regardless of case sensitivity. This behavior was already
 enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
 
-icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
+icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
 
 [[v1.8.6]]
 == 1.8.6 (06.07.2022)
