@@ -196,6 +196,8 @@ Element for select group.
 |-----|------|-------------|---------------|
 | `additional_element` | boolean | Flag for letting the user add additional elements | `false` |
 
+When `additional_element` is `true`, and the POSTed data contains `[fieldname]=[fieldname]additional_field`, the custom value POSTed as `[fieldname]_additional` will be taken.
+
 ## `recaptcha`
 
 Element for recaptcha.
@@ -551,3 +553,12 @@ The following helpers are available for rendering mail bodies or HTML markup:
 * `formsInputType INPUT_ELEMENT`: returns the suggested input type for the given element
 * `formatDate DATE TARGET_FORMAT [SOURCE_FORMAT]`: returns the given date formatted with TARGET_FORMAT. When no SOURCE_FORMAT is specified, the input is assumed to be in the form YYY-MM-DD.
 * `formatTime TIME TARGET_FORMAT [SOURCE_FORMAT]`: same as `formatDate` for a time. When no SOURCE_FORMAT is specified the input is assumed to be in the form HH:mm. Note that both `formatDate` and `formatTime` can be used to format with any pattern parsable by the [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) class. The distinct helpers are just provided with different default source formats for convenience reasons.
+
+* startsWith checks if string variable starts with match string
+```handlebars
+{{#startsWith element.name 'hidden_element'}}
+    <!-- true action here -->
+  {{else}}
+    <!-- false action here -->
+{{/startsWith}}
+```

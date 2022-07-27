@@ -38,6 +38,7 @@ public class Form implements RestModel {
 	public final static String ERRORS_FIELD_NAME = "errors";
 
 	public final static String ERROR_FIELD_NAME = "error";
+	public static final String FIELD_VALUE = "value";
 
 	private String uuid;
 
@@ -385,7 +386,7 @@ public class Form implements RestModel {
 		flattened().forEach(elem -> {
 			if (elem.getName() != null) {
 				JsonObject elemJson = new JsonObject();
-				elem.addFormData(elemJson, container, e -> "value");
+				elem.addFormData(elemJson, container, e -> FIELD_VALUE);
 				object.put(elem.getName(), elemJson);
 				JsonObject elemError = errors.getJsonObject(elem.getName());
 				if (elemError != null) {
@@ -443,8 +444,19 @@ public class Form implements RestModel {
 			.forEach(elem -> {
 				JsonObject elemObj = new JsonObject(elem.toJson())
 					.put("isFile", elem instanceof FileElement);
+				Object valueProperty = elemObj.remove(FIELD_VALUE);
 
-				elem.addFormData(elemObj, container, e -> "value");
+				if (valueProperty != null) {
+					// This means the element has a property named value, which
+					// conflicts with field name for the actually submitted
+					// value for this element. So we store it under a different
+					// name. This will overwrite any field with the name
+					// "valueProperty", so that name must not be used as a
+					// custom property for form elements.
+					elemObj.put(FIELD_VALUE + "Property", valueProperty);
+				}
+
+				elem.addFormData(elemObj, container, e -> FIELD_VALUE);
 
 				array.add(addValueLabels(elem, elemObj));
 			});
@@ -475,7 +487,7 @@ public class Form implements RestModel {
 			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
 
 		if (elem.isMultivalue()) {
-			JsonArray values = resultObj.getJsonArray("value");
+			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
 			JsonArray labels = values.stream()
 				.sequential()
 				.filter(v -> v instanceof String)
@@ -486,7 +498,7 @@ public class Form implements RestModel {
 			return resultObj.put("valueLabel", labels);
 		}
 
-		String value = resultObj.getString("value");
+		String value = resultObj.getString(FIELD_VALUE);
 
 		return resultObj.put("valueLabel", valueLabels.getOrDefault(value, value));
 	}

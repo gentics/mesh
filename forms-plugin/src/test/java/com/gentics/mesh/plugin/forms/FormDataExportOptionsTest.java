@@ -19,11 +19,15 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import com.gentics.mesh.util.Tuple;
 
 /**
  * Test cases for getting reporting data with special export options.
@@ -86,20 +90,23 @@ public class FormDataExportOptionsTest extends AbstractFormsPluginIntegrationTes
 
 		records.add(StringUtils.join(headers, ","));
 
-		for (String value : Arrays.asList("one", "two", "three")) {
-			String value1 = value + " in field 1";
-			String value2 = value + " in field 2";
-			String value3 = value + " in field 3";
+		List<Tuple<String, String>> testList = Arrays.asList(
+			Tuple.tuple("one", "one"),
+			Tuple.tuple("new-line\ntwo", "new-line two"),
+			Tuple.tuple("test,\"three\"", "\"test,\"\"three\"\"\"")
+		);
+
+		for (Tuple<String, String> value : testList) {
 			RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("input1", value1)
-				.addFormDataPart("input2", value2)
-				.addFormDataPart("input3", value3)
+				.addFormDataPart("input1", value.v1())
+				.addFormDataPart("input2", value.v1())
+				.addFormDataPart("input3", value.v1())
 				.build();
 			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).post(requestBody).build();
 			Response response = client().newCall(postRequest).execute();
 			// add the line to the set of expected records
-			List<String> values = prepareValues(response, value1, value2, value3);
+			List<String> values = prepareValues(response, value.v2(), value.v2(), value.v2());
 
 			records.add(StringUtils.join(values, ","));
 		}

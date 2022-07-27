@@ -10,8 +10,17 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.3]]
+== 1.8.3 (2022-07-27)
+
+icon:check[] Forms: The documentation for form elements of type `selectgroup` has been extended to explain the proper usage of `additional_element`.
+
+icon:check[] Forms: Fixes reporting of submitted checkbox values for outgoing mails. The field of the checkbox element which contains the value to be stored when checked conflicts with the name of the field used for actually submitted values, so all checkboxes would appear to be checked in e-mails. The field `value` now only contains the actual submitted data, the field from the checkbox element will be named `valueProperty` in the e-mail templates.
+
+icon:check[] Export: Adds a UTF-8 BOM to fix charset detection, as well as proper escaping of special characters (double-quotes, commas, ...) for better compatibility with Excel. (SUP-12524)
+
 [[v1.8.2]]
-1.8.2 (2022-04-19)
+== 1.8.2 (2022-04-19)
 
 icon:check[] Forms: Fixed an issue where no form data was loaded when the form was not stored in the Mesh default language.
 
@@ -19,6 +28,20 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.24]]
+== 1.6.24 (2022-07-27)
+
+icon:check[] Forms: The documentation for form elements of type `selectgroup` has been extended to explain the proper usage of `additional_element`.
+
+icon:check[] Forms: Fixes reporting of submitted checkbox values for outgoing mails. The field of the checkbox element which contains the value to be stored when checked conflicts with the name of the field used for actually submitted values, so all checkboxes would appear to be checked in e-mails. The field `value` now only contains the actual submitted data, the field from the checkbox element will be named `valueProperty` in the e-mail templates.
+
+icon:check[] Export: Adds a UTF-8 BOM to fix charset detection, as well as proper escaping of special characters (double-quotes, commas, ...) for better compatibility with Excel. (SUP-12524)
+
+[[v1.6.21]]
+== 1.6.21 (2022-04-19)
+
+icon:check[] Forms: Fixed an issue where no form data was loaded when the form was not stored in the Mesh default language.
 
 [[v1.6.20]]
 == 1.6.20 (2022-02-16)

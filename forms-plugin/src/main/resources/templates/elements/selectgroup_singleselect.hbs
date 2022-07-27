@@ -3,6 +3,9 @@
 {{#each options }}
 		<option value="{{ key }}" {{#equals key data.value}}selected="selected"{{/equals}}>{{{ value }}}</option>
 {{/each}}
+{{#if additional_element }}
+		<option value="{{ name }}additional_field">... anderer Wert ...</option>
+{{/if}}
 	</select>
 	<label for="{{ name }}">{{{ label }}}</label>
 {{#if additional_element }}

@@ -37,6 +37,10 @@ public class FormHelper {
 		return options.inverse();
 	}
 
+	public CharSequence startsWith(String str, String prefix, Options options) throws IOException {
+    		return str != null && prefix != null && str.startsWith(prefix) ? options.fn() : options.inverse();
+	}
+
 	/**
 	 * Render the name of the template for the element with type given in the context
 	 *

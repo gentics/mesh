@@ -6,6 +6,8 @@ import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.config.ExportOptions;
 import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
+import com.google.common.base.Strings;
 import com.google.common.net.HttpHeaders;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
@@ -15,6 +17,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVFormat.Predefined;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.io.output.StringBuilderWriter;
 
 import java.io.IOException;
@@ -92,7 +95,14 @@ public class CsvExporter extends Exporter {
 		JsonArray dataFields = formData.getJsonArray("data");
 
 		StringBuilderWriter writer = new StringBuilderWriter();
-		CSVFormat format = baseFormat.withHeader(getHeaders(dataFields));
+		// UTF-8 BOM to detect the correct encoding
+		writer.write("\ufeff");
+
+		CSVFormat format = baseFormat
+			.withHeader(getHeaders(dataFields))
+			.withQuote('"')
+			.withIgnoreEmptyLines(false)
+			.withAllowMissingColumnNames();
 		List<List<String>> records = dataFields.stream()
 			.filter(e -> e instanceof JsonObject)
 			.map(e -> getExportedValues(((JsonObject) e)))
@@ -144,9 +154,9 @@ public class CsvExporter extends Exporter {
 
 		for (String fieldName : fieldNames) {
 			String fieldLabel = fieldLabels.getOrDefault(fieldName, fieldName);
-			String annotatedFieldLabel = fieldName.equals(fieldLabel)
+			String annotatedFieldLabel = this.normalizeValue(fieldName.equals(fieldLabel)
 					? fieldName
-					: fieldName + headerDelimiter + fieldLabel;
+					: fieldName + headerDelimiter + fieldLabel);
 
 			headers.add(annotatedFieldLabel);
 
@@ -204,9 +214,14 @@ public class CsvExporter extends Exporter {
 					fieldName));
 			}
 
-			ret.add(value == null ? "" : String.valueOf(value));
+			ret.add(value == null ? "" : this.normalizeValue(String.valueOf(value)));
 		}
 
 		return ret;
+	}
+
+	private String normalizeValue(String value) {
+		return Strings.nullToEmpty(value)
+			.replaceAll("\r?\n", " ");
 	}
 }
