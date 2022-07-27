@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh.plugin.commercial</groupId>
 	<artifactId>mesh-commercial-plugins</artifactId>
-	<version>1.6.24-SNAPSHOT</version>
+	<version>1.6.24</version>
 	<packaging>pom</packaging>
 
 	<parent>
