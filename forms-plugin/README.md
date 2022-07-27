@@ -196,6 +196,8 @@ Element for select group.
 |-----|------|-------------|---------------|
 | `additional_element` | boolean | Flag for letting the user add additional elements | `false` |
 
+When `additional_element` is `true`, and the POSTed data contains `[fieldname]=[fieldname]additional_field`, the custom value POSTed as `[fieldname]_additional` will be taken.
+
 ## `recaptcha`
 
 Element for recaptcha.
