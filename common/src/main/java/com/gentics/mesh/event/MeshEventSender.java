@@ -31,7 +31,7 @@ public final class MeshEventSender {
 	 * @return
 	 */
 	public Single<Boolean> isSearchIdle() {
-		return vertx.eventBus().rxSend(IS_SEARCH_IDLE.address, null)
+		return vertx.eventBus().rxRequest(IS_SEARCH_IDLE.address, null)
 			.map(msg -> (Boolean) msg.body());
 	}
 
@@ -41,7 +41,7 @@ public final class MeshEventSender {
 	 * @return
 	 */
 	public Completable refreshSearch() {
-		return vertx.eventBus().rxSend(SEARCH_REFRESH_REQUEST.address, null).toCompletable();
+		return vertx.eventBus().rxRequest(SEARCH_REFRESH_REQUEST.address, null).toCompletable();
 	}
 
 	/**

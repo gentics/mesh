@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.vertx.ext.web.Router;
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
@@ -59,6 +60,13 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 * @return Fluent API
 	 */
 	InternalEndpointRoute handler(Handler<RoutingContext> requestHandler);
+
+	/**
+	 * Create a sub router
+	 * @param router
+	 * @return
+	 */
+	InternalEndpointRoute subRouter(Router router);
 
 	/**
 	 * Wrapper for {@link Route#last()}

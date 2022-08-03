@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import java.util.Objects;
 
+import io.vertx.ext.auth.authorization.Authorization;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -97,7 +98,17 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public User isAuthorized(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
+	public User merge(User user) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public JsonObject attributes() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public User isAuthorized(Authorization authorization, Handler<AsyncResult<Boolean>> handler) {
 		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 

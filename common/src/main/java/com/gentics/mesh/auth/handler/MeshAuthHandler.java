@@ -2,12 +2,12 @@ package com.gentics.mesh.auth.handler;
 
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.AuthHandler;
+import io.vertx.ext.web.handler.AuthenticationHandler;
 
 /**
- * Common interface all all custom Gentics Mesh Auth handlers.
+ * Common interface all  custom Gentics Mesh Auth handlers.
  */
-public interface MeshAuthHandler extends AuthHandler {
+public interface MeshAuthHandler extends AuthenticationHandler {
 
 	/**
 	 * Finish the request with code 401.

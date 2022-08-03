@@ -1208,6 +1208,11 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 					// TODO Auto-generated method stub
 					return null;
 				}
+
+				@Override
+				public boolean cancel() {
+					return false;
+				}
 			});
 
 			fieldAPIHandler.handleUpdateField(ac, nodeUuid, fieldKey, attributes);

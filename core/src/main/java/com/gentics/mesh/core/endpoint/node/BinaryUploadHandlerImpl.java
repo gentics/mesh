@@ -162,7 +162,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
 
-		Set<FileUpload> fileUploads = ac.getFileUploads();
+		List<FileUpload> fileUploads = ac.getFileUploads();
 		if (fileUploads.isEmpty()) {
 			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
 		}

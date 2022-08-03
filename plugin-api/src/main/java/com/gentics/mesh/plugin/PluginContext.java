@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin;
 
 import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,13 +12,13 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.rest.client.MeshRestClient;
-
 import io.reactivex.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
@@ -25,13 +26,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.web.Cookie;
-import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.Locale;
-import io.vertx.ext.web.ParsedHeaderValues;
-import io.vertx.ext.web.Route;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
+import io.vertx.ext.web.*;
 
 /**
  * Wrapper for the regular Vert.x routing context.
@@ -179,6 +174,11 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
+	public <T> T get(String s, T t) {
+		return rc.get(s, t);
+	}
+
+	@Override
 	public <T> T remove(String key) {
 		return rc.remove(key);
 	}
@@ -209,13 +209,13 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
-	public @Nullable Cookie getCookie(String name) {
-		return rc.getCookie(name);
+	public String normalizedPath() {
+		return rc.normalizedPath();
 	}
 
 	@Override
-	public RoutingContext addCookie(Cookie cookie) {
-		return rc.addCookie(cookie);
+	public @Nullable Cookie getCookie(String name) {
+		return rc.getCookie(name);
 	}
 
 	@Override
@@ -229,11 +229,6 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
-	public Set<Cookie> cookies() {
-		return rc.cookies();
-	}
-
-	@Override
 	public @Nullable String getBodyAsString() {
 		return rc.getBodyAsString();
 	}
@@ -241,6 +236,16 @@ public class PluginContext implements RoutingContext {
 	@Override
 	public @Nullable String getBodyAsString(String encoding) {
 		return rc.getBodyAsString(encoding);
+	}
+
+	@Override
+	public @io.vertx.codegen.annotations.Nullable JsonObject getBodyAsJson(int i) {
+		return rc.getBodyAsJson(i);
+	}
+
+	@Override
+	public @io.vertx.codegen.annotations.Nullable JsonArray getBodyAsJsonArray(int i) {
+		return rc.getBodyAsJsonArray(i);
 	}
 
 	@Override
@@ -259,7 +264,12 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
-	public Set<FileUpload> fileUploads() {
+	public RequestBody body() {
+		return rc.body();
+	}
+
+	@Override
+	public List<FileUpload> fileUploads() {
 		return rc.fileUploads();
 	}
 
@@ -349,11 +359,6 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
-	public List<Locale> acceptableLocales() {
-		return rc.acceptableLocales();
-	}
-
-	@Override
 	public Map<String, String> pathParams() {
 		return rc.pathParams();
 	}
@@ -366,6 +371,11 @@ public class PluginContext implements RoutingContext {
 	@Override
 	public MultiMap queryParams() {
 		return rc.queryParams();
+	}
+
+	@Override
+	public MultiMap queryParams(Charset charset) {
+		return rc.queryParams(charset);
 	}
 
 	@Override

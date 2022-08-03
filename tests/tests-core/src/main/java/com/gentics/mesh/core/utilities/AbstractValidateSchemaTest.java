@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.vertx.ext.web.handler.HttpException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -14,7 +15,6 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.handler.impl.HttpStatusException;
 import okhttp3.Response;
 
 public abstract class AbstractValidateSchemaTest extends AbstractMeshTest {
@@ -339,7 +339,7 @@ public abstract class AbstractValidateSchemaTest extends AbstractMeshTest {
 			try {
 				Response r = this.httpPost(this.path, schema).execute();
 				if (r.code() != 200) {
-					throw new HttpStatusException(r.code());
+					throw new HttpException(r.code());
 				}
 				JsonObject obj = new JsonObject(r.body().string());
 				assertEquals("Status should be invalid", obj.getString("status"), "INVALID");
@@ -416,7 +416,7 @@ public abstract class AbstractValidateSchemaTest extends AbstractMeshTest {
 			try {
 				Response r = this.httpPost(this.path, schema).execute();
 				if (r.code() != 200) {
-					throw new HttpStatusException(r.code());
+					throw new HttpException(r.code());
 				}
 				JsonObject obj = new JsonObject(r.body().string());
 				assertEquals("Status should be valid", obj.getString("status"), "VALID");

@@ -16,24 +16,23 @@ import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
-import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
+import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
 
 /**
- * This class extends the Vert.x AuthHandler, so that it also works when the token is set as a cookie.
+ * This class extends the Vert.x AuthenticationHandlerImpl, so that it also works when the token is set as a cookie.
  * 
  * Central authentication handler for mesh. All requests to secured resources must pass this handler.
  */
 @Singleton
-public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandler, MeshAuthHandler {
+public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthProvider> implements JWTAuthHandler, MeshAuthHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthHandler.class);
 
@@ -54,24 +53,6 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 		this.meshOptions = meshOptions;
 
 		options = new JsonObject();
-	}
-
-	@Override
-	public JWTAuthHandler setAudience(List<String> audience) {
-		options.put("audience", new JsonArray(audience));
-		return this;
-	}
-
-	@Override
-	public JWTAuthHandler setIssuer(String issuer) {
-		options.put("issuer", issuer);
-		return this;
-	}
-
-	@Override
-	public JWTAuthHandler setIgnoreExpiration(boolean ignoreExpiration) {
-		options.put("ignoreExpiration", ignoreExpiration);
-		return this;
 	}
 
 	@Override
@@ -97,7 +78,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 	}
 
 	@Override
-	public void parseCredentials(RoutingContext arg0, Handler<AsyncResult<JsonObject>> arg1) {
+	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
 		// Not needed for this handler
 	}
 
@@ -155,7 +136,7 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 		}
 
 		// 4. Authenticate the found token using JWT
-		JsonObject authInfo = new JsonObject().put("jwt", token).put("options", options);
+		JsonObject authInfo = new JsonObject().put("token", token).put("options", options);
 		authProvider.authenticateJWT(authInfo, res -> {
 
 			// Authentication was successful.
@@ -189,4 +170,18 @@ public class MeshJWTAuthHandler extends AuthHandlerImpl implements JWTAuthHandle
 		});
 	}
 
+	@Override
+	public JWTAuthHandler scopeDelimiter(String s) {
+		return this;
+	}
+
+	@Override
+	public JWTAuthHandler withScope(String s) {
+		return this;
+	}
+
+	@Override
+	public JWTAuthHandler withScopes(List<String> list) {
+		return this;
+	}
 }

@@ -144,33 +144,36 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 			log.debug("Forwarding request to master {" + master.toString() + "}");
 		}
 
-		@SuppressWarnings("deprecation")
-		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
-			response.setChunked(true);
-			response.setStatusCode(forwardResponse.statusCode());
-			response.putHeader(MESH_FORWARDED_FROM_HEADER, master.getName());
-			forwardHeaders(response, forwardResponse);
-			printHeaders("Forward response headers", response.headers());
-			Pump.pump(forwardResponse, response)
-				.setWriteQueueMaxSize(8192)
-				.start();
-			forwardResponse.endHandler(v -> response.end());
-		});
+		httpClient.request(method, port, host, requestURI)
+				.compose(forwardRequest -> {
+					forwardHeaders(request, forwardRequest);
+					forwardRequest.putHeader(MESH_DIRECT_HEADER, "true");
+					forwardRequest.setChunked(true);
 
-		forwardHeaders(request, forwardRequest);
-		forwardRequest.putHeader(MESH_DIRECT_HEADER, "true");
-		forwardRequest.setChunked(true);
+					if (request.isEnded()) {
+						log.warn("Request to be proxied is already read");
+						proxyEndHandler(forwardRequest, rc.getBody());
+					} else {
+						request.exceptionHandler(e -> log.error("Could not forward request to Mesh: {}", e, e.getMessage()))
+								.endHandler(v -> proxyEndHandler(forwardRequest, null));
+						Pump.pump(request, forwardRequest)
+								.setWriteQueueMaxSize(8192)
+								.start();
+					}
 
-		if (request.isEnded()) {
-			log.warn("Request to be proxied is already read");
-			proxyEndHandler(forwardRequest, rc.getBody());
-		} else {
-			request.exceptionHandler(e -> log.error("Could not forward request to Mesh: {}", e, e.getMessage()))
-				.endHandler(v -> proxyEndHandler(forwardRequest, null));
-			Pump.pump(request, forwardRequest)
-				.setWriteQueueMaxSize(8192)
-				.start();
-		}
+					return forwardRequest.send();
+				}).onComplete(ar -> {
+					HttpClientResponse forwardResponse = ar.result();
+					response.setChunked(true);
+					response.setStatusCode(forwardResponse.statusCode());
+					response.putHeader(MESH_FORWARDED_FROM_HEADER, master.getName());
+					forwardHeaders(response, forwardResponse);
+					printHeaders("Forward response headers", response.headers());
+					Pump.pump(forwardResponse, response)
+							.setWriteQueueMaxSize(8192)
+							.start();
+					forwardResponse.endHandler(v -> response.end());
+				});
 	}
 
 	@Override

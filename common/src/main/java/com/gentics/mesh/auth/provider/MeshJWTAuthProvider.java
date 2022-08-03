@@ -8,6 +8,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
+import io.vertx.core.http.Cookie;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,7 +39,6 @@ import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
-import io.vertx.ext.web.Cookie;
 
 /**
  * Central mesh authentication provider which will handle JWT.
@@ -46,7 +48,7 @@ import io.vertx.ext.web.Cookie;
  * 
  */
 @Singleton
-public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
+public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
 
@@ -128,6 +130,11 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	@Override
 	public String generateToken(JsonObject claims, JWTOptions options) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public String generateToken(JsonObject jsonObject) {
 		throw new NotImplementedException();
 	}
 

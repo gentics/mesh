@@ -15,18 +15,18 @@ import com.gentics.mesh.http.MeshHeaders;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
+import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
 
 /**
  * Auth handler which will deal with anonymous auth handling. This handler will only auth the user if anonymous auth is enabled and the request does not contain
  * any auth header.
  */
 @Singleton
-public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAuthHandler {
+public class MeshAnonymousAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthProvider> implements MeshAuthHandler {
 
 	public static final String ANONYMOUS_USERNAME = "anonymous";
 
@@ -45,7 +45,7 @@ public class MeshAnonymousAuthHandler extends AuthHandlerImpl implements MeshAut
 	}
 
 	@Override
-	public void parseCredentials(RoutingContext arg0, Handler<AsyncResult<JsonObject>> arg1) {
+	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
 		// Not needed for this handler
 	}
 

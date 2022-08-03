@@ -59,7 +59,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.jwt.impl.JWTUser;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
@@ -168,8 +167,8 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				rc.next();
 				return;
 			}
-			if (user instanceof JWTUser) {
-				JWTUser token = (JWTUser) user;
+			if (user instanceof User) {
+				User token = (User) user;
 
 				List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
 				JsonObject decodedToken = token.principal();

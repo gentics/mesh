@@ -535,7 +535,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	public void initVertx(MeshOptions options) {
 		VertxOptions vertxOptions = new VertxOptions();
-		vertxOptions.getEventBusOptions().setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
 		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 
@@ -549,7 +548,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		vertxOptions.setPreferNativeTransport(true);
 		System.setProperty("vertx.cacheDirBase", options.getTempDirectory());
 		Vertx vertx = null;
-		if (vertxOptions.getEventBusOptions().isClustered()) {
+		if (options.getClusterOptions().isEnabled()) {
 			log.info("Creating clustered Vert.x instance");
 			vertx = createClusteredVertx(options, vertxOptions);
 		} else {
@@ -993,7 +992,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		try {
 			return fut.get(getClusteredVertxInitializationTimeoutInSeconds(), SECONDS);
 		} catch (Exception e) {
-			throw new RuntimeException("Error while creating clusterd Vert.x instance");
+			throw new RuntimeException("Error while creating clusterd Vert.x instance", e);
 		}
 	}
 

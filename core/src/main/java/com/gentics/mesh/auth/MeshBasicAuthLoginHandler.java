@@ -7,11 +7,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.AuthHandler;
-import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
+import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -23,7 +21,7 @@ import java.util.Base64;
  * The {@link #handle(RoutingContext)} method is overriden in order to support the {@link MeshJWTAuthProvider}.
  */
 @Singleton
-public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
+public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWTAuthProvider> {
 
 	final String realm;
 
@@ -37,18 +35,11 @@ public class MeshBasicAuthLoginHandler extends AuthHandlerImpl {
 	}
 
 	private void authorizeUser(RoutingContext ctx, User user) {
-		authorize(user, authZ -> {
-			if (authZ.failed()) {
-				ctx.fail(authZ.cause());
-				return;
-			}
-			// success, allowed to continue
-			ctx.next();
-		});
+		// authorization is done with roles
 	}
 
 	@Override
-	public void parseCredentials(RoutingContext context, Handler<AsyncResult<JsonObject>> handler) {
+	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
 		// Not needed
 	}
 

@@ -15,6 +15,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import io.vertx.core.http.*;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.Mesh;
@@ -29,8 +30,6 @@ import com.gentics.mesh.util.VersionUtil;
 import io.reactivex.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -205,45 +204,55 @@ public class MeshImpl implements Mesh {
 	public void invokeUpdateCheck() {
 		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
-		HttpClientRequest request = getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
-			"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
-				int code = rh.statusCode();
-				if (code < 200 || code >= 299) {
-					log.error("Update check failed with status code {" + code + "}");
-				} else {
-					rh.bodyHandler(bh -> {
-						JsonObject info = bh.toJsonObject();
-						String latestVersion = info.getString("latest");
 
-						if (currentVersion.contains("-SNAPSHOT")) {
-							log.warn("You are using a SNAPSHOT version {" + currentVersion
-								+ "}. This is potentially dangerous because this version has never been officially released.");
-							log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
-						} else {
-							int result = VersionUtil.compareVersions(latestVersion, currentVersion);
-							if (result == 0) {
-								log.info("Great! You are using the latest version");
-							} else if (result > 0) {
-								log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
-									+ latestVersion + "} is available.");
-							}
+		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
+				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), ar -> {
+					if (ar.succeeded()) {
+						HttpClientRequest req = ar.result();
+
+						MultiMap headers = req.headers();
+						headers.set("content-type", "application/json");
+						String hostname = getHostname();
+						if (!isEmpty(hostname)) {
+							headers.set("X-Hostname", hostname);
 						}
-					});
-				}
-			});
 
-		MultiMap headers = request.headers();
-		headers.set("content-type", "application/json");
-		String hostname = getHostname();
-		if (!isEmpty(hostname)) {
-			headers.set("X-Hostname", hostname);
-		}
-		request.exceptionHandler(err -> {
-			log.info("Failed to check for updates.");
-			log.debug("Reason for failed update check", err);
-		});
-		request.end();
+						req.send(ar2 -> {
+							if (ar2.succeeded()) {
+								HttpClientResponse response = ar2.result();
+								int code = response.statusCode();
+								if (code < 200 || code >= 299) {
+									log.error("Update check failed with status code {" + code + "}");
+								} else {
+									response.bodyHandler(bh -> {
+										JsonObject info = bh.toJsonObject();
+										String latestVersion = info.getString("latest");
 
+										if (currentVersion.contains("-SNAPSHOT")) {
+											log.warn("You are using a SNAPSHOT version {" + currentVersion
+													+ "}. This is potentially dangerous because this version has never been officially released.");
+											log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
+										} else {
+											int result = VersionUtil.compareVersions(latestVersion, currentVersion);
+											if (result == 0) {
+												log.info("Great! You are using the latest version");
+											} else if (result > 0) {
+												log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
+														+ latestVersion + "} is available.");
+											}
+										}
+									});
+								}
+							} else {
+								log.info("Failed to check for updates.");
+								log.debug("Reason for failed update check", ar2.cause());
+							}
+						});
+					} else {
+						log.info("Failed to check for updates.");
+						log.debug("Reason for failed update check", ar.cause());
+					}
+				});
 	}
 
 	/**
