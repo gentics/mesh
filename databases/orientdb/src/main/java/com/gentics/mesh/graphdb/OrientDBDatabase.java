@@ -751,6 +751,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	/**
+	 * Check if the database is currently running.
+	 * 
+	 * @return
+	 */
+	public boolean isRunning() {
+		return Orient.instance().isActive();
+	}
+
+	/**
 	 * Start the disk quota checker, if configured to do so and not started before
 	 */
 	private void startDiskQuotaChecker() {

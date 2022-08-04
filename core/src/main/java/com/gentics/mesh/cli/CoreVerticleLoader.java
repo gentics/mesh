@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Singleton;
 
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -24,8 +23,7 @@ import io.vertx.reactivex.core.Vertx;
 /**
  * Central loader for core verticles. Needed verticles will be listed and deployed here.
  */
-@Singleton
-public class CoreVerticleLoader {
+public abstract class CoreVerticleLoader implements VerticleLoader {
 
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
@@ -45,42 +43,41 @@ public class CoreVerticleLoader {
 	@Inject
 	public MeshOptions meshOptions;
 
-	private final Vertx rxVertx;
-	private String searchVerticleId;
+	protected final Vertx rxVertx;
+	protected String searchVerticleId;
 
-	@Inject
 	public CoreVerticleLoader(Vertx rxVertx) {
 		this.rxVertx = rxVertx;
 	}
 
 	private JsonObject defaultConfig;
 
-	/**
-	 * Load verticles that are configured within the mesh configuration.
-	 * 
-	 * @param initialProjects
-	 */
+	@Override
 	public Completable loadVerticles(List<String> initialProjects) {
 		defaultConfig = new JsonObject();
 		defaultConfig.put("port", meshOptions.getHttpServerOptions().getPort());
 		defaultConfig.put("host", meshOptions.getHttpServerOptions().getHost());
 		defaultConfig.put("initialProjects", initialProjects);
 
-		return Completable.mergeArray(
-			deployRestVerticle(),
-			deployMonitoringVerticle(),
-			deployJobWorkerVerticle(),
-			deploySearchVerticle());
+		return deployAll();
 	}
 
-	private Completable deployRestVerticle() {
+	protected Completable deployAll() {
+		return Completable.mergeArray(
+				deployRestVerticle(),
+				deployMonitoringVerticle(),
+				deployJobWorkerVerticle(),
+				deploySearchVerticle());
+	}
+
+	protected Completable deployRestVerticle() {
 		return rxVertx.rxDeployVerticle(restVerticle::get, new DeploymentOptions()
 			.setConfig(defaultConfig)
 			.setInstances(meshOptions.getHttpServerOptions().getVerticleAmount()))
 			.ignoreElement();
 	}
 
-	private Completable deployMonitoringVerticle() {
+	protected Completable deployMonitoringVerticle() {
 		if (meshOptions.getMonitoringOptions() != null && meshOptions.getMonitoringOptions().isEnabled()) {
 			return rxVertx.rxDeployVerticle(monitoringServerVerticle::get, new DeploymentOptions()
 				.setInstances(1))
@@ -90,7 +87,7 @@ public class CoreVerticleLoader {
 		}
 	}
 
-	private Completable deployJobWorkerVerticle() {
+	protected Completable deployJobWorkerVerticle() {
 		// the verticle is not deployed as worker verticle (any more). See comments of AbstractJobVerticle for details
 		return rxVertx.rxDeployVerticle(jobWorkerVerticle, new DeploymentOptions()
 			.setInstances(1)
@@ -98,7 +95,7 @@ public class CoreVerticleLoader {
 			.ignoreElement();
 	}
 
-	private Completable deploySearchVerticle() {
+	protected Completable deploySearchVerticle() {
 		// Only deploy search sync verticle if we actually have a configured ES
 		ElasticSearchOptions searchOptions = meshOptions.getSearchOptions();
 		if (searchOptions != null && searchOptions.getUrl() != null) {
@@ -114,11 +111,7 @@ public class CoreVerticleLoader {
 		}
 	}
 
-	/**
-	 * Dedeploy the serarch verticle.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Completable redeploySearchVerticle() {
 		return RxUtil.fromNullable(searchVerticleId)
 			.flatMapCompletable(rxVertx::rxUndeploy)
