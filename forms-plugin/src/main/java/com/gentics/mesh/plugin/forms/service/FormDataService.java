@@ -537,9 +537,13 @@ public class FormDataService {
 		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().map(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
+			MultiMap postedData = ctx.getPostedData();
 
 			// send mails to admin and user
 			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
+
+			// perform actions
+			ctx.getForm().flattened().forEach(e-> e.performSubmit(ctx.getForm(), postedData));
 
 			boolean isPoll = ctx.getForm().getType() == FormType.POLL;
 

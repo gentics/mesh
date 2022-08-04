@@ -32,6 +32,7 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 | `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported                                                                          | CSV                       |
 | `reCaptcha`           | object         | Recaptcha settings                                                                                                                 |                           |
 | `friendlyCaptcha`     | object         | FriendlyRecaptcha settings                                                                                                         |                           |
+| `eyepin`              | object         | Eyepin settings                                                                                                                    |                           |
 | `proxyOptions`        | object         | Proxy settings, if http proxy is required for accessing the recaptcha/friendlycaptcha verification URL                             |                           |
 | `fileUpload`          | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                         |                           |
 | `custom`              | Map of objects | Custom configurations you can use in your extensions and handlebars template                                                       |                           |
@@ -65,6 +66,10 @@ reCaptcha:
 friendlyCaptcha:
   siteKey: "your-site-key"
   secretKey: "your-secret-key"
+eyepin:
+  apiUrl: "https://apiv3.eyepin.com/interface3.php"
+  username: "your-username"
+  password: "your-password"
 proxyOptions:
   host: proxy.acme.com
   port: 4711
@@ -395,6 +400,137 @@ to allow editors to set the start and lang attribute when adding a FriendlyCaptc
     }
   ]
 }
+```
+
+# Eyepin
+
+Mandatory settings for the Eyepin newsletter registration to work are `apiUrl`, `username` and `password`.
+
+## Configuration Options
+These are the options available for the FriendlyCaptcha Implementation 
+
+| Key                   | Type     | Description                                                                                                                             | Default value |
+|-----------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------|---|
+| `apiUrl`             | string   | URL of the Eyepin API 
+| `username`           | string   | Username for the Eyepin account  
+| `password`         | string   | Password for the Eyepin account
+
+## Configuration inside of the CMS
+A form that contains an eyepin element must contain a usermail element as well. The eyepin element inside the form generator must have a customer id set.  
+
+Use this example configuration for the Gentics CMS form-editor.json [here](https://gentics.com/Content.Node/guides/feature_forms.html#configuration):
+
+```json
+{
+    "type": "eyepin",
+    "type_label_i18n_ui": {
+        "en": "Eyepin newsletter registration",
+        "de": "Eyepin Newsletteranmeldung"
+    },
+    "description_i18n_ui": {
+        "en": "Eyepin newsletter registration. The form must also contain a user email field.",
+        "de": "Eyepin Newsletteranmeldung. Das Formular muss zusätzlich ein Benutzer E-Mail Feld enthalten."
+    },
+    "label_property_ui": "label",
+    "is_container": false,
+    "properties": [
+        {
+            "name": "label",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "Label",
+                "de": "Label"
+            },
+            "description_i18n_ui": {
+                "en": "Label for this selection.",
+                "de": "Label für diese Auswahl."
+            }
+        },
+        {
+            "name": "mandatory",
+            "type": "BOOLEAN",
+            "label_i18n_ui": {
+                "en": "Mandatory",
+                "de": "Verpflichtend"
+            },
+            "description_i18n_ui": {
+                "en": "This checkbox is mandatory.",
+                "de": "Dieses Checkbox ist verpflichtend."
+            }
+        },
+        {
+            "name": "checked",
+            "type": "BOOLEAN",
+            "label_i18n_ui": {
+                "en": "Checked",
+                "de": "Ausgewählt"
+            },
+            "description_i18n_ui": {
+                "en": "This checkbox is checked.",
+                "de": "Dieses Checkbox ist ausgewählt."
+            }
+        },
+        {
+            "name": "customerId",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "Eyepin customer id (required)",
+                "de": "Eyepin Mandanten ID (Pflichtfeld)"
+            },
+            "description_i18n_ui": {
+                "en": "Customer ID in eyepin",
+                "de": "ID des Mandanten in Eyepin."
+            }
+        },
+        {
+            "name": "value",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "Value",
+                "de": "Wert"
+            },
+            "description_i18n_ui": {
+                "en": "Value that is selected by this checkbox.",
+                "de": "Wert der durch diese Checkbox gewählt wird."
+            },
+            "default_value_i18n": {
+                "en": "X",
+                "de": "X",
+                "pl": "X",
+                "cs": "X",
+                "hu": "X",
+                "sl": "X",
+                "ar": "X",
+                "bg": "X",
+                "bs": "X",
+                "da": "X",
+                "es": "X",
+                "et": "X",
+                "fa": "X",
+                "fi": "X",
+                "fr": "X",
+                "hr": "X",
+                "it": "X",
+                "ja": "X",
+                "ko": "X",
+                "mk": "X",
+                "nl": "X",
+                "pt": "X",
+                "ro": "X",
+                "ru": "X",
+                "sk": "X",
+                "sq": "X",
+                "sr": "X",
+                "tr": "X",
+                "uk": "X",
+                "ar_eg": "X",
+                "en_ca": "X",
+                "fr_ca": "X"
+            }
+        }
+    ]
+}
+
 ```
 
 # Form rendering

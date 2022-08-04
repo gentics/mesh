@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.4]]
+== 1.8.4 (2022-08-04)
+
+icon:plus[] Eyepin element: When the eyepin element is checked the submitted user email will be added to eyepin addresses for the purpose of sending future newsletters.
+
 [[v1.8.3]]
 == 1.8.3 (2022-07-27)
 
@@ -28,6 +33,12 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+
+[[v1.6.25]]
+== 1.6.25 (2022-08-04)
+
+icon:plus[] Eyepin element: When the eyepin element is checked the submitted user email will be added to eyepin addresses for the purpose of sending future newsletters.
 
 [[v1.6.24]]
 == 1.6.24 (2022-07-27)
