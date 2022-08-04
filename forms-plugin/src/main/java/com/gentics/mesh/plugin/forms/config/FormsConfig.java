@@ -28,6 +28,8 @@ public class FormsConfig {
 
 	private FriendlyCaptchaOptions friendlyCaptcha;
 
+	private EyepinOptions eyepin;
+
 	private FileUploadOptions fileUpload;
 
 	private ProxyOptions proxyOptions;
@@ -113,6 +115,14 @@ public class FormsConfig {
 
 	public void setFriendlyCaptcha(FriendlyCaptchaOptions friendlyCaptcha) {
 		this.friendlyCaptcha = friendlyCaptcha;
+	}
+
+	public EyepinOptions getEyepin() {
+		return eyepin;
+	}
+
+	public void setEyepin(EyepinOptions eyepin) {
+		this.eyepin = eyepin;
 	}
 
 	public FileUploadOptions getFileUpload() {

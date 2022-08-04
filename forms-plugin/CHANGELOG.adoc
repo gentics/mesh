@@ -10,6 +10,12 @@
 
 = Mesh Forms Plugin
 
+
+[[v1.6.25]]
+== 1.6.25 (2022-08-04)
+
+icon:plus[] Eyepin element: When the eyepin element is checked the submitted user email will be added to eyepin addresses for the purpose of sending future newsletters.
+
 [[v1.6.24]]
 == 1.6.24 (2022-07-27)
 

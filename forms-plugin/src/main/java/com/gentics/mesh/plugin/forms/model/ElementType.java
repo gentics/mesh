@@ -27,6 +27,8 @@ public enum ElementType {
 
 	friendlycaptcha(FriendlyCaptchaElement.class),
 
+	eyepin(EyepinElement.class),
+
 	file(FileElement.class), // OK
 
 	conditionalcontainer(ConditionalContainerElement.class);
@@ -40,8 +42,7 @@ public enum ElementType {
 	/**
 	 * Get the element type or null if not known
 	 * 
-	 * @param type
-	 *            type string
+	 * @param type type string
 	 * @return type or null
 	 */
 	public static ElementType get(String type) {
