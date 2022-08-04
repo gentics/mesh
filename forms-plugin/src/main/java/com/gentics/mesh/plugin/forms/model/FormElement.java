@@ -528,6 +528,14 @@ public abstract class FormElement implements RestModel {
 	}
 
 	/**
+	 * Performs submit action
+	 * @param postedData 
+	 */
+	@JsonIgnore
+	public void performSubmit(Form form, MultiMap postedData) {
+	}
+
+	/**
 	 * Create a shallow clone of this form element.
 	 * @return A shallow clone of this form element.
 	 */
