@@ -8,11 +8,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 @Singleton
 public class DatabaseAdminHandler {
@@ -29,19 +29,19 @@ public class DatabaseAdminHandler {
 	/**
 	 * Stop the database of the running Mesh instance, without stopping Mesh itself
 	 * 
-	 * @param rc
+	 * @param ac
 	 */
-	public void handleDatabaseStop(RoutingContext rc) {
+	public void handleDatabaseStop(InternalActionContext ac) {
 		try {
 			if (db.isRunning()) {
 				db.shutdown();
-				rc.response().setStatusCode(OK.code()).end();
+				ac.send(OK);
 			} else {
-				rc.response().setStatusCode(BAD_REQUEST.code()).end();
+				ac.send(BAD_REQUEST);
 			}
 		} catch (Exception e) {
 			log.error("Database stop failed", e);
-			rc.fail(error(INTERNAL_SERVER_ERROR, "error_internal"));
+			ac.fail(error(INTERNAL_SERVER_ERROR, "error_internal"));
 		}
 	}
 
@@ -50,17 +50,17 @@ public class DatabaseAdminHandler {
 	 * 
 	 * @param rc
 	 */
-	public void handleDatabaseStart(RoutingContext rc) {
+	public void handleDatabaseStart(InternalActionContext ac) {
 		try {
 			if (!db.isRunning()) {
 				db.setupConnectionPool();
-				rc.response().setStatusCode(OK.code()).end();
+				ac.send(OK);
 			} else {
-				rc.response().setStatusCode(BAD_REQUEST.code()).end();
+				ac.send(BAD_REQUEST);
 			}
 		} catch (Exception e) {
 			log.error("Database start failed", e);
-			rc.fail(error(INTERNAL_SERVER_ERROR, "error_internal"));
+			ac.fail(error(INTERNAL_SERVER_ERROR, "error_internal"));
 		}
 	}
 }

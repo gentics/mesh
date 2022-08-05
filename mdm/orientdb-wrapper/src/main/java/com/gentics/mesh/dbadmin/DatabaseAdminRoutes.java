@@ -1,11 +1,14 @@
 package com.gentics.mesh.dbadmin;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.endpoint.handler.DatabaseAdminHandler;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.handler.VersionUtils;
@@ -62,36 +65,43 @@ public class DatabaseAdminRoutes {
 			apiRouter.route("/dbstop")
 				.method(HttpMethod.POST)
 				.produces(APPLICATION_JSON)
-				.handler(wrapClientLimit(rc -> {
-					databaseAdminHandler.handleDatabaseStop(rc);
+				.handler(wrapClientLimit(ac -> {
+					databaseAdminHandler.handleDatabaseStop(ac);
 				})));
 		maybeSecure(
 			apiRouter.route("/dbstart")
 				.method(HttpMethod.POST)
 				.produces(APPLICATION_JSON)
-				.handler(rc -> {
-					databaseAdminHandler.handleDatabaseStart(rc);
-				}));
+				.handler(wrapClientLimit(ac -> {
+					databaseAdminHandler.handleDatabaseStart(ac);
+				})));
 	}
 
 	public Router getRouter() {
 		return router;
 	}
 
-	private Handler<RoutingContext> wrapClientLimit(Handler<RoutingContext> inner) {
+	private Handler<RoutingContext> wrapClientLimit(Handler<InternalActionContext> inner) {
 		return rc -> {
-			if (options.getStorageOptions().getAdministrationOptions() != null 
-					&& options.getStorageOptions().getAdministrationOptions().isLocalOnly()
-					&& !isLocalClient(rc)) {
-				rc.fail(FORBIDDEN.code());
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			if (options.getStorageOptions().getAdministrationOptions() == null) {
+				throw error(METHOD_NOT_ALLOWED, "error");
+			}
+			if (options.getStorageOptions().getAdministrationOptions().isLocalOnly() && !isLocalClient(rc)) {
+				throw error(FORBIDDEN, "error_local_client_only");
+			} else if (!options.getStorageOptions().getAdministrationOptions().isLocalOnly() && !ac.isAdmin()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
 			} else {
-				inner.handle(rc);
-			}			
+				inner.handle(ac);
+			}
 		};
 	}
 
 	private boolean isLocalClient(RoutingContext rc) {
-		return rc.request().host().equals(rc.request().remoteAddress().host()) || "127.0.0.1".equals(rc.request().host())  || "localhost".equals(rc.request().host());
+		if (rc.request().remoteAddress() == null) {
+			return false;
+		}
+		return rc.request().host().equals(rc.request().remoteAddress().host()) || "127.0.0.1".equals(rc.request().remoteAddress().host())  || "localhost".equals(rc.request().remoteAddress().host());
 	}
 
 	private void maybeSecure(Route route) {
