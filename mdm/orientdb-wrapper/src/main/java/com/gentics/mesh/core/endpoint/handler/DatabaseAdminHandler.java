@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -19,11 +20,13 @@ public class DatabaseAdminHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(DatabaseAdminHandler.class);
 
+	private final LivenessManager liveness;
 	private final OrientDBDatabase db;
 
 	@Inject
-	public DatabaseAdminHandler(OrientDBDatabase db) {
+	public DatabaseAdminHandler(OrientDBDatabase db, LivenessManager liveness) {
 		this.db = db;
+		this.liveness = liveness;
 	}
 
 	/**
@@ -35,6 +38,7 @@ public class DatabaseAdminHandler {
 		try {
 			if (db.isRunning()) {
 				db.shutdown();
+				liveness.setLive(false, "DB turned off manually");
 				ac.send(OK);
 			} else {
 				ac.send(BAD_REQUEST);
@@ -54,6 +58,7 @@ public class DatabaseAdminHandler {
 		try {
 			if (!db.isRunning()) {
 				db.setupConnectionPool();
+				liveness.setLive(true, "DB turned on, after manual off");
 				ac.send(OK);
 			} else {
 				ac.send(BAD_REQUEST);

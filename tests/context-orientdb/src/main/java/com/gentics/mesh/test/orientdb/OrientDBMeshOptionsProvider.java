@@ -5,6 +5,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
+import com.gentics.mesh.test.util.TestUtils;
 
 public class OrientDBMeshOptionsProvider implements MeshOptionsProvider {
 
@@ -12,6 +13,8 @@ public class OrientDBMeshOptionsProvider implements MeshOptionsProvider {
 	
 	public OrientDBMeshOptionsProvider() {
 		meshOptions = OptionsLoader.generateDefaultConfig(OrientDBMeshOptions.class, null);
+		meshOptions.getStorageOptions().getAdministrationOptions().setEnabled(true);
+		meshOptions.getStorageOptions().getAdministrationOptions().setPort(TestUtils.getRandomPort());
 	}
 	
 	@Override

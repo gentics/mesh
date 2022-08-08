@@ -49,5 +49,4 @@ public interface MonitoringRestClient extends MonitoringClientMethods {
 	 * Close the client.
 	 */
 	void close();
-
 }

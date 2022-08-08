@@ -2,7 +2,8 @@ package com.gentics.mesh.dbadmin;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import javax.inject.Inject;
 
@@ -98,10 +99,10 @@ public class DatabaseAdminRoutes {
 	}
 
 	private boolean isLocalClient(RoutingContext rc) {
-		if (rc.request().remoteAddress() == null) {
+		if (rc.request().remoteAddress() == null || rc.request().remoteAddress().host() == null) {
 			return false;
 		}
-		return rc.request().host().equals(rc.request().remoteAddress().host()) || "127.0.0.1".equals(rc.request().remoteAddress().host())  || "localhost".equals(rc.request().remoteAddress().host());
+		return rc.request().host().equals(rc.request().remoteAddress().host()) || rc.request().remoteAddress().host().startsWith("127.0.0.1") || rc.request().remoteAddress().host().startsWith("localhost");
 	}
 
 	private void maybeSecure(Route route) {

@@ -390,6 +390,7 @@ public class MeshTestContext implements TestRule {
 			.build();
 
 		monitoringClient = MonitoringRestClient.create(monitoringClientConfig);
+
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.clear().blockingAwait();
 		}
