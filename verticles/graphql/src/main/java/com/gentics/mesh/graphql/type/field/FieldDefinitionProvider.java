@@ -402,7 +402,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				}
 				return nodes
 					.filter(content -> content.getContainer() != null)
-					.filter(gc::hasReadPerm)
+					.filter(content1 -> gc.hasReadPerm(content1, nodeType))
 					.collect(Collectors.toList());
 			case "micronode":
 				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
@@ -483,7 +483,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 						NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
-						container = gc.requiresReadPermSoft(container, env);
+						container = gc.requiresReadPermSoft(container, env, type);
 						return new NodeContent(node, container, languageTags, type);
 					}
 				}

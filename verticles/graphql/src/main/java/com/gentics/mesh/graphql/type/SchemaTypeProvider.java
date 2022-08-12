@@ -112,7 +112,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
-			.filter(gc::hasReadPerm);
+			.filter(content1 -> gc.hasReadPerm(content1, type));
 
 			return applyNodeFilter(env, nodes);
 		}, NODE_PAGE_TYPE_NAME)

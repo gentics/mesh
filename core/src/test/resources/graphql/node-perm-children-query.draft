@@ -34,7 +34,7 @@
 		}
 	}
 }
-# [$.errors.length()=2]
+# [$.errors.length()=3]
 # [$.errors[0].message=graphql_error_missing_perm]
 # [$.errors[1].message=graphql_error_missing_perm]
 # [$.errors[0].type=missing_perm]

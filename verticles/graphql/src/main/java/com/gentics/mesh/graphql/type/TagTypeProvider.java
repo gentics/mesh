@@ -18,7 +18,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -83,7 +82,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						.map(node -> new NodeContent(node, node.findVersion(gc, languageTags, type), languageTags, type))
 						// Filter nodes without a container
 						.filter(content -> content.getContainer() != null)
-						.filter(gc::hasReadPerm);
+						.filter(content1 -> gc.hasReadPerm(content1, type));
 
 					return applyNodeFilter(env, contents);
 
