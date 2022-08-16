@@ -359,9 +359,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		HibProject project = tx.getProject(gc);
 		if (project != null) {
 			HibNode node = project.getBaseNode();
-			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
+			gc.requiresPerm(node, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
+			List<String> languageTags = getLanguageArgument(env);
 			HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 
 			return createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
