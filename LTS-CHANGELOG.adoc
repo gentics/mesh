@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.6.32]]
+== 1.6.32 (TBD)
+
+icon:check[] GraphQL: When a node with the root webpath was retrieved in a specific branch, a permission error was returned, even if user had permission for it. This has been fixed.
+
 [[v1.6.31]]
 == 1.6.31 (21.07.2022)
 
