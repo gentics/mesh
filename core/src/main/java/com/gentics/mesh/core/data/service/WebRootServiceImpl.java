@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIEL
 import static com.gentics.mesh.util.URIUtils.decodeSegment;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.stream.IntStream;
 
@@ -80,14 +81,14 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
-			// TODO Why this container? Any other container would also be fine?
-			Iterator<? extends NodeGraphFieldContainer> it = baseNode.getDraftGraphFieldContainers().iterator();
-			NodeGraphFieldContainer container = it.next();
-			nodePath.addSegment(new PathSegment(container, null, null, "/"));
-			stack.push("/");
-			nodePath.setInitialStack(stack);
-			pathStore.store(project, branch, type, path, nodePath);
-			return nodePath;
+			Optional<? extends NodeGraphFieldContainer> container = baseNode.getGraphFieldContainers(branch, type).stream().findFirst();
+			if (container.isPresent()) {
+				nodePath.addSegment(new PathSegment(container.get(), null, null, "/"));
+				stack.push("/");
+				nodePath.setInitialStack(stack);
+				pathStore.store(project, branch, type, path, nodePath);
+				return nodePath;
+			}
 		}
 
 		// Prepare the stack which we use for resolving
