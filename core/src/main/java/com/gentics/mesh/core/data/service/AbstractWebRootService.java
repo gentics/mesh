@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.service;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Stack;
 
 import com.gentics.mesh.cache.WebrootPathCache;
@@ -14,6 +15,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.webroot.PathPrefixUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.impl.PathImpl;
@@ -74,14 +76,14 @@ public abstract class AbstractWebRootService implements WebRootService {
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
-			// TODO Why this container? Any other container would also be fine?
-			Iterator<HibNodeFieldContainer> it = contentDao.getDraftFieldContainers(baseNode).iterator();
-			HibNodeFieldContainer container = it.next();
-			nodePath.addSegment(new PathSegmentImpl(container, null, null, "/"));
-			stack.push("/");
-			nodePath.setInitialStack(stack);
-			pathStore.store(project, branch, type, path, nodePath);
-			return nodePath;
+			Optional<HibNodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findFirst();
+			if (container.isPresent()) {
+				nodePath.addSegment(new PathSegmentImpl(container.get(), null, null, "/"));
+				stack.push("/");
+				nodePath.setInitialStack(stack);
+				pathStore.store(project, branch, type, path, nodePath);
+				return nodePath;
+			}
 		}
 
 		// Prepare the stack which we use for resolving
