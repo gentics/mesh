@@ -22,6 +22,11 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.9.1]]
+== 1.9.1 (TBD)
+
+icon:check[] GraphQL: When a node with the root webpath was retrieved in a specific branch, a permission error was returned, even if user had permission for it. This has been fixed.
+
 [[v1.9.0]]
 == 1.9.0 (22.07.2022)
 
