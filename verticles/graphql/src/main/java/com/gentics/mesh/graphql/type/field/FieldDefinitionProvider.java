@@ -421,7 +421,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				}
 				return nodes
 					.filter(content -> content.getContainer() != null)
-					.filter(gc::hasReadPerm)
+					.filter(content1 -> gc.hasReadPerm(content1, nodeType))
 					.collect(Collectors.toList());
 			case "micronode":
 				HibMicronodeFieldList micronodeList = container.getMicronodeList(schema.getName());
