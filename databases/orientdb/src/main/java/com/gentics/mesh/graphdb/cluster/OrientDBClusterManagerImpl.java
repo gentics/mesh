@@ -578,7 +578,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	/**
 	 * Check whether any of the cluster members is set to have exceeded the disk quota
-	 * @return Optional name of the (first found) instance having the disk quota exceeded
+	 * @return Optional uuid of the (first found) instance having the disk quota exceeded
 	 */
 	public Optional<String> getInstanceDiskQuotaExceeded() {
 		if (!isClusteringEnabled || hazelcastPlugin == null) {
@@ -586,7 +586,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		} else {
 			return hazelcastPlugin.getHazelcastInstance().getCluster().getMembers().stream()
 					.filter(m -> m.getBooleanAttribute(MESH_MEMBER_DISK_QUOTA_EXCEEDED) == Boolean.TRUE)
-					.map(m -> hazelcastPlugin.getNodeName(m)).findFirst();
+					.map(m -> m.getUuid()).findFirst();
 		}
 	}
 
