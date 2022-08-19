@@ -237,7 +237,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
-			.filter(gc::hasReadPerm);
+			.filter(content1 -> gc.hasReadPerm(content1, type));
 
 		return applyNodeFilter(env, contents);
 	}
@@ -263,7 +263,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
 			if (container != null) {
-				container = gc.requiresReadPermSoft(container, env);
+				container = gc.requiresReadPermSoft(container, env, type);
 			}
 			return new NodeContent(node, container, languageTags, type);
 		}
@@ -282,7 +282,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			Node nodeOfContainer = container.getParentNode();
 
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
-			container = gc.requiresReadPermSoft(container, env);
+			container = gc.requiresReadPermSoft(container, env, type);
 			List<String> langs = new ArrayList<>();
 			if (container != null) {
 				langs.add(container.getLanguageTag());
@@ -344,7 +344,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
 			NodeGraphFieldContainer container = node.findVersion(gc, languageTags, type);
-			container = gc.requiresReadPermSoft(container, env);
+			container = gc.requiresReadPermSoft(container, env, type);
 			return new NodeContent(node, container, languageTags, type);
 		}
 		return null;

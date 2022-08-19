@@ -22,6 +22,10 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] GraphQL: When a node with the root webpath was retrieved in a specific branch, a permission error was returned, even if user had permission for it. This has been fixed.
 
+icon:check[] GraphQL: The behaviour for getting a single node with `version`=`draft` using GraphQL has been changed. Before, if a user had only `read published` permissions
+and was requesting a draft node, the node content was returned in case the draft version matched the published version. Now a permission error will be returned
+without the actual content of the node.
+
 [[v1.6.31]]
 == 1.6.31 (21.07.2022)
 

@@ -382,15 +382,14 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean hasReadPermission(NodeGraphFieldContainer container, String branchUuid, String requestedVersion) {
+		ContainerType type = ContainerType.forVersion(requestedVersion);
 		Node node = container.getParentNode();
-		if (hasPermission(node, READ_PERM)) {
-			return true;
+		if (ContainerType.PUBLISHED.equals(type)) {
+			boolean published = container.isPublished(branchUuid);
+			return published && hasPermission(node, READ_PUBLISHED_PERM);
 		}
-		boolean published = container.isPublished(branchUuid);
-		if (published && hasPermission(node, READ_PUBLISHED_PERM)) {
-			return true;
-		}
-		return false;
+
+		return hasPermission(node, READ_PERM);
 	}
 
 	@Override

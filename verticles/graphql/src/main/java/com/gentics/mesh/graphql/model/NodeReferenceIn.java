@@ -48,7 +48,7 @@ public class NodeReferenceIn {
 					}
 					return false;
 				})
-				.filter(context::hasReadPerm)
+				.filter(container1 -> context.hasReadPerm(container1, type))
 				.findAny())
 					.map(referencingContent -> new NodeReferenceIn(
 						new NodeContent(null, referencingContent, content.getLanguageFallback(), type),
