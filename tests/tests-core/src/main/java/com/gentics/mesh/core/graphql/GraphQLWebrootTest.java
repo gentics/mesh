@@ -111,7 +111,7 @@ public class GraphQLWebrootTest extends AbstractMeshTest {
 		GraphQLResponse response = client().graphql(projectName, new GraphQLRequest()
 						.setQuery(getGraphQLQuery(getUuidByPath))
 						.setVariables(new JsonObject().put("path", "/")),
-						new VersioningParametersImpl().draft().setBranch(newBranchName)
+						new VersioningParametersImpl().published().setBranch(newBranchName)
 		).blockingGet();
 
 		assertThat(response.getErrors()).isNull();
