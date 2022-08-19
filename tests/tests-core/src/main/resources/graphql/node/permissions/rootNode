@@ -36,14 +36,14 @@ query Test($type: NodeVersion) {
 # [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isPublished=<is-null>
 # [ONLY_READ,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isDraft=<is-null>
 
-# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.rootNode=<is-null>
+# [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=$.data.rootNode.version=<is-null>
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_DRAFT]=checkperm:rootNode
 
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.version=1.0
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isPublished=true
 # [ONLY_READ_PUBLISHED,PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.isDraft=false
 
-# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode=<is-null>
+# [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=$.data.rootNode.version=<is-null>
 # [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_DRAFT]=checkperm:rootNode
 
 # [ONLY_READ_PUBLISHED,NO_PUBLISH_SELECT_PUBLISHED]=$.data.rootNode.version=<is-null>
