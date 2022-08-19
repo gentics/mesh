@@ -87,7 +87,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						.map(node -> new NodeContent(node, contentDao.findVersion(node, gc, languageTags, type), languageTags, type))
 						// Filter nodes without a container
 						.filter(content -> content.getContainer() != null)
-						.filter(gc::hasReadPerm);
+						.filter(content1 -> gc.hasReadPerm(content1, type));
 
 					return applyNodeFilter(env, contents);
 

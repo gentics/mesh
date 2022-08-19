@@ -17,6 +17,15 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.8.8]]
+== 1.8.8 (19.08.22)
+
+icon:check[] GraphQL: When a node with the root webpath was retrieved in a specific branch, a permission error was returned, even if user had permission for it. This has been fixed.
+
+icon:check[] GraphQL: The behaviour for getting a single node with `version`=`draft` using GraphQL has been changed. Before, if a user had only `read published` permissions
+and was requesting a draft node, the node content was returned in case the draft version matched the published version. Now a permission error will be returned
+without the actual content of the node.
+
 [[v1.8.7]]
 == 1.8.7 (22.07.2022)
 
@@ -26,14 +35,23 @@ icon:check[] Core: Possible errors during node migrations in branches have been 
 
 icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` can be used to configure automatic retries for requests to Mesh which failed due to a network error. By default retries are disabled. A value of -1 for `retryDelayMs` will automatically calculate a delay such that all tries are performed in the timespan of the call timeout configured for the Ok HTTP client.
 
-icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
+icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the liveness probe to return an unhealthy status.
 
 icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
 
 icon:check[] Core: Schema field names are now checked for uniqueness regardless of case sensitivity. This behavior was already
 enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
 
-icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
+icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
+
+[[v1.6.32]]
+== 1.6.32 (19.08.22)
+
+icon:check[] GraphQL: When a node with the root webpath was retrieved in a specific branch, a permission error was returned, even if user had permission for it. This has been fixed.
+
+icon:check[] GraphQL: The behaviour for getting a single node with `version`=`draft` using GraphQL has been changed. Before, if a user had only `read published` permissions
+and was requesting a draft node, the node content was returned in case the draft version matched the published version. Now a permission error will be returned
+without the actual content of the node.
 
 [[v1.6.31]]
 == 1.6.31 (21.07.2022)

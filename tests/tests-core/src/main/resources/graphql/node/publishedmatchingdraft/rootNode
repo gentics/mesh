@@ -1,0 +1,23 @@
+query Test($type: NodeVersion) {
+
+  rootNode(version: $type) {
+    uuid
+    path
+    version
+    ... on folder {
+        fields {
+            slug
+        }
+    }
+  }
+}
+# [select_published]=$.data.rootNode.uuid=<not-null>
+# [select_published]=$.data.rootNode.path=<not-null>
+# [select_published]=$.data.rootNode.version=<not-null>
+# [select_published]=$.data.rootNode.fields=<not-null>
+
+# [select_draft]=$.data.rootNode.uuid=<not-null>
+# [select_draft]=$.data.rootNode.path=<is-null>
+# [select_draft]=$.data.rootNode.version=<is-null>
+# [select_draft]=$.data.rootNode.fields=<is-null>
+# [select_draft]=checkperm:rootNode

@@ -6,12 +6,21 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 import java.io.IOException;
 
+import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
+import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
@@ -65,6 +74,48 @@ public class GraphQLWebrootTest extends AbstractMeshTest {
 
 		response = singleParameterQuery(getUuidByPath, "path", resultPath);
 		assertThat(response.getData().getJsonObject("node").getString("uuid")).isEqualTo(uuid);
+	}
+
+	@Test
+	public void testRootNodeInBranch() throws IOException {
+		final String getUuidByPath = "webroot/get-uuid-by-path";
+		final String projectName = "testProject";
+		final String newBranchName = "test1";
+
+		// create project
+		ProjectResponse project = createProject(projectName);
+
+		// create branch
+		grantAdmin();
+		waitForJobs(() -> {
+			BranchCreateRequest branchCreateRequest = new BranchCreateRequest();
+			branchCreateRequest.setName(newBranchName);
+			branchCreateRequest.setLatest(false);
+			call(() -> client().createBranch(projectName, branchCreateRequest));
+		}, JobStatus.COMPLETED, 1);
+		revokeAdmin();
+
+		NodeResponse request = new NodeResponse();
+		request.setUuid(project.getRootNode().getUuid());
+		// publish node in initial branch
+		call(() -> client().publishNode(projectName, project.getRootNode().getUuid()));
+		// publish node in new branch
+		call(() -> client().publishNode(projectName, project.getRootNode().getUuid(), new VersioningParametersImpl().setBranch(newBranchName)));
+
+		// assign only publish permission to root node
+		RolePermissionRequest permissionRequest = new RolePermissionRequest();
+		permissionRequest.getPermissions().setOthers(false, true).add(Permission.READ_PUBLISHED);
+		call(() -> client().updateRolePermissions(roleUuid(), "projects/" + projectName + "/nodes/" + project.getRootNode().getUuid(), permissionRequest));
+
+		// query
+		GraphQLResponse response = client().graphql(projectName, new GraphQLRequest()
+						.setQuery(getGraphQLQuery(getUuidByPath))
+						.setVariables(new JsonObject().put("path", "/")),
+						new VersioningParametersImpl().published().setBranch(newBranchName)
+		).blockingGet();
+
+		assertThat(response.getErrors()).isNull();
+		assertThat(response.getData().getJsonObject("node").getString("uuid")).isEqualTo(project.getRootNode().getUuid());
 	}
 
 	private GraphQLResponse singleParameterQuery(String queryName, String parameterName, String parameterValue) throws IOException {

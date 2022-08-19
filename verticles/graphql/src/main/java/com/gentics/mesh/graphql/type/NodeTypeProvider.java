@@ -186,7 +186,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return breadcrumbLoader.load(content.getNode(), context).thenApply(contents -> {
 			return contents.stream()
 					.filter(item -> item != null && item.getContainer() != null)
-					.filter(gc::hasReadPerm)
+					.filter(content1 -> gc.hasReadPerm(content1, type))
 					.collect(Collectors.toList());
 		});
 	}
@@ -217,7 +217,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		NodeDataLoader.Context context = new NodeDataLoader.Context(type);
 		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
 		return contentLoader.load(node, context).thenApply(l -> l.stream()
-				.filter(gc::hasReadPerm)
+				.filter(c -> gc.hasReadPerm(c, type))
 				.map(container -> new NodeContent(node, container, content.getLanguageFallback(), content.getType()))
 				.collect(Collectors.toList()));
 	}
@@ -880,7 +880,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public static DataFetcherResult<NodeContent> createNodeContentWithSoftPermissions(DataFetchingEnvironment env, GraphQLContext gc, HibNode node, List<String> languageTags, ContainerType type, HibNodeFieldContainer container) {
 		List<GraphQLError> errors = new ArrayList<>();
-		gc.requiresReadPermSoft(container, env).ifPresent(errors::add);
+		gc.requiresReadPermSoft(container, env, type).ifPresent(errors::add);
 
 		return DataFetcherResult.<NodeContent>newResult()
 				.data(new NodeContent(node, errors.isEmpty() ? container : null, languageTags, type))

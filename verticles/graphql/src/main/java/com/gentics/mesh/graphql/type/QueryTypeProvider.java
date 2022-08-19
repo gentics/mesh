@@ -45,7 +45,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.parameter.PagingParameters;
 import graphql.GraphQLError;
 import graphql.execution.DataFetcherResult;
 import org.apache.commons.lang3.tuple.Pair;
@@ -252,7 +251,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
-			.filter(gc::hasReadPerm).collect(Collectors.toList());
+			.filter(content1 -> gc.hasReadPerm(content1, type)).collect(Collectors.toList());
 
 		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream())).errors(errors).build();
 	}
@@ -359,9 +358,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		HibProject project = tx.getProject(gc);
 		if (project != null) {
 			HibNode node = project.getBaseNode();
-			List<String> languageTags = getLanguageArgument(env);
 			ContainerType type = getNodeVersion(env);
-			gc.requiresPerm(node, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
+			gc.requiresPerm(node, READ_PUBLISHED_PERM, READ_PERM);
+			List<String> languageTags = getLanguageArgument(env);
 			HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 
 			return createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
