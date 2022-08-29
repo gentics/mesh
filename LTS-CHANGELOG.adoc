@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Core: The included Mesh UI has been updated to version `1.3.4`.
 
+icon:check[] GraphQL: all requests to graphql v2 were failing if one of the schemas included an s3 binary field. This has been fixed.
+
 [[v1.8.8]]
 == 1.8.8 (19.08.2022)
 
@@ -53,6 +55,8 @@ icon:check[] Core: When a project was deleted, its associated version purge jobs
 == 1.6.33 (TBD)
 
 icon:check[] Core: The included Mesh UI has been updated to version `1.3.4`.
+
+icon:check[] GraphQL: all requests to graphql v2 were failing if one of the schemas included an s3 binary field. This has been fixed.
 
 [[v1.6.32]]
 == 1.6.32 (19.08.2022)
