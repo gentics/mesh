@@ -19,6 +19,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
+import com.gentics.mesh.util.UUIDUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -257,6 +262,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			binaryFieldSchema.setName("binary");
 			schema.addField(binaryFieldSchema);
 
+			S3BinaryFieldSchema s3BinarySchema = new S3BinaryFieldSchemaImpl();
+			s3BinarySchema.setName("s3Binary");
+			schema.addField(s3BinarySchema);
+
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName("number");
 			schema.addField(numberFieldSchema);
@@ -368,6 +377,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setMimeType("image/jpeg").setImageFocalPoint(new FocalPoint(0.2f, 0.3f));
+
+			// s3Binary
+			S3Binary s3binary = mesh().s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
+			S3BinaryGraphField field = container.createS3Binary("s3Binary", s3binary);
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");
