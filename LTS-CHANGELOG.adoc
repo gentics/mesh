@@ -33,6 +33,8 @@ icon:check[] GraphQL: The behaviour for getting a single node with `version`=`dr
 and was requesting a draft node, the node content was returned in case the draft version matched the published version. Now a permission error will be returned
 without the actual content of the node.
 
+icon:check[] Dependencies: The 'spring-security', 'gson', 'zip4j' libraries have been updated.
+
 [[v1.6.31]]
 == 1.6.31 (21.07.2022)
 
