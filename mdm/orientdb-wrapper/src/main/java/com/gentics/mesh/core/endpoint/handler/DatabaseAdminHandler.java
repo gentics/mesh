@@ -37,6 +37,7 @@ public class DatabaseAdminHandler {
 	public void handleDatabaseStop(InternalActionContext ac) {
 		try {
 			if (db.isRunning()) {
+				db.stop();
 				db.shutdown();
 				liveness.setLive(false, "DB turned off manually");
 				ac.send(OK);
@@ -58,6 +59,7 @@ public class DatabaseAdminHandler {
 		try {
 			if (!db.isRunning()) {
 				db.setupConnectionPool();
+				db.clusterManager().startAndSync();
 				liveness.setLive(true, "DB turned on, after manual off");
 				ac.send(OK);
 			} else {
