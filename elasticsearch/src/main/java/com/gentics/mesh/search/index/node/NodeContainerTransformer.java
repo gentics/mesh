@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,8 +23,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.jsoup.Jsoup;
 
 import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibImageDataField;
 import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
@@ -48,6 +50,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -203,59 +206,13 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 					}
 				}
 				break;
+			case S3BINARY:
+				S3HibBinaryField s3binaryField = container.getS3Binary(name);
+				fillCommonBinaryData(name, s3binaryField, fieldsMap, fieldSchema, binaryFieldInfo -> binaryFieldInfo.put("s3ObjectKey", s3binaryField.getBinary().getS3ObjectKey()));
+				break;
 			case BINARY:
 				HibBinaryField binaryField = container.getBinary(name);
-				if (binaryField != null) {
-					JsonObject binaryFieldInfo = new JsonObject();
-					fieldsMap.put(name, binaryFieldInfo);
-					binaryFieldInfo.put("filename", binaryField.getFileName());
-					binaryFieldInfo.put("mimeType", binaryField.getMimeType());
-					binaryFieldInfo.put("dominantColor", binaryField.getImageDominantColor());
-
-					HibBinary binary = binaryField.getBinary();
-					if (binary != null) {
-						binaryFieldInfo.put("filesize", binary.getSize());
-						binaryFieldInfo.put("sha512sum", binary.getSHA512Sum());
-						binaryFieldInfo.put("width", binary.getImageWidth());
-						binaryFieldInfo.put("height", binary.getImageHeight());
-					}
-
-					BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
-					if ((extractOptions != null && extractOptions.getMetadata()) ||
-						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
-						// Add the metadata
-						BinaryMetadata metadata = binaryField.getMetadata();
-						if (metadata != null) {
-							JsonObject binaryFieldMetadataInfo = new JsonObject();
-							binaryFieldInfo.put("metadata", binaryFieldMetadataInfo);
-
-							for (Entry<String, String> entry : metadata.getMap().entrySet()) {
-								binaryFieldMetadataInfo.put(entry.getKey(), entry.getValue());
-							}
-
-							Location loc = metadata.getLocation();
-							if (loc != null) {
-								JsonObject locationInfo = new JsonObject();
-								binaryFieldMetadataInfo.put("location", locationInfo);
-								locationInfo.put("lon", loc.getLon());
-								locationInfo.put("lat", loc.getLat());
-								// Add height outside of object to prevent ES error
-								binaryFieldMetadataInfo.put("location-z", loc.getAlt());
-							}
-						}
-					}
-
-					if ((extractOptions != null && extractOptions.getContent()) ||
-						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
-						// Plain text
-						String plainText = binaryField.getPlainText();
-						if (plainText != null) {
-							JsonObject file = new JsonObject();
-							binaryFieldInfo.put("file", file);
-							file.put("content", plainText);
-						}
-					}
-				}
+				fillCommonBinaryData(name, binaryField, fieldsMap, fieldSchema, binaryFieldInfo -> binaryFieldInfo.put("sha512sum", binaryField.getBinary().getSHA512Sum()));
 				break;
 			case BOOLEAN:
 				HibBooleanField booleanField = container.getBoolean(name);
@@ -410,7 +367,59 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 
 		}
 		document.put(fieldKey, fieldsMap);
+	}
 
+	private <T extends HibImageDataField> void fillCommonBinaryData(String name, T binaryField, Map<String, Object> fieldsMap, FieldSchema fieldSchema, Consumer<JsonObject> customizer) {
+		if (binaryField != null) {
+			JsonObject binaryFieldInfo = new JsonObject();
+			fieldsMap.put(name, binaryFieldInfo);
+			binaryFieldInfo.put("filename", binaryField.getFileName());
+			binaryFieldInfo.put("mimeType", binaryField.getMimeType());
+			binaryFieldInfo.put("dominantColor", binaryField.getImageDominantColor());
+
+			HibImageDataElement binary = binaryField.getBinary();
+			if (binary != null) {
+				binaryFieldInfo.put("filesize", binary.getSize());
+				binaryFieldInfo.put("width", binary.getImageWidth());
+				binaryFieldInfo.put("height", binary.getImageHeight());
+			}
+
+			BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
+			if ((extractOptions != null && extractOptions.getMetadata()) ||
+				(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
+				// Add the metadata
+				BinaryMetadata metadata = binaryField.getMetadata();
+				if (metadata != null) {
+					JsonObject binaryFieldMetadataInfo = new JsonObject();
+					binaryFieldInfo.put("metadata", binaryFieldMetadataInfo);
+
+					for (Entry<String, String> entry : metadata.getMap().entrySet()) {
+						binaryFieldMetadataInfo.put(entry.getKey(), entry.getValue());
+					}
+
+					Location loc = metadata.getLocation();
+					if (loc != null) {
+						JsonObject locationInfo = new JsonObject();
+						binaryFieldMetadataInfo.put("location", locationInfo);
+						locationInfo.put("lon", loc.getLon());
+						locationInfo.put("lat", loc.getLat());
+						// Add height outside of object to prevent ES error
+						binaryFieldMetadataInfo.put("location-z", loc.getAlt());
+					}
+				}
+			}
+
+			if ((extractOptions != null && extractOptions.getContent()) ||
+				(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
+				// Plain text
+				String plainText = binaryField.getPlainText();
+				if (plainText != null) {
+					JsonObject file = new JsonObject();
+					binaryFieldInfo.put("file", file);
+					file.put("content", plainText);
+				}
+			}
+		}
 	}
 
 	/**

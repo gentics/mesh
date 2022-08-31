@@ -122,6 +122,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return field.getBinary().getSHA512Sum();
 			}));
 
+		// .s3objectKey
+		type.field(
+			newFieldDefinition().name("s3ObjectKey").description("S3 object key of the S3 storage binary data.").type(GraphQLString).dataFetcher(fetcher -> {
+				S3HibBinaryField field = fetcher.getSource();
+				return field.getBinary().getS3ObjectKey();
+			}));
+
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize").description("Size of the binary data in bytes").type(GraphQLLong).dataFetcher(fetcher -> {
 			HibBinaryField field = fetcher.getSource();
