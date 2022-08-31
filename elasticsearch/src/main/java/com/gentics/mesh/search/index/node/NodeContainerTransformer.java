@@ -63,6 +63,8 @@ import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.S3BinaryExtractOptions;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -208,11 +210,23 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 				break;
 			case S3BINARY:
 				S3HibBinaryField s3binaryField = container.getS3Binary(name);
-				fillCommonBinaryData(name, s3binaryField, fieldsMap, fieldSchema, binaryFieldInfo -> binaryFieldInfo.put("s3ObjectKey", s3binaryField.getBinary().getS3ObjectKey()));
+				S3BinaryExtractOptions extractS3Options = ((S3BinaryFieldSchema) fieldSchema).getS3BinaryExtractOptions();
+				boolean shouldIncludeBinaryMetadata = (extractS3Options != null && extractS3Options.getMetadata()) || (extractS3Options == null && options.getSearchOptions().isIncludeBinaryFields());
+				boolean shouldIncludeBinaryContent = (extractS3Options != null && extractS3Options.getContent()) ||	(extractS3Options == null && options.getSearchOptions().isIncludeBinaryFields());
+
+				fillCommonBinaryData(name, s3binaryField, fieldsMap, fieldSchema, shouldIncludeBinaryContent, shouldIncludeBinaryMetadata, binaryFieldInfo -> {
+					binaryFieldInfo.put("s3ObjectKey", s3binaryField.getBinary().getS3ObjectKey());
+				});
 				break;
 			case BINARY:
 				HibBinaryField binaryField = container.getBinary(name);
-				fillCommonBinaryData(name, binaryField, fieldsMap, fieldSchema, binaryFieldInfo -> binaryFieldInfo.put("sha512sum", binaryField.getBinary().getSHA512Sum()));
+				BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
+				shouldIncludeBinaryMetadata = (extractOptions != null && extractOptions.getMetadata()) || (extractOptions == null && options.getSearchOptions().isIncludeBinaryFields());
+				shouldIncludeBinaryContent = (extractOptions != null && extractOptions.getContent()) ||	(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields());
+
+				fillCommonBinaryData(name, binaryField, fieldsMap, fieldSchema, shouldIncludeBinaryContent, shouldIncludeBinaryMetadata, binaryFieldInfo -> {
+					binaryFieldInfo.put("sha512sum", binaryField.getBinary().getSHA512Sum());
+				});
 				break;
 			case BOOLEAN:
 				HibBooleanField booleanField = container.getBoolean(name);
@@ -369,7 +383,8 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 		document.put(fieldKey, fieldsMap);
 	}
 
-	private <T extends HibImageDataField> void fillCommonBinaryData(String name, T binaryField, Map<String, Object> fieldsMap, FieldSchema fieldSchema, Consumer<JsonObject> customizer) {
+	private <T extends HibImageDataField> void fillCommonBinaryData(String name, T binaryField, Map<String, Object> fieldsMap, FieldSchema fieldSchema, 
+				boolean shouldIncludeBinaryContent, boolean shouldIncludeBinaryMetadata, Consumer<JsonObject> customizer) {
 		if (binaryField != null) {
 			JsonObject binaryFieldInfo = new JsonObject();
 			fieldsMap.put(name, binaryFieldInfo);
@@ -384,9 +399,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 				binaryFieldInfo.put("height", binary.getImageHeight());
 			}
 
-			BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
-			if ((extractOptions != null && extractOptions.getMetadata()) ||
-				(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
+			if (shouldIncludeBinaryMetadata) {
 				// Add the metadata
 				BinaryMetadata metadata = binaryField.getMetadata();
 				if (metadata != null) {
@@ -408,9 +421,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 					}
 				}
 			}
-
-			if ((extractOptions != null && extractOptions.getContent()) ||
-				(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
+			if (shouldIncludeBinaryContent) {
 				// Plain text
 				String plainText = binaryField.getPlainText();
 				if (plainText != null) {
