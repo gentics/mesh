@@ -117,7 +117,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 				.flatMap(res -> {
 					if (res) {
 						return s3BinaryStorage.read(bucket, objectKey).singleOrError();
-					} else return Single.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
+					} else return Single.error(error(BAD_REQUEST, "image_error_reading_failed"));
 				})
 				.onErrorResumeNext(e ->  Single.error(e))
 				.flatMap(fileBuffer -> {

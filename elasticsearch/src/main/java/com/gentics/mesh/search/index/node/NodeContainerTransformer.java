@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
@@ -44,12 +45,14 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -191,6 +194,60 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						fieldsMap.put(name, plainValue);
 					} else {
 						fieldsMap.put(name, value);
+					}
+				}
+				break;
+			case S3BINARY:
+				S3BinaryGraphField s3binaryField = container.getS3Binary(name);
+				if (s3binaryField != null) {
+					JsonObject binaryFieldInfo = new JsonObject();
+					fieldsMap.put(name, binaryFieldInfo);
+					binaryFieldInfo.put("filename", s3binaryField.getFileName());
+					binaryFieldInfo.put("mimeType", s3binaryField.getMimeType());
+					binaryFieldInfo.put("dominantColor", s3binaryField.getImageDominantColor());
+
+					S3Binary binary = s3binaryField.getS3Binary();
+					if (binary != null) {
+						binaryFieldInfo.put("filesize", binary.getSize());
+						binaryFieldInfo.put("s3ObjectKey", binary.getS3ObjectKey());
+						binaryFieldInfo.put("width", binary.getImageWidth());
+						binaryFieldInfo.put("height", binary.getImageHeight());
+					}
+
+					BinaryExtractOptions extractOptions = ((BinaryFieldSchema) fieldSchema).getBinaryExtractOptions();
+					if ((extractOptions != null && extractOptions.getMetadata()) ||
+						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
+						// Add the metadata
+						S3BinaryMetadata metadata = s3binaryField.getMetadata();
+						if (metadata != null) {
+							JsonObject binaryFieldMetadataInfo = new JsonObject();
+							binaryFieldInfo.put("metadata", binaryFieldMetadataInfo);
+
+							for (Entry<String, String> entry : metadata.getMap().entrySet()) {
+								binaryFieldMetadataInfo.put(entry.getKey(), entry.getValue());
+							}
+
+							Location loc = metadata.getLocation();
+							if (loc != null) {
+								JsonObject locationInfo = new JsonObject();
+								binaryFieldMetadataInfo.put("location", locationInfo);
+								locationInfo.put("lon", loc.getLon());
+								locationInfo.put("lat", loc.getLat());
+								// Add height outside of object to prevent ES error
+								binaryFieldMetadataInfo.put("location-z", loc.getAlt());
+							}
+						}
+					}
+
+					if ((extractOptions != null && extractOptions.getContent()) ||
+						(extractOptions == null && options.getSearchOptions().isIncludeBinaryFields())) {
+						// Plain text
+						String plainText = s3binaryField.getPlainText();
+						if (plainText != null) {
+							JsonObject file = new JsonObject();
+							binaryFieldInfo.put("file", file);
+							file.put("content", plainText);
+						}
 					}
 				}
 				break;

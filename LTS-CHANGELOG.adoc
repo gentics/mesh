@@ -26,6 +26,8 @@ icon:check[] GraphQL: all requests to graphql v2 were failing if one of the sche
 
 icon:check[] Dependencies: The 'spring-security', 'gson', 'zip4j' libraries have been updated.
 
+icon:check[] S3: A support of S3 fields has been added to the indexing engine.
+
 [[v1.6.32]]
 == 1.6.32 (19.08.2022)
 

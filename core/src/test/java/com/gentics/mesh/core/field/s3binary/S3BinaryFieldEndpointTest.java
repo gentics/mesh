@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.AWSTestMode.MINIO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -22,18 +23,26 @@ import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.assertj.MeshAssertions;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
-import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(awsContainer = MINIO, startServer = true)
 public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -53,15 +62,26 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
      */
     @Before
     public void updateSchema() throws IOException {
-        try (Tx tx = tx()) {
-            SchemaModel schema = schemaContainer("content").getLatestVersion().getSchema();
-            S3BinaryFieldSchema s3BinaryFieldSchema = new S3BinaryFieldSchemaImpl();
-            s3BinaryFieldSchema.setName(FIELD_NAME);
-            s3BinaryFieldSchema.setLabel("Some label");
-            schema.addField(s3BinaryFieldSchema);
-            schemaContainer("content").getLatestVersion().setSchema(schema);
-            tx.success();
-        }
+    	SchemaContainer schemaContainer = schemaContainer("content");
+		String schemaUuid = tx(() -> schemaContainer.getUuid());
+		SchemaContainerVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
+		assertNull("The schema should not yet have any changes", tx(() -> currentVersion.getNextChange()));
+
+		// 1. Setup changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		JsonObject elasticSearch = new JsonObject().put("test", "test");
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange(FIELD_NAME, "s3binary", "Some label", elasticSearch);
+		listOfChanges.getChanges().add(change);
+
+		// 3. Invoke migration
+		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
+		MeshAssertions.assertThat(status).matches("schema_changes_applied", "content");
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+
+		waitForJobs(() -> {
+			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(),
+				new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
+		}, JobStatus.COMPLETED, 1);
     }
 
     @Override
