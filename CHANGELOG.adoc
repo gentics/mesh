@@ -22,23 +22,10 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
-[[v1.9.0]]
-== 1.9.0 (22.07.2022)
+[[v1.8.7]]
+== 1.8.7 (TBD)
 
-icon:plus[] It is now possible to use an external SQL database for data storage as alternative to the embedded OrientDB by using the commercially available `Gentics Mesh SQL`.
-
-icon:check[] Core: Possible errors during node migrations in branches have been fixed.
-
-icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` can be used to configure automatic retries for requests to Mesh which failed due to a network error. By default retries are disabled. A value of -1 for `retryDelayMs` will automatically calculate a delay such that all tries are performed in the timespan of the call timeout configured for the Ok HTTP client.
-
-icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
-
-icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
-
-icon:check[] Core: Schema field names are now checked for uniqueness regardless of case sensitivity. This behavior was already
-enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
-
-icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
+icon:check[] S3: A support of S3 fields has been added to the indexing engine.
 
 [[v1.8.6]]
 == 1.8.6 (06.07.2022)
