@@ -24,6 +24,8 @@ icon:check[] Core: The included Mesh UI has been updated to version `1.3.4`.
 
 icon:check[] GraphQL: all requests to graphql v2 were failing if one of the schemas included an s3 binary field. This has been fixed.
 
+icon:check[] Dependencies: The 'spring-security', 'gson', 'zip4j' libraries have been updated.
+
 [[v1.6.32]]
 == 1.6.32 (19.08.2022)
 
@@ -32,8 +34,6 @@ icon:check[] GraphQL: When a node with the root webpath was retrieved in a speci
 icon:check[] GraphQL: The behaviour for getting a single node with `version`=`draft` using GraphQL has been changed. Before, if a user had only `read published` permissions
 and was requesting a draft node, the node content was returned in case the draft version matched the published version. Now a permission error will be returned
 without the actual content of the node.
-
-icon:check[] Dependencies: The 'spring-security', 'gson', 'zip4j' libraries have been updated.
 
 [[v1.6.31]]
 == 1.6.31 (21.07.2022)
