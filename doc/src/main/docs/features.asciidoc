@@ -876,6 +876,7 @@ Possible applications for the `urlFields` property are:
 * Nice URL handling
 * Redirection handling
 
+Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
 
 [options="header"]
 |======
