@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.8.9]]
-== 1.8.9 (TBD)
+== 1.8.9 (07.09.2022)
 
 icon:check[] Core: The included Mesh UI has been updated to version `1.3.4`.
 
@@ -56,7 +56,7 @@ enforced in the UI, and is now enforced in the REST API. The check is not perfor
 icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
 
 [[v1.6.33]]
-== 1.6.33 (TBD)
+== 1.6.33 (07.09.2022)
 
 icon:check[] Core: The included Mesh UI has been updated to version `1.3.4`.
 
