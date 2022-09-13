@@ -824,10 +824,51 @@ This functionality builds on top of the schema ```segmentField``` and ```urlFiel
 WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes.
 The WebRoot API endpoint uses this information to resolve a given path to a node UUID. Each node in turn will provide a single `segment` to the full path via the referenced `segmentField`.
 
-In addition to that it is also possible to create completely custom URLs to your content using the ```urlFields``` schema property. You can reference `string` and `string list` fields within your schema using the property.
-Those fields can in turn contain a custom path to your node. Gentics Mesh will only make sure that there are no collisions between custom paths of other nodes. Saving a node which uses the same urlField value would cause a conflict error.
-It is important to note that conflicts between custom url field values and existing paths which are build using the `segmentPath` property will not cause a conflict. You can use this in order to override an existing path to a node using a custom path.
+=== Url Fields
+In addition to ```segmentField``` it is also possible to create completely custom URLs to your content using the ```urlFields``` schema property. You can reference `string` and `string list` fields within your schema using the property.
+Gentics Mesh will only make sure that there are no collisions between custom paths of other nodes. Saving a node which uses the same urlField value would cause a conflict error.
+Those fields can in turn contain a custom path to your node. It is important to note that conflicts between custom url field values and existing paths which are build using the `segmentPath` property will not cause a conflict. You can use this in order to override an existing path to a node using a custom path.
 Custom paths via the `urlFields` property will always be resolved first and thus overrule the `segmentField` paths.
+Note that the custom path must start with a forward slash, otherwise it will be ignored.
+For example, the following will not work:
+
+[source,json]
+{
+  "fields": {
+    "myUrlField": "hello-world/example-page.html"
+  }
+}
+
+[options="header",cols="3*"]
+|======
+
+| Request
+| API endpoint
+| Response code
+| GET
+| /api/v2/docs/hello-world/example-page.html
+| 404
+|======
+
+
+By prepending the path with a forward slash, the same request will resolve the node correctly:
+[source,json]
+{
+  "fields": {
+    "myUrlField": "/hello-world/example-page.html"
+  }
+}
+
+[options="header",cols="3*"]
+|======
+
+| Request
+| API endpoint
+| Response code
+| GET
+| /api/v2/docs/hello-world/example-page.html
+| 200
+|======
 
 Possible applications for the `urlFields` property are:
 
