@@ -22,4 +22,10 @@ public @interface EnvironmentVariable {
 	 * @return
 	 */
 	String name();
+
+	/**
+	 * Whether this variable is sensitive (should not be logged)
+	 * @return
+	 */
+	boolean isSensitive() default false;
 }
