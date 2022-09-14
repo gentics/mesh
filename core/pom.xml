@@ -136,9 +136,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.gentics</groupId>
-			<artifactId>vertx-hazelcast3</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>hazelcast3-cluster-manager</artifactId>
 			<!-- Use the specified hazelcast version instead -->
 			<exclusions>
 				<exclusion>

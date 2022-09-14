@@ -497,6 +497,13 @@
 				<version>2.6.0</version>
 			</dependency>
 
+			<!-- Vertx Hazelcast cluster manager -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>hazelcast3-cluster-manager</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<!-- Mesh Test Internals -->
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
