@@ -10,6 +10,12 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.6.26]]
+== 1.6.26 (TBD)
+
+icon:check[] Custom queries: when a custom query specified a specific page size, the `hasMore` field was incorrectly
+taking into account the global `pageSize`. This has been fixed.
+
 [[v1.6.13]]
 == 1.6.13 (2020-09-22)
 
