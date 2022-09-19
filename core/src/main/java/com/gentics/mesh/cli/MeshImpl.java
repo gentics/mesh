@@ -35,7 +35,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import org.apache.cxf.jaxrs.client.WebClient;
 
 /**
  * @see Mesh
