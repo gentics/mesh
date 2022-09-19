@@ -36,6 +36,7 @@ public class MeshBasicAuthLoginHandler extends AuthenticationHandlerImpl<MeshJWT
 
 	private void authorizeUser(RoutingContext ctx, User user) {
 		// authorization is done with roles
+		ctx.next();
 	}
 
 	@Override
