@@ -35,6 +35,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import org.apache.cxf.jaxrs.client.WebClient;
 
 /**
  * @see Mesh
@@ -205,8 +206,12 @@ public class MeshImpl implements Mesh {
 		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
 
+		RequestOptions requestOptions = new RequestOptions();
+		requestOptions.setMethod(HttpMethod.GET);
+		requestOptions.setSsl(true);
+		requestOptions.setHost("getmesh.io/api/updatecheck?v=" + Mesh.getPlainVersion());
 		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
-				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), ar -> {
+				.request(requestOptions, ar -> {
 					if (ar.succeeded()) {
 						HttpClientRequest req = ar.result();
 
