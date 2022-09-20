@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.9.3]]
+== 1.9.3 (TBD)
+
+icon:plus[] Mails: The new `mailsource` property for `Form` and `UserMailElement` objects can be used to specify a Handlebars template directly instead of the path to a template file.
+
 [[v1.8.4]]
 == 1.8.4 (2022-08-04)
 

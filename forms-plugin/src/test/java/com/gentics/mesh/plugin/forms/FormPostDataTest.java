@@ -270,6 +270,36 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		doPostFile("filefield.json");
 	}
 
+	/**
+	 * Test usage of direct mailsource in Form and UserMailElement.
+	 */
+	@Test
+	public void testMailTemplate() throws IOException, MessagingException {
+		String uuid = createForm("mailsource.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false, "usermail1", "user@test.com");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 2))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(2);
+
+		for (MimeMessage msg : messages) {
+			String subject = msg.getSubject();
+			String content = msg.getContent().toString().replaceAll("\\r", "");
+
+			System.out.println(content);
+
+			assertThat(content.trim())
+				.as(String.format("Mail content for %s", subject))
+				.isEqualTo(String.format("Custom %s source, value: user@test.com", subject));
+		}
+	}
+
 	@Test
 	public void testDateFormat() throws IOException, MessagingException {
 		String uuid = createForm("datefield.json");

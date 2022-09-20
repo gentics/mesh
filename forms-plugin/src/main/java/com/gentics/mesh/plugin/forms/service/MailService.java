@@ -1,22 +1,11 @@
 package com.gentics.mesh.plugin.forms.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import com.gentics.mesh.plugin.common.service.RenderService;
-import com.gentics.mesh.plugin.forms.util.FormUtil;
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
+import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
 import com.gentics.mesh.plugin.forms.model.FileElement;
@@ -25,7 +14,6 @@ import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.UsermailElement;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
@@ -38,6 +26,15 @@ import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Singleton
 public class MailService {
@@ -84,10 +81,9 @@ public class MailService {
 		String adminEmail = StringUtils.trim(form.getEmail());
 		if (!StringUtils.isEmpty(adminEmail)) {
 			List<String> emails = Arrays.asList(StringUtils.split(adminEmail, ','));
+			TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
 
-			String template = StringUtils
-				.trim(StringUtils.defaultIfBlank(form.getMailtemp(), configuration.getAdminMailTemplate()));
-			if (!StringUtils.isBlank(template)) {
+			if (template.isValid()) {
 				String subject = StringUtils.defaultIfBlank(form.getMailsubject(), configuration.getAdminMailSubject())
 					.replace("[[FORMNAME]]", form.getName());
 
@@ -108,9 +104,10 @@ public class MailService {
 			if (StringUtils.isBlank(userEmail)) {
 				return;
 			}
-			String template = StringUtils
-				.trim(StringUtils.defaultIfBlank(element.getTemplate(), configuration.getUserMailTemplate()));
-			if (StringUtils.isBlank(template)) {
+
+			TemplateWrapper template = TemplateWrapper.wrap(element.getMailsource(), element.getTemplate(), configuration.getUserMailTemplate());
+
+			if (!template.isValid()) {
 				log.error(
 						"Could not send user mail for element {} in form {}, because no template configuration was found (template must be either configured in config.yml as \"userMailTemplate\" or set in the element as \"mailtemplate\").",
 						element.getLabelOrName(), form.getName());
@@ -119,7 +116,7 @@ public class MailService {
 			String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject()).replace(
 				"[[FORMNAME]]",
 				form.getName());
-			sendMail(projectName, form, formDataNode, rc, subject, template, Arrays.asList(userEmail), attachFileUploads);
+			sendMail(projectName, form, formDataNode, rc, subject, template, Collections.singletonList(userEmail), attachFileUploads);
 		});
 	}
 
@@ -127,22 +124,23 @@ public class MailService {
 	 * Send a mail
 	 *
 	 * @param projectName
+	 *            The project name
 	 * @param form
-	 *            form
+	 *            The form
 	 * @param formDataNode
-	 *            form data node
+	 *            The form data node
 	 * @param rc
-	 *            routing context
+	 *            The routing context
 	 * @param subject
-	 *            mail subject
+	 *            The mail subject
 	 * @param template
-	 *            mail template name
+	 *            The mail template
 	 * @param to
 	 *            recipient(s)
 	 * @param attachFiles
 	 *            flag for attaching binary fields as files
 	 */
-	private void sendMail(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc, String subject, String template, List<String> to,
+	private void sendMail(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc, String subject, TemplateWrapper template, List<String> to,
 			boolean attachFiles) {
 		String from = configuration.getFromAddress();
 		if (StringUtils.isBlank(from)) {
@@ -183,8 +181,8 @@ public class MailService {
 	/**
 	 * Transform the options to Vert.x configuration.
 	 *
-	 * @param mailOptions
-	 * @return Vert.x mail configuration
+	 * @param mailOptions The plugin mail options.
+	 * @return Vert.x mail configuration.
 	 */
 	private MailConfig convertConfig(MailOptions mailOptions) {
 		MailConfig config = new MailConfig();

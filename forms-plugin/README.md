@@ -113,14 +113,15 @@ custom:
 
 The following properties are used by the plugin itself (although some _may_ be empty or `null`):
 
-| Key | Type | Description | Default value |
-|-----|------|-------------|---------------|
-| `name` | string | Name of the form | REQUIRED |
-| `email` | string | Comma separated list of admin email addresses | `null` |
-| `mailsubject` | string | Mail subject for overriding `adminMailSubject` from the configuration | `null` |
-| `mailtemp` | string | Mail template for overriding `adminMailTemplate` from the configuration | `null` |
-| `successurl` | string | URL for redirection after user successfully filled the form | `null` |
-| `elements` | array of objects | Array of embedded elements | `[]` |
+| Key | Type | Description                                                                           | Default value |
+|-----|------|---------------------------------------------------------------------------------------|---------------|
+| `name` | string | Name of the form                                                                      | REQUIRED |
+| `email` | string | Comma separated list of admin email addresses                                         | `null` |
+| `mailsubject` | string | Mail subject for overriding `adminMailSubject` from the configuration                 | `null` |
+| `mailtemp` | string | Path to a mail template for overriding `adminMailTemplate` from the configuration     | `null` |
+ | `mailsource` | string | Mail template for overriding `mailtemp` property or `adminMailTemplate` configuration | `null` |
+| `successurl` | string | URL for redirection after user successfully filled the form                           | `null` |
+| `elements` | array of objects | Array of embedded elements                                                            | `[]` |
 
 Other custom elements provided in the form JSON will still be stored and made available during rendering.
 
@@ -182,10 +183,11 @@ No extra properties.
 Element for user`s email address.
 When filled, the plugin will send an email to the entered address after the form was successfully filled.
 
-| Key | Type | Description | Default value |
-|-----|------|-------------|---------------|
-| `mailsubject` | string | Mail subject for overriding `userMailSubject` from the configuration | |
-| `mailtemplate` | string | Mail template for overriding `userMailTemplate` from the configuration | |
+| Key | Type | Description                                                                               | Default value |
+|-----|------|-------------------------------------------------------------------------------------------|---------------|
+| `mailsubject` | string | Mail subject for overriding `userMailSubject` from the configuration                      | |
+| `mailtemplate` | string | Mail template for overriding `userMailTemplate` from the configuration                    | |
+| `mailsource` | string | Mail template for overriding `mailtemplate` property and `userMailTemplate` configuration | |
 
 ## `mandatorygroup`
 

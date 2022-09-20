@@ -52,6 +52,8 @@ public class Form implements RestModel {
 
 	private String mailtemp;
 
+	private String mailsource;
+
 	private String successurl;
 
 	private List<FormElement> elements = new ArrayList<>();
@@ -82,6 +84,7 @@ public class Form implements RestModel {
 		this.email = other.email;
 		this.mailsubject = other.mailsubject;
 		this.mailtemp = other.mailtemp;
+		this.mailsource = other.mailsource;
 		this.successurl = other.successurl;
 		this.elements = other.elements == null ? new ArrayList<>() : new ArrayList<>(other.elements);
 		this.currentPage = other.currentPage;
@@ -169,19 +172,35 @@ public class Form implements RestModel {
 	}
 
 	/**
-	 * Get email template
-	 * @return mail template
+	 * Get admin email template path.
+	 * @return mail template path
 	 */
 	public String getMailtemp() {
 		return mailtemp;
 	}
 
 	/**
-	 * Set email template
-	 * @param mailtemp mail template
+	 * Set admin email template path.
+	 * @param mailtemp mail template path
 	 */
 	public void setMailtemp(String mailtemp) {
 		this.mailtemp = mailtemp;
+	}
+
+
+	/**
+	 * Get the admin mail template source.
+	 * @return The admin mail template source.
+	 */
+	public String getMailsource() {
+		return mailsource;
+	}
+
+	/**
+	 * Set the admin mail template source.
+	 */
+	public void setMailsource(String mailsource) {
+		this.mailsource = mailsource;
 	}
 
 	/**
@@ -370,7 +389,7 @@ public class Form implements RestModel {
 	 * @return true if the form is completed, false if not
 	 */
 	public boolean isCompleted(NodeResponse formDataNode) {
-		return !flattened().filter(elem -> !elem.isCompleted(formDataNode)).findAny().isPresent();
+		return flattened().allMatch(elem -> elem.isCompleted(formDataNode));
 	}
 
 	/**
@@ -403,7 +422,7 @@ public class Form implements RestModel {
 	 *
 	 * @param results The {@code JsonObject} to gather the results into
 	 * @param formData The form data node containing
-	 * @return
+	 * @return The {@code results} object for fluent API.
 	 */
 	public JsonObject gatherPollResults(JsonObject results, FieldContainer formData) {
 		flattened().forEach(elem -> {
@@ -532,7 +551,7 @@ public class Form implements RestModel {
 	public Map<String, Boolean> getReportableElementsInfo() {
 		return flattened()
 			.filter(elt -> elt.isReportable() && StringUtils.isNotBlank(elt.getName()))
-			.collect(Collectors.toMap(e -> e.getName(), e -> e instanceof FileElement, (u, v) -> u, LinkedHashMap::new));
+			.collect(Collectors.toMap(FormElement::getName, e -> e instanceof FileElement, (u, v) -> u, LinkedHashMap::new));
 	}
 
 	/**
@@ -550,7 +569,7 @@ public class Form implements RestModel {
 	 * @return true if at least one FormpageElement is found
 	 */
 	public boolean isMultipage() {
-		return flattened().filter(elem -> elem instanceof FormpageElement).findFirst().isPresent();
+		return flattened().anyMatch(elem -> elem instanceof FormpageElement);
 	}
 
 

@@ -10,6 +10,11 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.9.3]]
+== 1.9.3 (TBD)
+
+icon:plus[] RenderService: Adds support for rendering inline templates by passing a `TemplateWrapper` object which contains the template source itself instead of a file path.
+
 [[v1.8.0]]
 == 1.8.0 (2022-03-25)
 

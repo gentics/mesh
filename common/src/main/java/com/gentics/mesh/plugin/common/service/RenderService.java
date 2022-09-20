@@ -1,14 +1,21 @@
 package com.gentics.mesh.plugin.common.service;
 
+import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
+import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Template;
+import com.github.jknack.handlebars.cache.NullTemplateCache;
 import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.common.template.impl.ConcurrentLRUCache;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
+import io.vertx.reactivex.impl.AsyncResultSingle;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -36,6 +43,8 @@ public class RenderService {
 	private static final Pattern LEADING_SLASHES = Pattern.compile("^/*");
 	private static final Pattern TRAILING_SLASHES = Pattern.compile("/*$");
 
+
+	private final ConcurrentLRUCache<String, Template> inlineTemplateCache;
 	private final HandlebarsTemplateEngine templateEngine;
 	private final String templateBasePath;
 
@@ -55,6 +64,11 @@ public class RenderService {
 
 		this.templateEngine = templateEngine;
 		this.templateBasePath = storageDirPath + "/templates/";
+		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
+		// TemplateCache implementations other than NullTemplateCache actually perform caching.
+		this.inlineTemplateCache = templateEngine.getDelegate().getHandlebars().getCache() instanceof NullTemplateCache
+			? new ConcurrentLRUCache<>(HandlebarsTemplateEngine.DEFAULT_MAX_CACHE_SIZE)
+			: null;
 
 		log.debug("RenderService initialized with storageDirPath: {}, templateBasePath: {}", storageDirPath, templateBasePath);
 	}
@@ -72,6 +86,11 @@ public class RenderService {
 	public RenderService(String templateBasePath, HandlebarsTemplateEngine templateEngine) {
 		this.templateBasePath = TRAILING_SLASHES.matcher(templateBasePath).replaceFirst("/");
 		this.templateEngine = templateEngine;
+		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
+		// TemplateCache implementations other than NullTemplateCache actually perform caching.
+		this.inlineTemplateCache = templateEngine.getDelegate().getHandlebars().getCache() instanceof NullTemplateCache
+			? new ConcurrentLRUCache<>(HandlebarsTemplateEngine.DEFAULT_MAX_CACHE_SIZE)
+			: null;
 
 		log.debug("RenderService initialized with templateBasePath: {}", templateBasePath);
 	}
@@ -109,26 +128,73 @@ public class RenderService {
 	 * Render the given template with the given context.
 	 *
 	 * <p>
-	 *     Convenience method for {@link #render(Map, String, Handler)}.
+	 *     Convenience method for {@link #render(Map, TemplateWrapper, Handler)}.
 	 * </p>
 	 *
-	 * @param ctx The context for rendering
-	 * @param template The template to render
-	 * @param resultHandler The result handler
+	 * @see #render(Map, TemplateWrapper, Handler)
+	 * @param ctx The context for rendering.
+	 * @param templatePath The path to the template to render.
+	 * @param resultHandler The result handler.
 	 */
-	public void render(JsonObject ctx, String template, Handler<AsyncResult<Buffer>> resultHandler) {
+	public void render(JsonObject ctx, String templatePath, Handler<AsyncResult<Buffer>> resultHandler) {
+		render(ctx.getMap(), TemplateWrapper.wrap(null, templatePath), resultHandler);
+	}
+
+	/**
+	 * Render the given template with the given context.
+	 *
+	 * <p>
+	 *     Convenience method for {@link #render(Map, TemplateWrapper, Handler)}.
+	 * </p>
+	 *
+	 * @see #render(Map, TemplateWrapper, Handler)
+	 * @param ctx The context for rendering.
+	 * @param templatePath The path to the template to render.
+	 * @param resultHandler The result handler.
+	 */
+	public void render(Map<String, Object> ctx, String templatePath, Handler<AsyncResult<Buffer>> resultHandler) {
+		render(ctx, TemplateWrapper.wrap(null, templatePath), resultHandler);
+	}
+
+	/**
+	 * Render the given template with the given context.
+	 *
+	 * <p>
+	 *     Convenience method for {@link #render(Map, TemplateWrapper, Handler)}.
+	 * </p>
+	 *
+	 * @see #render(Map, TemplateWrapper, Handler)
+	 * @param ctx The context for rendering.
+	 * @param template The template to render.
+	 * @param resultHandler The result handler.
+	 */
+	public void render(JsonObject ctx, TemplateWrapper template, Handler<AsyncResult<Buffer>> resultHandler) {
 		render(ctx.getMap(), template, resultHandler);
 	}
 
 	/**
 	 * Render the given template with the given context.
 	 *
-	 * @param ctx The context for rendering
-	 * @param template The template to render
-	 * @param resultHandler The result handler
+	 * <p>
+	 *     When the template is actually a path to a template file, the actual
+	 *     rendering is done by
+	 *     {@link HandlebarsTemplateEngine#rxRender(Map, String)}. Otherwise
+	 *     the template source will be compiled inline by
+	 *     {@link #renderSource(Map, String, Handler)}.
+	 * </p>
+	 *
+	 * @see #renderSource(Map, String, Handler)
+
+	 * @param ctx The context for rendering.
+	 * @param template The template to render.
+	 * @param resultHandler The result handler.
 	 */
-	public void render(Map<String, Object> ctx, String template, Handler<AsyncResult<Buffer>> resultHandler) {
-		templateEngine.render(ctx, adjustTemplatePath(template), resultHandler);
+	public void render(Map<String, Object> ctx, TemplateWrapper template, Handler<AsyncResult<Buffer>> resultHandler) {
+		if (template.isTemplatePath()) {
+			templateEngine.render(ctx, adjustTemplatePath(template.value()), resultHandler);
+		} else {
+			renderSource(ctx, template.value(), resultHandler);
+		}
 	}
 
 	/**
@@ -142,16 +208,99 @@ public class RenderService {
 	 * @param template The template to render
 	 */
 	public Single<Buffer> rxRender(JsonObject ctx, String template) {
-		return rxRender(ctx.getMap(), template);
+		return rxRender(ctx.getMap(), TemplateWrapper.wrap(null, template));
 	}
 
 	/**
 	 * Render the given template with the given context.
 	 *
-	 * @param ctx The context for rendering
-	 * @param template The template to render
+	 * <p>
+	 *     Convenience overload for {@link #rxRender(Map, TemplateWrapper)}.
+	 * </p>
+	 *
+	 * @see #rxRender(Map, TemplateWrapper)
+	 * @param ctx The context for rendering.
+	 * @param template The template to render.
+	 * @return A {@code Single} with the rendered result.
 	 */
-	public Single<Buffer> rxRender(Map<String, Object> ctx, String template) {
-		return templateEngine.rxRender(ctx, adjustTemplatePath(template));
+	public Single<Buffer> rxRender(JsonObject ctx, TemplateWrapper template) {
+		return rxRender(ctx.getMap(), template);
+	}
+
+	/**
+	 * Render the template with the given path using the given context.
+	 *
+	 * <p>
+	 *     Convenience overload for {@link #rxRender(Map, TemplateWrapper)}.
+	 * </p>
+	 *
+	 * @see #rxRender(Map, TemplateWrapper)
+	 * @param ctx The context for rendering.
+	 * @param templatePath The path to the template to render.
+	 */
+	public Single<Buffer> rxRender(Map<String, Object> ctx, String templatePath) {
+		return rxRender(ctx, TemplateWrapper.wrap(null, templatePath));
+	}
+
+	/**
+	 * Render the given template with the given context.
+	 *
+	 * <p>
+	 *     When the template is actually a path to a template file, the actual
+	 *     rendering is done by
+	 *     {@link HandlebarsTemplateEngine#rxRender(Map, String)}. Otherwise
+	 *     the template source will be compiled inline by
+	 *     {@link #renderSource(Map, String, Handler)}.
+	 * </p>
+	 *
+	 * @see #renderSource(Map, String, Handler)
+	 *
+	 * @param ctx The template context.
+	 * @param template The path to the template file, or the template source.
+	 * @return A {@code Single} with the rendered result.
+	 */
+	public Single<Buffer> rxRender(Map<String, Object> ctx, TemplateWrapper template) {
+		if (template.isTemplatePath()) {
+			return templateEngine.rxRender(ctx, adjustTemplatePath(template.value()));
+		}
+
+		return AsyncResultSingle.toSingle(handler -> renderSource(ctx, template.value(), handler));
+	}
+
+
+	/**
+	 * Render the given template source with the given template context.
+	 *
+	 * <p>
+	 *     Created templates will be cached (either by
+	 *     {@link com.github.jknack.handlebars.Handlebars} itself or by the
+	 *     {@code RenderService}).
+	 * </p>
+	 *
+	 * @param templateCtx The context for rendering the template.
+	 * @param source The template source.
+	 * @param resultHandler A handler for the rendered result.
+	 */
+	private void renderSource(Map<String, Object> templateCtx, String source, Handler<AsyncResult<Buffer>> resultHandler) {
+		try {
+			Template template = inlineTemplateCache != null ? inlineTemplateCache.get(source) : null;
+
+			if (template == null) {
+				template = templateEngine.getDelegate().getHandlebars().compileInline(source);
+
+				if (inlineTemplateCache != null) {
+					inlineTemplateCache.put(source, template);
+				}
+			}
+
+			Context engineCtx = Context.newBuilder(templateCtx)
+				.resolver(templateEngine.getDelegate().getResolvers())
+				.build();
+			Buffer result = Buffer.buffer(template.apply(engineCtx));
+
+			resultHandler.handle(Future.succeededFuture(result));
+		} catch (Exception e) {
+			resultHandler.handle(Future.failedFuture(e));
+		}
 	}
 }

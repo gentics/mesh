@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
@@ -18,7 +19,11 @@ public class UsermailElement extends FormElement {
 	private String subject;
 
 	@JsonProperty("mailtemplate")
+	@JsonPropertyDescription("Path to the e-mail template")
 	private String template;
+
+	@JsonProperty
+	private String mailsource;
 
 	public UsermailElement() {
 	}
@@ -28,6 +33,7 @@ public class UsermailElement extends FormElement {
 
 		this.subject = other.subject;
 		this.template = other.template;
+		this.mailsource = other.mailsource;
 	}
 
 	@JsonProperty("mailsubject")
@@ -40,14 +46,37 @@ public class UsermailElement extends FormElement {
 		this.subject = subject;
 	}
 
+	/**
+	 * Get the path to the user mail template.
+	 * @return The path to the user mail template.
+	 */
 	@JsonProperty("mailtemplate")
 	public String getTemplate() {
 		return template;
 	}
 
+	/**
+	 * Set the path to the user mail template.
+	 */
 	@JsonProperty("mailtemplate")
 	public void setTemplate(String template) {
 		this.template = template;
+	}
+
+	/**
+	 * Get the user mail template source.
+	 * @return The user mail template source.
+	 */
+	public String getMailsource() {
+		return mailsource;
+	}
+
+	/**
+	 * Set the user mail template source.
+	 */
+	public UsermailElement setMailsource(String mailsource) {
+		this.mailsource = mailsource;
+		return this;
 	}
 
 	@Override
