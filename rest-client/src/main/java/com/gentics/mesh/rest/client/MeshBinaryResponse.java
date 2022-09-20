@@ -23,7 +23,7 @@ public interface MeshBinaryResponse extends Closeable {
 	 * @return
 	 */
 	default Flowable<byte[]> getFlowable() {
-		return Flowable.defer(() -> {
+		Flowable<byte[]> f = Flowable.defer(() -> {
 			InputStream stream = getStream();
 			return Flowable.generate(emitter -> {
 				byte[] buffer = new byte[FLOWABLE_BUFFER_SIZE];
@@ -39,6 +39,8 @@ public interface MeshBinaryResponse extends Closeable {
 				}
 			});
 		});
+
+		return f.doFinally(() -> close());
 	}
 
 	/**
