@@ -362,6 +362,11 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			public T getBody() {
 				return body.get();
 			}
+
+			@Override
+			public void close() {
+				Optional.ofNullable(response).map(Response::body).ifPresent(ResponseBody::close);
+			}
 		});
 	}
 

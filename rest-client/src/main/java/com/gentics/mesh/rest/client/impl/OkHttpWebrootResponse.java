@@ -1,19 +1,21 @@
 package com.gentics.mesh.rest.client.impl;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
+import static com.gentics.mesh.http.MeshHeaders.WEBROOT_NODE_UUID;
+import static com.gentics.mesh.http.MeshHeaders.WEBROOT_RESPONSE_TYPE;
+import static com.gentics.mesh.rest.client.impl.Util.lazily;
 
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-import com.gentics.mesh.rest.client.MeshWebrootResponse;
-import okhttp3.Response;
-
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
 
-import static com.gentics.mesh.http.MeshHeaders.WEBROOT_RESPONSE_TYPE;
-import static com.gentics.mesh.http.MeshHeaders.WEBROOT_NODE_UUID;
-import static com.gentics.mesh.rest.client.impl.Util.lazily;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * OkHttp specific webroot response implementation.
@@ -56,5 +58,10 @@ public class OkHttpWebrootResponse implements MeshWebrootResponse {
 		return isBinary()
 			? null
 			: nodeResponse.get();
+	}
+
+	@Override
+	public void close() {
+		Optional.ofNullable(response).map(Response::body).ifPresent(ResponseBody::close);
 	}
 }
