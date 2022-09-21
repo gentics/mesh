@@ -13,9 +13,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -27,21 +26,19 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.test.ConnectionVerifier;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestContext;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
-import okhttp3.ConnectionPool;
 
 /**
  * Tests for possible resource leaks when using the MeshRestClient
  */
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
-public class ResourceLeakTest extends AbstractMeshTest {
+public class ConnectionLeakTest extends AbstractMeshTest {
 	public final static String BINARY_SCHEMA_NAME = "binary_schema";
 
 	public final static String BINARY_FIELD_NAME = "binary";
@@ -52,24 +49,12 @@ public class ResourceLeakTest extends AbstractMeshTest {
 
 	public final static String WEBROOT_PATH = "/" + FILENAME;
 
-	protected static ConnectionPool connectionPool;
-
-	protected int usedConnectionsBeforeTest = 0;
-
 	protected NodeResponse node;
 
 	protected int uploadSize;
 
-	/**
-	 * Setup the connection pool
-	 */
-	@BeforeClass
-	public static void setupOnce() {
-		connectionPool = MeshTestContext.okHttp.connectionPool();
-		Observable.interval(1, TimeUnit.SECONDS).forEach(l -> {
-			System.out.println(String.format("Connections: total %d, idle %d", connectionPool.connectionCount(), connectionPool.idleConnectionCount()));
-		});
-	}
+	@Rule
+	public ConnectionVerifier connectionVerifier = new ConnectionVerifier(MeshTestContext.okHttp);
 
 	/**
 	 * Setup everything required for the test
@@ -77,16 +62,8 @@ public class ResourceLeakTest extends AbstractMeshTest {
 	 */
 	@Before
 	public void setup() throws IOException {
-		setupConnectionPool();
 		setupBinarySchema();
 		setupBinaryData();
-	}
-
-	/**
-	 * Get connection pool and determine, how many connections are currently "in use"
-	 */
-	public void setupConnectionPool() {
-		usedConnectionsBeforeTest = connectionPool.connectionCount() - connectionPool.idleConnectionCount();
 	}
 
 	/**
@@ -118,16 +95,6 @@ public class ResourceLeakTest extends AbstractMeshTest {
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(),
 				FILENAME, CONTENT_TYPE));
 		uploadSize = buffer.length();
-	}
-
-	/**
-	 * Assert that connections "in use" did not change during test execution
-	 * @throws InterruptedException
-	 */
-	@After
-	public void assertConnectionClosed() throws InterruptedException {
-		waitForConnectionFreed();
-		assertThat(getConnectionsUsedByTest()).as("Connections used (and not ended) by test").isEqualTo(0);
 	}
 
 	// Test cases for node requests (non-blocking)
@@ -574,29 +541,5 @@ public class ResourceLeakTest extends AbstractMeshTest {
 			} catch (RuntimeException ignored) {
 			}
 		}
-	}
-
-	/**
-	 * Wait for the connection used by the test to become free
-	 * @throws InterruptedException
-	 */
-	protected void waitForConnectionFreed() throws InterruptedException {
-		// now wait 10 more seconds for the connection to be freed
-		CountDownLatch secondLatch = new CountDownLatch(1);
-		Flowable.interval(100, TimeUnit.MILLISECONDS).forEach(ignore -> {
-			if (getConnectionsUsedByTest() == 0) {
-				secondLatch.countDown();
-			}
-		});
-		secondLatch.await(10, TimeUnit.SECONDS);
-	}
-
-	/**
-	 * Determine the number of connections used by the test
-	 * @return number of used connections
-	 */
-	protected int getConnectionsUsedByTest() {
-		int usedConnectionsAfterTest = connectionPool.connectionCount() - connectionPool.idleConnectionCount();
-		return usedConnectionsAfterTest - usedConnectionsBeforeTest;
 	}
 }
