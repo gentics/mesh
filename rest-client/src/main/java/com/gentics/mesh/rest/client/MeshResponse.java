@@ -1,11 +1,19 @@
 package com.gentics.mesh.rest.client;
 
+import java.io.Closeable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface MeshResponse<T> {
+/**
+ * Common interface for Gentics Mesh REST Client responses.
+ * 
+ * @param <T>
+ *            Response type
+ * @implNote It is important to close the response by calling {@link #close()} when the response is no longer needed. Failing to do so might lead to a connection leak.
+ */
+public interface MeshResponse<T> extends Closeable {
 	/**
 	 * Retrieve the response headers
 	 * @return A map of all response headers
@@ -62,4 +70,7 @@ public interface MeshResponse<T> {
 	 * @return The body as the specified type
 	 */
 	T getBody();
+
+	@Override
+	void close();
 }
