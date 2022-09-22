@@ -66,7 +66,7 @@ enforced in the UI, and is now enforced in the REST API. The check is not perfor
 icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
 
 [[v.1.6.35]]
-== 1.6.36 (TBD)
+== 1.6.35 (TBD)
 
 icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
 
