@@ -210,7 +210,7 @@ public class MeshImpl implements Mesh {
 		requestOptions.setSsl(true);
 		requestOptions.setHost("getmesh.io/api/updatecheck?v=" + Mesh.getPlainVersion());
 		getVertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false))
-				.request(requestOptions, ar -> {
+				.request(HttpMethod.GET, 443, "getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), ar -> {
 					if (ar.succeeded()) {
 						HttpClientRequest req = ar.result();
 
