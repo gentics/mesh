@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.6.34]]
-== 1.6.34 (TBD)
+== 1.6.34 (22.09.2022)
 
 icon:check[] Java Rest Client: The classes `MeshWebrootResponse` and `MeshWebrootFieldResponse` now extend `Closeable` and calling `close()` on implementations
 will close the underlying response. See link:{{< relref "java-rest-client.asciidoc" >}}#_connection_leaks[Gentics Mesh Java Client] for examples of how to properly
