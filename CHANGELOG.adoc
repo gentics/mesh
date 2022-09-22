@@ -23,7 +23,7 @@ include::content/docs/variables.adoc-include[]
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
 [[v1.9.2]]
-== 1.9.2 (TBD)
+== 1.9.2 (22.09.2022)
 
 icon:check[] Core: The included Mesh UI has been updated to version `1.3.4`.
 
@@ -32,6 +32,10 @@ icon:check[] GraphQL: all requests to graphql v2 were failing if one of the sche
 icon:check[] Dependencies: The 'spring-security', 'gson', 'zip4j' libraries have been updated.
 
 icon:check[] S3: A support of S3 fields has been added to the indexing engine.
+
+icon:check[] Java Rest Client: The classes `MeshWebrootResponse` and `MeshWebrootFieldResponse` now extend `Closeable` and calling `close()` on implementations
+will close the underlying response. See link:{{< relref "java-rest-client.asciidoc" >}}#_connection_leaks[Gentics Mesh Java Client] for examples of how to properly
+close the responses.
 
 [[v1.9.1]]
 == 1.9.1 (19.08.2022)
