@@ -83,11 +83,11 @@
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
 
-| *MESH_CACHE_PATH_SIZE*
-| Override the path cache size.
-
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
+
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.
 
 | *INTEGER_VALUE_ENV*
 | 
@@ -125,6 +125,9 @@
 | *MESH_IMAGE_CACHE_DIRECTORY*
 | Override the path for image cache directory.
 
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.
+
 | *MESH_DEBUGINFO_LOG_ENABLED*
 | Enables the debug info log
 
@@ -155,11 +158,11 @@
 | *MESH_ELASTICSEARCH_USERNAME*
 | Override the configured Elasticsearch connection username.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
-| Override the cluster topology lock timeout in ms.
-
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
+| Override the cluster topology lock timeout in ms.
 
 | *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
 | Override the Vert.x eventBus check interval in ms.
@@ -236,11 +239,11 @@
 | *DOUBLE_VALUE_ENV*
 | 
 
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
 | *MESH_GRAPH_STARTSERVER*
 | Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.
 
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
@@ -353,11 +356,11 @@
 | *TEST_ENV_KEY*
 | 
 
-| *MESH_BINARY_DIR*
-| Override the configured binary data directory.
-
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
+
+| *MESH_BINARY_DIR*
+| Override the configured binary data directory.
 
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
@@ -389,11 +392,11 @@
 | *MESH_MAX_PURGE_BATCH_SIZE*
 | Override the maximum purge batch size.
 
-| *MESH_HTTPS_PORT*
-| Override the configured server https port.
-
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
+
+| *MESH_HTTPS_PORT*
+| Override the configured server https port.
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.

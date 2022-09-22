@@ -1,12 +1,15 @@
 package com.gentics.mesh.rest.client;
 
+import java.io.Closeable;
+
 /**
  * Response for {@link WebRootFieldClientMethods}
  * 
  * @author plyhun
  *
+ * @implNote It is important to close the response by calling {@link #close()} when the response is no longer needed. Failing to do so might lead to a connection leak.
  */
-public interface MeshWebrootFieldResponse {
+public interface MeshWebrootFieldResponse extends Closeable {
 
 	/**
 	 * Tests if the response is binary data.
@@ -63,4 +66,7 @@ public interface MeshWebrootFieldResponse {
 	 * @return
 	 */
 	String getResponseAsPlainText();
+
+	@Override
+	void close();
 }
