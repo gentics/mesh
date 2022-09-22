@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v.1.6.35]]
-== 1.6.36 (TBD)
+== 1.6.35 (TBD)
 
 icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
 
