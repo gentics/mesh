@@ -96,6 +96,48 @@ Method to set the hostname verification checks:
 
   * `MeshRestClientConfig.Builder#setHostnameVerification(boolean flag)`
 
+=== Connection Leaks
+
+In most cases, the connection to Mesh will implicitly be closed when the response object is created. The only exceptions are when loading binary data or doing a webroot or webrootField request (where the response might contain binary data).
+
+For those requests, it is important to make sure, that the response is properly closed in all cases, especially when the response data is not (fully) consumed (e.g. when an error happens while consuming the binary data).
+
+Incorrect example:
+[source,java]
+----
+client.downloadBinaryField("demo", "01ecd6048ee21471bb90af6deea40d2c", "en", "image")
+	.toSingle()
+	.doOnSuccess(response -> {
+		// an exception might be thrown here, which would leave the response open
+	})
+	.subscribe();
+----
+
+Better example:
+[source,java]
+----
+client.downloadBinaryField("demo", "01ecd6048ee21471bb90af6deea40d2c", "en", "image")
+	.toSingle()
+	.doAfterSuccess(response -> {
+		// we explicitly need to close the response here
+		response.close();
+	})
+	.doOnSuccess(response -> {
+		// an exception might be thrown here
+	})
+	.subscribe();
+----
+
+Example with blocking code:
+[source,java]
+----
+// try-with-resource will make sure, that close() is called on the response
+try (MeshBinaryResponse response = client.downloadBinaryField("demo", "01ecd6048ee21471bb90af6deea40d2c", "en", "image")
+	.toSingle().blockingGet()) {
+	// an exception might be thrown here
+}
+----
+
 == Monitoring Client
 
 The monitoring client can be used to interact with the link:{{< relref "monitoring.asciidoc" >}}#_endpoints[Monitoring Endpoints].

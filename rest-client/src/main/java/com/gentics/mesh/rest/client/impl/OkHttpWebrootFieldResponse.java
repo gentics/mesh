@@ -1,12 +1,13 @@
 package com.gentics.mesh.rest.client.impl;
 
+import static com.gentics.mesh.http.HttpConstants.TEXT_HTML_UTF8;
+import static com.gentics.mesh.http.HttpConstants.TEXT_PLAIN_UTF8;
 import static com.gentics.mesh.http.MeshHeaders.WEBROOT_NODE_UUID;
 import static com.gentics.mesh.http.MeshHeaders.WEBROOT_RESPONSE_TYPE;
-import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
-import static com.gentics.mesh.http.HttpConstants.TEXT_PLAIN_UTF8;
-import static com.gentics.mesh.http.HttpConstants.TEXT_HTML_UTF8;
 import static com.gentics.mesh.rest.client.impl.Util.lazily;
+import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang.StringUtils;
@@ -17,6 +18,7 @@ import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * {@link OkHttpClient} implementation of {@link MeshWebrootFieldResponse}.
@@ -87,5 +89,10 @@ public class OkHttpWebrootFieldResponse implements MeshWebrootFieldResponse {
 			return null;
 		}
 		return jsonStringResponse.get();
-	}	
+	}
+
+	@Override
+	public void close() {
+		Optional.ofNullable(response).map(Response::body).ifPresent(ResponseBody::close);
+	}
 }
