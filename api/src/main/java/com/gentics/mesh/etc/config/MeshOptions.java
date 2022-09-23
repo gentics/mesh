@@ -161,7 +161,7 @@ public abstract class MeshOptions implements Option {
 	private String livePath = "mesh.live";
 
 	@JsonIgnore
-	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.")
+	@EnvironmentVariable(name = MESH_INITIAL_ADMIN_PASSWORD_ENV, description = "Password which will be used during initial admin user creation.", isSensitive = true)
 	private String initialAdminPassword = PasswordUtil.humanPassword();
 
 	@JsonIgnore
