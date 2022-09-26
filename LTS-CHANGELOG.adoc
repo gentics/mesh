@@ -22,6 +22,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
 
+icon:check[] Core: when a binary file was manually deleted from the file system and the same file was uploaded again through the rest api, the binary
+upload endpoint was returning a success response even though the binary wasn't actually uploaded. The file will now be uploaded correctly.
+
 [[v1.8.10]]
 == 1.8.10 (22.09.2022)
 
@@ -69,6 +72,9 @@ icon:check[] Core: When a project was deleted, its associated version purge job 
 == 1.6.35 (TBD)
 
 icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
+
+icon:check[] Core: when a binary file was manually deleted from the file system and the same file was uploaded again through the rest api, the binary
+upload endpoint was returning a success response even though the binary wasn't actually uploaded. The file will now be uploaded correctly.
 
 [[v1.6.34]]
 == 1.6.34 (22.09.2022)
