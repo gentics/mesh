@@ -66,7 +66,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		Vertx vertx,
 		MeshOptions meshOptions,
 		BCryptPasswordEncoder passwordEncoder,
-		Database database,
+		Database database
 	) {
 		this.vertx = vertx;
 		this.meshOptions = meshOptions;
