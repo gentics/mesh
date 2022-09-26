@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
 
+icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
+
 [[v1.8.10]]
 == 1.8.10 (22.09.2022)
 
@@ -69,6 +71,8 @@ icon:check[] Core: When a project was deleted, its associated version purge job 
 == 1.6.35 (TBD)
 
 icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
+
+icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
 
 [[v1.6.34]]
 == 1.6.34 (22.09.2022)
