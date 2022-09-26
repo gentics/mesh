@@ -90,4 +90,11 @@ public @interface MeshTestSetting {
 	 * @return
 	 */
 	MeshOptionChanger optionChanger() default NO_CHANGE;
+
+	/**
+	 * If it should login the clients after initialization at the beginning of the test.
+	 *
+	 * @return
+	 */
+	boolean loginClients() default true;
 }
