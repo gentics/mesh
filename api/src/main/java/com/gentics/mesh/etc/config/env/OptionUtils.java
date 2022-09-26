@@ -16,6 +16,7 @@ import io.vertx.core.logging.LoggerFactory;
 public class OptionUtils {
 	static final Logger log = LoggerFactory.getLogger(Option.class);
 	private static final Pattern SPLIT_PATTERN = Pattern.compile(",");
+	private static final String MASK = "********";
 
 	/**
 	 * Convert a string value to a type. Throws an runtime exception when the type is not supported
@@ -80,7 +81,7 @@ public class OptionUtils {
 		}
 		Class<?> typeClazz = method.getParameterTypes()[0];
 		try {
-			log.info("Setting env via method {" + name + "=" + value + "}");
+			log.info("Setting env via method {" + name + "=" + (envInfo.isSensitive() ? MASK : value) + "}");
 			method.invoke(target, convertValue(typeClazz, value));
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException("Could not set environment variable via method {" + name + "} with value {" + value + "}", e);
@@ -100,7 +101,7 @@ public class OptionUtils {
 			return;
 		}
 		try {
-			log.info("Setting env via field access {" + name + "=" + value + "}");
+			log.info("Setting env via field access {" + name + "=" + (envInfo.isSensitive() ? MASK : value) + "}");
 			field.setAccessible(true);
 			field.set(target, convertValue(field.getType(), value));
 		} catch (IllegalArgumentException | IllegalAccessException ex) {
