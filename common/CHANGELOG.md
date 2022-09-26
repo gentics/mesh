@@ -10,8 +10,15 @@
 
 = Mesh Commercial Plugin Commons Changelog
 
+[[v1.6.26]]
+== 1.6.26 (TBD)
+
+CAUTION: Plugins require Mesh >= 1.6.34 to run.
+
+icon:check[] Common: The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+
 [[v1.6.19]]
-== 1.6.19 (TBD)
+== 1.6.19 (2022-02-14)
 
 icon:plus[] Common: Adds the `RenderService` which wraps Handlebars template rendering and makes sure that all template names start with the correct base template bath. The service can be injected automatically in which case the templates have to reside in _STORAGE_DIR/templates/_, or it can be created with an explicit base path.
 

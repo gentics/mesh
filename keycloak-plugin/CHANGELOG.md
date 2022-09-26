@@ -10,6 +10,13 @@
 
 = Mesh Keycloak Plugin Changelog
 
+[[v1.6.26]]
+== 1.6.26 (TBD)
+
+CAUTION: The plugin requires Mesh >= 1.6.34 to run.
+
+icon:check[] Common: The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+
 [[v1.6.18]]
 == 1.6.18 (2022-02-01)
 

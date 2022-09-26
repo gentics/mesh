@@ -37,6 +37,9 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.plugin.PluginDeploymentRequest;
 import com.gentics.mesh.core.rest.plugin.PluginListResponse;
@@ -88,6 +91,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
@@ -274,7 +278,7 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
+	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -829,12 +833,12 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeIndexClear() {
+	public MeshRequest<GenericMessageResponse> invokeIndexClear(ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invokeIndexSync() {
+	public MeshRequest<GenericMessageResponse> invokeIndexSync(ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -985,6 +989,18 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MeshWebrootResponse> webroot(String projectName, String[] pathSegments, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
+			ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName,
+			String[] pathSegments, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1211,6 +1227,28 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey,
+			S3BinaryUploadRequest request, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> extractMetadataNodeS3BinaryField(String projectName, String nodeUuid,
+			String fieldKey, S3BinaryMetadataRequest request, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> writable() {
 		throw new NotImplementedException();
 	}
 }
