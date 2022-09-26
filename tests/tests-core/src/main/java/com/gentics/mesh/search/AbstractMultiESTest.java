@@ -170,7 +170,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 		@Override
 		public boolean loginClients() {
-			return true;
+			return delegate.loginClients();
 		}
 	}
 

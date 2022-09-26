@@ -179,7 +179,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Password
 	 */
 	private HibUser authenticate(String username, String password, String newPassword) {
-		HibUser user = db.tx(tx -> tx.userDao().findByUsername(username));
+		HibUser user = db.tx(tx -> {
+			return tx.userDao().findByUsername(username);
+		});
 
 		if (user == null) {
 			if (log.isDebugEnabled()) {
@@ -215,7 +217,9 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		}
 
 		if (forcedPasswordChange) {
-			db.tx(() -> user.setPassword(newPassword));
+			db.tx(tx -> {
+				return tx.userDao().setPassword(user, newPassword);
+			});
 		}
 
 		return user;
