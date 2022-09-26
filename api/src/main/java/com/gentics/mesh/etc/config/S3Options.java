@@ -256,17 +256,14 @@ public class S3Options implements Option {
 		return corsAllowedHeaders;
 	}
 
-	@Setter
 	public void setCorsAllowedHeaders(Collection<String> corsAllowedHeaders) {
 		this.corsAllowedHeaders = corsAllowedHeaders == null ? null : new ArrayList<>(corsAllowedHeaders);
 	}
 
-	@Setter
 	public List<String> getCorsAllowedOrigins() {
 		return corsAllowedOrigins;
 	}
 
-	@Setter
 	public void setCorsAllowedOrigins(Collection<String> corsAllowedOrigins) {
 		this.corsAllowedOrigins = corsAllowedOrigins == null ? null : new ArrayList<>(corsAllowedOrigins);
 	}

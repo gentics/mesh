@@ -18,7 +18,9 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.8.11]]
-== 1.8.11 (TBD)
+== v1.8.11 (TBD)
+
+icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
 
 icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
 
@@ -65,8 +67,10 @@ enforced in the UI, and is now enforced in the REST API. The check is not perfor
 
 icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
 
-[[v1.6.35]]
+[[v.1.6.35]]
 == 1.6.35 (TBD)
+
+icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss"`, `audience` - `"aud"`) and token verification (`leeway` and `ignoreExpiration`).
 
 icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
 
