@@ -16,7 +16,7 @@
 
 CAUTION: The plugin requires Mesh >= 1.6.34 to run.
 
-icon:check[] Common: The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+icon:check[] The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
 

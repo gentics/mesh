@@ -15,7 +15,7 @@
 
 CAUTION: The plugin requires Mesh >= 1.6.34 to run.
 
-icon:check[] Common: The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+icon:check[] The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
 
 [[Released]]
 == Released
