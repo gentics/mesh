@@ -187,19 +187,15 @@ public class BinaryUploadHandler extends AbstractHandler {
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			Tuple<Binary, String> binaryAndUuid = binaries.findByHash(hash)
-					.mapInTx(b -> {
-						return Tuple.tuple(b, b != null ? b.getUuid() : null);
-					})
+			String binaryUuid = binaries.findByHash(hash)
+					.mapInTx(b -> b != null ? b.getUuid() : null)
 					.runInNewTx();
-			Binary binary = binaryAndUuid.v1();
-			String binaryUuid = binaryAndUuid.v2();
 
 			// Create a new binary uuid if the data was not already stored
-			if (binary == null) {
+			if (binaryUuid == null) {
 				ctx.setBinaryUuid(UUIDUtil.randomUUID());
 				ctx.setInvokeStore();
-			} else if (binaryUuid != null && fileNotExists(binaryUuid)) {
+			} else if (fileNotExists(binaryUuid)) {
 				ctx.setBinaryUuid(binaryUuid);
 				ctx.setInvokeStore();
 			}
