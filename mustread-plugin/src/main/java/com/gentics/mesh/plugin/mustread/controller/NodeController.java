@@ -14,6 +14,8 @@ import com.gentics.mesh.plugin.mustread.helper.LogHelper;
 import com.gentics.mesh.plugin.mustread.object.User;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
@@ -142,6 +144,7 @@ public class NodeController extends BaseController {
         return getClient()
                 .webroot(projectName, "/" + path, parameters)
                 .toSingle()
+                .doAfterSuccess(MeshWebrootResponse::close)
                 .map(response -> {
                     log.info(getLogHelper().generateLogMessage(projectName, String.format("Path '%s' already exists.", stringProjectName(response.getNodeResponse().getPath()))));
                     return response.getNodeResponse();

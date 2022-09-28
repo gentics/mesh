@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -89,6 +90,7 @@ public class FavoritePluginClient {
 	 */
 	public Completable deleteAllFavorites() {
 		return client.webroot(projectName, "/favorite_plugin").toSingle()
+				.doAfterSuccess(MeshWebrootResponse::close)
 				.flatMap(it -> client.findNodeChildren(projectName, it.getNodeUuid()).toSingle())
 				.flatMapObservable(res -> Observable.fromIterable(res.getData()))
 				.flatMapSingle(favorite -> delete(projectName, favorite)).ignoreElements();

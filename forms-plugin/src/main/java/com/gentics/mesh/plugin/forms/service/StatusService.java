@@ -255,7 +255,9 @@ public class StatusService {
 			return client
 					.webroot(projectName, pathPrefix + "/Forms Plugin",
 							new GenericParametersImpl().setETag(false).setFields("fields", "uuid"))
-					.toSingle().map(MeshWebrootResponse::getNodeResponse);
+					.toSingle()
+					.doAfterSuccess(MeshWebrootResponse::close)
+					.map(MeshWebrootResponse::getNodeResponse);
 		});
 	}
 

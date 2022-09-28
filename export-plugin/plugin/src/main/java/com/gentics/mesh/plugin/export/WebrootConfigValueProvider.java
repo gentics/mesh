@@ -53,6 +53,7 @@ public class WebrootConfigValueProvider implements ConfigValueProvider {
 		}
 
 		return obs
+			.doAfterNext(MeshWebrootResponse::close)
 			.filter(response -> !response.isBinary())
 			.firstOrError()
 			.map(MeshWebrootResponse::getNodeResponse)

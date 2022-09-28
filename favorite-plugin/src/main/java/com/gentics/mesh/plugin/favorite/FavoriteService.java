@@ -159,6 +159,7 @@ public class FavoriteService {
 	protected Single<NodeResponse> getSection(String projectName, String type) {
 		return adminClient.webroot(projectName, new String[]{FAVORITE_PLUGIN_NAME, type})
 				.toSingle()
+				.doAfterSuccess(MeshWebrootResponse::close)
 				.map(MeshWebrootResponse::getNodeResponse)
 				.onErrorResumeNext(t -> ifNotFound(t, () -> createSection(projectName, type)));
 	}
@@ -172,7 +173,7 @@ public class FavoriteService {
 	 * @return single node response
 	 */
 	protected Single<NodeResponse> createSection(String projectName, String type) {
-		return adminClient.webroot(projectName, "/" + FAVORITE_PLUGIN_NAME).toSingle().flatMap(it -> {
+		return adminClient.webroot(projectName, "/" + FAVORITE_PLUGIN_NAME).toSingle().doAfterSuccess(MeshWebrootResponse::close).flatMap(it -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setSchemaName(SECTION_SCHEMA_NAME);
 			create.setLanguage("en");
@@ -193,6 +194,7 @@ public class FavoriteService {
 		return getUser().flatMap(user ->
 				adminClient.webroot(projectName, new String[]{FAVORITE_PLUGIN_NAME, type, user.getUuid()})
 						.toSingle()
+						.doAfterSuccess(MeshWebrootResponse::close)
 						.doOnSubscribe(disp -> log.debug(String.format("Loading favorite section for type %s, user %s in project %s", user.getUuid(), type, projectName)))
 						.map(MeshWebrootResponse::getNodeResponse));
 	}

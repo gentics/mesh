@@ -993,6 +993,18 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
+			ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName,
+			String[] pathSegments, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public JWTAuthentication getAuthentication() {
 		throw new NotImplementedException();
 	}
@@ -1078,18 +1090,6 @@ public class AbstractTestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<NodeResponse> webrootCreate(String projectName, String[] pathSegments, NodeCreateRequest nodeCreateRequest,
 		ParameterProvider... parameters) {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
-			ParameterProvider... parameters) {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName,
-			String[] pathSegments, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
@@ -1227,6 +1227,11 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<ClusterConfigResponse> updateClusterConfig(ClusterConfigRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> clearCache() {
 		throw new NotImplementedException();
 	}
 

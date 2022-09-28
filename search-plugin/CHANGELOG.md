@@ -10,10 +10,30 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.8.5]]
+== 1.8.5 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.8.10 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.8.10 and various possible connection leaks have been fixed.
+
+icon:check[] Custom queries: when a custom query specified a specific page size, the `hasMore` field was incorrectly
+taking into account the global `pageSize`. This has been fixed.
+
 [[v1.8.0]]
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.26]]
+== 1.6.26 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.6.34 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+
+icon:check[] Custom queries: when a custom query specified a specific page size, the `hasMore` field was incorrectly
+taking into account the global `pageSize`. This has been fixed.
 
 [[v1.6.13]]
 == 1.6.13 (2020-09-22)
