@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.event.EventBusStore;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -162,6 +163,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Inject
 	public EventBusLivenessManager eventbusLiveness;
+
+	@Inject
+	public EventBusStore eventBusStore;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
@@ -562,6 +566,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		}
 
 		this.vertx = vertx;
+		this.eventBusStore.setEventBus(vertx.eventBus());
 	}
 
 	/**

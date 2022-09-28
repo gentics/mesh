@@ -8,6 +8,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import com.gentics.mesh.event.EventBusStore;
 import org.junit.Test;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheImpl;
@@ -25,6 +26,8 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 	public void testCustomHandler() {
 		MeshOptions options = getTestContext().getOptions();
 		options.getMonitoringOptions().setEnabled(false);
+		EventBusStore eventBusStore = new EventBusStore();
+		eventBusStore.setEventBus(vertx().eventBus());
 		EventAwareCache<String, Boolean> USER_STATE_CACHE = new EventAwareCacheImpl.Builder<String, Boolean>()
 			.maxSize(15_000)
 			.events(USER_UPDATED)
@@ -40,7 +43,7 @@ public class EventAwareCacheTest extends AbstractMeshTest {
 			.setMetricsService(mock(MetricsService.class))
 			.meshOptions(options)
 			.name("testcache")
-			.vertx(vertx())
+			.eventBusStore(eventBusStore)
 			.build();
 
 		// Set some values to the cache
