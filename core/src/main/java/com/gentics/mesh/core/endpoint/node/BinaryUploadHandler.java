@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -186,11 +187,16 @@ public class BinaryUploadHandler extends AbstractHandler {
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			Binary binary = binaries.findByHash(hash).runInNewTx();
+			String binaryUuid = binaries.findByHash(hash)
+					.mapInTx(b -> b != null ? b.getUuid() : null)
+					.runInNewTx();
 
 			// Create a new binary uuid if the data was not already stored
-			if (binary == null) {
+			if (binaryUuid == null) {
 				ctx.setBinaryUuid(UUIDUtil.randomUUID());
+				ctx.setInvokeStore();
+			} else if (fileNotExists(binaryUuid)) {
+				ctx.setBinaryUuid(binaryUuid);
 				ctx.setInvokeStore();
 			}
 
@@ -221,6 +227,10 @@ public class BinaryUploadHandler extends AbstractHandler {
 			}
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
+	}
+
+	private boolean fileNotExists(String binaryUuid) {
+		return !new File(binaryStorage.getFilePath(binaryUuid)).exists();
 	}
 
 	private Completable storeUploadInTemp(UploadContext ctx, FileUpload ul, String hash) {

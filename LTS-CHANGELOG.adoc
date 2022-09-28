@@ -24,6 +24,9 @@ icon:plus[] Auth: Added JWT options to configure token content (`issuer` - `"iss
 
 icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
 
+icon:check[] Core: when a binary file was manually deleted from the file system and the same file was uploaded again through the rest api, the binary
+upload endpoint was returning a success response even though the binary wasn't actually uploaded. The file will now be uploaded correctly.
+
 [[v1.6.34]]
 == 1.6.34 (22.09.2022)
 

@@ -155,6 +155,7 @@ public class LocalBinaryStorage extends AbstractBinaryStorage {
 		return binaryFile.getAbsolutePath();
 	}
 
+	@Override
 	public String getFilePath(String binaryUuid) {
 		Objects.requireNonNull(binaryUuid, "The binary uuid was not specified.");
 		File folder = new File(options.getDirectory(), getSegmentedPath(binaryUuid));
