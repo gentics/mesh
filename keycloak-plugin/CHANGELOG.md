@@ -10,6 +10,20 @@
 
 = Mesh Keycloak Plugin Changelog
 
+[[v1.9.2]]
+== 1.9.2 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.9.3 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
+
+[[v1.8.5]]
+== 1.8.5 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.8.10 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.8.10 and various possible connection leaks have been fixed.
+
 [[v1.8.1]]
 == 1.8.1 (2022-04-05)
 
@@ -31,6 +45,13 @@ icon:plus[] The initialization of the plugin will now fail if no public-keys are
 icon:plus[] It's now possible to define roles that are managed by the plugin
 
 icon:plus[] The configuration can now be accessed in the mapper script via `config` variable
+
+[[v1.6.26]]
+== 1.6.26 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.6.34 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
 
 [[v1.6.18]]
 == 1.6.18 (2022-02-01)

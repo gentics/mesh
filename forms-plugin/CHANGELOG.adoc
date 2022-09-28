@@ -15,6 +15,24 @@
 
 icon:plus[] Mails: The new `mailsource` property for `Form` and `UserMailElement` objects can be used to specify a Handlebars template directly instead of the path to a template file.
 
+[[v1.9.2]]
+== 1.9.2 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.9.3 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
+
+icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
+[[v1.8.5]]
+== 1.8.5 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.8.10 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.8.10 and various possible connection leaks have been fixed.
+
+icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
 [[v1.8.4]]
 == 1.8.4 (2022-08-04)
 
@@ -39,6 +57,15 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
 
+
+[[v1.6.26]]
+== 1.6.26 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.6.34 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+
+icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
 
 [[v1.6.25]]
 == 1.6.25 (2022-08-04)

@@ -15,13 +15,34 @@
 
 icon:plus[] RenderService: Adds support for rendering inline templates by passing a `TemplateWrapper` object which contains the template source itself instead of a file path.
 
+[[v1.9.2]]
+== 1.9.2 (2022-09-28)
+
+CAUTION: Plugins require Mesh >= 1.9.3 to run.
+
+icon:check[] Common: The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
+
+[[v1.8.5]]
+== 1.8.5 (2022-09-28)
+
+CAUTION: Plugins require Mesh >= 1.8.10 to run.
+
+icon:check[] Common: The dependency to Mesh has been updated to 1.8.10 and various possible connection leaks have been fixed.
+
 [[v1.8.0]]
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
 
+[[v1.6.26]]
+== 1.6.26 (2022-09-28)
+
+CAUTION: Plugins require Mesh >= 1.6.34 to run.
+
+icon:check[] Common: The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
+
 [[v1.6.19]]
-== 1.6.19 (TBD)
+== 1.6.19 (2022-02-14)
 
 icon:plus[] Common: Adds the `RenderService` which wraps Handlebars template rendering and makes sure that all template names start with the correct base template bath. The service can be injected automatically in which case the templates have to reside in _STORAGE_DIR/templates/_, or it can be created with an explicit base path.
 

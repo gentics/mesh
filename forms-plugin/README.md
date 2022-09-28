@@ -201,6 +201,8 @@ Element for select group.
 
 | Key | Type | Description | Default value |
 |-----|------|-------------|---------------|
+| `select_type` | string or select | Determines whether a selectgroup is a multivalue field or not. Selectgroups with a select_type that starts with the string "multiselect" are considered to be multivalue(e.g. "multiselect", "multiselect_checkboxes", "multiselect_switch",...). |REQUIRED|
+| `options` | selectable_options | Key-value pairs used as options for the select group |REQUIRED|
 | `additional_element` | boolean | Flag for letting the user add additional elements | `false` |
 
 When `additional_element` is `true`, and the POSTed data contains `[fieldname]=[fieldname]additional_field`, the custom value POSTed as `[fieldname]_additional` will be taken.

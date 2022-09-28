@@ -80,7 +80,7 @@ public class SelectgroupElement extends CombiElement {
 
 	@Override
 	public boolean isMultivalue() {
-		return Objects.equals("multiselect", getSelectType());
+		return (getSelectType() != null && getSelectType().startsWith("multiselect"));
 	}
 
 	@Override
