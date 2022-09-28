@@ -10,10 +10,31 @@
 
 = Mesh Favorite Plugin
 
+[[v1.9.2]]
+== 1.9.2 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.9.3 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
+
+[[v1.8.5]]
+== 1.8.5 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.8.10 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.8.10 and various possible connection leaks have been fixed.
+
 [[v1.8.0]]
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.26]]
+== 1.6.26 (2022-09-28)
+
+CAUTION: The plugin requires Mesh >= 1.6.34 to run.
+
+icon:check[] The dependency to Mesh has been updated to 1.6.34 and various possible connection leaks have been fixed.
 
 [[v3.0.0]]
 

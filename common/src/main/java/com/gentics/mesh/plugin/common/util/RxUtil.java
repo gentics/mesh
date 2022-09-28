@@ -90,6 +90,7 @@ public class RxUtil {
 	public static Maybe<NodeResponse> webrootMaybe(MeshRestClient client, String project, String[] pathSegments) {
 		return client.webroot(project, pathSegments).toSingle()
 			.toMaybe()
+			.doAfterSuccess(MeshWebrootResponse::close)
 			.onErrorComplete(err -> {
 				if (err instanceof MeshRestClientMessageException) {
 					MeshRestClientMessageException meshError = (MeshRestClientMessageException) err;
@@ -99,6 +100,7 @@ public class RxUtil {
 
 				return false;
 			})
+			.filter(resp -> !resp.isBinary())
 			.map(MeshWebrootResponse::getNodeResponse);
 	}
 

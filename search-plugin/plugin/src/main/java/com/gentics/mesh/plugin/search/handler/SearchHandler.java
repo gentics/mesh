@@ -165,14 +165,13 @@ public class SearchHandler extends AbstractQueryHandler {
 	 * @see #transformResult(JsonObject)
 	 * @see #transformHits(JsonArray)
 	 * @see #finalizeHits(JsonObject, List)
-	 * @see #addPagingInfo(JsonObject, String)
+	 * @see #addPagingInfo(JsonObject, String, JsonObject)
 	 * @see #addDidYouMean(JsonObject)
 	 *
 	 * @return A <code>Completable</code> for the handler action
 	 */
 	@Override
 	public Completable internalHandle() {
-		String project = context.projectName();
 		HttpServerRequest request = context.request();
 		String queryParam = request.getParam("q");
 
@@ -185,12 +184,12 @@ public class SearchHandler extends AbstractQueryHandler {
 		return querySupplier.get()
 			.doOnSuccess(this::injectBranchUuidSource)
 			.doOnSuccess(this::traceQuery)
-			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), multiProjectSearch, waitForIdle).toSingle())
-			.map(JsonUtils::jsonObjectOf)
-			.flatMap(this::transformResult)
-			.flatMap(result -> transformHits(result.getJsonArray(RS_HITS_FIELD)).flatMap(hits -> finalizeHits(result, hits)))
-			.flatMap(result -> addPagingInfo(result, queryParam))
-			.flatMap(this::addDidYouMean)
+			.flatMap(query -> RequestUtils.getSearchRequest(context, query.encode(), multiProjectSearch, waitForIdle).toSingle()
+					.map(JsonUtils::jsonObjectOf)
+					.flatMap(this::transformResult)
+					.flatMap(result -> transformHits(result.getJsonArray(RS_HITS_FIELD)).flatMap(hits -> finalizeHits(result, hits)))
+					.flatMap(result -> addPagingInfo(result, queryParam, query))
+					.flatMap(this::addDidYouMean))
 			.flatMapCompletable(resultMapper)
 			.doOnError(context::fail);
 	}
@@ -615,17 +614,19 @@ public class SearchHandler extends AbstractQueryHandler {
 	 *
 	 * @param result The search result
 	 * @param query The original search query
+	 * @param queryObject The query json object.
 	 * @return A <code>Single</code> with the <code>result</code> with added paging information
 	 * @throws UnsupportedEncodingException When the <code>query</code> cannot be URL encoded
 	 */
-	private Single<JsonObject> addPagingInfo(JsonObject result, String query) throws UnsupportedEncodingException {
+	private Single<JsonObject> addPagingInfo(JsonObject result, String query, JsonObject queryObject) throws UnsupportedEncodingException {
 		int currentPage = NumberUtils.toInt(context.request().getParam("p"), 0) + 1;
 
 		// We can only approximate the total hits count, because it is possible that we do not get
 		// results from GraphQL for some elasticsearch hits.
 		long missing = result.getInteger(RS_PAGE_HITCOUNT_FIELD) - result.getJsonArray(RS_HITS_FIELD).size();
 		long total = result.getInteger(RS_TOTAL_FIELD) - missing;
-		boolean hasMore = total > currentPage * config.getPageSize();
+		long pageSize = queryObject.getInteger("size", config.getPageSize());
+		boolean hasMore = total > currentPage * pageSize;
 
 		result.remove(RS_PAGE_HITCOUNT_FIELD);
 		result.put(RS_TOTAL_FIELD, total);

@@ -36,6 +36,7 @@ import com.gentics.mesh.plugin.formgenerator.model.FileElement;
 import com.gentics.mesh.plugin.formgenerator.model.FormElement;
 import com.gentics.mesh.plugin.formgenerator.service.FormService;
 import com.gentics.mesh.plugin.formgenerator.service.SchemaService;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
@@ -233,7 +234,7 @@ public class LoadFilesZipHandler extends AbstractFormGeneratorHandler {
 		}
 
 		return Observable.fromIterable(downloadables).flatMap(d -> {
-			return adminClient.downloadBinaryField(projectName, d.uuid, "en", d.fieldName).toObservable().flatMap(download -> {
+			return adminClient.downloadBinaryField(projectName, d.uuid, "en", d.fieldName).toObservable().doAfterNext(MeshBinaryResponse::close).flatMap(download -> {
 				addZipEntryWithUniquename(out, download.getFilename());
 				try (InputStream ins = download.getStream()) {
 					IOUtils.copy(ins, out);

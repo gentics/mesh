@@ -409,13 +409,16 @@ public class SearchHandlerTest {
 		when(queryServiceMock.getCustomQuery(any(), anyString())).thenReturn(Single.just(expectedQuery));
 
 		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search/custom/" + customQuery, "q=test");
-		CustomHandler customHandler = new CustomQueryHandler(queryServiceMock, new CustomQueryOptions(customQuery)) ;
+		int customQueryPageSize = 1;
+		CustomQueryOptions customQueryOptions = new CustomQueryOptions(customQuery, HandlerType.SEARCH, null, customQueryPageSize);
+		CustomHandler customHandler = new CustomQueryHandler(queryServiceMock, customQueryOptions) ;
 
 		makeSearchRequest(pc, customHandler);
 
+		assertThat(expectedQuery.getInteger("size")).isEqualTo(customQueryPageSize);
 		verify(pc.client(), times(1)).searchNodesRaw(eq(DEFAULT_PROJECT), eq(expectedQuery.encode()), anyVararg());
 		verify(pc.response()).putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8);
-		verify(pc.response()).end(anyString());
+		verify(pc.response()).end(contains("\"hasMore\":true"));
 		verify(queryServiceMock, never()).getSearchResultQuery(anyString());
 		verify(queryServiceMock, never()).getSearchResultQuery(anyString(), anyString());
 		verify(queryServiceMock, times(1)).getCustomQuery(any(), eq(customQuery));

@@ -241,6 +241,7 @@ public class LikeService {
 	protected Single<NodeResponse> getSection(String projectName, String nodeUuid, String lang) {
 		return adminClient.webroot(projectName, new String[] {LikePlugin.NAME, getSectionSegment(nodeUuid, lang)})
 			.toSingle()
+			.doAfterSuccess(MeshWebrootResponse::close)
 			.map(MeshWebrootResponse::getNodeResponse)
 			.onErrorResumeNext(t -> {
 				return ifNotFound(t, () -> createSection(projectName, nodeUuid, lang));
@@ -327,6 +328,7 @@ public class LikeService {
 		return getUser().flatMap(user -> {
 			return adminClient.webroot(projectName, new String[] {LikePlugin.NAME, getSectionSegment(nodeUuid, lang), user.getUuid()})
 					.toSingle()
+					.doAfterSuccess(MeshWebrootResponse::close)
 					.doOnSubscribe(
 							disp -> log.debug(String.format("Loading likes section for node %s, user %s in project %s", nodeUuid, user.getUuid(), projectName)))
 					.map(MeshWebrootResponse::getNodeResponse);
