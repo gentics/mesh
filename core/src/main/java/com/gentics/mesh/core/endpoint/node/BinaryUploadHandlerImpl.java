@@ -190,19 +190,15 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			Tuple<HibBinary, String> binaryAndUuid = binaries.findByHash(hash)
-					.mapInTx(b -> {
-						return Tuple.tuple(b, b != null ? b.getUuid() : null);
-					})
+			String binaryUuid = binaries.findByHash(hash)
+					.mapInTx(b -> b != null ? b.getUuid() : null)
 					.runInNewTx();
-			HibBinary binary = binaryAndUuid.v1();
-			String binaryUuid = binaryAndUuid.v2();
 
 			// Create a new binary uuid if the data was not already stored
-			if (binary == null) {
+			if (binaryUuid == null) {
 				ctx.setBinaryUuid(UUIDUtil.randomUUID());
 				ctx.setInvokeStore();
-			} else if (binaryUuid != null && fileNotExists(binaryUuid)) {
+			} else if (fileNotExists(binaryUuid)) {
 				ctx.setBinaryUuid(binaryUuid);
 				ctx.setInvokeStore();
 			}
