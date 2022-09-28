@@ -46,6 +46,17 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parsers</artifactId>
+				<version>1.26</version>
+				<exclusions>
+					<exclusion>
+						<groupId>xml-apis</groupId>
+						<artifactId>xml-apis</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
 				<groupId>com.gentics.mesh.plugin.commercial</groupId>
 				<artifactId>mesh-commercial-plugins-common</artifactId>
 				<version>${project.version}</version>
