@@ -77,7 +77,7 @@ public class CommentSectionService {
 
 	private Maybe<CommentSection> findCommentSection(String nodeUuid, String language) {
 		return getNodePath(nodeUuid, language)
-			.flatMapMaybe(meshService::webrootMaybe)
+			.flatMapMaybe(path -> com.gentics.mesh.plugin.common.util.RxUtil.webrootMaybe(adminClient, projectName, path))
 			.map(CommentSection::new);
 	}
 

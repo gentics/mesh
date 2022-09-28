@@ -97,26 +97,11 @@ public class MeshService {
 	}
 
 	/**
-	 * Returns the node by webroot or an empty Maybe if the node could not be found.
-	 */
-	public Maybe<NodeResponse> webrootMaybe(String path) {
-		return adminClient.webroot(projectName, path).toSingle()
-			.toMaybe()
-			.onErrorComplete(err -> {
-				if (!(err instanceof MeshRestClientMessageException)) {
-					return false;
-				}
-				MeshRestClientMessageException meshError = (MeshRestClientMessageException) err;
-				return meshError.getStatusCode() == HttpResponseStatus.NOT_FOUND.code();
-			}).map(MeshWebrootResponse::getNodeResponse);
-	}
-
-	/**
 	 * Makes sure that there is a node with the provided path.
 	 * If not, folders are created until the path.
 	 */
 	public Single<NodeResponse> ensureFolders(String path) {
-		return webrootMaybe(path)
+		return com.gentics.mesh.plugin.common.util.RxUtil.webrootMaybe(adminClient, projectName, path)
 			.to(RxUtil.defaultSingle(() -> {
 				String[] split = splitLastSegment(path);
 				return ensureFolders(split[0])
