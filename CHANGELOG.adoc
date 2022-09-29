@@ -27,6 +27,9 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: The OrientDB database as been updated to version 3.2.10.
 
+icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
+
+
 [[v1.9.3]]
 == 1.9.3 (22.09.2022)
 
