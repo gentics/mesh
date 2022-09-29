@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
@@ -56,7 +57,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	/**
 	 * Handle a permission read request.
-	 * 
+	 *
 	 * @param ac
 	 * @param userUuid
 	 * @param pathToElement
@@ -75,7 +76,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
-				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
+				HibUser user = getUser(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				HibBaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
@@ -99,7 +100,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	/**
 	 * Handle the fetch token action for the user with the given uuid.
-	 * 
+	 *
 	 * @param ac
 	 * @param userUuid
 	 *            User uuid
@@ -110,7 +111,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+				HibUser user = getUser(ac, userUuid, CREATE_PERM);
 
 				// 2. Generate a new token and store it for the user
 				UserResetTokenResponse tokenResponse = db.tx(() -> {
@@ -133,7 +134,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	/**
 	 * Handle the API key generation action for the user.
-	 * 
+	 *
 	 * @param ac
 	 * @param userUuid
 	 */
@@ -143,7 +144,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = getUser(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
@@ -165,7 +166,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 
 	/**
 	 * Delete the stored API key token code in order to invalidate the API key.
-	 * 
+	 *
 	 * @param ac
 	 * @param userUuid
 	 */
@@ -175,7 +176,7 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = getUser(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				GenericMessageResponse message = db.tx(() -> {
@@ -185,6 +186,17 @@ public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> 
 				return message;
 			}, model -> ac.send(model, CREATED));
 		}
+	}
+
+	/**
+	 * Get the requested user checking for permission in case the requesting and requested users are different
+	 * @param ac the action context wrapping the requesting user
+	 * @param userUuid requested user
+	 * @param permission the permission to check
+	 * @return
+	 */
+	private HibUser getUser(InternalActionContext ac, String userUuid, InternalPermission permission) {
+		return ac.getUser().getUuid().equals(userUuid) ? ac.getUser() : Tx.get().userDao().loadObjectByUuid(ac, userUuid, permission);
 	}
 
 }

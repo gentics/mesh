@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.CommonTx;
 import org.apache.commons.lang3.StringUtils;
@@ -310,27 +311,42 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
-	public void testIssueAPIKeyWithoutPerm() {
+	public void testIssueOwnAPIKeyWithoutPerm() {
 		tx((tx) -> {
 			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), user(), UPDATE_PERM);
+
 			tx.success();
 		});
 
 		call(() -> client().findUserByUuid(userUuid()));
-		call(() -> client().issueAPIToken(userUuid()), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().issueAPIToken(userUuid()));
+	}
+
+	@Test
+	public void testIssueAPIKeyWithoutPerm() {
+		String userUuid = tx(() -> data().getUsers().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME).getUuid());
+		tx((tx) -> {
+			RoleDao roleDao = tx.roleDao();
+			HibUser user = data().getUsers().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME);
+			roleDao.revokePermissions(role(), user, UPDATE_PERM);
+
+			tx.success();
+		});
+
+		call(() -> client().findUserByUuid(userUuid));
+		call(() -> client().issueAPIToken(userUuid), FORBIDDEN, "error_missing_perm", userUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
 	@Test
 	public void testRevokeAPIKeyWithoutPerm() {
 
-		String uuid = userUuid();
+		String uuid = tx(() -> data().getUsers().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME).getUuid());
 		call(() -> client().findUserByUuid(uuid));
-		call(() -> client().issueAPIToken(uuid));
 
 		tx((tx) -> {
 			RoleDao roleDao = tx.roleDao();
-			HibUser user = user();
+			HibUser user = data().getUsers().get(MeshJWTAuthHandler.ANONYMOUS_USERNAME);
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			tx.success();
 		});
