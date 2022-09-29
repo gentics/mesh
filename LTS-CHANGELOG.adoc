@@ -27,6 +27,8 @@ icon:check[] Core: when an initial admin password is provided with an environmen
 icon:check[] Core: when a binary file was manually deleted from the file system and the same file was uploaded again through the rest api, the binary
 upload endpoint was returning a success response even though the binary wasn't actually uploaded. The file will now be uploaded correctly.
 
+icon:check[] Core: permission for creating API tokens are now checked only when creating a token for a different user than the requesting user.
+
 [[v1.6.34]]
 == 1.6.34 (22.09.2022)
 

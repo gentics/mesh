@@ -77,7 +77,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
+				User user = getUser(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
 				MeshVertex targetElement = boot.meshRoot().resolvePathToElement(pathToElement);
@@ -112,7 +112,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+				User user = getUser(ac, userUuid, CREATE_PERM);
 
 				// 2. Generate a new token and store it for the user
 				UserResetTokenResponse tokenResponse = db.tx(() -> {
@@ -145,7 +145,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				User user = getUser(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
@@ -177,7 +177,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				User user = getUser(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				GenericMessageResponse message = db.tx(() -> {
@@ -187,6 +187,17 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 				return message;
 			}, model -> ac.send(model, CREATED));
 		}
+	}
+
+	/**
+	 * Get the requested user checking for permission in case the requesting and requested users are different
+	 * @param ac the action context wrapping the requesting user
+	 * @param userUuid requested user
+	 * @param permission the permission to check
+	 * @return
+	 */
+	private User getUser(InternalActionContext ac, String userUuid, GraphPermission permission) {
+		return ac.getUser().getUuid().equals(userUuid) ? ac.getUser() : boot.userRoot().loadObjectByUuid(ac, userUuid, permission);
 	}
 
 }
