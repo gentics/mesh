@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -1661,5 +1662,67 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			.collect(Collectors.joining("/", "/", ""));
 
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/webrootfield/" + fieldName + path + getQuery(parameters), MeshWebrootFieldResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getNodeRolePermissions(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/nodes/" + uuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagFamilyRolePermissions(String projectName, String tagFamilyUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagRolePermissions(String projectName, String tagFamilyUuid,
+			String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
 	}
 }

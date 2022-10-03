@@ -59,6 +59,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -71,6 +72,7 @@ import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
@@ -838,5 +840,47 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// get the list of projects
 		list = call(() -> client().findProjects());
 		assertThat(list.getData().stream().map(ProjectResponse::getName)).as("List of projects").containsOnly("dummy");
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissions() throws Exception {
+		String projectUuid = tx(() -> project().getUuid());
+		RoleReference testRole = tx(() -> role().transformToReference());
+		ObjectPermissionResponse response = call(() -> client().getProjectRolePermissions(projectUuid));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
+		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
+		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
+		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
+		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissionWithoutPermission() throws Exception {
+		String projectUuid = tx(() -> project().getUuid());
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), project(), READ_PERM);
+		});
+		call(() -> client().getProjectRolePermissions(projectUuid), FORBIDDEN, "error_missing_perm", projectUuid, READ_PERM.getRestPerm().getName());
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
+		String projectUuid = tx(() -> project().getUuid());
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
+		});
+		ObjectPermissionResponse response = call(() -> client().getProjectRolePermissions(projectUuid));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
+		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
+		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
+		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
+		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }

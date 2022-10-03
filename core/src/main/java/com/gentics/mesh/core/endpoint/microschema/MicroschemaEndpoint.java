@@ -59,6 +59,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+		addRolePermissionHandler();
 	}
 
 	private void addDiffHandler() {
@@ -190,4 +191,18 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		});
 	}
 
+	private void addRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:microschemaUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("microschemaUuid", "Uuid of the microschema", MICROSCHEMA_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the microschema for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam("microschemaUuid");
+			crudHandler.handleReadPermissions(ac, uuid);
+		}, false);
+	}
 }

@@ -63,6 +63,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		addResetTokenHandler();
 		addAPITokenHandler();
 		addReadPermissionHandler();
+		addRolePermissionHandler();
 	}
 
 	private void addAPITokenHandler() {
@@ -233,5 +234,20 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
 		});
+	}
+
+	private void addRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:userUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("userUuid", "Uuid of the user", USER_EDITOR_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the user for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam("userUuid");
+			crudHandler.handleReadPermissions(ac, uuid);
+		}, false);
 	}
 }

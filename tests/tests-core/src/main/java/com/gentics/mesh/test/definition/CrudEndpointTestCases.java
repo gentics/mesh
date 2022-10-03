@@ -43,4 +43,21 @@ public interface CrudEndpointTestCases {
 
 	void testDeleteByUUIDWithNoPermission() throws Exception;
 
+	/**
+	 * Test reading role permissions
+	 * @throws Exception
+	 */
+	void testReadRolePermissions() throws Exception;
+
+	/**
+	 * Test reading role permissions without permission on the object itself
+	 * @throws Exception
+	 */
+	void testReadRolePermissionWithoutPermission() throws Exception;
+
+	/**
+	 * Test reading role permissions without permission on all roles
+	 * @throws Exception
+	 */
+	void testReadRolePermissionWithoutPermissionOnRole() throws Exception;
 }

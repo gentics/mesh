@@ -63,6 +63,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+		addRolePermissionHandler();
 	}
 
 	private void addGroupRoleHandlers() {
@@ -243,5 +244,20 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 			crudHandler.handleCreate(wrap(rc));
 		});
 
+	}
+
+	private void addRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:groupUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("groupUuid", "Uuid of the group", GROUP_CLIENT_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the group for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam("groupUuid");
+			crudHandler.handleReadPermissions(ac, uuid);
+		}, false);
 	}
 }

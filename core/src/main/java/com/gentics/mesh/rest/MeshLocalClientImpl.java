@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -1862,5 +1863,75 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	@Override
 	public MeshRequest<GenericMessageResponse> clearCache() {
 		return null;
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		groupCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		microschemaCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getNodeRolePermissions(String projectName, String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		nodeCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		projectCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		roleCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		schemaCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagFamilyRolePermissions(String projectName, String tagFamilyUuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
+		tagFamilyCrudHandler.handleReadPermissions(ac, tagFamilyUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagRolePermissions(String projectName, String tagFamilyUuid,
+			String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
+		tagCrudHandler.handleReadPermissions(ac, tagFamilyUuid, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		userCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 }

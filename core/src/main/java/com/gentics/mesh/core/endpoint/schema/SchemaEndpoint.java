@@ -63,6 +63,8 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		addCreateHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addRolePermissionHandler();
 	}
 
 	private void addChangesHandler() {
@@ -198,5 +200,20 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 			crudHandler.handleReadList(ac);
 		}, false);
 
+	}
+
+	private void addRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:schemaUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("schemaUuid", "Uuid of the schema", SCHEMA_VEHICLE_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the schema for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam("schemaUuid");
+			crudHandler.handleReadPermissions(ac, uuid);
+		}, false);
 	}
 }

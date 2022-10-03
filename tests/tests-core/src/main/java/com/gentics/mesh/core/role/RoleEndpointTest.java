@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -40,11 +41,13 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -557,5 +560,47 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testPermissionResponse() {
 		RoleResponse role = client().findRoles().blockingGet().getData().get(0);
 		assertThat(role.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissions() throws Exception {
+		String roleUuid = tx(() -> roles().get("anonymous").getUuid());
+		RoleReference testRole = tx(() -> role().transformToReference());
+		ObjectPermissionResponse response = call(() -> client().getRoleRolePermissions(roleUuid));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
+		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
+		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
+		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
+		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissionWithoutPermission() throws Exception {
+		String roleUuid = tx(() -> roles().get("anonymous").getUuid());
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), roles().get("anonymous"), READ_PERM);
+		});
+		call(() -> client().getRoleRolePermissions(roleUuid), FORBIDDEN, "error_missing_perm", roleUuid, READ_PERM.getRestPerm().getName());
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
+		String roleUuid = tx(() -> roles().get("anonymous").getUuid());
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
+		});
+		ObjectPermissionResponse response = call(() -> client().getRoleRolePermissions(roleUuid));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
+		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
+		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
+		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
+		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }

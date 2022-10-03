@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -301,4 +302,13 @@ public interface NodeClientMethods {
 	 */
 	MeshRequest<NodeVersionsResponse> listNodeVersions(String projectName, String nodeUuid, ParameterProvider...parameters);
 
+	/**
+	 * Get the role permissions on the node
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param uuid    Uuid of the node
+	 * @return request
+	 */
+	MeshRequest<ObjectPermissionResponse> getNodeRolePermissions(String projectName, String uuid);
 }

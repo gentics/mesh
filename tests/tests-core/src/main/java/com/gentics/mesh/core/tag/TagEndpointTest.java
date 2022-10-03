@@ -24,6 +24,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -48,9 +49,11 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.event.tag.TagMeshEventModel;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -657,5 +660,51 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagFamilyResponse tagfamily = client().findTagFamilies(PROJECT_NAME).blockingGet().getData().get(0);
 		TagResponse tag = client().findTags(PROJECT_NAME, tagfamily.getUuid()).blockingGet().getData().get(0);
 		assertThat(tag.getPermissions()).hasNoPublishPermsSet();
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissions() throws Exception {
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		String tagUuid = tx(() -> tag("red").getUuid());
+		RoleReference testRole = tx(() -> role().transformToReference());
+
+		ObjectPermissionResponse response = call(() -> client().getTagRolePermissions(PROJECT_NAME, tagFamilyUuid, tagUuid));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
+		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
+		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
+		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
+		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissionWithoutPermission() throws Exception {
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		String tagUuid = tx(() -> tag("red").getUuid());
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), tag("red"), READ_PERM);
+		});
+		call(() -> client().getTagRolePermissions(PROJECT_NAME, tagFamilyUuid, tagUuid), FORBIDDEN, "error_missing_perm", tagUuid, READ_PERM.getRestPerm().getName());
+	}
+
+	@Test
+	@Override
+	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		String tagUuid = tx(() -> tag("red").getUuid());
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
+		});
+		ObjectPermissionResponse response = call(() -> client().getTagRolePermissions(PROJECT_NAME, tagFamilyUuid, tagUuid));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
+		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
+		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
+		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
+		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }

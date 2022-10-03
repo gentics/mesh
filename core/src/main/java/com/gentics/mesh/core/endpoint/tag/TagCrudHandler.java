@@ -5,28 +5,37 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
+import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.ResultInfo;
 
 /**
@@ -186,6 +195,37 @@ public class TagCrudHandler extends AbstractHandler {
 		};
 		utils.deleteElement(ac, tagFamilyLoader, tagActions, tagUuid);
 
+	}
+
+	/**
+	 * Handle request to read the permissions for all roles
+	 * @param ac action context
+	 * @param tagFamilyUuid Uuid of the tag family
+	 * @param tagUuid Uuid of the tag
+	 */
+	public void handleReadPermissions(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {
+		validateParameter(tagFamilyUuid, "tagFamilyUuid");
+		validateParameter(tagUuid, "tagUuid");
+
+		utils.syncTx(ac, tx -> {
+			RoleDao roleDao = tx.roleDao();
+			HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+
+			Set<HibRole> roles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+
+			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(roles, tag);
+			permissions.values().removeIf(Set::isEmpty);
+
+			ObjectPermissionResponse response = new ObjectPermissionResponse();
+			permissions.entrySet().forEach(entry -> {
+				RoleReference role = entry.getKey().transformToReference();
+				entry.getValue().forEach(perm -> response.add(role, perm.getRestPerm()));
+			});
+			response.setOthers(tag.hasPublishPermissions());
+
+			return response;
+		}, model -> ac.send(model, OK));
 	}
 
 }

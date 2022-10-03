@@ -1,5 +1,35 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.S3BINARY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.S3BINARY_METADATA_EXTRACTED;
+import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
+import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
+import static com.gentics.mesh.example.ExampleUuids.UUID_1;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.DELETE;
+import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.raml.model.Resource;
+
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -15,25 +45,8 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
+
 import io.vertx.core.MultiMap;
-import org.apache.commons.lang3.StringUtils;
-import org.raml.model.Resource;
-
-import javax.inject.Inject;
-
-import static com.gentics.mesh.core.rest.MeshEvent.*;
-import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
-import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
-import static com.gentics.mesh.example.ExampleUuids.UUID_1;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
-import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
@@ -98,6 +111,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addNavigationHandlers();
 		addPublishHandlers();
 		addVersioningHandlers();
+		addRolePermissionHandler();
 	}
 
 	public Resource getResource() {
@@ -568,6 +582,21 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleTakeOffline(ac, uuid, lang);
 		});
 
+	}
+
+	private void addRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:nodeUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the node for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(true), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam("nodeUuid");
+			crudHandler.handleReadPermissions(ac, uuid);
+		}, false);
 	}
 
 	public NodeCrudHandler getCrudHandler() {

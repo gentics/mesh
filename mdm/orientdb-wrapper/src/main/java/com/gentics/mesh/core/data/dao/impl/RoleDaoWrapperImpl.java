@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -58,6 +59,34 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	}
 
 	@Override
+	public boolean grantRolePermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions) {
+		MeshVertex vertex = (MeshVertex) element;
+		boolean permissionGranted = false;
+		Set<String> roleUuids = roles.stream().map(HibRole::getUuid).collect(Collectors.toSet());
+
+		for (InternalPermission permission : permissions) {
+			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
+
+			if (allowedRoles == null) {
+				vertex.setRoleUuidForPerm(permission, roleUuids);
+				if (!roleUuids.isEmpty()) {
+					permissionGranted = true;
+				}
+			} else {
+				permissionGranted = allowedRoles.addAll(roleUuids) || permissionGranted;
+				if (exclusive) {
+					permissionGranted = allowedRoles.retainAll(roleUuids) || permissionGranted;
+				}
+
+				vertex.setRoleUuidForPerm(permission, allowedRoles);
+			}
+		}
+
+		return permissionGranted;
+	}
+
+	@Override
 	public boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
 		boolean permissionRevoked = false;
@@ -66,6 +95,24 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 			if (allowedRoles != null) {
 				permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
 				vertex.setRoleUuidForPerm(permission, allowedRoles);
+			}
+		}
+
+		return permissionRevoked;
+	}
+
+	@Override
+	public boolean revokeRolePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions) {
+		MeshVertex vertex = (MeshVertex) element;
+
+		boolean permissionRevoked = false;
+		for (InternalPermission permission : permissions) {
+			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
+			if (allowedRoles != null) {
+				for (HibRole role : roles) {
+					permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
+					vertex.setRoleUuidForPerm(permission, allowedRoles);
+				}
 			}
 		}
 

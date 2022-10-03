@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
@@ -169,4 +170,12 @@ public interface SchemaClientMethods {
 	 * @return
 	 */
 	MeshRequest<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters);
+
+	/**
+	 * Get the role permissions on the schema
+	 * 
+	 * @param uuid Uuid of the schema
+	 * @return request
+	 */
+	MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid);
 }

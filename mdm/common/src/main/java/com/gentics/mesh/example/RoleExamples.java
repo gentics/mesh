@@ -14,11 +14,14 @@ import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gentics.mesh.core.rest.Examples;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 
@@ -95,4 +98,30 @@ public class RoleExamples extends AbstractExamples {
 		return roleCreate;
 	}
 
+	public ObjectPermissionResponse getObjectPermissionResponse(boolean includePublishPermissions) {
+		ObjectPermissionResponse response = new ObjectPermissionResponse();
+		RoleReference role1 = Examples.roleRef();
+		RoleReference role2 = Examples.roleRef2();
+
+		response.set(role1, CREATE, false);
+		response.set(role1, READ, true);
+		response.set(role1, UPDATE, true);
+		response.set(role1, DELETE, false);
+		if (includePublishPermissions) {
+			response.set(role1, READ_PUBLISHED, true);
+			response.set(role1, PUBLISH, false);
+		}
+
+		response.set(role2, CREATE, true);
+		response.set(role2, READ, true);
+		response.set(role2, UPDATE, true);
+		response.set(role2, DELETE, true);
+		if (includePublishPermissions) {
+			response.set(role2, READ_PUBLISHED, true);
+			response.set(role2, PUBLISH, true);
+		}
+
+		response.setOthers(includePublishPermissions);
+		return response;
+	}
 }

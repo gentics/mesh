@@ -2,15 +2,22 @@ package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -128,12 +135,174 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	@Test
+	public void testGrantMultiplePermission() {
+		// change permissions on multiple roles
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.grantPermissions(new HashSet<>(Arrays.asList(admin, anonymous)), node, false,
+					CREATE_PERM, READ_PERM)).as("Changed permissions").isTrue();
+
+			assertThat(roleDao.getPermissions(admin, node)).as("Permissions for admin").containsOnly(CREATE_PERM,
+					READ_PERM);
+			assertThat(roleDao.getPermissions(anonymous, node)).as("Permissions for anonymous")
+					.containsOnly(CREATE_PERM, READ_PERM);
+			assertThat(roleDao.getPermissions(testRole, node)).as("Permissions for test role").containsOnly(CREATE_PERM,
+					PUBLISH_PERM, UPDATE_PERM, READ_PERM, DELETE_PERM, READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// change permissions and check the unmentioned roles are not touched
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.grantPermissions(new HashSet<>(Arrays.asList(admin, testRole)), node, false,
+					UPDATE_PERM)).as("Changed permissions").isTrue();
+
+			assertThat(roleDao.getPermissions(admin, node)).as("Permissions for admin").containsOnly(CREATE_PERM,
+					READ_PERM, UPDATE_PERM);
+			assertThat(roleDao.getPermissions(anonymous, node)).as("Permissions for anonymous")
+					.containsOnly(CREATE_PERM, READ_PERM);
+			assertThat(roleDao.getPermissions(testRole, node)).as("Permissions for test role").containsOnly(CREATE_PERM,
+					PUBLISH_PERM, UPDATE_PERM, READ_PERM, DELETE_PERM, READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// "change" something that is already set
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.grantPermissions(new HashSet<>(Arrays.asList(admin, anonymous, testRole)), node, false,
+					CREATE_PERM, READ_PERM)).as("Changed permissions").isFalse();
+			tx.success();
+		}
+	}
+
+	@Test
+	public void testGrantMultiplePermissionExclusive() {
+		// change permissions on multiple roles
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.grantPermissions(new HashSet<>(Arrays.asList(admin, anonymous)), node, true,
+					CREATE_PERM, READ_PERM)).as("Changed permissions").isTrue();
+
+			assertThat(roleDao.getPermissions(admin, node)).as("Permissions for admin").containsOnly(CREATE_PERM,
+					READ_PERM);
+			assertThat(roleDao.getPermissions(anonymous, node)).as("Permissions for anonymous")
+					.containsOnly(CREATE_PERM, READ_PERM);
+			assertThat(roleDao.getPermissions(testRole, node)).as("Permissions for test role")
+					.containsOnly(PUBLISH_PERM, UPDATE_PERM, DELETE_PERM, READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// "change" something that is already set
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.grantPermissions(new HashSet<>(Arrays.asList(admin, anonymous)), node, true, READ_PERM))
+					.as("Changed permissions").isFalse();
+			tx.success();
+		}
+
+		// do a change, that only restricts other roles further
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.grantPermissions(new HashSet<>(Arrays.asList(admin)), node, true, READ_PERM))
+					.as("Changed permissions").isTrue();
+
+			assertThat(roleDao.getPermissions(admin, node)).as("Permissions for admin").containsOnly(CREATE_PERM,
+					READ_PERM);
+			assertThat(roleDao.getPermissions(anonymous, node)).as("Permissions for anonymous")
+					.containsOnly(CREATE_PERM);
+			assertThat(roleDao.getPermissions(testRole, node)).as("Permissions for test role")
+					.containsOnly(PUBLISH_PERM, UPDATE_PERM, DELETE_PERM, READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+	}
+
+	@Test
 	public void testGetPermissions() {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			HibRole role = role();
 			HibNode node = folder("news");
 			assertEquals(6, roleDao.getPermissions(role, node).size());
+		}
+	}
+
+	@Test
+	public void testGetMultiplePermissions() {
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+			Map<HibRole, Set<InternalPermission>> result = roleDao.getPermissions(new HashSet<>(Arrays.asList(admin, anonymous, testRole)), node);
+			assertThat(result).as("Permissions result")
+				.containsOnlyKeys(admin, anonymous, testRole)
+				.containsEntry(testRole, new HashSet<>(Arrays.asList(CREATE_PERM, PUBLISH_PERM, UPDATE_PERM, READ_PERM, DELETE_PERM, READ_PUBLISHED_PERM)))
+				.containsEntry(admin, Collections.emptySet())
+				.containsEntry(anonymous, Collections.emptySet());
+		}
+	}
+
+	@Test
+	public void testGetMultiplePermissionsForNoRoles() {
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibNode node = folder("news");
+			Map<HibRole, Set<InternalPermission>> result = roleDao.getPermissions(Collections.emptySet(), node);
+			assertThat(result).as("Permissions result")
+				.isEmpty();
 		}
 	}
 
@@ -151,6 +320,52 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertTrue(permissions.contains(DELETE_PERM));
 			assertTrue(permissions.contains(UPDATE_PERM));
 			assertTrue(permissions.contains(READ_PERM));
+		}
+	}
+
+	@Test
+	public void testRevokeMultiplePermissions() {
+		// revoke permissions
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			roleDao.grantPermissions(admin, node, CREATE_PERM, UPDATE_PERM);
+			roleDao.grantPermissions(anonymous, node, CREATE_PERM);
+
+			assertThat(roleDao.revokePermissions(new HashSet<>(Arrays.asList(admin, testRole)), node, CREATE_PERM,
+					READ_PERM)).as("Permissions were changed").isTrue();
+
+			assertThat(roleDao.getPermissions(admin, node)).as("Permissions for admin").containsOnly(UPDATE_PERM);
+			assertThat(roleDao.getPermissions(anonymous, node)).as("Permissions for anonymous")
+					.containsOnly(CREATE_PERM);
+			assertThat(roleDao.getPermissions(testRole, node)).as("Permissions for test role")
+					.containsOnly(PUBLISH_PERM, UPDATE_PERM, DELETE_PERM, READ_PUBLISHED_PERM);
+
+			tx.success();
+		}
+
+		// try again (nothing is changed)
+		try (Tx tx = tx()) {
+			RoleDao roleDao = tx.roleDao();
+			HibRole admin = roleDao.findByName("admin");
+			assertThat(admin).as("Admin role").isNotNull();
+			HibRole anonymous = roleDao.findByName("anonymous");
+			assertThat(anonymous).as("Anonymous role").isNotNull();
+			HibRole testRole = role();
+			assertThat(testRole).as("Test role").isNotNull();
+			HibNode node = folder("news");
+
+			assertThat(roleDao.revokePermissions(new HashSet<>(Arrays.asList(admin, testRole)), node, CREATE_PERM,
+					READ_PERM)).as("Permissions were changed").isFalse();
+
+			tx.success();
 		}
 	}
 

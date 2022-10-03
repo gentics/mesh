@@ -59,6 +59,8 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 
 		// Version purge
 		addVersionPurgeHandler();
+
+		addRolePermissionHandler();
 	}
 
 	private void addUpdateHandler() {
@@ -161,6 +163,21 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handlePurge(ac, uuid);
+		}, false);
+	}
+
+	private void addRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:projectUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the project for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("projectUuid");
+			crudHandler.handleReadPermissions(ac, uuid);
 		}, false);
 	}
 }

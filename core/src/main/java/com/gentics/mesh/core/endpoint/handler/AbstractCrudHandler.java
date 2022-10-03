@@ -4,17 +4,28 @@ import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
@@ -103,4 +114,29 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 		return handler;
 	}
 
+	/**
+	 * Handle request to read permissions for all roles
+	 * @param ac action context
+	 * @param uuid entity uuid
+	 */
+	public void handleReadPermissions(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		utils.syncTx(ac, tx -> {
+			RoleDao roleDao = tx.roleDao();
+			T object = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
+			Set<HibRole> roles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+
+			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(roles, object);
+			permissions.values().removeIf(Set::isEmpty);
+
+			ObjectPermissionResponse response = new ObjectPermissionResponse();
+			permissions.entrySet().forEach(entry -> {
+				RoleReference role = entry.getKey().transformToReference();
+				entry.getValue().forEach(perm -> response.add(role, perm.getRestPerm()));
+			});
+			response.setOthers(object.hasPublishPermissions());
+
+			return response;
+		}, model -> ac.send(model, OK));
+	}
 }

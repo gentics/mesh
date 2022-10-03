@@ -276,6 +276,13 @@ public final class Examples {
 		return ref;
 	}
 
+	public static RoleReference roleRef2() {
+		RoleReference ref = new RoleReference();
+		ref.setUuid(uuid4());
+		ref.setName("editor");
+		return ref;
+	}
+
 	public static TagReference tagRef() {
 		String uuid = "e5861ba26b914b21861ba26b91ab211a";
 		TagReference ref = new TagReference();

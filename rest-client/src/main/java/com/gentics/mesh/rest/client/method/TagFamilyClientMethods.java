@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -91,5 +92,14 @@ public interface TagFamilyClientMethods {
 	 */
 	MeshRequest<TagFamilyListResponse> findTagFamilies(String projectName, ParameterProvider... parameters);
 
-
+	/**
+	 * Get the role permissions on the tag family
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param tagFamilyUuid
+	 *            Uuid of the tagfamily
+	 * @return request
+	 */
+	MeshRequest<ObjectPermissionResponse> getTagFamilyRolePermissions(String projectName, String tagFamilyUuid);
 }

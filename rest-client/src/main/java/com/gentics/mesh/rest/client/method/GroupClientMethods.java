@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -100,4 +101,11 @@ public interface GroupClientMethods {
 	 */
 	MeshRequest<EmptyResponse> removeRoleFromGroup(String groupUuid, String roleUuid);
 
+	/**
+	 * Get the role permissions on the group
+	 * 
+	 * @param uuid Uuid of the group
+	 * @return request
+	 */
+	MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid);
 }

@@ -72,6 +72,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		addTagFamilyCreateHandler();
 		addTagFamilyUpdateHandler();
 		addTagFamilyDeleteHandler();
+		addTagFamilyRolePermissionHandler();
 
 		// Tags API
 		addTagCreateHandler();
@@ -79,6 +80,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		addTagUpdateHandler();
 		addTagDeleteHandler();
 		addTaggedNodesHandler();
+		addTagRolePermissionHandler();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Registered tagfamily verticle endpoints");
@@ -174,6 +176,23 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		});
 	}
 
+	private void addTagRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the tag for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleReadPermissions(ac, tagFamilyUuid, uuid);
+		}, false);
+	}
+
 	private void addTaggedNodesHandler() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid/nodes");
@@ -267,5 +286,20 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
 		});
+	}
+
+	private void addTagFamilyRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:tagFamilyUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the tag family for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			tagFamilyCrudHandler.handleReadPermissions(ac, tagFamilyUuid);
+		}, false);
 	}
 }
