@@ -8,10 +8,11 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-
 import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
+
+import jdk.nashorn.internal.objects.annotations.Setter;
 
 /**
  * S3 configuration POJO.
@@ -243,14 +244,17 @@ public class S3Options implements Option {
 		return corsAllowedHeaders;
 	}
 
+	@Setter
 	public void setCorsAllowedHeaders(Collection<String> corsAllowedHeaders) {
 		this.corsAllowedHeaders = corsAllowedHeaders == null ? null : new ArrayList<>(corsAllowedHeaders);
 	}
 
+	@Setter
 	public List<String> getCorsAllowedOrigins() {
 		return corsAllowedOrigins;
 	}
 
+	@Setter
 	public void setCorsAllowedOrigins(Collection<String> corsAllowedOrigins) {
 		this.corsAllowedOrigins = corsAllowedOrigins == null ? null : new ArrayList<>(corsAllowedOrigins);
 	}

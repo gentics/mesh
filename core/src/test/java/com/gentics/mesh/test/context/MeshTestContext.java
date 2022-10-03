@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -310,9 +311,7 @@ public class MeshTestContext extends TestWatcher {
 
 			MeshRestClient httpClient = MeshRestClient.create(httpConfigBuilder.build(), okHttp);
 			httpClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-			if (settings.loginClients()) {
-				httpClient.login().blockingGet();
-			}
+			httpClient.login().blockingGet();
 			clients.put("http_v" + CURRENT_API_VERSION, httpClient);
 
 			// Setup SSL client if needed
@@ -326,28 +325,26 @@ public class MeshTestContext extends TestWatcher {
 
 			MeshRestClientConfig httpsConfig = null;
 			switch (ssl) {
-				case OFF:
-					break;
+			case OFF:
+				break;
 
-				case CLIENT_CERT_REQUEST:
-				case CLIENT_CERT_REQUIRED:
-					httpsConfigBuilder.addTrustedCA("src/test/resources/client-ssl/server.pem");
-					httpsConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
-					httpsConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
-					httpsConfig = httpsConfigBuilder.build();
-					break;
+			case CLIENT_CERT_REQUEST:
+			case CLIENT_CERT_REQUIRED:
+				httpsConfigBuilder.addTrustedCA("src/test/resources/client-ssl/server.pem");
+				httpsConfigBuilder.setClientCert("src/test/resources/client-ssl/alice.pem");
+				httpsConfigBuilder.setClientKey("src/test/resources/client-ssl/alice.key");
+				httpsConfig = httpsConfigBuilder.build();
+				break;
 
-				case NORMAL:
-					httpsConfig = httpsConfigBuilder.build();
-					break;
+			case NORMAL:
+				httpsConfig = httpsConfigBuilder.build();
+				break;
 			}
 
 			if (httpsConfig != null) {
 				MeshRestClient httpsClient = MeshRestClient.create(httpsConfig);
 				httpsClient.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-				if (settings.loginClients()) {
-					httpsClient.login().blockingGet();
-				}
+				httpsClient.login().blockingGet();
 				clients.put("https_v" + CURRENT_API_VERSION, httpsClient);
 			}
 
@@ -357,7 +354,6 @@ public class MeshTestContext extends TestWatcher {
 				clients.put("http_v" + version, oldClient);
 			});
 		});
-
 		log.info("Using monitoring port: " + monitoringPort);
 		MonitoringClientConfig monitoringClientConfig = new MonitoringClientConfig.Builder()
 			.setBasePath(CURRENT_API_BASE_PATH)
