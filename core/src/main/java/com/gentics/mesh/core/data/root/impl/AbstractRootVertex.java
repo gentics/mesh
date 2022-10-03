@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -39,16 +40,15 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+									Set<GraphPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
 		if (recursive) {
 			for (T t : findAll()) {
-				permissionChanged = t.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+				permissionChanged = t.applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		permissionChanged = applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = applyVertexPermissions(user, batch, role, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
-
 }

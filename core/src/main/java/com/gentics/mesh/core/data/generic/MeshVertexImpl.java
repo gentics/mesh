@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.core.data.MeshAuthUser;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.annotations.GraphElement;
@@ -108,13 +109,23 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
-		return applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+	public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		return applyVertexPermissions(user, batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected boolean applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	protected boolean applyVertexPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
+											 Set<GraphPermission> permissionsToRevoke) {
+		permissionsToGrant.forEach(permission -> {
+			if (!user.hasPermission(this, permission)) {
+				throw new IllegalArgumentException("Cannot assign permission " + permission + " on element with uuid " + uuid + ".");
+			}
+		});
+		permissionsToRevoke.forEach(permission -> {
+			if (!user.hasPermission(this, permission)) {
+				throw new IllegalArgumentException("Cannot revoke permission " + permission + " on element with uuid " + uuid + ".");
+			}
+		});
+
 		boolean permissionChanged = false;
 		permissionChanged = role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()])) || permissionChanged;
 		permissionChanged = role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()])) || permissionChanged;

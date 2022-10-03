@@ -151,7 +151,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 						}
 					}
 					// 3. Apply the permission actions
-					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+					element.applyPermissions(ac.getUser(), batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
 					return role.getName();
 				});
 				if (ac.getSecurityLogger().isInfoEnabled()) {

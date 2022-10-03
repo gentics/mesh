@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -464,7 +465,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
-				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+
+				MeshAuthUserImpl meshAuthUser = new MeshAuthUserImpl();
+				folder.applyPermissions(meshAuthUser, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac2);
@@ -516,7 +519,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
-				folder.applyPermissions(bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
+				MeshAuthUserImpl meshAuthUser = new MeshAuthUserImpl();
+				folder.applyPermissions(meshAuthUser, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
 					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac);

@@ -329,18 +329,17 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive,
-			Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
 		if (recursive) {
 			for (Node node : findAll()) {
 				// We don't need to recursively handle the permissions for each node again since
 				// this call will already affect all nodes.
-				permissionChanged = node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+				permissionChanged = node.applyPermissions(user, batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
 
-		permissionChanged = applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = applyVertexPermissions(user, batch, role, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
 
