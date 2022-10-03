@@ -60,5 +60,3 @@ mesh-mdm/config
 /config/
 /data/graphdb/storage/
 .vscode
-core/data/
-core/elasticsearch/

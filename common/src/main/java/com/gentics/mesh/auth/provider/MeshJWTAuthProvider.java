@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.AuthenticationResult;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.shared.SharedKeys;
-import com.gentics.mesh.util.JWTUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -40,50 +40,34 @@ import io.vertx.ext.web.Cookie;
 
 /**
  * Central mesh authentication provider which will handle JWT.
- *
- * Note that the auth process starts at {@link com.gentics.mesh.auth.handler.MeshJWTAuthHandler#handle(io.vertx.ext.web.RoutingContext)}.
- * The handler will extract the JWT values and this provider will authenticate the data and load the user.
- *
+ * 
+ * Note that the auth proces starts at {@link MeshJWTAuthHandler#handle(io.vertx.ext.web.RoutingContext). The handler will extract the JWT values and this
+ * provider will authenticate the data and load the user.
+ * 
  */
 @Singleton
 public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshJWTAuthProvider.class);
 
-	public static final String TOKEN_COOKIE_KEY = "mesh.token";
-	private static final String USERID_FIELD_NAME = "userUuid";
-	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "jti";
-
-	private final Vertx vertx;
-	protected final Database db;
-	private final BCryptPasswordEncoder passwordEncoder;
-	private final MeshOptions meshOptions;
-
 	private JWTAuth jwtProvider;
 
+	private static final String USERID_FIELD_NAME = "userUuid";
+
+	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "jti";
+
+	protected final Database db;
+
+	private BCryptPasswordEncoder passwordEncoder;
+
+	private final MeshOptions meshOptions;
+
 	@Inject
-	public MeshJWTAuthProvider(
-		Vertx vertx,
-		MeshOptions meshOptions,
-		BCryptPasswordEncoder passwordEncoder,
-		Database database
-	) {
-		this.vertx = vertx;
+	public MeshJWTAuthProvider(Vertx vertx, MeshOptions meshOptions, BCryptPasswordEncoder passwordEncoder, Database database,
+		BootstrapInitializer boot) {
 		this.meshOptions = meshOptions;
 		this.passwordEncoder = passwordEncoder;
 		this.db = database;
-	}
-
-	/**
-	 * Delayed initialize function, which is only executed once this provider is actually needed
-	 * ({@link #authenticateJWT(JsonObject, Handler) and {@link #generateToken(String, String, String)}}.
-	 * This is done, to make testing possible, as otherwise the provider would be initialized with the
-	 * settings, before the tests could change them (and therefore make it impossible to test different configurations).
-	 */
-	public void initialize() {
-		if (this.jwtProvider != null) {
-			return;
-		}
 
 		// Use the mesh JWT options in order to setup the JWTAuth provider
 		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
@@ -95,23 +79,19 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		String keyStorePath = options.getKeystorePath();
 		String type = "jceks";
 		JWTAuthOptions config = new JWTAuthOptions();
-		// Set JWT options from the config
-		config.setJWTOptions(JWTUtil.createJWTOptions(options));
 		config.setKeyStore(new KeyStoreOptions().setPath(keyStorePath).setPassword(keystorePassword).setType(type));
-		this.jwtProvider = JWTAuth.create(this.vertx, new JWTAuthOptions(config));
+		jwtProvider = JWTAuth.create(vertx, new JWTAuthOptions(config));
 	}
 
 	/**
 	 * Authenticate the JWT information and invoke the handler with the result of the authentication process.
-	 *
+	 * 
 	 * This method will also load the actual user from the JWT user reference.
-	 *
+	 * 
 	 * @param authInfo
 	 * @param resultHandler
 	 */
 	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		this.initialize();
-
 		// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
 		// We will use this information to load the Mesh User from the graph.
 		jwtProvider.authenticate(authInfo, rh -> {
@@ -122,21 +102,20 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 					log.warn("Could not authenticate token.");
 				}
 				resultHandler.handle(Future.failedFuture("Invalid Token"));
-				return;
-			}
+			} else {
+				JsonObject decodedJwt = rh.result().principal();
+				try {
+					User user = loadUserByJWT(decodedJwt);
+					AuthenticationResult result = new AuthenticationResult(user);
 
-			JsonObject decodedJwt = rh.result().principal();
-			try {
-				User user = loadUserByJWT(decodedJwt);
-				AuthenticationResult result = new AuthenticationResult(user);
-
-				// Check whether an api key was used to authenticate the user.
-				if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
-					result.setUsingAPIKey(true);
+					// Check whether an api key was used to authenticate the user.
+					if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
+						result.setUsingAPIKey(true);
+					}
+					resultHandler.handle(Future.succeededFuture(result));
+				} catch (Exception e) {
+					resultHandler.handle(Future.failedFuture(e));
 				}
-				resultHandler.handle(Future.succeededFuture(result));
-			} catch (Exception e) {
-				resultHandler.handle(Future.failedFuture(e));
 			}
 		});
 	}
@@ -161,8 +140,6 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Password
 	 */
 	public String generateToken(String username, String password, String newPassword) {
-		this.initialize();
-
 		HibUser user = authenticate(username, password, newPassword);
 		String uuid = db.tx(user::getUuid);
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
@@ -179,50 +156,44 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 *            Password
 	 */
 	private HibUser authenticate(String username, String password, String newPassword) {
-		HibUser user = db.tx(tx -> {
-			return tx.userDao().findByUsername(username);
-		});
-
-		if (user == null) {
+		HibUser user = db.tx(tx -> { return tx.userDao().findByUsername(username); });
+		if (user != null) {
+			String accountPasswordHash = db.tx(user::getPasswordHash);
+			// TODO check if user is enabled
+			boolean hashMatches = false;
+			if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("The account password hash or token password string are invalid.");
+				}
+				throw error(UNAUTHORIZED, "auth_login_failed");
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Validating password using the bcrypt password encoder");
+				}
+				hashMatches = passwordEncoder.matches(password, accountPasswordHash);
+			}
+			if (hashMatches) {
+				boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
+				if (forcedPasswordChange && newPassword == null) {
+					throw error(BAD_REQUEST, "auth_login_password_change_required");
+				} else if (!forcedPasswordChange && newPassword != null) {
+					throw error(BAD_REQUEST, "auth_login_newpassword_failed");
+				} else {
+					if (forcedPasswordChange) {
+						db.tx(tx -> { return tx.userDao().setPassword(user, newPassword); });
+					}
+					return user;
+				}
+			} else {
+				throw error(UNAUTHORIZED, "auth_login_failed");
+			}
+		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not load user with username {" + username + "}.");
 			}
 			// TODO Don't let the user know that we know that he did not exist?
 			throw error(UNAUTHORIZED, "auth_login_failed");
 		}
-
-		String accountPasswordHash = db.tx(user::getPasswordHash);
-		// TODO check if user is enabled
-		if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("The account password hash or token password string are invalid.");
-			}
-			throw error(UNAUTHORIZED, "auth_login_failed");
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug("Validating password using the bcrypt password encoder");
-		}
-
-		if (!passwordEncoder.matches(password, accountPasswordHash)) {
-			throw error(UNAUTHORIZED, "auth_login_failed");
-		}
-
-		boolean forcedPasswordChange = db.tx(user::isForcedPasswordChange);
-
-		if (forcedPasswordChange && newPassword == null) {
-			throw error(BAD_REQUEST, "auth_login_password_change_required");
-		} else if (!forcedPasswordChange && newPassword != null) {
-			throw error(BAD_REQUEST, "auth_login_newpassword_failed");
-		}
-
-		if (forcedPasswordChange) {
-			db.tx(tx -> {
-				return tx.userDao().setPassword(user, newPassword);
-			});
-		}
-
-		return user;
 	}
 
 	/**
@@ -233,17 +204,18 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 	 * @return The new token
 	 */
 	public String generateToken(User user) {
-		if (!(user instanceof MeshAuthUser)) {
+		if (user instanceof MeshAuthUser) {
+			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
+			JsonObject tokenData = new JsonObject();
+			String uuid = db.tx(((MeshAuthUser) user).getDelegate()::getUuid);
+			tokenData.put(USERID_FIELD_NAME, uuid);
+			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm())
+				.setExpiresInSeconds(options.getTokenExpirationTime());
+			return jwtProvider.generateToken(tokenData, jwtOptions);
+		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
 			throw error(INTERNAL_SERVER_ERROR, "error_internal");
 		}
-
-		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
-		JsonObject tokenData = new JsonObject();
-		String uuid = db.tx(((MeshAuthUser) user).getDelegate()::getUuid);
-		tokenData.put(USERID_FIELD_NAME, uuid);
-		JWTOptions jwtOptions = JWTUtil.createJWTOptions(options);
-		return jwtProvider.generateToken(tokenData, jwtOptions);
 	}
 
 	/**
@@ -260,7 +232,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 		JsonObject tokenData = new JsonObject()
 			.put(USERID_FIELD_NAME, user.getUuid())
 			.put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
-		JWTOptions jwtOptions = JWTUtil.createJWTOptions(options);
+		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
 		if (expireDuration != null) {
 			jwtOptions.setExpiresInMinutes(expireDuration);
 		}
@@ -293,7 +265,7 @@ public class MeshJWTAuthProvider implements AuthProvider, JWTAuth {
 			// }
 
 			// Check whether the token might be an API key token
-			if (!jwt.containsKey(JWTUtil.JWT_FIELD_EXPIRATION)) {
+			if (!jwt.containsKey("exp")) {
 				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
 				// TODO: All tokens without exp must have a token code - See https://github.com/gentics/mesh/issues/412
 				if (apiKeyToken != null) {
