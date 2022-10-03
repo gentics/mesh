@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.user;
 
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
@@ -249,5 +250,21 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 			String uuid = rc.request().getParam("userUuid");
 			crudHandler.handleReadPermissions(ac, uuid);
 		}, false);
+
+		InternalEndpointRoute grantPermissionsEndpoint = createRoute();
+		grantPermissionsEndpoint.path("/:userUuid/rolePermissions");
+		grantPermissionsEndpoint.addUriParameter("userUuid", "Uuid of the user", USER_EDITOR_UUID);
+		grantPermissionsEndpoint.method(POST);
+		grantPermissionsEndpoint.description("Grant permissions on the user for multiple roles.");
+		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
+		grantPermissionsEndpoint.produces(APPLICATION_JSON);
+		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
+		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		grantPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam("userUuid");
+			crudHandler.handleGrantPermissions(ac, uuid);
+		});
 	}
 }

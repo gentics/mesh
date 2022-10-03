@@ -20,7 +20,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -33,7 +32,6 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -44,7 +42,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
-import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -504,47 +501,5 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		client().createSchema(schemaRequest).blockingAwait();
 		call(() -> client().createMicroschema(microSchemaRequest), CONFLICT, "schema_conflicting_name", "test");
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissions() throws Exception {
-		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
-		RoleReference testRole = tx(() -> role().transformToReference());
-		ObjectPermissionResponse response = call(() -> client().getMicroschemaRolePermissions(microschemaUuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
-		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
-		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
-		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
-		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermission() throws Exception {
-		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), microschemaContainer("vcard"), READ_PERM);
-		});
-		call(() -> client().getMicroschemaRolePermissions(microschemaUuid), FORBIDDEN, "error_missing_perm", microschemaUuid, READ_PERM.getRestPerm().getName());
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
-		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
-		});
-		ObjectPermissionResponse response = call(() -> client().getMicroschemaRolePermissions(microschemaUuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
-		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
-		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
-		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
-		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }

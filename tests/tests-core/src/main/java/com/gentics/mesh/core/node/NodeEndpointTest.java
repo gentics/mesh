@@ -28,12 +28,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -61,7 +61,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -72,7 +71,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -2135,48 +2133,5 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		List<NodeReference> breadcrumb = node.getNodeResponse().getBreadcrumb();
 		assertEquals(1, breadcrumb.size());
 		assertEquals(node.getNodeResponse().getUuid(), breadcrumb.get(0).getUuid());
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissions() throws Exception {
-		String uuid = tx(() -> folder("2015").getUuid());
-		RoleReference testRole = tx(() -> role().transformToReference());
-
-		ObjectPermissionResponse response = call(() -> client().getNodeRolePermissions(PROJECT_NAME, uuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
-		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
-		assertThat(response.getPublish()).as("Roles with publish permission").containsOnly(testRole);
-		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").containsOnly(testRole);
-		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermission() throws Exception {
-		String uuid = tx(() -> folder("2015").getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), folder("2015"), READ_PERM);
-		});
-		call(() -> client().getNodeRolePermissions(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
-		String uuid = tx(() -> folder("2015").getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
-		});
-		ObjectPermissionResponse response = call(() -> client().getNodeRolePermissions(PROJECT_NAME, uuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
-		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
-		assertThat(response.getPublish()).as("Roles with publish permission").isNotNull().isEmpty();
-		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNotNull().isEmpty();
-		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }

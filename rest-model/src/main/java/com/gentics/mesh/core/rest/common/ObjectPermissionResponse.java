@@ -163,6 +163,30 @@ public class ObjectPermissionResponse implements RestModel {
 		return this;
 	}
 
+	/**
+	 * Get the roles with the given permission
+	 * @param perm permission
+	 * @return set of role references
+	 */
+	public Set<RoleReference> get(Permission perm) {
+		switch (perm) {
+		case CREATE:
+			return create;
+		case READ:
+			return read;
+		case UPDATE:
+			return update;
+		case DELETE:
+			return delete;
+		case PUBLISH:
+			return publish;
+		case READ_PUBLISHED:
+			return readPublished;
+		default:
+			throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
+		}
+	}
+
 	protected Set<RoleReference> update(Set<RoleReference> set, RoleReference role, boolean flag) {
 		if (set == null) {
 			set = new HashSet<>();

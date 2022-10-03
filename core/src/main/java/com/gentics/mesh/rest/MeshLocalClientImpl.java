@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -1873,6 +1874,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		groupCrudHandler.handleGrantPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		microschemaCrudHandler.handleReadPermissions(ac, uuid);
@@ -1932,6 +1942,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		userCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		userCrudHandler.handleGrantPermissions(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 }

@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -1671,6 +1672,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
@@ -1724,5 +1733,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 }

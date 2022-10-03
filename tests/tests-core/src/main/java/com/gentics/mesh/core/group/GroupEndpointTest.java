@@ -23,7 +23,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -44,14 +43,12 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -596,47 +593,5 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupResponse group = client().findGroups().blockingGet().getData().get(0);
 
 		assertThat(group.getPermissions()).hasNoPublishPermsSet();
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissions() throws Exception {
-		String groupUuid = tx(() -> group().getUuid());
-		RoleReference testRole = tx(() -> role().transformToReference());
-		ObjectPermissionResponse response = call(() -> client().getGroupRolePermissions(groupUuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
-		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
-		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
-		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
-		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermission() throws Exception {
-		String groupUuid = tx(() -> group().getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), group(), READ_PERM);
-		});
-		call(() -> client().getGroupRolePermissions(groupUuid), FORBIDDEN, "error_missing_perm", groupUuid, READ_PERM.getRestPerm().getName());
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
-		String groupUuid = tx(() -> group().getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
-		});
-		ObjectPermissionResponse response = call(() -> client().getGroupRolePermissions(groupUuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
-		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
-		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
-		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
-		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }

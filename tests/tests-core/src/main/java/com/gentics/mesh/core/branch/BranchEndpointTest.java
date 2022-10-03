@@ -30,7 +30,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -1368,24 +1367,6 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		updateFolderSchema(false);
 		// No migration should happen
 		this.migrateSchema();
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissions() throws Exception {
-		fail("Not implemented");
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermission() throws Exception {
-		fail("Not implemented");
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
-		fail("Not implemented");
 	}
 
 	private void updateFolderSchema(boolean immediate) {

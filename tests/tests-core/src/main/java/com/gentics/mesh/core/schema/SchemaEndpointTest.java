@@ -58,7 +58,6 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
-import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
@@ -72,7 +71,6 @@ import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
-import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -841,47 +839,5 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			HibSchemaVersion version = schema.getLatestVersion();
 			assertThat(version.getMicroschemaVersionHash(initialBranch())).as("Microschema Version Hash").isNull();
 		});
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissions() throws Exception {
-		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		RoleReference testRole = tx(() -> role().transformToReference());
-		ObjectPermissionResponse response = call(() -> client().getSchemaRolePermissions(schemaUuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").containsOnly(testRole);
-		assertThat(response.getDelete()).as("Roles with delete permission").containsOnly(testRole);
-		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
-		assertThat(response.getRead()).as("Roles with read permission").containsOnly(testRole);
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
-		assertThat(response.getUpdate()).as("Roles with update permission").containsOnly(testRole);
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermission() throws Exception {
-		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), schemaContainer("content"), READ_PERM);
-		});
-		call(() -> client().getSchemaRolePermissions(schemaUuid), FORBIDDEN, "error_missing_perm", schemaUuid, READ_PERM.getRestPerm().getName());
-	}
-
-	@Test
-	@Override
-	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
-		String schemaUuid = tx(() -> schemaContainer("content").getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
-		});
-		ObjectPermissionResponse response = call(() -> client().getSchemaRolePermissions(schemaUuid));
-		assertThat(response).as("Response").isNotNull();
-		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
-		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().isEmpty();
-		assertThat(response.getPublish()).as("Roles with publish permission").isNull();
-		assertThat(response.getRead()).as("Roles with read permission").isNotNull().isEmpty();
-		assertThat(response.getReadPublished()).as("Roles with readPublished permission").isNull();
-		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
 	}
 }
