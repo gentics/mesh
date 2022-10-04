@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -44,7 +45,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 									Set<GraphPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (T t : findAll()) {
+			for (T t : findAll().stream().filter(e -> user.hasPermission(e, GraphPermission.READ_PERM)).collect(Collectors.toList())) {
 				permissionChanged = t.applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}

@@ -222,7 +222,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (User user : getUsers()) {
+			for (User user : getUsers().stream().filter(e -> authUser.hasPermission(e, READ_PERM)).collect(Collectors.toList())) {
 				permissionChanged = user.applyPermissions(authUser, batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}

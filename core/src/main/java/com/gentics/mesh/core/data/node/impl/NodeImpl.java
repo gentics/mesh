@@ -1614,7 +1614,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		boolean permissionChanged = false;
 		if (recursive) {
 			// We don't need to filter by branch. Branch nodes can't have dedicated perms
-			for (Node child : getChildren()) {
+			for (Node child : getChildren().stream().filter(e -> user.hasPermission(e, READ_PERM)).collect(Collectors.toList())) {
 				permissionChanged = child.applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
