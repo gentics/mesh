@@ -115,16 +115,10 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	protected boolean applyVertexPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
 											 Set<GraphPermission> permissionsToRevoke) {
-		permissionsToGrant.forEach(permission -> {
-			if (!user.hasPermission(this, permission)) {
-				throw new IllegalArgumentException("Cannot assign permission " + permission + " on element with uuid " + uuid + ".");
-			}
-		});
-		permissionsToRevoke.forEach(permission -> {
-			if (!user.hasPermission(this, permission)) {
-				throw new IllegalArgumentException("Cannot revoke permission " + permission + " on element with uuid " + uuid + ".");
-			}
-		});
+
+		if (!user.hasPermission(this, GraphPermission.READ_PERM)) {
+			throw new IllegalArgumentException("Cannot assign permission " + GraphPermission.READ_PERM + " on element with uuid " + uuid + ".");
+		}
 
 		boolean permissionChanged = false;
 		permissionChanged = role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()])) || permissionChanged;
