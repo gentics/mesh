@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.error.MissingPermissionException;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.annotations.GraphElement;
@@ -117,7 +118,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 											 Set<GraphPermission> permissionsToRevoke) {
 
 		if (!user.hasPermission(this, GraphPermission.READ_PERM)) {
-			throw new IllegalArgumentException("Cannot assign permission " + GraphPermission.READ_PERM + " on element with uuid " + uuid + ".");
+			throw new MissingPermissionException(GraphPermission.READ_PERM, this.getUuid());
 		}
 
 		boolean permissionChanged = false;
