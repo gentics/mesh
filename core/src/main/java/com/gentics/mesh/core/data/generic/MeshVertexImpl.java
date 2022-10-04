@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.error.MissingPermissionException;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -117,7 +118,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected boolean applyVertexPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
 											 Set<GraphPermission> permissionsToRevoke) {
 
-		if (!user.hasPermission(this, GraphPermission.READ_PERM)) {
+		if (!user.hasPermission(this, GraphPermission.READ_PERM) && !(this instanceof RootVertex)) {
 			throw new MissingPermissionException(GraphPermission.READ_PERM, this.getUuid());
 		}
 
