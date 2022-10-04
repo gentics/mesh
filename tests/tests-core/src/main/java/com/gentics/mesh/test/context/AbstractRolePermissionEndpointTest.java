@@ -21,7 +21,7 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Abstract test class for role permissions test
  */
-public abstract class AbstractRolePermissionTest extends AbstractMeshTest {
+public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTest {
 	/**
 	 * Test reading role permissions
 	 * @throws Exception

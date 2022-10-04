@@ -33,6 +33,7 @@ import org.raml.model.Resource;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -44,14 +45,13 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.core.MultiMap;
 
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
-public class NodeEndpoint extends AbstractProjectEndpoint {
+public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private Resource resource = new Resource();
 
@@ -111,7 +111,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addNavigationHandlers();
 		addPublishHandlers();
 		addVersioningHandlers();
-		addRolePermissionHandler();
+		addRolePermissionHandler("nodeUuid", NODE_DELOREAN_UUID, "node", crudHandler, true);
 	}
 
 	public Resource getResource() {
@@ -582,21 +582,6 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleTakeOffline(ac, uuid, lang);
 		});
 
-	}
-
-	private void addRolePermissionHandler() {
-		InternalEndpointRoute readPermissionsEndpoint = createRoute();
-		readPermissionsEndpoint.path("/:nodeUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the node for all roles.");
-		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(true), "Loaded permissions.");
-		readPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("nodeUuid");
-			crudHandler.handleReadPermissions(ac, uuid);
-		}, false);
 	}
 
 	public NodeCrudHandler getCrudHandler() {

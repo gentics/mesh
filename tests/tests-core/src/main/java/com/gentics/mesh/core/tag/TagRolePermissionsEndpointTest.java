@@ -7,14 +7,14 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.context.AbstractRolePermissionTest;
+import com.gentics.mesh.test.context.AbstractRolePermissionEndpointTest;
 import com.gentics.mesh.test.context.ClientHandler;
 
 /**
  * Test cases for handling role permissions for tags
  */
 @MeshTestSetting(testSize = FULL, startServer = true)
-public class TagRolePermissionsEndpointTest extends AbstractRolePermissionTest {
+public class TagRolePermissionsEndpointTest extends AbstractRolePermissionEndpointTest {
 
 	@Override
 	protected HibBaseElement getTestedElement() {
@@ -24,12 +24,14 @@ public class TagRolePermissionsEndpointTest extends AbstractRolePermissionTest {
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> getRolePermissions() {
 		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
-		return () -> client().getTagRolePermissions(PROJECT_NAME, tagFamilyUuid, getTestedUuid());
+		String uuid = getTestedUuid();
+		return () -> client().getTagRolePermissions(PROJECT_NAME, tagFamilyUuid, uuid);
 	}
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		String uuid = getTestedUuid();
+		return () -> client().grantTagRolePermissions(PROJECT_NAME, tagFamilyUuid, uuid, request);
 	}
 }

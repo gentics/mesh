@@ -7,14 +7,14 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.context.AbstractRolePermissionTest;
+import com.gentics.mesh.test.context.AbstractRolePermissionEndpointTest;
 import com.gentics.mesh.test.context.ClientHandler;
 
 /**
  * Test cases for handling role permissions for tag families
  */
 @MeshTestSetting(testSize = FULL, startServer = true)
-public class TagFamilyRolePermissionsEndpointTest extends AbstractRolePermissionTest {
+public class TagFamilyRolePermissionsEndpointTest extends AbstractRolePermissionEndpointTest {
 
 	@Override
 	protected HibBaseElement getTestedElement() {
@@ -28,7 +28,6 @@ public class TagFamilyRolePermissionsEndpointTest extends AbstractRolePermission
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		return () -> client().grantTagFamilyRolePermissions(PROJECT_NAME, getTestedUuid(), request);
 	}
 }

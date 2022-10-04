@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.MeshEvent.GROUP_ROLE_UNASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_ASSIGNED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_USER_UNASSIGNED;
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.example.ExampleUuids.GROUP_CLIENT_UUID;
 import static com.gentics.mesh.example.ExampleUuids.GROUP_EDITORS_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
@@ -25,16 +24,16 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
- * Endpoint defintion for /api/v1/groups
+ * Endpoint definition for /api/v1/groups
  */
-public class GroupEndpoint extends AbstractInternalEndpoint {
+public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 
 	private GroupCrudHandler crudHandler;
 
@@ -64,7 +63,7 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 		addReadHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-		addRolePermissionHandler();
+		addRolePermissionHandler("groupUuid", GROUP_CLIENT_UUID, "group", crudHandler, false);
 	}
 
 	private void addGroupRoleHandlers() {
@@ -245,36 +244,5 @@ public class GroupEndpoint extends AbstractInternalEndpoint {
 			crudHandler.handleCreate(wrap(rc));
 		});
 
-	}
-
-	private void addRolePermissionHandler() {
-		InternalEndpointRoute readPermissionsEndpoint = createRoute();
-		readPermissionsEndpoint.path("/:groupUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("groupUuid", "Uuid of the group", GROUP_CLIENT_UUID);
-		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the group for all roles.");
-		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
-		readPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("groupUuid");
-			crudHandler.handleReadPermissions(ac, uuid);
-		}, false);
-
-		InternalEndpointRoute grantPermissionsEndpoint = createRoute();
-		grantPermissionsEndpoint.path("/:groupUuid/rolePermissions");
-		grantPermissionsEndpoint.addUriParameter("groupUuid", "Uuid of the group", GROUP_CLIENT_UUID);
-		grantPermissionsEndpoint.method(POST);
-		grantPermissionsEndpoint.description("Grant permissions on the group for multiple roles.");
-		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
-		grantPermissionsEndpoint.produces(APPLICATION_JSON);
-		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
-		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
-		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
-		grantPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("groupUuid");
-			crudHandler.handleGrantPermissions(ac, uuid);
-		});
 	}
 }

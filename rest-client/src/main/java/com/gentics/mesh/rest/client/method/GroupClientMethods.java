@@ -110,7 +110,6 @@ public interface GroupClientMethods {
 	 */
 	MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid);
 
-
 	/**
 	 * Grant permissions on the group to roles
 	 * @param uuid Uuid of the group

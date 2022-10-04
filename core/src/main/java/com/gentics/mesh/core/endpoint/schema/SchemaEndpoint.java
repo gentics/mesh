@@ -21,17 +21,17 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Verticle for /api/v2/schemas endpoint
  */
-public class SchemaEndpoint extends AbstractInternalEndpoint {
+public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
@@ -64,7 +64,7 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		addUpdateHandler();
 		addDeleteHandler();
 
-		addRolePermissionHandler();
+		addRolePermissionHandler("schemaUuid", SCHEMA_VEHICLE_UUID, "schema", crudHandler, false);
 	}
 
 	private void addChangesHandler() {
@@ -200,20 +200,5 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 			crudHandler.handleReadList(ac);
 		}, false);
 
-	}
-
-	private void addRolePermissionHandler() {
-		InternalEndpointRoute readPermissionsEndpoint = createRoute();
-		readPermissionsEndpoint.path("/:schemaUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("schemaUuid", "Uuid of the schema", SCHEMA_VEHICLE_UUID);
-		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the schema for all roles.");
-		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
-		readPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("schemaUuid");
-			crudHandler.handleReadPermissions(ac, uuid);
-		}, false);
 	}
 }

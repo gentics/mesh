@@ -21,15 +21,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Endpoint for /api/v1/microschemas
  */
-public class MicroschemaEndpoint extends AbstractInternalEndpoint {
+public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
@@ -59,7 +59,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
-		addRolePermissionHandler();
+		addRolePermissionHandler("microschemaUuid", MICROSCHEMA_UUID, "microschema", crudHandler, false);
 	}
 
 	private void addDiffHandler() {
@@ -189,20 +189,5 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
 		});
-	}
-
-	private void addRolePermissionHandler() {
-		InternalEndpointRoute readPermissionsEndpoint = createRoute();
-		readPermissionsEndpoint.path("/:microschemaUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("microschemaUuid", "Uuid of the microschema", MICROSCHEMA_UUID);
-		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the microschema for all roles.");
-		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
-		readPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("microschemaUuid");
-			crudHandler.handleReadPermissions(ac, uuid);
-		}, false);
 	}
 }

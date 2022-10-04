@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.endpoint.user;
 
-import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
@@ -17,6 +16,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -24,14 +24,13 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpHeaders;
 
 /**
  * Endpoint for /api/v1/users
  */
-public class UserEndpoint extends AbstractInternalEndpoint {
+public class UserEndpoint extends RolePermissionHandlingEndpoint {
 
 	private UserCrudHandler crudHandler;
 
@@ -64,7 +63,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		addResetTokenHandler();
 		addAPITokenHandler();
 		addReadPermissionHandler();
-		addRolePermissionHandler();
+		addRolePermissionHandler("userUuid", USER_EDITOR_UUID, "user", crudHandler, false);
 	}
 
 	private void addAPITokenHandler() {
@@ -234,37 +233,6 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
-		});
-	}
-
-	private void addRolePermissionHandler() {
-		InternalEndpointRoute readPermissionsEndpoint = createRoute();
-		readPermissionsEndpoint.path("/:userUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("userUuid", "Uuid of the user", USER_EDITOR_UUID);
-		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the user for all roles.");
-		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
-		readPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("userUuid");
-			crudHandler.handleReadPermissions(ac, uuid);
-		}, false);
-
-		InternalEndpointRoute grantPermissionsEndpoint = createRoute();
-		grantPermissionsEndpoint.path("/:userUuid/rolePermissions");
-		grantPermissionsEndpoint.addUriParameter("userUuid", "Uuid of the user", USER_EDITOR_UUID);
-		grantPermissionsEndpoint.method(POST);
-		grantPermissionsEndpoint.description("Grant permissions on the user for multiple roles.");
-		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
-		grantPermissionsEndpoint.produces(APPLICATION_JSON);
-		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
-		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
-		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
-		grantPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = rc.request().getParam("userUuid");
-			crudHandler.handleGrantPermissions(ac, uuid);
 		});
 	}
 }

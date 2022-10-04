@@ -20,16 +20,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Endpoint for /api/v1/projects
  */
-public class ProjectEndpoint extends AbstractInternalEndpoint {
+public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 
 	private ProjectCrudHandler crudHandler;
 
@@ -60,7 +60,7 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 		// Version purge
 		addVersionPurgeHandler();
 
-		addRolePermissionHandler();
+		addRolePermissionHandler("projectUuid", PROJECT_DEMO_UUID, "project", crudHandler, false);
 	}
 
 	private void addUpdateHandler() {
@@ -163,21 +163,6 @@ public class ProjectEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handlePurge(ac, uuid);
-		}, false);
-	}
-
-	private void addRolePermissionHandler() {
-		InternalEndpointRoute readPermissionsEndpoint = createRoute();
-		readPermissionsEndpoint.path("/:projectUuid/rolePermissions");
-		readPermissionsEndpoint.addUriParameter("projectUuid", "Uuid of the project.", PROJECT_DEMO_UUID);
-		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the project for all roles.");
-		readPermissionsEndpoint.produces(APPLICATION_JSON);
-		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
-		readPermissionsEndpoint.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("projectUuid");
-			crudHandler.handleReadPermissions(ac, uuid);
 		}, false);
 	}
 }
