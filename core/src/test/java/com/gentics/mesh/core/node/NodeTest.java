@@ -16,7 +16,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -463,12 +465,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 1. create folder and publish
 			String folderUuid = tx(() -> {
-				Node folder = project.getBaseNode().create(user(), folderSchema, project);
+				Node folder = project.getBaseNode().create(user(), folderSchema, project).reframeExplicit(NodeImpl.class);
 				BulkActionContext bac2 = createBulkContext();
-
-				MeshAuthUserImpl meshAuthUser = new MeshAuthUserImpl();
-				folder.applyPermissions(meshAuthUser, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
-					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+				role().grantPermissions(folder, GraphPermission.READ_PERM);
+				role().grantPermissions(folder, GraphPermission.READ_PUBLISHED_PERM);
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac2);
 				assertEquals(1, bac2.batch().size());
@@ -519,9 +519,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
-				MeshAuthUserImpl meshAuthUser = new MeshAuthUserImpl();
-				folder.applyPermissions(meshAuthUser, bac.batch(), role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM,
-					GraphPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+				role().grantPermissions(folder, GraphPermission.READ_PERM);
+				role().grantPermissions(folder, GraphPermission.READ_PUBLISHED_PERM);
 				folder.createGraphFieldContainer(english(), initialBranch, user()).createString("name").setString("Folder");
 				folder.publish(mockActionContext(), bac);
 				return folder.getUuid();

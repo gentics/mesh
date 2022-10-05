@@ -147,6 +147,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			// Revoke all permissions to vcard microschema
 			role().revokePermissions(vcard, GraphPermission.values());
+			role().grantPermissions(vcard, GraphPermission.READ_PERM);
 			tx.success();
 		}
 
@@ -158,7 +159,6 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
-			request.getPermissions().add(READ);
 			request.getPermissions().add(UPDATE);
 			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));

@@ -6,9 +6,14 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.ElasticsearchTestMode.CONTAINER_ES6;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import org.junit.Test;
 
 import com.gentics.madl.tx.Tx;
@@ -16,7 +21,6 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -57,6 +61,12 @@ public class GraphQLSearchPermissionTest extends AbstractMeshTest {
 		assertSearch(queryName, 0, 1);
 
 		// 4. Remove read publish perm
+		tx((tx) -> {
+			Node node = project().getNodeRoot().findByUuid(response.getUuid());
+			Role role = boot().roleRoot().findByUuid(roleUuid());
+			// we need read permission to be able to modify permissions through the rest api
+			role.grantPermissions(node, GraphPermission.READ_PERM);
+		});
 		request.getPermissions().setReadPublished(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
 
