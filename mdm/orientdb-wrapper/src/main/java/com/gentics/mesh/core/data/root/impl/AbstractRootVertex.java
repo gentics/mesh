@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -47,9 +48,10 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
                                     Set<InternalPermission> permissionsToRevoke) {
+		UserDao userDao = Tx.get().userDao();
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (T t : findAll()) {
+			for (T t : findAll().stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, READ_PERM)).collect(Collectors.toList())) {
 				permissionChanged = t.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}

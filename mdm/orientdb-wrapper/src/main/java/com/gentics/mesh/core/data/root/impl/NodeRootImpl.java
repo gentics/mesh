@@ -11,6 +11,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.madl.index.IndexHandler;
@@ -156,9 +157,10 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive,
                                     Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+		UserDao userDao = Tx.get().userDao();
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (Node node : findAll()) {
+			for (Node node : findAll().stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, READ_PERM)).collect(Collectors.toList())) {
 				// We don't need to recursively handle the permissions for each node again since
 				// this call will already affect all nodes.
 				permissionChanged = node.applyPermissions(authUser, batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
