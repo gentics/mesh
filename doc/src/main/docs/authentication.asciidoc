@@ -150,7 +150,7 @@ WARNING: Leaking an API token is potentially dangerous and thus the API token sh
 
 Typical use cases for API tokens are backend implementations which constantly communicate with Gentics Mesh using a secure or local connection.
 
-The token can be issued per user with ```POST {apiLatest}/users/:userUuid/token```.
+The token can be issued per user with ```POST {apiLatest}/users/:userUuid/token```. Note that update permissions is required on the user associated with the provided userUuid.
 
 NOTE: Creating a new API token will automatically invalidate a previously issued token.
 
@@ -163,7 +163,7 @@ curl -X GET \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
 ----
 
-It is possible to manually revoke a previously issued token via ```DELETE {apiLatest}/users/:userUuid/token```. Once the token is invalidated it can no longer be used for authentication.
+It is possible to manually revoke a previously issued token via ```DELETE {apiLatest}/users/:userUuid/token```. Once the token is invalidated it can no longer be used for authentication. This requires delete permission on the user associated with the provided userUuid.
 
 === Anonymous Access 
 
