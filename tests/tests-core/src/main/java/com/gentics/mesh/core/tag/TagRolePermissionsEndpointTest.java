@@ -34,4 +34,11 @@ public class TagRolePermissionsEndpointTest extends AbstractRolePermissionEndpoi
 		String uuid = getTestedUuid();
 		return () -> client().grantTagRolePermissions(PROJECT_NAME, tagFamilyUuid, uuid, request);
 	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		String uuid = getTestedUuid();
+		return () -> client().revokeTagRolePermissions(PROJECT_NAME, tagFamilyUuid, uuid, request);
+	}
 }

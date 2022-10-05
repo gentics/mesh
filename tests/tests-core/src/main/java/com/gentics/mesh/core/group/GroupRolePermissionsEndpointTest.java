@@ -22,13 +22,16 @@ public class GroupRolePermissionsEndpointTest extends AbstractRolePermissionEndp
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> getRolePermissions() {
-		String uuid = getTestedUuid();
-		return () -> client().getGroupRolePermissions(uuid);
+		return () -> client().getGroupRolePermissions(getTestedUuid());
 	}
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		String uuid = getTestedUuid();
-		return () -> client().grantGroupRolePermissions(uuid, request);
+		return () -> client().grantGroupRolePermissions(getTestedUuid(), request);
+	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeGroupRolePermissions(getTestedUuid(), request);
 	}
 }

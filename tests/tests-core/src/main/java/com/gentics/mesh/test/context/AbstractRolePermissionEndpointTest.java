@@ -10,9 +10,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Set;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -24,10 +28,9 @@ import com.gentics.mesh.util.UUIDUtil;
 public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTest {
 	/**
 	 * Test reading role permissions
-	 * @throws Exception
 	 */
 	@Test
-	public void testReadRolePermissions() throws Exception {
+	public void testReadRolePermissions() {
 		boolean hasPublishPermissions = tx(() -> getTestedElement().hasPublishPermissions());
 		RoleReference testRole = tx(() -> role().transformToReference());
 
@@ -48,27 +51,21 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 	/**
 	 * Test reading role permissions without permission on the object itself
-	 * @throws Exception
 	 */
 	@Test
-	public void testReadRolePermissionWithoutPermission() throws Exception {
-		String uuid = tx(() -> getTestedElement().getUuid());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), getTestedElement(), READ_PERM);
-		});
+	public void testReadRolePermissionWithoutPermission() {
+		revokeReadOnTestedElement();
+		String uuid = getTestedUuid();
 		call(getRolePermissions(), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
 	}
 
 	/**
 	 * Test reading role permissions without permission on all roles
-	 * @throws Exception
 	 */
 	@Test
-	public void testReadRolePermissionWithoutPermissionOnRole() throws Exception {
+	public void testReadRolePermissionWithoutPermissionOnRole() {
 		boolean hasPublishPermissions = tx(() -> getTestedElement().hasPublishPermissions());
-		tx(tx -> {
-			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
-		});
+		revokeReadOnRole();
 
 		ObjectPermissionResponse response = call(getRolePermissions());
 		assertThat(response).as("Response").isNotNull();
@@ -87,10 +84,9 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 	/**
 	 * Test granting role permissions by uuid
-	 * @throws Exception
 	 */
 	@Test
-	public void testGrantRolePermissionsByUuid() throws Exception {
+	public void testGrantRolePermissionsByUuid() {
 		String anonymousUuid = tx(() -> roles().get("anonymous").getUuid());
 		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
 		RoleReference testRole = tx(() -> role().transformToReference());
@@ -105,10 +101,9 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 	/**
 	 * Test granting role permissions by name
-	 * @throws Exception
 	 */
 	@Test
-	public void testGrantRolePermissionsByName() throws Exception {
+	public void testGrantRolePermissionsByName() {
 		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
 		RoleReference testRole = tx(() -> role().transformToReference());
 
@@ -122,10 +117,9 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 	/**
 	 * Test granting role permissions by unknown uuid
-	 * @throws Exception
 	 */
 	@Test
-	public void testGrantUnknownRolePermissionsByUuid() throws Exception {
+	public void testGrantUnknownRolePermissionsByUuid() {
 		String randomUUID = UUIDUtil.randomUUID();
 		ObjectPermissionRequest request = new ObjectPermissionRequest();
 		request.set(new RoleReference().setUuid(randomUUID), UPDATE_PERM.getRestPerm(), true);
@@ -134,10 +128,9 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 	/**
 	 * Test granting role permissions by unknown name
-	 * @throws Exception
 	 */
 	@Test
-	public void testGrantUnknownRolePermissionsByName() throws Exception {
+	public void testGrantUnknownRolePermissionsByName() {
 		ObjectPermissionRequest request = new ObjectPermissionRequest();
 		request.set(new RoleReference().setName("bogus"), DELETE_PERM.getRestPerm(), true);
 		call(grantRolePermissions(request), NOT_FOUND, "object_not_found_for_name", "bogus");
@@ -145,14 +138,192 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 	/**
 	 * Test granting role permissions by neither uuid nor name
-	 * @throws Exception
 	 */
 	@Test
-	public void testGrantInvalidRolePermissions() throws Exception {
+	public void testGrantInvalidRolePermissions() {
 		ObjectPermissionRequest request = new ObjectPermissionRequest();
 		request.set(new RoleReference(), CREATE_PERM.getRestPerm(), true);
 		call(grantRolePermissions(request), BAD_REQUEST, "role_reference_uuid_or_name_missing");
 	}
+
+	/**
+	 * Test granting roles permissions exclusively
+	 */
+	@Test
+	public void testGrantRolePermissionsExclusive() {
+		String anonymousUuid = tx(() -> roles().get("anonymous").getUuid());
+		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference testRole = tx(() -> role().transformToReference());
+
+		tx(tx -> {
+			HibRole adminObj = roles().get("admin");
+			HibRole testRoleObj = role();
+
+			// revoke the permission on the admin role
+			tx.roleDao().revokePermissions(testRoleObj, adminObj, READ_PERM);
+
+			// grant some permissions to the admin role
+			tx.roleDao().grantPermissions(adminObj, getTestedElement(), UPDATE_PERM, CREATE_PERM, READ_PERM);
+		});
+
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(new RoleReference().setUuid(anonymousUuid), CREATE_PERM.getRestPerm(), true);
+		request.set(new RoleReference().setUuid(anonymousUuid), DELETE_PERM.getRestPerm(), true);
+		request.setExclusive(true);
+		ObjectPermissionResponse response = call(grantRolePermissions(request));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getRead()).as("Roles with read permission").isNotNull().containsOnly(testRole);
+		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().containsOnly(testRole);
+		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().containsOnly(anonymous);
+		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().containsOnly(anonymous);
+
+		// check that admin permissions were not changed
+		Set<InternalPermission> adminPermissions = tx(tx -> {
+			return tx.roleDao().getPermissions(roles().get("admin"), getTestedElement());
+		});
+		assertThat(adminPermissions).as("Permissions for role admin").isNotNull().containsOnly(UPDATE_PERM, CREATE_PERM, READ_PERM);
+	}
+
+	/**
+	 * Test granting role without permission on the entity
+	 */
+	@Test
+	public void testGrantRoleWithoutPermission() {
+		String uuid = getTestedUuid();
+		revokeReadOnTestedElement();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		call(grantRolePermissions(request), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+	}
+
+	/**
+	 * Test granting role without read permission on the role
+	 */
+	@Test
+	public void testGrantRoleWithoutReadPermissionOnRole() {
+		String testRoleUuid = tx(() -> role().getUuid());
+		RoleReference testRoleRef = tx(() -> role().transformToReference());
+		revokeReadOnRole();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		call(grantRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", testRoleUuid);
+	}
+
+	/**
+	 * Test granting role without update permission on the role
+	 */
+	@Test
+	public void testGrantRoleWithoutUpdatePermissionOnRole() {
+		String testRoleUuid = tx(() -> role().getUuid());
+		RoleReference testRoleRef = tx(() -> role().transformToReference());
+		revokeUpdateOnRole();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		call(grantRolePermissions(request), FORBIDDEN, "error_missing_perm", testRoleUuid, UPDATE_PERM.getRestPerm().getName());
+	}
+
+	// TODO more grant tests
+
+	/**
+	 * Test revoking permissions by uuid
+	 */
+	@Test
+	public void testRevokeRolePermissionsByUuid() {
+		String testRoleUuid = tx(() -> role().getUuid());
+		RoleReference testRole = tx(() -> role().transformToReference());
+
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(new RoleReference().setUuid(testRoleUuid), CREATE_PERM.getRestPerm(), true);
+		ObjectPermissionResponse response = call(revokeRolePermissions(request));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
+		assertThat(response.getRead()).as("Roles with read permission").isNotNull().containsOnly(testRole);
+	}
+
+	/**
+	 * Test revoking role permissions by name
+	 */
+	@Test
+	public void testRevokeRolePermissionsByName() {
+		String testRoleName = tx(() -> role().getName());
+		RoleReference testRole = tx(() -> role().transformToReference());
+
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(new RoleReference().setName(testRoleName), UPDATE_PERM.getRestPerm(), true);
+		ObjectPermissionResponse response = call(revokeRolePermissions(request));
+		assertThat(response).as("Response").isNotNull();
+		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
+		assertThat(response.getDelete()).as("Roles with delete permission").isNotNull().containsOnly(testRole);
+	}
+
+	/**
+	 * Test revoking role permissions by unknown uuid
+	 */
+	@Test
+	public void testRevokeUnknownRolePermissionsByUuid() {
+		String randomUUID = UUIDUtil.randomUUID();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(new RoleReference().setUuid(randomUUID), UPDATE_PERM.getRestPerm(), true);
+		call(revokeRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", randomUUID);
+	}
+
+	/**
+	 * Test revoking role permissions by unknown name
+	 */
+	@Test
+	public void testRevoketUnknownRolePermissionsByName() {
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(new RoleReference().setName("bogus"), DELETE_PERM.getRestPerm(), true);
+		call(revokeRolePermissions(request), NOT_FOUND, "object_not_found_for_name", "bogus");
+	}
+
+	/**
+	 * Test revoking role permissions by neither uuid nor name
+	 */
+	@Test
+	public void testRevokeInvalidRolePermissions() {
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(new RoleReference(), CREATE_PERM.getRestPerm(), true);
+		call(revokeRolePermissions(request), BAD_REQUEST, "role_reference_uuid_or_name_missing");
+	}
+
+	/**
+	 * Test revoking role without permission on the entity
+	 */
+	@Test
+	public void testRevokeRoleWithoutPermission() {
+		String uuid = getTestedUuid();
+		revokeReadOnTestedElement();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		call(revokeRolePermissions(request), FORBIDDEN, "error_missing_perm", uuid, READ_PERM.getRestPerm().getName());
+	}
+
+	/**
+	 * Test revoking role without read permission on the role
+	 */
+	@Test
+	public void testRevokeRoleWithoutReadPermissionOnRole() {
+		String testRoleUuid = tx(() -> role().getUuid());
+		RoleReference testRoleRef = tx(() -> role().transformToReference());
+		revokeReadOnRole();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		call(revokeRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", testRoleUuid);
+	}
+
+	/**
+	 * Test revoking role without update permission on the role
+	 */
+	@Test
+	public void testRevokeRoleWithoutUpdatePermissionOnRole() {
+		String testRoleUuid = tx(() -> role().getUuid());
+		RoleReference testRoleRef = tx(() -> role().transformToReference());
+		revokeUpdateOnRole();
+		ObjectPermissionRequest request = new ObjectPermissionRequest();
+		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		call(revokeRolePermissions(request), FORBIDDEN, "error_missing_perm", testRoleUuid, UPDATE_PERM.getRestPerm().getName());
+	}
+
+	// TODO more revoke tests
 
 	/**
 	 * Get the tested element (this method assumes a running transaction)
@@ -169,6 +340,33 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	}
 
 	/**
+	 * Revoke the read permission on the tested element
+	 */
+	protected void revokeReadOnTestedElement() {
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), getTestedElement(), READ_PERM);
+		});
+	}
+
+	/**
+	 * Revoke the read permission on the role
+	 */
+	protected void revokeReadOnRole() {
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), role(), READ_PERM);
+		});
+	}
+
+	/**
+	 * Revoke the update permission on the role
+	 */
+	protected void revokeUpdateOnRole() {
+		tx(tx -> {
+			tx.roleDao().revokePermissions(role(), role(), UPDATE_PERM);
+		});
+	}
+
+	/**
 	 * Get a client handler that gets the role permissions on the tested element
 	 * @return client handler
 	 */
@@ -180,4 +378,11 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	 * @return client handler
 	 */
 	protected abstract ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request);
+
+	/**
+	 * Get a client handler that revokes the role permissions from the tested element
+	 * @param request request
+	 * @return client handler
+	 */
+	protected abstract ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request);
 }

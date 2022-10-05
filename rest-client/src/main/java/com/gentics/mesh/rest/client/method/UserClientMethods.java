@@ -137,4 +137,12 @@ public interface UserClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the user from roles
+	 * @param uuid Uuid of the user
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid, ObjectPermissionRequest request);
 }

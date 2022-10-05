@@ -27,7 +27,11 @@ public class SchemaRolePermissionsEndpointTest extends AbstractRolePermissionEnd
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		String uuid = getTestedUuid();
-		return () -> client().grantSchemaRolePermissions(uuid, request);
+		return () -> client().grantSchemaRolePermissions(getTestedUuid(), request);
+	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeRoleRolePermissions(getTestedUuid(), request);
 	}
 }

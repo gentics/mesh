@@ -1680,6 +1680,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
@@ -1691,6 +1699,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(POST, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 
 	@Override
@@ -1711,6 +1727,15 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/nodes/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
@@ -1722,6 +1747,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(POST, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 
 	@Override
@@ -1739,6 +1772,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeRoleRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
@@ -1750,6 +1791,14 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(POST, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeSchemaRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 
 	@Override
@@ -1767,6 +1816,15 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagFamilyRolePermissions(String projectName, String tagFamilyUuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 
 	@Override
@@ -1790,6 +1848,16 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid, String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
@@ -1801,5 +1869,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(POST, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 }

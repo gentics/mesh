@@ -115,4 +115,16 @@ public interface TagClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantTagRolePermissions(String projectName, String tagFamilyUuid, String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the tag from roles
+	 * @param projectName
+	 *            Name of the project
+	 * @param tagFamilyUuid
+	 *            Uuid of the tagfamily in which the tag is stored
+	 * @param uuid Uuid of the tag
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid, String uuid, ObjectPermissionRequest request);
 }

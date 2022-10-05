@@ -117,4 +117,12 @@ public interface GroupClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the group from roles
+	 * @param uuid Uuid of the group
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid, ObjectPermissionRequest request);
 }

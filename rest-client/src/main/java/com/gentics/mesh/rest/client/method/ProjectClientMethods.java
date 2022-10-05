@@ -121,4 +121,12 @@ public interface ProjectClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantProjectRolePermissions(String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the project from roles
+	 * @param uuid Uuid of the project
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid, ObjectPermissionRequest request);
 }

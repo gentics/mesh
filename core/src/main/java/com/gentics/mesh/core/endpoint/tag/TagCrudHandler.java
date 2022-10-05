@@ -255,7 +255,7 @@ public class TagCrudHandler extends AbstractHandler {
 			UserDao userDao = tx.userDao();
 			HibUser requestUser = ac.getUser();
 			HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
-			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, UPDATE_PERM, true);
+			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
 
 			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
 			Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
@@ -309,6 +309,79 @@ public class TagCrudHandler extends AbstractHandler {
 							roleDao.revokePermissions(rolesToRevoke, tag, perm);
 						}
 					}
+				}
+			}
+
+			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, tag);
+			permissions.values().removeIf(Set::isEmpty);
+
+			ObjectPermissionResponse response = new ObjectPermissionResponse();
+			permissions.entrySet().forEach(entry -> {
+				RoleReference role = entry.getKey().transformToReference();
+				entry.getValue().forEach(perm -> response.add(role, perm.getRestPerm()));
+			});
+			response.setOthers(false);
+
+			return response;
+		}, model -> ac.send(model, OK));
+	}
+
+	/**
+	 * Handle request to revoke permissions on sets of roles
+	 * @param ac action context
+	 * @param tagFamilyUuid Uuid of the tag family
+	 * @param tagUuid Uuid of the tag
+	 */
+	public void handleRevokePermissions(InternalActionContext ac, String tagFamilyUuid, String tagUuid) {
+		validateParameter(tagFamilyUuid, "tagFamilyUuid");
+		validateParameter(tagUuid, "tagUuid");
+
+		ObjectPermissionRequest update = ac.fromJson(ObjectPermissionRequest.class);
+		utils.syncTx(ac, tx -> {
+			RoleDao roleDao = tx.roleDao();
+			UserDao userDao = tx.userDao();
+			HibUser requestUser = ac.getUser();
+			HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+
+			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
+			Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+
+			InternalPermission[] possiblePermissions = InternalPermission.basicPermissions();
+
+			for (InternalPermission perm : possiblePermissions) {
+				Set<RoleReference> roleRefsToRevoke = update.get(perm.getRestPerm());
+				if (roleRefsToRevoke != null) {
+					Set<HibRole> rolesToRevoke = new HashSet<>();
+					for (RoleReference roleRef : roleRefsToRevoke) {
+						// find the role for the role reference
+						HibRole role = null;
+						if (!StringUtils.isEmpty(roleRef.getUuid())) {
+							role = allRolesByUuid.get(roleRef.getUuid());
+
+							if (role == null) {
+								throw error(NOT_FOUND, "object_not_found_for_uuid", roleRef.getUuid());
+							}
+						} else if (!StringUtils.isEmpty(roleRef.getName())) {
+							role = allRolesByName.get(roleRef.getName());
+
+							if (role == null) {
+								throw error(NOT_FOUND, "object_not_found_for_name", roleRef.getName());
+							}
+						} else {
+							throw error(BAD_REQUEST, "role_reference_uuid_or_name_missing");
+						}
+
+						// check update permission
+						if (!userDao.hasPermission(requestUser, role, UPDATE_PERM)) {
+							throw error(FORBIDDEN, "error_missing_perm", role.getUuid(), UPDATE_PERM.getRestPerm().getName());
+						}
+
+						rolesToRevoke.add(role);
+					}
+
+					roleDao.revokePermissions(rolesToRevoke, tag, perm);
 				}
 			}
 

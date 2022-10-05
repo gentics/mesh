@@ -187,4 +187,12 @@ public interface SchemaClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantSchemaRolePermissions(String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the schema from roles
+	 * @param uuid Uuid of the schema
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeSchemaRolePermissions(String uuid, ObjectPermissionRequest request);
 }

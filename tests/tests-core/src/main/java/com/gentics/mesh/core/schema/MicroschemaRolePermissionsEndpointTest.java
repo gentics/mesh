@@ -27,7 +27,11 @@ public class MicroschemaRolePermissionsEndpointTest extends AbstractRolePermissi
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		String uuid = getTestedUuid();
-		return () -> client().grantMicroschemaRolePermissions(uuid, request);
+		return () -> client().grantMicroschemaRolePermissions(getTestedUuid(), request);
+	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeMicroschemaRolePermissions(getTestedUuid(), request);
 	}
 }

@@ -22,13 +22,16 @@ public class UserRolePermissionsEndpointTest extends AbstractRolePermissionEndpo
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> getRolePermissions() {
-		String uuid = getTestedUuid();
-		return () -> client().getUserRolePermissions(uuid);
+		return () -> client().getUserRolePermissions(getTestedUuid());
 	}
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		String uuid = getTestedUuid();
-		return () -> client().grantUserRolePermissions(uuid, request);
+		return () -> client().grantUserRolePermissions(getTestedUuid(), request);
+	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeUserRolePermissions(getTestedUuid(), request);
 	}
 }

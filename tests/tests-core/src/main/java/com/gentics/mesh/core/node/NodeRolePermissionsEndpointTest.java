@@ -30,4 +30,9 @@ public class NodeRolePermissionsEndpointTest extends AbstractRolePermissionEndpo
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
 		return () -> client().grantNodeRolePermissions(PROJECT_NAME, getTestedUuid(), request);
 	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeNodeRolePermissions(PROJECT_NAME, getTestedUuid(), request);
+	}
 }

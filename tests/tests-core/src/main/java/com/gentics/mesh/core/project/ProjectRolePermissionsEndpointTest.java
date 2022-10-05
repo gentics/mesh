@@ -27,7 +27,11 @@ public class ProjectRolePermissionsEndpointTest extends AbstractRolePermissionEn
 
 	@Override
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
-		String uuid = getTestedUuid();
-		return () -> client().grantProjectRolePermissions(uuid, request);
+		return () -> client().grantProjectRolePermissions(getTestedUuid(), request);
+	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeProjectRolePermissions(getTestedUuid(), request);
 	}
 }

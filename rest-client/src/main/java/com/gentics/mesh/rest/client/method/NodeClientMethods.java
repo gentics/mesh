@@ -323,4 +323,15 @@ public interface NodeClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the node from roles
+	 * 
+	 * @param projectName
+	 *            Name of the project
+	 * @param uuid Uuid of the node
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid, ObjectPermissionRequest request);
 }

@@ -118,4 +118,12 @@ public interface RoleClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantRoleRolePermissions(String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the role from roles
+	 * @param uuid Uuid of the role
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeRoleRolePermissions(String uuid, ObjectPermissionRequest request);
 }

@@ -30,4 +30,9 @@ public class TagFamilyRolePermissionsEndpointTest extends AbstractRolePermission
 	protected ClientHandler<ObjectPermissionResponse> grantRolePermissions(ObjectPermissionRequest request) {
 		return () -> client().grantTagFamilyRolePermissions(PROJECT_NAME, getTestedUuid(), request);
 	}
+
+	@Override
+	protected ClientHandler<ObjectPermissionResponse> revokeRolePermissions(ObjectPermissionRequest request) {
+		return () -> client().revokeTagFamilyRolePermissions(PROJECT_NAME, getTestedUuid(), request);
+	}
 }

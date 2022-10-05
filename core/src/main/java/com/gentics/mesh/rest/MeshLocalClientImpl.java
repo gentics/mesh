@@ -1883,6 +1883,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		groupCrudHandler.handleRevokePermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		microschemaCrudHandler.handleReadPermissions(ac, uuid);
@@ -1895,6 +1904,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		microschemaCrudHandler.handleGrantPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		microschemaCrudHandler.handleRevokePermissions(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1917,6 +1935,16 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		nodeCrudHandler.handleRevokePermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		projectCrudHandler.handleReadPermissions(ac, uuid);
@@ -1929,6 +1957,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		projectCrudHandler.handleGrantPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		projectCrudHandler.handleRevokePermissions(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1949,6 +1986,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeRoleRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		roleCrudHandler.handleRevokePermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		schemaCrudHandler.handleReadPermissions(ac, uuid);
@@ -1961,6 +2007,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		schemaCrudHandler.handleGrantPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeSchemaRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		schemaCrudHandler.handleRevokePermissions(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1981,6 +2036,17 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
 		ac.setPayloadObject(request);
 		tagFamilyCrudHandler.handleGrantPermissions(ac, tagFamilyUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagFamilyRolePermissions(String projectName, String tagFamilyUuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
+		ac.setPayloadObject(request);
+		tagFamilyCrudHandler.handleRevokePermissions(ac, tagFamilyUuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -2009,6 +2075,19 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid,
+			String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setParameter("tagUuid", uuid);
+		ac.setParameter("tagFamilyUuid", tagFamilyUuid);
+		ac.setPayloadObject(request);
+		tagCrudHandler.handleRevokePermissions(ac, tagFamilyUuid, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		userCrudHandler.handleReadPermissions(ac, uuid);
@@ -2021,6 +2100,15 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		userCrudHandler.handleGrantPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setPayloadObject(request);
+		userCrudHandler.handleRevokePermissions(ac, uuid);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 }

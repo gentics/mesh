@@ -100,4 +100,12 @@ public interface MicroschemaClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> grantMicroschemaRolePermissions(String uuid, ObjectPermissionRequest request);
+
+	/**
+	 * Revoke permissions on the microschema from roles
+	 * @param uuid Uuid of the microschema
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid, ObjectPermissionRequest request);
 }
