@@ -1,7 +1,8 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -322,7 +323,7 @@ public interface NodeClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid, ObjectPermissionGrantRequest request);
 
 	/**
 	 * Revoke permissions on the node from roles
@@ -333,5 +334,5 @@ public interface NodeClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid, ObjectPermissionRevokeRequest request);
 }

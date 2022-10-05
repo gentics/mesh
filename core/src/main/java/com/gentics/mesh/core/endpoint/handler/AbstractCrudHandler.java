@@ -29,8 +29,9 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -158,7 +159,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 	public void handleGrantPermissions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		ObjectPermissionRequest update = ac.fromJson(ObjectPermissionRequest.class);
+		ObjectPermissionGrantRequest update = ac.fromJson(ObjectPermissionGrantRequest.class);
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
@@ -211,6 +212,16 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 						Set<HibRole> rolesToRevoke = new HashSet<>(allRoles);
 						// remove all roles, which get the permission granted
 						rolesToRevoke.removeAll(rolesToSet);
+
+						// remove all roles, which should be ignored
+						if (update.getIgnore() != null) {
+							rolesToRevoke.removeIf(role -> {
+								return update.getIgnore().stream().filter(ign -> {
+									return StringUtils.equals(ign.getUuid(), role.getUuid()) || StringUtils.equals(ign.getName(), role.getName());
+								}).findAny().isPresent();
+							});
+						}
+
 						// remove all roles without UPDATE_PERM
 						rolesToRevoke.removeIf(role -> !userDao.hasPermission(requestUser, role, UPDATE_PERM));
 
@@ -243,7 +254,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 	public void handleRevokePermissions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		ObjectPermissionRequest update = ac.fromJson(ObjectPermissionRequest.class);
+		ObjectPermissionRevokeRequest update = ac.fromJson(ObjectPermissionRevokeRequest.class);
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();

@@ -1,7 +1,8 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -114,7 +115,7 @@ public interface TagFamilyClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> grantTagFamilyRolePermissions(String projectName, String tagFamilyUuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> grantTagFamilyRolePermissions(String projectName, String tagFamilyUuid, ObjectPermissionGrantRequest request);
 
 	/**
 	 * Revoke permissions on the tag family from roles
@@ -126,5 +127,5 @@ public interface TagFamilyClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> revokeTagFamilyRolePermissions(String projectName, String tagFamilyUuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> revokeTagFamilyRolePermissions(String projectName, String tagFamilyUuid, ObjectPermissionRevokeRequest request);
 }

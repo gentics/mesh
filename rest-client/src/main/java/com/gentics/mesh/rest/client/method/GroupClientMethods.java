@@ -1,7 +1,8 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -116,7 +117,7 @@ public interface GroupClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid, ObjectPermissionGrantRequest request);
 
 	/**
 	 * Revoke permissions on the group from roles
@@ -124,5 +125,5 @@ public interface GroupClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid, ObjectPermissionRevokeRequest request);
 }

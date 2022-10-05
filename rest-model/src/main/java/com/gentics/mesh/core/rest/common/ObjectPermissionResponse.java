@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.role.RoleReference;
 
+/**
+ * Response containing object permissions on all roles
+ */
 public class ObjectPermissionResponse implements RestModel {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Roles to which the create permission is granted.")

@@ -198,7 +198,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
 		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
 		grantPermissionsEndpoint.method(POST);
-		grantPermissionsEndpoint.description("Grant permissions on the tag for multiple roles.");
+		grantPermissionsEndpoint.description("Grant permissions on the tag to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
 		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
@@ -209,6 +209,24 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleGrantPermissions(ac, tagFamilyUuid, uuid);
+		});
+
+		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
+		revokePermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		revokePermissionsEndpoint.method(DELETE);
+		revokePermissionsEndpoint.description("Revoke permissions on the tag from multiple roles.");
+		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
+		revokePermissionsEndpoint.produces(APPLICATION_JSON);
+		revokePermissionsEndpoint.exampleRequest((String)null); // TODO
+		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleRevokePermissions(ac, tagFamilyUuid, uuid);
 		});
 	}
 

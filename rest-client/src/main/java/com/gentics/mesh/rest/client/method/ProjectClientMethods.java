@@ -1,8 +1,9 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -120,7 +121,7 @@ public interface ProjectClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> grantProjectRolePermissions(String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> grantProjectRolePermissions(String uuid, ObjectPermissionGrantRequest request);
 
 	/**
 	 * Revoke permissions on the project from roles
@@ -128,5 +129,5 @@ public interface ProjectClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid, ObjectPermissionRevokeRequest request);
 }

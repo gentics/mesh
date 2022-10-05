@@ -49,7 +49,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		grantPermissionsEndpoint.path(path);
 		grantPermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
 		grantPermissionsEndpoint.method(POST);
-		grantPermissionsEndpoint.description("Grant permissions on the " + typeDescription + " for multiple roles.");
+		grantPermissionsEndpoint.description("Grant permissions on the " + typeDescription + " to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
 		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
@@ -65,7 +65,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		revokePermissionsEndpoint.path(path);
 		revokePermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
 		revokePermissionsEndpoint.method(DELETE);
-		revokePermissionsEndpoint.description("Revoke permissions from the " + typeDescription + " for multiple roles.");
+		revokePermissionsEndpoint.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
 		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
 		revokePermissionsEndpoint.produces(APPLICATION_JSON);
 		revokePermissionsEndpoint.exampleRequest((String)null); // TODO

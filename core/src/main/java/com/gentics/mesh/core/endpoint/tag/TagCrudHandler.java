@@ -37,8 +37,9 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -249,7 +250,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		ObjectPermissionRequest update = ac.fromJson(ObjectPermissionRequest.class);
+		ObjectPermissionGrantRequest update = ac.fromJson(ObjectPermissionGrantRequest.class);
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
@@ -302,6 +303,16 @@ public class TagCrudHandler extends AbstractHandler {
 						Set<HibRole> rolesToRevoke = new HashSet<>(allRoles);
 						// remove all roles, which get the permission granted
 						rolesToRevoke.removeAll(rolesToSet);
+
+						// remove all roles, which should be ignored
+						if (update.getIgnore() != null) {
+							rolesToRevoke.removeIf(role -> {
+								return update.getIgnore().stream().filter(ign -> {
+									return StringUtils.equals(ign.getUuid(), role.getUuid()) || StringUtils.equals(ign.getName(), role.getName());
+								}).findAny().isPresent();
+							});
+						}
+
 						// remove all roles without UPDATE_PERM
 						rolesToRevoke.removeIf(role -> !userDao.hasPermission(requestUser, role, UPDATE_PERM));
 
@@ -336,7 +347,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		ObjectPermissionRequest update = ac.fromJson(ObjectPermissionRequest.class);
+		ObjectPermissionRevokeRequest update = ac.fromJson(ObjectPermissionRevokeRequest.class);
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();

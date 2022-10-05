@@ -7,8 +7,9 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.ObjectPermissionRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
@@ -227,7 +228,7 @@ public interface BranchClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid, ObjectPermissionGrantRequest request);
 
 	/**
 	 * Revoke permissions on the branch from roles
@@ -238,5 +239,5 @@ public interface BranchClientMethods {
 	 * @param request request
 	 * @return mesh request
 	 */
-	MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid, ObjectPermissionRequest request);
+	MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid, ObjectPermissionRevokeRequest request);
 }
