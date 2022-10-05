@@ -1666,6 +1666,32 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getBranchRolePermissions(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + uuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid,
+			ObjectPermissionRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/branches/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);

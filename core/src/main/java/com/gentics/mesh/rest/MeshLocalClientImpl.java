@@ -1867,6 +1867,34 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getBranchRolePermissions(String projectName, String uuid) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		branchCrudHandler.handleReadPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		branchCrudHandler.handleGrantPermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid,
+			ObjectPermissionRequest request) {
+		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		branchCrudHandler.handleRevokePermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid) {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		groupCrudHandler.handleReadPermissions(ac, uuid);

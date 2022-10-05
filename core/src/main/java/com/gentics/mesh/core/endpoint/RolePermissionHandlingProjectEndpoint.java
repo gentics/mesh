@@ -3,6 +3,7 @@ package com.gentics.mesh.core.endpoint;
 import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -35,7 +36,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		readPermissionsEndpoint.path(path);
 		readPermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
 		readPermissionsEndpoint.method(GET);
-		readPermissionsEndpoint.description("Get the permissions on the "+typeDescription+" for all roles.");
+		readPermissionsEndpoint.description("Get the permissions on the " + typeDescription + " for all roles.");
 		readPermissionsEndpoint.produces(APPLICATION_JSON);
 		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Loaded permissions.");
 		readPermissionsEndpoint.blockingHandler(rc -> {
@@ -48,7 +49,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		grantPermissionsEndpoint.path(path);
 		grantPermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
 		grantPermissionsEndpoint.method(POST);
-		grantPermissionsEndpoint.description("Grant permissions on the "+typeDescription+" for multiple roles.");
+		grantPermissionsEndpoint.description("Grant permissions on the " + typeDescription + " for multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
 		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
@@ -58,6 +59,22 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam(uuidParameterName);
 			crudHandler.handleGrantPermissions(ac, uuid);
+		});
+
+		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
+		revokePermissionsEndpoint.path(path);
+		revokePermissionsEndpoint.addUriParameter(uuidParameterName, "Uuid of the " + typeDescription, uuidParameterExample);
+		revokePermissionsEndpoint.method(DELETE);
+		revokePermissionsEndpoint.description("Revoke permissions from the " + typeDescription + " for multiple roles.");
+		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
+		revokePermissionsEndpoint.produces(APPLICATION_JSON);
+		revokePermissionsEndpoint.exampleRequest((String)null); // TODO
+		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
+		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = rc.request().getParam(uuidParameterName);
+			crudHandler.handleRevokePermissions(ac, uuid);
 		});
 	}
 }
