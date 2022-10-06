@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -57,6 +58,11 @@ public class GraphQLSearchPermissionTest extends AbstractMeshTest {
 		assertSearch(queryName, 0, 1);
 
 		// 4. Remove read publish perm
+		tx((tx) -> {
+			// updating role permission through the rest api requires read permission for which we are changing permissions
+			tx.roleDao().grantPermissions(role(), tx.nodeDao().findByUuid(project(), response.getUuid()), InternalPermission.READ_PERM);
+		});
+
 		request.getPermissions().setReadPublished(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
 

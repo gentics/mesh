@@ -43,6 +43,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 
 	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
+	@Override
+	default boolean checkReadPermissionBeforeApplyingPermissions() {
+		// We don't check for read permission on root elements, since the mesh-ui doesn't allow currently to add
+		// read permissions for root elements.
+		return false;
+	}
+
 	/**
 	 * Return a traversal of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
 	 * 

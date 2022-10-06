@@ -159,21 +159,18 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			// handles the clustering.
 			db.setupConnectionPool();
 
-			// TODO find a better way around the chicken and the egg issues.
-			// Vert.x is currently needed for eventQueueBatch creation.
-			// This process fails if vert.x has not been made accessible during local data setup.
-			vertx = Vertx.vertx();
 			initLocalData(flags, options, false);
 			db.closeConnectionPool();
 			db.shutdown();
-			vertx.close();
-			vertx = null;
 
 			// Start OrientDB Server which will open the previously created db and init hazelcast
 			db.clusterManager().startAndSync();
 
 			// Now since hazelcast is ready we can create Vert.x
 			initVertx(options);
+
+			// update the event bus store with the clustered event bus
+			eventBusStore.setEventBus(vertx.eventBus());
 
 			// Setup the connection pool in order to allow transactions to be used
 			db.setupConnectionPool();

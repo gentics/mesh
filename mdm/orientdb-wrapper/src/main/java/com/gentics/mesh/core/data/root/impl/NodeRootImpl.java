@@ -11,6 +11,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.madl.index.IndexHandler;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -153,18 +155,19 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
-		Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive,
+                                    Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+		UserDao userDao = Tx.get().userDao();
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (Node node : findAll()) {
+			for (Node node : findAll().stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, READ_PERM)).collect(Collectors.toList())) {
 				// We don't need to recursively handle the permissions for each node again since
 				// this call will already affect all nodes.
-				permissionChanged = node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+				permissionChanged = node.applyPermissions(authUser, batch, role, false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
 
-		permissionChanged = super.applyPermissions(batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = super.applyPermissions(authUser, batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
 }

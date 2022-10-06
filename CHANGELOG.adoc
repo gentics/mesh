@@ -22,6 +22,20 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.9.4]]
+== 1.9.4 (06.10.2022)
+
+icon:check[] Core: when an initial admin password is provided with an environment variable, its value won't be logged anymore.
+
+icon:check[] Core: when a binary file was manually deleted from the file system and the same file was uploaded again through the rest api, the binary
+upload endpoint was returning a success response even though the binary wasn't actually uploaded. The file will now be uploaded correctly.
+
+icon:check[] Core: when starting a cluster with the initCluster flag, caches were incorrectly initialized. This could lead to data consistency
+errors and various validations errors and has been fixed now.
+
+icon:check[] Core: when updating permissions of a role for a given object, only the update permissions for the role were checked.
+A new check has been added to verify that the user requesting the permissions change has read permission on the object.
+
 [[v1.9.3]]
 == 1.9.3 (22.09.2022)
 

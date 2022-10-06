@@ -11,6 +11,7 @@ import java.util.function.Function;
 import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.metric.CachingMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -18,8 +19,8 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import io.micrometer.core.instrument.Counter;
 import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Predicate;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -36,8 +37,6 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private final Cache<K, V> cache;
 
-	private final Vertx vertx;
-
 	private final MeshOptions options;
 
 	private final Predicate<Message<JsonObject>> filter;
@@ -51,10 +50,11 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter missCounter;
 	private final Counter hitCounter;
 
-	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, Vertx vertx, MeshOptions options, MetricsService metricsService,
+	private Disposable eventSubscription;
+
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, EventBusStore eventBusStore, MeshOptions options, MetricsService metricsService,
 							   Predicate<Message<JsonObject>> filter,
 							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, MeshEvent... events) {
-		this.vertx = vertx;
 		this.options = options;
 		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
 		if (expireAfter != null) {
@@ -66,33 +66,39 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		this.cache = cacheBuilder.build();
 		this.filter = filter;
 		this.onNext = onNext;
-		registerEventHandlers(events);
+		registerEventHandlers(eventBusStore, events);
 		invalidateKeyCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.CLEAR_SINGLE, name));
 		invalidateAllCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.CLEAR_ALL, name));
 		missCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.MISS, name));
 		hitCounter = metricsService.counter(new CachingMetric(CachingMetric.Event.HIT, name));
 	}
 
-	private void registerEventHandlers(MeshEvent... events) {
-		if (log.isTraceEnabled()) {
-			log.trace("Registering to events");
-		}
-		EventBus eb = vertx.eventBus();
-		Observable<Message<JsonObject>> o = rxEventBus(eb, events);
-		if (filter != null) {
-			o = o.filter(filter);
-		}
-
-		o.subscribe(event -> {
-			// Use a default implementation which will invalidate the whole cache on every event
-			if (onNext == null) {
-				invalidate();
-			} else {
-				onNext.accept(event, this);
+	private void registerEventHandlers(EventBusStore eventBusStore, MeshEvent... events) {
+		eventBusStore.eventBus().subscribe((eb) -> {
+			if (log.isTraceEnabled()) {
+				log.trace("Registering to events");
 			}
-		}, error -> {
-			log.error("Error while handling event in cache. Disabling cache.", error);
-			disable();
+			Observable<Message<JsonObject>> o = rxEventBus(eb, events);
+			if (filter != null) {
+				o = o.filter(filter);
+			}
+
+			// Dispose previous event bus subscription
+			if (eventSubscription != null && !eventSubscription.isDisposed()) {
+				eventSubscription.dispose();
+			}
+
+			eventSubscription = o.subscribe(event -> {
+				// Use a default implementation which will invalidate the whole cache on every event
+				if (onNext == null) {
+					invalidate();
+				} else {
+					onNext.accept(event, this);
+				}
+			}, error -> {
+				log.error("Error while handling event in cache. Disabling cache.", error);
+				disable();
+			});
 		});
 	}
 
@@ -195,12 +201,13 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private Predicate<Message<JsonObject>> filter = null;
 		private BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext = null;
 		private MeshEvent[] events = null;
-		private Vertx vertx;
+		private EventBusStore eventBusStore;
 		private Duration expireAfter;
 		private Duration expireAfterAccess;
 		private String name;
 		private MeshOptions options;
 		private MetricsService metricsService;
+
 
 		/**
 		 * Build the cache instance.
@@ -209,9 +216,8 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 */
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
-			Objects.requireNonNull(vertx, "No Vert.x instance has been set");
 			Objects.requireNonNull(name, "No name has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, vertx, options, metricsService, filter, onNext, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -261,13 +267,13 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 
 		/**
-		 * Set the vertx instance to be used for eventbus communication.
-		 * 
-		 * @param vertx
+		 * Sets the event bus store
+		 *
+		 * @param eventBusStore
 		 * @return Fluent API
 		 */
-		public Builder<K, V> vertx(Vertx vertx) {
-			this.vertx = vertx;
+		public Builder<K, V> eventBusStore(EventBusStore eventBusStore) {
+			this.eventBusStore = eventBusStore;
 			return this;
 		}
 

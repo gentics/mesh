@@ -19,6 +19,8 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
@@ -489,6 +493,55 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertEquals("The expected length of the file did not match.", binaryLen, binaryFile.length());
 		}
 
+	}
+
+	@Test
+	public void testRepairUpload() throws Exception {
+		String contentType = "application/blub";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+		HibNode node = folder("news");
+		String uuid = tx(() -> node.getUuid());
+		Buffer data = TestUtils.randomBuffer(binaryLen);
+		try (Tx tx = tx()) {
+			prepareSchema(node, "", "binary");
+			tx.success();
+		}
+		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
+		call(() -> uploadData(data, node, "en", "binary", contentType, fileName));
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
+
+		MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary"));
+		assertNotNull(downloadResponse);
+		byte[] bytes = IOUtils.toByteArray(downloadResponse.getStream());
+		downloadResponse.close();
+		assertNotNull(bytes[0]);
+		assertNotNull(bytes[binaryLen - 1]);
+		assertEquals(binaryLen, bytes.length);
+		assertEquals(contentType, downloadResponse.getContentType());
+		assertEquals(fileName, downloadResponse.getFilename());
+
+		// delete file from file system
+		String dir = options().getUploadOptions().getDirectory();
+		Files.walk(Paths.get(dir))
+				.filter(Files::isRegularFile)
+				.findFirst().ifPresent(p -> {
+					try {
+						Files.delete(p);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				});
+
+		// assert download fails
+		call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary"), HttpResponseStatus.INTERNAL_SERVER_ERROR);
+
+		// re-upload file
+		call(() -> uploadData(data, node, "en", "binary", contentType, fileName));
+		MeshCoreAssertion.assertThat(testContext).hasUploads(1, 1).hasTempFiles(0).hasTempUploads(0);
+
+		// download now works
+		call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary"));
 	}
 
 	/**

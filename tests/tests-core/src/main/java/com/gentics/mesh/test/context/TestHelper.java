@@ -656,14 +656,18 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default public MeshRequest<NodeResponse> uploadRandomData(HibNode node, String languageTag, String fieldKey, int binaryLen, String contentType,
 		String fileName) {
-
-		String uuid = tx(() -> node.getUuid());
-		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(tx.nodeDao().findByUuidGlobal(uuid), "en").getVersion(); });		
-
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
+		return uploadData(buffer, node, languageTag, fieldKey, contentType, fileName);
+	}
+
+	default MeshRequest<NodeResponse> uploadData(Buffer data, HibNode node, String languageTag, String fieldKey, String contentType,
+												 String fileName) {
+		String uuid = tx(() -> node.getUuid());
+		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(tx.nodeDao().findByUuidGlobal(uuid), "en").getVersion(); });
+
 		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey,
-			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), fileName, contentType,
-			new NodeParametersImpl().setResolveLinks(LinkType.FULL));
+				new ByteArrayInputStream(data.getBytes()), data.length(), fileName, contentType,
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
 	default public File createTempFile() {

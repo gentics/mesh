@@ -7,6 +7,7 @@ import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
@@ -16,11 +17,14 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.event.tagfamily.TagFamilyMeshEventModel;
@@ -121,15 +125,16 @@ public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibRefe
 	}
 
 	@Override
-	default boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-									 Set<InternalPermission> permissionsToRevoke) {
+	default boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+                                     Set<InternalPermission> permissionsToRevoke) {
+		UserDao userDao = Tx.get().userDao();
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (HibTag tag : findAllTags()) {
-				permissionChanged = tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			for (HibTag tag : findAllTags().stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, InternalPermission.READ_PERM)).collect(Collectors.toList())) {
+				permissionChanged = tag.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		permissionChanged = HibCoreElement.super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = HibCoreElement.super.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
 
