@@ -11,6 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -265,7 +266,7 @@ public class TagCrudHandler extends AbstractHandler {
 			InternalPermission[] possiblePermissions = InternalPermission.basicPermissions();
 
 			for (InternalPermission perm : possiblePermissions) {
-				Set<RoleReference> roleRefsToSet = update.get(perm.getRestPerm());
+				List<RoleReference> roleRefsToSet = update.get(perm.getRestPerm());
 				if (roleRefsToSet != null) {
 					Set<HibRole> rolesToSet = new HashSet<>();
 					for (RoleReference roleRef : roleRefsToSet) {
@@ -362,7 +363,7 @@ public class TagCrudHandler extends AbstractHandler {
 			InternalPermission[] possiblePermissions = InternalPermission.basicPermissions();
 
 			for (InternalPermission perm : possiblePermissions) {
-				Set<RoleReference> roleRefsToRevoke = update.get(perm.getRestPerm());
+				List<RoleReference> roleRefsToRevoke = update.get(perm.getRestPerm());
 				if (roleRefsToRevoke != null) {
 					Set<HibRole> rolesToRevoke = new HashSet<>();
 					for (RoleReference roleRef : roleRefsToRevoke) {

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.rest.common;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -14,78 +14,78 @@ import com.gentics.mesh.core.rest.role.RoleReference;
 public class ObjectPermissionResponse implements RestModel {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Roles to which the create permission is granted.")
-	private Set<RoleReference> create;
+	private List<RoleReference> create;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Roles to which the read permission is granted.")
-	private Set<RoleReference> read;
+	private List<RoleReference> read;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Roles to which the update permission is granted.")
-	private Set<RoleReference> update;
+	private List<RoleReference> update;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Roles to which the delete permission is granted.")
-	private Set<RoleReference> delete;
+	private List<RoleReference> delete;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Roles to which the publish permission is granted.")
-	private Set<RoleReference> publish;
+	private List<RoleReference> publish;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Roles to which the read published permission is granted.")
-	private Set<RoleReference> readPublished;
+	private List<RoleReference> readPublished;
 
-	public Set<RoleReference> getCreate() {
+	public List<RoleReference> getCreate() {
 		return create;
 	}
 
-	public ObjectPermissionResponse setCreate(Set<RoleReference> create) {
+	public ObjectPermissionResponse setCreate(List<RoleReference> create) {
 		this.create = create;
 		return this;
 	}
 
-	public Set<RoleReference> getRead() {
+	public List<RoleReference> getRead() {
 		return read;
 	}
 
-	public ObjectPermissionResponse setRead(Set<RoleReference> read) {
+	public ObjectPermissionResponse setRead(List<RoleReference> read) {
 		this.read = read;
 		return this;
 	}
 
-	public Set<RoleReference> getUpdate() {
+	public List<RoleReference> getUpdate() {
 		return update;
 	}
 
-	public ObjectPermissionResponse setUpdate(Set<RoleReference> update) {
+	public ObjectPermissionResponse setUpdate(List<RoleReference> update) {
 		this.update = update;
 		return this;
 	}
 
-	public Set<RoleReference> getDelete() {
+	public List<RoleReference> getDelete() {
 		return delete;
 	}
 
-	public ObjectPermissionResponse setDelete(Set<RoleReference> delete) {
+	public ObjectPermissionResponse setDelete(List<RoleReference> delete) {
 		this.delete = delete;
 		return this;
 	}
 
-	public Set<RoleReference> getPublish() {
+	public List<RoleReference> getPublish() {
 		return publish;
 	}
 
-	public ObjectPermissionResponse setPublish(Set<RoleReference> publish) {
+	public ObjectPermissionResponse setPublish(List<RoleReference> publish) {
 		this.publish = publish;
 		return this;
 	}
 
-	public Set<RoleReference> getReadPublished() {
+	public List<RoleReference> getReadPublished() {
 		return readPublished;
 	}
 
-	public ObjectPermissionResponse setReadPublished(Set<RoleReference> readPublished) {
+	public ObjectPermissionResponse setReadPublished(List<RoleReference> readPublished) {
 		this.readPublished = readPublished;
 		return this;
 	}
@@ -98,41 +98,29 @@ public class ObjectPermissionResponse implements RestModel {
 	 * @return Fluent API
 	 */
 	public ObjectPermissionResponse add(RoleReference role, Permission permission) {
-		set(role, permission, true);
-		return this;
-	}
-
-	/**
-	 * Set the given permission.
-	 * 
-	 * @param role role reference
-	 * @param perm permission
-	 * @param flag true to set, false to remove
-	 * @return Fluent API
-	 */
-	public ObjectPermissionResponse set(RoleReference role, Permission perm, boolean flag) {
-		switch (perm) {
+		switch (permission) {
 		case CREATE:
-			create = update(create, role, flag);
+			create = add(create, role);
 			break;
 		case READ:
-			read = update(read, role, flag);
+			read = add(read, role);
 			break;
 		case UPDATE:
-			update = update(update, role, flag);
+			update = add(update, role);
 			break;
 		case DELETE:
-			delete = update(delete, role, flag);
+			delete = add(delete, role);
 			break;
 		case PUBLISH:
-			publish = update(publish, role, flag);
+			publish = add(publish, role);
 			break;
 		case READ_PUBLISHED:
-			readPublished = update(readPublished, role, flag);
+			readPublished = add(readPublished, role);
 			break;
 		default:
-			throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
+			throw new RuntimeException("Unknown permission type {" + permission.getName() + "}");
 		}
+
 		return this;
 	}
 
@@ -144,23 +132,23 @@ public class ObjectPermissionResponse implements RestModel {
 	 */
 	public ObjectPermissionResponse setOthers(boolean includePublishPermissions) {
 		if (create == null) {
-			create = Collections.emptySet();
+			create = Collections.emptyList();
 		}
 		if (read == null) {
-			read = Collections.emptySet();
+			read = Collections.emptyList();
 		}
 		if (update == null) {
-			update = Collections.emptySet();
+			update = Collections.emptyList();
 		}
 		if (delete == null) {
-			delete = Collections.emptySet();
+			delete = Collections.emptyList();
 		}
 		if (includePublishPermissions) {
 			if (publish == null) {
-				publish = Collections.emptySet();
+				publish = Collections.emptyList();
 			}
 			if (readPublished == null) {
-				readPublished = Collections.emptySet();
+				readPublished = Collections.emptyList();
 			}
 		}
 		return this;
@@ -171,7 +159,7 @@ public class ObjectPermissionResponse implements RestModel {
 	 * @param perm permission
 	 * @return set of role references
 	 */
-	public Set<RoleReference> get(Permission perm) {
+	public List<RoleReference> get(Permission perm) {
 		switch (perm) {
 		case CREATE:
 			return create;
@@ -190,16 +178,11 @@ public class ObjectPermissionResponse implements RestModel {
 		}
 	}
 
-	protected Set<RoleReference> update(Set<RoleReference> set, RoleReference role, boolean flag) {
+	protected List<RoleReference> add(List<RoleReference> set, RoleReference role) {
 		if (set == null) {
-			set = new HashSet<>();
+			set = new ArrayList<>();
 		}
-
-		if (flag) {
-			set.add(role);
-		} else {
-			set.remove(role);
-		}
+		set.add(role);
 
 		return set;
 	}

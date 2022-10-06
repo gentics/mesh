@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.common;
 
-import java.util.Set;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -16,7 +16,7 @@ public class ObjectPermissionGrantRequest extends ObjectPermissionResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Roles which are ignored when the exclusive flag is set.")
-	private Set<RoleReference> ignore;
+	private List<RoleReference> ignore;
 
 	/**
 	 * Flag that indicated that the request should be executed exclusively.
@@ -39,47 +39,47 @@ public class ObjectPermissionGrantRequest extends ObjectPermissionResponse {
 		return this;
 	}
 
-	public Set<RoleReference> getIgnore() {
+	public List<RoleReference> getIgnore() {
 		return ignore;
 	}
 
-	public ObjectPermissionGrantRequest setIgnore(Set<RoleReference> ignore) {
+	public ObjectPermissionGrantRequest setIgnore(List<RoleReference> ignore) {
 		this.ignore = ignore;
 		return this;
 	}
 
 	@Override
-	public ObjectPermissionGrantRequest setCreate(Set<RoleReference> create) {
+	public ObjectPermissionGrantRequest setCreate(List<RoleReference> create) {
 		super.setCreate(create);
 		return this;
 	}
 
 	@Override
-	public ObjectPermissionGrantRequest setRead(Set<RoleReference> read) {
+	public ObjectPermissionGrantRequest setRead(List<RoleReference> read) {
 		super.setRead(read);
 		return this;
 	}
 
 	@Override
-	public ObjectPermissionGrantRequest setUpdate(Set<RoleReference> update) {
+	public ObjectPermissionGrantRequest setUpdate(List<RoleReference> update) {
 		super.setUpdate(update);
 		return this;
 	}
 
 	@Override
-	public ObjectPermissionGrantRequest setDelete(Set<RoleReference> delete) {
+	public ObjectPermissionGrantRequest setDelete(List<RoleReference> delete) {
 		super.setDelete(delete);
 		return this;
 	}
 
 	@Override
-	public ObjectPermissionGrantRequest setPublish(Set<RoleReference> publish) {
+	public ObjectPermissionGrantRequest setPublish(List<RoleReference> publish) {
 		super.setPublish(publish);
 		return this;
 	}
 
 	@Override
-	public ObjectPermissionGrantRequest setReadPublished(Set<RoleReference> readPublished) {
+	public ObjectPermissionGrantRequest setReadPublished(List<RoleReference> readPublished) {
 		super.setReadPublished(readPublished);
 		return this;
 	}
@@ -87,12 +87,6 @@ public class ObjectPermissionGrantRequest extends ObjectPermissionResponse {
 	@Override
 	public ObjectPermissionGrantRequest add(RoleReference role, Permission permission) {
 		super.add(role, permission);
-		return this;
-	}
-
-	@Override
-	public ObjectPermissionGrantRequest set(RoleReference role, Permission perm, boolean flag) {
-		super.set(role, perm, flag);
 		return this;
 	}
 

@@ -12,6 +12,7 @@ import static com.gentics.mesh.example.ExampleUuids.ROLE_ADMIN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.gentics.mesh.core.rest.Examples;
@@ -103,22 +104,13 @@ public class RoleExamples extends AbstractExamples {
 		RoleReference role1 = Examples.roleRef();
 		RoleReference role2 = Examples.roleRef2();
 
-		response.set(role1, CREATE, false);
-		response.set(role1, READ, true);
-		response.set(role1, UPDATE, true);
-		response.set(role1, DELETE, false);
+		response.setCreate(Arrays.asList(role2));
+		response.setRead(Arrays.asList(role1, role2));
+		response.setUpdate(Arrays.asList(role1, role2));
+		response.setDelete(Arrays.asList(role2));
 		if (includePublishPermissions) {
-			response.set(role1, READ_PUBLISHED, true);
-			response.set(role1, PUBLISH, false);
-		}
-
-		response.set(role2, CREATE, true);
-		response.set(role2, READ, true);
-		response.set(role2, UPDATE, true);
-		response.set(role2, DELETE, true);
-		if (includePublishPermissions) {
-			response.set(role2, READ_PUBLISHED, true);
-			response.set(role2, PUBLISH, true);
+			response.setReadPublished(Arrays.asList(role1, role2));
+			response.setPublish(Arrays.asList(role2));
 		}
 
 		response.setOthers(includePublishPermissions);

@@ -1,7 +1,6 @@
 package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -10,7 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.junit.Test;
@@ -94,7 +93,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference().setUuid(anonymousUuid), READ_PERM.getRestPerm(), true);
+		request.setRead(Arrays.asList(new RoleReference().setUuid(anonymousUuid)));
 		ObjectPermissionResponse response = call(grantRolePermissions(request));
 		assertThat(response).as("Response").isNotNull();
 		assertThat(response.getRead()).as("Roles with read permission").isNotNull().containsOnly(anonymous, testRole);
@@ -110,7 +109,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference().setName("anonymous"), UPDATE_PERM.getRestPerm(), true);
+		request.setUpdate(Arrays.asList(new RoleReference().setName("anonymous")));
 		ObjectPermissionResponse response = call(grantRolePermissions(request));
 		assertThat(response).as("Response").isNotNull();
 		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().containsOnly(anonymous, testRole);
@@ -124,7 +123,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	public void testGrantUnknownRolePermissionsByUuid() {
 		String randomUUID = UUIDUtil.randomUUID();
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference().setUuid(randomUUID), UPDATE_PERM.getRestPerm(), true);
+		request.setUpdate(Arrays.asList(new RoleReference().setUuid(randomUUID)));
 		call(grantRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", randomUUID);
 	}
 
@@ -134,7 +133,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	@Test
 	public void testGrantUnknownRolePermissionsByName() {
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference().setName("bogus"), DELETE_PERM.getRestPerm(), true);
+		request.setDelete(Arrays.asList(new RoleReference().setName("bogus")));
 		call(grantRolePermissions(request), NOT_FOUND, "object_not_found_for_name", "bogus");
 	}
 
@@ -144,7 +143,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	@Test
 	public void testGrantInvalidRolePermissions() {
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference(), CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(new RoleReference()));
 		call(grantRolePermissions(request), BAD_REQUEST, "role_reference_uuid_or_name_missing");
 	}
 
@@ -169,8 +168,8 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		});
 
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference().setUuid(anonymousUuid), CREATE_PERM.getRestPerm(), true);
-		request.set(new RoleReference().setUuid(anonymousUuid), DELETE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(new RoleReference().setUuid(anonymousUuid)));
+		request.setDelete(Arrays.asList(new RoleReference().setUuid(anonymousUuid)));
 		request.setExclusive(true);
 		ObjectPermissionResponse response = call(grantRolePermissions(request));
 		assertThat(response).as("Response").isNotNull();
@@ -207,10 +206,10 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		});
 
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(new RoleReference().setUuid(anonymousUuid), CREATE_PERM.getRestPerm(), true);
-		request.set(new RoleReference().setUuid(anonymousUuid), DELETE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(new RoleReference().setUuid(anonymousUuid)));
+		request.setDelete(Arrays.asList(new RoleReference().setUuid(anonymousUuid)));
 		request.setExclusive(true);
-		request.setIgnore(Collections.singleton(testRole));
+		request.setIgnore(Arrays.asList(testRole));
 		ObjectPermissionResponse response = call(grantRolePermissions(request));
 		assertThat(response).as("Response").isNotNull();
 		assertThat(response.getRead()).as("Roles with read permission").isNotNull().containsOnly(testRole);
@@ -245,7 +244,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRoleRef = tx(() -> role().transformToReference());
 		revokeReadOnRole();
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(testRoleRef));
 		call(grantRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", testRoleUuid);
 	}
 
@@ -258,7 +257,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRoleRef = tx(() -> role().transformToReference());
 		revokeUpdateOnRole();
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
-		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(testRoleRef));
 		call(grantRolePermissions(request), FORBIDDEN, "error_missing_perm", testRoleUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
@@ -271,7 +270,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(new RoleReference().setUuid(testRoleUuid), CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(new RoleReference().setUuid(testRoleUuid)));
 		ObjectPermissionResponse response = call(revokeRolePermissions(request));
 		assertThat(response).as("Response").isNotNull();
 		assertThat(response.getCreate()).as("Roles with create permission").isNotNull().isEmpty();
@@ -287,7 +286,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(new RoleReference().setName(testRoleName), UPDATE_PERM.getRestPerm(), true);
+		request.setUpdate(Arrays.asList(new RoleReference().setName(testRoleName)));
 		ObjectPermissionResponse response = call(revokeRolePermissions(request));
 		assertThat(response).as("Response").isNotNull();
 		assertThat(response.getUpdate()).as("Roles with update permission").isNotNull().isEmpty();
@@ -301,7 +300,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	public void testRevokeUnknownRolePermissionsByUuid() {
 		String randomUUID = UUIDUtil.randomUUID();
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(new RoleReference().setUuid(randomUUID), UPDATE_PERM.getRestPerm(), true);
+		request.setUpdate(Arrays.asList(new RoleReference().setUuid(randomUUID)));
 		call(revokeRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", randomUUID);
 	}
 
@@ -311,7 +310,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	@Test
 	public void testRevoketUnknownRolePermissionsByName() {
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(new RoleReference().setName("bogus"), DELETE_PERM.getRestPerm(), true);
+		request.setDelete(Arrays.asList(new RoleReference().setName("bogus")));
 		call(revokeRolePermissions(request), NOT_FOUND, "object_not_found_for_name", "bogus");
 	}
 
@@ -321,7 +320,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	@Test
 	public void testRevokeInvalidRolePermissions() {
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(new RoleReference(), CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(new RoleReference()));
 		call(revokeRolePermissions(request), BAD_REQUEST, "role_reference_uuid_or_name_missing");
 	}
 
@@ -345,7 +344,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRoleRef = tx(() -> role().transformToReference());
 		revokeReadOnRole();
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(testRoleRef));
 		call(revokeRolePermissions(request), NOT_FOUND, "object_not_found_for_uuid", testRoleUuid);
 	}
 
@@ -358,7 +357,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRoleRef = tx(() -> role().transformToReference());
 		revokeUpdateOnRole();
 		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
-		request.set(testRoleRef, CREATE_PERM.getRestPerm(), true);
+		request.setCreate(Arrays.asList(testRoleRef));
 		call(revokeRolePermissions(request), FORBIDDEN, "error_missing_perm", testRoleUuid, UPDATE_PERM.getRestPerm().getName());
 	}
 
