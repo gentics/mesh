@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.8.10"
+version: "1.8.11"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -541,7 +541,7 @@ mediaType: application/json
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
         get: 
-            description: Read the user permissions on the element that can be located by the specified path.
+            description: Read the user permissions on the element that can be located by the specified path. Requires READ permission on the user.
             responses: 
                 "200": 
                     description: Response which contains the loaded permissions.
@@ -573,7 +573,7 @@ mediaType: application/json
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
         post: 
-            description: "Return a one time token which can be used by any user to update a user (e.g.: Reset the password)"
+            description: "Return a one time token which can be used by any user to update a user (e.g.: Reset the password). Requires CREATE permission on the user."
             responses: 
                 "200": 
                     description: User token response.
@@ -599,7 +599,7 @@ mediaType: application/json
                 repeat: false
                 example: "589319933be24ec79319933be24ec7fe"
         post: 
-            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user.
+            description: Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user. Requires UPDATE permission on the user.
             responses: 
                 "200": 
                     description: The User API token response.
@@ -618,7 +618,7 @@ mediaType: application/json
             description: Invalidate the issued API token.
             responses: 
                 "200": 
-                    description: Message confirming the invalidation of the API token.
+                    description: Message confirming the invalidation of the API token. Requires DELETE permission on the user.
                     body: 
                         application/json: 
                             schema: |
@@ -6129,7 +6129,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.8.10",
+                                  "meshVersion" : "1.8.11",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
