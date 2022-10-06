@@ -4,9 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
@@ -14,6 +12,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.error.MissingPermissionException;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -151,15 +150,18 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 					}
 				}
 				// 3. Apply the permission actions
-				roleDao.applyPermissions(element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
-					permissionsToRevoke);
-				String name = role.getName();
-
-				if (ac.getSecurityLogger().isInfoEnabled()) {
-					ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
-						role.getName(), roleUuid, pathToElement, requestModel.toJson()));
+				try {
+					roleDao.applyPermissions(ac.getMeshAuthUser(), element, batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant,
+							permissionsToRevoke);
+					String name = role.getName();
+					if (ac.getSecurityLogger().isInfoEnabled()) {
+						ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
+								role.getName(), roleUuid, pathToElement, requestModel.toJson()));
+					}
+					return message(ac, "role_updated_permission", name);
+				} catch (MissingPermissionException e) {
+					throw error(FORBIDDEN, "error_missing_perm", e.getElementUuid(), e.getPermission().toString());
 				}
-				return message(ac, "role_updated_permission", name);
 			}, model -> ac.send(model, OK));
 		}
 	}

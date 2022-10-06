@@ -117,4 +117,11 @@ public interface BinaryStorage {
 	 */
 	Completable purgeTemporaryUpload(String temporaryId);
 
+	/**
+	 * Return the local filesystem path for the binary.
+	 *
+	 * @param binaryUuid of the binary
+	 * @return Absolute path
+	 */
+	String getFilePath(String binaryUuid);
 }

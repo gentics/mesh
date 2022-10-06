@@ -527,8 +527,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				RoleDao roleDao = tx2.roleDao();
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
-				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
-					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 				nodeDao.publish(folder, mockActionContext(), bac2);
 				assertEquals(1, bac2.batch().size());
@@ -584,8 +583,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
 				RoleDao roleDao = tx.roleDao();
-				roleDao.applyPermissions(folder, bac.batch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM,
-					InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 				nodeDao.publish(folder, mockActionContext(), bac);
 				return folder.getUuid();
@@ -650,7 +648,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			tx().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("1");
 			tx().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("2");
 			RoleDao roleDao = tx.roleDao();
-			roleDao.applyPermissions(folder, new DummyEventQueueBatch(), role(), false, new HashSet<>(Arrays.asList(InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM)), Collections.emptySet());
+			roleDao.grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 			return folder;
 		});
 
