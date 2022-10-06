@@ -418,11 +418,11 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setRead(true);
 		request.getPermissions().setOthers(false);
 
-		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
+		GenericMessageResponse message = adminCall(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
 		assertThat(message).matches("role_updated_permission", "testRole");
 
 		request.getPermissions().setUpdate(true);
-		message = call(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
+		message = adminCall(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
 		assertThat(message).matches("role_updated_permission", "testRole");
 
 		client().logout().blockingGet();
