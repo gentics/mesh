@@ -16,6 +16,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -213,15 +214,14 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
 		if (recursive) {
-			for (Tag tag : findAll()) {
-				permissionChanged = tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			for (Tag tag : findAll().stream().filter(e -> user.hasPermission(e, READ_PERM)).collect(Collectors.toList())) {
+				permissionChanged = tag.applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = super.applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
 

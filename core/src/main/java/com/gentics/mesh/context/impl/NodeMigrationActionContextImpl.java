@@ -222,8 +222,8 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-				Set<GraphPermission> permissionsToRevoke) {
+			public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+											Set<GraphPermission> permissionsToRevoke) {
 				return false;
 			}
 

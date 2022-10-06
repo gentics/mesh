@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.error.MissingPermissionException;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.annotations.GraphElement;
@@ -108,13 +111,17 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
-		return applyVertexPermissions(batch, role, permissionsToGrant, permissionsToRevoke);
+	public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+		return applyVertexPermissions(user, batch, role, permissionsToGrant, permissionsToRevoke);
 	}
 
-	protected boolean applyVertexPermissions(EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	protected boolean applyVertexPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, Set<GraphPermission> permissionsToGrant,
+											 Set<GraphPermission> permissionsToRevoke) {
+
+		if (!user.hasPermission(this, GraphPermission.READ_PERM) && !(this instanceof RootVertex)) {
+			throw new MissingPermissionException(GraphPermission.READ_PERM, this.getUuid());
+		}
+
 		boolean permissionChanged = false;
 		permissionChanged = role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()])) || permissionChanged;
 		permissionChanged = role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()])) || permissionChanged;

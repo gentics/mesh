@@ -42,7 +42,7 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 
 	/**
 	 * Grant the set of permissions and revoke the other set of permissions to this element using the role.
-	 * 
+	 * @param user the user requesting the permissions change
 	 * @param batch
 	 * @param role
 	 * @param recursive
@@ -50,8 +50,7 @@ public interface MeshVertex extends MeshElement, VertexFrame {
 	 * @param permissionsToRevoke
 	 * @return true, iff permissions were effectively changed
 	 */
-	boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke);
+	boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke);
 
 	/**
 	 * Tests if the {@link GraphPermission}s READ_PUBLISHED_PERM and READ_PUBLISHED can be set for this element.

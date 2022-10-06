@@ -29,6 +29,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -264,15 +265,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-		Set<GraphPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser user, EventQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		boolean permissionChanged = false;
 		if (recursive) {
-			permissionChanged = getTagFamilyRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			permissionChanged = getBranchRoot().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
-			permissionChanged = getBaseNode().applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			permissionChanged = getTagFamilyRoot().applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			permissionChanged = getBranchRoot().applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			permissionChanged = getBaseNode().applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		}
-		permissionChanged = super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = super.applyPermissions(user, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
 

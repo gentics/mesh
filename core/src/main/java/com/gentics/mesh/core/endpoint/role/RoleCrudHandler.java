@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -14,6 +15,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.error.MissingPermissionException;
 import org.apache.commons.lang3.BooleanUtils;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -151,8 +153,12 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 						}
 					}
 					// 3. Apply the permission actions
-					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
-					return role.getName();
+					try {
+						element.applyPermissions(ac.getUser(), batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+						return role.getName();
+					} catch(MissingPermissionException e) {
+						throw error(FORBIDDEN, "error_missing_perm", e.getElementUuid(), e.getPermission().toString());
+					}
 				});
 				if (ac.getSecurityLogger().isInfoEnabled()) {
 					ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
