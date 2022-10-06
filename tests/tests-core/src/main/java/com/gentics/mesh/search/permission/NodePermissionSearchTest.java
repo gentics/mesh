@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -84,6 +85,10 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 
 		list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission read publish", 1, list.getData().size());
+
+		tx((tx) -> {
+			tx.roleDao().grantPermissions(role(), tx.nodeDao().findByUuidGlobal(response.getUuid()), InternalPermission.READ_PERM);
+		});
 
 		request.getPermissions().setReadPublished(false);
 		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));

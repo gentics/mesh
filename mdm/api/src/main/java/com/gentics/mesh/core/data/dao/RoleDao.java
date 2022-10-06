@@ -9,6 +9,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -133,7 +134,8 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 
 	/**
 	 * Apply the permissions for the given element.
-	 * 
+	 *
+	 * @param authUser
 	 * @param element
 	 * @param batch
 	 * @param role
@@ -141,8 +143,8 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke);
+	void applyPermissions(MeshAuthUser authUser, HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+						  Set<InternalPermission> permissionsToRevoke);
 
 	/**
 	 * Return set of role uuids for the given permission that were granted on the element.

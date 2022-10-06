@@ -285,8 +285,8 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
-			Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive,
+                                    Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		return false;
 	}
 
