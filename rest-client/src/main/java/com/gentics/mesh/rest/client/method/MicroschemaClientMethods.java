@@ -1,6 +1,9 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -83,4 +86,27 @@ public interface MicroschemaClientMethods {
 	 */
 	MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaModel request);
 
+	/**
+	 * Get the role permissions on the microschema
+	 * 
+	 * @param uuid Uuid of the microschema
+	 * @return request
+	 */
+	MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid);
+
+	/**
+	 * Grant permissions on the microschema to roles
+	 * @param uuid Uuid of the microschema
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> grantMicroschemaRolePermissions(String uuid, ObjectPermissionGrantRequest request);
+
+	/**
+	 * Revoke permissions on the microschema from roles
+	 * @param uuid Uuid of the microschema
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid, ObjectPermissionRevokeRequest request);
 }

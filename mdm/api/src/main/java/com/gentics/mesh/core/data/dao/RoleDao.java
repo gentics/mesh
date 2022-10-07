@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -69,6 +70,17 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
+	 * Grant the given permissions on the element to the set of roles
+	 *
+	 * @param roles set of roles
+	 * @param element element to grant permission on
+	 * @param exclusive true to revoke the given permissions on all other roles
+	 * @param permissions permissions to grant
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean grantPermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive, InternalPermission... permissions);
+
+	/**
 	 * Revoke the given permissions on the given role.
 	 *
 	 * @param role
@@ -79,6 +91,16 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
+	 * Revoke the given permissions on the element from the given roles.
+	 *
+	 * @param roles set of roles
+	 * @param element element to revoke permissions from
+	 * @param permissions permissions to revoke
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean revokePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions);
+
+	/**
 	 * Return a set of permissions which the role is granting to the given element.
 	 *
 	 * @param role
@@ -86,6 +108,15 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 * @return Set of permissions of the element
 	 */
 	Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element);
+
+	/**
+	 * Return the sets of granted permissions to the given set of roles on the given element
+	 *
+	 * @param roles set of roles
+	 * @param element element
+	 * @return map of permission sets per role
+	 */
+	Map<HibRole, Set<InternalPermission>> getPermissions(Set<HibRole> roles, HibBaseElement element);
 
 	/**
 	 * Add the given role to this role.

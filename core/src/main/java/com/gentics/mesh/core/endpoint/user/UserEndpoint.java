@@ -16,6 +16,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -23,14 +24,13 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpHeaders;
 
 /**
  * Endpoint for /api/v1/users
  */
-public class UserEndpoint extends AbstractInternalEndpoint {
+public class UserEndpoint extends RolePermissionHandlingEndpoint {
 
 	private UserCrudHandler crudHandler;
 
@@ -63,6 +63,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		addResetTokenHandler();
 		addAPITokenHandler();
 		addReadPermissionHandler();
+		addRolePermissionHandler("userUuid", USER_EDITOR_UUID, "user", crudHandler, false);
 	}
 
 	private void addAPITokenHandler() {

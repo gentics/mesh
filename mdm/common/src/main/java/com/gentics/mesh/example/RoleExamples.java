@@ -12,15 +12,22 @@ import static com.gentics.mesh.example.ExampleUuids.ROLE_ADMIN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.ROLE_CLIENT_UUID;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.core.rest.Examples;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
+import com.gentics.mesh.util.UUIDUtil;
 
 public class RoleExamples extends AbstractExamples {
 
@@ -95,4 +102,56 @@ public class RoleExamples extends AbstractExamples {
 		return roleCreate;
 	}
 
+	public ObjectPermissionResponse getObjectPermissionResponse(boolean includePublishPermissions) {
+		ObjectPermissionResponse response = new ObjectPermissionResponse();
+		RoleReference role1 = Examples.roleRef();
+		RoleReference role2 = Examples.roleRef2();
+
+		response.setCreate(Arrays.asList(role2));
+		response.setRead(Arrays.asList(role1, role2));
+		response.setUpdate(Arrays.asList(role1, role2));
+		response.setDelete(Arrays.asList(role2));
+		if (includePublishPermissions) {
+			response.setReadPublished(Arrays.asList(role1, role2));
+			response.setPublish(Arrays.asList(role2));
+		}
+
+		response.setOthers(includePublishPermissions);
+		return response;
+	}
+
+	public ObjectPermissionGrantRequest getObjectPermissionGrantRequest(boolean includePublishPermissions) {
+		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
+		RoleReference role1 = Examples.roleRef();
+		RoleReference role2 = Examples.roleRef2();
+		RoleReference adminRef = new RoleReference().setName("admin").setUuid(UUIDUtil.randomUUID());
+
+		request.setCreate(Arrays.asList(role2));
+		request.setRead(Arrays.asList(role1, role2));
+		request.setUpdate(Arrays.asList(role1, role2));
+		request.setDelete(Arrays.asList(role2));
+		if (includePublishPermissions) {
+			request.setReadPublished(Arrays.asList(role1, role2));
+			request.setPublish(Arrays.asList(role2));
+		}
+		request.setExclusive(true);
+		request.setIgnore(Arrays.asList(adminRef));
+		return request;
+	}
+
+	public ObjectPermissionRevokeRequest getObjectPermissionRevokeRequest(boolean includePublishPermissions) {
+		ObjectPermissionRevokeRequest request = new ObjectPermissionRevokeRequest();
+		RoleReference role1 = Examples.roleRef();
+		RoleReference role2 = Examples.roleRef2();
+
+		request.setCreate(Arrays.asList(role2));
+		request.setRead(Arrays.asList(role1, role2));
+		request.setUpdate(Arrays.asList(role1, role2));
+		request.setDelete(Arrays.asList(role2));
+		if (includePublishPermissions) {
+			request.setReadPublished(Arrays.asList(role1, role2));
+			request.setPublish(Arrays.asList(role2));
+		}
+		return request;
+	}
 }

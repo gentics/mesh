@@ -1,6 +1,9 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -119,4 +122,28 @@ public interface UserClientMethods {
 	 * @return
 	 */
 	MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid);
+
+	/**
+	 * Get the role permissions on the user
+	 * 
+	 * @param uuid Uuid of the user
+	 * @return request
+	 */
+	MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid);
+
+	/**
+	 * Grant permissions on the user to roles
+	 * @param uuid Uuid of the user
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid, ObjectPermissionGrantRequest request);
+
+	/**
+	 * Revoke permissions on the user from roles
+	 * @param uuid Uuid of the user
+	 * @param request request
+	 * @return mesh request
+	 */
+	MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid, ObjectPermissionRevokeRequest request);
 }
