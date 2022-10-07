@@ -13,6 +13,9 @@ import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+/**
+ * Abstract endpoint implementation with methods that add routes for getting/granting/revoking role permissions
+ */
 public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEndpoint {
 
 	protected RolePermissionHandlingEndpoint(String basePath, MeshAuthChainImpl chain) {

@@ -278,7 +278,7 @@ public final class Examples {
 
 	public static RoleReference roleRef2() {
 		RoleReference ref = new RoleReference();
-		ref.setUuid(uuid4());
+		ref.setUuid(uuid5());
 		ref.setName("editor");
 		return ref;
 	}
@@ -326,6 +326,10 @@ public final class Examples {
 
 	public static String uuid4() {
 		return "d84a6f054a3f4ed68a6f054a3f1ed635";
+	}
+
+	public static String uuid5() {
+		return "01ed2f8647421b2b85891e5204d53f1b";
 	}
 
 }

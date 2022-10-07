@@ -111,8 +111,8 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 			if (allowedRoles != null) {
 				for (HibRole role : roles) {
 					permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
-					vertex.setRoleUuidForPerm(permission, allowedRoles);
 				}
+				vertex.setRoleUuidForPerm(permission, allowedRoles);
 			}
 		}
 
