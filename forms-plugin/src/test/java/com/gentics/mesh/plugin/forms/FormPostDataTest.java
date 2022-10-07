@@ -6,32 +6,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.mockito.ArgumentCaptor;
-
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -40,12 +17,9 @@ import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 import com.gentics.mesh.plugin.forms.service.MailService;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -59,6 +33,34 @@ import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.mockito.ArgumentCaptor;
+
+import javax.mail.Address;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Test cases for posting data to a form
@@ -300,6 +302,9 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		}
 	}
 
+	/**
+	 * Test the date format helper.
+	 */
 	@Test
 	public void testDateFormat() throws IOException, MessagingException {
 		String uuid = createForm("datefield.json");
@@ -323,6 +328,77 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			.isEqualTo(fromFile("datefield.html"));
 	}
 
+	/**
+	 * Verify that the admin email is taken from the {@link com.gentics.mesh.plugin.forms.model.AdminMailElement},
+	 * and not from the configured mail in the form.
+	 */
+	@Test
+	public void testAdminMailElement() throws IOException, MessagingException {
+		String uuid = createForm("admin_mail_element.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(1);
+
+		List<String> recipients = Stream.of(messages[0].getRecipients(Message.RecipientType.TO))
+			.map(Address::toString)
+			.collect(Collectors.toList());
+
+		assertThat(recipients)
+			.as("Mail recipients")
+			.containsExactlyInAnyOrder("admin1@green.mail");
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("admin_mail_element_mail.html"));
+	}
+
+	/**
+	 * Verify that the admin emails are taken from the {@link com.gentics.mesh.plugin.forms.model.AdminMailElement},
+	 * and not from the configured mail in the form.
+	 */
+	@Test
+	public void testAdminMailElementMultiple() throws IOException, MessagingException {
+		String uuid = createForm("admin_mail_element_multiselect.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false, "input1", "test input", "adminmail1", "Admin 1", "adminmail1", "Admin 3");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(2);
+
+		List<String> recipients = Stream.of(messages[0].getRecipients(Message.RecipientType.TO))
+			.map(Address::toString)
+			.collect(Collectors.toList());
+
+		assertThat(recipients)
+			.as("Mail recipients")
+			.containsExactlyInAnyOrder("admin1@green.mail", "admin3@green.mail");
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("admin_mail_element_mail_multiple.html"));
+	}
+
+	/**
+	 * Test rendering of selection elements for mails.
+	 */
 	@Test
 	public void testSelectionWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
@@ -351,6 +427,9 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			.isEqualTo(fromFile("selection_with_mail.html"));
 	}
 
+	/**
+	 * Test rendering for checkbox elements for mails.
+	 */
 	@Test
 	public void testCheckboxWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
@@ -378,6 +457,9 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			.isEqualTo(fromFile("selection_with_mail_unchecked_checkbox.html"));
 	}
 
+	/**
+	 * Test rendering posted files for mails.
+	 */
 	@Test
 	public void testPostFileWithMail() throws IOException, MessagingException {
 		String formDefinition = "filefield_with_mail.json";

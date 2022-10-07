@@ -1,0 +1,44 @@
+{
+	"name": "Selection fields",
+	"type": "GENERIC",
+	"email": "test@green.mail",
+	"mailsubject": "testmail",
+	"mailtemp": "testmail",
+	"elements": [
+		{
+			"type": "input",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "Text",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "adminmail",
+			"name": "adminmail1",
+			"select_type": "multiselect",
+			"label": "Admin email",
+			"options": [
+				{
+					"value": "admin1@green.mail",
+					"key": "Admin 1"
+				},
+				{
+					"value": "admin2@green.mail",
+					"key": "Admin 2"
+				},
+				{
+					"value": "admin3@green.mail",
+					"key": "Admin 3"
+				}
+			]
+		}
+	]
+}

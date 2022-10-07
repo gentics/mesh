@@ -43,7 +43,7 @@ public class CombiElement extends ValueListElement {
 
 	@Override
 	public boolean isMultivalue() {
-		return "Checkbox".equals(getSelectType());
+		return "checkbox".equalsIgnoreCase(getSelectType());
 	}
 
 	@Override

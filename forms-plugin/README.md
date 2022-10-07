@@ -162,9 +162,12 @@ No extra properties.
 
 ## `combielem`
 
-| Key | Type | Description | Default value |
-|-----|------|-------------|---------------|
-| `select_type` | string | | |
+Base element for elements which represent a list of predefined options to select. The `select_type` is intended to be either `checkbox` or `radiobutton`. For rendering purposes the value for `select_type` can be any string, but for the element to be considered multivalue, the `select_type` must be `checkbox`.
+
+| Key           | Type | Description                                                                                                                   | Default value |
+|---------------|------|-------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `options` | selectable_options | Key-value pairs used as options for the combi element                                                                         |REQUIRED|
+| `select_type` | string | The type of representation. Should be `checkbox` or `radiobutton` (with checkbox meaning the element accespts multiple values | `null`         |
 
 ## `buttons`
 
@@ -189,6 +192,19 @@ When filled, the plugin will send an email to the entered address after the form
 | `mailtemplate` | string | Mail template for overriding `userMailTemplate` from the configuration                    | |
 | `mailsource` | string | Mail template for overriding `mailtemplate` property and `userMailTemplate` configuration | |
 
+## `adminmail`
+
+Element to specify to which admin mail addresses submission notifications should be sent. If such an element is present in the form, the forms `email` property will be ignored, and instead be taken from the selected values.
+
+*IMPORTANT:* Make sure to not render the actual email addresses in the elements template. Only the keys of the available options should be rendered.
+
+When the `select_type` starts with the string `multiselect` the element is treated as a multivalue element. The values themselves can be lists of mail addresses separated by commas.
+
+| Key           | Type | Description                                                                                                                                        | Default value |
+|---------------|------|----------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `options` | selectable_options | Key-value pairs used as options for the admin mail element                                                                                         |REQUIRED|
+| `select_type` | string | The type of representation. The type is mostly used for rendering, if the element should accept multiple values, it has to start with `multiselect` | `null`         |
+
 ## `mandatorygroup`
 
 Container element for mandatory group of elements. At least one of the embedded elements has to be filled by the user.
@@ -197,7 +213,7 @@ No extra properties.
 
 ## `selectgroup`
 
-Element for select group.
+Element for select group. The difference to the `combielem` is the `additional_element` field for entering values not covered by the options, and how the element determines if it is multivalue. A `selectgroup` will accept multiple values if the `select_type` starts with `multivalue`.
 
 | Key | Type | Description | Default value |
 |-----|------|-------------|---------------|

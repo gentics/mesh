@@ -431,6 +431,14 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 		doTestSimpleRender("multipage", false, null);
 	}
 
+	/**
+	 * Test rendering the admin mail element.
+	 */
+	@Test
+	public void testRenderAdminMailElement() throws IOException {
+		doTestSimpleRender("admin_mail_element", false, null);
+	}
+
 	private void doTestSimpleRender(String testName, boolean addVotedCookie, String templateContext) throws IOException {
 		String uuid = createForm(testName + ".json");
 

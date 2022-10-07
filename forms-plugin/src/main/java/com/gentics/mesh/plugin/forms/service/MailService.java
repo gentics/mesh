@@ -8,6 +8,7 @@ import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
+import com.gentics.mesh.plugin.forms.model.AdminMailElement;
 import com.gentics.mesh.plugin.forms.model.FileElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
@@ -77,10 +78,24 @@ public class MailService {
 	 */
 	public void sendMails(String projectName, Form form, NodeResponse formDataNode, RoutingContext rc) {
 		boolean attachFileUploads = configuration.getMailOptions().isAttachFileUploads();
-		// send mail to admin
-		String adminEmail = StringUtils.trim(form.getEmail());
-		if (!StringUtils.isEmpty(adminEmail)) {
-			List<String> emails = Arrays.asList(StringUtils.split(adminEmail, ','));
+		// Check for admin mails in AdminMailElements.
+		List<String> emails = form.flattened()
+			.filter(e -> e instanceof AdminMailElement)
+			.map(e -> ((AdminMailElement) e).getSelectedEmails(formDataNode))
+			.flatMap(List::stream)
+			.collect(Collectors.toList());
+
+		// Fallback to admin mail configured in the form itself.
+		if (emails.isEmpty()) {
+			String configuredAdminMail = StringUtils.trim(form.getEmail());
+
+			emails = StringUtils.isBlank(configuredAdminMail)
+				? Collections.emptyList()
+				: Arrays.asList(StringUtils.split(configuredAdminMail, ','));
+		}
+
+		// send mail to admins
+		if (!emails.isEmpty()) {
 			TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
 
 			if (template.isValid()) {

@@ -17,6 +17,8 @@ public enum ElementType {
 
 	formpage(FormpageElement.class),
 
+	adminmail(AdminMailElement.class),
+
 	usermail(UsermailElement.class), // OK
 
 	mandatorygroup(MandatorygroupElement.class),
@@ -41,7 +43,7 @@ public enum ElementType {
 
 	/**
 	 * Get the element type or null if not known
-	 * 
+	 *
 	 * @param type type string
 	 * @return type or null
 	 */
@@ -55,7 +57,7 @@ public enum ElementType {
 
 	/**
 	 * Get the implementation class
-	 * 
+	 *
 	 * @return implementation class
 	 */
 	public Class<? extends FormElement> getImplementationClass() {
