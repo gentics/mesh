@@ -201,7 +201,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		grantPermissionsEndpoint.description("Grant permissions on the tag to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
-		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
+		grantPermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionGrantRequest(false));
 		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
 		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		grantPermissionsEndpoint.blockingHandler(rc -> {
@@ -219,7 +219,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		revokePermissionsEndpoint.description("Revoke permissions on the tag from multiple roles.");
 		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
 		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest((String)null); // TODO
+		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(false));
 		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
 		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		revokePermissionsEndpoint.blockingHandler(rc -> {

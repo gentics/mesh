@@ -52,7 +52,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		grantPermissionsEndpoint.description("Grant permissions on the " + typeDescription + " to multiple roles.");
 		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
 		grantPermissionsEndpoint.produces(APPLICATION_JSON);
-		grantPermissionsEndpoint.exampleRequest((String)null); // TODO
+		grantPermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionGrantRequest(includePublishPermissions));
 		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
 		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		grantPermissionsEndpoint.blockingHandler(rc -> {
@@ -68,7 +68,7 @@ public abstract class RolePermissionHandlingProjectEndpoint extends AbstractProj
 		revokePermissionsEndpoint.description("Revoke permissions on the " + typeDescription + " from multiple roles.");
 		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
 		revokePermissionsEndpoint.produces(APPLICATION_JSON);
-		revokePermissionsEndpoint.exampleRequest((String)null); // TODO
+		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(includePublishPermissions));
 		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(includePublishPermissions), "Updated permissions.");
 		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
 		revokePermissionsEndpoint.blockingHandler(rc -> {
