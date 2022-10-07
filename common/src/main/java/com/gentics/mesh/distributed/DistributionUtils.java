@@ -34,16 +34,16 @@ public class DistributionUtils {
 			return false;
 		}
 
-		switch (method) {
-		case CONNECT:
-		case OPTIONS:
-		case GET:
+		switch (method.name()) {
+		case "CONNECT":
+		case "OPTIONS":
+		case "GET":
 			return true;
-		case DELETE:
-		case PATCH:
-		case PUT:
+		case "DELETE":
+		case "PATCH":
+		case "PUT":
 			return false;
-		case POST:
+		case "POST":
 			// Lets check whether the request is actually a read request.
 			// In this case we don't need to delegate it.
 			return isReadOnly(path);

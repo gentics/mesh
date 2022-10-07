@@ -1,5 +1,6 @@
 package com.gentics.mesh.context;
 
+import java.util.List;
 import java.util.Set;
 
 import com.gentics.mesh.core.data.user.HibUser;
@@ -14,8 +15,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.spi.logging.LogDelegate;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -67,11 +68,11 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	void send(HttpResponseStatus status);
 
 	/**
-	 * Return the set of fileuploads that are accessible through the context.
+	 * Return the list of fileuploads that are accessible through the context.
 	 * 
 	 * @return
 	 */
-	Set<FileUpload> getFileUploads();
+	List<FileUpload> getFileUploads();
 
 	/**
 	 * Return the request headers.

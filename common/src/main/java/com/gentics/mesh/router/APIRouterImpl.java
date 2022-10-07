@@ -1,19 +1,17 @@
 package com.gentics.mesh.router;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.handler.VersionUtils;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.CookieHandler;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @see APIRouter
@@ -82,8 +80,6 @@ public class APIRouterImpl implements APIRouter {
 				storage.getBodyHandler().handle(rh);
 			}
 		});
-
-		router.route().handler(CookieHandler.create());
 
 	}
 

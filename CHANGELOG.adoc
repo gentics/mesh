@@ -29,6 +29,9 @@ icon:plus[] Core: The OrientDB database as been updated to version 3.2.10.
 
 icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting, granting and revoking permissions on entities for multiple roles in a single request.
 
+icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
+
+
 [[v1.9.3]]
 == 1.9.3 (22.09.2022)
 

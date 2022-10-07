@@ -134,9 +134,10 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-codegen</artifactId>
 		</dependency>
+
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-hazelcast</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>hazelcast3-cluster-manager</artifactId>
 			<!-- Use the specified hazelcast version instead -->
 			<exclusions>
 				<exclusion>
@@ -145,8 +146,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-		<!-- Hazelcast -->
+		<!-- Hazelcast (the cluster manager for orientdb) -->
 		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-kubernetes</artifactId>

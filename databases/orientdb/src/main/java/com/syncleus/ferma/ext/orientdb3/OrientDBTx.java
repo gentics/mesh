@@ -5,6 +5,7 @@ import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
 import javax.inject.Inject;
 
+import dagger.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -93,7 +94,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	private final CommonTxData txData;
 	private final ContextDataRegistry contextDataRegistry;
 	private final OrientDBDaoCollection daos;
-	private final CacheCollection caches;
+	/**
+	 * We provide a lazy instance, otherwise we risk prematurely subscribing to the event bus in certain bootstrapping
+	 * scenarios (mesh clustered + init cluster flag set to true)
+	 */
+	private final Lazy<CacheCollection> caches;
 	private final SecurityUtils security;
 	private final Binaries binaries;
 	private final S3Binaries s3binaries;
@@ -102,9 +107,9 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Inject
 	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
-		OrientDBDaoCollection daos, CacheCollection caches, SecurityUtils security, OrientStorage provider,
-		TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
-		ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {
+					  OrientDBDaoCollection daos, Lazy<CacheCollection> caches, SecurityUtils security, OrientStorage provider,
+					  TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
+					  ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {
 		this.db = db;
 		this.boot = boot;
 		this.typeResolver = typeResolver;
@@ -324,7 +329,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Override
 	public PermissionCache permissionCache() {
-		return caches.permissionCache();
+		return caches.get().permissionCache();
 	}
 
 	@Override

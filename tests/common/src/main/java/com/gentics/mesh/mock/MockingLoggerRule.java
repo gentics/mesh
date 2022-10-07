@@ -49,6 +49,11 @@ public class MockingLoggerRule extends TestWatcher implements LogDelegateFactory
 	}
 
 	@Override
+	public boolean isAvailable() {
+		return true;
+	}
+
+	@Override
 	public LogDelegate createDelegate(String name) {
 		return get(name);
 	}

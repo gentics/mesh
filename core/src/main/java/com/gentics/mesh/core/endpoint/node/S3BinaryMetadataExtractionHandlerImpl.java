@@ -164,6 +164,11 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 											// TODO Auto-generated method stub
 											return "UTF-8";
 										}
+
+										@Override
+										public boolean cancel() {
+											return false;
+										}
 									};
 									ctx.setFileUpload(fileUpload);
 									ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);

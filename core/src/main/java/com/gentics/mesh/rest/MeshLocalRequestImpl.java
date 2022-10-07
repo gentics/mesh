@@ -3,6 +3,7 @@ package com.gentics.mesh.rest;
 import java.util.List;
 import java.util.Map;
 
+import io.vertx.reactivex.SingleHelper;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -28,7 +29,7 @@ public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public Single<T> toSingle() {
-		return new io.vertx.reactivex.core.Future<T>(future).rxOnComplete();
+		return SingleHelper.toSingle(future::onComplete);
 	}
 
 	@Override

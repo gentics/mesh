@@ -29,7 +29,7 @@
 		<hazelcast.version>3.12.8</hazelcast.version>
 		<jackson.version>2.13.2</jackson.version>
 		<jackson-databind.version>2.13.2</jackson-databind.version>
-		<netty.version>4.1.72.Final</netty.version>
+		<netty.version>4.1.78.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
@@ -495,6 +495,13 @@
 				<groupId>com.tinkerpop.gremlin</groupId>
 				<artifactId>gremlin-java</artifactId>
 				<version>2.6.0</version>
+			</dependency>
+
+			<!-- Vertx Hazelcast cluster manager -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>hazelcast3-cluster-manager</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Mesh Test Internals -->

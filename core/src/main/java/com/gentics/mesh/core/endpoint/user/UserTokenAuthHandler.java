@@ -21,9 +21,9 @@ import com.gentics.mesh.parameter.UserParameters;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
+import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
 
 /**
  * The user token authentication handler grants access to routes by validating the provides token query parameter value.
@@ -33,7 +33,7 @@ import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
  * this handler fails the {@link MeshJWTAuthHandler} should try to extract the JWT token from the cookie and load the correct user.
  */
 @Singleton
-public class UserTokenAuthHandler extends AuthHandlerImpl {
+public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthProvider> {
 
 	public static final int DEFAULT_MAX_TOKEN_AGE_IN_MINS = 30;
 	private Database db;
@@ -45,7 +45,7 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 	}
 
 	@Override
-	public void parseCredentials(RoutingContext context, Handler<AsyncResult<JsonObject>> handler) {
+	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
 		// Not needed
 	}
 

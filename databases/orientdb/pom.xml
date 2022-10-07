@@ -49,8 +49,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-hazelcast</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>hazelcast3-cluster-manager</artifactId>
 			<!-- Use the specified hazelcast version instead -->
 			<exclusions>
 				<exclusion>

@@ -39,6 +39,11 @@
 			<artifactId>vertx-web</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-http-proxy</artifactId>
+			<version>${vertx.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
 		</dependency>
