@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections.CollectionUtils;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cache.PermissionCache;
@@ -210,10 +211,10 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	}
 
 	@Override
-	default void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
-		Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		element.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+	default void applyPermissions(MeshAuthUser authUser, HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
+								  Set<InternalPermission> permissionsToGrant,
+								  Set<InternalPermission> permissionsToRevoke) {
+		element.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override

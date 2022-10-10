@@ -159,6 +159,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			// Revoke all permissions to vcard microschema
 			roleDao.revokePermissions(role(), vcard, InternalPermission.values());
+			roleDao.grantPermissions(role(), vcard, InternalPermission.READ_PERM);
 			tx.success();
 		}
 
@@ -172,7 +173,6 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
-			request.getPermissions().add(READ);
 			request.getPermissions().add(UPDATE);
 			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
@@ -418,11 +418,11 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		request.getPermissions().setRead(true);
 		request.getPermissions().setOthers(false);
 
-		GenericMessageResponse message = call(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
+		GenericMessageResponse message = adminCall(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
 		assertThat(message).matches("role_updated_permission", "testRole");
 
 		request.getPermissions().setUpdate(true);
-		message = call(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
+		message = adminCall(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
 		assertThat(message).matches("role_updated_permission", "testRole");
 
 		client().logout().blockingGet();
