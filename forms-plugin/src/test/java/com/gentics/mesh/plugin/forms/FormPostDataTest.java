@@ -20,7 +20,9 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
@@ -852,6 +854,118 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		// form-data cookie must be present
 		assertThat(pair.getRight()).as("Cookie").isPresent();
 		assertThat(pair.getRight().get()).as("Cookie").matches(c -> c.value().equals(dataNode.getUuid() + "-page1"), "Value is not empty");
+	}
+
+	/**
+	 * Test whether a mandatory field is ignored for validation when inside a
+	 * conditional container which condition is not met.
+	 */
+	@Test
+	public void testConditionalContainerSkipValidation() throws IOException {
+		String uuid = createForm("conditional_container.json", true, true);
+
+		// The submit() method already checks if the request was successful. No further assertions needed here.
+		submit(uuid, true, false, false, "checked_input", "ignore_container_contents");
+	}
+
+	/**
+	 * Test whether validation failed because the mandatory element inside the
+	 * conditional container is missing.
+	 */
+	@Test
+	public void testConditionalContainerPerformValidation() throws IOException {
+		String uuid = createForm("conditional_container.json", true, true);
+		ResponseWithCookies rs = submit(uuid, true, "checked_input", "process_conditional_container");
+		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
+		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+
+		assertThat(savedDataFields.fieldNames())
+			.as("Saved elements")
+			.containsOnly("checked_input", "errors");
+
+		assertThat(new JsonObject(savedDataFields.getString("errors")).fieldNames())
+			.as("Validation errors")
+			.containsOnly("conditional_input");
+	}
+
+	/**
+	 * Test whether validation is skipped using nested conditional containers.
+	 */
+	@Test
+	public void testNestedConditionalContainerSkipValidation() throws IOException {
+		String uuid = createForm("nested_conditional_container.json", true, true);
+
+		// The submit() method already checks if the request was successful. No further assertions needed here.
+		submit(uuid, true, false, false,
+			"checked_input_outer", "ignore_container_contents",
+			"checked_input_inner", "process_conditional_container");
+	}
+
+	/**
+	 * Test whether validation failed because the mandatory element inside the
+	 * conditional containers is missing.
+	 */
+	@Test
+	public void testNestedConditionalContainerPerformValidation() throws IOException {
+		String uuid = createForm("nested_conditional_container.json", true, true);
+		ResponseWithCookies rs = submit(uuid, true,
+			"checked_input_inner", "process_conditional_container",
+			"checked_input_outer", "process_conditional_container");
+		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
+		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+
+		assertThat(savedDataFields.fieldNames())
+			.as("Saved elements")
+			.containsOnly("checked_input_inner", "checked_input_outer", "errors");
+
+		assertThat(new JsonObject(savedDataFields.getString("errors")).fieldNames())
+			.as("Validation errors")
+			.containsOnly("conditional_input");
+	}
+
+	/**
+	 * Test that elements inside a conditional container are not saved, when the
+	 * checked element is not set to the expected value.
+	 */
+	@Test
+	public void testConditionalContaierSkipSave() throws IOException {
+		String uuid = createForm("conditional_container.json", true, true);
+		ResponseWithCookies rs = submit(uuid, true,
+			"checked_input", "ignore_container_contents",
+			"normal_input", "test value",
+			"conditional_input", "this should not be saved");
+		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
+		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+
+		assertThat(savedDataFields)
+			.as("Saved elements")
+			.containsOnly(
+				Pair.of("normal_input", "test value"),
+				Pair.of("checked_input", "ignore_container_contents"),
+				Pair.of("errors", ""));
+	}
+
+	/**
+	 * Test that elements inside a conditional container are saved, when the
+	 * checked element is set to the expected value.
+	 */
+	@Test
+	public void testConditionalContaierPerformSave() throws IOException {
+		String uuid = createForm("conditional_container.json", true, true);
+		ResponseWithCookies rs = submit(uuid, true,
+			"checked_input", "process_conditional_container",
+			"normal_input", "test value",
+			"conditional_input", "this should be saved");
+		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
+		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+
+		assertThat(savedDataFields)
+			.as("Saved elements")
+			.containsOnly(
+				Pair.of("normal_input", "test value"),
+				Pair.of("checked_input", "process_conditional_container"),
+				Pair.of("conditional_input", "this should be saved"),
+				Pair.of("errors", ""));
 	}
 
 	/**

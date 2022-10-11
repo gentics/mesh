@@ -480,11 +480,19 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		return submit(formUuid, true, false, data);
 	}
 
+	protected ResponseWithCookies submit(String formUuid, boolean json, String ...data) throws IOException {
+		return submit(formUuid, true, false, false, true, data);
+	}
+
 	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, String ...data) throws IOException {
 		return submit(formUuid, publish, expectRedirect, false, data);
 	}
 
 	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, String ...data) throws IOException {
+		return submit(formUuid, publish, expectRedirect, cookie, false, data);
+	}
+
+	protected ResponseWithCookies submit(String formUuid, boolean publish, boolean expectRedirect, boolean cookie, boolean json, String ...data) throws IOException {
 		MultipartBody.Builder body = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM);
 
@@ -497,7 +505,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 		String publishParam = publish ? "" : "?publish=false";
 		Request.Builder requestBuilder = new Request.Builder()
-			.url(projectUrl("/forms/" + formUuid + "/data" + publishParam))
+			.url(projectUrl(String.format("/forms/%s/%sdata%s", formUuid, (json ? "json" : ""), publishParam)))
 			.header("Referer", "ref");
 
 		if (cookie) {
@@ -518,7 +526,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 			assertThat(response.code())
 				.as("Response code")
-				.isEqualTo(HttpResponseStatus.RESET_CONTENT.code());
+				.isEqualTo(json ? HttpResponseStatus.OK.code() : HttpResponseStatus.RESET_CONTENT.code());
 		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));

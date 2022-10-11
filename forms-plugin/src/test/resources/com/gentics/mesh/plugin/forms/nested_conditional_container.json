@@ -1,0 +1,43 @@
+{
+	"name": "Form with Conditional Container",
+	"cms_id": 1,
+	"elements": [
+		{
+			"type": "input",
+			"name": "checked_input_outer",
+			"label": "Checked input outer"
+		},
+		{
+			"type": "input",
+			"name": "checked_input_inner",
+			"label": "Checked input inner"
+		},
+		{
+			"type": "input",
+			"name": "normal_input",
+			"label": "Normal input"
+		},
+		{
+			"type": "conditionalcontainer",
+			"name": "conditionalcontainer1",
+			"element_to_check": "checked_input_outer",
+			"value_to_check": "process_conditional_container",
+			"elements": [
+				{
+					"type": "conditionalcontainer",
+					"name": "conditionalcontainer2",
+					"element_to_check": "checked_input_inner",
+					"value_to_check": "process_conditional_container",
+					"elements": [
+						{
+							"type": "input",
+							"name": "conditional_input",
+							"label": "Conditional input",
+							"mandatory": true
+						}
+					]
+				}
+			]
+		}
+	]
+}

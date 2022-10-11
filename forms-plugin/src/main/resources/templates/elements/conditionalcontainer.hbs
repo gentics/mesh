@@ -1,6 +1,17 @@
-<div>
+<div id="{{{name}}}">
 {{#each elements}}
 {{> error }}
 {{> (formsElementTemplate type) }}
 {{/each}}
+
+	<script>/*<![CDATA[*/
+		let container = document.getElementById('{{{name}}}')
+		let toCheck = document.getElementById('{{{elementToCheck}}}')
+
+		toCheck.addEventListener('change', () => {
+			let display = toCheck.value === '{{{valueToCheck}}}' ? 'inline' : 'none'
+
+			container.style = `display: ${display}`
+		})
+	/*]]>*/</script>
 </div>
