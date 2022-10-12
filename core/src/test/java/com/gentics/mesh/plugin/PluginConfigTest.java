@@ -6,8 +6,10 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -57,6 +59,16 @@ public class PluginConfigTest {
 		assertEquals("test", plugin.readConfig(DummyPluginConfig.class).getName());
 		assertEquals(PLUGIN_DIR + "/dummy/config.yml", plugin.getConfigFile().getPath());
 		assertEquals(PLUGIN_DIR + "/dummy/storage", plugin.getStorageDir().getPath());
+	}
+
+	@Test(expected = Exception.class)
+	public void testReadInvalidYamlFile() throws Exception {
+		DummyPlugin plugin = mockPlugin();
+		File file = plugin.getConfigFile();
+		FileUtils.writeStringToFile(file, "foo bar", StandardCharsets.UTF_8);
+
+		// this should fail since the yaml format is invalid
+		plugin.readConfig(DummyPluginConfig.class);
 	}
 
 	@Test
