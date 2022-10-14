@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.error.BackupInProgressException;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.madl.tx.Tx;
@@ -561,6 +562,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		case READY:
 		case STARTING:
 			return;
+		case BACKUP:
+			throw new BackupInProgressException();
 		default:
 			throw new RuntimeException("Mesh is not ready. Current status " + status.name() + ". Aborting transaction.");
 		}
