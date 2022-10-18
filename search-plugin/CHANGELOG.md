@@ -10,8 +10,15 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.6.27]]
+== 1.6.27 (TBD)
+
+icon:check[] HitTransformer: Fixes excerpt generation in `BasicHitTransformer`.
+
+icon:plus[] HitTransformer: Adds raw highlights to the search result in addition to the excerpt. The highlights are grouped by fieldname, and the contents is determined by the `fragment_size` and `number_of_fragments` settings in the query (see: [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html#highlighting-settings)).
+
 [[v1.6.26]]
-== 1.6.26 (TBD)
+== 1.6.26 (2022-09-28)
 
 CAUTION: The plugin requires Mesh >= 1.6.34 to run.
 

@@ -25,12 +25,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +42,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.gentics.mesh.plugin.search.util.TestUtils.mockContext;
 import static com.gentics.mesh.plugin.search.util.TestUtils.mockRequest;
@@ -60,6 +63,55 @@ import static org.mockito.Mockito.when;
  * Tests for the {@link SearchHandler}.
  */
 public class SearchHandlerTest {
+
+	/**
+	 * Matcher which verifies that the expected highlights were returned.
+	 */
+	private static class ContainsHighlight extends BaseMatcher<String> {
+
+		private final JsonObject expectedHighlights;
+		private final JsonObject expectedExcerpts;
+
+		public ContainsHighlight(JsonObject expectedHighlights, JsonObject expectedExcerpts) {
+			this.expectedHighlights = expectedHighlights;
+			this.expectedExcerpts = expectedExcerpts;
+		}
+
+		@Override
+		public boolean matches(Object actual) {
+			Map<String, Object> foundResults = new JsonObject(actual.toString()).getJsonArray("results").stream()
+				.map(o -> (JsonObject) o)
+				.map(o -> Pair.of(o.getJsonObject("raw").getString("uuid"), o))
+				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
+			for (String result : expectedHighlights.fieldNames()) {
+				if (!checkHighlight(foundResults, result)) {
+					return false;
+				}
+			}
+
+			for (String result : expectedExcerpts.fieldNames()) {
+				if (!checkExcerpt(foundResults, result)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private boolean checkHighlight(Map<String, Object> foundResults, String result) {
+			return ((JsonObject) foundResults.get(result)).getJsonObject("highlights").equals(expectedHighlights.getJsonObject(result));
+		}
+
+		private boolean checkExcerpt(Map<String, Object> foundResults, String result) {
+			return ((JsonObject) foundResults.get(result)).getString("excerpt").equals(expectedExcerpts.getString(result));
+		}
+
+		@Override
+		public void describeTo(Description description) {
+			description.appendText(String.format("Result contains highlights\n%s\nand excerpts\n%s", expectedHighlights.encodePrettily(), expectedExcerpts.encodePrettily()));
+		}
+	}
 
 	/**
 	 * Checks if the final search result has exactly the expected number of elements, and all default fields are present.
@@ -251,6 +303,39 @@ public class SearchHandlerTest {
 		verify(pc.client(), times(1)).searchNodesRaw(anyString(), anyString(), anyVararg());
 		verify(pc.client(), never()).graphql(anyString(), any(), anyVararg());
 		verify(pc.response()).end(anyString());
+	}
+
+	/**
+	 * Test that the handler does not make a GraphQL request, when no search result query is configured.
+	 */
+	@Test
+	public void testHighlights() throws IOException {
+		// The did you mean queries would mess up the count of the searchNodesRaw() invocations.
+		config.setDidYouMeanThreshold(0);
+		config.setResultQuery(null);
+
+		PluginContext pc = mockContext(DEFAULT_PROJECT, "/search", "q=test");
+
+		searchResult = mockRequest(new ObjectMapper().readValue(getClass().getResource("/results/searchResultOneBranch.json"), ObjectNode.class));
+
+		makeSearchRequest(pc, null);
+
+		verify(pc.client(), times(1)).searchNodesRaw(anyString(), anyString(), anyVararg());
+		verify(pc.client(), never()).graphql(anyString(), any(), anyVararg());
+
+		JsonObject expectedHighlights = new JsonObject()
+			.put("01234", new JsonObject()
+				.put("fields.title", new JsonArray().add("<strong>Test</strong> result 1")))
+			.put("56789", new JsonObject()
+				.put("fields.title", new JsonArray().add("<strong>Test</strong> result 2 - title"))
+				.put("fields.content", new JsonArray()
+					.add("<strong>Test</strong> result 2 - content 1")
+					.add("<strong>Test</strong> result 2 - content 2")));
+		JsonObject expectedExcerpts = new JsonObject()
+			.put("01234", "<strong>Test</strong> result 1")
+			.put("56789", "<strong>Test</strong> result 2 - title ... <strong>Test</strong> result 2 - content 1 ... <strong>Test</strong> result 2 - content 2");
+
+		verify(pc.response()).end(argThat(new ContainsHighlight(expectedHighlights, expectedExcerpts)));
 	}
 
 	/**
