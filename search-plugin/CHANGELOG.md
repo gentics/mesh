@@ -10,6 +10,13 @@
 
 = Mesh Search Plugin Changelog
 
+[[v1.8.6]]
+== 1.8.6 (2022-10-19)
+
+icon:check[] HitTransformer: Fixes excerpt generation in `BasicHitTransformer`.
+
+icon:plus[] HitTransformer: Adds raw highlights to the search result in addition to the excerpt. The highlights are grouped by fieldname, and the contents is determined by the `fragment_size` and `number_of_fragments` settings in the query (see: [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html#highlighting-settings)).
+
 [[v1.8.5]]
 == 1.8.5 (2022-09-28)
 
@@ -24,6 +31,13 @@ taking into account the global `pageSize`. This has been fixed.
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.27]]
+== 1.6.27 (2022-10-19)
+
+icon:check[] HitTransformer: Fixes excerpt generation in `BasicHitTransformer`.
+
+icon:plus[] HitTransformer: Adds raw highlights to the search result in addition to the excerpt. The highlights are grouped by fieldname, and the contents is determined by the `fragment_size` and `number_of_fragments` settings in the query (see: [Elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/highlighting.html#highlighting-settings)).
 
 [[v1.6.26]]
 == 1.6.26 (2022-09-28)
