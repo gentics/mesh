@@ -2,16 +2,16 @@ package com.gentics.mesh.plugin.search.transformer;
 
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.plugin.search.extension.HitTransformer;
-import com.gentics.mesh.plugin.search.util.MiscUtils;
-import com.gentics.mesh.plugin.search.util.JsonUtils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A very simple transformation for search hits.
@@ -40,22 +40,13 @@ public class BasicHitTransformer implements HitTransformer {
 
 		ret.put("raw", hit.getJsonObject("_source", emptyObject));
 
-		Optional<JsonArray> highlight = hit.getJsonObject("highlight", emptyObject).stream()
-			.map(o -> o instanceof JsonArray ? (JsonArray) o : emptyArray)
-			.filter(o -> !o.isEmpty())
-			.findFirst();
+		Map<String, List<String>> highlights = hit.getJsonObject("highlight", emptyObject).stream()
+			.filter(e -> e != null && e.getValue() instanceof JsonArray && !((JsonArray) e.getValue()).isEmpty())
+			.map(e -> Pair.of(e.getKey(), transformHighlightFragments((JsonArray) e.getValue())))
+			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
-		if (highlight.isPresent()) {
-			String excerpt = highlight.get().getString(0);
-
-			if (!StringUtils.isBlank(excerpt)) {
-				excerpt = excerpt.replaceAll("%hb%", "<strong>")
-					.replaceAll("%he%", "</strong>")
-					.replaceAll("\\s+", " ");
-
-				ret.put("excerpt", Jsoup.parse(excerpt).text());
-			}
-		}
+		ret.put("highlights", highlights)
+			.put("excerpt", highlights.values().stream().flatMap(List::stream).collect(Collectors.joining(" ... ")));
 
 		if (node != null) {
 			ret.put("additional", node.getJsonObject("fields", emptyObject));
@@ -66,5 +57,31 @@ public class BasicHitTransformer implements HitTransformer {
 		}
 
 		return ret;
+	}
+
+	/**
+	 * Creates a list of sanitized strings from the given JsonArray.
+	 *
+	 * <p>
+	 *     This method performs the following transformations on each entry:
+	 *     <ul>
+	 *         <li>Replace {@code %hb%} with {@code &lt;strong&gt;}</li>
+	 *         <li>Replace {@code %he%} with {@code &lt;/strong&gt;}</li>
+	 *         <li>Replace all consecutive whitespace characters with a single space</li>
+	 *         <lil>Use {@link Jsoup#parse(String)} and {@link Document#text()} to remove markup</lil>
+	 *     </ul>
+	 * </p>
+	 * @param fragments The highlight fragments from the search result.
+	 * @return The highlights as a list of sanitized strings.
+	 */
+	private List<String> transformHighlightFragments(JsonArray fragments) {
+		return fragments.stream()
+			.filter(Objects::nonNull)
+			.map(Object::toString)
+			.map(s -> Jsoup.parse(s).text())
+			.map(s -> s.replaceAll("%hb%", "<strong>")
+				.replaceAll("%he%", "</strong>")
+				.replaceAll("\\s+", " "))
+			.collect(Collectors.toList());
 	}
 }

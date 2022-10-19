@@ -224,10 +224,77 @@ Element for file uploads.
 
 Container for elements to show on condition.
 
+When the current value of `elementToCheck` is not equal to `valueToCheck`, the forms plugin will
+
+1. Skip validation for all elements inside the container, and
+2. Ignore posted values for elements inside the container.
+
+Displaying or hiding the elements must be handled client side, a simple example for this can be found in the example template: _src/main/resources/templates/elements/conditionalcontainer.hbs_.
+
+### Configuration options
+
 | Key | Type | Description | Default value |
 |-----|------|-------------|---------------|
 | `elementToCheck` | string | Name of the element to check for specific value | REQUIRED |
 | `valueToCheck` | string | Required value of the element to check | |
+
+### CMS configuration
+
+This is an example configuration for a `conditionalcontainer` element to add to the forms `elements` in the [Gentics CMS form-editor.json](https://gentics.com/Content.Node/guides/feature_forms.html#configuration).
+
+```json
+{
+  "type": "conditionalcontainer",
+  "type_label_i18n_ui": {
+    "en": "Conditional container",
+    "de": "Wenn-Dann-Container"
+  },
+  "description_i18n_ui": {
+    "en": "Conditional container which contents is only active when the checked element has the expected value.",
+    "de": "Wenn-Dann-Container dessen Inhalt nur aktiv ist, wenn das geprüfte Element den erwarteten Wert hat."
+  },
+  "label_property_ui": "label",
+  "is_container": true,
+  "properties": [
+    {
+      "name": "label",
+      "type": "STRING",
+      "label_i18n_ui": {
+        "en": "Label",
+        "de": "Label"
+      },
+      "description_i18n_ui": {
+        "en": "Label for this container.",
+        "de": "Label für diesen Container."
+      }
+    },
+    {
+      "name": "element_to_check",
+      "type": "STRING",
+      "label_i18n_ui": {
+        "en": "Element name",
+        "de": "Elementname"
+      },
+      "description_i18n_ui": {
+        "en": "Element to check.",
+        "de": "Zu prüfendes Element."
+      }
+    },
+    {
+      "name": "value_to_check",
+      "type": "STRING",
+      "label_i18n_ui": {
+        "en": "Value",
+        "de": "Wert"
+      },
+      "description_i18n_ui": {
+        "en": "Expected value.",
+        "de": "Erwarteter Wert."
+      }
+    }
+  ]
+}
+```
 
 # Server-side Validation
 
