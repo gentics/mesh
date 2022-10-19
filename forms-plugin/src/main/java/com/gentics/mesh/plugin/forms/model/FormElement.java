@@ -39,7 +39,8 @@ import java.util.stream.Stream;
  * Abstract form element
  */
 public abstract class FormElement implements RestModel {
-	protected static final Logger log = LoggerFactory.getLogger(FormElement.class);
+
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private String name;
 
@@ -306,6 +307,10 @@ public abstract class FormElement implements RestModel {
 	 * @return validation error or null if posted data is valid
 	 */
 	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+		if (skipElement(postedData)) {
+			return null;
+		}
+
 		List<String> values = new ArrayList<>();
 		if (isMultivalue()) {
 			List<String> data = getMultiFormData(postedData);
@@ -342,6 +347,10 @@ public abstract class FormElement implements RestModel {
 	 * @param errors true if validation errors were detected
 	 */
 	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+		if (skipElement(postedData)) {
+			return;
+		}
+
 		if (isMultivalue()) {
 			List<String> values = getMultiFormData(postedData);
 			if (values != null) {
@@ -529,10 +538,43 @@ public abstract class FormElement implements RestModel {
 
 	/**
 	 * Performs submit action
-	 * @param postedData 
+	 * @param postedData
 	 */
 	@JsonIgnore
 	public void performSubmit(Form form, MultiMap postedData) {
+	}
+
+	/**
+	 * Test whether this element should be skipped for validation and saving
+	 * form data via {@link #addField(FieldContainer, MultiMap, boolean)}.
+	 *
+	 * <p>
+	 *     Currently the only reason to skip an element is if it is a descendant
+	 *     of a {@link ConditionalContainerElement}, and the specified checked
+	 *     field is not set accordingly.
+	 * </p>
+	 *
+	 * @param postedData The posted form data.
+	 * @return {@code true} if the element should be skipped during validation
+	 * 		and saving data, and {@code false} otherwise.
+	 */
+	protected boolean skipElement(MultiMap postedData) {
+		FormElement parent = container;
+
+		while (parent != null) {
+			if (parent instanceof ConditionalContainerElement) {
+				if (((ConditionalContainerElement) parent).skipElements(postedData)) {
+					// The conditional container could be nested. If we found
+					// a container that says skip, we can return here, otherwise
+					// we need to go further upwards.
+					return true;
+				}
+			}
+
+			parent = parent.container;
+		}
+
+		return false;
 	}
 
 	/**
