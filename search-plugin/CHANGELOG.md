@@ -11,7 +11,7 @@
 = Mesh Search Plugin Changelog
 
 [[v1.6.27]]
-== 1.6.27 (TBD)
+== 1.6.27 (2022-10-19)
 
 icon:check[] HitTransformer: Fixes excerpt generation in `BasicHitTransformer`.
 
