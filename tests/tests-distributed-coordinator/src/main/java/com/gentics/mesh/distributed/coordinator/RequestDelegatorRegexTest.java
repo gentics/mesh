@@ -30,6 +30,8 @@ public class RequestDelegatorRegexTest {
 		assertReadOnly("/api/v1/demo/rawSearch/");
 		assertReadOnly("/api/v1/utilities/linkResolver");
 		assertReadOnly("/api/v1/utilities/validateMicroschema");
+		assertReadOnly("/api/v1/plugins/hello-world");
+		assertReadOnly("/api/v1/some-project/plugins/hello-world");
 	}
 
 	private void assertWhiteListed(String path) {
