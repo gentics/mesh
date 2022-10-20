@@ -17,6 +17,12 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.8.12]]
+== 1.8.12 (20.10.2022)
+
+icon:check[] Clustering: when running in CUD coordination mode, post requests of plugins endpoint were redirected to the master instance.
+This redirection has been removed since plugins can only modify the graphdb using the mesh rest api.
+
 [[v1.8.11]]
 == 1.8.11 (06.10.2022)
 
@@ -75,6 +81,12 @@ icon:check[] Core: Schema field names are now checked for uniqueness regardless 
 enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
 
 icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
+
+[[v1.6.36]]
+== 1.6.36 (20.10.2022)
+
+icon:check[] Clustering: when running in CUD coordination mode, post requests of plugins endpoint were redirected to the master instance.
+This redirection has been removed since plugins can only modify the graphdb using the mesh rest api.
 
 [[v1.6.35]]
 == 1.6.35 (06.10.2022)
