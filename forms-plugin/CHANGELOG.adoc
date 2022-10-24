@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.6]]
+== 1.8.6 (2022-10-19)
+
+icon:check[] Forms: Add missing implementation for `conditionalcontainer` elements. Elements inside a `conditionalcontainer` will only be validated and saved, when the respective element to check has the correct value.
+
 [[v1.8.5]]
 == 1.8.5 (2022-09-28)
 
