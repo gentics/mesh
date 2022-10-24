@@ -15,6 +15,11 @@
 
 icon:plus[] Mails: The new `mailsource` property for `Form` and `UserMailElement` objects can be used to specify a Handlebars template directly instead of the path to a template file.
 
+[[v1.9.3]]
+== 1.9.3 (2022-10-19)
+
+icon:check[] Forms: Add missing implementation for `conditionalcontainer` elements. Elements inside a `conditionalcontainer` will only be validated and saved, when the respective element to check has the correct value.
+
 [[v1.9.2]]
 == 1.9.2 (2022-09-28)
 
@@ -23,6 +28,11 @@ CAUTION: The plugin requires Mesh >= 1.9.3 to run.
 icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
+[[v1.8.6]]
+== 1.8.6 (2022-10-19)
+
+icon:check[] Forms: Add missing implementation for `conditionalcontainer` elements. Elements inside a `conditionalcontainer` will only be validated and saved, when the respective element to check has the correct value.
 
 [[v1.8.5]]
 == 1.8.5 (2022-09-28)
@@ -57,6 +67,11 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
 
+
+[[v1.6.27]]
+== 1.6.27 (2022-10-19)
+
+icon:check[] Forms: Add missing implementation for `conditionalcontainer` elements. Elements inside a `conditionalcontainer` will only be validated and saved, when the respective element to check has the correct value.
 
 [[v1.6.26]]
 == 1.6.26 (2022-09-28)
