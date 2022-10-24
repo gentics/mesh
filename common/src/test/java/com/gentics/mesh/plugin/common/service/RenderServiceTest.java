@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
@@ -88,7 +89,7 @@ public class RenderServiceTest {
 
 	@Test
 	public void testRxRenderWithInvalidPath() throws InterruptedException {
-		doTestRxRenderWithPath(0, TEMPLATES[2], IllegalArgumentException.class);
+		doTestRxRenderWithPath(0, TEMPLATES[2], FileNotFoundException.class);
 	}
 
 	@Test

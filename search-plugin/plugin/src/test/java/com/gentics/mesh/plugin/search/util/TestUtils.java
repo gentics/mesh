@@ -29,7 +29,6 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Route;
@@ -64,7 +63,7 @@ public class TestUtils {
 		});
 		when(pc.get(anyString())).thenAnswer(in -> map.get(in.getArgumentAt(0, String.class)));
 
-		MultiMap headerMap = new CaseInsensitiveHeaders();
+		MultiMap headerMap = MultiMap.caseInsensitiveMultiMap();
 
 		headerMap.add("Accept-Language", "en, en-gb;q=0.8, en;q=0.72");
 		when(request.headers()).thenReturn(headerMap);

@@ -49,6 +49,10 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 
 	/**
 	 * Test loading the schema for a form
+	 *
+	 * TODO: This test keeps failing due to a timing issue. The schema seems not
+	 * to be ready yet when the load schema request is sent.
+	 *
 	 * @throws IOException
 	 */
 	@Test

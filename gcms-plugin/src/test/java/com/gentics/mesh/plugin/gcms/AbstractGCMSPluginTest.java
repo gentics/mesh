@@ -1,23 +1,22 @@
 package com.gentics.mesh.plugin.gcms;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
-
 import com.gentics.mesh.plugin.gcms.config.GCMSPluginConfig;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
 import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
-
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
-import io.vertx.ext.jwt.JWTOptions;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Test cases for the GCMS plugin
@@ -63,8 +62,17 @@ public abstract class AbstractGCMSPluginTest extends AbstractPluginLocalIntegrat
 	 */
 	protected String getToken(String username, String firstname, String lastname, String email,
 			List<String> groupNames) {
-		return provider.generateToken(new JsonObject().put("preferred_username", username).put("given_name", firstname)
-				.put("family_name", lastname).put("email", email).put("gcms_groups", groupNames)
-				.put("iss", "Gentics CMS"), new JWTOptions().setAlgorithm("RS256"));
+		return provider.generateToken(
+			// Make sure that the added claims are the same that the CMS
+			// actually sets in ProxyResource#forward(T method, Consumer<T> prepareHandler).
+			new JsonObject()
+				.put("preferred_username", username)
+				.put("given_name", firstname)
+				.put("family_name", lastname)
+				.put("email", email)
+				.put("gcms_groups", groupNames)
+				.put("iss", "Gentics CMS")
+				.put("iat", OffsetDateTime.now().toEpochSecond()),
+			new JWTOptions().setAlgorithm("RS256"));
 	}
 }

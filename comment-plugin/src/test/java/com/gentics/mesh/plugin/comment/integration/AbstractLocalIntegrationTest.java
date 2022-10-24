@@ -71,7 +71,7 @@ public abstract class AbstractLocalIntegrationTest extends AbstractPluginLocalIn
 
 		TestCommentPlugin.config = testConfig;
 		server.getMesh().deployPlugin(TestCommentPlugin.class, "comment").blockingAwait();
-		PluginTestUtil.waitForPluginRegistration(server, 5_000, "comment");
+		PluginTestUtil.waitForPluginRegistration(server, 10_000, "comment");
 	}
 
 	@Before

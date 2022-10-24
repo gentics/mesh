@@ -250,7 +250,7 @@ public class MailService {
 		}).flatMapSingle(download -> RxUtil.readEntireData(download.getFlowable())
 		.map(buffer -> {
 			message.getAttachment()
-				.add(new MailAttachment().setName(download.getFilename()).setContentType(download.getContentType()).setData(buffer));
+				.add(MailAttachment.create().setName(download.getFilename()).setContentType(download.getContentType()).setData(buffer));
 			return message;
 		})).lastOrError();
 	}

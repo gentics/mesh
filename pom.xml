@@ -10,15 +10,15 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>1.9.3</version>
+		<version>1.10.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>1.9.3</mesh.version>
-		<netty.version>4.1.72.Final</netty.version>
+		<mesh.version>1.10.0-SNAPSHOT</mesh.version>
+		<netty.version>4.1.78.Final</netty.version>
 	</properties>
 
 	<modules>
@@ -149,6 +149,9 @@
 			<releases>
 				<enabled>true</enabled>
 			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>gtx-commercial</id>
@@ -157,6 +160,9 @@
 			<releases>
 				<enabled>true</enabled>
 			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 

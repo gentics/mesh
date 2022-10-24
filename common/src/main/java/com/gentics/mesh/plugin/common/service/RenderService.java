@@ -2,7 +2,10 @@ package com.gentics.mesh.plugin.common.service;
 
 import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.jknack.handlebars.Context;
+import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.cache.NullTemplateCache;
 import io.reactivex.Single;
@@ -12,7 +15,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.common.template.impl.ConcurrentLRUCache;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.web.templ.handlebars.HandlebarsTemplateEngine;
 import io.vertx.reactivex.impl.AsyncResultSingle;
@@ -42,9 +44,9 @@ public class RenderService {
 
 	private static final Pattern LEADING_SLASHES = Pattern.compile("^/*");
 	private static final Pattern TRAILING_SLASHES = Pattern.compile("/*$");
+	private static final int MAX_CACHE_SIZE = 100;
 
-
-	private final ConcurrentLRUCache<String, Template> inlineTemplateCache;
+	private final Cache<String, Template> inlineTemplateCache;
 	private final HandlebarsTemplateEngine templateEngine;
 	private final String templateBasePath;
 
@@ -66,8 +68,8 @@ public class RenderService {
 		this.templateBasePath = storageDirPath + "/templates/";
 		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
 		// TemplateCache implementations other than NullTemplateCache actually perform caching.
-		this.inlineTemplateCache = templateEngine.getDelegate().getHandlebars().getCache() instanceof NullTemplateCache
-			? new ConcurrentLRUCache<>(HandlebarsTemplateEngine.DEFAULT_MAX_CACHE_SIZE)
+		this.inlineTemplateCache = templateEngine.getDelegate().<Handlebars>unwrap().getCache() instanceof NullTemplateCache
+			? Caffeine.newBuilder().maximumSize(MAX_CACHE_SIZE).build()
 			: null;
 
 		log.debug("RenderService initialized with storageDirPath: {}, templateBasePath: {}", storageDirPath, templateBasePath);
@@ -88,8 +90,8 @@ public class RenderService {
 		this.templateEngine = templateEngine;
 		// When Handlebars already uses a cache, there is no need to cache the templates here. This check assumes that
 		// TemplateCache implementations other than NullTemplateCache actually perform caching.
-		this.inlineTemplateCache = templateEngine.getDelegate().getHandlebars().getCache() instanceof NullTemplateCache
-			? new ConcurrentLRUCache<>(HandlebarsTemplateEngine.DEFAULT_MAX_CACHE_SIZE)
+		this.inlineTemplateCache = templateEngine.getDelegate().<Handlebars>unwrap().getCache() instanceof NullTemplateCache
+			? Caffeine.newBuilder().maximumSize(MAX_CACHE_SIZE).build()
 			: null;
 
 		log.debug("RenderService initialized with templateBasePath: {}", templateBasePath);
@@ -283,10 +285,10 @@ public class RenderService {
 	 */
 	private void renderSource(Map<String, Object> templateCtx, String source, Handler<AsyncResult<Buffer>> resultHandler) {
 		try {
-			Template template = inlineTemplateCache != null ? inlineTemplateCache.get(source) : null;
+			Template template = inlineTemplateCache != null ? inlineTemplateCache.getIfPresent(source) : null;
 
 			if (template == null) {
-				template = templateEngine.getDelegate().getHandlebars().compileInline(source);
+				template = templateEngine.getDelegate().<Handlebars>unwrap().compileInline(source);
 
 				if (inlineTemplateCache != null) {
 					inlineTemplateCache.put(source, template);

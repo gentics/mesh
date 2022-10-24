@@ -17,6 +17,9 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -278,6 +281,21 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid, ObjectPermissionRevokeRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public MeshRequest<JobListResponse> findJobs(ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
@@ -339,6 +357,21 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<SchemaChangesListModel> diffMicroschema(String uuid, MicroschemaModel request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantMicroschemaRolePermissions(String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid, ObjectPermissionRevokeRequest request) {
 		throw new NotImplementedException();
 	}
 
@@ -482,6 +515,21 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getNodeRolePermissions(String projectName, String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid, ObjectPermissionRevokeRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public MeshRequest<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
@@ -528,6 +576,21 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> purgeProject(String uuid, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantProjectRolePermissions(String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid, ObjectPermissionRevokeRequest request) {
 		throw new NotImplementedException();
 	}
 
@@ -638,6 +701,21 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantRoleRolePermissions(String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeRoleRolePermissions(String uuid, ObjectPermissionRevokeRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest schemaCreateRequest, ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
@@ -709,6 +787,21 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantSchemaRolePermissions(String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeSchemaRolePermissions(String uuid, ObjectPermissionRevokeRequest request) {
 		throw new NotImplementedException();
 	}
 
@@ -878,6 +971,21 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagRolePermissions(String projectName, String tagFamilyUuid, String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantTagRolePermissions(String projectName, String tagFamilyUuid, String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid, String uuid, ObjectPermissionRevokeRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public MeshRequest<TagFamilyResponse> findTagFamilyByUuid(String projectName, String uuid, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
@@ -909,6 +1017,21 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<TagFamilyListResponse> findTagFamilies(String projectName, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagFamilyRolePermissions(String projectName, String tagFamilyUuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantTagFamilyRolePermissions(String projectName, String tagFamilyUuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagFamilyRolePermissions(String projectName, String tagFamilyUuid, ObjectPermissionRevokeRequest request) {
 		throw new NotImplementedException();
 	}
 
@@ -964,6 +1087,21 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid, ObjectPermissionRevokeRequest request) {
 		throw new NotImplementedException();
 	}
 
@@ -1070,6 +1208,21 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ObjectPermissionResponse> getBranchRolePermissions(String projectName, String uuid) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid, ObjectPermissionGrantRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid, ObjectPermissionRevokeRequest request) {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public MeshRequest<NodeResponse> webrootUpdate(String projectName, String path, NodeUpdateRequest nodeUpdateRequest,
 		ParameterProvider... parameters) {
 		throw new NotImplementedException();
@@ -1117,7 +1270,7 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public <R> MeshRequest<R> get(String path, Class<R> responseClass) {
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -1137,7 +1290,7 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public <R, T extends RestModel> MeshRequest<R> post(String path, T request, Class<R> responseClass) {
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -1157,7 +1310,7 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public <R, T extends RestModel> MeshRequest<R> put(String path, T request, Class<R> responseClass) {
-		return null;
+		throw new NotImplementedException();
 	}
 
 	@Override

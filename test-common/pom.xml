@@ -33,6 +33,11 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-orientdb-api</artifactId>
+			<version>${mesh.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
