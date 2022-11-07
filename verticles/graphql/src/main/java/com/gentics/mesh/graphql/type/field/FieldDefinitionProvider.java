@@ -17,6 +17,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -119,6 +120,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			newFieldDefinition().name("sha512sum").description("SHA512 checksum of the binary data.").type(GraphQLString).dataFetcher(fetcher -> {
 				HibBinaryField field = fetcher.getSource();
 				return field.getBinary().getSHA512Sum();
+			}));
+
+		// .s3objectKey
+		type.field(
+			newFieldDefinition().name("s3ObjectKey").description("S3 object key of the S3 storage binary data.").type(GraphQLString).dataFetcher(fetcher -> {
+				S3HibBinaryField field = fetcher.getSource();
+				return field.getBinary().getS3ObjectKey();
 			}));
 
 		// .fileSize
@@ -399,6 +407,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 				Stream<NodeContent> nodes = nodeList.getList().stream().map(item -> {
 					HibNode node = item.getNode();
+					if (node == null) {
+						return null;
+					}
 					List<String> languageTags;
 					if (container instanceof HibNodeFieldContainer) {
 						languageTags = Arrays.asList(container.getLanguageTag());
@@ -411,13 +422,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					HibNodeFieldContainer itemContainer = contentDao.findVersion(node, gc, languageTags, nodeType);
 					return new NodeContent(node, itemContainer, languageTags, nodeType);
-				});
+				}).filter(Objects::nonNull);
 				if (filterArgument != null) {
 					nodes = nodes.filter(nodeFilter.createPredicate(filterArgument));
 				}
 				return nodes
 					.filter(content -> content.getContainer() != null)
-					.filter(gc::hasReadPerm)
+					.filter(content1 -> gc.hasReadPerm(content1, nodeType))
 					.collect(Collectors.toList());
 			case "micronode":
 				HibMicronodeFieldList micronodeList = container.getMicronodeList(schema.getName());

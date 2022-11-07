@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.8.7-SNAPSHOT</version>
+		<version>1.10.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -36,23 +36,16 @@
 			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-test-common</artifactId>
-		</dependency>
-
 		<!-- Generator dependencies -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>tests-mesh-core</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
+		</dependency>
+
+		<!-- Required by SearchModelGenerator -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
 		</dependency>
 	</dependencies>
 

@@ -38,7 +38,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
-import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
 @RunWith(value = Parameterized.class)

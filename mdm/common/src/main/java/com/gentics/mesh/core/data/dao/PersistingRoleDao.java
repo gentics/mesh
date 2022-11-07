@@ -8,11 +8,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.cache.PermissionCache;
@@ -42,95 +47,137 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  *
  */
 public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole> {
-    /**
-     * Grant role permission. Consumers implementing this method do not need to invalidate the cache
-     * @param role the role
-     * @param element
-     * @param permissions
-     */
-    boolean grantRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
+	/**
+	 * Grant role permission. Consumers implementing this method do not need to invalidate the cache
+	 * @param role the role
+	 * @param element
+	 * @param permissions
+	 */
+	boolean grantRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
-    /**
-     * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
-     * @param role the role
-     * @param element
-     * @param permissions
-     */
-    boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
+	/**
+	 * Grant the given permissions on the element to the set of roles. Implementations do not need to invalidate the cache
+	 *
+	 * @param roles set of roles
+	 * @param element element to grant permission on
+	 * @param exclusive true to revoke the given permissions on all other roles
+	 * @param permissions permissions to grant
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean grantRolePermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions);
 
-    /**
-     * Create a new role
-     *
-     * @param ac
-     * @param batch
-     * @param uuid
-     *            Uuid of the role
-     * @return
-     */
-    default HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-        RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
-        String roleName = requestModel.getName();
-        UserDao userDao = Tx.get().userDao();
-        HibBaseElement roleRoot = Tx.get().data().permissionRoots().role();
+	/**
+	 * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
+	 * @param role the role
+	 * @param element
+	 * @param permissions
+	 */
+	boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
-        HibUser requestUser = ac.getUser();
-        if (StringUtils.isEmpty(roleName)) {
-            throw error(BAD_REQUEST, "error_name_must_be_set");
-        }
+	/**
+	 * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
+	 * @param roles set of roles
+	 * @param element element to revoke permissions from
+	 * @param permissions permissions to revoke
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean revokeRolePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions);
 
-        HibRole conflictingRole = findByName(roleName);
-        if (conflictingRole != null) {
-            throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
-        }
+	/**
+	 * Create a new role
+	 *
+	 * @param ac
+	 * @param batch
+	 * @param uuid
+	 *			Uuid of the role
+	 * @return
+	 */
+	default HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
+		String roleName = requestModel.getName();
+		UserDao userDao = Tx.get().userDao();
+		HibBaseElement roleRoot = Tx.get().data().permissionRoots().role();
 
-        if (!userDao.hasPermission(requestUser, roleRoot, CREATE_PERM)) {
-            throw error(FORBIDDEN, "error_missing_perm", roleRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
-        }
+		HibUser requestUser = ac.getUser();
+		if (StringUtils.isEmpty(roleName)) {
+			throw error(BAD_REQUEST, "error_name_must_be_set");
+		}
 
-        HibRole role = create(requestModel.getName(), requestUser, uuid);
-        userDao.inheritRolePermissions(requestUser, roleRoot, role);
-        batch.add(role.onCreated());
-        return role;
-    }
+		HibRole conflictingRole = findByName(roleName);
+		if (conflictingRole != null) {
+			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
+		}
 
-    @Override
-    default boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
-        boolean permissionsGranted = grantRolePermissions(role, element, permissions);
-        if (permissionsGranted) {
-            PermissionCache cache = Tx.get().permissionCache();
-            cache.clear();
-        }
-        return permissionsGranted;
-    }
+		if (!userDao.hasPermission(requestUser, roleRoot, CREATE_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", roleRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
+		}
 
-    /**
-     * Revoke the given permissions and clear the cache when successful
-     *
-     * @param role
-     * @param element
-     * @param permissions
-     * @return
-     */
-    default boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
-        boolean permissionsRevoked = revokeRolePermissions(role, element, permissions);
-        if (permissionsRevoked) {
-            PermissionCache cache = Tx.get().permissionCache();
-            cache.clear();
-        }
-        return permissionsRevoked;
-    }
+		HibRole role = create(requestModel.getName(), requestUser, uuid);
+		userDao.inheritRolePermissions(requestUser, roleRoot, role);
+		batch.add(role.onCreated());
+		return role;
+	}
 
-    @Override
-    default void delete(HibRole role, BulkActionContext bac) {
-        bac.add(role.onDeleted());
-        deletePersisted(role);
-        bac.process();
-        PermissionCache permissionCache = Tx.get().permissionCache();
+	@Override
+	default boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+		boolean permissionsGranted = grantRolePermissions(role, element, permissions);
+		if (permissionsGranted) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsGranted;
+	}
 
-        permissionCache.clear();
-    }
+	@Override
+	default boolean grantPermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions) {
+		boolean permissionsGranted = grantRolePermissions(roles, element, exclusive, permissions);
+		if (permissionsGranted) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsGranted;
+	}
 
-    @Override
+	/**
+	 * Revoke the given permissions and clear the cache when successful
+	 *
+	 * @param role
+	 * @param element
+	 * @param permissions
+	 * @return
+	 */
+	default boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+		boolean permissionsRevoked = revokeRolePermissions(role, element, permissions);
+		if (permissionsRevoked) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsRevoked;
+	}
+
+	@Override
+	default boolean revokePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions) {
+		boolean permissionsRevoked = revokeRolePermissions(roles, element, permissions);
+		if (permissionsRevoked) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsRevoked;
+	}
+
+	@Override
+	default void delete(HibRole role, BulkActionContext bac) {
+		bac.add(role.onDeleted());
+		deletePersisted(role);
+		bac.process();
+		PermissionCache permissionCache = Tx.get().permissionCache();
+
+		permissionCache.clear();
+	}
+
+	@Override
 	default Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm) {
 		Set<String> roleUuids = getRoleUuidsForPerm(element, perm);
 		Stream<String> stream = roleUuids == null
@@ -141,7 +188,7 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 			.filter(Objects::nonNull));
 	}
 
-    @Override
+	@Override
 	default PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
 			HibRole role = loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -164,10 +211,10 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	}
 
 	@Override
-	default void applyPermissions(HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
-		Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		element.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
+	default void applyPermissions(MeshAuthUser authUser, HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive,
+								  Set<InternalPermission> permissionsToGrant,
+								  Set<InternalPermission> permissionsToRevoke) {
+		element.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override
@@ -216,6 +263,30 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 			}
 		}
 		return permissions;
+	}
+
+	@Override
+	default Map<HibRole, Set<InternalPermission>> getPermissions(Set<HibRole> roles, HibBaseElement element) {
+		if (CollectionUtils.isEmpty(roles)) {
+			return Collections.emptyMap();
+		}
+		Map<HibRole, Set<InternalPermission>> permissionsMap = new HashMap<>();
+		InternalPermission[] possiblePermissions = element.hasPublishPermissions()
+				? InternalPermission.values()
+				: InternalPermission.basicPermissions();
+
+		for (InternalPermission permission : possiblePermissions) {
+			Set<String> allowedUuids = getRoleUuidsForPerm(element, permission);
+			for (HibRole role : roles) {
+				Set<InternalPermission> permissions = permissionsMap.computeIfAbsent(role, key -> new HashSet<>());
+
+				if (allowedUuids != null && allowedUuids.contains(role.getUuid())) {
+					permissions.add(permission);
+				}
+			}
+		}
+
+		return permissionsMap;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATU
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +18,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.Vertx;
+import com.gentics.mesh.event.EventBusStore;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 	private static final Logger log = LoggerFactory.getLogger(PermissionCacheImpl.class);
 
-	private final Vertx vertx;
+	private final EventBusStore eventBusStore;
 
 	private final MeshOptions options;
 
@@ -46,12 +47,12 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	 * before putting them into the cache. With 6 permission bits, there are only 2^6=64 possible combinations and we will
 	 * keep only unique instances in the cache instead of up to 100_000 different instances.
 	 */
-	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = new HashMap<>();
+	private final Map<EnumSet<InternalPermission>, EnumSet<InternalPermission>> uniqueMap = Collections.synchronizedMap(new HashMap<>());
 
 	@Inject
-	public PermissionCacheImpl(EventAwareCacheFactory factory, Vertx vertx, CacheRegistry registry, MeshOptions options) {
+	public PermissionCacheImpl(EventAwareCacheFactory factory, EventBusStore eventBusStore, CacheRegistry registry, MeshOptions options) {
 		super(createCache(factory), registry, CACHE_SIZE);
-		this.vertx = vertx;
+		this.eventBusStore = eventBusStore;
 		this.options = options;
 	}
 
@@ -103,9 +104,9 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	public void clear(boolean notify) {
 		// Invalidate locally
 		cache.invalidate();
-		if (notify && options.getClusterOptions().isEnabled()) {
+		if (notify && options.getClusterOptions().isEnabled() && eventBusStore.current() != null) {
 			// Send the event to inform other to purge the stored permissions
-			vertx.eventBus().publish(CLEAR_PERMISSION_STORE.address, null);
+			eventBusStore.current().publish(CLEAR_PERMISSION_STORE.address, null);
 			// log.error("Can't distribute cache clear event. Maybe Vert.x is stopping / starting right now");
 		}
 	}

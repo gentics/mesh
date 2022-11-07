@@ -28,15 +28,15 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 /**
  * Verticle for REST endpoints to manage branches.
  */
-public class BranchEndpoint extends AbstractProjectEndpoint {
+public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private BranchCrudHandler crudHandler;
 
@@ -67,6 +67,7 @@ public class BranchEndpoint extends AbstractProjectEndpoint {
 		addNodeMigrationHandler();
 		addMicronodeMigrationHandler();
 		addTagsHandler();
+		addRolePermissionHandler("branchUuid", BRANCH_UUID, "branch", crudHandler, false);
 	}
 
 	private void addMicroschemaInfoHandler() {

@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.8.7-SNAPSHOT</version>
+		<version>1.10.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -22,14 +22,14 @@
 		<graphql-dataloader.version>3.1.2</graphql-dataloader.version>
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
-		<spring.security.version>4.2.16.RELEASE</spring.security.version>
+		<spring.security.version>5.5.7</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
-		<orientdb.version>3.1.18</orientdb.version>
+		<orientdb.version>3.2.10</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
 		<jackson.version>2.13.2</jackson.version>
 		<jackson-databind.version>2.13.2</jackson-databind.version>
-		<netty.version>4.1.72.Final</netty.version>
+		<netty.version>4.1.78.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
@@ -148,7 +148,7 @@
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
 				<artifactId>gson</artifactId>
-				<version>2.8.1</version>
+				<version>2.8.9</version>
 			</dependency>
 
 			<!-- Tika -->
@@ -248,12 +248,12 @@
 			<dependency>
 				<groupId>io.reactivex.rxjava2</groupId>
 				<artifactId>rxjava</artifactId>
-				<version>2.2.4</version>
+				<version>2.2.21</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.akarnokd</groupId>
 				<artifactId>rxjava2-jdk8-interop</artifactId>
-				<version>0.2.11</version>
+				<version>0.3.7</version>
 			</dependency>
 
 			<!-- Vert.x -->
@@ -317,7 +317,7 @@
 			<dependency>
 				<groupId>net.lingala.zip4j</groupId>
 				<artifactId>zip4j</artifactId>
-				<version>1.3.2</version>
+				<version>2.10.0</version>
 			</dependency>
 
 			<!-- UUID Support -->
@@ -495,6 +495,13 @@
 				<groupId>com.tinkerpop.gremlin</groupId>
 				<artifactId>gremlin-java</artifactId>
 				<version>2.6.0</version>
+			</dependency>
+
+			<!-- Vertx Hazelcast cluster manager -->
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>hazelcast3-cluster-manager</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- Mesh Test Internals -->

@@ -6,18 +6,6 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.google.common.base.Throwables.getRootCause;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.auth.AuthHandlerContainer;
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.auth.MeshOAuthService;
@@ -50,7 +38,6 @@ import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
@@ -59,10 +46,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
-import io.vertx.ext.auth.jwt.impl.JWTUser;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @see MeshOAuthService
@@ -168,40 +165,42 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				rc.next();
 				return;
 			}
-			if (user instanceof JWTUser) {
-				JWTUser token = (JWTUser) user;
+			List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
+			// The Vert.x JWT implementation stores the decoded token in attributes.accessToken. If that JsonObject is
+			// missing or empty, something went wrong during decoding of the token. User.principal() only contains
+			// some of the claims from the token, this is why it is not used here.
+			JsonObject decodedToken = user.attributes().getJsonObject("accessToken");
 
-				List<AuthServicePlugin> plugins = authPluginRegistry.getPlugins();
-				JsonObject decodedToken = token.principal();
-				for (AuthServicePlugin plugin : plugins) {
-					if (!plugin.acceptToken(rc.request(), decodedToken)) {
-						if (log.isDebugEnabled()) {
-							log.debug("The plugin {} rejected the token.", plugin.getManifest().getName());
-						}
-						rc.fail(401);
-						return;
-					}
-				}
-				syncUser(rc, token.principal()).subscribe(syncedUser -> {
-					rc.setUser(syncedUser);
-					rc.next();
-				}, error -> {
-					if (getRootCause(error) instanceof CannotWriteException) {
-						delegator.redirectToMaster(rc);
-					} else {
-						rc.fail(error);
-					}
-				});
-			} else {
+			if (decodedToken == null || decodedToken.isEmpty()) {
 				rc.fail(401);
 				return;
 			}
+
+			for (AuthServicePlugin plugin : plugins) {
+				if (!plugin.acceptToken(rc.request(), decodedToken)) {
+					if (log.isDebugEnabled()) {
+						log.debug("The plugin {} rejected the token.", plugin.getManifest().getName());
+					}
+					rc.fail(401);
+					return;
+				}
+			}
+			syncUser(rc, decodedToken).subscribe(syncedUser -> {
+				rc.setUser(syncedUser);
+				rc.next();
+			}, error -> {
+				if (getRootCause(error) instanceof CannotWriteException) {
+					delegator.redirectToMaster(rc);
+				} else {
+					rc.fail(error);
+				}
+			});
 		});
 	}
 
 	/**
 	 * Utilize the user information to return the matching mesh user.
-	 * 
+	 *
 	 * @param rc
 	 * @param token
 	 * @return

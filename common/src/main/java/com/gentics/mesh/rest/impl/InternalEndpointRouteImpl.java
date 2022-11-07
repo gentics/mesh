@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.vertx.ext.web.handler.PlatformHandler;
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
@@ -110,22 +111,8 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	 */
 	public InternalEndpointRouteImpl(Router router, LocalConfigApi localConfigApi, Database db) {
 		this.route = router.route();
-		route.handler(rc -> {
-			if (!isMutating()) {
-				rc.next();
-			} else {
-				if (db.isReadOnly(true)) {
-					rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
-				}
-				localConfigApi.getActiveConfig().subscribe(config -> {
-					if (config.isReadOnly()) {
-						rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
-					} else {
-						rc.next();
-					}
-				});
-			}
-		});
+		ReadOnlyHandler readOnlyHandler = new ReadOnlyHandler(localConfigApi, db);
+		route.handler(readOnlyHandler);
 	}
 
 	@Override
@@ -182,6 +169,13 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	public InternalEndpointRoute handler(Handler<RoutingContext> requestHandler) {
 		validate();
 		route.handler(requestHandler);
+		return this;
+	}
+
+	@Override
+	public InternalEndpointRoute subRouter(Router subRouter) {
+		validate();
+		route.subRouter(subRouter);
 		return this;
 	}
 
@@ -566,5 +560,34 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	@Override
 	public Set<String> getConsumes() {
 		return Collections.unmodifiableSet(consumes);
+	}
+
+	private class ReadOnlyHandler implements PlatformHandler {
+
+		private final LocalConfigApi localConfigApi;
+		private final Database db;
+
+		public ReadOnlyHandler(LocalConfigApi localConfigApi, Database db) {
+			this.localConfigApi = localConfigApi;
+			this.db = db;
+		}
+
+		@Override
+		public void handle(RoutingContext rc) {
+			if (!isMutating()) {
+				rc.next();
+			} else {
+				if (db.isReadOnly(true)) {
+					rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
+				}
+				localConfigApi.getActiveConfig().subscribe(config -> {
+					if (config.isReadOnly()) {
+						rc.fail(error(HttpResponseStatus.METHOD_NOT_ALLOWED, "error_readonly_mode"));
+					} else {
+						rc.next();
+					}
+				});
+			}
+		}
 	}
 }

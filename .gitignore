@@ -59,3 +59,4 @@ debuginfo.log
 mesh-mdm/config
 /config/
 /data/graphdb/storage/
+.vscode

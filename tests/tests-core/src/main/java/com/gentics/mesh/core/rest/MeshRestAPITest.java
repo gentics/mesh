@@ -28,12 +28,13 @@ public class MeshRestAPITest extends AbstractMeshTest {
 
 		HttpClient client = vertx().createHttpClient(options);
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(HttpMethod.POST, MeshVersion.CURRENT_API_BASE_PATH + "/test", rh -> {
-			rh.bodyHandler(bh -> {
-				future.complete(bh.toString());
-			});
-		});
-		request.end();
+		client.request(HttpMethod.POST, MeshVersion.CURRENT_API_BASE_PATH + "/test")
+				.compose(request -> request.send())
+				.onComplete(response -> {
+					response.result().bodyHandler(bh -> {
+						future.complete(bh.toString());
+					});
+				});
 
 		String response = future.get(1, TimeUnit.SECONDS);
 		assertTrue("The response string should not contain any html specific characters but it was {" + response + "} ",

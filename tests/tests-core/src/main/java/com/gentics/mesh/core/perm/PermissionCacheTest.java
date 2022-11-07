@@ -48,8 +48,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		db().tx(tx -> {
 			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			HibRole role = tx.roleDao().findByUuid(roleUuid());
-			tx.roleDao().applyPermissions(project, new DummyEventQueueBatch(), role, false, Collections.emptySet(),
-					new HashSet<>(Arrays.asList(InternalPermission.DELETE_PERM, InternalPermission.UPDATE_PERM)));
+			tx.roleDao().revokePermissions(role, project, InternalPermission.DELETE_PERM, InternalPermission.UPDATE_PERM);
 		});
 
 		assertPermissions("revoking permissions", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM);
@@ -58,8 +57,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		db().tx(tx -> {
 			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			HibRole role = tx.roleDao().findByUuid(roleUuid());
-			tx.roleDao().applyPermissions(project, new DummyEventQueueBatch(), role, false,
-					new HashSet<>(Arrays.asList(InternalPermission.UPDATE_PERM)), Collections.emptySet());
+			tx.roleDao().grantPermissions(role, project, InternalPermission.UPDATE_PERM);
 		});
 
 		assertPermissions("granting permissions", InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
@@ -169,9 +167,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		db().tx(tx -> {
 			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			HibRole role = tx.roleDao().findByUuid(roleUuid());
-			tx.roleDao().applyPermissions(project, new DummyEventQueueBatch(), role, false, Collections.emptySet(),
-					new HashSet<>(Arrays.asList(InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
-							InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM)));
+			tx.roleDao().revokePermissions(role, project, InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
+					InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 		});
 
 		revokeAdmin();
@@ -202,9 +199,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		db().tx(tx -> {
 			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			HibRole role = tx.roleDao().findByUuid(roleUuid());
-			tx.roleDao().applyPermissions(project, new DummyEventQueueBatch(), role, false, Collections.emptySet(),
-					new HashSet<>(Arrays.asList(InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
-							InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM)));
+			tx.roleDao().revokePermissions(role, project, InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
+					InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 		});
 		grantAdmin();
 		db().tx(tx -> {

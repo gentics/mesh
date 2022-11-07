@@ -35,6 +35,9 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
+import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -1661,5 +1664,245 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			.collect(Collectors.joining("/", "/", ""));
 
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/webrootfield/" + fieldName + path + getQuery(parameters), MeshWebrootFieldResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getBranchRolePermissions(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + uuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantBranchRolePermissions(String projectName, String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeBranchRolePermissions(String projectName, String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/branches/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getGroupRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantGroupRolePermissions(String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeGroupRolePermissions(String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/groups/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getMicroschemaRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantMicroschemaRolePermissions(String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/microschemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getNodeRolePermissions(String projectName, String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/nodes/" + uuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantNodeRolePermissions(String projectName, String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeNodeRolePermissions(String projectName, String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/nodes/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getProjectRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantProjectRolePermissions(String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeProjectRolePermissions(String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/projects/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getRoleRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantRoleRolePermissions(String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeRoleRolePermissions(String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/roles/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getSchemaRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantSchemaRolePermissions(String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeSchemaRolePermissions(String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/schemas/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagFamilyRolePermissions(String projectName, String tagFamilyUuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantTagFamilyRolePermissions(String projectName, String tagFamilyUuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagFamilyRolePermissions(String projectName, String tagFamilyUuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getTagRolePermissions(String projectName, String tagFamilyUuid,
+			String uuid) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + "/rolePermissions",
+				ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantTagRolePermissions(String projectName, String tagFamilyUuid, String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeTagRolePermissions(String projectName, String tagFamilyUuid, String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> getUserRolePermissions(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> grantUserRolePermissions(String uuid,
+			ObjectPermissionGrantRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(POST, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ObjectPermissionResponse> revokeUserRolePermissions(String uuid,
+			ObjectPermissionRevokeRequest request) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
+		return prepareRequest(DELETE, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
 	}
 }

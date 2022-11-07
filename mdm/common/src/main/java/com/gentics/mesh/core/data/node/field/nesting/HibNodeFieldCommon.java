@@ -41,8 +41,7 @@ public interface HibNodeFieldCommon extends HibNodeField {
 		HibNode node = getNode();
 
 		// Check whether the user is allowed to read the node reference
-		boolean canReadNode = userDao.canReadNode(ac.getUser(), ac, node);
-		if (!canReadNode) {
+		if (node == null || !userDao.canReadNode(ac.getUser(), ac, node)) {
 			return null;
 		}
 

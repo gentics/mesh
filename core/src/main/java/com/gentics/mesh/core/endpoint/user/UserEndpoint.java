@@ -16,6 +16,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -23,14 +24,13 @@ import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 import io.vertx.core.http.HttpHeaders;
 
 /**
  * Endpoint for /api/v1/users
  */
-public class UserEndpoint extends AbstractInternalEndpoint {
+public class UserEndpoint extends RolePermissionHandlingEndpoint {
 
 	private UserCrudHandler crudHandler;
 
@@ -63,6 +63,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		addResetTokenHandler();
 		addAPITokenHandler();
 		addReadPermissionHandler();
+		addRolePermissionHandler("userUuid", USER_EDITOR_UUID, "user", crudHandler, false);
 	}
 
 	private void addAPITokenHandler() {
@@ -71,7 +72,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.description(
-			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user.");
+			"Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on. This invalidates all tokens previously issued for this user. Requires UPDATE permission on the user.");
 		endpoint.method(POST);
 		endpoint.setMutating(true);
 		endpoint.produces(APPLICATION_JSON);
@@ -91,7 +92,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.setMutating(true);
 		deleteEndpoint.produces(APPLICATION_JSON);
-		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token.");
+		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token. Requires DELETE permission on the user.");
 		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -105,7 +106,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
 		endpoint.addUriParameter("path", "Path to the element from which the permissions should be loaded.", "projects/:projectUuid/schemas");
-		endpoint.description("Read the user permissions on the element that can be located by the specified path.");
+		endpoint.description("Read the user permissions on the element that can be located by the specified path. Requires READ permission on the user.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
@@ -122,7 +123,7 @@ public class UserEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/:userUuid/reset_token");
 		endpoint.setRAMLPath("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", USER_EDITOR_UUID);
-		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password)");
+		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password). Requires CREATE permission on the user.");
 		endpoint.method(POST);
 		endpoint.setMutating(true);
 		endpoint.produces(APPLICATION_JSON);

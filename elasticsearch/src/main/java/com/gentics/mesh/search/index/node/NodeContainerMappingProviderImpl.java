@@ -200,6 +200,9 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		case DATE:
 			addDataFieldMapping(fieldInfo, customIndexOptions);
 			break;
+		case S3BINARY:
+			addS3BinaryFieldMapping(fieldInfo, customIndexOptions);
+			break;
 		case BINARY:
 			addBinaryFieldMapping(fieldInfo, customIndexOptions);
 			break;
@@ -218,7 +221,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 			addMicronodeMapping(fieldInfo, fieldSchema, branch, language, customIndexOptions);
 			break;
 		default:
-			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
+			throw new RuntimeException("Mapping type for field type {" + type + "} unknown.");
 		}
 		return Optional.of(fieldInfo);
 	}
@@ -332,16 +335,32 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		}
 	}
 
+	private void addS3BinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (!isStrictMode) {
+			JsonObject binaryProps = new JsonObject();
+
+			// .s3ObjectKey
+			binaryProps.put("s3ObjectKey", notAnalyzedType(KEYWORD));
+			addCommonBinaryFieldMapping(fieldInfo, customIndexOptions, binaryProps);
+		}
+	}
+
 	private void addBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions) {
+		if (!isStrictMode) {
+			JsonObject binaryProps = new JsonObject();
+
+			// .sha512sum
+			binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
+			addCommonBinaryFieldMapping(fieldInfo, customIndexOptions, binaryProps);
+		}
+	}
+
+	private void addCommonBinaryFieldMapping(JsonObject fieldInfo, JsonObject customIndexOptions, JsonObject binaryProps) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
 		} else {
 			fieldInfo.put("type", OBJECT);
-			JsonObject binaryProps = new JsonObject();
 			fieldInfo.put("properties", binaryProps);
-
-			// .sha512sum
-			binaryProps.put("sha512sum", notAnalyzedType(KEYWORD));
 
 			// .filename
 			JsonObject customFilenameMapping = null;

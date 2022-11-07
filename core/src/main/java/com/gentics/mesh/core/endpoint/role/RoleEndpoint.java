@@ -19,15 +19,15 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Endpoint for /api/v1/roles
  */
-public class RoleEndpoint extends AbstractInternalEndpoint {
+public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 
 	private RoleCrudHandlerImpl crudHandler;
 
@@ -56,6 +56,7 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 		addDeleteHandler();
 
 		addPermissionHandler();
+		addRolePermissionHandler("roleUuid", ROLE_CLIENT_UUID, "role", crudHandler, false);
 	}
 
 	private void addPermissionHandler() {

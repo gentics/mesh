@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.endpoint.tagfamily;
 
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.ROLE_PERMISSIONS_CHANGED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
@@ -23,11 +24,11 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.endpoint.PathParameters;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,7 +36,7 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Endpoint for /api/v1/:project/tagFamilies
  */
-public class TagFamilyEndpoint extends AbstractProjectEndpoint {
+public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyEndpoint.class);
 
@@ -72,6 +73,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		addTagFamilyCreateHandler();
 		addTagFamilyUpdateHandler();
 		addTagFamilyDeleteHandler();
+		addRolePermissionHandler("tagFamilyUuid", TAGFAMILY_COLORS_UUID, "tag family", tagFamilyCrudHandler, false);
 
 		// Tags API
 		addTagCreateHandler();
@@ -79,6 +81,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		addTagUpdateHandler();
 		addTagDeleteHandler();
 		addTaggedNodesHandler();
+		addTagRolePermissionHandler();
 
 		if (log.isDebugEnabled()) {
 			log.debug("Registered tagfamily verticle endpoints");
@@ -171,6 +174,59 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
+		});
+	}
+
+	private void addTagRolePermissionHandler() {
+		InternalEndpointRoute readPermissionsEndpoint = createRoute();
+		readPermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		readPermissionsEndpoint.method(GET);
+		readPermissionsEndpoint.description("Get the permissions on the tag for all roles.");
+		readPermissionsEndpoint.produces(APPLICATION_JSON);
+		readPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Loaded permissions.");
+		readPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleReadPermissions(ac, tagFamilyUuid, uuid);
+		}, false);
+
+		InternalEndpointRoute grantPermissionsEndpoint = createRoute();
+		grantPermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		grantPermissionsEndpoint.method(POST);
+		grantPermissionsEndpoint.description("Grant permissions on the tag to multiple roles.");
+		grantPermissionsEndpoint.consumes(APPLICATION_JSON);
+		grantPermissionsEndpoint.produces(APPLICATION_JSON);
+		grantPermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionGrantRequest(false));
+		grantPermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		grantPermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		grantPermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleGrantPermissions(ac, tagFamilyUuid, uuid);
+		});
+
+		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
+		revokePermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
+		readPermissionsEndpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", TAGFAMILY_COLORS_UUID);
+		readPermissionsEndpoint.addUriParameter("tagUuid", "Uuid of the tag.", TAG_BLUE_UUID);
+		revokePermissionsEndpoint.method(DELETE);
+		revokePermissionsEndpoint.description("Revoke permissions on the tag from multiple roles.");
+		revokePermissionsEndpoint.consumes(APPLICATION_JSON);
+		revokePermissionsEndpoint.produces(APPLICATION_JSON);
+		revokePermissionsEndpoint.exampleRequest(roleExamples.getObjectPermissionRevokeRequest(false));
+		revokePermissionsEndpoint.exampleResponse(OK, roleExamples.getObjectPermissionResponse(false), "Updated permissions.");
+		revokePermissionsEndpoint.events(ROLE_PERMISSIONS_CHANGED);
+		revokePermissionsEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
+			String uuid = PathParameters.getTagUuid(rc);
+			tagCrudHandler.handleRevokePermissions(ac, tagFamilyUuid, uuid);
 		});
 	}
 

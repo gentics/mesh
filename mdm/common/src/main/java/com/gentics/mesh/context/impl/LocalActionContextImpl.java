@@ -2,12 +2,8 @@ package com.gentics.mesh.context.impl;
 
 import static com.gentics.mesh.rest.client.AbstractMeshRestHttpClient.getQuery;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -28,8 +24,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.spi.logging.LogDelegate;
-import io.vertx.ext.web.Cookie;
 import io.vertx.ext.web.FileUpload;
 
 /**
@@ -50,7 +46,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	private HttpResponseStatus responseStatus;
 	private Promise<T> promise = Promise.promise();
 	private Class<? extends T> classOfResponse;
-	private Set<FileUpload> fileUploads = new HashSet<>();
+	private List<FileUpload> fileUploads = new ArrayList<>();
 	private LogDelegate securityLogger = new DummyLogger();
 	private BootstrapInitializer boot;
 
@@ -205,7 +201,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public Set<FileUpload> getFileUploads() {
+	public List<FileUpload> getFileUploads() {
 		return fileUploads;
 	}
 

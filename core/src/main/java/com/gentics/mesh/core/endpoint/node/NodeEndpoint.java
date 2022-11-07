@@ -1,27 +1,17 @@
 package com.gentics.mesh.core.endpoint.node;
 
-import com.gentics.mesh.auth.MeshAuthChainImpl;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
-import com.gentics.mesh.parameter.impl.GenericParametersImpl;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-import io.vertx.core.MultiMap;
-import org.apache.commons.lang3.StringUtils;
-import org.raml.model.Resource;
-
-import javax.inject.Inject;
-
-import static com.gentics.mesh.core.rest.MeshEvent.*;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CONTENT_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNTAGGED;
+import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.S3BINARY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.S3BINARY_METADATA_EXTRACTED;
 import static com.gentics.mesh.example.ExampleUuids.NODE_DELOREAN_UUID;
 import static com.gentics.mesh.example.ExampleUuids.TAG_RED_UUID;
 import static com.gentics.mesh.example.ExampleUuids.UUID_1;
@@ -35,10 +25,33 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.raml.model.Resource;
+
+import com.gentics.mesh.auth.MeshAuthChainImpl;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
+import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+
+import io.vertx.core.MultiMap;
+
 /**
  * The content verticle adds rest endpoints for manipulating nodes.
  */
-public class NodeEndpoint extends AbstractProjectEndpoint {
+public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private Resource resource = new Resource();
 
@@ -98,6 +111,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addNavigationHandlers();
 		addPublishHandlers();
 		addVersioningHandlers();
+		addRolePermissionHandler("nodeUuid", NODE_DELOREAN_UUID, "node", crudHandler, true);
 	}
 
 	public Resource getResource() {

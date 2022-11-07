@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>1.8.7-SNAPSHOT</version>
+		<version>1.10.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>ferma</artifactId>
@@ -40,10 +40,24 @@
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-core</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.orientechnologies</groupId>
 			<artifactId>orientdb-graphdb</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

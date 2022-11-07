@@ -13,6 +13,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.bridge.BridgeEventType;
 import io.vertx.ext.bridge.PermittedOptions;
+import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.sockjs.SockJSBridgeOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
@@ -47,13 +48,17 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 	}
 
 	private void addEventBusHandler() {
-		SockJSHandler handler = null;
-		if (localRouter != null) {
+		secureAll();
+		InternalEndpointRoute endpoint = createRoute();
+		endpoint.setRAMLPath("/");
+		endpoint.description("This endpoint provides a sockjs compliant websocket which can be used to interface with the vert.x eventbus.");
+
+		if (!isRamlGeneratorContext()) {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
-			handler = SockJSHandler.create(vertx, sockJSoptions);
+			SockJSHandler handler = SockJSHandler.create(vertx, sockJSoptions);
 			SockJSBridgeOptions bridgeOptions = new SockJSBridgeOptions();
 			for (MeshEvent event : MeshEvent.publicEvents()) {
-				// TODO ensure that clients can't fire internal mesh events. 
+				// TODO ensure that clients can't fire internal mesh events.
 				bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(event.address));
 				bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(event.address));
 			}
@@ -61,7 +66,7 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddressRegex("custom.*"));
 			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddressRegex("custom.*"));
 
-			handler.bridge(bridgeOptions, event -> {
+			Router brigdeRoute = handler.bridge(bridgeOptions, event -> {
 				if (log.isDebugEnabled()) {
 					if (event.type() == BridgeEventType.SOCKET_CREATED) {
 						// TODO maybe it would be useful to send a reply to the user.
@@ -76,14 +81,16 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 				log.debug("Eventbridge creation. User was authenticated: " + isAuthenticated);
 				event.complete(isAuthenticated);
 			});
+
+			endpoint.path("/*").subRouter(brigdeRoute);
 		}
-
-		secureAll();
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.setRAMLPath("/");
-		endpoint.description("This endpoint provides a sockjs complient websocket which can be used to interface with the vert.x eventbus.");
-		endpoint.path("/*").handler(handler);
-
 	}
 
+	/**
+	 * Returns whether the method is called from during the documentation generation context.
+	 * @return
+	 */
+	private boolean isRamlGeneratorContext() {
+		return localRouter == null;
+	}
 }

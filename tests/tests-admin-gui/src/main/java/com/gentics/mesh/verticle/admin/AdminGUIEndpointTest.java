@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import io.vertx.core.http.HttpClientResponse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -20,7 +21,6 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
 
 @MeshTestSetting(testSize = TestSize.EMPTY, startServer = false)
 public class AdminGUIEndpointTest extends AbstractMeshTest {
@@ -43,16 +43,18 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 
 		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(GET, "/mesh-ui-v1/mesh-ui-config.js", rh -> {
-			rh.bodyHandler(bh -> {
-				if (rh.statusCode() == 200) {
-					future.complete(bh.toString());
-				} else {
-					future.completeExceptionally(new Exception("Status code wrong {" + rh.statusCode() + "}"));
-				}
-			});
-		});
-		request.end();
+		client.request(GET, "/mesh-ui-v1/mesh-ui-config.js")
+				.compose(request -> request.send())
+				.onComplete(rh -> {
+					HttpClientResponse response = rh.result();
+					response.bodyHandler(bh -> {
+						if (response.statusCode() == 200) {
+							future.complete(bh.toString());
+						} else {
+							future.completeExceptionally(new Exception("Status code wrong {" + response.statusCode() + "}"));
+						}
+					});
+				});
 
 		String response = future.get(10, TimeUnit.SECONDS);
 		// String expectedUrl = "localhost:" + port;
@@ -67,10 +69,11 @@ public class AdminGUIEndpointTest extends AbstractMeshTest {
 	public void testRedirect() throws InterruptedException, ExecutionException {
 		HttpClient client = createHttpClient();
 		CompletableFuture<String> future = new CompletableFuture<>();
-		HttpClientRequest request = client.request(GET, "/", rh -> {
-			future.complete(rh.getHeader("Location"));
-		});
-		request.end();
+		client.request(GET, "/")
+				.compose(request -> request.send())
+				.onComplete(rh -> {
+					future.complete(rh.result().getHeader("Location"));
+				});
 		assertEquals("/mesh-ui/", future.get());
 	}
 }

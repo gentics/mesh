@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -162,7 +163,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
 
-		Set<FileUpload> fileUploads = ac.getFileUploads();
+		List<FileUpload> fileUploads = ac.getFileUploads();
 		if (fileUploads.isEmpty()) {
 			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
 		}
@@ -189,11 +190,16 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
-			HibBinary binary = binaries.findByHash(hash).runInNewTx();
+			String binaryUuid = binaries.findByHash(hash)
+					.mapInTx(b -> b != null ? b.getUuid() : null)
+					.runInNewTx();
 
 			// Create a new binary uuid if the data was not already stored
-			if (binary == null) {
+			if (binaryUuid == null) {
 				ctx.setBinaryUuid(UUIDUtil.randomUUID());
+				ctx.setInvokeStore();
+			} else if (fileNotExists(binaryUuid)) {
+				ctx.setBinaryUuid(binaryUuid);
 				ctx.setInvokeStore();
 			}
 
@@ -224,6 +230,10 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			}
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
+	}
+
+	private boolean fileNotExists(String binaryUuid) {
+		return !new File(binaryStorage.getFilePath(binaryUuid)).exists();
 	}
 
 	private Completable storeUploadInTemp(UploadContext ctx, FileUpload ul, String hash) {

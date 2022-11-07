@@ -243,13 +243,14 @@ NOTE: Make sure to share the extension point interfaces via a common maven modul
 
 == Integration Testing
 
-Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance. 
-We provide a JUnit class rule which can be used to quickly startup Gentics Mesh.
+Plugins can be directly tested in your IDE by starting an embedded Gentics Mesh instance.
+We provide a JUnit class rule which can be used to quickly startup Gentics Mesh:
+https://github.com/gentics/mesh-plugin-examples/blob/master/test-common/src/main/java/com/gentics/mesh/plugin/OrientDBMeshLocalServer.java[OrientDBMeshLocalServer]
 
 [source,java]
 ----
 @ClassRule
-public static final MeshLocalServer server = new MeshLocalServer()
+public static final MeshLocalServer server = new OrientDBMeshLocalServer()
     .withInMemoryMode()
     .withPlugin(GraphQLExamplePlugin.class, "myPlugin")
     .waitForStartup();
@@ -275,11 +276,16 @@ You need to following test dependencies in order to use the class rule.
     <artifactId>mesh-core</artifactId>
     <scope>test</scope>
 </dependency>
+<dependency>
+    <groupId>com.gentics.mesh</groupId>
+    <artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+    <scope>test</scope>
+</dependency>
 ----
 
 === Full Example
 
-This example shows how to use the `MeshLocalServer` and test the GraphQL plugin.
+This example shows how to test the GraphQL plugin using Mesh with the OrientDB storage option.
 
 .GraphQlExamplePluginTest.java
 [source,java]

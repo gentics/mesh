@@ -35,6 +35,6 @@ public class ProjectInfoEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadProjectWithEndSlash() {
-		call(() -> client().get("/" + encodeSegment(PROJECT_NAME) + "/", ProjectResponse.class), NOT_FOUND);
+		call(() -> client().get("/" + encodeSegment(PROJECT_NAME) + "/", ProjectResponse.class));
 	}
 }

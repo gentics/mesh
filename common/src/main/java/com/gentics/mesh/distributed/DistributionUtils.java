@@ -34,16 +34,16 @@ public class DistributionUtils {
 			return false;
 		}
 
-		switch (method) {
-		case CONNECT:
-		case OPTIONS:
-		case GET:
+		switch (method.name()) {
+		case "CONNECT":
+		case "OPTIONS":
+		case "GET":
 			return true;
-		case DELETE:
-		case PATCH:
-		case PUT:
+		case "DELETE":
+		case "PATCH":
+		case "PUT":
 			return false;
-		case POST:
+		case "POST":
 			// Lets check whether the request is actually a read request.
 			// In this case we don't need to delegate it.
 			return isReadOnly(path);
@@ -98,6 +98,11 @@ public class DistributionUtils {
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/linkResolver/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateSchema/?"));
 		patterns.add(Pattern.compile("/api/v[0-9]+/utilities/validateMicroschema/?"));
+		// Since plugins don't access the graphdb direclty but only through the rest api,
+		// we can assume that post requests in plugin can be safely executed by every node in the cluster, therefore
+		// we can treat them as readOnly.
+		patterns.add(Pattern.compile("/api/v[0-9]+/plugins/.*"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/.*/plugins/.*"));
 		return patterns;
 	}
 

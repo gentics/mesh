@@ -21,17 +21,17 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Verticle for /api/v2/schemas endpoint
  */
-public class SchemaEndpoint extends AbstractInternalEndpoint {
+public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 
 	private SchemaCrudHandler crudHandler;
 
@@ -63,6 +63,8 @@ public class SchemaEndpoint extends AbstractInternalEndpoint {
 		addCreateHandler();
 		addUpdateHandler();
 		addDeleteHandler();
+
+		addRolePermissionHandler("schemaUuid", SCHEMA_VEHICLE_UUID, "schema", crudHandler, false);
 	}
 
 	private void addChangesHandler() {

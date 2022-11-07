@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -22,6 +23,7 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.util.UUIDUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +38,7 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
@@ -81,6 +84,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.S3BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -90,7 +94,6 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.hazelcast.util.function.Consumer;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -260,6 +263,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			binaryFieldSchema.setName("binary");
 			schema.addField(binaryFieldSchema);
 
+			S3BinaryFieldSchemaImpl s3BinaryFieldSchema = new S3BinaryFieldSchemaImpl();
+			s3BinaryFieldSchema.setName("s3Binary");
+			schema.addField(s3BinaryFieldSchema);
+
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName("number");
 			schema.addField(numberFieldSchema);
@@ -372,6 +379,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
 				.setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg");
+
+			// s3binary
+			S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
+			container.createS3Binary("s3Binary", s3binary);
 
 			// stringList
 			HibStringFieldList stringList = container.createStringList("stringList");

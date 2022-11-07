@@ -6,24 +6,25 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
 import static com.gentics.mesh.util.URIUtils.encodeSegment;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.Taggable;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedProjectElementEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -31,8 +32,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.VersionUtils;
-import com.gentics.mesh.parameter.NodeParameters;
-import com.gentics.mesh.parameter.VersioningParameters;
 
 public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTracking, 
 		HibBucketableElement, HibTransformableElement<NodeResponse>, HibProjectElement, Taggable {
@@ -152,16 +151,17 @@ public interface HibNode extends HibCoreElement<NodeResponse>, HibCreatorTrackin
 	}
 
 	@Override
-	default boolean applyPermissions(EventQueueBatch batch, HibRole role, boolean recursive,
-									Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+	default boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive,
+                                     Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+		UserDao userDao = Tx.get().userDao();
 		boolean permissionChanged = false;
 		if (recursive) {
 			// We don't need to filter by branch. Branch nodes can't have dedicated perms
-			for (HibNode child : Tx.get().nodeDao().getChildren(this)) {
-				permissionChanged = child.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+			for (HibNode child : Tx.get().nodeDao().getChildren(this).stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, InternalPermission.READ_PERM)).collect(Collectors.toList())) {
+				permissionChanged = child.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}
-		permissionChanged = HibCoreElement.super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
+		permissionChanged = HibCoreElement.super.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
 }

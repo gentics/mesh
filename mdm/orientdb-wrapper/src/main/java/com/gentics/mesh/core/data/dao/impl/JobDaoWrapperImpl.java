@@ -86,21 +86,6 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 		return boot.get().meshRoot().getJobRoot().enqueueBranchMigration(creator, branch);
 	}
 
-	/**
-	 * Apply the permissions to the job.
-	 * 
-	 * @param batch
-	 * @param role
-	 * @param recursive
-	 * @param permissionsToGrant
-	 * @param permissionsToRevoke
-	 */
-	public void applyPermissions(EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
-		Set<InternalPermission> permissionsToRevoke) {
-		Role graphRole = toGraph(role);
-		boot.get().meshRoot().getJobRoot().applyPermissions(batch, graphRole, recursive, permissionsToGrant, permissionsToRevoke);
-	}
-
 	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
 		toGraph(job).delete(bac);

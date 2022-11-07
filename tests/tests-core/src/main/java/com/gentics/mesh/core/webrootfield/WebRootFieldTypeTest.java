@@ -11,12 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -577,13 +572,13 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				valuesSet.add(micronode.getFields().getStringField("lastName").getString());
 			});
 
-			json.forEach(result -> {
-				JsonObject o = (JsonObject) result;
-				assertTrue(valuesSet.remove(o.getJsonObject("fields").getString("firstName")));
-				assertTrue(valuesSet.remove(o.getJsonObject("fields").getString("lastName")));
+			for (Iterator<Object> iterator = json.iterator(); iterator.hasNext(); ) {
+				JsonObject result = (JsonObject) iterator.next();
+				assertTrue(valuesSet.remove(result.getJsonObject("fields").getString("firstName")));
+				assertTrue(valuesSet.remove(result.getJsonObject("fields").getString("lastName")));
 
-				json.remove(result);
-			});
+				iterator.remove();
+			}
 
 			assertTrue(valuesSet.isEmpty());
 		};
@@ -677,12 +672,11 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 
 			Set<String> valuesSet = list.stream().map(node -> node.getUuid()).collect(Collectors.toSet());
 
-			json.forEach(result -> {
-				JsonObject o = (JsonObject) result;
-				assertTrue(valuesSet.remove(o.getString("uuid")));
-
-				json.remove(result);
-			});
+			for (Iterator<Object> iterator = json.iterator(); iterator.hasNext(); ) {
+				JsonObject result = (JsonObject) iterator.next();
+				assertTrue(valuesSet.remove(result.getString("uuid")));
+				iterator.remove();
+			}
 
 			assertTrue(valuesSet.isEmpty());
 		};

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.list;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -50,7 +51,7 @@ public interface HibNodeFieldList extends HibMicroschemaListableField, HibListFi
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (HibNodeField item : getList()) {
 				HibNode node = item.getNode();
-				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
+				if (node == null || !userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
 				restModel.getItems().add(nodeDao.transformToRestSync(node, ac, level, lTagsArray));
@@ -61,7 +62,7 @@ public interface HibNodeFieldList extends HibMicroschemaListableField, HibListFi
 			NodeFieldList restModel = new NodeFieldListImpl();
 			for (HibNodeField item : getList()) {
 				HibNode node = item.getNode();
-				if (!userDao.canReadNode(ac.getUser(), ac, node)) {
+				if (node == null || !userDao.canReadNode(ac.getUser(), ac, node)) {
 					continue;
 				}
 				restModel.add(contentDao.toListItem(node, ac, lTagsArray));
@@ -72,7 +73,11 @@ public interface HibNodeFieldList extends HibMicroschemaListableField, HibListFi
 
 	@Override
 	default List<HibNode> getValues() {
-		return getList().stream().map(HibNodeField::getNode).collect(Collectors.toList());
+		return getList()
+				.stream()
+				.map(HibNodeField::getNode)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 	}
 
 	@Override

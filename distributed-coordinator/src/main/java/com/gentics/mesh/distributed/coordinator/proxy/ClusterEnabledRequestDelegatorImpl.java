@@ -26,8 +26,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.httpproxy.ProxyRequest;
 
 /**
  * @see RequestDelegator
@@ -133,44 +133,31 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 	@Override
 	public void redirectToMaster(RoutingContext rc) {
 		HttpServerRequest request = rc.request();
-		String requestURI = request.uri();
-		HttpMethod method = request.method();
-		HttpServerResponse response = rc.response();
 		MasterServer master = coordinator.getMasterMember();
 		String host = master.getHost();
 		int port = master.getPort();
-
 		if (log.isDebugEnabled()) {
 			log.debug("Forwarding request to master {" + master.toString() + "}");
 		}
 
-		@SuppressWarnings("deprecation")
-		HttpClientRequest forwardRequest = httpClient.request(method, port, host, requestURI, forwardResponse -> {
-			response.setChunked(true);
-			response.setStatusCode(forwardResponse.statusCode());
-			response.putHeader(MESH_FORWARDED_FROM_HEADER, master.getName());
-			forwardHeaders(response, forwardResponse);
-			printHeaders("Forward response headers", response.headers());
-			Pump.pump(forwardResponse, response)
-				.setWriteQueueMaxSize(8192)
-				.start();
-			forwardResponse.endHandler(v -> response.end());
-		});
+		ProxyRequest proxyRequest = ProxyRequest.reverseProxy(request);
+		proxyRequest.putHeader(MESH_DIRECT_HEADER, "true");
 
-		forwardHeaders(request, forwardRequest);
-		forwardRequest.putHeader(MESH_DIRECT_HEADER, "true");
-		forwardRequest.setChunked(true);
+		httpClient.request(proxyRequest.getMethod(), port, host, proxyRequest.getURI())
+				.compose(proxyRequest::send)
+				.onSuccess(proxyResponse -> {
+					// Send the proxy response
+					proxyResponse.putHeader(MESH_FORWARDED_FROM_HEADER, master.getName());
+					proxyResponse.send();
+				})
+				.onFailure(err -> {
+					// Release the request
+					proxyRequest.release();
 
-		if (request.isEnded()) {
-			log.warn("Request to be proxied is already read");
-			proxyEndHandler(forwardRequest, rc.getBody());
-		} else {
-			request.exceptionHandler(e -> log.error("Could not forward request to Mesh: {}", e, e.getMessage()))
-				.endHandler(v -> proxyEndHandler(forwardRequest, null));
-			Pump.pump(request, forwardRequest)
-				.setWriteQueueMaxSize(8192)
-				.start();
-		}
+					// Send error
+					request.response().setStatusCode(500)
+							.send();
+				});
 	}
 
 	@Override

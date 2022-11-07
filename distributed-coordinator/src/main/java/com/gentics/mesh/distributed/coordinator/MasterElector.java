@@ -106,7 +106,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the instance that runs this code is the elected master.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isMaster() {
@@ -134,7 +134,7 @@ public class MasterElector {
 	/**
 	 * Each instance in the cluster will call the elect master method when the structure of the cluster changes. The master election runs in a locked manner and
 	 * is terminated as soon as one node in the cluster got elected.
-	 * 
+	 *
 	 * @return Elected member
 	 */
 	private void electMaster() {
@@ -145,8 +145,8 @@ public class MasterElector {
 		try {
 			log.info("Locked for master election");
 			Optional<Member> foundMaster = cluster.getMembers().stream()
-				.filter(m -> isMaster(m))
-				.findFirst();
+					.filter(m -> isMaster(m))
+					.findFirst();
 			boolean hasMaster = foundMaster.isPresent();
 			boolean isElectible = isElectable(localMember());
 			if (!hasMaster && isElectible) {
@@ -156,8 +156,8 @@ public class MasterElector {
 				localMember().setBooleanAttribute(MASTER, true);
 				log.info("Cluster node was elected as new master");
 			} else if (cluster.getMembers().stream()
-				.filter(m -> isMaster(m))
-				.count() > 1) {
+					.filter(m -> isMaster(m))
+					.count() > 1) {
 				log.info("Detected multiple masters in the cluster, giving up the master flag");
 				giveUpMasterFlag();
 			}
@@ -169,7 +169,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the member is allowed to be elected as master
-	 * 
+	 *
 	 * @param m
 	 * @return
 	 */
@@ -236,16 +236,16 @@ public class MasterElector {
 		hazelcast.get().getLifecycleService().addLifecycleListener(event -> {
 			log.info(String.format("Lifecycle state changed to %s", event.getState()));
 			switch (event.getState()) {
-			case MERGING:
-				merging = true;
-				break;
-			case MERGED:
-				// when the instance merged into a cluster, we need to elect a new master (to avoid multimaster situations)
-				merging = false;
-				electMaster();
-				break;
-			default:
-				break;
+				case MERGING:
+					merging = true;
+					break;
+				case MERGED:
+					// when the instance merged into a cluster, we need to elect a new master (to avoid multimaster situations)
+					merging = false;
+					electMaster();
+					break;
+				default:
+					break;
 			}
 		});
 
@@ -273,8 +273,8 @@ public class MasterElector {
 	protected void findCurrentMaster() {
 		Cluster cluster = hazelcast.get().getCluster();
 		Optional<Member> master = cluster.getMembers().stream()
-			.filter(m -> isMaster(m))
-			.findFirst();
+				.filter(m -> isMaster(m))
+				.findFirst();
 		if (master.isPresent()) {
 			masterMember = master.get();
 			log.info("Updated master member {" + masterMember.getStringAttribute(MESH_NODE_NAME_ATTR) + "}");
@@ -296,7 +296,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the given member currently is the master
-	 * 
+	 *
 	 * @param member
 	 *            member
 	 * @return true for the master
@@ -307,7 +307,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the given instance is the local instance.
-	 * 
+	 *
 	 * @param member
 	 * @return
 	 */
@@ -317,7 +317,7 @@ public class MasterElector {
 
 	/**
 	 * Return the hazelcast member for this instance.
-	 * 
+	 *
 	 * @return
 	 */
 	public Member localMember() {
@@ -348,7 +348,7 @@ public class MasterElector {
 
 	/**
 	 * Let the handler accept the object from the given message, if the message was not published from the local node
-	 * 
+	 *
 	 * @param msg
 	 *            message
 	 * @param handler
@@ -363,7 +363,7 @@ public class MasterElector {
 
 	/**
 	 * Let the handler accept the object from the given message, if the message was published from the local node
-	 * 
+	 *
 	 * @param msg
 	 *            message
 	 * @param handler
@@ -378,7 +378,7 @@ public class MasterElector {
 
 	/**
 	 * Check whether the local member is electable.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isElectable() {

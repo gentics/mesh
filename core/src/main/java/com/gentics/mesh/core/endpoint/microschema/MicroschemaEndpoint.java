@@ -21,15 +21,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
-import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Endpoint for /api/v1/microschemas
  */
-public class MicroschemaEndpoint extends AbstractInternalEndpoint {
+public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 
 	private MicroschemaCrudHandler crudHandler;
 
@@ -59,6 +59,7 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 		addReadHandlers();
 		addUpdateHandler();
 		addDeleteHandler();
+		addRolePermissionHandler("microschemaUuid", MICROSCHEMA_UUID, "microschema", crudHandler, false);
 	}
 
 	private void addDiffHandler() {
@@ -189,5 +190,4 @@ public class MicroschemaEndpoint extends AbstractInternalEndpoint {
 			crudHandler.handleCreate(wrap(rc));
 		});
 	}
-
 }

@@ -28,9 +28,9 @@ public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 		String internalMessage = "The rest endpoint or resource for given path {" + rc.normalisedPath() + "} could not be found.";
 		String contentType = rc.request().getHeader("Content-Type");
 		if (contentType == null) {
-			switch (rc.request().method()) {
-			case PUT:
-			case POST:
+			switch (rc.request().method().name()) {
+			case "PUT":
+			case "POST":
 				internalMessage += " You tried to POST or PUT data but you did not specifiy any Content-Type within your request.";
 				break;
 			default:

@@ -228,8 +228,10 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void deleteByProject(Project project) {
-		Result<? extends VersionPurgeJobImpl> in = project.in(HAS_PROJECT, VersionPurgeJobImpl.class);
-		for (VersionPurgeJobImpl versionPurgeJob : in.iterable()) {
+		// note: it is very important to use has(VersionPurgeJobImpl.class) to check whether we actually get a job here
+		// otherwise we would also get the ProjectRootImpl and delete it
+		for (VersionPurgeJobImpl versionPurgeJob : project.in(HAS_PROJECT).has(VersionPurgeJobImpl.class)
+				.frameExplicit(VersionPurgeJobImpl.class)) {
 			versionPurgeJob.delete();
 		}
 	}

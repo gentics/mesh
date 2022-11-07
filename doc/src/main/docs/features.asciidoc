@@ -824,10 +824,51 @@ This functionality builds on top of the schema ```segmentField``` and ```urlFiel
 WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes.
 The WebRoot API endpoint uses this information to resolve a given path to a node UUID. Each node in turn will provide a single `segment` to the full path via the referenced `segmentField`.
 
-In addition to that it is also possible to create completely custom URLs to your content using the ```urlFields``` schema property. You can reference `string` and `string list` fields within your schema using the property.
-Those fields can in turn contain a custom path to your node. Gentics Mesh will only make sure that there are no collisions between custom paths of other nodes. Saving a node which uses the same urlField value would cause a conflict error.
-It is important to note that conflicts between custom url field values and existing paths which are build using the `segmentPath` property will not cause a conflict. You can use this in order to override an existing path to a node using a custom path.
+=== Url Fields
+In addition to ```segmentField``` it is also possible to create completely custom URLs to your content using the ```urlFields``` schema property. You can reference `string` and `string list` fields within your schema using the property.
+Gentics Mesh will only make sure that there are no collisions between custom paths of other nodes. Saving a node which uses the same urlField value would cause a conflict error.
+Those fields can in turn contain a custom path to your node. It is important to note that conflicts between custom url field values and existing paths which are build using the `segmentPath` property will not cause a conflict. You can use this in order to override an existing path to a node using a custom path.
 Custom paths via the `urlFields` property will always be resolved first and thus overrule the `segmentField` paths.
+Note that the custom path must start with a forward slash, otherwise it will be ignored.
+For example, the following will not work:
+
+[source,json]
+{
+  "fields": {
+    "myUrlField": "hello-world/example-page.html"
+  }
+}
+
+[options="header",cols="3*"]
+|======
+
+| Request
+| API endpoint
+| Response code
+| GET
+| /api/v2/docs/hello-world/example-page.html
+| 404
+|======
+
+
+By prepending the path with a forward slash, the same request will resolve the node correctly:
+[source,json]
+{
+  "fields": {
+    "myUrlField": "/hello-world/example-page.html"
+  }
+}
+
+[options="header",cols="3*"]
+|======
+
+| Request
+| API endpoint
+| Response code
+| GET
+| /api/v2/docs/hello-world/example-page.html
+| 200
+|======
 
 Possible applications for the `urlFields` property are:
 
@@ -1445,7 +1486,7 @@ The link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST {ap
 
 * It is important to note that permissions can be granted on individual elements and onto a set of elements, which is identified by the element path name (e.g.: ```/users/:uuid``` and ```/users```).
 
-* Furthermore, the endpoint offers the property ```recursive``` for applying permissions recursively on child elements.
+* Furthermore, the endpoint offers the property ```recursive``` for applying permissions recursively on child elements to which the requesting user has read access..
 
 //COMMENT: This info is interesting for mesh developers, not mesh API users.
 //In order to ensure that roles are able to invoke CRUD operations on objects they have created or would have been able to create in the first place, CRUD permissions are assigned to those roles. 
@@ -1462,7 +1503,7 @@ Following, we go through all Gentics Mesh objects that can be subject to permiss
 
 In order to grant permission on individual or all users, one need to specify the path to be either ```/users/:uuid``` or ```/users```, respectively.
 
-Applying permissions on ```/users``` recursively will affect all users.
+Applying permissions on ```/users``` recursively will affect all users to which the requesting user has read access.
 
 //COMMENT: This info is interesting for mesh developers, not mesh API users.
 // However, applying permissions on ```/users/:uuid``` recursively will have no effect on referenced elements such as node references.
@@ -1522,8 +1563,8 @@ All possible role permissions on users are summarized in the following table.
 
 Permissions on a single or multiple groups are applied via ```/groups/:uuid``` path and ```/groups``` path respectively.
 
-* Granting permissions on ```/groups``` recursively will affect all groups.
-* Granting permissions  on ```/groups/:uuid``` recursively will affect users of the group.
+* Granting permissions on ```/groups``` recursively will affect all groups to which the requesting user has read access.
+* Granting permissions  on ```/groups/:uuid``` recursively will affect users of the group to which the requesting user has read access..
 
 ===== Example
 The following example shows how to grant the ```Editor Role``` role the permission to read a specific group (i.e. ```Client Group```) and its users (i.e. ```webclient```). This operation needs to be applied recursively (i.e., ```recursive=true```), otherwise ```read``` permissions would be granted to the group, only.
@@ -1589,7 +1630,7 @@ All possible role permissions on groups are summarized in the following table.
 By granting permissions on roles, you effectively grant users the right to change permissions of other users.
 
 * Permissions on a single or multiple roles are applied via ```/roles/:uuid``` path and ```/roles``` path respectively.
-* Granting permissions on ```/roles``` recursively will affect all roles.
+* Granting permissions on ```/roles``` recursively will affect all roles to which the requesting user has read access.
 
 ===== Example
 The following example shows how to grant the ```Editor Role``` role permissions to create new roles and subsequently manage them (i.e., ```read```, ```update```, ```delete```) but no access to existing roles. 
@@ -1647,7 +1688,7 @@ All possible role permissions on roles are summarized in the following table.
 
 Permissions on a single or multiple schemas are applied via ```/schemas/:uuid``` path and ```/schemas``` path respectively.
 
-* Granting permissions on ```/schemas``` recursively will affect all schemas.
+* Granting permissions on ```/schemas``` recursively will affect all schemas to which the requesting user has read access.
 * Read permissions on a schema are needed for creating nodes based on that schema.
 
 [caption=]
@@ -1668,7 +1709,7 @@ Permissions on a single or multiple schemas are applied via ```/schemas/:uuid```
 
 Permissions on a single or multiple microschemas are applied via ```/microschemas/:uuid``` path and ```/microschemas``` path respectively.
 
-* Granting permissions on ```/microschemas``` recursively will affect all microschemas.
+* Granting permissions on ```/microschemas``` recursively will affect all microschemas to which the requesting user has read access.
 * Read permissions on a microschemaModel are needed for creating, reading, updating, and deleting micronodes based on that schema.
 
 [caption=]
@@ -1691,7 +1732,7 @@ Permissions on a single or multiple microschemas are applied via ```/microschema
 Permissions on a single or multiple projects are applied via ```/projects/:uuid``` path and ```/projects``` path respectively.
 
 * Granting permissions on ```/projects/:uuid``` will also affect sub elements, i.e., used schemas, microschemas, tagfamilies & tags, nodes & sub nodes of the project.
-* Granting permissions on ```/projects``` recursively will affect all projects and their sub elements.
+* Granting permissions on ```/projects``` recursively will affect all projects and their sub elements to which the requesting user has read access.
 
 [caption=]
 .Role permissions on a specific project and multiple projects
@@ -1716,7 +1757,7 @@ Permissions on a single or multiple projects are applied via ```/projects/:uuid`
 In order to grant permission on tag families the ```/:projectName/tagFamilies``` path can be used.
 
 * Granting permissions on ```/:projectName/tagFamilies/:uuid```  together with property ```recursive=true``` allows setting permissions for tags of a tag family.
-* Granting permissions on ```/:projectName/tagFamilies```  together with property ```recursive=true``` allows setting permissions for all tag families and their tags.
+* Granting permissions on ```/:projectName/tagFamilies```  together with property ```recursive=true``` allows setting permissions for all tag families and their tags to which the requesting user has read access.
 
 [caption=]
 .Role permissions on tag families
@@ -1766,7 +1807,7 @@ In order to grant permission on tags the ```/:projectName/tagFamilies/:uuid/tags
 Permissions on a single or multiple nodes are applied via ```/:projectName/nodes``` and ```/:projectName/nodes/:uuid``` path:
 
 * ```/:projectName/nodes/:uuid``` is used to grant permissions on single nodes. 
-* ```/:projectName/nodes``` together with property ```recursive=true``` can be used to quickly grant permissions on all node of the project.
+* ```/:projectName/nodes``` together with property ```recursive=true``` can be used to quickly grant permissions on all node of the project to which the requesting user has read access.
 * In order to grant permissions on sub trees of the content tree ```/:projectName/nodes/:uuid``` together with property ```recursive=true``` is to be used.
 
 [caption=]
