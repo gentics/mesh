@@ -251,29 +251,29 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				// Reset the default security requirements
 				operation.setSecurity(Collections.emptyList());
 			}
-			switch (method) {
-			case DELETE:
+			switch (method.name()) {
+			case "DELETE":
 				pathItem.setDelete(operation);
 				break;
-			case GET:
+			case "GET":
 				pathItem.setGet(operation);
 				break;
-			case HEAD:
+			case "HEAD":
 				pathItem.setHead(operation);
 				break;
-			case OPTIONS:
+			case "OPTIONS":
 				pathItem.setOptions(operation);
 				break;
-			case PATCH:
+			case "PATCH":
 				pathItem.setPatch(operation);
 				break;
-			case POST:
+			case "POST":
 				pathItem.setPost(operation);
 				break;
-			case PUT:
+			case "PUT":
 				pathItem.setPut(operation);
 				break;
-			case TRACE:
+			case "TRACE":
 				pathItem.setTrace(operation);
 				break;
 			default:
