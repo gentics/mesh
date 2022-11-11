@@ -305,7 +305,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 						version.getSchema().findOverriddenSearchLanguages()
 								.forEach(language -> Stream.of(DRAFT, PUBLISHED).forEach(type -> {
 									activeIndices.add(ContentDao.composeIndexName(currentProject.getUuid(),
-											branch.getUuid(), version.getUuid(), type, language));
+											branch.getUuid(), version.getUuid(), type, language, version.getMicroschemaVersionHash(branch)));
 								}));
 
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
