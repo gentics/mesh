@@ -10,7 +10,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -60,7 +59,6 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.servers.Server;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -73,6 +71,8 @@ import io.vertx.core.logging.LoggerFactory;
  *
  */
 public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
+
+	private static final String API_VERSION_PATH_PREFIX = "/api/v";
 
 	private static final Logger log = LoggerFactory.getLogger(OpenAPIv3Generator.class);
 
@@ -96,13 +96,13 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		log.info("Starting OpenAPIv3 generation...");
 		OpenAPI openApi = new OpenAPI();
 		Info info = new Info();
-		Server server = new Server();
 		info.setTitle("Gentics Mesh REST API");
 		info.setVersion(MeshVersion.getBuildInfo().getVersion());
-		if (hz != null) {
-			hz.getCluster().getMembers().stream().forEach(m -> server.setUrl(m.getAddress().toString()));
-		}
-		openApi.servers(Collections.singletonList(server));
+//		if (hz != null) {
+//			Server server = new Server();
+//			hz.getCluster().getMembers().stream().forEach(m -> server.setUrl(m.getAddress().toString()));
+//			openApi.servers(Collections.singletonList(server));
+//		}
 		openApi.setInfo(info);		
 		try {
 			addSecurity(openApi);
@@ -163,26 +163,32 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			components = openApi.getComponents();
 		}
 		Reflections reflections = new Reflections("com.gentics.mesh");
+		reflections.getSubTypesOf(RestModel.class).stream().forEach(cls -> fillComponent(cls, components));
+	}
+
+	private void fillComponent(Class<?> cls, Components components) {
+		Schema<?> schema = new Schema<String>();
+		List<Stream<Field>> fieldStreams = new ArrayList<>();
+		Class<?> tclass = cls;
+		log.debug("Class: " + tclass.getCanonicalName());
 		final List<Type> generics = new ArrayList<>();
-		reflections.getSubTypesOf(RestModel.class).stream().map(cls -> {
-			if (Modifier.isInterface(cls.getModifiers()) || Modifier.isAbstract(cls.getModifiers()) || cls.getTypeParameters().length > 0) {
-				return null;
-			}
-			Schema<?> schema = new Schema<String>();
-			List<Stream<Field>> fieldStreams = new ArrayList<>();
-			Class<?> tclass = cls;
-			log.debug("Class: " + tclass.getCanonicalName());
-			generics.clear();
-			generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(cls) ? ParameterizedType.class.cast(cls).getActualTypeArguments() : new Type[0]));
-			while (tclass != null) {
-				fieldStreams.add(Arrays.stream(tclass.getDeclaredFields()));
-				generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(tclass.getGenericSuperclass()) ? ParameterizedType.class.cast(tclass.getGenericSuperclass()).getActualTypeArguments() : new Type[0]));
-				tclass = tclass.getSuperclass();
-			}
-			if (generics.size() > 0) {
-				log.debug(" - Generics: " + Arrays.toString(generics.toArray()));
-			}
-			Map<String, Schema> properties = fieldStreams.stream().flatMap(Function.identity()).map(f -> {
+		generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(cls) ? ParameterizedType.class.cast(cls).getActualTypeArguments() : new Type[0]));
+		while (tclass != null) {
+			fieldStreams.add(Arrays.stream(tclass.getDeclaredFields()));
+			generics.addAll(Arrays.asList(ParameterizedType.class.isInstance(tclass.getGenericSuperclass()) ? ParameterizedType.class.cast(tclass.getGenericSuperclass()).getActualTypeArguments() : new Type[0]));
+			tclass = tclass.getSuperclass();
+		}
+		if (generics.size() > 0) {
+			log.debug(" - Generics: " + Arrays.toString(generics.toArray()));
+		}
+		Map<String, Schema> properties = fieldStreams.stream().flatMap(Function.identity())
+			.filter(f -> !Modifier.isStatic(f.getModifiers())).peek(f -> {
+				Class<?> t = f.getType();
+				if (!RestModel.class.isAssignableFrom(t) && !t.isPrimitive() && !t.getCanonicalName().startsWith("java.lang")) {
+					fillComponent(t, components);
+				}
+			})
+			.map(f -> {
 				String name = f.getName();
 				log.debug(" - Field: " + f);
 				Schema<?> fieldSchema = new Schema<String>();
@@ -194,6 +200,9 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				if (property != null) {
 					if (StringUtils.isNotBlank(property.defaultValue())) {
 						fieldSchema.setDefault(property.defaultValue());
+					}
+					if (StringUtils.isNotBlank(property.value())) {
+						name = property.value();
 					}
 					if (property.required()) {
 						schema.addRequiredItem(name);
@@ -214,13 +223,12 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				}
 				return new UnmodifiableMapEntry<>(name, fieldSchema);
 			}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-			schema.setProperties(properties);
-			return new UnmodifiableMapEntry<>(cls.getSimpleName(), schema);
-		}).filter(Objects::nonNull).forEach(e -> components.addSchemas(e.getKey(), e.getValue()));
+		schema.setProperties(properties);
+		components.addSchemas(cls.getSimpleName(), schema);
 	}
 
 	@Override
-	protected void addEndpoints(String basePath, OpenAPI consumer, AbstractInternalEndpoint verticle)
+	protected void addEndpoints(String basePath, OpenAPI consumer, AbstractInternalEndpoint verticle, boolean isProject)
 			throws IOException {
 		// Check whether the resource was already added. Maybe we just need to extend it
 		Paths paths = consumer.getPaths();
@@ -229,10 +237,10 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			consumer.setPaths(paths);
 		}
 		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
-			String fullPath = "api/v" + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath()
+			String fullPath = API_VERSION_PATH_PREFIX + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath()
 					+ endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
-				fullPath = "api/v" + CURRENT_API_VERSION + basePath + endpoint.getRamlPath();
+				fullPath = API_VERSION_PATH_PREFIX + CURRENT_API_VERSION + basePath + endpoint.getRamlPath();
 			}
 			PathItem pathItem = paths.get(fullPath);
 			if (pathItem == null) {
@@ -280,9 +288,47 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				break;
 			}
 			List<Stream<Parameter>> params = List.of(
+					isProject ? Stream.of(new Parameter().name("project").in(InParameter.PATH.value).schema(new Schema<String>().type("string").description("Uuid of the related project"))) : Stream.of(),
 					endpoint.getQueryParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.QUERY)),
 					endpoint.getUriParameters().entrySet().stream().map(e -> parameter(e.getKey(), e.getValue(), InParameter.PATH)));
 			operation.setParameters(params.stream().flatMap(Function.identity()).filter(Objects::nonNull).collect(Collectors.toList()));
+			ApiResponses responses = new ApiResponses();
+			endpoint.getProduces().stream().map(e -> {
+				ApiResponse response = new ApiResponse();
+				Content responseBody = new Content();
+				responseBody.addMediaType(e, new MediaType());
+				response.setContent(responseBody);
+				response.setDescription(e);
+				return new UnmodifiableMapEntry<String, ApiResponse>("default", response);
+			}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(e.getKey(), e.getValue()));
+			endpoint.getExampleResponses().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
+				.map(e -> {
+					ApiResponse response = new ApiResponse();
+					if (e.getValue().getDescription().startsWith("Generated login token")) {
+						e.getValue().getHeaders();
+					}
+					response.setDescription(e.getValue().getDescription());
+					Content responseBody = new Content();
+					if (endpoint.getExampleResponseClasses() != null && endpoint.getExampleResponseClasses().get(e.getKey()) != null) {
+						Class<?> ref = endpoint.getExampleResponseClasses().get(e.getKey());
+						if (ref.getCanonicalName().startsWith("com.gentics.mesh")) {
+							Schema<String> schema = new Schema<>();
+							schema.set$ref("#/components/schemas/" + ref.getSimpleName());
+							MediaType mediaType = new MediaType();
+							mediaType.setSchema(schema);
+							mediaType.setExample(e.getValue());
+							responseBody.addMediaType("*/*", mediaType);
+							response.setContent(responseBody);
+						} else {
+							e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
+								.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
+								.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
+							response.setContent(responseBody);
+						}
+					}							
+					return new UnmodifiableMapEntry<Integer, ApiResponse>(e.getKey(), response);
+				}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(Integer.toString(e.getKey()), e.getValue()));
+			operation.setResponses(responses);
 			if (endpoint.getExampleRequestMap() != null) {
 				RequestBody requestBody = new RequestBody();
 				Content content = new Content();
@@ -291,37 +337,6 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 						.filter(Objects::nonNull).forEach(e -> content.addMediaType(e.getKey(), e.getValue()));
 				requestBody.setContent(content);
 				operation.setRequestBody(requestBody);
-				ApiResponses responses = new ApiResponses();
-				endpoint.getProduces().stream().map(e -> {
-					ApiResponse response = new ApiResponse();
-					Content responseBody = new Content();
-					responseBody.addMediaType(e, new MediaType());
-					response.setContent(responseBody);
-					return new UnmodifiableMapEntry<String, ApiResponse>("default", response);
-				}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(e.getKey(), e.getValue()));
-				endpoint.getExampleResponses().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
-						.map(e -> {
-							ApiResponse response = new ApiResponse();
-							if (e.getValue().getDescription().startsWith("Generated login token")) {
-								e.getValue().getHeaders();
-							}
-							response.setDescription(e.getValue().getDescription());
-							if (endpoint.getExampleResponseClasses() != null && endpoint.getExampleResponseClasses().get(e.getKey()) != null) {
-								Class<?> ref = endpoint.getExampleResponseClasses().get(e.getKey());
-								if (ref.getCanonicalName().startsWith("com.gentics.mesh")) {
-									response.set$ref("#/components/schemas/" + ref.getSimpleName());
-								} else {
-									Content responseBody = new Content();
-								//	response.setContent(responseBody);
-									e.getValue().getBody().entrySet().stream().filter(r -> Objects.nonNull(r.getValue()))
-										.map(r -> fillMediaType(r.getKey(), r.getValue(), ref))
-										.filter(Objects::nonNull).forEach(r -> responseBody.addMediaType(r.getKey(), r.getValue()));
-									response.setContent(responseBody);
-								}
-							}							
-							return new UnmodifiableMapEntry<Integer, ApiResponse>(e.getKey(), response);
-						}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(Integer.toString(e.getKey()), e.getValue()));
-				operation.setResponses(responses);
 			}
 			// action.setIs(Arrays.asList(endpoint.getTraits()));
 		}
@@ -349,7 +364,9 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		} else if (refClass != null && refClass.getSimpleName().toLowerCase().startsWith("json")) {
 			mediaType.setExample(mimeType.getExample());
 			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
-		} else { return null; }	
+		} else { 
+			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
+		}	
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -380,10 +397,12 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			fieldSchema.setType("array");
 			Schema<?> itemSchema = new Schema<String>();
 			if (t.isArray()) {
-				fillType(components, Array.newInstance(t, 0).getClass(), itemSchema, generics);
+				List<Type> generics1 = Arrays.asList(ParameterizedType.class.isInstance(t) ? ParameterizedType.class.cast(t).getActualTypeArguments() : new Type[0]);
+				fillType(components, t.getComponentType(), itemSchema, generics1);
 			} else if (generics.size() > 0 && Class.class.isInstance(generics.get(0))) {
 				Class<?> itemClass = Class.class.cast(generics.get(0));
-				fillType(components, itemClass, itemSchema, null);
+				List<Type> generics1 = Arrays.asList(ParameterizedType.class.isInstance(t) ? ParameterizedType.class.cast(t).getActualTypeArguments() : new Type[0]);
+				fillType(components, itemClass, itemSchema, generics1);
 			} else {
 				// TODO
 				log.error("Unknown array type" + t + " / " + Arrays.toString(generics.toArray()));

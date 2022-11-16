@@ -5,6 +5,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.search.MappingMode;
@@ -15,7 +16,7 @@ import io.vertx.core.json.JsonObject;
  * A field schema is a field within a schema. In contradiction to node fields a field schema is the blueprint of a field and will not store any data. Instead it
  * only defines a field within a schema.
  */
-public interface FieldSchema {
+public interface FieldSchema extends RestModel {
 
 	/**
 	 * Return the type of the field schema.

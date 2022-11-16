@@ -104,7 +104,7 @@ public class RAMLGenerator extends AbstractEndpointGenerator<Map<String, Resourc
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	protected void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle) throws IOException {
+	protected void addEndpoints(String basePath, Map<String, Resource> resources, AbstractInternalEndpoint verticle, boolean isProject) throws IOException {
 
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
