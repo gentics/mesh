@@ -3,12 +3,13 @@ package com.gentics.mesh.core.rest.navigation;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 
 /**
  * A navigation element is a reference to a node within the navigation tree.
  */
-public class NavigationElement {
+public class NavigationElement implements RestModel {
 
 	@JsonPropertyDescription("Uuid of the node within this navigation element.")
 	private String uuid;

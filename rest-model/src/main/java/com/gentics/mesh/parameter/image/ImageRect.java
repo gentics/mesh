@@ -6,12 +6,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 /**
  * Class which represents an image rectangular.
  */
-public class ImageRect {
+public class ImageRect implements RestModel {
 
 	private int startX;
 	private int startY;

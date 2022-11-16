@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.rest.node.field;
 
+import com.gentics.mesh.core.rest.common.RestModel;
+
 /**
  * Entry for a node list REST model.
  */
-public interface NodeFieldListItem {
+public interface NodeFieldListItem extends RestModel {
 
 	/**
 	 * Return the item node uuid.

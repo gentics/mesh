@@ -65,47 +65,47 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		NodeEndpoint nodeEndpoint = Mockito.spy(new NodeEndpoint());
 		initEndpoint(nodeEndpoint);
 		String projectBasePath = "/{project}";
-		addEndpoints(projectBasePath, consumer, nodeEndpoint);
+		addEndpoints(projectBasePath, consumer, nodeEndpoint, true);
 
 		TagFamilyEndpoint tagFamilyEndpoint = Mockito.spy(new TagFamilyEndpoint());
 		initEndpoint(tagFamilyEndpoint);
-		addEndpoints(projectBasePath, consumer, tagFamilyEndpoint);
+		addEndpoints(projectBasePath, consumer, tagFamilyEndpoint, true);
 
 		NavRootEndpoint navEndpoint = Mockito.spy(new NavRootEndpoint());
 		initEndpoint(navEndpoint);
-		addEndpoints(projectBasePath, consumer, navEndpoint);
+		addEndpoints(projectBasePath, consumer, navEndpoint, true);
 
 		WebRootEndpoint webEndpoint = Mockito.spy(new WebRootEndpoint());
 		initEndpoint(webEndpoint);
-		addEndpoints(projectBasePath, consumer, webEndpoint);
+		addEndpoints(projectBasePath, consumer, webEndpoint, true);
 
 		WebRootFieldEndpoint webFieldEndpoint = Mockito.spy(new WebRootFieldEndpoint());
 		initEndpoint(webFieldEndpoint);
-		addEndpoints(projectBasePath, consumer, webFieldEndpoint);
+		addEndpoints(projectBasePath, consumer, webFieldEndpoint, true);
 
 		BranchEndpoint branchEndpoint = Mockito.spy(new BranchEndpoint());
 		initEndpoint(branchEndpoint);
-		addEndpoints(projectBasePath, consumer, branchEndpoint);
+		addEndpoints(projectBasePath, consumer, branchEndpoint, true);
 
 		GraphQLEndpoint graphqlEndpoint = Mockito.spy(new GraphQLEndpoint());
 		initEndpoint(graphqlEndpoint);
-		addEndpoints(projectBasePath, consumer, graphqlEndpoint);
+		addEndpoints(projectBasePath, consumer, graphqlEndpoint, true);
 
 		ProjectSearchEndpointImpl projectSearchEndpoint = Mockito.spy(new ProjectSearchEndpointImpl());
 		initEndpoint(projectSearchEndpoint);
-		addEndpoints(projectBasePath, consumer, projectSearchEndpoint);
+		addEndpoints(projectBasePath, consumer, projectSearchEndpoint, true);
 
 		ProjectRawSearchEndpointImpl projectRawSearchEndpoint = Mockito.spy(new ProjectRawSearchEndpointImpl());
 		initEndpoint(projectRawSearchEndpoint);
-		addEndpoints(projectBasePath, consumer, projectRawSearchEndpoint);
+		addEndpoints(projectBasePath, consumer, projectRawSearchEndpoint, true);
 
 		ProjectSchemaEndpoint projectSchemaEndpoint = Mockito.spy(new ProjectSchemaEndpoint());
 		initEndpoint(projectSchemaEndpoint);
-		addEndpoints(projectBasePath, consumer, projectSchemaEndpoint);
+		addEndpoints(projectBasePath, consumer, projectSchemaEndpoint, true);
 
 		ProjectMicroschemaEndpoint projectMicroschemaEndpoint = Mockito.spy(new ProjectMicroschemaEndpoint());
 		initEndpoint(projectMicroschemaEndpoint);
-		addEndpoints(projectBasePath, consumer, projectMicroschemaEndpoint);
+		addEndpoints(projectBasePath, consumer, projectMicroschemaEndpoint, true);
 	}
 
 	/**
@@ -119,55 +119,55 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		String coreBasePath = "";
 		UserEndpoint userEndpoint = Mockito.spy(new UserEndpoint());
 		initEndpoint(userEndpoint);
-		addEndpoints(coreBasePath, consumer, userEndpoint);
+		addEndpoints(coreBasePath, consumer, userEndpoint, false);
 
 		RoleEndpoint roleEndpoint = Mockito.spy(new RoleEndpoint());
 		initEndpoint(roleEndpoint);
-		addEndpoints(coreBasePath, consumer, roleEndpoint);
+		addEndpoints(coreBasePath, consumer, roleEndpoint, false);
 
 		GroupEndpoint groupEndpoint = Mockito.spy(new GroupEndpoint());
 		initEndpoint(groupEndpoint);
-		addEndpoints(coreBasePath, consumer, groupEndpoint);
+		addEndpoints(coreBasePath, consumer, groupEndpoint, false);
 
 		ProjectEndpoint projectEndpoint = Mockito.spy(new ProjectEndpoint());
 		initEndpoint(projectEndpoint);
-		addEndpoints(coreBasePath, consumer, projectEndpoint);
+		addEndpoints(coreBasePath, consumer, projectEndpoint, false);
 
 		SchemaEndpoint schemaEndpoint = Mockito.spy(new SchemaEndpoint());
 		initEndpoint(schemaEndpoint);
-		addEndpoints(coreBasePath, consumer, schemaEndpoint);
+		addEndpoints(coreBasePath, consumer, schemaEndpoint, false);
 
 		MicroschemaEndpoint microschemaEndpoint = Mockito.spy(new MicroschemaEndpoint());
 		initEndpoint(microschemaEndpoint);
-		addEndpoints(coreBasePath, consumer, microschemaEndpoint);
+		addEndpoints(coreBasePath, consumer, microschemaEndpoint, false);
 
 		AdminEndpoint adminEndpoint = Mockito.spy(new AdminEndpoint());
 		initEndpoint(adminEndpoint);
-		addEndpoints(coreBasePath, consumer, adminEndpoint);
+		addEndpoints(coreBasePath, consumer, adminEndpoint, false);
 
 		HealthEndpoint healthEndpoint = Mockito.spy(new HealthEndpoint());
 		initEndpoint(healthEndpoint);
-		addEndpoints(coreBasePath, consumer, healthEndpoint);
+		addEndpoints(coreBasePath, consumer, healthEndpoint, false);
 
 		SearchEndpointImpl searchEndpoint = Mockito.spy(new SearchEndpointImpl());
 		initEndpoint(searchEndpoint);
-		addEndpoints(coreBasePath, consumer, searchEndpoint);
+		addEndpoints(coreBasePath, consumer, searchEndpoint, false);
 
 		RawSearchEndpointImpl rawSearchEndpoint = Mockito.spy(new RawSearchEndpointImpl());
 		initEndpoint(rawSearchEndpoint);
-		addEndpoints(coreBasePath, consumer, rawSearchEndpoint);
+		addEndpoints(coreBasePath, consumer, rawSearchEndpoint, false);
 
 		UtilityEndpoint utilityEndpoint = Mockito.spy(new UtilityEndpoint());
 		initEndpoint(utilityEndpoint);
-		addEndpoints(coreBasePath, consumer, utilityEndpoint);
+		addEndpoints(coreBasePath, consumer, utilityEndpoint, false);
 
 		AuthenticationEndpoint authEndpoint = Mockito.spy(new AuthenticationEndpoint());
 		initEndpoint(authEndpoint);
-		addEndpoints(coreBasePath, consumer, authEndpoint);
+		addEndpoints(coreBasePath, consumer, authEndpoint, false);
 
 		EventbusEndpoint eventbusEndpoint = Mockito.spy(new EventbusEndpoint());
 		initEndpoint(eventbusEndpoint);
-		addEndpoints(coreBasePath, consumer, eventbusEndpoint);
+		addEndpoints(coreBasePath, consumer, eventbusEndpoint, false);
 
 		RouterStorageImpl rs = Mockito.mock(RouterStorageImpl.class);
 		RootRouterImpl rootRouter = Mockito.mock(RootRouterImpl.class);
@@ -177,14 +177,14 @@ public abstract class AbstractEndpointGenerator<T> extends AbstractGenerator {
 		RestInfoEndpoint infoEndpoint = Mockito.spy(new RestInfoEndpoint(""));
 		infoEndpoint.init(null, rs);
 		initEndpoint(infoEndpoint);
-		addEndpoints(coreBasePath, consumer, infoEndpoint);
+		addEndpoints(coreBasePath, consumer, infoEndpoint, false);
 
 		ProjectInfoEndpoint projectInfoEndpoint = Mockito.spy(new ProjectInfoEndpoint());
 		initEndpoint(projectInfoEndpoint);
-		addEndpoints(coreBasePath, consumer, projectInfoEndpoint);
+		addEndpoints(coreBasePath, consumer, projectInfoEndpoint, false);
 	}
 
-	protected abstract void addEndpoints(String coreBasePath, T consumer, AbstractInternalEndpoint projectInfoEndpoint) throws IOException;
+	protected abstract void addEndpoints(String coreBasePath, T consumer, AbstractInternalEndpoint projectInfoEndpoint, boolean isProject) throws IOException;
 
 	protected void initEndpoint(AbstractInternalEndpoint endpoint) {
 		Vertx vertx = mock(Vertx.class);
