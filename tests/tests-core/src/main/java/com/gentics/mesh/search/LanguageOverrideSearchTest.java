@@ -2,6 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -20,7 +22,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -31,6 +37,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.ElasticsearchTestMode;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -180,6 +187,50 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		waitForSearchIdleEvent();
 
 		assertPublishedContentCount();
+	}
+
+	@Test
+	public void testIndexSyncWithMicronodeField() throws Exception {
+		MicroschemaResponse microschema = createMicroschema("micro");
+		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/pageWithMicronode.json", SchemaCreateRequest.class));
+		createContent();
+		waitForSearchIdleEvent();
+
+		String microschemaHash = tx(tx -> {
+			HibSchema schema1 = tx.schemaDao().findByUuid(schema.getUuid());
+			HibSchemaVersion version = schema1.getLatestVersion();
+			return version.getMicroschemaVersionHash(initialBranch());
+		});
+
+		assertDocumentCount(fromEntries(
+			docs("de", DRAFT, 2),
+			docs("fr", DRAFT, 1),
+			docs("zh", DRAFT, 1),
+			docs("ja", DRAFT, 1),
+			docs("ko", DRAFT, 1),
+			// italian and english contents use default settings
+			docs(microschemaHash.toLowerCase(), DRAFT, 3)
+		));
+
+		SyncEventHandler.invokeSyncCompletable(meshApi()).blockingAwait(30, TimeUnit.SECONDS);
+
+		assertDocumentCount(fromEntries(
+			docs("de", DRAFT, 2),
+			docs("fr", DRAFT, 1),
+			docs("zh", DRAFT, 1),
+			docs("ja", DRAFT, 1),
+			docs("ko", DRAFT, 1),
+			// italian and english contents use default settings
+			docs(microschemaHash.toLowerCase(), DRAFT, 3)
+		));
+
+		// We expect only one result because "die" is a stop word in german
+		assertContentSearch("die", "Report");
+		// We expect only two results, because "no" is a stop word in all languages except german and french.
+		// French would use the standard analyzer, but there is an exception for that language in the schema.
+		// There is no analyzer defined for italian, so the default english stop word list should be used.
+		assertContentSearch("no", "Kino", "Film");
 	}
 
 	@Test
