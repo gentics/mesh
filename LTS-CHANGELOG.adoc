@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Docker-Image: The base images have been updated to a newer JDK minor version (`11.0.16`).
 
+icon:check[] Core: On Elasticsearch index resync the indices for additional languages were deleted, ignoring the actual ES language schema setup. This has been fixed.
+
 [[v1.8.12]]
 == 1.8.12 (24.10.2022)
 
