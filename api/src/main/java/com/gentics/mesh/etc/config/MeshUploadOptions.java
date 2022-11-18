@@ -27,7 +27,7 @@ public class MeshUploadOptions implements Option {
 	public static final String MESH_BINARY_METADATA_WHITELIST_ENV = "MESH_BINARY_METADATA_WHITELIST";
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_MB_LIMIT)
+	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_BYTE_LIMIT + " (" + DEFAULT_FILEUPLOAD_MB_LIMIT + " MB)")
 	@EnvironmentVariable(name = MESH_BINARY_UPLOAD_LIMIT_ENV, description = "Override the configured binary byte upload limit.")
 	private long byteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
@@ -59,7 +59,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Return the upload limit in bytes.
-	 * 
+	 *
 	 * @return Limit in bytes
 	 */
 	public long getByteLimit() {
@@ -68,7 +68,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Set the upload limit in bytes.
-	 * 
+	 *
 	 * @param byteLimit
 	 *            Limit in bytes
 	 * @return Fluent API
@@ -80,7 +80,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Return the binary storage directory.
-	 * 
+	 *
 	 * @return Binary storage filesystem directory
 	 */
 	public String getDirectory() {
@@ -89,7 +89,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Set the binary storage directory.
-	 * 
+	 *
 	 * @param directory
 	 *            Binary storage filesystem directory
 	 * @return Fluent API
@@ -101,7 +101,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Returns the upload temporary directory. New uploads are placed in this directory before those are processed and moved.
-	 * 
+	 *
 	 * @return Temporary filesystem directory
 	 */
 	public String getTempDirectory() {
@@ -110,7 +110,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Set the temporary upload directory. New uploads will be placed within this location before processing.
-	 * 
+	 *
 	 * @param tempDirectory
 	 *            Temporary filesystem directory
 	 * @return Fluent API
@@ -122,7 +122,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Return the configured parser limit.
-	 * 
+	 *
 	 * @return
 	 */
 	public int getParserLimit() {
@@ -131,7 +131,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Set the parser limit for uploaded documents.
-	 * 
+	 *
 	 * @param parserLimit
 	 * @return Fluent API
 	 */
@@ -142,7 +142,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Check whether the upload document parser is enabled.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isParser() {
@@ -151,7 +151,7 @@ public class MeshUploadOptions implements Option {
 
 	/**
 	 * Set the document parser flag.
-	 * 
+	 *
 	 * @param parser
 	 * @return Fluent API
 	 */
