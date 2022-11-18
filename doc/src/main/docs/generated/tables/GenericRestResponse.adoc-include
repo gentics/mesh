@@ -7,17 +7,17 @@
 | Description
 
 
-| editor.firstName
+| creator.firstName
 | false
 | string
 | Firstname of the user
 
-| editor.lastName
+| creator.lastName
 | false
 | string
 | Lastname of the user
 
-| editor.uuid
+| creator.uuid
 | true
 | string
 | Uuid of the user

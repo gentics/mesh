@@ -31,6 +31,15 @@ icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting,
 
 icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
 
+[[v1.9.6]]
+== 1.9.6 (17.11.2022)
+
+icon:check[] Docker-Image: The base images have been updated to a newer JDK minor version (`11.0.16`).
+
+icon:check[] Core: On Elasticsearch index resync the indices for additional languages were deleted, ignoring the actual ES language schema setup. This has been fixed.
+
+icon:check[] Core: The included Mesh UI has been updated to version `1.3.6`.
+
 [[v1.9.5]]
 == 1.9.5 (24.10.2022)
 
