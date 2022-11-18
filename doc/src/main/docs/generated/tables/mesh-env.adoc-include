@@ -20,20 +20,20 @@
 | *MESH_LOCK_PATH*
 | Path to the mesh lock file.
 
-| *MESH_PLUGIN_DIR*
-| Override the configured plugin directory.
-
 | *MESH_S3_BINARY_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
+
+| *MESH_PLUGIN_DIR*
+| Override the configured plugin directory.
 
 | *MESH_S3_BINARY_PARSER_LIMIT*
 | Override the configured parser limit.
 
-| *MESH_HTTP_SSL_CERT_PATH*
-| Override the configured SSL enable flag.
-
 | *MESH_CLUSTER_COORDINATOR_REGEX*
 | Override the cluster coordinator regex.
+
+| *MESH_HTTP_SSL_CERT_PATH*
+| Override the configured SSL enable flag.
 
 | *MESH_CONTENT_AUTO_PURGE*
 | Override the content versioning flag
@@ -59,17 +59,17 @@
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
-| *MESH_HTTP_PORT*
-| Override the configured server http port.
-
 | *MESH_S3_CORS_ALLOWED_ORIGINS*
 | Override the configured AWS S3 CORS allowed origins.
 
-| *MESH_S3_BINARY_REGION*
-| Override the configured AWS S3 region.
+| *MESH_HTTP_PORT*
+| Override the configured server http port.
 
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size
+
+| *MESH_S3_BINARY_REGION*
+| Override the configured AWS S3 region.
 
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
@@ -83,11 +83,11 @@
 | *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
 | Override the Vert.x eventBus error threshold in ms.
 
-| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
-| Override the configured client certificate handling mode.
-
 | *MESH_ELASTICSEARCH_CERT_PATH*
 | Override the configured trusted server certificate.
+
+| *MESH_HTTP_SSL_CLIENT_AUTH_MODE*
+| Override the configured client certificate handling mode.
 
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
@@ -101,11 +101,11 @@
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
 
-| *MESH_S3_CORS_ALLOWED_HEADERS*
-| Override the configured AWS S3 CORS allowed headers.
-
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
+
+| *MESH_S3_CORS_ALLOWED_HEADERS*
+| Override the configured AWS S3 CORS allowed headers.
 
 | *MESH_IMAGE_CACHE_DIRECTORY*
 | Override the path for image cache directory.
@@ -182,11 +182,11 @@
 | *MESH_S3_BINARY_METADATA_WHITELIST*
 | Override the metadata whitelist
 
-| *MESH_NODE_NAME*
-| Override the configured node name.
-
 | *MESH_ELASTICSEARCH_INDEX_CHECK_INTERVAL*
 | Override the interval for index checks
+
+| *MESH_NODE_NAME*
+| Override the configured node name.
 
 | *MESH_S3_BINARY_CACHE_BUCKET*
 | Override the configured AWS S3 bucket.
@@ -218,11 +218,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_PLUGIN_TIMEOUT*
-| Override the configured plugin timeout.
-
 | *MESH_CLUSTER_NETWORK_HOST*
 | Override the cluster network host.
+
+| *MESH_PLUGIN_TIMEOUT*
+| Override the configured plugin timeout.
 
 | *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
 | Override the configured AWS S3 upload time.
@@ -236,17 +236,17 @@
 | *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
 | Override the configured parser limit.
 
-| *MESH_IMAGE_MAX_HEIGHT*
-| Override the max height for image resize operations.
-
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_DEBUGINFO_LOG_FOLDER*
-| Override the path to the debug info log folder
+| *MESH_IMAGE_MAX_HEIGHT*
+| Override the max height for image resize operations.
 
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
+
+| *MESH_DEBUGINFO_LOG_FOLDER*
+| Override the path to the debug info log folder
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
@@ -263,29 +263,29 @@
 | *MESH_AUTH_PUBLIC_KEYS_PATH*
 | Override the configured public keys file path.
 
-| *MESH_LANGUAGES_FILE_PATH*
-| Override the path to the optional languages file
-
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
 
-| *MESH_BINARY_DOCUMENT_PARSER*
-| Override the document parser enabled flag.
-
-| *MESH_AUTH_KEYSTORE_PASS*
-| Override the configured keystore password.
+| *MESH_LANGUAGES_FILE_PATH*
+| Override the path to the optional languages file
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
 
-| *MESH_GRAPHQL_SLOW_THRESHOLD*
-| Override the configured slow graphQl query threshold.
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.
+
+| *MESH_BINARY_DOCUMENT_PARSER*
+| Override the document parser enabled flag.
 
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
 
 | *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
 | Override the timeout for the cache if index mappings
+
+| *MESH_GRAPHQL_SLOW_THRESHOLD*
+| Override the configured slow graphQl query threshold.
 
 | *MESH_S3_BINARY_BUCKET*
 | Override the configured AWS S3 bucket.
@@ -302,23 +302,23 @@
 | *MESH_HTTP_SSL_KEY_PATH*
 | Override the configured SSL enable flag.
 
-| *MESH_TEMP_DIR*
-| Override the configured temp directory.
-
 | *MESH_S3_BINARY_ENABLED_KEY*
 | Override cluster enabled flag.
 
-| *MESH_S3_BINARY_LINK_RESOLVER*
-| Override the configured AWS S3 link resolver.
+| *MESH_TEMP_DIR*
+| Override the configured temp directory.
 
 | *MESH_ELASTICSEARCH_URL*
 | Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
 
-| *MESH_UPDATECHECK*
-| Override the configured updatecheck flag.
+| *MESH_S3_BINARY_LINK_RESOLVER*
+| Override the configured AWS S3 link resolver.
 
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
+
+| *MESH_UPDATECHECK*
+| Override the configured updatecheck flag.
 
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
@@ -332,11 +332,11 @@
 | *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
 
-| *MESH_HTTP_CORS_ORIGIN_PATTERN*
-| Override the configured CORS allowed origin pattern.
-
 | *MESH_S3_BINARY_ENDPOINT*
 | Override the configured AWS S3 custom endpoint.
+
+| *MESH_HTTP_CORS_ORIGIN_PATTERN*
+| Override the configured CORS allowed origin pattern.
 
 | *MESH_IMAGE_RESAMPLE_FILTER*
 | Override the sample filter for image resize operations.
@@ -374,10 +374,10 @@
 | *MESH_S3_BINARY_CACHE_REGION*
 | Override the configured AWS S3 region.
 
-| *MESH_BINARY_METADATA_WHITELIST*
-| Override the metadata whitelist
-
 | *MESH_AUTH_KEYSTORE_PATH*
 | Override the configured keystore path.
+
+| *MESH_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist
 
 |======
