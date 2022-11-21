@@ -256,8 +256,11 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				method = HttpMethod.GET;
 			}
 			if (endpoint.isInsecure()) {
-				// Reset the default security requirements
 				operation.setSecurity(Collections.emptyList());
+			} else {
+				SecurityRequirement reqBearerAuth = new SecurityRequirement();
+				reqBearerAuth.addList("bearerAuth");
+				operation.setSecurity(List.of(reqBearerAuth));
 			}
 			switch (method.name()) {
 			case "DELETE":
@@ -342,6 +345,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private Map.Entry<String, MediaType> fillMediaType(String key, MimeType mimeType, Class<?> refClass) {
 		MediaType mediaType = new MediaType();
 		mediaType.setExample(mimeType.getExample());
@@ -363,6 +367,9 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
 		} else if (refClass != null && refClass.getSimpleName().toLowerCase().startsWith("json")) {
 			mediaType.setExample(mimeType.getExample());
+			Schema<String> schema = new Schema<>();
+			schema.setType("object");
+			mediaType.setSchema(schema);
 			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
 		} else { 
 			return new UnmodifiableMapEntry<String, MediaType>(key, mediaType);
