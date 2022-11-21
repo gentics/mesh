@@ -11,7 +11,11 @@
 = Mesh Forms Plugin
 
 
-[[v1.6.27]]
+[[v1.6.28]]
+== 1.6.28 (2022-11-21)
+
+icon:plus[] SUP-14376 Selectgroup element: Adds `data.additional_element` to the render context of `selectgroup` elements which contains the POSTed value of the (optional) additional element. The documentation and examples for form elements of type `selectgroup` have been extended.
+
 == 1.6.27 (2022-10-19)
 
 icon:check[] Forms: Add missing implementation for `conditionalcontainer` elements. Elements inside a `conditionalcontainer` will only be validated and saved, when the respective element to check has the correct value.
