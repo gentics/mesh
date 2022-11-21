@@ -385,7 +385,7 @@
 | uploadOptions.byteLimit
 | false
 | long
-| The upload size limit in bytes. Default: 250
+| The upload size limit in bytes. Default: 262144000 (250 MB)
 
 | uploadOptions.directory
 | false
