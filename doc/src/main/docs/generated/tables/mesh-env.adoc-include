@@ -65,11 +65,11 @@
 | *MESH_HTTP_PORT*
 | Override the configured server http port.
 
-| *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
-| Override the search sync batch size
-
 | *MESH_S3_BINARY_REGION*
 | Override the configured AWS S3 region.
+
+| *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
+| Override the search sync batch size
 
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
@@ -92,11 +92,11 @@
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
 
-| *MESH_BINARY_UPLOAD_LIMIT*
-| Override the configured binary byte upload limit.
-
 | *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
 | Override the max form attribute size
+
+| *MESH_BINARY_UPLOAD_LIMIT*
+| Override the configured binary byte upload limit.
 
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
@@ -218,11 +218,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_CLUSTER_NETWORK_HOST*
-| Override the cluster network host.
-
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
+
+| *MESH_CLUSTER_NETWORK_HOST*
+| Override the cluster network host.
 
 | *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
 | Override the configured AWS S3 upload time.
@@ -269,11 +269,11 @@
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
-| Override the cluster topology lock delay in ms.
-
 | *MESH_AUTH_KEYSTORE_PASS*
 | Override the configured keystore password.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
+| Override the cluster topology lock delay in ms.
 
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
@@ -308,17 +308,17 @@
 | *MESH_TEMP_DIR*
 | Override the configured temp directory.
 
-| *MESH_ELASTICSEARCH_URL*
-| Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
-
 | *MESH_S3_BINARY_LINK_RESOLVER*
 | Override the configured AWS S3 link resolver.
 
-| *MESH_BINARY_DIR*
-| Override the configured binary data directory.
+| *MESH_ELASTICSEARCH_URL*
+| Override the configured elasticsearch server url. The value can be set to null in order to disable the Elasticsearch support.
 
 | *MESH_UPDATECHECK*
 | Override the configured updatecheck flag.
+
+| *MESH_BINARY_DIR*
+| Override the configured binary data directory.
 
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.
