@@ -31,6 +31,11 @@ icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting,
 
 icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
 
+[[v1.9.7]]
+== 1.9.7 (22.11.2022)
+
+icon:check[] Logging: Remove superfluous error messages for HTTP status 4xx errors. These are logged by the logger handler as warnings.
+
 [[v1.9.6]]
 == 1.9.6 (17.11.2022)
 
