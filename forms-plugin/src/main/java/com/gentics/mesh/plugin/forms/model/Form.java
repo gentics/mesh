@@ -487,7 +487,12 @@ public class Form implements RestModel {
 			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
 
 		if (elem.isMultivalue()) {
-			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
+			JsonArray values = resultObj.getJsonArray(FIELD_VALUE, new JsonArray());
+
+			if (values == null) {
+				values = new JsonArray();
+			}
+
 			JsonArray labels = values.stream()
 				.sequential()
 				.filter(v -> v instanceof String)

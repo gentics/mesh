@@ -558,12 +558,44 @@ public abstract class FormElement implements RestModel {
 	 * @return {@code true} if the element should be skipped during validation
 	 * 		and saving data, and {@code false} otherwise.
 	 */
-	protected boolean skipElement(MultiMap postedData) {
+	public boolean skipElement(MultiMap postedData) {
 		FormElement parent = container;
 
 		while (parent != null) {
 			if (parent instanceof ConditionalContainerElement) {
 				if (((ConditionalContainerElement) parent).skipElements(postedData)) {
+					// The conditional container could be nested. If we found
+					// a container that says skip, we can return here, otherwise
+					// we need to go further upwards.
+					return true;
+				}
+			}
+
+			parent = parent.container;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Test whether this element should be skipped for email rendering.
+	 *
+	 * <p>
+	 *     Currently the only reason to skip an element is if it is a descendant
+	 *     of a {@link ConditionalContainerElement}, and the specified checked
+	 *     field is not set accordingly.
+	 * </p>
+	 *
+	 * @param formData The saved form data.
+	 * @return {@code true} if the element should be skipped during validation
+	 * 		and saving data, and {@code false} otherwise.
+	 */
+	public boolean skipElement(NodeResponse formData) {
+		FormElement parent = container;
+
+		while (parent != null) {
+			if (parent instanceof ConditionalContainerElement) {
+				if (((ConditionalContainerElement) parent).skipElements(formData)) {
 					// The conditional container could be nested. If we found
 					// a container that says skip, we can return here, otherwise
 					// we need to go further upwards.

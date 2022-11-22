@@ -945,6 +945,34 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 				Pair.of("errors", ""));
 	}
 
+	@Test
+	public void testConditionalContainerSkipInMail() throws IOException, MessagingException, InterruptedException {
+		String uuid = createForm("conditional_container.json", true, true);
+
+		ResponseWithCookies rs = submit(uuid, true,
+			"checked_input", "ignore_container_contents",
+			"normal_input", "test value",
+			"conditional_input", "this should not be saved");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(1);
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		System.out.println(content);
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("conditional_container_mail.html"));
+	}
+
 	/**
 	 * Test that elements inside a conditional container are saved, when the
 	 * checked element is set to the expected value.

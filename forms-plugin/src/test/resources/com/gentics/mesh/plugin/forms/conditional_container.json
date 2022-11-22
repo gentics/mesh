@@ -1,5 +1,9 @@
 {
 	"name": "Form with Conditional Container",
+	"type": "GENERIC",
+	"email": "test@green.mail",
+	"mailsubject": "testmail",
+	"mailtemp": "testmail",
 	"cms_id": 1,
 	"elements": [
 		{
