@@ -487,7 +487,7 @@ public class Form implements RestModel {
 			.collect(ValueListElement.OPTIONS_MAP_COLLECTOR);
 
 		if (elem.isMultivalue()) {
-			JsonArray values = resultObj.getJsonArray(FIELD_VALUE, new JsonArray());
+			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
 
 			if (values == null) {
 				values = new JsonArray();
@@ -500,7 +500,13 @@ public class Form implements RestModel {
 				.map(v -> valueLabels.getOrDefault(v, v))
 				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll));
 
-			return resultObj.put("valueLabel", labels);
+			if (labels.isEmpty()) {
+				resultObj.put("valueLabel", "");
+			} else {
+				resultObj.put("valueLabel", labels);
+			}
+
+			return resultObj;
 		}
 
 		String value = resultObj.getString(FIELD_VALUE);

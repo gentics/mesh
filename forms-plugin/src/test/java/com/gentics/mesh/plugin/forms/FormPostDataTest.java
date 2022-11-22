@@ -324,6 +324,32 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	public void testEmptySelectionWithMail() throws IOException, MessagingException {
+		String uuid = createForm("selection_with_mail.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false,
+			// The body must contain at least one field
+			"checkbox1", "X");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(1);
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		System.out.println(content);
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("empty_selection_with_mail.html"));
+	}
+
+	@Test
 	public void testCheckboxWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
 		ResponseWithCookies rs = submit(uuid, true, false, false,

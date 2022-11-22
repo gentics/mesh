@@ -12,7 +12,9 @@
 
 
 [[v1.6.28]]
-== 1.6.28 (2022-11-22)
+== 1.6.28 (TBD)
+
+icon:check[] Forms: Fixes a possible `NullPointerException` for multivalue elements, when no values are submitted.
 
 icon:check[] Emails: Removes fields inside conditional containers that where not saved from email messages.
 
