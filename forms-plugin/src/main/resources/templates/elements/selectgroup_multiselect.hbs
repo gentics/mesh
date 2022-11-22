@@ -1,7 +1,7 @@
 <div>
 	<select name="{{ name }}[]" {{#if mandatory}}required="required"{{/if}} multiple>
 {{#each options }}
-		<option value="{{ key }}" {{#equals key data.value}}selected="selected"{{/equals}}>{{{ value }}}</option>
+		<option value="{{ key }}"{{#each data.value}}{{#equals key this}} selected{{/equals}}{{/each}}>{{{ value }}}</option>
 {{/each}}
 {{#if additional_element }}
 		<option value="{{ name }}additional_field"{{#if data.additional_element }} selected="selected"{{/if}}>Additional element</option>
