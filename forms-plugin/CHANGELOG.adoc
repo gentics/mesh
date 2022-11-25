@@ -20,6 +20,7 @@ icon:check[] Forms: Fixes a possible `NullPointerException` for multivalue eleme
 
 icon:check[] Emails: Removes fields inside conditional containers that where not saved from email messages.
 
+[[v1.6.27]]
 == 1.6.27 (2022-10-19)
 
 icon:check[] Forms: Add missing implementation for `conditionalcontainer` elements. Elements inside a `conditionalcontainer` will only be validated and saved, when the respective element to check has the correct value.
