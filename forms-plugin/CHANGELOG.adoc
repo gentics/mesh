@@ -14,6 +14,8 @@
 [[v1.6.28]]
 == 1.6.28 (TBD)
 
+icon:plus[] SUP-14376 Selectgroup element: Adds `data.additional_element` to the render context of `selectgroup` elements which contains the POSTed value of the (optional) additional element. The documentation and examples for form elements of type `selectgroup` have been extended.
+
 icon:check[] Forms: Fixes a possible `NullPointerException` for multivalue elements, when no values are submitted.
 
 icon:check[] Emails: Removes fields inside conditional containers that where not saved from email messages.
