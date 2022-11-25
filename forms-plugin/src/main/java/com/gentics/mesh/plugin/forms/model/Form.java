@@ -488,6 +488,11 @@ public class Form implements RestModel {
 
 		if (elem.isMultivalue()) {
 			JsonArray values = resultObj.getJsonArray(FIELD_VALUE);
+
+			if (values == null) {
+				values = new JsonArray();
+			}
+
 			JsonArray labels = values.stream()
 				.sequential()
 				.filter(v -> v instanceof String)
@@ -495,7 +500,13 @@ public class Form implements RestModel {
 				.map(v -> valueLabels.getOrDefault(v, v))
 				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::addAll));
 
-			return resultObj.put("valueLabel", labels);
+			if (labels.isEmpty()) {
+				resultObj.put("valueLabel", "");
+			} else {
+				resultObj.put("valueLabel", labels);
+			}
+
+			return resultObj;
 		}
 
 		String value = resultObj.getString(FIELD_VALUE);
