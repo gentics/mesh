@@ -10,6 +10,15 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.7]]
+== 1.8.7 (2022-11-30)
+
+icon:plus[] SUP-14376 Selectgroup element: Adds `data.additional_element` to the render context of `selectgroup` elements which contains the POSTed value of the (optional) additional element. The documentation and examples for form elements of type `selectgroup` have been extended.
+
+icon:check[] Forms: Fixes a possible `NullPointerException` for multivalue elements, when no values are submitted.
+
+icon:check[] Emails: Removes fields inside conditional containers that where not saved from email messages.
+
 [[v1.8.6]]
 == 1.8.6 (2022-10-19)
 
@@ -47,7 +56,6 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
-
 
 [[v1.6.28]]
 == 1.6.28 (2022-11-30)
