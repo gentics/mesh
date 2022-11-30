@@ -1,13 +1,14 @@
 package com.gentics.mesh.plugin.forms.model;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import io.vertx.core.MultiMap;
-import org.apache.commons.lang3.tuple.Pair;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Element for select groups
@@ -61,6 +62,41 @@ public class SelectgroupElement extends CombiElement {
 	}
 
 	/**
+	 * Add the element data and additional element data stored in the container to
+	 * the json object
+	 * 
+	 * @param object    object (will be modified)
+	 * @param container field container
+	 * @param key       key function
+	 */
+	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
+		super.addFormData(object, container, key);
+
+		List<String> options = getOptions().stream().map(ValueListItem::getKey).collect(Collectors.toList());
+
+		// check if posted data contains the value of an additional element
+		if (isMultivalue()) {
+			JsonArray postedData = object.getJsonArray(key.apply(this));
+			if (postedData != null) {
+				for (Object postedValue : postedData) {
+					if (!options.contains(postedValue)) {
+						// posted value is not part of regular options thus it must belong to an
+						// additional element
+						object.put("additional_element", postedValue);
+					}
+				}
+			}
+		} else {
+			String submittedValue = object.getString(key.apply(this));
+			if (submittedValue != null && !options.contains(submittedValue)) {
+				// submitted value is not part of regular options thus it must belong to an
+				// additional element
+				object.put("additional_element", submittedValue);
+			}
+		}
+	}
+
+	/**
 	 * Transform the value:
 	 * <ol>
 	 * <li>If the element has an additional element, and the posted value is "[name]additional_field", get the data posted with this name instead</li>
@@ -72,6 +108,7 @@ public class SelectgroupElement extends CombiElement {
 	protected String transform(String value, MultiMap postedData) {
 		if (isAdditionalElement()) {
 			if (String.format("%sadditional_field", getName()).equals(value)) {
+				
 				return postedData.get(String.format("%s_additional", getName()));
 			}
 		}

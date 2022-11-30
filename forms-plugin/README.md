@@ -223,6 +223,11 @@ Element for select group. The difference to the `combielem` is the `additional_e
 
 When `additional_element` is `true`, and the POSTed data contains `[fieldname]=[fieldname]additional_field`, the custom value POSTed as `[fieldname]_additional` will be taken.
 
+Handlebars examples:
+* [selectgroup_multiselect.hbs](src/main/resources/templates/elements/selectgroup_multiselect.hbs)
+* [selectgroup_singleselect.hbs](src/main/resources/templates/elements/selectgroup_singleselect.hbs)
+* [selectgroup_radiobuttons.hbs](src/main/resources/templates/elements/selectgroup_radiobuttons.hbs)
+
 ## `recaptcha`
 
 Element for recaptcha.
