@@ -324,6 +324,32 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	public void testEmptySelectionWithMail() throws IOException, MessagingException {
+		String uuid = createForm("selection_with_mail.json");
+		ResponseWithCookies rs = submit(uuid, true, false, false,
+			// The body must contain at least one field
+			"checkbox1", "X");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(1);
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		System.out.println(content);
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("empty_selection_with_mail.html"));
+	}
+
+	@Test
 	public void testCheckboxWithMail() throws IOException, MessagingException {
 		String uuid = createForm("selection_with_mail.json");
 		ResponseWithCookies rs = submit(uuid, true, false, false,
@@ -943,6 +969,34 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 				Pair.of("normal_input", "test value"),
 				Pair.of("checked_input", "ignore_container_contents"),
 				Pair.of("errors", ""));
+	}
+
+	@Test
+	public void testConditionalContainerSkipInMail() throws IOException, MessagingException, InterruptedException {
+		String uuid = createForm("conditional_container.json", true, true);
+
+		ResponseWithCookies rs = submit(uuid, true,
+			"checked_input", "ignore_container_contents",
+			"normal_input", "test value",
+			"conditional_input", "this should not be saved");
+
+		assertThat(greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1))
+			.as("Mail sent in time")
+			.isTrue();
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+
+		assertThat(messages.length)
+			.as("Received messages")
+			.isEqualTo(1);
+
+		String content = messages[0].getContent().toString().replaceAll("\\r", "");
+
+		System.out.println(content);
+
+		assertThat(content)
+			.as("Mail content")
+			.isEqualTo(fromFile("conditional_container_mail.html"));
 	}
 
 	/**

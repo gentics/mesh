@@ -152,7 +152,7 @@ public class MailService {
 		statusService.getBaseUrl(projectName).subscribe(baseUrl -> {
 			rc.put("baseUrl", baseUrl);
 			rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
-			rc.put("data", form.getReportableFormData(formDataNode, FormElement::isActive));
+			rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive() && !e.skipElement(formDataNode)));
 			rc.put("dataUuid", formDataNode.getUuid());
 			renderService.render(rc.data(), template, res -> {
 				if (res.succeeded()) {
