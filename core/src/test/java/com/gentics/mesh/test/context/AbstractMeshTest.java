@@ -47,6 +47,8 @@ import okhttp3.OkHttpClient;
 public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
 
 	static {
+		// New OrientDBs have aggressive memory preallocation, which can eat the whole RAM with an eventual crash, so we disable it.
+		System.setProperty("memory.directMemory.preallocate", "false");
 		// Use slf4j instead of JUL
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)

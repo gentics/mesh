@@ -481,7 +481,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// remove existing draft edge
 		if (draftEdge != null) {
 			draftEdge.remove();
-			newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 		}
 		// We need to update the display field property since we created a new
 		// node graph field container.
@@ -494,6 +493,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			edge.setBranchUuid(branchUuid);
 			edge.setType(DRAFT);
 		}
+
+		newContainer.updateWebrootPathInfo(branchUuid, "node_conflicting_segmentfield_update");
 
 		// if there is no initial edge, create one
 		if (getGraphFieldContainerEdge(languageTag, branchUuid, INITIAL) == null) {

@@ -31,6 +31,7 @@ public class DemoRunner {
 	private static Logger log;
 
 	static {
+		System.setProperty("memory.directMemory.preallocate", "false");
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 		System.setProperty("storage.trackChangedRecordsInWAL", "true");

@@ -21,6 +21,10 @@ import com.gentics.mesh.util.UUIDUtil;
  */
 public class DemoDumpGenerator {
 
+	static {
+		System.setProperty("memory.directMemory.preallocate", "false");
+	}
+
 	public static void main(String[] args) throws Exception {
 		DemoDumpGenerator generator = new DemoDumpGenerator();
 		try {
