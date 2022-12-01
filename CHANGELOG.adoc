@@ -32,7 +32,7 @@ icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting,
 icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
 
 [[v1.9.8]]
-== 1.9.8 (TBD)
+== 1.9.8 (01.12.2022)
 
 icon:check[] Core: Having a binary non-segment field update might break the uniqueness of the segment field value, allowing creation of multiple nodes with the same segment/webroot value. This has now been fixed.
 
