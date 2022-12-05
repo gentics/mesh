@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -36,6 +35,10 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.test.ElasticsearchTestMode;
@@ -253,6 +256,53 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		assertContentSearch("no", "Kino", "Film");
 	}
 
+	/**
+	 * Check that documents are indexed in correct language specific indices after moving a node
+	 * @throws Exception
+	 */
+	@Test
+	public void testIndexAfterMove() throws Exception {
+		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		createContent();
+		waitForSearchIdleEvent();
+
+		assertContentCount();
+
+		// create folder
+		NodeResponse folder = createFolder("de", "Zielordner");
+
+		// move first page into the target folder
+		NodeResponse page = createdPages.get(0);
+		client().moveNode(PROJECT_NAME, page.getUuid(), folder.getUuid()).blockingAwait();
+
+		waitForSearchIdleEvent();
+
+		assertContentCount();
+	}
+
+	/**
+	 * Check that documents are indexed in correct language specific indices after tagging a node
+	 * @throws Exception
+	 */
+	@Test
+	public void testIndexAfterTagging() throws Exception {
+		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		createContent();
+		waitForSearchIdleEvent();
+
+		assertContentCount();
+
+		// add tag to first page
+		NodeResponse page = createdPages.get(0);
+		TagFamilyResponse family = client().createTagFamily(PROJECT_NAME, new TagFamilyCreateRequest().setName("colors")).blockingGet();
+		TagResponse tag = client().createTag(PROJECT_NAME, family.getUuid(), new TagCreateRequest().setName("red")).blockingGet();
+		client().addTagToNode(PROJECT_NAME, page.getUuid(), tag.getUuid()).blockingAwait();
+
+		waitForSearchIdleEvent();
+
+		assertContentCount();
+	}
+
 	private void createContent() {
 		createPage("de", "Wetter", "Es ist herrliches Wetter, denn die Sonne kommt heraus.");
 		createPage("en", "Report", "Many innocent people die during war.");
@@ -321,6 +371,24 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		for (NodeResponse createdPage : createdPages) {
 			publishNode(createdPage);
 		}
+	}
+
+	/**
+	 * Create a folder in the projects root node
+	 * @param language folder language
+	 * @param name folder name
+	 * @return folder
+	 */
+	private NodeResponse createFolder(String language, String name) {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest
+			.setParentNode(getProject().getRootNode())
+			.setLanguage(language)
+			.setSchemaName("folder")
+			.setFields(FieldMap.of(
+				"name", StringField.of(name)
+			));
+		return client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
 	}
 
 	/**
