@@ -33,6 +33,7 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.DatabaseReindexParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -107,6 +108,16 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		addShutdownHandler();
 		addCoordinatorHandler();
 		addCacheHandler();
+		addDatabaseManagementHandler();
+	}
+
+	private void addDatabaseManagementHandler() {
+		InternalEndpointRoute dbReindexEndpoint = createRoute();
+		dbReindexEndpoint.path("/db/reindex");
+		dbReindexEndpoint.method(POST);
+		dbReindexEndpoint.description("Recreate database indices, all or mentioned in the query parameter.");
+		dbReindexEndpoint.produces(APPLICATION_JSON);
+		dbReindexEndpoint.addQueryParameters(DatabaseReindexParametersImpl.class);
 	}
 
 	private void addSecurityLogger() {
