@@ -161,6 +161,9 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 						long sinceLastPing = System.currentTimeMillis() - lastNodePingTimestamp;
 						if (errorThreshold > 0 && sinceLastPing > errorThreshold) {
 							log.error("Last ping from {} received {} ms ago", nodeName, sinceLastPing);
+							if (nodeName.equals(options.getNodeName())) {
+								livenessManager.setLive(false, "Last own cluster ping received " + sinceLastPing + " ms ago");
+							}
 						} else if (warnThreshold > 0 && sinceLastPing > warnThreshold) {
 							log.warn("Last ping from {} received {} ms ago", nodeName, sinceLastPing);
 						} else {
