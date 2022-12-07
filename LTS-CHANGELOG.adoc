@@ -20,7 +20,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.40]]
 == 1.6.40 (TBD)
 
-icon:check[] Clustering: Liveness check now marks an instance as dead, if the cluster manager (Hazelcast) reports it as unresponsive, even if the non-cluster liveness check passes.
+icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster pod ping within the timeout period, even if the non-cluster ping comes in time.
 
 [[v1.6.39]]
 == 1.6.39 (01.12.2022)
