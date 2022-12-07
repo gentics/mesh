@@ -88,6 +88,7 @@ public class PermissionChangedEventHandler implements EventHandler {
 									branch.getUuid(),
 									container.getSchemaContainerVersion().getUuid(),
 									type,
+									null,
 									container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)),
 								NodeGraphFieldContainer.composeDocumentId(model.getUuid(), container.getLanguageTag()),
 								tf.toPermissionPartial(node, type), complianceMode))))))
