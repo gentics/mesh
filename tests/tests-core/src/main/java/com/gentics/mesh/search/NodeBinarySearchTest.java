@@ -87,7 +87,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 			HibNode nodeA = content("concorde");
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
-				schemaVersionUuid, ContainerType.DRAFT, null);
+				schemaVersionUuid, ContainerType.DRAFT, null, null);
 			String id = ContentDao.composeDocumentId(nodeA.getUuid(), "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertEquals("Lorem ipsum dolor sit amet",
@@ -164,7 +164,7 @@ public class NodeBinarySearchTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			HibNode nodeA = tx.nodeDao().findByUuidGlobal(nodeUuid);
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
-				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null);
+				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null, null);
 			String id = ContentDao.composeDocumentId(nodeUuid, "en");
 			JsonObject doc = getProvider().getDocument(indexName, id).blockingGet();
 			assertEquals("Lorem ipsum dolor sit amet",
