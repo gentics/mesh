@@ -4,6 +4,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.latestVersionTy
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -287,17 +289,23 @@ public class MeshEntities {
 		return findElementByUuidStream(project.getNodeRoot(), nodeUuid)
 		.flatMap(node -> latestVersionTypes()
 		.flatMap(type -> node.getGraphFieldContainers(branch, type).stream()
-		.map(container -> helper.createDocumentRequest(
-			NodeGraphFieldContainer.composeIndexName(
-				project.getUuid(),
-				branch.getUuid(),
-				container.getSchemaContainerVersion().getUuid(),
-				type,
-				container.getLanguageTag(),
-				container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)
-			),
-			NodeGraphFieldContainer.composeDocumentId(nodeUuid, container.getLanguageTag()),
-			transformer.toDocument(container, branch.getUuid(), type), complianceMode
-		))));
+		.map(container -> {
+			SchemaContainerVersion version = container.getSchemaContainerVersion();
+			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
+			boolean languageSpecificIndex = indexLanguages.contains(container.getLanguageTag());
+
+			return helper.createDocumentRequest(
+				NodeGraphFieldContainer.composeIndexName(
+					project.getUuid(),
+					branch.getUuid(),
+					version.getUuid(),
+					type,
+					languageSpecificIndex ? container.getLanguageTag() : null,
+					version.getMicroschemaVersionHash(branch)
+				),
+				NodeGraphFieldContainer.composeDocumentId(nodeUuid, container.getLanguageTag()),
+				transformer.toDocument(container, branch.getUuid(), type), complianceMode
+			);
+		})));
 	}
 }

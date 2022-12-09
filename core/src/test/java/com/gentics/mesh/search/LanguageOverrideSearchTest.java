@@ -15,12 +15,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.rest.branch.BranchListResponse;
+import com.gentics.mesh.core.rest.branch.BranchResponse;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -88,7 +93,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		publishCreatedPages();
 		waitForSearchIdleEvent();
 
-		assertPublishedContentCount();
+		assertPublishedContentCount(schema.getUuid());
 
 		// We expect 12 additional indices. (5 overridden languages + 1 default index) * 2 versions (draft, published)
 		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
@@ -98,7 +103,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 		assertThat(getIndexCount()).isEqualTo(originalIndexCount + 12);
 
-		assertPublishedContentCount();
+		assertPublishedContentCount(schema.getUuid());
 	}
 
 	@Test
@@ -168,11 +173,11 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 	@Test
 	public void testLanguageOverride() {
-		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		createContent();
 		waitForSearchIdleEvent();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
 
 		// We expect only one result because "die" is a stop word in german
 		assertContentSearch("die", "Report");
@@ -184,20 +189,20 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		publishCreatedPages();
 		waitForSearchIdleEvent();
 
-		assertPublishedContentCount();
+		assertPublishedContentCount(schema.getUuid());
 	}
 
 	@Test
 	public void testIndexSync() throws Exception {
-		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		createContent();
 		waitForSearchIdleEvent();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
 
 		recreateIndices();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
 
 		// We expect only one result because "die" is a stop word in german
 		assertContentSearch("die", "Report");
@@ -213,11 +218,11 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	 */
 	@Test
 	public void testIndexAfterMove() throws Exception {
-		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		createContent();
 		waitForSearchIdleEvent();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
 
 		// create folder
 		NodeResponse folder = createFolder("de", "Zielordner");
@@ -228,7 +233,31 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 		waitForSearchIdleEvent();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
+	}
+
+	/**
+	 * Check that documents are indexed in correct generic indices after moving a node
+	 * @throws Exception
+	 */
+	@Test
+	public void testIndexAfterMoveGeneric() throws Exception {
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		createContent();
+		waitForSearchIdleEvent();
+
+		assertContentCount(schema.getUuid());
+
+		// create folder
+		NodeResponse folder = createFolder("de", "Zielordner");
+
+		// move english page
+		NodeResponse page = createdPages.get(1);
+		client().moveNode(PROJECT_NAME, page.getUuid(), folder.getUuid()).blockingAwait();
+
+		waitForSearchIdleEvent();
+
+		assertContentCount(schema.getUuid());
 	}
 
 	/**
@@ -237,11 +266,11 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 	 */
 	@Test
 	public void testIndexAfterTagging() throws Exception {
-		createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
+		SchemaResponse schema = createSchema(loadResourceJsonAsPojo("schemas/languageOverride/page.json", SchemaCreateRequest.class));
 		createContent();
 		waitForSearchIdleEvent();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
 
 		// add tag to first page
 		NodeResponse page = createdPages.get(0);
@@ -251,7 +280,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 
 		waitForSearchIdleEvent();
 
-		assertContentCount();
+		assertContentCount(schema.getUuid());
 	}
 
 	private void createContent() {
@@ -270,26 +299,30 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		createPage("ko", "Apology", "There is no korean content yet.");
 	}
 
-	private void assertContentCount() {
-		assertDocumentCount(fromEntries(
+	private void assertContentCount(String schemaUuid) {
+		assertDocumentCount(schemaUuid, fromEntries(
 			docs("de", DRAFT, 2),
 			docs("fr", DRAFT, 1),
 			docs("zh", DRAFT, 1),
 			docs("ja", DRAFT, 1),
 			docs("ko", DRAFT, 1),
 			// italian and english contents use default settings
+			docs("en", DRAFT, 0),
+			docs("it", DRAFT, 0),
 			docs(DRAFT, 3)
 		));
 	}
 
-	private void assertPublishedContentCount() {
-		assertDocumentCount(fromEntries(
+	private void assertPublishedContentCount(String schemaUuid) {
+		assertDocumentCount(schemaUuid, fromEntries(
 			docs("de", DRAFT, 2),
 			docs("fr", DRAFT, 1),
 			docs("zh", DRAFT, 1),
 			docs("ja", DRAFT, 1),
 			docs("ko", DRAFT, 1),
 			// italian and english contents use default settings
+			docs("en", DRAFT, 0),
+			docs("it", DRAFT, 0),
 			docs(DRAFT, 3),
 
 			docs("de", PUBLISHED, 2),
@@ -298,6 +331,8 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 			docs("ja", PUBLISHED, 1),
 			docs("ko", PUBLISHED, 1),
 			// italian and english contents use default settings
+			docs("en", PUBLISHED, 0),
+			docs("it", PUBLISHED, 0),
 			docs(PUBLISHED, 3)
 		));
 
@@ -384,15 +419,23 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 
-	private void assertDocumentCount(Map<Document, Long> expected) {
+	private void assertDocumentCount(String schemaUuid, Map<Document, Long> expected) {
 		try {
+			BranchListResponse branches = client().findBranches(PROJECT_NAME).blockingGet();
+			BranchResponse branch = branches.getData().stream().filter(BranchResponse::getLatest).findFirst()
+					.orElseThrow(() -> new RuntimeException("Did not find latest branch for test project"));
+			BranchInfoSchemaList schemaVersions = client().getBranchSchemaVersions(PROJECT_NAME, branch.getUuid()).blockingGet();
+			BranchSchemaInfo info = schemaVersions.getSchemas().stream().filter(i -> StringUtils.equals(i.getUuid(), schemaUuid))
+					.findFirst()
+					.orElseThrow(() -> new RuntimeException("Did not find version of schema " + schemaUuid));
+
 			String response = httpClient().newCall(new Request.Builder()
-				.url(getTestContext().getOptions().getSearchOptions().getUrl() + "/mesh-node-*/_search")
+				.url(getTestContext().getOptions().getSearchOptions().getUrl() + "/mesh-node-*-" + info.getVersionUuid() + "-*/_search")
 				.method("POST", RequestBody.create(MediaType.parse("application/json"), new JsonObject()
 					.put("size", 100)
 					.put("query", new JsonObject()
-						.put("term", new JsonObject()
-							.put("schema.name.raw", "page")
+						.put("query_string", new JsonObject()
+							.put("query", "*")
 						)
 					).toString()
 				))
@@ -408,6 +451,10 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 					Function.identity(),
 					Collectors.counting()
 				));
+
+			for (Document key : expected.keySet()) {
+				actual.computeIfAbsent(key, k -> 0L);
+			}
 
 			assertThat(actual).isEqualTo(expected);
 		} catch (IOException e) {
