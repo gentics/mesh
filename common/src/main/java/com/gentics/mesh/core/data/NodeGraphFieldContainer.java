@@ -45,27 +45,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * 
 	 * <p>
 	 * <ul>
-	 * <li>Document Index: [:indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType]</li>
-	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
-	 * </ul>
-	 * <p>
-	 * 
-	 * @param projectUuid
-	 * @param branchUuid
-	 * @param schemaContainerVersionUuid
-	 * @param type
-	 * @param microSchemaVersionHash optional hash over all microschema versions, which are used by the schema version
-	 * @return
-	 */
-	static String composeIndexName(String projectUuid, String branchUuid, String schemaContainerVersionUuid, ContainerType type, String microSchemaVersionHash) {
-		return composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null, microSchemaVersionHash);
-	}
-
-	/**
-	 * Construct the index name using the provided information.
-	 * 
-	 * <p>
-	 * <ul>
 	 * <li>Document Index: ":indexPrefixnode-:projectUuid-:branchUuid-:schemaVersionUuid-:versionType[-:language]"</li>
 	 * <li>Example: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft</li>
 	 * <li>Example with language: node-934ef7f2210e4d0e8ef7f2210e0d0ec5-fd26b3cf20fb4f6ca6b3cf20fbdf6cd6-draft-en</li>
