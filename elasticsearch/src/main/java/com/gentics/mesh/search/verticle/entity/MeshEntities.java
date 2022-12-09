@@ -2,6 +2,7 @@ package com.gentics.mesh.search.verticle.entity;
 
 import static com.gentics.mesh.search.verticle.eventhandler.Util.warningOptional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -24,6 +25,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
@@ -311,17 +313,23 @@ public class MeshEntities {
 		return findElementByUuidStream(Tx.get().nodeDao(), project, nodeUuid)
 		.flatMap(node -> Util.latestVersionTypes()
 		.flatMap(type -> Tx.get().contentDao().getFieldContainers(node, branch, type).stream()
-		.map(container -> helper.createDocumentRequest(
-			ContentDao.composeIndexName(
-				project.getUuid(),
-				branch.getUuid(),
-				container.getSchemaContainerVersion().getUuid(),
-				type,
-				container.getLanguageTag(),
-				container.getSchemaContainerVersion().getMicroschemaVersionHash(branch)
-			),
-			ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
-			transformer.toDocument(container, branch.getUuid(), type), complianceMode
-		))));
+		.map(container -> {
+			HibSchemaVersion version = container.getSchemaContainerVersion();
+			List<String> indexLanguages = version.getSchema().findOverriddenSearchLanguages().collect(Collectors.toList());
+			boolean languageSpecificIndex = indexLanguages.contains(container.getLanguageTag());
+
+			return helper.createDocumentRequest(
+				ContentDao.composeIndexName(
+					project.getUuid(),
+					branch.getUuid(),
+					version.getUuid(),
+					type,
+					languageSpecificIndex ? container.getLanguageTag() : null,
+					version.getMicroschemaVersionHash(branch)
+				),
+				ContentDao.composeDocumentId(nodeUuid, container.getLanguageTag()),
+				transformer.toDocument(container, branch.getUuid(), type), complianceMode
+			);
+		})));
 	}
 }
