@@ -24,6 +24,8 @@ icon:check[] Clustering: Liveness check now marks an instance as dead, if the ev
 
 icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
 
+icon:check[] Core: When using segment fields, creating a node in a new branch would always fail with a 409 conflict error due to some incorrect uniqueness check for the segment field value. This bug was introduced in version 1.6.39 and has been fixed now.
+
 [[v1.6.39]]
 == 1.6.39 (01.12.2022)
 
