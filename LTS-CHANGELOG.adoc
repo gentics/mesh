@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.8.16]]
-== 1.8.16 (TBD)
+== 1.8.16 (14.12.2022)
 
 icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
 
@@ -109,9 +109,13 @@ enforced in the UI, and is now enforced in the REST API. The check is not perfor
 icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
 
 [[v1.6.40]]
-== 1.6.40 (TBD)
+== 1.6.40 (14.12.2022)
 
 icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
+
+icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
+
+icon:check[] Core: When using segment fields, creating a node in a new branch would always fail with a 409 conflict error due to some incorrect uniqueness check for the segment field value. This bug was introduced in version 1.6.39 and has been fixed now.
 
 [[v1.6.39]]
 == 1.6.39 (01.12.2022)
