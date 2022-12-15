@@ -235,10 +235,11 @@ public interface PersistingContentDao extends ContentDao {
 			// remove existing draft edge
 			if (draftEdge != null) {
 				removeEdge(draftEdge);
-				updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update");
 			}
 			// create a new draft edge
 			createContainerEdge(node, newContainer, branchUuid, languageTag, DRAFT);
+
+			updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update");
 		}
 
 		// if there is no initial edge, create one

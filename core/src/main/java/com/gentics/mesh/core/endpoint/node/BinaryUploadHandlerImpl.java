@@ -372,6 +372,8 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			newDraftVersion.removeField(oldField);
 
 			// If the binary field is the segment field, we need to update the webroot info in the node
+			// TODO FIXME This is already called in `PersistingContentDao.connectFieldContainer()`. Normally one should not update a container without reconnecting versions,
+			// but currently MeshLocalClient does this, which may be illegal. The check and call below should be removed, once MeshLocalClientImpl is improved.
 			if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
 				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
 			}
