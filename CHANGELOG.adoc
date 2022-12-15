@@ -32,9 +32,11 @@ icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting,
 icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
 
 [[v1.9.9]]
-== 1.9.9 (TBD)
+== 1.9.9 (15.12.2022)
 
 icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
+
+icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
 
 [[v1.9.8]]
 == 1.9.8 (01.12.2022)
