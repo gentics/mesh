@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.6.40]]
-== 1.6.40 (14.12.2022)
+== 1.6.40 (15.12.2022)
 
 icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
 
