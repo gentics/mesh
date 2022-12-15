@@ -92,11 +92,11 @@
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
 
-| *MESH_BINARY_UPLOAD_LIMIT*
-| Override the configured binary byte upload limit.
-
 | *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
 | Override the max form attribute size
+
+| *MESH_BINARY_UPLOAD_LIMIT*
+| Override the configured binary byte upload limit.
 
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
@@ -242,11 +242,11 @@
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
-| Override the search idle wait flag.
-
 | *MESH_DEBUGINFO_LOG_FOLDER*
 | Override the path to the debug info log folder
+
+| *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
+| Override the search idle wait flag.
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
@@ -269,14 +269,14 @@
 | *MESH_LANGUAGES_FILE_PATH*
 | Override the path to the optional languages file
 
+| *MESH_AUTH_KEYSTORE_PASS*
+| Override the configured keystore password.
+
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
 
 | *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
 | Override the cluster topology lock delay in ms.
-
-| *MESH_AUTH_KEYSTORE_PASS*
-| Override the configured keystore password.
 
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
@@ -374,10 +374,10 @@
 | *MESH_S3_BINARY_CACHE_REGION*
 | Override the configured AWS S3 region.
 
-| *MESH_BINARY_METADATA_WHITELIST*
-| Override the metadata whitelist
-
 | *MESH_AUTH_KEYSTORE_PATH*
 | Override the configured keystore path.
+
+| *MESH_BINARY_METADATA_WHITELIST*
+| Override the metadata whitelist
 
 |======
