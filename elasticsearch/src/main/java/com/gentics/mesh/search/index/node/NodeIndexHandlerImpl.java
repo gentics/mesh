@@ -199,7 +199,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			// And all default indices
 			Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
-					.getUuid(), version, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
+					.getUuid(), version, null, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
 				// Load the index mapping information for the index
 				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));
@@ -252,9 +252,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				// And all default indices
 				Stream.of(DRAFT, PUBLISHED).forEach(version -> {
 					String oldIndexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
-							containerVersion.getUuid(), version, oldHash);
+							containerVersion.getUuid(), version, null, oldHash);
 					String newIndexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
-							containerVersion.getUuid(), version, newHash);
+							containerVersion.getUuid(), version, null, newHash);
 					indexTripleList.add(Triple.of(oldIndexName, newIndexName, query));
 				});
 			}
@@ -311,7 +311,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 						Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
 							activeIndices
 								.add(ContentDao.composeIndexName(currentProject.getUuid(), branch.getUuid(), version.getUuid(),
-									type, version.getMicroschemaVersionHash(branch)));
+									type, null, version.getMicroschemaVersionHash(branch)));
 						});
 					}
 				}
@@ -491,7 +491,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				project.getUuid(),
 				branch.getUuid(),
 				version.getUuid(),
-				type, version.getMicroschemaVersionHash(branch)));
+				type,
+				null,
+				version.getMicroschemaVersionHash(branch)));
 			return Stream.concat(languageIndices, defaultIndex)
 				.collect(Collectors.toList());
 		});
@@ -539,7 +541,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		HibSchemaVersion version = contentDao.getSchemaContainerVersion(container);
 		HibBranch branch = Tx.get().branchDao().findByUuid(project, branchUuid);
 		String indexName = ContentDao.composeIndexName(project.getUuid(), branchUuid, version.getUuid(), 
-				type, version.getMicroschemaVersionHash(branch));
+				type, null, version.getMicroschemaVersionHash(branch));
 		if (log.isDebugEnabled()) {
 			log.debug("Storing node {" + contentDao.getNode(container).getUuid() + "} into index {" + indexName + "}");
 		}

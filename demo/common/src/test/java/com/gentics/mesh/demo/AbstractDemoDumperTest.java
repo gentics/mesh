@@ -91,7 +91,7 @@ public abstract class AbstractDemoDumperTest implements MeshOptionsTypeUnawareCo
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				String microSchemaVersionHash = container.getSchemaContainerVersion().getMicroschemaVersionHash(branchDao.getInitialBranch(node.getProject()));
 				ContainerType type = PUBLISHED;
-				String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, microSchemaVersionHash);
+				String indexName = ContentDao.composeIndexName(projectUuid, branchUuid, schemaContainerVersionUuid, type, null, microSchemaVersionHash);
 				String documentId = ContentDao.composeDocumentId(node.getUuid(), languageTag);
 				if (searchProvider.getDocument(indexName, documentId).blockingGet() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
