@@ -92,6 +92,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath/>
+								<argument>-Dstorage.diskCache.bufferSize=512</argument>
 								<argument>com.gentics.mesh.demo.DemoDumpGenerator</argument>
 							</arguments>
 						</configuration>
