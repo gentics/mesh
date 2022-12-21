@@ -22,12 +22,15 @@ properties([
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
-final def splits = 20;
-final def runs = 20;
+final def splits = 1;
+final def runs = 1;
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
 
 stage("Setup Build Environment") {
 	node("mesh-root-worker") {
+		echo "Testing connectivity to Jenkins"
+		sh "echo $JENKINS_URL"
+
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
@@ -52,21 +55,21 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Prebuild") {
-				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) ) {
-					def extraFlags = ""
-					if (Boolean.valueOf(params.runSonar)) {
-						extraFlags = "-Djacoco.skip=false"
-					}
-					// Install is needed to provide deps for the test plugin build
-					echo "Setup of GPG"
-					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
-					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-					withCredentials([usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
-					}
-				} else {
-					echo "Omitted since we don't execute tests"
-				}
+				// if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) ) {
+				// 	def extraFlags = ""
+				// 	if (Boolean.valueOf(params.runSonar)) {
+				// 		extraFlags = "-Djacoco.skip=false"
+				// 	}
+				// 	// Install is needed to provide deps for the test plugin build
+				// 	echo "Setup of GPG"
+				// 	sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+				// 	sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
+				// 	withCredentials([usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+				// 		sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
+				// 	}
+				// } else {
+				// 	echo "Omitted since we don't execute tests"
+				// }
 			}
 
 			stage("Test") {
@@ -84,7 +87,7 @@ stage("Setup Build Environment") {
 							branches["split${current}"] = {
 								node('mesh-worker') {
 									echo "Testing connectivity to Jenkins"
-									sh "curl -IvL $JENKINS_URL"
+									sh "echo $JENKINS_URL"
 									// echo "Preparing slave environment for ${current}"
 									// sh "rm -rf split${current}"
 									// sh "mkdir split${current}"
