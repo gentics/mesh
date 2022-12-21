@@ -81,7 +81,6 @@ stage("Setup Build Environment") {
 							sh ".jenkins/split-tests.sh ${splits}"
 						}
 						stash includes: '**', name: 'project'
-						unstash 'project'
 						def branches = [:]
 						for (int i = 0; i < runs; i++) {
 							def current = i
@@ -90,8 +89,8 @@ stage("Setup Build Environment") {
 									echo "Testing connectivity to Jenkins"
 									sh "env"
 									sh "touch bla"
-									stash includes: '**', name: 'bla'
-									unstash 'bla'
+									// stash includes: '**', name: 'bla'
+									// unstash 'bla'
 									unstash 'project'
 									// echo "Preparing slave environment for ${current}"
 									// sh "rm -rf split${current}"
