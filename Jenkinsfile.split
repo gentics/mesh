@@ -92,6 +92,7 @@ stage("Setup Build Environment") {
 									sh "touch bla"
 									stash includes: '**', name: 'bla'
 									unstash 'bla'
+									unstash 'project'
 									// echo "Preparing slave environment for ${current}"
 									// sh "rm -rf split${current}"
 									// sh "mkdir split${current}"
