@@ -22,8 +22,8 @@ properties([
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
-final def splits = 1;
-final def runs = 1;
+final def splits = 20;
+final def runs = 20;
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
 
 stage("Setup Build Environment") {
@@ -87,23 +87,21 @@ stage("Setup Build Environment") {
 									sh "rm -rf split${current}"
 									sh "mkdir split${current}"
 									dir("split${current}") {
-										sh "ls -al | wc -l"
 										unstash 'project'
-										sh "ls -al | wc -l"
-									// 	def postfix = current;
-									// 	if (current <= 9) {
-									// 		postfix = "0" + current
-									// 	}
-									// 	sshagent(["git"]) {
-									// 		try {
-									// 			def jacoco = Boolean.valueOf(params.runSonar);
-									// 			sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
-									// 			stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
-									// 		} finally {
-									// 			step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-									// 			deleteDir()
-									// 		}
-									// 	}
+										def postfix = current;
+										if (current <= 9) {
+											postfix = "0" + current
+										}
+										sshagent(["git"]) {
+											try {
+												def jacoco = Boolean.valueOf(params.runSonar);
+												sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
+												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
+											} finally {
+												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+												deleteDir()
+											}
+										}
 									}
 								}
 							}
