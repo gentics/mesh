@@ -52,21 +52,21 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Prebuild") {
-				// if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) ) {
-				// 	def extraFlags = ""
-				// 	if (Boolean.valueOf(params.runSonar)) {
-				// 		extraFlags = "-Djacoco.skip=false"
-				// 	}
-				// 	// Install is needed to provide deps for the test plugin build
-				// 	echo "Setup of GPG"
-				// 	sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
-				// 	sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-				// 	withCredentials([usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-				// 		sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
-				// 	}
-				// } else {
-				// 	echo "Omitted since we don't execute tests"
-				// }
+				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) ) {
+					def extraFlags = ""
+					if (Boolean.valueOf(params.runSonar)) {
+						extraFlags = "-Djacoco.skip=false"
+					}
+					// Install is needed to provide deps for the test plugin build
+					echo "Setup of GPG"
+					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
+					withCredentials([usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
+					}
+				} else {
+					echo "Omitted since we don't execute tests"
+				}
 			}
 
 			stage("Test") {
@@ -87,7 +87,9 @@ stage("Setup Build Environment") {
 									sh "rm -rf split${current}"
 									sh "mkdir split${current}"
 									dir("split${current}") {
+										sh "ls -al | wc -l"
 										unstash 'project'
+										sh "ls -al | wc -l"
 									// 	def postfix = current;
 									// 	if (current <= 9) {
 									// 		postfix = "0" + current
