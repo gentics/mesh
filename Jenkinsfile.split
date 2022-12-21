@@ -89,6 +89,7 @@ stage("Setup Build Environment") {
 								node('mesh-worker') {
 									echo "Testing connectivity to Jenkins"
 									sh "env"
+									sh "touch bla"
 									stash includes: '**', name: 'bla'
 									unstash 'bla'
 									// echo "Preparing slave environment for ${current}"
