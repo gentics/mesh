@@ -97,6 +97,7 @@ stage("Setup Build Environment") {
 												def jacoco = Boolean.valueOf(params.runSonar);
 												withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 													sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
+													sh 'docker pull docker.apa-it.at/testcontainers/ryuk:0.2.3'
 													sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
 												}
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
