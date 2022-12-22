@@ -72,10 +72,12 @@ stage("Setup Build Environment") {
 			stage("Test") {
 				if (Boolean.valueOf(params.runTests)) {
 					if (Boolean.valueOf(params.splitTests)) {
-						if (Boolean.valueOf(params.skipSearchTests)) {
-							sh ".jenkins/split-tests.sh ${splits} nosearch"
-						} else {
-							sh ".jenkins/split-tests.sh ${splits}"
+						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+							if (Boolean.valueOf(params.skipSearchTests)) {
+								sh ".jenkins/split-tests.sh ${splits} nosearch"
+							} else {
+								sh ".jenkins/split-tests.sh ${splits}"
+							}
 						}
 						stash includes: '**', name: 'project'
 						def branches = [:]
