@@ -22,8 +22,8 @@ properties([
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
-final def splits = 20;
-final def runs = 20;
+final def splits = 1;
+final def runs = 1;
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
 
 stage("Setup Build Environment") {
