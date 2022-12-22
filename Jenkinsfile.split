@@ -98,6 +98,8 @@ stage("Setup Build Environment") {
 												withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 													sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
 													sh 'docker pull docker.apa-it.at/testcontainers/ryuk:0.2.3'
+													sh 'docker pull docker.apa-it.at/elasticsearch/elasticsearch-oss:6.8.1'
+													sh 'docker pull docker.apa-it.at/elasticsearch/elasticsearch-oss:7.4.0'
 													sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
 												}
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
