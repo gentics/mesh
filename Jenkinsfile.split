@@ -73,6 +73,7 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runTests)) {
 					if (Boolean.valueOf(params.splitTests)) {
 						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+							sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
 							if (Boolean.valueOf(params.skipSearchTests)) {
 								sh ".jenkins/split-tests.sh ${splits} nosearch"
 							} else {
