@@ -72,13 +72,10 @@ stage("Setup Build Environment") {
 			stage("Test") {
 				if (Boolean.valueOf(params.runTests)) {
 					if (Boolean.valueOf(params.splitTests)) {
-						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-							sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
-							if (Boolean.valueOf(params.skipSearchTests)) {
-								sh ".jenkins/split-tests.sh ${splits} nosearch"
-							} else {
-								sh ".jenkins/split-tests.sh ${splits}"
-							}
+						if (Boolean.valueOf(params.skipSearchTests)) {
+							sh ".jenkins/split-tests.sh ${splits} nosearch"
+						} else {
+							sh ".jenkins/split-tests.sh ${splits}"
 						}
 						stash includes: '**', name: 'project'
 						def branches = [:]
@@ -98,7 +95,10 @@ stage("Setup Build Environment") {
 										sshagent(["git"]) {
 											try {
 												def jacoco = Boolean.valueOf(params.runSonar);
-												sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
+												withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+													sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
+													sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco}"
+												}
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
