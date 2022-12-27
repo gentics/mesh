@@ -14,7 +14,7 @@
 
     <properties>
         <stack.version>4.3.2</stack.version>
-        <hazelcast.version>3.12.2</hazelcast.version>
+        <hazelcast.version>3.12.13</hazelcast.version>
         <hazelcast-kubernetes.version>1.5.1</hazelcast-kubernetes.version>
         <skipUnitTests>${skip.vertx-hazelcast}</skipUnitTests>
         <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
