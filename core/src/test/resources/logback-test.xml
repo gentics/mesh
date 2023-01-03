@@ -44,6 +44,7 @@
 	<logger name="com.gentics.mesh.plugin" level="TRACE" />
  -->
 	<logger name="org.testcontainers" level="DEBUG"/>
+	<logger name="com.github" level="DEBUG"/>
 	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
