@@ -5,9 +5,6 @@ cd $BASEDIR/..
 echo "Using includes: $1"
 tests=$(paste -sd "," $1 | sed 's/\.java//g' | sed 's/\//./g')
 
-tests=com.gentics.mesh.core.monitoring.MetricsLabelTest#testSearchProject
-# tests=com.gentics.mesh.core.data.fieldhandler.schema.SchemaComparatorSchemaTest
-
 if [ -z "$tests" ] ; then
   echo "Did not collect valid test set. Set was empty."
   exit 10

@@ -43,10 +43,6 @@
 	<logger name="com.gentics.mesh.event.impl.EventQueueBatchImpl" level="TRACE" />
 	<logger name="com.gentics.mesh.plugin" level="TRACE" />
  -->
-	<logger name="org.testcontainers" level="DEBUG"/>
-	<logger name="org.testcontainers.shaded.okhttp3" level="TRACE"/>
-	<logger name="com.github.dockerjava" level="TRACE"/>
-	<logger name="okhttp3" level="TRACE"/>
 	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
