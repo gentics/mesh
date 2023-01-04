@@ -96,7 +96,10 @@ stage("Setup Build Environment") {
 										sshagent(["git"]) {
 											try {
 												def jacoco = Boolean.valueOf(params.runSonar);
-												sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} split${current}"
+												withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+													sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
+													sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} split${current}"
+												}
 												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 											} finally {
 												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
