@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.8]]
+== 1.8.8 (TBD)
+
+icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
+
 [[v1.8.7]]
 == 1.8.7 (2022-11-30)
 
@@ -56,6 +61,11 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.29]]
+== 1.6.29 (TBD)
+
+icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
 
 [[v1.6.28]]
 == 1.6.28 (2022-11-30)
