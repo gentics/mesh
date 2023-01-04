@@ -14,17 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -60,39 +59,6 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 	private final FormService formService;
 	private final File storageDir;
 	private final StatusService statusService;
-
-	/**
-	 * Get the next filename to try
-	 * 
-	 * @param filename
-	 *            filename
-	 * @return next filename to try
-	 */
-	public static String getNextFilename(String filename) {
-		Matcher m1 = filenameWithNumPattern.matcher(filename);
-		if (m1.matches()) {
-			String base = m1.group("base");
-			String numGroup = m1.group("num");
-			int num = numGroup != null ? Integer.parseInt(numGroup) + 1 : 1;
-			String ext = m1.group("ext");
-			if (ext == null) {
-				ext = "";
-			}
-			return String.format("%s (%d)%s", base, num, ext);
-		} else {
-			Matcher m2 = filenameWithoutNumPattern.matcher(filename);
-			if (m2.matches()) {
-				String base = m2.group("base");
-				String ext = m2.group("ext");
-				if (ext == null) {
-					ext = "";
-				}
-				return String.format("%s (%d)%s", base, 1, ext);
-			} else {
-				return String.format("%s (%d)", filename, 1);
-			}
-		}
-	}
 
 	@Inject
 	public LoadFilesZipHandler(@AdminClient MeshRestClient adminClient, FormService formService, @StorageDir File storageDir, StatusService statusService) {
@@ -239,7 +205,7 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 
 		return Observable.fromIterable(downloadables).flatMap(d -> {
 			return adminClient.downloadBinaryField(projectName, d.uuid, "en", d.fieldName).toObservable().doAfterNext(MeshBinaryResponse::close).flatMap(download -> {
-				addZipEntryWithUniquename(out, download.getFilename());
+				addZipEntryWithUniqueFolderStructure(out, download.getFilename(), d.uuid, d.fieldName);
 				try (InputStream ins = download.getStream()) {
 					IOUtils.copy(ins, out);
 				}
@@ -254,30 +220,33 @@ public class LoadFilesZipHandler extends AbstractFormsHandler {
 	}
 
 	/**
-	 * Add a new ZipEntry to the ZipOutputStream instance. First try the given filename, but if that leads to a ZipException (duplicate entry), try making the
-	 * filename unique by calling {@link #getNextFilename(String)}
+	 * Add a new ZipEntry to the ZipOutputStream instance at a given folder structure that corresponds to the form UUID-field path. Both form parameters have to be either empty or filled.
+	 * First try the given filename, but if that leads to a ZipException (duplicate entry), try making the filename unique by calling {@link #getNextFilename(String)}
 	 * 
 	 * @param out
 	 *            zip output stream
 	 * @param filename
 	 *            proposed filename
+	 * @param formDataUuid
+	 *            form data UUID, nullable
+	 * @param fieldName
+	 *            form field name, nullable
 	 * @throws IOException
 	 */
-	protected void addZipEntryWithUniquename(ZipOutputStream out, String filename) throws IOException {
+	protected void addZipEntryWithUniqueFolderStructure(ZipOutputStream out, String filename, String formDataUuid, String fieldName) throws IOException {
 		boolean tryAgain = false;
 		do {
 			tryAgain = false;
-			try {
-				out.putNextEntry(new ZipEntry(filename));
-			} catch (ZipException e) {
-				if (e.getMessage() != null && e.getMessage().startsWith("duplicate entry")) {
-					// try again
-					tryAgain = true;
-					filename = getNextFilename(filename);
-				} else {
-					throw e;
-				}
+			StringBuilder folderName = new StringBuilder();
+			if (StringUtils.isNotBlank(formDataUuid) && StringUtils.isNotBlank(fieldName)) {
+				folderName.append(formDataUuid);
+				folderName.append("/");
+				folderName.append(fieldName);
+				folderName.append("/");
+			} else if (StringUtils.isNotBlank(formDataUuid) ^ StringUtils.isNotBlank(fieldName)) {
+				throw new IllegalStateException("Incomplete form data: form UUID: " + formDataUuid + ", field: " + fieldName);
 			}
+			out.putNextEntry(new ZipEntry(folderName + filename));
 		} while (tryAgain);
 	}
 

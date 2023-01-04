@@ -15,10 +15,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.google.common.net.HttpHeaders;
 
+import io.vertx.core.json.JsonObject;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -593,16 +594,20 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm("filefield.json");
 
 		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
-
-		for (String fileName : filesToPost) {
-			RequestBody requestBody = new MultipartBody.Builder()
-					.setType(MultipartBody.FORM)
-					.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
-					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
-			Response response = client().newCall(postRequest).execute();
-			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		}
+		List<String> expectedNames = filesToPost.stream().map(fileName -> {
+			try {
+				RequestBody requestBody = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.build();
+				Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+				Response response = client().newCall(postRequest).execute();
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+				return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toList());
 
 		if (!online) {
 			setFormOffline(uuid, "en", true, true);
@@ -629,11 +634,10 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					foundFiles.add(name);
 					StringWriter fileContents = new StringWriter();
 					IOUtils.copy(zipIn, fileContents, "UTF-8");
-					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name));
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name.contains("/") ? name.substring(name.lastIndexOf("/") + 1) : name));
 				}
 			}
-
-			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(filesToPost);
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
 		} else {
 			assertForbidden(zipDownloadResponse);
 		}
@@ -648,16 +652,20 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm("filefield_de.json");
 
 		List<String> filesToPost = Arrays.asList("list1.json", "list2.json", "list3.json");
-
-		for (String fileName : filesToPost) {
-			RequestBody requestBody = new MultipartBody.Builder()
-					.setType(MultipartBody.FORM)
-					.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
-					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
-			Response response = client().newCall(postRequest).execute();
-			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		}
+		List<String> expectedNames = filesToPost.stream().map(fileName -> {
+			try {
+				RequestBody requestBody = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.build();
+				Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+				Response response = client().newCall(postRequest).execute();
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+				return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toList());
 
 		if (!online) {
 			setFormOffline(uuid, "de", true, true);
@@ -684,11 +692,10 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					foundFiles.add(name);
 					StringWriter fileContents = new StringWriter();
 					IOUtils.copy(zipIn, fileContents, "UTF-8");
-					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name));
+					assertThat(fileContents.toString()).as(String.format("Contents of file %s", name)).isEqualTo(fromFile(name.contains("/") ? name.substring(name.lastIndexOf("/") + 1) : name));
 				}
 			}
-
-			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(filesToPost);
+			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
 		} else {
 			assertForbidden(zipDownloadResponse);
 		}
@@ -703,17 +710,20 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		String uuid = createForm("filefield.json");
 
 		List<String> filesToPost = Arrays.asList("list1.json", "list1.json", "list1.json");
-		List<String> expectedNames = Arrays.asList("list1.json", "list1 (1).json", "list1 (2).json");
-
-		for (String fileName : filesToPost) {
-			RequestBody requestBody = new MultipartBody.Builder()
-					.setType(MultipartBody.FORM)
-					.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
-					.build();
-			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
-			Response response = client().newCall(postRequest).execute();
-			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		}
+		List<String> expectedNames = filesToPost.stream().map(fileName -> {
+			try {
+				RequestBody requestBody = new MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart("file1", fileName, requestBodyFromFile(fileName))
+						.build();
+				Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/jsondata")).header("Referer", "ref").post(requestBody).build();
+				Response response = client().newCall(postRequest).execute();
+				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+				return new JsonObject(response.body().string()).getValue("dataUuid") + "/file1/" + fileName;
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}).collect(Collectors.toList());
 
 		if (!online) {
 			setFormOffline(uuid, "en", true, true);
@@ -737,7 +747,6 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 					foundFiles.add(name);
 				}
 			}
-
 			assertThat(foundFiles).as("Files found in ZIP").containsOnlyElementsOf(expectedNames);
 		} else {
 			assertForbidden(zipDownloadResponse);
