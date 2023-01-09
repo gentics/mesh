@@ -6,8 +6,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
-import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
