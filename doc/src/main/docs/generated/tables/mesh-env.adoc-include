@@ -107,11 +107,11 @@
 | *MESH_S3_CORS_ALLOWED_HEADERS*
 | Override the configured AWS S3 CORS allowed headers.
 
-| *MESH_IMAGE_CACHE_DIRECTORY*
-| Override the path for image cache directory.
-
 | *MESH_DEBUGINFO_LOG_ENABLED*
 | Enables the debug info log
+
+| *MESH_IMAGE_CACHE_DIRECTORY*
+| Override the path for image cache directory.
 
 | *MESH_ELASTICSEARCH_BULK_LENGTH_LIMIT*
 | Override the batch bulk length limit. Default: 5000000
@@ -218,11 +218,11 @@
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
-| *MESH_PLUGIN_TIMEOUT*
-| Override the configured plugin timeout.
-
 | *MESH_CLUSTER_NETWORK_HOST*
 | Override the cluster network host.
+
+| *MESH_PLUGIN_TIMEOUT*
+| Override the configured plugin timeout.
 
 | *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
 | Override the configured AWS S3 upload time.
@@ -236,17 +236,17 @@
 | *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
 | Override the configured parser limit.
 
-| *MESH_IMAGE_MAX_HEIGHT*
-| Override the max height for image resize operations.
-
 | *MESH_ELASTICSEARCH_MAPPING_MODE*
 | Override the search mapping mode. 
 
-| *MESH_DEBUGINFO_LOG_FOLDER*
-| Override the path to the debug info log folder
+| *MESH_IMAGE_MAX_HEIGHT*
+| Override the max height for image resize operations.
 
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
+
+| *MESH_DEBUGINFO_LOG_FOLDER*
+| Override the path to the debug info log folder
 
 | *MESH_GRAPH_SYNC_WRITES*
 | Override the graph database sync writes flag.
@@ -344,11 +344,11 @@
 | *MESH_MAX_PURGE_BATCH_SIZE*
 | Override the maximum purge batch size.
 
-| *MESH_IMAGE_MAX_WIDTH*
-| Override the max width for image resize operations.
-
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.
+
+| *MESH_IMAGE_MAX_WIDTH*
+| Override the max width for image resize operations.
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.
