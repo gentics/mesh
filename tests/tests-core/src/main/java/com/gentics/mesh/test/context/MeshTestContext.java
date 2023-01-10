@@ -275,8 +275,7 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {
-		// TODO CI does not like this, reactivate later:
-		// mesh.shutdown();
+		mesh.shutdown();
 		removeConfigDirectory();
 		if (elasticsearch != null && elasticsearch.isRunning()) {
 			elasticsearch.stop();
