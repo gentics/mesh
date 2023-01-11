@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.9.9"
+version: "1.10.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -589,6 +589,217 @@ mediaType: application/json
                                   "token" : "FDrbBDWRY3aS",
                                   "created" : "2018-11-20T20:12:01.084Z"
                                 }
+    /{userUuid}/rolePermissions: 
+        uriParameters: 
+            userUuid: 
+                displayName: userUuid
+                description: Uuid of the user
+                type: string
+                required: true
+                repeat: false
+                example: "589319933be24ec79319933be24ec7fe"
+        get: 
+            description: Get the permissions on the user for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the user to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "25f5c2fba09340a8b09cfb3c1619a8ea"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the user from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
     /{userUuid}/token: 
         uriParameters: 
             userUuid: 
@@ -1001,6 +1212,217 @@ mediaType: application/json
                                   "publish" : false,
                                   "readPublished" : false
                                 }
+    /{roleUuid}/rolePermissions: 
+        uriParameters: 
+            roleUuid: 
+                displayName: roleUuid
+                description: Uuid of the role
+                type: string
+                required: true
+                repeat: false
+                example: ddcddceb33d648318ddceb33d618314f
+        get: 
+            description: Get the permissions on the role for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the role to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "9f574354f2b041f685d85a21d9d6be77"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the role from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
 /groups: 
     displayName: /groups
     description: Provides endpoints which allow the manipulation of groups.
@@ -1304,6 +1726,217 @@ mediaType: application/json
             responses: 
                 "204": 
                     description: Group was deleted.
+    /{groupUuid}/rolePermissions: 
+        uriParameters: 
+            groupUuid: 
+                displayName: groupUuid
+                description: Uuid of the group
+                type: string
+                required: true
+                repeat: false
+                example: df81c23d9ff1450081c23d9ff195005e
+        get: 
+            description: Get the permissions on the group for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the group to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "f48bddcb60aa42f6bdff2a46ec087144"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the group from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
     /{groupUuid}/roles: 
         uriParameters: 
             groupUuid: 
@@ -2026,6 +2659,217 @@ mediaType: application/json
             responses: 
                 "200": 
                     description: Project versions purge job added.
+    /{projectUuid}/rolePermissions: 
+        uriParameters: 
+            projectUuid: 
+                displayName: projectUuid
+                description: Uuid of the project
+                type: string
+                required: true
+                repeat: false
+                example: "217f8c981ada4642bf8c981adaa642c3"
+        get: 
+            description: Get the permissions on the project for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the project to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "52b16fc2bba24e1885d33229ade073f3"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the project from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
 /schemas: 
     displayName: /schemas
     description: Provides endpoints which allow the manipulation of schemas.
@@ -2762,6 +3606,217 @@ mediaType: application/json
                                     "properties" : { }
                                   } ]
                                 }
+    /{schemaUuid}/rolePermissions: 
+        uriParameters: 
+            schemaUuid: 
+                displayName: schemaUuid
+                description: Uuid of the schema
+                type: string
+                required: true
+                repeat: false
+                example: "2aa83a2b3cba40a1a83a2b3cba90a1de"
+        get: 
+            description: Get the permissions on the schema for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the schema to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "cfb68a0ee2254bd4a57daa5c4d71b042"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the schema from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
 /microschemas: 
     displayName: /microschemas
     description: Endpoint which provides methods to manipulate microschemas.
@@ -3186,6 +4241,217 @@ mediaType: application/json
                                   }, {
                                     "operation" : "UPDATESCHEMA",
                                     "properties" : { }
+                                  } ]
+                                }
+    /{microschemaUuid}/rolePermissions: 
+        uriParameters: 
+            microschemaUuid: 
+                displayName: microschemaUuid
+                description: Uuid of the microschema
+                type: string
+                required: true
+                repeat: false
+                example: "2715307deafc4ecc95307deafccecc10"
+        get: 
+            description: Get the permissions on the microschema for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the microschema to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "54e49793be734ecfa34883a6859ba00c"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the microschema from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
                                   } ]
                                 }
 /admin: 
@@ -6129,13 +7395,13 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.9.9",
+                                  "meshVersion" : "1.10.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "3.9.12"
+                                  "vertxVersion" : "4.3.2"
                                 }
     /raml: 
         get: 
@@ -8428,6 +9694,272 @@ mediaType: application/json
                                 }
                 "204": 
                     description: Node was unpublished.
+    /{nodeUuid}/rolePermissions: 
+        uriParameters: 
+            nodeUuid: 
+                displayName: nodeUuid
+                description: Uuid of the node
+                type: string
+                required: true
+                repeat: false
+                example: adaf48da8c124049af48da8c12a0493e
+        get: 
+            description: Get the permissions on the node for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "publish" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "readPublished" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the node to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "publish" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "readPublished" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "d0d77c0268164ebe8df32dadbc2951c9"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "publish" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "readPublished" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the node from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "publish" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "readPublished" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "publish" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "readPublished" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
     /{nodeUuid}/s3binary/{fieldName}: 
         uriParameters: 
             fieldName: 
@@ -9623,6 +11155,217 @@ mediaType: application/json
             responses: 
                 "204": 
                     description: Tag family was deleted.
+    /{tagFamilyUuid}/rolePermissions: 
+        uriParameters: 
+            tagFamilyUuid: 
+                displayName: tagFamilyUuid
+                description: Uuid of the tag family
+                type: string
+                required: true
+                repeat: false
+                example: "1898428398164d9a9842839816ed9a3d"
+        get: 
+            description: Get the permissions on the tag family for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the tag family to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "d8aee5f878414f7d9f6f597b8ae22c83"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the tag family from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
     /{tagFamilyUuid}/tags: 
         uriParameters: 
             tagFamilyUuid: 
@@ -10196,6 +11939,209 @@ mediaType: application/json
                                     "pageCount" : 10,
                                     "totalCount" : 20
                                   }
+                                }
+    /{tagFamilyUuid}/tags/{tagUuid}/rolePermissions: 
+        get: 
+            description: Get the permissions on the tag for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the tag to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "5d086dad1c5c42bf8673c867f3939918"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the tag from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
                                 }
 /{project}/navroot: 
     displayName: /{project}/navroot
@@ -11641,6 +13587,217 @@ mediaType: application/json
                             example: |
                                 {
                                   "message" : "I18n message"
+                                }
+    /{branchUuid}/rolePermissions: 
+        uriParameters: 
+            branchUuid: 
+                displayName: branchUuid
+                description: Uuid of the branch
+                type: string
+                required: true
+                repeat: false
+                example: "39f69bee0baa415eb69bee0baa115e82"
+        get: 
+            description: Get the permissions on the branch for all roles.
+            responses: 
+                "200": 
+                    description: Loaded permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        post: 
+            description: Grant permissions on the branch to multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | exclusive | false | boolean | Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles). |
+                        | ignore | true | array | Roles which are ignored when the exclusive flag is set. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "exclusive" : true,
+                          "ignore" : [ {
+                            "name" : "admin",
+                            "uuid" : "f8717c9bbd5f490c8db1dca5023774c9"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
+                                }
+        delete: 
+            description: Revoke permissions on the branch from multiple roles.
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | create | true | array | Roles to which the create permission is granted. |
+                        | delete | true | array | Roles to which the delete permission is granted. |
+                        | publish | false | array | Roles to which the publish permission is granted. |
+                        | read | true | array | Roles to which the read permission is granted. |
+                        | readPublished | false | array | Roles to which the read published permission is granted. |
+                        | update | true | array | Roles to which the update permission is granted. |
+                    example: |
+                        {
+                          "create" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "read" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "update" : [ {
+                            "name" : "translator",
+                            "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                          }, {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ],
+                          "delete" : [ {
+                            "name" : "editor",
+                            "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                          } ]
+                        }
+            responses: 
+                "200": 
+                    description: Updated permissions.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | create | true | array | Roles to which the create permission is granted. |
+                                | delete | true | array | Roles to which the delete permission is granted. |
+                                | publish | false | array | Roles to which the publish permission is granted. |
+                                | read | true | array | Roles to which the read permission is granted. |
+                                | readPublished | false | array | Roles to which the read published permission is granted. |
+                                | update | true | array | Roles to which the update permission is granted. |
+                            example: |
+                                {
+                                  "create" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "read" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "update" : [ {
+                                    "name" : "translator",
+                                    "uuid" : "d84a6f054a3f4ed68a6f054a3f1ed635"
+                                  }, {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ],
+                                  "delete" : [ {
+                                    "name" : "editor",
+                                    "uuid" : "01ed2f8647421b2b85891e5204d53f1b"
+                                  } ]
                                 }
     /{branchUuid}/schemas: 
         uriParameters: 
