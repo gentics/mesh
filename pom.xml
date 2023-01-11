@@ -26,6 +26,7 @@
 		<skip.cluster.tests>false</skip.cluster.tests>
 		<surefire.excludedGroups></surefire.excludedGroups>
 		<surefire.groups></surefire.groups>
+		<skip.vertx-hazelcast>true</skip.vertx-hazelcast>
 
 		<!-- Jacoco -->
 		<jacoco.skip.merge>true</jacoco.skip.merge>
