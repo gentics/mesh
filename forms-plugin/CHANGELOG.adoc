@@ -15,6 +15,8 @@
 
 icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
 
+icon:check[] Forms: Adds new form property `downloadBaseUrl` which is used for creating download links in notification emails and exports. When not set the generated base URL used for email templates and exports will be the endpoint for the `LoadFormDataBinaryHandler` of the plugin itself. Otherwise it will be exactly the value of `downloadBaseUrl`. Note that mail templates need to be adapted accordingly.
+
 [[v1.6.28]]
 == 1.6.28 (2022-11-30)
 

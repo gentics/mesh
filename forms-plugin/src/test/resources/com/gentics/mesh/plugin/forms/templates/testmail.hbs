@@ -1,6 +1,6 @@
 {{# each data }}
     {{~# if this.isFile ~}}
-        {{ baseUrl }}/api/forms/forms/{{ form.uuid }}/data/{{ dataUuid }}/binary/{{ this.name }}
+        {{ baseUrl }}/{{ dataUuid }}/binary/{{ this.name }}
     {{~ else }}
 value: {{{formatDate value "MM/dd/yyyy" srcFormat="dd.MM.yyyy"}}}
 valueProperty: {{valueProperty}}
