@@ -3,6 +3,24 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.google.common.net.HttpHeaders;
+import io.vertx.core.json.JsonObject;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -18,26 +36,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.google.common.net.HttpHeaders;
-
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * Test cases for getting reporting data
@@ -422,11 +420,23 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	/**
-	 * Test export with binary data
-	 * @throws IOException
+	 * Test export with binary data and default base URL.
 	 */
 	@Test
-	public void testExportBinary() throws IOException {
+	public void testExportBinaryDefaultBaseUrl() throws Exception {
+		doTestExportBinary("filefield.json", String.format("/api/v2/%s/plugins/forms/forms", PROJECT_NAME), true);
+	}
+
+	/**
+	 * Test export with binary data and custom base URL.
+	 */
+	@Test
+	public void testExportBinaryCustomBaseUrl() throws Exception {
+		doTestExportBinary("filefield_with_download_url.json", "http://cms.domain/editor/#proxy/CNPortletapp/rest/form/1/data", false);
+
+	}
+
+	private void doTestExportBinary(String filename, String expectedBaseUrl, boolean addFormUuidToBasePath) throws IOException {
 		if (!online || !permission) {
 			// Permission and online status is covered by other tests. Here we
 			// are only interested if the binary fields are exported correctly.
@@ -435,7 +445,6 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 		}
 
 		String fieldName = "file1";
-		String filename = "filefield.json";
 		String uuid = createForm(filename);
 		RequestBody requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
@@ -450,9 +459,12 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			.build();
 		Response exportResponse = client().newCall(exportRequest).execute();
 		String dataUuid = new JsonObject(postResponse.body().string()).getString(FIELD_RS_DATA_UUID);
+		String fileUrl = addFormUuidToBasePath
+			? String.format("%s/%s/data/%s/binary/%s,%s", expectedBaseUrl, uuid, dataUuid, fieldName, filename)
+			: String.format("%s/%s/binary/%s,%s", expectedBaseUrl, dataUuid, fieldName, filename);
 		List<String> expected = Arrays.asList(
 			String.format("%1$s|||Datei,%1$s|||Datei (filename)", fieldName),
-			String.format("http://%s/api/forms/forms/%s/data/%s/binary/%s,%s", PROJECT_HOSTNAME, uuid, dataUuid, fieldName, filename));
+			fileUrl);
 		Set<String> actual = getExportRecords(exportResponse.body().string());
 
 		assertThat(actual).as("Exported data").containsOnlyElementsOf(expected);
