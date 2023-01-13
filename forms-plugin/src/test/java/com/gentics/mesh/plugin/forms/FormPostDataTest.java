@@ -377,8 +377,20 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
-	public void testPostFileWithMail() throws IOException, MessagingException {
-		String formDefinition = "filefield_with_mail.json";
+	public void testPostFileWithEmailDefaultBaseUrl() throws MessagingException, IOException {
+		doTestPostFileWithMail(
+			"filefield_with_mail.json",
+			"/api/v2/testproject/plugins/forms/forms/%s/data/%s/binary/file1", true);
+	}
+
+	@Test
+	public void testPostFileWithEmailCustomBaseUrl() throws MessagingException, IOException {
+		doTestPostFileWithMail(
+			"filefield_with_mail_custom_download_url.json",
+			"http://cms.domain/editor/#proxy/CNPortletapp/rest/form/1/data/%s/binary/file1", false);
+	}
+
+	private void doTestPostFileWithMail(String formDefinition, String expectedLinkFormat, boolean addFormUuid) throws IOException, MessagingException {
 		Pair<String, String> uuids = doPostFile(formDefinition);
 
 		boolean mailSent = greenMail.waitForIncomingEmail(MAIL_TIMEOUT, 1);
@@ -401,7 +413,10 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			.isEqualTo(2);
 
 		BodyPart part = content.getBodyPart(0);
-		String expectedLink = String.format("http://testhost/api/forms/forms/%s/data/%s/binary/file1", uuids.getLeft(), uuids.getRight());
+
+		String expectedLink = addFormUuid
+			? String.format(expectedLinkFormat, uuids.getLeft(), uuids.getRight())
+			: String.format(expectedLinkFormat, uuids.getRight());
 
 		assertThat(part.getContent().toString().trim())
 			.as("Message")

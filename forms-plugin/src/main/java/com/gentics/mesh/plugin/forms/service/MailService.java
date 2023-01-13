@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,13 +10,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.common.service.RenderService;
-import com.gentics.mesh.plugin.forms.util.FormUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.MailOptions;
@@ -51,20 +50,16 @@ public class MailService {
 
 	private final RenderService renderService;
 
-	private final StatusService statusService;
-
 	@Inject
 	public MailService(
 			@AdminClient MeshRestClient adminClient,
 			Vertx vertx,
 			FormsConfig configuration,
-			RenderService renderService,
-			StatusService statusService) {
+			RenderService renderService) {
 		this.adminClient = adminClient;
 		this.vertx = vertx;
 		this.configuration = configuration;
 		this.renderService = renderService;
-		this.statusService = statusService;
 	}
 
 	/**
@@ -119,7 +114,7 @@ public class MailService {
 			String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject()).replace(
 				"[[FORMNAME]]",
 				form.getName());
-			sendMail(projectName, form, formDataNode, rc, subject, template, Arrays.asList(userEmail), attachFileUploads);
+			sendMail(projectName, form, formDataNode, rc, subject, template, Collections.singletonList(userEmail), attachFileUploads);
 		});
 	}
 
@@ -149,34 +144,33 @@ public class MailService {
 			log.error("Sending mail will probably fail, because no \"fromAddress\" is configured in config.yml.");
 		}
 
-		statusService.getBaseUrl(projectName).subscribe(baseUrl -> {
-			rc.put("baseUrl", baseUrl);
-			rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
-			rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive() && !e.skipElement(formDataNode)));
-			rc.put("dataUuid", formDataNode.getUuid());
-			renderService.render(rc.data(), template, res -> {
-				if (res.succeeded()) {
-					MailMessage message = new MailMessage().setTo(to).setFrom(from).setSubject(subject).setHtml(res.result().toString());
+		rc.put("baseUrl", FormDataService.getDownloadBaseUrl(form, projectName));
+		rc.put("form", new JsonObject(form.removeInactiveElements().toJson()));
+		rc.put("data", form.getReportableFormData(formDataNode, e -> e.isActive() && !e.skipElement(formDataNode)));
+		rc.put("dataUuid", formDataNode.getUuid());
 
-					Consumer<MailMessage> send = m -> {
-						MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
-						client.sendMail(m, sendRes -> {
-							if (sendRes.succeeded()) {
-								log.info(sendRes.result());
-							} else {
-								log.error("Error while sending mail", sendRes.cause());
-							}
-						});
-					};
-					if (attachFiles) {
-						addAttachments(projectName, form, formDataNode, message).subscribe(send);
-					} else {
-						Single.just(message).subscribe(send);
-					}
+		renderService.render(rc.data(), template, res -> {
+			if (res.succeeded()) {
+				MailMessage message = new MailMessage().setTo(to).setFrom(from).setSubject(subject).setHtml(res.result().toString());
+
+				Consumer<MailMessage> send = m -> {
+					MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
+					client.sendMail(m, sendRes -> {
+						if (sendRes.succeeded()) {
+							log.info(sendRes.result());
+						} else {
+							log.error("Error while sending mail", sendRes.cause());
+						}
+					});
+				};
+				if (attachFiles) {
+					addAttachments(projectName, form, formDataNode, message).subscribe(send);
 				} else {
-					log.error("Error while rendering mail body", res.cause());
+					Single.just(message).subscribe(send);
 				}
-			});
+			} else {
+				log.error("Error while rendering mail body", res.cause());
+			}
 		});
 	}
 
