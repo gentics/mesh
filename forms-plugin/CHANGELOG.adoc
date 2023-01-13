@@ -63,7 +63,7 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
 
 [[v1.6.29]]
-== 1.6.29 (TBD)
+== 1.6.29 (2023-01-13)
 
 icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
 
