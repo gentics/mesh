@@ -11,7 +11,7 @@
 = Mesh Forms Plugin
 
 [[v1.6.29]]
-== 1.6.29 (TBD)
+== 1.6.29 (2023-01-13)
 
 icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
 
