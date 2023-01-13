@@ -1,9 +1,8 @@
 package com.gentics.mesh.plugin.forms.test;
 
-import com.gentics.mesh.plugin.forms.service.FormDataService;
 import okhttp3.Cookie;
 import okhttp3.Response;
-import org.testcontainers.shaded.org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
 import java.util.Collections;
