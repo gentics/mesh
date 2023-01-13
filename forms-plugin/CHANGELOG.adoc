@@ -11,9 +11,16 @@
 = Mesh Forms Plugin
 
 [[v1.10.0]]
-== 1.10.0 (TBD)
+== 1.10.0 (2023-01-13)
 
 icon:plus[] Mails: The new `mailsource` property for `Form` and `UserMailElement` objects can be used to specify a Handlebars template directly instead of the path to a template file.
+
+[[v1.9.5]]
+== 1.9.5 (2023-01-13)
+
+icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
+
+icon:check[] Forms: Adds new form property `downloadBaseUrl` which is used for creating download links in notification emails and exports. When not set the generated base URL used for email templates and exports will be the endpoint for the `LoadFormDataBinaryHandler` of the plugin itself. Otherwise it will be exactly the value of `downloadBaseUrl`. Note that mail templates need to be adapted accordingly.
 
 [[v1.9.4]]
 == 1.9.4 (2022-11-30)
@@ -37,6 +44,14 @@ CAUTION: The plugin requires Mesh >= 1.9.3 to run.
 icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
+[[v1.8.8]]
+== 1.8.8 (2023-01-13)
+
+icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
+
+
+icon:check[] Forms: Adds new form property `downloadBaseUrl` which is used for creating download links in notification emails and exports. When not set the generated base URL used for email templates and exports will be the endpoint for the `LoadFormDataBinaryHandler` of the plugin itself. Otherwise it will be exactly the value of `downloadBaseUrl`. Note that mail templates need to be adapted accordingly.
 
 [[v1.8.7]]
 == 1.8.7 (2022-11-30)
@@ -84,6 +99,13 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.29]]
+== 1.6.29 (2023-01-13)
+
+icon:check[] Forms: Uniqueness of the binary form fields is now guaranteed by including of the form data UUID and field name into the binary data path, during ZIP content export.
+
+icon:check[] Forms: Adds new form property `downloadBaseUrl` which is used for creating download links in notification emails and exports. When not set the generated base URL used for email templates and exports will be the endpoint for the `LoadFormDataBinaryHandler` of the plugin itself. Otherwise it will be exactly the value of `downloadBaseUrl`. Note that mail templates need to be adapted accordingly.
 
 [[v1.6.28]]
 == 1.6.28 (2022-11-30)

@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -19,7 +17,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.plugin.forms.handler.LoadFilesZipHandler;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.jayway.jsonpath.JsonPath;
 
@@ -112,22 +109,6 @@ public class GenericFormsPluginIntegrationTest extends AbstractFormsPluginIntegr
 							new StringFieldSchemaImpl().setName("errors").setLabel("Errors"));
 		} else {
 			assertForbidden(response);
-		}
-	}
-
-	@Test
-	public void testFilenameUnique() {
-		Map<String, String> filenameReplacements = new HashMap<>();
-		filenameReplacements.put("list.json", "list (1).json");
-		filenameReplacements.put("list (1).json", "list (2).json");
-		filenameReplacements.put("list", "list (1)");
-		filenameReplacements.put("list (1)", "list (2)");
-
-		for (Map.Entry<String, String> entry : filenameReplacements.entrySet()) {
-			String orig = entry.getKey();
-			String replacement = LoadFilesZipHandler.getNextFilename(orig);
-			String expected = entry.getValue();
-			assertThat(replacement).as(String.format("Replacement for %s", orig)).isEqualTo(expected);
 		}
 	}
 }

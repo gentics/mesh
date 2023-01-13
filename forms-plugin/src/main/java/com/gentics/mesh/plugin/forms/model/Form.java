@@ -62,6 +62,8 @@ public class Form implements RestModel {
 
 	private String templateContext;
 
+	private String downloadBaseUrl;
+
 	private Map<String, Object> properties = new LinkedHashMap<>();
 
 	public Form() {
@@ -281,6 +283,27 @@ public class Form implements RestModel {
 	 */
 	public void setTemplateContext(String templateContext) {
 		this.templateContext = templateContext;
+	}
+
+	/**
+	 * Get the download base URL.
+	 * @return The download base URL.
+	 */
+	@Nonnull
+	public String getDownloadBaseUrl() {
+		if (downloadBaseUrl == null) {
+			downloadBaseUrl = "";
+		}
+
+		return downloadBaseUrl;
+	}
+
+	/**
+	 * Set the download base URL.
+	 * @param downloadBaseUrl The download base URL.
+	 */
+	public void setDownloadBaseUrl(String downloadBaseUrl) {
+		this.downloadBaseUrl = downloadBaseUrl;
 	}
 
 	/**

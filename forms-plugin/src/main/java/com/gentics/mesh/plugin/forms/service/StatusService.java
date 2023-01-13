@@ -272,20 +272,4 @@ public class StatusService {
 				.filter(branch -> branch.getLatest() != null && branch.getLatest())
 				.map(branch -> branch.getPathPrefix()).first("");
 	}
-
-	/**
-	 * Gets the base url of the project
-	 *
-	 * @param projectName project name
-	 * @return single base URL
-	 */
-	public Single<String> getBaseUrl(String projectName) {
-		return adminClient.findProjectByName(projectName).toSingle()
-			.flatMap(projectResponse -> {
-				String link = String.format("{{mesh.link(\"%s\", \"en\")}}", projectResponse.getRootNode().getUuid());
-				ParameterProvider params = new NodeParametersImpl().setResolveLinks(LinkType.SHORT);
-
-				return adminClient.resolveLinks(link, params).toSingle();
-			}).map(baseUrl -> StringUtils.removeEnd(baseUrl, "/"));
-	}
 }

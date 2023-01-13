@@ -207,9 +207,8 @@ public class CsvExporter extends Exporter {
 				value = ((JsonObject) value).getString("fileName", fieldName);
 
 				ret.add(String.format(
-					"%s/api/forms/forms/%s/data/%s/binary/%s",
+					"%s/%s/binary/%s",
 					baseUrl,
-					uuid,
 					data.getString("uuid"),
 					fieldName));
 			}
