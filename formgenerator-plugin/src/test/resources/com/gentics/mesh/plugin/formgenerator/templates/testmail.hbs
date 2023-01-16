@@ -1,7 +1,0 @@
-{{# each data }}
-    {{~# if this.isFile ~}}
-        {{ baseUrl }}/api/fg/forms/{{ form.uuid }}/data/{{ dataUuid }}/binary/{{ this.name }}
-    {{~ else ~}}
-        {{ value }}
-    {{~/ if ~}}
-{{~/ each ~}}

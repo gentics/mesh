@@ -1,7 +1,0 @@
-{
-  schema (name:"formgenerator_plugin") {
-    nodes {
-      totalCount
-    }
-  }
-}
