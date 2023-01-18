@@ -26,9 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,13 +58,16 @@ import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -664,6 +664,10 @@ public interface PersistingContentDao extends ContentDao {
 	private boolean updateWebrootPathInfo(HibNodeFieldContainer content, HibNode node, HibNodeFieldContainerEdge edge, String branchUuid, String segmentFieldName,
 										  String conflictI18n,
 										  ContainerType type) {
+		// Early return, if no segment field set
+		if (StringUtils.isBlank(segmentFieldName)) {
+			return true;
+		}
 		NodeDao nodeDao = Tx.get().nodeDao();
 
 		// Determine the webroot path of the container parent node
