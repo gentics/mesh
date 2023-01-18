@@ -664,18 +664,14 @@ public interface PersistingContentDao extends ContentDao {
 	private boolean updateWebrootPathInfo(HibNodeFieldContainer content, HibNode node, HibNodeFieldContainerEdge edge, String branchUuid, String segmentFieldName,
 										  String conflictI18n,
 										  ContainerType type) {
-		// Early return, if no segment field set
-		if (StringUtils.isBlank(segmentFieldName)) {
-			return true;
-		}
 		NodeDao nodeDao = Tx.get().nodeDao();
 
 		// Determine the webroot path of the container parent node
 		String segment = getPathSegment(node, branchUuid, type, getLanguageTag(content));
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
-		// specific index for (drafts or published nodes)
-		if (segment != null) {
+		// specific index for (drafts or published nodes). Segment field should also be set, otherwise the segment info is treated as outdated and is subject to reset.
+		if (segment != null && StringUtils.isNotBlank(segmentFieldName)) {
 			HibNode parentNode = nodeDao.getParentNode(node, branchUuid);
 			String segmentInfo = composeSegmentInfo(parentNode, segment);
 			// check for uniqueness of webroot path
