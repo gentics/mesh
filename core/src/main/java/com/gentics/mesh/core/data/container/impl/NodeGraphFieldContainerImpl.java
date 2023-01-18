@@ -390,8 +390,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		String segment = node.getPathSegment(branchUuid, type, getLanguageTag());
 
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
-		// specific index for (drafts or published nodes)
-		if (segment != null) {
+		// specific index for (drafts or published nodes)Segment field should also be set, otherwise the segment info is treated as outdated and is subject to reset.
+		if (segment != null && StringUtils.isNotBlank(segmentFieldName)) {
 			Node parentNode = node.getParentNode(branchUuid);
 			String segmentInfo = GraphFieldContainerEdgeImpl.composeSegmentInfo(parentNode, segment);
 			Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
