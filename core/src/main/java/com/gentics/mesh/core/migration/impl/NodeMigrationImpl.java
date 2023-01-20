@@ -156,6 +156,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			SchemaMigrationCause cause = context.getCause();
 			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
+			String branchUuid = db.tx(() -> branch.getUuid());
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
@@ -181,7 +182,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			if (batchSize > 0 && metrics.isEnabled()) {
 				total = db.tx(tx -> {
 					SchemaDao schemaDao = tx.schemaDao();
-					return schemaDao.findDraftFieldContainerCount(fromVersion, branch.getUuid());
+					return schemaDao.findDraftFieldContainerCount(fromVersion, branchUuid);
 				});
 			}
 			do {
@@ -190,7 +191,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 				Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
 					SchemaDao schemaDao = tx.schemaDao();
-					return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid(), myBatched, batchSize).stream()
+					return schemaDao.findDraftFieldContainers(fromVersion, branchUuid, myBatched, batchSize).stream()
 							.collect(Collectors.toCollection(ArrayDeque::new));
 				});
 				currentBatch = containers.size();
@@ -233,7 +234,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					}
 				});
 				if (metrics.isEnabled()) {
-					log.info("Batch: {} of {} processed", batched, total);
+					log.info("Batch: {} of {} processed, from {} to {} branch {}", batched, total, fromVersion, context.getToVersion(), branchUuid);
 				}
 			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);			
 
