@@ -14,8 +14,10 @@ import com.gentics.mesh.etc.config.env.Option;
 public class ContentConfig implements Option {
 
 	public static final String MESH_CONTENT_AUTO_PURGE_ENV = "MESH_CONTENT_AUTO_PURGE";
+	public static final String MESH_GRAPH_BATCH_SIZE_ENV = "MESH_GRAPH_BATCH_SIZE";
 
-	private static final boolean DEFAULT_AUTO_PURGE = true;
+	public static final boolean DEFAULT_AUTO_PURGE = true;
+	public static final int DEFAULT_BATCH_SIZE = 0;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema 'autoPurge' flag. Default: "
@@ -23,8 +25,23 @@ public class ContentConfig implements Option {
 	@EnvironmentVariable(name = MESH_CONTENT_AUTO_PURGE_ENV, description = "Override the content versioning flag")
 	private boolean autoPurge = DEFAULT_AUTO_PURGE;
 
+	@JsonProperty(defaultValue = DEFAULT_BATCH_SIZE + " items")
+	@JsonPropertyDescription("The size of a batch for operations over large amount of entities. Setting this to any number lower than 1 will disable batch paging")
+	@EnvironmentVariable(name = MESH_GRAPH_BATCH_SIZE_ENV, description = "Override the batch page size. Default: "
+		+ DEFAULT_BATCH_SIZE)
+	private int batchSize = DEFAULT_BATCH_SIZE;
+
 	public ContentConfig() {
 
+	}
+
+	public int getBatchSize() {
+		return batchSize;
+	}
+
+	public ContentConfig setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
+		return this;
 	}
 
 	public boolean isAutoPurge() {

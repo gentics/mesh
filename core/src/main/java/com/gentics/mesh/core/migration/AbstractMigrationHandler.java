@@ -59,7 +59,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 	protected final Provider<EventQueueBatch> batchProvider;
 
-	private final MeshOptions options;
+	protected final MeshOptions options;
 
 	public AbstractMigrationHandler(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
 									Provider<EventQueueBatch> batchProvider, MeshOptions options) {

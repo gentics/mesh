@@ -172,47 +172,70 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 				return Completable.error(e);
 			}
 
-			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
-				SchemaDao schemaDao = tx.schemaDao();
-				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
-						.collect(Collectors.toCollection(ArrayDeque::new));
-			});
+			int batchSize = options.getContentOptions().getBatchSize();
+			long batched = 0;
+			int currentBatch = 0;
+			List<Exception> errorsDetected;
 
-			if (metrics.isEnabled()) {
-				migrationGauge.set(containers.size());
+			long total = 0;
+			if (batchSize > 0 && metrics.isEnabled()) {
+				total = db.tx(tx -> {
+					SchemaDao schemaDao = tx.schemaDao();
+					return schemaDao.findDraftFieldContainerCount(fromVersion, branch.getUuid());
+				});
 			}
+			do {
+				long myBatched = batched;
+				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+				Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
+					SchemaDao schemaDao = tx.schemaDao();
+					return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid(), myBatched, batchSize).stream()
+							.collect(Collectors.toCollection(ArrayDeque::new));
+				});
+				currentBatch = containers.size();
+				batched += currentBatch;
 
-			// No field containers, migration is done
-			if (containers.isEmpty()) {
-				if (status != null) {
-					db.tx(() -> {
-						status.setStatus(COMPLETED);
-						status.commit();
-					});
-				}
-				return Completable.complete();
-			}
-
-			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
-				try (WriteLock lock = writeLock.lock(context)) {
-					beforeBatchMigration(containerList, context);
-					List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
-					for (HibNodeFieldContainer container : containerList) {
-						Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
-						if (toPurgePair != null) {
-							toPurge.add(toPurgePair);
-						}
-					}
-
-					List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
-					bulkPurge(toPurgeList);
-				}
 				if (metrics.isEnabled()) {
-					migrationGauge.decrementAndGet();
+					if (batchSize < 1) {
+						total = containers.size();
+					}
+					migrationGauge.set(total);
 				}
-			});
+
+				// No field containers, migration is done
+				if (containers.isEmpty()) {
+					if (status != null) {
+						db.tx(() -> {
+							status.setStatus(COMPLETED);
+							status.commit();
+						});
+					}
+					return Completable.complete();
+				}
+
+				errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
+					try (WriteLock lock = writeLock.lock(context)) {
+						beforeBatchMigration(containerList, context);
+						List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
+						for (HibNodeFieldContainer container : containerList) {
+							Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
+							if (toPurgePair != null) {
+								toPurge.add(toPurgePair);
+							}
+						}
+
+						List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
+						bulkPurge(toPurgeList);
+					}
+					if (metrics.isEnabled()) {
+						migrationGauge.decrementAndGet();
+					}
+				});
+				if (metrics.isEnabled()) {
+					log.info("Batch: {} of {} processed", batched, total);
+				}
+			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);			
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
