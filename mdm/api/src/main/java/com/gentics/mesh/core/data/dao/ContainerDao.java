@@ -106,7 +106,31 @@ public interface ContainerDao<
 	 * @param branchUuid
 	 * @return
 	 */
-	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(SCV version, String branchUuid);
+	default Result<? extends HibNodeFieldContainer> findDraftFieldContainers(SCV version, String branchUuid) {
+		return findDraftFieldContainers(version, branchUuid, -1, -1);
+	}
+
+	/**
+	 * Count the contents that use the given schema version for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @return
+	 */
+	default long findDraftFieldContainerCount(SCV version, String branchUuid) {
+		return findDraftFieldContainers(version, branchUuid).count();
+	}
+
+	/**
+	 * Load the limited portion of contents that use the given schema version for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @param limit limits the fetched entry number. if less than 1, limits are disabled
+	 * @param offset offset for fetched data. if less than 0, offsets are disabled
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(SCV version, String branchUuid, long offset, long limit);
 
 	/**
 	 * Find all versions for the given schema.
