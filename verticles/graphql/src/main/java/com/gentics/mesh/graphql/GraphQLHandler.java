@@ -6,12 +6,18 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.dataloader.DataLoader;
+import org.dataloader.DataLoaderOptions;
+import org.dataloader.DataLoaderRegistry;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
@@ -22,6 +28,7 @@ import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
+
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
@@ -35,9 +42,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
-import org.dataloader.DataLoader;
-import org.dataloader.DataLoaderOptions;
-import org.dataloader.DataLoaderRegistry;
 
 /**
  * Handler for GraphQL REST endpoint operations.
@@ -107,28 +111,43 @@ public class GraphQLHandler {
 						.context(gc)
 						.variables(variables)
 						.build();
-					ExecutionResult result = graphQL.execute(executionInput);
-					List<GraphQLError> errors = result.getErrors();
-					JsonObject response = new JsonObject();
-					if (!errors.isEmpty()) {
-						addErrors(errors, response);
-						if (log.isDebugEnabled()) {
-							log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
-							for (GraphQLError error : errors) {
-								String loc = "unknown location";
-								if (error.getLocations() != null) {
-									loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+//					try {
+						// Implementation Note: GraphQL is implemented synchronously (no implemented datafetcher returns a CompletableFuture, which is not yet completed)
+						// Nonetheless, we see sometimes that the CompletableFuture is not completed (and never will be), when GraphQL joins it, which leads to endlessly
+						// blocked worker threads.
+						// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
+//						ExecutionResult result = graphQL.executeAsync(executionInput)
+//								.get(graphQLOptions.getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
+						ExecutionResult result = graphQL.execute(executionInput);
+						List<GraphQLError> errors = result.getErrors();
+						JsonObject response = new JsonObject();
+						if (!errors.isEmpty()) {
+							addErrors(errors, response);
+							if (log.isDebugEnabled()) {
+								log.debug("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
+								for (GraphQLError error : errors) {
+									String loc = "unknown location";
+									if (error.getLocations() != null) {
+										loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+									}
+									log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 								}
-								log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
 							}
 						}
-					}
-					if (result.getData() != null) {
-						Map<String, Object> data = result.getData();
-						response.put("data", new JsonObject(data));
-					}
-					gc.send(response.encodePrettily(), OK);
-					promise.complete();
+						if (result.getData() != null) {
+							Map<String, Object> data = result.getData();
+							response.put("data", new JsonObject(data));
+						}
+						gc.send(response.encodePrettily(), OK);
+						promise.complete();
+//					} catch (TimeoutException | InterruptedException | ExecutionException e) {
+//						// If an error happens while "waiting" for the result, we log the GraphQL query here.
+//						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
+//								graphQLOptions.getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
+//								loggableVariables.get());
+//						gc.fail(e);
+//						promise.fail(e);
+//					}
 				});
 			} catch (Exception e) {
 				promise.fail(e);
