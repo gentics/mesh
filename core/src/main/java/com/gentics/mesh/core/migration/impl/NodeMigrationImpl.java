@@ -157,6 +157,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
 			String branchUuid = db.tx(() -> branch.getUuid());
+			String fromUuud = db.tx(() -> fromVersion.getUuid());
+			String toUuid = db.tx(() -> context.getToVersion().getUuid());
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
@@ -234,7 +236,7 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					}
 				});
 				if (metrics.isEnabled()) {
-					log.info("Batch: {} of {} processed, from {} to {} branch {}", batched, total, fromVersion, context.getToVersion(), branchUuid);
+					log.info("Batch: {} of {} processed, from {} to {} branch {}", batched, total, fromUuud, toUuid, branchUuid);
 				}
 			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);			
 
