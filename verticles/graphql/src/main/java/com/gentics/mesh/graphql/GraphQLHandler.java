@@ -111,14 +111,13 @@ public class GraphQLHandler {
 						.context(gc)
 						.variables(variables)
 						.build();
-//					try {
+					try {
 						// Implementation Note: GraphQL is implemented synchronously (no implemented datafetcher returns a CompletableFuture, which is not yet completed)
 						// Nonetheless, we see sometimes that the CompletableFuture is not completed (and never will be), when GraphQL joins it, which leads to endlessly
 						// blocked worker threads.
 						// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
-//						ExecutionResult result = graphQL.executeAsync(executionInput)
-//								.get(graphQLOptions.getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
-						ExecutionResult result = graphQL.execute(executionInput);
+						ExecutionResult result = graphQL.executeAsync(executionInput)
+								.get(graphQLOptions.getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
 						List<GraphQLError> errors = result.getErrors();
 						JsonObject response = new JsonObject();
 						if (!errors.isEmpty()) {
@@ -140,14 +139,14 @@ public class GraphQLHandler {
 						}
 						gc.send(response.encodePrettily(), OK);
 						promise.complete();
-//					} catch (TimeoutException | InterruptedException | ExecutionException e) {
-//						// If an error happens while "waiting" for the result, we log the GraphQL query here.
-//						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
-//								graphQLOptions.getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
-//								loggableVariables.get());
-//						gc.fail(e);
-//						promise.fail(e);
-//					}
+					} catch (TimeoutException | InterruptedException | ExecutionException e) {
+						// If an error happens while "waiting" for the result, we log the GraphQL query here.
+						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
+								graphQLOptions.getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
+								loggableVariables.get());
+						gc.fail(e);
+						promise.fail(e);
+					}
 				});
 			} catch (Exception e) {
 				promise.fail(e);

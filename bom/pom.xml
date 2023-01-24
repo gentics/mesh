@@ -18,7 +18,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
-		<graphql.version>12.0</graphql.version>
+		<graphql.version>20.0</graphql.version>
 		<graphql-dataloader.version>3.1.2</graphql-dataloader.version>
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
@@ -670,6 +670,11 @@
 			<dependency>
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-java</artifactId>
+				<version>${graphql.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphql-java-extended-scalars</artifactId>
 				<version>${graphql.version}</version>
 			</dependency>
 			<dependency>

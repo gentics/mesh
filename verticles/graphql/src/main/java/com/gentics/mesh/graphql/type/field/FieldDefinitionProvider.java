@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
-import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLFloat;
 import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
+import static graphql.scalars.java.JavaPrimitives.GraphQLBigDecimal;
+import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 

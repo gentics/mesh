@@ -46,10 +46,20 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 		List<GraphQLEnumValueDefinition> values = StreamSupport.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(schema -> {
 				String name = schema.getName();
-				return new GraphQLEnumValueDefinition(name, name, schema.getUuid());
+				return GraphQLEnumValueDefinition
+						.newEnumValueDefinition()
+						.name(name)
+						.description(name)
+						.value(schema.getUuid())
+						.build();
 			}).collect(Collectors.toList());
 
-		return new GraphQLEnumType("SchemaEnum", "Enumerates all schemas", values);
+		return GraphQLEnumType
+				.newEnum()
+				.name("SChemaEnum")
+				.description("Enumerates all schemas")
+				.values(values)
+				.build();
 	}
 
 	@Override
