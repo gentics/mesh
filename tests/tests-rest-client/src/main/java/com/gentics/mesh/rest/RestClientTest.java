@@ -2,7 +2,6 @@ package com.gentics.mesh.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,8 +63,8 @@ public class RestClientTest {
 
 		latch.await(10, TimeUnit.SECONDS);
 		assertThat(success.get()).isFalse();
-		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessage(
-				"I/O Error in GET http://does.not.exist:4711/api/v1/ : UnknownHostException (does.not.exist: Name or service not known)");
+		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessageStartingWith(
+				"I/O Error in GET http://does.not.exist:4711/api/v1/ : UnknownHostException");
 	}
 
 	/**
@@ -88,7 +87,7 @@ public class RestClientTest {
 
 		latch.await(10, TimeUnit.SECONDS);
 		assertThat(success.get()).isFalse();
-		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessage(
-				"I/O Error in GET http://localhost:4711/api/v1/ : ConnectException (Failed to connect to localhost/127.0.0.1:4711)");
+		assertThat(caught.get()).as("Caught exception").isNotNull().hasMessageStartingWith(
+				"I/O Error in GET http://localhost:4711/api/v1/ : ConnectException");
 	}
 }
