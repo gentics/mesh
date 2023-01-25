@@ -313,6 +313,7 @@ public interface EventHelper extends BaseHelper {
 		}, status, expectedJobs);
 	}
 
+
 	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
@@ -325,6 +326,23 @@ public interface EventHelper extends BaseHelper {
 	 * @return Migration status
 	 */
 	default JobListResponse waitForJobs(Supplier<?> action, JobStatus status, int expectedJobs) {
+		return waitForJobs(action, status, expectedJobs, 30);
+	}
+
+	/**
+	 * Execute the action and check that the jobs are executed and yields the given status.
+	 *
+	 * @param action
+	 *            Action to be invoked. This action should trigger the migrations
+	 * @param status
+	 *            Expected job status for all migrations. No assertion will be performed when the status is null
+	 * @param expectedJobs
+	 *            Amount of expected jobs
+	 * @param waitSeconds
+	 *            Timeout for job to succeed.
+	 * @return Migration status
+	 */
+	default JobListResponse waitForJobs(Supplier<?> action, JobStatus status, int expectedJobs, int waitSeconds) {
 
 		// Load a status just before the action
 		JobListResponse before = runAsAdmin(() -> {
@@ -341,9 +359,8 @@ public interface EventHelper extends BaseHelper {
 		}
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 30;
 		JobListResponse response;
-		for (int i = 0; i < MAX_WAIT; i++) {
+		for (int i = 0; i < waitSeconds; i++) {
 
 			response = runAsAdmin(() -> call(() -> client().findJobs()));
 
@@ -360,9 +377,9 @@ public interface EventHelper extends BaseHelper {
 					}
 				}
 			}
-			if (i == MAX_WAIT - 1) {
+			if (i == waitSeconds - 1) {
 				String json = response == null ? "NULL" : response.toJson();
-				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds. Last job response was:\n" + json);
+				throw new RuntimeException("Migration did not complete within " + waitSeconds + " seconds. Last job response was:\n" + json);
 			}
 			sleep(1000);
 		}

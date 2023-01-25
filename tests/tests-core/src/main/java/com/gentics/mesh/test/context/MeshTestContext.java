@@ -87,6 +87,7 @@ public class MeshTestContext implements TestRule {
 
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
+		System.setProperty("memory.directMemory.preallocate", "false");
 	}
 
 	public static final Logger LOG = LoggerFactory.getLogger(MeshTestContext.class);
