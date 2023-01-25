@@ -1,11 +1,6 @@
 package com.gentics.mesh.core.data.dao.impl;
 
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
-import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -19,11 +14,9 @@ import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.AbstractContainerDaoWrapper;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
@@ -48,7 +41,6 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 
 import dagger.Lazy;
 
@@ -148,19 +140,8 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	public long findDraftFieldContainerCount(HibSchemaVersion version, String branchUuid) {
-		// TODO FIXME setting query parameters does not seem to work, so we have to sanitize all UUIDs manually
-		OrientBaseGraph baseGraph = ((MeshVertexImpl) version).mesh().database().unwrapCurrentGraph();
-		String query = "select count(1) "
-				+ " from " + NodeGraphFieldContainerImpl.class.getSimpleName() 
-				+ " where " + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = '" + version.getUuid() + "' "
-				+ " and inE(\"" + HAS_FIELD_CONTAINER + "\")[" + BRANCH_UUID_KEY + "='" + branchUuid + "'][" + EDGE_TYPE_KEY + "='" + DRAFT.getCode() + "'].size() > 0 ";
-		return baseGraph.getRawGraph().query(query, new Object[] { }).next().getProperty("count(1)");
-	}
-
-	@Override
-	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid, long offset, long limit) {
-		return toGraph(version).getDraftFieldContainers(branchUuid, offset, limit);
+	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid, long limit) {
+		return toGraph(version).getDraftFieldContainers(branchUuid, limit);
 	}
 
 	@Override

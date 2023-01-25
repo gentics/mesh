@@ -76,7 +76,7 @@ public class GraphStorageOptions implements Option {
 	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_DELAY_ENV, description = "Override the transaction retry delay. Default: "
 		+ DEFAULT_TX_RETRY_DELAY)
 	private int txRetryDelay = DEFAULT_TX_RETRY_DELAY;
-	
+
 	@JsonProperty(defaultValue = DEFAULT_TX_RETRY_LIMIT + " times")
 	@JsonPropertyDescription("The limit for the tx retires.")
 	@EnvironmentVariable(name = MESH_GRAPH_TX_RETRY_LIMIT_ENV, description = "Override the transaction retry limit. Default: "

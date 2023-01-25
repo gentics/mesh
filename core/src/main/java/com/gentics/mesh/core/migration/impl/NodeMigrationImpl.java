@@ -180,33 +180,23 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			int currentBatch = 0;
 			List<Exception> errorsDetected;
 
-			long total = 0;
-			if (batchSize > 0 && metrics.isEnabled()) {
-				total = db.tx(tx -> {
-					SchemaDao schemaDao = tx.schemaDao();
-					return schemaDao.findDraftFieldContainerCount(fromVersion, branchUuid);
-				});
-			}
 			do {
 				long myBatched = batched;
 				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 				Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
 					SchemaDao schemaDao = tx.schemaDao();
-					return schemaDao.findDraftFieldContainers(fromVersion, branchUuid, myBatched, batchSize).stream()
+					return schemaDao.findDraftFieldContainers(fromVersion, branchUuid, batchSize).stream()
 							.collect(Collectors.toCollection(ArrayDeque::new));
 				});
 				currentBatch = containers.size();
 				batched += currentBatch;
 
 				if (metrics.isEnabled()) {
-					if (batchSize < 1) {
-						total = containers.size();
-					}
-					migrationGauge.set(total);
+					migrationGauge.set(batched);
 				}
 				if (metrics.isEnabled()) {
-					log.info("Batch: {} of {} fetched, from {} to {}, branch {}", batched, total, fromUuud, toUuid, branchUuid);
+					log.info("Batch: {} fetched, from {} to {}, branch {}", batched, fromUuud, toUuid, branchUuid);
 				}
 
 				// No field containers, migration is done
