@@ -181,7 +181,6 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			List<Exception> errorsDetected;
 
 			do {
-				long myBatched = batched;
 				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
 				Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
