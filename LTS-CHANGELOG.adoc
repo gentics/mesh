@@ -118,6 +118,11 @@ enforced in the UI, and is now enforced in the REST API. The check is not perfor
 
 icon:check[] Core: When a project was deleted, its associated version purge job were not. This has been fixed.
 
+[[v1.6.41]]
+== 1.6.41 (TBD)
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
 [[v1.6.40]]
 == 1.6.40 (15.12.2022)
 
