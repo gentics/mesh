@@ -205,6 +205,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					}
 					migrationGauge.set(total);
 				}
+				if (metrics.isEnabled()) {
+					log.info("Batch: {} of {} fetched, from {} to {}, branch {}", batched, total, fromUuud, toUuid, branchUuid);
+				}
 
 				// No field containers, migration is done
 				if (containers.isEmpty()) {
@@ -235,9 +238,6 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 						migrationGauge.decrementAndGet();
 					}
 				});
-				if (metrics.isEnabled()) {
-					log.info("Batch: {} of {} processed, from {} to {} branch {}", batched, total, fromUuud, toUuid, branchUuid);
-				}
 			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);			
 
 			// TODO prepare errors. They should be easy to understand and to grasp

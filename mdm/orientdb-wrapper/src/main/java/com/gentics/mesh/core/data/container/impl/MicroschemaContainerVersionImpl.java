@@ -63,19 +63,12 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid, long offset, long limit) {
+	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
 		ContentDao contentDao = Tx.get().contentDao();
-		Stream<? extends NodeGraphFieldContainer> stream = getMicronodeStream()
-				.flatMap(micronode -> micronode.getContainers().stream())
-				.filter(uniqueBy(ElementFrame::getId))
-				.filter(container -> contentDao.isDraft(container, branchUuid));
-		if (offset > -1) {
-			stream = stream.skip(offset);
-		}
-		if (limit > 0) {
-			stream = stream.limit(limit);
-		}
-		return new TraversalResult<>(stream);
+		return new TraversalResult<>(getMicronodeStream()
+			.flatMap(micronode -> micronode.getContainers().stream())
+			.filter(uniqueBy(ElementFrame::getId))
+			.filter(container -> contentDao.isDraft(container, branchUuid)));
 	}
 
 	@Override

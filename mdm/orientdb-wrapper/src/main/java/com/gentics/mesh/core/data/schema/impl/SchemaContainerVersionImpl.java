@@ -20,7 +20,6 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.Branch;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -98,15 +97,13 @@ public class SchemaContainerVersionImpl extends
 						&& ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT))
 				).map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
 		} else {
-			// TODO FIXME setting query parameters does not seem to work, so we have to sanitize all UUIDs manually
 			OrientBaseGraph baseGraph = database.unwrapCurrentGraph();
-			String query = "select expand(inV()) as content "
+			String query = "select expand(in) as content "
 					+ " from " + HAS_FIELD_CONTAINER + " "
-					+ " where " + EDGE_TYPE_KEY + " = '" + DRAFT.getCode() + "' and " + BRANCH_UUID_KEY + " = '" + branchUuid + "' "
-					+ " and inV()." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = '" + uuid + "' "
-					+ " order by " + MeshVertex.UUID_KEY 
-					+ " skip " + offset + " limit " + limit;
-			OResultSet list = baseGraph.getRawGraph().query(query, new Object[] { });
+					+ " where " + EDGE_TYPE_KEY + " = ? and " + BRANCH_UUID_KEY + " = ? "
+					+ " and in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = ? "
+					+ " limit " + limit;
+			OResultSet list = baseGraph.getRawGraph().query(query, new Object[] { DRAFT.getCode(), branchUuid, uuid });
 			stream = toStream(list)
 					.map(oresult -> (Vertex) new OrientVertex(baseGraph, oresult.toElement()))
 					.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
