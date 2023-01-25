@@ -13,7 +13,7 @@ import com.gentics.mesh.etc.config.env.Option;
 public class GraphQLOptions implements Option {
 	public static final long DEFAULT_SLOW_THRESHOLD = 60_000L;
 
-	public static final long DEFAULT_ASYNC_WAIT_TIMEOUT = 60_000L;
+	public static final long DEFAULT_ASYNC_WAIT_TIMEOUT = 120_000L;
 
 	public static final String MESH_GRAPHQL_SLOW_THRESHOLD_ENV = "MESH_GRAPHQL_SLOW_THRESHOLD";
 
