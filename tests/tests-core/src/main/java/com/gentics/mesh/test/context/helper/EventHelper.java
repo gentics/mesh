@@ -313,7 +313,6 @@ public interface EventHelper extends BaseHelper {
 		}, status, expectedJobs);
 	}
 
-
 	/**
 	 * Execute the action and check that the jobs are executed and yields the given status.
 	 *
