@@ -83,11 +83,11 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid, long offset, long limit) {
+	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid, long limit) {
 		OrientDBDatabase database = mesh().database();
 		Stream<? extends NodeGraphFieldContainer> stream;
 		String uuid = getUuid();
-		if (offset < 0 || limit < 1) {
+		if (limit < 1) {
 			stream = toStream(database.getVertices(
 					NodeGraphFieldContainerImpl.class,
 					new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
