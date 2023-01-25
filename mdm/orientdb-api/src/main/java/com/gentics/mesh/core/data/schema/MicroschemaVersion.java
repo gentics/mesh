@@ -30,11 +30,9 @@ public interface MicroschemaVersion extends
 	 *
 	 * @param branchUuid
 	 *            Uuid of the branch
-	 * @param limit limits the fetched vertices number. if less than 1, limits are disabled
-	 * @param offset offset for fetched data. if less than 0, offsets are disabled
 	 * @return
 	 */
-	Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid, long offset, long limit);
+	Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
 
 	@Override
 	default TypeInfo getTypeInfo() {

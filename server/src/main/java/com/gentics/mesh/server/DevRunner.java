@@ -22,6 +22,7 @@ public class DevRunner {
 
 	static {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
+		System.setProperty("vertx.options.maxEventLoopExecuteTime", "100000000000");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 		if ("jotschi".equalsIgnoreCase(System.getProperty("user.name"))) {
 			System.setProperty("storage.wal.allowDirectIO", "false");

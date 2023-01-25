@@ -109,8 +109,8 @@ public class MicroschemaDaoWrapperImpl
 
 	@Override
 	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version,
-		String branchUuid, long offset, long limit) {
-		return toGraph(version).getDraftFieldContainers(branchUuid, offset, limit);
+		String branchUuid) {
+		return toGraph(version).getDraftFieldContainers(branchUuid);
 	}
 
 	@Override

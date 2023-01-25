@@ -144,4 +144,37 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
+
+	/**
+	 * Count the contents that use the given schema version for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @return
+	 */
+	default long findDraftFieldContainerCount(HibSchemaVersion version, String branchUuid) {
+		return findDraftFieldContainers(version, branchUuid).count();
+	}
+
+	/**
+	 * Load the limited portion of contents that use the given schema version for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @param limit limits the fetched entry number. if less than 1, limits are disabled
+	 * @param offset offset for fetched data. if less than 0, offsets are disabled
+	 * @return
+	 */
+	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid, long offset, long limit);
+
+	/**
+	 * Load the contents that use the given schema version for the given branch.
+	 * 
+	 * @param version
+	 * @param branchUuid
+	 * @return
+	 */
+	default Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
+		return findDraftFieldContainers(version, branchUuid, -1, -1);
+	}
 }
