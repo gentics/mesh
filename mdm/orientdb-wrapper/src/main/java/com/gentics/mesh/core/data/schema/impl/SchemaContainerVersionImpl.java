@@ -100,16 +100,13 @@ public class SchemaContainerVersionImpl extends
 		} else {
 			// TODO FIXME setting query parameters does not seem to work, so we have to sanitize all UUIDs manually
 			OrientBaseGraph baseGraph = database.unwrapCurrentGraph();
-			String query = "select * "
-					+ " from " + NodeGraphFieldContainerImpl.class.getSimpleName() 
-					+ " where " + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = '" + uuid + "' "
-					+ " and inE(\"" + HAS_FIELD_CONTAINER + "\")[" + BRANCH_UUID_KEY + "='" + branchUuid + "'][" + EDGE_TYPE_KEY + "='" + DRAFT.getCode() + "'].size() > 0 "
+			String query = "select expand(inV()) as content "
+					+ " from " + HAS_FIELD_CONTAINER + " "
+					+ " where " + EDGE_TYPE_KEY + " = '" + DRAFT.getCode() + "' and " + BRANCH_UUID_KEY + " = '" + branchUuid + "' "
+					+ " and inV()." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = '" + uuid + "' "
 					+ " order by " + MeshVertex.UUID_KEY 
 					+ " skip " + offset + " limit " + limit;
 			OResultSet list = baseGraph.getRawGraph().query(query, new Object[] { });
-			if (list.hasNext()) {
-				log.debug(list);
-			}
 			stream = toStream(list)
 					.map(oresult -> (Vertex) new OrientVertex(baseGraph, oresult.toElement()))
 					.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
