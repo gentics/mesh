@@ -60,7 +60,18 @@ public interface SchemaContainerVersion
 	 * @param branchUuid Branch Uuid
 	 * @return
 	 */
-	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid);
+	default Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
+		return getDraftFieldContainers(branchUuid, -1);
+	}
+
+	/**
+	 * Returns an iterator for those {@link NodeGraphFieldContainer}'s which can be edited by users. Those are draft and publish versions. Results limit can be applied as well.
+	 *
+	 * @param branchUuid Branch Uuid
+	 * @param limit limits the fetched vertices number. if less than 1, limits are disabled
+	 * @return
+	 */
+	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid, int limit);
 
 	/**
 	 * Returns all nodes that the user has read permissions for.

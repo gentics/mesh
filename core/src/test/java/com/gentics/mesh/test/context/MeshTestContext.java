@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.security.cert.CertificateException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -28,8 +27,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.gentics.mesh.etc.config.*;
-import com.gentics.mesh.test.docker.AWSContainer;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -47,6 +44,13 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
+import com.gentics.mesh.etc.config.AuthenticationOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.HttpServerConfig;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.etc.config.S3CacheOptions;
+import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -58,6 +62,7 @@ import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
 import com.gentics.mesh.test.SSLTestMode;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.docker.AWSContainer;
 import com.gentics.mesh.test.docker.ElasticsearchContainer;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 import com.gentics.mesh.test.util.MeshAssert;
@@ -76,6 +81,7 @@ public class MeshTestContext extends TestWatcher {
 
 	static {
 		System.setProperty(TrackingSearchProvider.TEST_PROPERTY_KEY, "true");
+		System.setProperty("memory.directMemory.preallocate", "false");
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);

@@ -29,6 +29,8 @@ public enum MeshOptionChanger {
 		} catch (Exception e) {
 			throw new RuntimeException("Could not find free port", e);
 		}
+	}), BATCH_MIGRATION(options -> {
+		options.getContentOptions().setBatchSize(2);
 	});
 
 	final Consumer<MeshOptions> changer;

@@ -17,6 +17,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -226,6 +227,13 @@ public interface EventHelper extends BaseHelper {
 		return waitForJobs(action, COMPLETED, 1);
 	}
 
+	default JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
+		return waitForJobs(() -> {
+			action.run();
+			return null;
+		}, status, expectedJobs);
+	}
+
 	/**
 	 * Run the given action with admin permissions enabled.
 	 * 
@@ -306,7 +314,24 @@ public interface EventHelper extends BaseHelper {
 	 *            Amount of expected jobs
 	 * @return Migration status
 	 */
-	default JobListResponse waitForJobs(Runnable action, JobStatus status, int expectedJobs) {
+	default JobListResponse waitForJobs(Supplier<?> action, JobStatus status, int expectedJobs) {
+		return waitForJobs(action, status, expectedJobs, 30);
+	}
+
+	/**
+	 * Execute the action and check that the jobs are executed and yields the given status.
+	 *
+	 * @param action
+	 *            Action to be invoked. This action should trigger the migrations
+	 * @param status
+	 *            Expected job status for all migrations. No assertion will be performed when the status is null
+	 * @param expectedJobs
+	 *            Amount of expected jobs
+	 * @param waitSeconds
+	 *            Timeout for job to succeed.
+	 * @return Migration status
+	 */
+	default JobListResponse waitForJobs(Supplier<?> action, JobStatus status, int expectedJobs, int waitSeconds) {
 
 		// Load a status just before the action
 		JobListResponse before = runAsAdmin(() -> {
@@ -314,13 +339,19 @@ public interface EventHelper extends BaseHelper {
 		});
 
 		// Invoke the action
-		action.run();
+		Object actionResponse = action.get();
+
+		if (actionResponse != null && actionResponse instanceof GenericMessageResponse) {
+			if ("Migration was not invoked. No changes were detected.".equals(((GenericMessageResponse) actionResponse).getMessage())) {
+				return null;
+			}
+		}
 
 		// Now poll the migration status and check the response
-		final int MAX_WAIT = 120;
-		for (int i = 0; i < MAX_WAIT; i++) {
+		JobListResponse response;
+		for (int i = 0; i < waitSeconds; i++) {
 
-			JobListResponse response = runAsAdmin(() -> call(() -> client().findJobs()));
+			response = runAsAdmin(() -> call(() -> client().findJobs()));
 
 			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedJobs) {
 				if (status != null) {
@@ -335,11 +366,9 @@ public interface EventHelper extends BaseHelper {
 					}
 				}
 			}
-			if (i > 30) {
-				System.out.println(response.toJson());
-			}
-			if (i == MAX_WAIT - 1) {
-				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
+			if (i == waitSeconds - 1) {
+				String json = response == null ? "NULL" : response.toJson();
+				throw new RuntimeException("Migration did not complete within " + waitSeconds + " seconds. Last job response was:\n" + json);
 			}
 			sleep(1000);
 		}

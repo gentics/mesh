@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.6.41]]
 == 1.6.41 (TBD)
 
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
 icon:check[] Core: Updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
 
 [[v1.6.40]]
