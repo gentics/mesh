@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.metric.MetricsService;
@@ -51,13 +52,15 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	private final AtomicLong migrationGauge;
 	private final WriteLock writeLock;
+	private final MeshOptions options;
 
 	@Inject
 	public NodeMigrationHandler(Database db, BinaryUploadHandler nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
-		WriteLock writeLock) {
+		WriteLock writeLock, MeshOptions meshOptions) {
 		super(db, nodeFieldAPIHandler, metrics, batchProvider);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.writeLock = writeLock;
+		this.options = meshOptions;
 	}
 
 	/**
@@ -79,6 +82,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
 			SchemaModel newSchema = db.tx(() -> toVersion.getSchema());
+			String branchUuid = db.tx(() -> branch.getUuid());
+			String fromUuud = db.tx(() -> fromVersion.getUuid());
+			String toUuid = db.tx(() -> context.getToVersion().getUuid());
 
 			try {
 				db.tx(() -> {
@@ -93,40 +99,52 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				return Completable.error(e);
 			}
 
-			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			Queue<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
-				Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid());
-				Queue<NodeGraphFieldContainer> queue = new ArrayDeque<>();
-				while (it.hasNext()) {
-					queue.add(it.next());
-				}
-				return queue;
-			});
+			int batchSize = options.getContentOptions().getBatchSize();
+			long batched = 0;
+			int currentBatch = 0;
+			List<Exception> errorsDetected;
 
-			if (metrics.isEnabled()) {
-				migrationGauge.set(containers.size());
-			}
+			do {
+				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+				Queue<? extends NodeGraphFieldContainer> containers = db.tx(() -> {
+					Iterator<? extends NodeGraphFieldContainer> it = fromVersion.getDraftFieldContainers(branch.getUuid(), batchSize);
+					Queue<NodeGraphFieldContainer> queue = new ArrayDeque<>();
+					while (it.hasNext()) {
+						queue.add(it.next());
+					}
+					return queue;
+				});
+				currentBatch = containers.size();
+				batched += currentBatch;
 
-			// No field containers, migration is done
-			if (containers.isEmpty()) {
-				if (status != null) {
-					db.tx(() -> {
-						status.setStatus(COMPLETED);
-						status.commit();
-					});
-				}
-				return Completable.complete();
-			}
-
-			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
-				try (WriteLock lock = writeLock.lock(context)) {
-					migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
+				if (metrics.isEnabled()) {
+					migrationGauge.set(batched);
 				}
 				if (metrics.isEnabled()) {
-					migrationGauge.decrementAndGet();
+					log.info("Batch: {} fetched, from {} to {}, branch {}", batched, fromUuud, toUuid, branchUuid);
 				}
-			});
+
+				// No field containers, migration is done
+				if (containers.isEmpty()) {
+					if (status != null) {
+						db.tx(() -> {
+							status.setStatus(COMPLETED);
+							status.commit();
+						});
+					}
+					return Completable.complete();
+				}
+
+				errorsDetected = migrateLoop(containers, cause, status, (batch, container, errors) -> {
+					try (WriteLock lock = writeLock.lock(context)) {
+						migrateContainer(context, batch, container, fromVersion, newSchema, errors, touchedFields);
+					}
+					if (metrics.isEnabled()) {
+						migrationGauge.decrementAndGet();
+					}
+				});
+			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
