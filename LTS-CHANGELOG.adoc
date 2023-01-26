@@ -27,6 +27,8 @@ icon:check[] GraphQL: The graphql library has been updated to version 20.0.
 
 icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
 
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
 [[v1.8.16]]
 == 1.8.16 (15.12.2022)
 
