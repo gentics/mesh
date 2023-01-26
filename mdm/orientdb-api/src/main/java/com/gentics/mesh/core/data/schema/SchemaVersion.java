@@ -16,12 +16,13 @@ public interface SchemaVersion
 		extends GraphFieldSchemaContainerVersion<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchemaVersion, HibSchema>, HibSchemaVersion {
 
 	/**
-	 * Returns a result for those {@link HibNodeFieldContainer}'s which can be edited by users. Those are draft and publish versions.
+	 * Returns a result for those {@link HibNodeFieldContainer}'s which are the subject for node migration.
 	 *
 	 * @param branchUuid Branch Uuid
+	 * @param limit limits the fetched vertices number. if less than 1, limits are disabled
 	 * @return
 	 */
-	Result<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid);
+	Result<? extends HibNodeFieldContainer> getDraftFieldContainers(String branchUuid, long limit);
 
 	/**
 	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
