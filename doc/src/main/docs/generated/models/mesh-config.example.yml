@@ -120,6 +120,7 @@ image:
   resampleFilter: "LANCZOS"
 content:
   autoPurge: true
+  batchSize: 5000
 cache:
   pathCacheSize: 20000
 debugInfo:
@@ -129,6 +130,7 @@ debugInfo:
   logPattern: "%d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n"
 graphQL:
   slowThreshold: 60000
+  asyncWaitTimeout: 120000
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"
