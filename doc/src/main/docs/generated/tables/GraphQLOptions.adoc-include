@@ -7,6 +7,11 @@
 | Description
 
 
+| asyncWaitTimeout
+| false
+| integer
+| Threshold for waiting for asynchronous graphql queries. Default: 120000ms
+
 | slowThreshold
 | false
 | integer
