@@ -664,10 +664,6 @@ public interface PersistingContentDao extends ContentDao {
 	private boolean updateWebrootPathInfo(HibNodeFieldContainer content, HibNode node, HibNodeFieldContainerEdge edge, String branchUuid, String segmentFieldName,
 										  String conflictI18n,
 										  ContainerType type) {
-		// Early return, if no segment field set
-		if (StringUtils.isBlank(segmentFieldName)) {
-			return true;
-		}
 		NodeDao nodeDao = Tx.get().nodeDao();
 
 		// Determine the webroot path of the container parent node
