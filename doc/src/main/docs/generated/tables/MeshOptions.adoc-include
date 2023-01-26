@@ -557,6 +557,11 @@
 | boolean
 | Flag which controls the global setting for the auto purge mechanism. The setting can be overriden by the schema &#x27;autoPurge&#x27; flag. Default: true
 
+| contentOptions.batchSize
+| false
+| int
+| The size of a batch for operations over large amount of entities. Setting this to any number lower than 1 will disable batch chunking
+
 | cacheConfig.pathCacheSize
 | false
 | long

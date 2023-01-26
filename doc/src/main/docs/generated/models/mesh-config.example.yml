@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 16
+  eventPoolSize: 64
   eventBus:
     checkInterval: 30000
     warnThreshold: 60000
@@ -55,7 +55,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 16
+  verticleAmount: 64
   serverTokens: true
 monitoring:
   enabled: true
@@ -141,6 +141,7 @@ image:
   resampleFilter: "LANCZOS"
 content:
   autoPurge: true
+  batchSize: 5000
 cache:
   pathCacheSize: 20000
 debugInfo:
