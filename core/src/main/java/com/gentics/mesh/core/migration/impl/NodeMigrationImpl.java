@@ -156,6 +156,9 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			SchemaMigrationCause cause = context.getCause();
 			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
+			String branchUuid = db.tx(() -> branch.getUuid());
+			String fromUuud = db.tx(() -> fromVersion.getUuid());
+			String toUuid = db.tx(() -> context.getToVersion().getUuid());
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
@@ -172,47 +175,59 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 				return Completable.error(e);
 			}
 
-			// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
-			// versions. We'll work on drafts. The migration code will later on also handle publish versions.
-			Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
-				SchemaDao schemaDao = tx.schemaDao();
-				return schemaDao.findDraftFieldContainers(fromVersion, branch.getUuid()).stream()
-						.collect(Collectors.toCollection(ArrayDeque::new));
-			});
+			int batchSize = options.getContentOptions().getBatchSize();
+			long batched = 0;
+			int currentBatch = 0;
+			List<Exception> errorsDetected;
 
-			if (metrics.isEnabled()) {
-				migrationGauge.set(containers.size());
-			}
+			do {
+				// Get the draft containers that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+				// versions. We'll work on drafts. The migration code will later on also handle publish versions.
+				Queue<? extends HibNodeFieldContainer> containers = db.tx(tx -> {
+					SchemaDao schemaDao = tx.schemaDao();
+					return schemaDao.findDraftFieldContainers(fromVersion, branchUuid, batchSize).stream()
+							.collect(Collectors.toCollection(ArrayDeque::new));
+				});
+				currentBatch = containers.size();
+				batched += currentBatch;
 
-			// No field containers, migration is done
-			if (containers.isEmpty()) {
-				if (status != null) {
-					db.tx(() -> {
-						status.setStatus(COMPLETED);
-						status.commit();
-					});
-				}
-				return Completable.complete();
-			}
-
-			List<Exception> errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
-				try (WriteLock lock = writeLock.lock(context)) {
-					beforeBatchMigration(containerList, context);
-					List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
-					for (HibNodeFieldContainer container : containerList) {
-						Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
-						if (toPurgePair != null) {
-							toPurge.add(toPurgePair);
-						}
-					}
-
-					List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
-					bulkPurge(toPurgeList);
+				if (metrics.isEnabled()) {
+					migrationGauge.set(batched);
 				}
 				if (metrics.isEnabled()) {
-					migrationGauge.decrementAndGet();
+					log.info("Batch: {} fetched, from {} to {}, branch {}", batched, fromUuud, toUuid, branchUuid);
 				}
-			});
+
+				// No field containers, migration is done
+				if (containers.isEmpty()) {
+					if (status != null) {
+						db.tx(() -> {
+							status.setStatus(COMPLETED);
+							status.commit();
+						});
+					}
+					return Completable.complete();
+				}
+
+				errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
+					try (WriteLock lock = writeLock.lock(context)) {
+						beforeBatchMigration(containerList, context);
+						List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
+						for (HibNodeFieldContainer container : containerList) {
+							Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
+							if (toPurgePair != null) {
+								toPurge.add(toPurgePair);
+							}
+						}
+
+						List<HibNodeFieldContainer> toPurgeList = filterPurgeable(toPurge);
+						bulkPurge(toPurgeList);
+					}
+					if (metrics.isEnabled()) {
+						migrationGauge.decrementAndGet();
+					}
+				});
+			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);			
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();

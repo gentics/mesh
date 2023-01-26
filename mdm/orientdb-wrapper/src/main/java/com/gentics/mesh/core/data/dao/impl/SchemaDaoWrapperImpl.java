@@ -140,8 +140,8 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
-		return toGraph(version).getDraftFieldContainers(branchUuid);
+	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid, long limit) {
+		return toGraph(version).getDraftFieldContainers(branchUuid, limit);
 	}
 
 	@Override

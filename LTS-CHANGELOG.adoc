@@ -17,6 +17,18 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.8.17]]
+== 1.8.17 (26.01.2023)
+
+icon:check[] GraphQL: In rare cases, GraphQL statements could "hang" forever, which caused the corresponding worker thread to be blocked forever.
+This has been fixed now by introducing a configurable timeout.
+
+icon:check[] GraphQL: The graphql library has been updated to version 20.0.
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
 [[v1.8.16]]
 == 1.8.16 (15.12.2022)
 
@@ -109,6 +121,13 @@ icon:check[] Core: Schema field names are now checked for uniqueness regardless 
 enforced in the UI, and is now enforced in the REST API. The check is not performed for existing schemas.
 
 icon:check[] Core: When a project was deleted, its associated version purge jobs were not. This has been fixed.
+
+[[v1.6.41]]
+== 1.6.41 (26.01.2023)
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
 
 [[v1.6.40]]
 == 1.6.40 (15.12.2022)

@@ -36,6 +36,7 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.ToxiproxyContainer;
 import org.testcontainers.containers.ToxiproxyContainer.ContainerProxy;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
@@ -87,6 +88,7 @@ public class MeshTestContext implements TestRule {
 
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
+		System.setProperty("memory.directMemory.preallocate", "false");
 	}
 
 	public static final Logger LOG = LoggerFactory.getLogger(MeshTestContext.class);
@@ -602,7 +604,9 @@ public class MeshTestContext implements TestRule {
 			network = Network.newNetwork();
 			elasticsearch = new ElasticsearchContainer(version).withNetwork(network);
 			elasticsearch.waitingFor(Wait.forHttp(("/")));
-			toxiproxy = new ToxiproxyContainer(System.getProperty("mesh.container.image.prefix", "") + "shopify/toxiproxy:2.1.0").withNetwork(network);
+			toxiproxy = new ToxiproxyContainer(DockerImageName
+					.parse(System.getProperty("mesh.container.image.prefix", "") + "shopify/toxiproxy:2.1.0")
+					.asCompatibleSubstituteFor("shopify/toxiproxy:2.1.0")).withNetwork(network);
 			if (!toxiproxy.isRunning()) {
 				toxiproxy.start();
 			}

@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
@@ -44,7 +43,12 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.etc.config.ContentConfig;
+import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.orientechnologies.orient.core.sql.executor.OResultSet;
 import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -79,15 +83,32 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid) {
-		return new TraversalResult<>(toStream(mesh().database().getVertices(
-			NodeGraphFieldContainerImpl.class,
-			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
-			new Object[] { getUuid() })).filter(
-				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-					.anyMatch(
-						e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) && ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class)));
+	public Result<? extends NodeGraphFieldContainer> getDraftFieldContainers(String branchUuid, long limit) {
+		OrientDBDatabase database = mesh().database();
+		Stream<? extends NodeGraphFieldContainer> stream;
+		String uuid = getUuid();
+		if (limit < 1) {
+			stream = toStream(database.getVertices(
+					NodeGraphFieldContainerImpl.class,
+					new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
+					new Object[] { uuid }))
+				.filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER)).anyMatch(e -> 
+						e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) 
+						&& ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT))
+				).map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+		} else {
+			OrientBaseGraph baseGraph = database.unwrapCurrentGraph();
+			String query = "select expand(in) as content "
+					+ " from " + HAS_FIELD_CONTAINER + " "
+					+ " where " + EDGE_TYPE_KEY + " = ? and " + BRANCH_UUID_KEY + " = ? "
+					+ " and in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = ? "
+					+ " limit " + limit;
+			OResultSet list = baseGraph.getRawGraph().query(query, new Object[] { DRAFT.getCode(), branchUuid, uuid });
+			stream = toStream(list)
+					.map(oresult -> (Vertex) new OrientVertex(baseGraph, oresult.toElement()))
+					.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+		}
+		return new TraversalResult<>(stream);
 	}
 
 	@Override
