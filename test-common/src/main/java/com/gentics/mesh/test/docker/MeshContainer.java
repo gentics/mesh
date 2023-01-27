@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
@@ -238,7 +239,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_REGEX_ENV, coordinatorPlaneRegex);
 		}
 
-		String javaOpts = null;
+		String javaOpts = "-Dstorage.diskCache.bufferSize=1024 ";
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
 			exposedPorts.add(8000);
@@ -690,7 +691,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		if (containerHost != null) {
 			return containerHost;
 		} else {
-			return super.getContainerIpAddress();
+			return DockerClientFactory.instance().dockerHostIpAddress();
 		}
 	}
 
