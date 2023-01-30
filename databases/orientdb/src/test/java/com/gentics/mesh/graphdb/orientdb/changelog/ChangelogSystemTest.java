@@ -44,6 +44,10 @@ import net.lingala.zip4j.exception.ZipException;
 @RunWith(value = Parameterized.class)
 public class ChangelogSystemTest {
 
+	static {
+		System.setProperty("memory.directMemory.preallocate", "false");
+	}
+
 	File targetDir = new File("target/dump");
 
 	private String version;
@@ -88,14 +92,13 @@ public class ChangelogSystemTest {
 
 		ReadableByteChannel rbc = Channels.newChannel(website.openStream());
 		File zipFile = new File("target" + File.separator + "dump.zip");
-		FileOutputStream fos = new FileOutputStream(zipFile);
-		try {
+
+		try (FileOutputStream fos = new FileOutputStream(zipFile)) {
 			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-		} finally {
-			fos.close();
 		}
-		ZipFile zip = new ZipFile(zipFile);
-		zip.extractAll(targetDir.getAbsolutePath());
+		try (ZipFile zip = new ZipFile(zipFile)) {
+			zip.extractAll(targetDir.getAbsolutePath());
+		}
 		zipFile.delete();
 	}
 

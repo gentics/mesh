@@ -239,7 +239,7 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_REGEX_ENV, coordinatorPlaneRegex);
 		}
 
-		String javaOpts = "-Dstorage.diskCache.bufferSize=1024 ";
+		String javaOpts = "-Dmemory.directMemory.preallocate=false ";
 		if (debugPort != null) {
 			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
 			exposedPorts.add(8000);
