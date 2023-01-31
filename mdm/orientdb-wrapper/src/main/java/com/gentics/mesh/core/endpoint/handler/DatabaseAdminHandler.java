@@ -58,8 +58,8 @@ public class DatabaseAdminHandler {
 	public void handleDatabaseStart(InternalActionContext ac) {
 		try {
 			if (!db.isRunning()) {
-				db.setupConnectionPool();
 				db.clusterManager().startAndSync();
+				db.setupConnectionPool();
 				liveness.setLive(true, "DB turned on, after manual off");
 				ac.send(OK);
 			} else {
