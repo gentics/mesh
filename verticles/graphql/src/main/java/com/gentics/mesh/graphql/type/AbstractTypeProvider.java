@@ -2,10 +2,8 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
+import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -20,13 +18,14 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -90,6 +90,12 @@ public abstract class AbstractTypeProvider {
 
 		// #perPage
 		arguments.add(newArgument().name("perPage").description("Max count of elements per page").type(GraphQLLong).build());
+
+		// #sortBy
+		arguments.add(newArgument().name("sortBy").description("Field to sort the elements by").type(GraphQLString).build());
+
+		// #sortOrder
+		arguments.add(newArgument().name("sortOrder").defaultValue(SortOrder.ASCENDING.getValue()).description("Order to sort the elements in").type(GraphQLString).build());
 		return arguments;
 	}
 
@@ -543,6 +549,14 @@ public abstract class AbstractTypeProvider {
 		if (perPage != null) {
 			parameters.setPerPage(perPage);
 		}
+		String sortBy = env.getArgument("sortBy");
+		if (StringUtils.isNotBlank(sortBy)) {
+			parameters.setSortBy(sortBy);
+		}
+		String sortOrder = env.getArgument("sortOrder");
+		if (StringUtils.isNotBlank(sortOrder)) {
+			parameters.setSortOrder(sortOrder);
+		}
 		parameters.validate();
 		return parameters;
 	}
@@ -561,9 +575,10 @@ public abstract class AbstractTypeProvider {
 		HibProject project = tx.getProject(gc);
 
 		List<String> languageTags = getLanguageArgument(env);
+		PagingParameters pagingInfo = getPagingInfo(env);
 		ContainerType type = getNodeVersion(env);
 
-		Stream<NodeContent> contents = nodeDao.findAllContent(project, gc, languageTags, type);
+		Stream<NodeContent> contents = nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo.getSortBy(), pagingInfo.getOrder());
 
 		return applyNodeFilter(env, contents);
 	}

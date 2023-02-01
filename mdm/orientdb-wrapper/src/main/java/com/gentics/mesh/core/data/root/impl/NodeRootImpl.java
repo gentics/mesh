@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -95,12 +96,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, String sortBy, SortOrder sortOrder) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
 		UserDao userDao = tx.userDao();
 
-		return findAll(tx.getProject(ac).getUuid())
+		return findAll(tx.getProject(ac).getUuid(), sortBy, sortOrder)
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
@@ -112,10 +113,17 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	private Stream<Vertex> findAll(String projectUuid) {
+		return findAll(projectUuid, null, null);
+	}
+
+	private Stream<Vertex> findAll(String projectUuid, String sortBy, SortOrder sortOrder) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
-			new Object[] { projectUuid }));
+			new Object[]{projectUuid},
+			sortBy,
+			sortOrder
+		));
 	}
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {

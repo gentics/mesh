@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -43,7 +44,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	Result<? extends L> findAll(R root);
 
 	/**
-	 * Return an iterator of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
+	 * Return an iterator of all elements, considering the sorting parameters. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
 	 * permissions.
 	 *
 	 * @param ac
@@ -51,7 +52,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @param permission
 	 *            Needed permission
 	 */
-	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission);
+	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, String sortBy, SortOrder sortOrder);
 
 	/**
 	 * Find the visible elements and return a paged result.

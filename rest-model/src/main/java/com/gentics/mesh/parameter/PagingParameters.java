@@ -14,6 +14,7 @@ public interface PagingParameters extends ParameterProvider {
 	public static final String SORT_ORDER_PARAMETER_KEY = "order";
 
 	public static final int DEFAULT_PAGE = 1;
+	public static final SortOrder DEFAULT_SORT_ORDER = SortOrder.UNSORTED;
 
 	/**
 	 * Return the current page.
@@ -63,9 +64,7 @@ public interface PagingParameters extends ParameterProvider {
 	 * Return the sort by parameter value.
 	 * 
 	 * @return Field to be sorted by
-	 * @deprecated not yet implemented
 	 */
-	@Deprecated
 	default String getSortBy() {
 		return getParameter(SORT_BY_PARAMETER_KEY);
 	}
@@ -74,24 +73,20 @@ public interface PagingParameters extends ParameterProvider {
 	 * Return the sortorder.
 	 * 
 	 * @return
-	 * @deprecated not yet implemented
 	 */
-	@Deprecated
 	default SortOrder getOrder() {
 		return SortOrder.valueOfName(getParameter(SORT_ORDER_PARAMETER_KEY));
 
 	}
 
 	/**
-	 * Set the order by parameter.
+	 * Set the sort by parameter.
 	 * 
-	 * @param orderBy
+	 * @param sortBy
 	 * @return
-	 * @deprecated not yet implemented
 	 */
-	@Deprecated
-	default PagingParameters setOrderBy(String orderBy) {
-		setParameter(SORT_BY_PARAMETER_KEY, orderBy);
+	default PagingParameters setSortBy(String sortBy) {
+		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
 		return this;
 	}
 
@@ -101,10 +96,8 @@ public interface PagingParameters extends ParameterProvider {
 	 * @param sortBy
 	 *            Sort order
 	 * @return Fluent API
-	 * @deprecated not yet implemented
 	 * 
 	 */
-	@Deprecated
 	default PagingParameters setSortOrder(String sortBy) {
 		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
 		return this;

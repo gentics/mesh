@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -15,8 +17,10 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -78,7 +82,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	public DynamicTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, InternalPermission perm,
 		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
+		init(root.getPersistanceClass(), root.getRootLabel(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
 	}
 
 	/**
@@ -86,6 +90,8 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *
 	 * @param requestUser
 	 *            User which is used to check permissions
+	 * @param rootLabel
+	 * 			  Root vertex label     
 	 * @param indexName
 	 *            Name of the index which should be used to lookup the elements
 	 * @param indexKey
@@ -103,10 +109,10 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param frameExplicitly
 	 *            Whether to frame the found value explicitily
 	 */
-	public DynamicTransformablePageImpl(HibUser requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
+	public DynamicTransformablePageImpl(HibUser requestUser, String rootLabel, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
 		InternalPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(clazz, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm);
+		init(clazz, rootLabel, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm);
 	}
 
 	/**
@@ -205,6 +211,8 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *
 	 * @param clazz
 	 *            Class used to frame the found elements.
+	 * @param rootLabel
+	 * 			  Root vertex label           
 	 * @param indexName
 	 *            Name of the graph index to use
 	 * @param indexKey
@@ -216,19 +224,40 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param perm
 	 *            Graph permission to filter by
 	 */
-	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
+	private void init(Class<? extends T> clazz, String rootLabel, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
 		InternalPermission perm) {
 
+		Spliterator<Edge> itemEdges;
 		// Iterate over all vertices that are managed by this root vertex
-		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+		itemEdges = graph.getEdges(indexName, indexKey).spliterator();
 		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
-
 			// Get the vertex from the edge
 			.map(itemEdge -> {
 				return itemEdge.getVertex(vertexDirection);
 			});
+
 		applyPagingAndPermChecks(stream, clazz, perm);
 
-	}
+		if (StringUtils.isNotBlank(sortBy)) {
+			if (sortOrder == null) {
+				sortOrder = PagingParameters.DEFAULT_SORT_ORDER;
+			}
+			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
+					.relationDirection(vertexDirection)
+					.edgeLabel(rootLabel)
+					.vertexClass(clazz);
+			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
+			itemEdges = query.edgesOrdered(new String[] { sortBy + " " + sortOrder.getValue()}).spliterator();
+		} else {
+			// Iterate over all vertices that are managed by this root vertex
+			itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+		}
+		applyPagingAndPermChecks(StreamSupport.stream(itemEdges, false)
 
+				// Get the vertex from the edge
+				.map(itemEdge -> {
+					return itemEdge.getVertex(vertexDirection);
+				}), clazz, perm);
+	}
 }

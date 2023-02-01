@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
@@ -38,7 +39,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		setPage(page);
 		setPerPage(perPage);
 		setSortOrder(order.toString());
-		setOrderBy(sortBy);
+		setSortBy(sortBy);
 	}
 
 	/**
@@ -67,7 +68,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 *            Per page count
 	 */
 	public PagingParametersImpl(int page, Long perPage) {
-		this(page, perPage, "uuid", SortOrder.ASCENDING);
+		this(page, perPage, StringUtils.EMPTY, SortOrder.UNSORTED);
 	}
 
 	@Override
@@ -98,6 +99,23 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		perPageParameter.setRequired(false);
 		perPageParameter.setType(ParamType.NUMBER);
 		parameters.put(PER_PAGE_PARAMETER_KEY, perPageParameter);
+
+		// sort by
+		QueryParameter sortByParameter = new QueryParameter();
+		sortByParameter.setDescription("Field name to sort the result by.");
+		sortByParameter.setExample("name");
+		sortByParameter.setRequired(false);
+		sortByParameter.setType(ParamType.STRING);
+		parameters.put(SORT_BY_PARAMETER_KEY, sortByParameter);
+
+		// sort order
+		QueryParameter sortOrderParameter = new QueryParameter();
+		sortOrderParameter.setDescription("Field order (asc/desc) to sort the result by.");
+		sortOrderParameter.setDefaultValue(DEFAULT_SORT_ORDER.getValue());
+		sortOrderParameter.setExample(SortOrder.ASCENDING.getValue());
+		sortOrderParameter.setRequired(false);
+		sortOrderParameter.setType(ParamType.STRING);
+		parameters.put(SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
 		return parameters;
 	}
 

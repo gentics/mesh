@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -54,8 +55,8 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	/**
 	 * @see LanguageRoot
 	 */
-	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission) {
-		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission);
+	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission, String sortBy, SortOrder sortOrder) {
+		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission, sortBy, sortOrder);
 	}
 
 	/**

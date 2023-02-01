@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -152,8 +153,8 @@ public class MicroschemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibMicroschema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission);
+			InternalPermission permission, String sortBy, SortOrder sortOrder) {
+		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission, sortBy, sortOrder);
 	}
 
 	@Override

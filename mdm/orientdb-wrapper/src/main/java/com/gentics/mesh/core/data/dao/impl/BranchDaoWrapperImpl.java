@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -112,16 +113,10 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 		return graphProject.getBranchRoot().getLatestBranch();
 	}
 
-// TODO remove if unneeded
-//	@Override
-//	public long globalCount() {
-//		return db.get().count(Branch.class);
-//	}
-
 	@Override
 	public Stream<? extends HibBranch> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getBranchRoot().findAllStream(ac, permission);
+			InternalPermission permission, String sortBy, SortOrder sortOrder) {
+		return toGraph(root).getBranchRoot().findAllStream(ac, permission, sortBy, sortOrder);
 	}
 
 	@Override

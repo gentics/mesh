@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -416,13 +417,28 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	/**
 	 * Fetch all contents for the provided project in the action context branch and the container type.
 	 * If the content is published, checks for read published permissions, otherwise check for read permissions
-	 *  @param project
+	 * @param project
 	 * @param ac
 	 * @param languageTags
 	 * @param type
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type);
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return findAllContent(project, ac, languageTags, type, null, null);
+	}
+
+	/**
+	 * Fetch all contents for the provided project in the action context branch and the container type, considering the sorting parameters.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 * @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, String sortBy, SortOrder sortOrder);
 
 	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.

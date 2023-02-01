@@ -39,8 +39,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.rest.node.FieldMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -62,6 +62,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -70,17 +71,15 @@ import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -111,7 +110,6 @@ import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
@@ -198,10 +196,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, String sortBy, SortOrder sortOrder) {
 		ContentDao contentDao = Tx.get().contentDao();
 
-		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)
+		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, sortBy, sortOrder)
 				// Now lets try to load the containers for those found nodes - apply the language fallback
 				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
 				// Filter nodes without a container

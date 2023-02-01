@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_VERSION;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.MICROSCHEMA_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
@@ -27,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -41,19 +42,20 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.S3BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
@@ -103,6 +105,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			.withField(BucketableElementHelper.BUCKET_ID_KEY, LONG)
 			.withType(NOTUNIQUE)
 			.withPostfix("bucket"));
+
+		GraphRelationships.addRelation(NodeGraphFieldContainerImpl.class, MicronodeImpl.class, "*", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
 	}
 
 	@Override

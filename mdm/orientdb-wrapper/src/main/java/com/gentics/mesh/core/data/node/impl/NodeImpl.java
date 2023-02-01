@@ -62,6 +62,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
@@ -130,6 +131,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		index.createIndex(vertexIndex(NodeImpl.class)
 			.withPostfix("branch_parents")
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
+
+		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.PUBLISHED.getCode());
 	}
 
 	@Override

@@ -22,14 +22,14 @@ public class PagingParametersTest {
 
 		Map<String, String> paramMap = splitQuery(params.getQueryParameters());
 
-		assertEquals(2, paramMap.size());
+		assertEquals(3, paramMap.size());
 		assertEquals("1", paramMap.get("page"));
 		assertEquals("uuid", paramMap.get("sortBy"));
 
 		params.setPerPage(25L);
 		paramMap = splitQuery(params.getQueryParameters());
 
-		assertEquals(3, paramMap.size());
+		assertEquals(4, paramMap.size());
 		assertEquals("1", paramMap.get("page"));
 		assertEquals("uuid", paramMap.get("sortBy"));
 		assertEquals("25", paramMap.get("perPage"));

@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -189,8 +190,8 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibSchema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission);
+			InternalPermission permission, String sortBy, SortOrder sortOrder) {
+		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission, sortBy, sortOrder);
 	}
 
 	@Override

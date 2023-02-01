@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Enum which contains the sortorder states.
  */
@@ -9,21 +11,21 @@ public enum SortOrder {
 
 	DESCENDING("desc"),
 
-	UNSORTED("unsorted");
+	UNSORTED(StringUtils.EMPTY);
 
-	private String simpleName;
+	private String value;
 
-	private SortOrder(String simpleName) {
-		this.simpleName = simpleName;
+	private SortOrder(String value) {
+		this.value = value;
 	}
 
 	/**
-	 * Return the human readable name of the sortorder.
+	 * Return the value of the sortorder.
 	 * 
 	 * @return
 	 */
-	public String getSimpleName() {
-		return simpleName;
+	public String getValue() {
+		return value;
 	}
 
 	/**
@@ -37,7 +39,7 @@ public enum SortOrder {
 			return null;
 		}
 		for (SortOrder p : SortOrder.values()) {
-			if (name.equals(p.getSimpleName())) {
+			if (name.equals(p.getValue())) {
 				return p;
 			}
 		}

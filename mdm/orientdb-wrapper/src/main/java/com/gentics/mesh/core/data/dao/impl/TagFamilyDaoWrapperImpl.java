@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -109,8 +110,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 
 	@Override
 	public Stream<? extends HibTagFamily> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getTagFamilyRoot().findAllStream(ac, permission);
+			InternalPermission permission, String sortBy, SortOrder sortOrder) {
+		return toGraph(root).getTagFamilyRoot().findAllStream(ac, permission, sortBy, sortOrder);
 	}
 
 	@Override

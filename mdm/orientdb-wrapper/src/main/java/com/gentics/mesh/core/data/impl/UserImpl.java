@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
@@ -88,6 +90,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
+		GraphRelationships.addRelation(UserImpl.class, NodeImpl.class, "nodeReference", HAS_NODE_REFERENCE, StringUtils.EMPTY, StringUtils.EMPTY);
 	}
 
 	@Override
@@ -262,7 +265,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params) {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		return new DynamicTransformablePageImpl<>(user, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
+		return new DynamicTransformablePageImpl<>(user, ASSIGNED_TO_ROLE, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
 
 	@Override

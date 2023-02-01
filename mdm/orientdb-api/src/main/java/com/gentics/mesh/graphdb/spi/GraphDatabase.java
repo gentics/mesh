@@ -5,6 +5,7 @@ import java.util.Iterator;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -28,7 +29,22 @@ public interface GraphDatabase extends Database {
 	 * @param fieldValues
 	 * @return
 	 */
-	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
+	default Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+		return getVertices(classOfVertex, fieldNames, fieldValues, null, null);
+	}
+
+	/**
+	 * Utilize the index and locate the matching vertices, considering sorting parameters.
+	 *
+	 * @param classOfVertex
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
+	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, String sortBy,
+			SortOrder sortOrder);
 
 	/**
 	 * Utilize the index and locate the matching vertices for the given parameters and the given range.

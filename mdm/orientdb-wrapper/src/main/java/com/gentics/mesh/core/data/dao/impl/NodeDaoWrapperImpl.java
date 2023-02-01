@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
@@ -25,6 +24,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
@@ -173,9 +174,9 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm) {
+	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, String sortBy, SortOrder sortOrder) {
 		Project graphProject = toGraph(project);
-		return graphProject.getNodeRoot().findAllStream(ac, perm);
+		return graphProject.getNodeRoot().findAllStream(ac, perm, sortBy, sortOrder);
 	}
 
 	@Override
