@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jre-11.0.12_7
+FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.16.1_1
 
 USER root
 RUN mkdir /mesh
