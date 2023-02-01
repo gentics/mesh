@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
@@ -238,21 +239,16 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			addEnv(ClusterOptions.MESH_CLUSTER_COORDINATOR_REGEX_ENV, coordinatorPlaneRegex);
 		}
 
-		String javaOpts = null;
+		String javaOpts = "-Dmemory.directMemory.preallocate=false ";
 		if (debugPort != null) {
-			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
+			javaOpts += "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
 			exposedPorts.add(8000);
 			setPortBindings(Arrays.asList("8000:8000"));
 		}
 		if (extraOpts != null) {
-			if (javaOpts == null) {
-				javaOpts = "";
-			}
 			javaOpts += extraOpts + " ";
 		}
-		if (javaOpts != null) {
-			addEnv("JAVAOPTS", javaOpts);
-		}
+		addEnv("JAVAOPTS", javaOpts);
 
 		exposedPorts.add(8600);
 		exposedPorts.add(8080);
@@ -685,17 +681,13 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 	}
 
 	@Override
-	public String getContainerIpAddress() {
+	public String getHost() {
 		String containerHost = System.getenv("CONTAINER_HOST");
 		if (containerHost != null) {
 			return containerHost;
 		} else {
-			return super.getContainerIpAddress();
+			return super.getHost();
 		}
-	}
-
-	public String getHost() {
-		return getContainerIpAddress();
 	}
 
 	public int getPort() {
