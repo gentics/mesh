@@ -79,10 +79,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (StringUtils.isNotBlank(sortBy)) {
-			if (sortOrder == null) {
-				sortOrder = PagingParameters.DEFAULT_SORT_ORDER;
-			}
+		if (StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.vertexClass(getPersistanceClass())

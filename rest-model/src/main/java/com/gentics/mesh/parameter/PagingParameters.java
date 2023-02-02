@@ -99,7 +99,7 @@ public interface PagingParameters extends ParameterProvider {
 	 * 
 	 */
 	default PagingParameters setSortOrder(String sortBy) {
-		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
+		setParameter(SORT_ORDER_PARAMETER_KEY, sortBy);
 		return this;
 	}
 

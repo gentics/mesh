@@ -65,9 +65,7 @@ abstract class AbstractTraversal<T, C, S, M> implements Traversal<T, C, S, M> {
 
 	protected AbstractTraversal(final FramedGraph graph, final FermaGremlinPipeline pipeline) {
 		this.graph = graph;
-		this.pipeline = (FermaGremlinPipeline) pipeline.order(pair -> {
-			return 0;
-		});
+		this.pipeline = pipeline;
 	}
 
 	protected FramedGraph graph() {

@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -175,7 +176,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
 					if (Objects.isNull(linkResolver) || linkResolver.equals("s3")) {
 						String fieldName = s3binaryFieldSchema.getName();
-						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName).getBinary());
+						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName)).map(S3HibBinaryField::getBinary);
 					} else {
 						return Optional.empty();
 					}
