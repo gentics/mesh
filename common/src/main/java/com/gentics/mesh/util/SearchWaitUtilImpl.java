@@ -1,10 +1,17 @@
 package com.gentics.mesh.util;
 
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.event.MeshEventSender;
+import com.gentics.mesh.metric.SearchRequestMetric;
+import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.parameter.ParameterProviderContext;
+
+import io.micrometer.core.instrument.Timer;
 import io.reactivex.Completable;
 
 public class SearchWaitUtilImpl implements SearchWaitUtil {
@@ -12,9 +19,17 @@ public class SearchWaitUtilImpl implements SearchWaitUtil {
 	private MeshEventSender meshEventSender;
 	private MeshOptions options;
 
-	public SearchWaitUtilImpl(MeshEventSender meshEventSender, MeshOptions options) {
+	private AtomicLong waitingGauge;
+
+	private Timer waitingTimer;
+
+	public SearchWaitUtilImpl(MeshEventSender meshEventSender, MeshOptions options, MetricsService metrics) {
 		this.meshEventSender = meshEventSender;
 		this.options = options;
+		if (metrics != null && metrics.isEnabled()) {
+			waitingGauge = metrics.longGauge(SearchRequestMetric.WAITING);
+			waitingTimer = metrics.timer(SearchRequestMetric.WAITING_TIME);
+		}
 	}
 
 	/**
@@ -40,6 +55,15 @@ public class SearchWaitUtilImpl implements SearchWaitUtil {
 				.orElseGet(options.getSearchOptions()::isWaitForIdle);
 	}
 
+	@Override
+	public long waitTimeoutMs() {
+		ElasticSearchOptions searchOptions = options.getSearchOptions();
+		if (searchOptions == null) {
+			return ElasticSearchOptions.DEFAULT_WAIT_FOR_IDLE_TIMEOUT;
+		}
+		return searchOptions.getWaitForIdleTimeout();
+	}
+
 	/**
 	 * Implements the {@link SearchWaitUtil#waitForIdle()} method.
 	 *
@@ -50,12 +74,40 @@ public class SearchWaitUtilImpl implements SearchWaitUtil {
 	 * @return A completable which resolves when elasticsearch is idle.
 	 */
 	public Completable waitForIdle() {
+		AtomicReference<Timer.Sample> sample = new AtomicReference<>();
 		return meshEventSender.isSearchIdle().flatMapCompletable(isIdle -> {
 			if (isIdle) {
 				return Completable.complete();
 			}
 			meshEventSender.flushSearch();
 			return meshEventSender.waitForEvent(MeshEvent.SEARCH_IDLE);
-		}).andThen(meshEventSender.refreshSearch());
+		}).andThen(meshEventSender.refreshSearch())
+		.doOnSubscribe(ignore -> {
+			// another request is waiting for the search becoming idle
+			if (waitingTimer != null) {
+				sample.set(Timer.start());
+			}
+			if (waitingGauge != null) {
+				waitingGauge.incrementAndGet();
+			}
+		})
+		.doOnDispose(() -> {
+			// waiting timed out before search became idle, so the request is not waiting any more
+			if (waitingGauge != null) {
+				waitingGauge.decrementAndGet();
+			}
+			if (waitingTimer != null) {
+				sample.get().stop(waitingTimer);
+			}
+		})
+		.doOnTerminate(() -> {
+			// search is idle now, so the request is not waiting any more
+			if (waitingGauge != null) {
+				waitingGauge.decrementAndGet();
+			}
+			if (waitingTimer != null) {
+				sample.get().stop(waitingTimer);
+			}
+		});
 	}
 }

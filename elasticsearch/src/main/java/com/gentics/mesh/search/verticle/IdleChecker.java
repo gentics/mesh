@@ -1,18 +1,22 @@
 package com.gentics.mesh.search.verticle;
 
+import static com.gentics.mesh.search.verticle.eventhandler.Util.dummyObject;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.inject.Inject;
+
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.metric.SearchRequestMetric;
+import com.gentics.mesh.metric.MetricsService;
+
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import javax.inject.Inject;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.gentics.mesh.search.verticle.eventhandler.Util.dummyObject;
 
 
 public class IdleChecker {
@@ -24,9 +28,18 @@ public class IdleChecker {
 
 	private final ElasticSearchOptions options;
 
+	private AtomicInteger idleGauge;
+
 	@Inject
-	public IdleChecker(MeshOptions options) {
+	public IdleChecker(MeshOptions options, MetricsService metrics) {
 		this.options = options.getSearchOptions();
+		if (metrics != null && metrics.isEnabled()) {
+			metrics.getMetricRegistry().gauge(SearchRequestMetric.REQUESTS.key(), requests);
+			metrics.getMetricRegistry().gauge(SearchRequestMetric.TRANSFORMATIONS.key(), transformations);
+			idleGauge = metrics.getMetricRegistry().gauge(SearchRequestMetric.IDLE.key(), new AtomicInteger());
+			// test for idle to set the idleGauge to the correct value
+			isIdle();
+		}
 	}
 
 	/**
@@ -50,7 +63,11 @@ public class IdleChecker {
 	 * @return
 	 */
 	public boolean isIdle() {
-		return requests.get() == 0 && transformations.get() == 0;
+		boolean idle = requests.get() == 0 && transformations.get() == 0;
+		if (this.idleGauge != null) {
+			this.idleGauge.set(idle ? 1 : 0);
+		}
+		return idle;
 	}
 
 	/**
@@ -74,7 +91,9 @@ public class IdleChecker {
 	 * @return
 	 */
 	public int incrementAndGetTransformations() {
-		return transformations.incrementAndGet();
+		int value = transformations.incrementAndGet();
+		isIdle();
+		return value;
 	}
 
 	/**
@@ -114,5 +133,6 @@ public class IdleChecker {
 	 */
 	public void resetTransformations() {
 		transformations.set(0);
+		isIdle();
 	}
 }

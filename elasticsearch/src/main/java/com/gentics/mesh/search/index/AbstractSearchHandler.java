@@ -146,7 +146,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			return;
 		}
 
-		waitUtil.awaitSync(ac).andThen(Single.defer(() -> {
+		waitUtil.awaitSync(ac).timeout(waitUtil.waitTimeoutMs(), TimeUnit.MILLISECONDS).andThen(Single.defer(() -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {
@@ -213,7 +213,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RL listResponse = classOfRL.newInstance();
 
-		waitUtil.awaitSync(ac).andThen(Single.defer(() -> {
+		waitUtil.awaitSync(ac).timeout(waitUtil.waitTimeoutMs(), TimeUnit.MILLISECONDS).andThen(Single.defer(() -> {
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			String searchQuery = ac.getBodyAsString();
 			if (log.isDebugEnabled()) {

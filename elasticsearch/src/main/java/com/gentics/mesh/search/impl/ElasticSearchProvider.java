@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -36,6 +37,8 @@ import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
+import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.SearchRequestMetric;
 import com.gentics.mesh.search.ElasticsearchProcessManager;
 import com.gentics.mesh.search.SearchMappingsCache;
 import com.gentics.mesh.search.SearchProvider;
@@ -82,13 +85,18 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private final Lazy<SearchMappingsCache> searchMappingsCache;
 
+	private AtomicLong storeGauge;
+
 	@Inject
-	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject> client, Lazy<SearchMappingsCache> searchMappingsCache) {
+	public ElasticSearchProvider(Lazy<Vertx> vertx, MeshOptions options, ElasticsearchClient<JsonObject> client, Lazy<SearchMappingsCache> searchMappingsCache, MetricsService metrics) {
 		this.vertx = vertx;
 		this.options = options;
 		this.client = client;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 		this.searchMappingsCache = searchMappingsCache;
+		if (metrics != null && metrics.isEnabled()) {
+			storeGauge = metrics.longGauge(SearchRequestMetric.STORE);
+		}
 	}
 
 	/**
@@ -400,6 +408,16 @@ public class ElasticSearchProvider implements SearchProvider {
 			log.debug("Adding object {" + uuid + "} to index {" + fullIndex + "}");
 		}
 		return client.storeDocument(fullIndex, getType(), uuid, document).async()
+			.doOnSubscribe(ignore -> {
+				if (storeGauge != null) {
+					storeGauge.incrementAndGet();
+				}
+			})
+			.doFinally(() -> {
+				if (storeGauge != null) {
+					storeGauge.decrementAndGet();
+				}
+			})
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
 					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
