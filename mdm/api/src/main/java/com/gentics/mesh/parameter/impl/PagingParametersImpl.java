@@ -14,6 +14,7 @@ import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 /**
  * A {@link PagingParametersImpl} can be used to add additional paging parameters to the rest requests.
@@ -106,16 +107,16 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		sortByParameter.setExample("name");
 		sortByParameter.setRequired(false);
 		sortByParameter.setType(ParamType.STRING);
-		parameters.put(SORT_BY_PARAMETER_KEY, sortByParameter);
+		parameters.put(SortingParameters.SORT_BY_PARAMETER_KEY, sortByParameter);
 
 		// sort order
 		QueryParameter sortOrderParameter = new QueryParameter();
 		sortOrderParameter.setDescription("Field order (asc/desc) to sort the result by.");
-		sortOrderParameter.setDefaultValue(DEFAULT_SORT_ORDER.getValue());
+		sortOrderParameter.setDefaultValue(SortingParameters.DEFAULT_SORT_ORDER.getValue());
 		sortOrderParameter.setExample(SortOrder.ASCENDING.getValue());
 		sortOrderParameter.setRequired(false);
 		sortOrderParameter.setType(ParamType.STRING);
-		parameters.put(SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
+		parameters.put(SortingParameters.SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
 		return parameters;
 	}
 

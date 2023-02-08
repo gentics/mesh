@@ -21,6 +21,9 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
+import com.gentics.graphqlfilter.filter.sql.SqlField;
+import com.gentics.graphqlfilter.filter.sql2.FilterQuery;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -587,6 +590,9 @@ public abstract class AbstractTypeProvider {
 		Map<String, ?> filterArgument = env.getArgument("filter");
 		PagingParameters pagingInfo = getPagingInfo(env);
 		GraphQLContext gc = env.getContext();
+		
+		System.err.println( NodeFilter.filter(gc).maybeGetSqlDefinition(filterArgument, Arrays.asList(new SqlField<>("node", ElementType.NODE))).map(p -> p.getSqlString()).orElse(null) );
+		System.err.println( NodeFilter.filter(gc).maybeGetFilterOperation(new FilterQuery<>(ElementType.NODE, "", filterArgument)).map(p -> p.toSql()).orElse(null) );
 
 		if (filterArgument != null) {
 			return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));

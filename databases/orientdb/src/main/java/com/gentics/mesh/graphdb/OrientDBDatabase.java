@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -327,7 +328,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, String sortBy, SortOrder sortOrder) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
-		if (StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED) {
+		if (PersistingRootDao.shouldSort(sortBy, sortOrder)) {
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph)
 					.relationDirection(Direction.OUT)
 					.vertexClass((Class<? extends MeshVertex>) classOfVertex);

@@ -2,9 +2,11 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.group.HibGroup;
 
 /**
@@ -29,15 +31,16 @@ public class GroupFilter extends StartMainFilter<HibGroup> {
 	}
 
 	private GroupFilter() {
-		super(NAME, "Filters groups");
+		super(NAME, "Filters groups", Optional.of(ElementType.GROUP.name()));
 	}
 
 	@Override
 	protected List<FilterField<HibGroup, ?>> getFilters() {
+		String owner = ElementType.GROUP.name();
 		List<FilterField<HibGroup, ?>> filters = new ArrayList<>();
-		filters.add(CommonFields.hibNameFilter());
-		filters.add(CommonFields.hibUuidFilter());
-		filters.addAll(CommonFields.hibUserTrackingFilter());
+		filters.add(CommonFields.hibNameFilter(owner));
+		filters.add(CommonFields.hibUuidFilter(owner));
+		filters.addAll(CommonFields.hibUserTrackingFilter(owner));
 		return filters;
 	}
 }

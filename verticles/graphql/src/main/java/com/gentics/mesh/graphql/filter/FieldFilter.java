@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	private final SchemaVersionModel schema;
 
 	private FieldFilter(SchemaVersionModel container) {
-		super(container.getName() + "FieldFilter", "Filters by fields");
+		super(container.getName() + "FieldFilter", "Filters by fields", Optional.empty());
 		this.schema = container;
 	}
 

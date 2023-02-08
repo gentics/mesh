@@ -1,5 +1,7 @@
 package com.gentics.mesh;
 
+import java.util.Optional;
+
 /**
  * List of basic element types which are stored in Gentics Mesh.
  */
@@ -32,4 +34,8 @@ public enum ElementType {
 	BRANCH,
 
 	NODE;
+
+	public static final Optional<ElementType> parse(String name) {
+		return Optional.ofNullable(name).map(String::toUpperCase).flatMap(id -> Optional.ofNullable(Enum.valueOf(ElementType.class, id)));
+	}
 }

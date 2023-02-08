@@ -19,6 +19,7 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -240,7 +241,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 		if (StringUtils.isNotBlank(sortBy)) {
 			if (sortOrder == null) {
-				sortOrder = PagingParameters.DEFAULT_SORT_ORDER;
+				sortOrder = SortingParameters.DEFAULT_SORT_ORDER;
 			}
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())

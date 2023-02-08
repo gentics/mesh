@@ -2,8 +2,11 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.function.BiFunction;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -60,5 +63,9 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	@Override
 	default BiFunction<R, String, L> getFinder() {
 		return this::findByUuid;
+	}
+
+	static boolean shouldSort(String sortBy, SortOrder sortOrder) {
+		return StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED;
 	}
 }

@@ -2,9 +2,11 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.role.HibRole;
 
 /**
@@ -24,15 +26,16 @@ public class RoleFilter extends StartMainFilter<HibRole> {
 	}
 
 	private RoleFilter() {
-		super(NAME, "Filters roles");
+		super(NAME, "Filters roles", Optional.of(ElementType.ROLE.name()));
 	}
 
 	@Override
 	protected List<FilterField<HibRole, ?>> getFilters() {
+		String owner = ElementType.ROLE.name();
 		List<FilterField<HibRole, ?>> filters = new ArrayList<>();
-		filters.add(CommonFields.hibNameFilter());
-		filters.add(CommonFields.hibUuidFilter());
-		filters.addAll(CommonFields.hibUserTrackingFilter());
+		filters.add(CommonFields.hibNameFilter(owner));
+		filters.add(CommonFields.hibUuidFilter(owner));
+		filters.addAll(CommonFields.hibUserTrackingFilter(owner));
 		return filters;
 	}
 }

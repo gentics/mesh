@@ -17,7 +17,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
 	 */
 	public FieldMappedFilter(String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, String schemaName) {
-		super(name, description, delegate, mapper);
+		super("content", name, description, delegate, mapper);
 		this.schemaName = schemaName;
 	}
 

@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -12,6 +13,7 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -25,6 +27,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 public class NodeFilter extends StartMainFilter<NodeContent> {
 
 	private static final String NAME = "NodeFilter";
+	private static final String OWNER = ElementType.NODE.name();
 
 	/**
 	 * Create a node filter for the given context.
@@ -39,25 +42,25 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 	private final GraphQLContext context;
 
 	private NodeFilter(GraphQLContext context) {
-		super(NAME, "Filters Nodes");
+		super(NAME, "Filters Nodes", Optional.of(OWNER));
 		this.context = context;
 	}
 
 	@Override
 	protected List<FilterField<NodeContent, ?>> getFilters() {
 		List<FilterField<NodeContent, ?>> filters = new ArrayList<>();
-		filters.add(new MappedFilter<>("uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
+		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
 		filters
-			.add(new MappedFilter<>("schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer()));
-		filters.add(new MappedFilter<>("created", "Filters by node creation timestamp", DateFilter.filter(),
+			.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer()));
+		filters.add(new MappedFilter<>(OWNER, "created", "Filters by node creation timestamp", DateFilter.filter(),
 			content -> content.getNode().getCreationTimestamp()));
-		filters.add(new MappedFilter<>("creator", "Filters by creator", UserFilter.filter(),
+		filters.add(new MappedFilter<>(OWNER, "creator", "Filters by creator", UserFilter.filter(),
 			content -> content.getNode().getCreator()));
-		filters.add(new MappedFilter<>("edited", "Filters by node update timestamp", DateFilter.filter(),
+		filters.add(new MappedFilter<>(OWNER, "edited", "Filters by node update timestamp", DateFilter.filter(),
 			content -> content.getContainer().getLastEditedTimestamp()));
-		filters.add(new MappedFilter<>("editor", "Filters by editor", UserFilter.filter(),
+		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
 			content -> content.getContainer().getEditor()));
-		filters.add(new MappedFilter<>("fields", "Filters by fields", createAllFieldFilters(), Function.identity()));
+		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity()));
 
 		return filters;
 	}
@@ -69,11 +72,11 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 			.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
-		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);
+		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false, Optional.of(ElementType.NODE.name()));
 	}
 
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
-		return new MappedFilter<>(schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
+		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
 			NodeContent::getContainer);
 	}
