@@ -8,8 +8,10 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -21,9 +23,8 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
-import com.gentics.graphqlfilter.filter.sql.SqlField;
-import com.gentics.graphqlfilter.filter.sql2.FilterQuery;
-import com.gentics.mesh.ElementType;
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.NoOperationException;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.parameter.LinkType;
@@ -590,10 +592,27 @@ public abstract class AbstractTypeProvider {
 		Map<String, ?> filterArgument = env.getArgument("filter");
 		PagingParameters pagingInfo = getPagingInfo(env);
 		GraphQLContext gc = env.getContext();
-		
-		System.err.println( NodeFilter.filter(gc).maybeGetSqlDefinition(filterArgument, Arrays.asList(new SqlField<>("node", ElementType.NODE))).map(p -> p.getSqlString()).orElse(null) );
-		System.err.println( NodeFilter.filter(gc).maybeGetFilterOperation(new FilterQuery<>(ElementType.NODE, "", filterArgument)).map(p -> p.toSql()).orElse(null) );
 
+		NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
+		switch (nativeQueryFiltering) {
+		case ON_DEMAND:
+			// break if disallowed in the query instance
+		case ALWAYS:
+			try {
+				FilterOperation<?> op = NodeFilter.filter(gc).createFilterOperation(filterArgument);
+				System.err.println( op.toSql() );
+				System.err.println( op.toString() );
+				System.err.println( op.getJoins(Collections.emptyMap()) );
+				break;
+			} catch (NoOperationException e) {
+				if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering) {
+					throw new InvalidParameterException(e.getLocalizedMessage());
+				}
+			}			
+		case OFF:
+			break;
+		}
+		
 		if (filterArgument != null) {
 			return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
 		} else {

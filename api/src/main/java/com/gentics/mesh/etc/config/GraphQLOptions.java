@@ -12,11 +12,11 @@ import com.gentics.mesh.etc.config.env.Option;
 @GenerateDocumentation
 public class GraphQLOptions implements Option {
 	public static final long DEFAULT_SLOW_THRESHOLD = 60_000L;
-
+	public static final NativeQueryFiltering DEFAULT_NATIVE_QUERY_FILTERING = NativeQueryFiltering.ON_DEMAND;
 	public static final long DEFAULT_ASYNC_WAIT_TIMEOUT = 120_000L;
 
 	public static final String MESH_GRAPHQL_SLOW_THRESHOLD_ENV = "MESH_GRAPHQL_SLOW_THRESHOLD";
-
+	public static final String MESH_GRAPHQL_NATIVE_QUERY_FILTERING = "MESH_GRAPHQL_NATIVE_QUERY_FILTERING";
 	public static final String MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV = "MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT";
 
 	@JsonProperty(required = false)
@@ -28,6 +28,11 @@ public class GraphQLOptions implements Option {
 	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries. Default: " + DEFAULT_ASYNC_WAIT_TIMEOUT + "ms")
 	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
 	private Long asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Enables the native database level filtering for queries. Default: ON_DEMAND")
+	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
+	private NativeQueryFiltering nativeQueryFiltering = DEFAULT_NATIVE_QUERY_FILTERING;
 
 	/**
 	 * Get the threshold for logging slow graphQl queries (in milliseconds)
@@ -66,6 +71,15 @@ public class GraphQLOptions implements Option {
 		if (this.asyncWaitTimeout == null) {
 			this.asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
 		}
+		return this;
+	}
+
+	public NativeQueryFiltering getNativeQueryFiltering() {
+		return nativeQueryFiltering;
+	}
+
+	public GraphQLOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering) {
+		this.nativeQueryFiltering = nativeQueryFiltering;
 		return this;
 	}
 }

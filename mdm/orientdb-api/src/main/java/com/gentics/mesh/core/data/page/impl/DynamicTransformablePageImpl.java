@@ -16,10 +16,10 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -239,10 +239,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 		applyPagingAndPermChecks(stream, clazz, perm);
 
-		if (StringUtils.isNotBlank(sortBy)) {
-			if (sortOrder == null) {
-				sortOrder = SortingParameters.DEFAULT_SORT_ORDER;
-			}
+		if (StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.relationDirection(vertexDirection)

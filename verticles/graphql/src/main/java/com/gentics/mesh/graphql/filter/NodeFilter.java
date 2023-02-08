@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -13,6 +14,9 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.FilterQuery;
+import com.gentics.graphqlfilter.filter.operation.NoOperationException;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -20,6 +24,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+
+import graphql.util.Pair;
 
 /**
  * Filters nodes.
@@ -51,7 +57,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 		List<FilterField<NodeContent, ?>> filters = new ArrayList<>();
 		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
 		filters
-			.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer()));
+			.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer(), Pair.pair(OWNER, "schema")));
 		filters.add(new MappedFilter<>(OWNER, "created", "Filters by node creation timestamp", DateFilter.filter(),
 			content -> content.getNode().getCreationTimestamp()));
 		filters.add(new MappedFilter<>(OWNER, "creator", "Filters by creator", UserFilter.filter(),
@@ -79,5 +85,9 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
 			NodeContent::getContainer);
+	}
+
+	public FilterOperation<?> createFilterOperation(Map<String, ?> filterArgument) throws NoOperationException  {
+		return createFilterOperation(new FilterQuery<>(ElementType.NODE, "", filterArgument));
 	}
 }

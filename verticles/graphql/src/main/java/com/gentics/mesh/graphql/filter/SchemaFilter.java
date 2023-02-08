@@ -10,9 +10,8 @@ import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
-import com.gentics.graphqlfilter.filter.sql.ComparisonPredicate;
-import com.gentics.graphqlfilter.filter.sql2.Comparison;
-import com.gentics.graphqlfilter.filter.sql2.FieldOperand;
+import com.gentics.graphqlfilter.filter.operation.Comparison;
+import com.gentics.graphqlfilter.filter.operation.FieldOperand;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -71,7 +70,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 	protected List<FilterField<HibSchema, ?>> getFilters() {
 		String owner = ElementType.SCHEMA.name();
 		List<FilterField<HibSchema, ?>> filters = new ArrayList<>();
-		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid), Optional.of((query, fields) -> new ComparisonPredicate<>("=", fields, query, true)),
+		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid), 
 				Optional.of(query -> Comparison.eq(new FieldOperand<>(ElementType.SCHEMA, "uuid"), query.makeValueOperand(true)))));
 		filters.add(new MappedFilter<>(owner, "isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.hibNameFilter(owner));
