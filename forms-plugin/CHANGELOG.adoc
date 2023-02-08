@@ -10,6 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.9]]
+== 1.8.9 (2023-02-08)
+
+icon:check[] Forms: Fixes an internal server error when a `selectgroup` element has options without a value.
+
+icon:check[] Forms: Fixes an issue with sending emails when no subject is configured in the form and the plugin configuration.
+
 [[v1.8.8]]
 == 1.8.8 (2023-01-13)
 
@@ -64,6 +71,13 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.30]]
+== 1.6.30 (2023-02-08)
+
+icon:check[] Forms: Fixes an internal server error when a `selectgroup` element has options without a value.
+
+icon:check[] Forms: Fixes an issue with sending emails when no subject is configured in the form and the plugin configuration.
 
 [[v1.6.29]]
 == 1.6.29 (2023-01-13)
