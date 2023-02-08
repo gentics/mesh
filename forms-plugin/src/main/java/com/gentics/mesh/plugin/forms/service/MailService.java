@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 @Singleton
 public class MailService {
 	private static final Logger log = LoggerFactory.getLogger(MailService.class);
+	private static final String PLACEHOLDER_FORMNAME = "[[FORMNAME]]";
 
 	private final MeshRestClient adminClient;
 
@@ -95,8 +96,10 @@ public class MailService {
 			TemplateWrapper template = TemplateWrapper.wrap(form.getMailsource(), form.getMailtemp(), configuration.getAdminMailTemplate());
 
 			if (template.isValid()) {
-				String subject = StringUtils.defaultIfBlank(form.getMailsubject(), configuration.getAdminMailSubject())
-					.replace("[[FORMNAME]]", form.getName());
+				String subject = StringUtils.defaultIfBlank(form.getMailsubject(), configuration.getAdminMailSubject());
+
+				subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
+					.replace(PLACEHOLDER_FORMNAME, form.getName());
 
 				sendMail(projectName, form, formDataNode, rc, subject, template, emails, attachFileUploads);
 			} else {
@@ -124,9 +127,11 @@ public class MailService {
 						element.getLabelOrName(), form.getName());
 				return;
 			}
-			String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject()).replace(
-				"[[FORMNAME]]",
-				form.getName());
+			String subject = StringUtils.defaultIfBlank(element.getSubject(), configuration.getUserMailSubject());
+
+			subject = StringUtils.defaultIfBlank(subject, PLACEHOLDER_FORMNAME)
+				.replace(PLACEHOLDER_FORMNAME, form.getName());
+
 			sendMail(projectName, form, formDataNode, rc, subject, template, Collections.singletonList(userEmail), attachFileUploads);
 		});
 	}
