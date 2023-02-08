@@ -17,6 +17,13 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.8.18]]
+== 1.8.18 (TBD)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
 [[v1.8.17]]
 == 1.8.17 (26.01.2023)
 
