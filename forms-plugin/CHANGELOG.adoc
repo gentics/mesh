@@ -10,6 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.9.6]]
+== 1.9.6 (2023-02-08)
+
+icon:check[] Forms: Fixes an internal server error when a `selectgroup` element has options without a value.
+
+icon:check[] Forms: Fixes an issue with sending emails when no subject is configured in the form and the plugin configuration.
+
 [[v1.9.5]]
 == 1.9.5 (2023-01-13)
 
@@ -39,6 +46,13 @@ CAUTION: The plugin requires Mesh >= 1.9.3 to run.
 icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
+[[v1.8.9]]
+== 1.8.9 (2023-02-08)
+
+icon:check[] Forms: Fixes an internal server error when a `selectgroup` element has options without a value.
+
+icon:check[] Forms: Fixes an issue with sending emails when no subject is configured in the form and the plugin configuration.
 
 [[v1.8.8]]
 == 1.8.8 (2023-01-13)
@@ -94,6 +108,13 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.30]]
+== 1.6.30 (2023-02-08)
+
+icon:check[] Forms: Fixes an internal server error when a `selectgroup` element has options without a value.
+
+icon:check[] Forms: Fixes an issue with sending emails when no subject is configured in the form and the plugin configuration.
 
 [[v1.6.29]]
 == 1.6.29 (2023-01-13)

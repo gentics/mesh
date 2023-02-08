@@ -28,8 +28,8 @@ public class ValueListElement extends FormElement {
 
 	/** Collect a stream of {@link ValueListItem} into a linked hash map preserving the order of the items. */
 	public static final Collector<ValueListItem, ?, Map<String, String>> OPTIONS_MAP_COLLECTOR = Collectors.toMap(
-		ValueListItem::getKey,
-		ValueListItem::getValue,
+		item -> StringUtils.defaultIfBlank(item.getKey(), ""),
+		item -> StringUtils.defaultIfBlank(item.getValue(), ""),
 		(u, v) -> u,
 		LinkedHashMap::new);
 
