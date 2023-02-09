@@ -35,6 +35,12 @@ public enum ElementType {
 
 	NODE;
 
+	/**
+	 * Parse the string value into the Mesh element type, if possible.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static final Optional<ElementType> parse(String name) {
 		return Optional.ofNullable(name).map(String::toUpperCase).flatMap(id -> Optional.ofNullable(Enum.valueOf(ElementType.class, id)));
 	}

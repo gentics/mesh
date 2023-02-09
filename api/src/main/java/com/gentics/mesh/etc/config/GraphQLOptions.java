@@ -25,7 +25,8 @@ public class GraphQLOptions implements Option {
 	private Long slowThreshold = DEFAULT_SLOW_THRESHOLD;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries. Default: " + DEFAULT_ASYNC_WAIT_TIMEOUT + "ms")
+	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries. Default: "
+			+ DEFAULT_ASYNC_WAIT_TIMEOUT + "ms")
 	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
 	private Long asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
 
@@ -36,6 +37,7 @@ public class GraphQLOptions implements Option {
 
 	/**
 	 * Get the threshold for logging slow graphQl queries (in milliseconds)
+	 * 
 	 * @return threshold in milliseconds
 	 */
 	public Long getSlowThreshold() {
@@ -44,6 +46,7 @@ public class GraphQLOptions implements Option {
 
 	/**
 	 * Set the threshold for logging slow graqhQl queries (in milliseconds)
+	 * 
 	 * @param slowThreshold threshold
 	 * @return fluent API
 	 */
@@ -54,6 +57,7 @@ public class GraphQLOptions implements Option {
 
 	/**
 	 * Async wait timeout for graphQl queries (in milliseconds)
+	 * 
 	 * @return wait timeout in milliseconds
 	 */
 	public Long getAsyncWaitTimeout() {
@@ -62,6 +66,7 @@ public class GraphQLOptions implements Option {
 
 	/**
 	 * Set the async wait timeout in milliseconds
+	 * 
 	 * @param asyncWaitTimeout timeout
 	 * @return fluent API
 	 */

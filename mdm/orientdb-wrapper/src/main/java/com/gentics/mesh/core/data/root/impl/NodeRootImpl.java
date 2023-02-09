@@ -116,6 +116,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return findAll(projectUuid, null, null);
 	}
 
+	/**
+	 * Find and sort all nodes.
+	 * 
+	 * @param projectUuid
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
 	private Stream<Vertex> findAll(String projectUuid, String sortBy, SortOrder sortOrder) {
 		return toStream(db().getVertices(
 			NodeImpl.class,

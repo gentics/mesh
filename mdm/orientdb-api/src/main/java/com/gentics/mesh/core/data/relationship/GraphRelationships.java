@@ -21,6 +21,12 @@ public class GraphRelationships {
 		VERTEX_RELATIONS.put(keyClass, relations);
 	}
 
+	/**
+	 * Find all relations of a given type.
+	 * 
+	 * @param keyClass
+	 * @return
+	 */
 	public static Map<String, GraphRelationship> findRelation(Class<?> keyClass) {
 		return VERTEX_RELATIONS.get(keyClass);
 	}

@@ -2,6 +2,12 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.core.rest.SortOrder;
 
+/**
+ * Interface for sorting query parameters.
+ * 
+ * @author plyhun
+ *
+ */
 public interface SortingParameters extends ParameterProvider {
 
 	String SORT_ORDER_PARAMETER_KEY = "order";

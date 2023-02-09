@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.graphqlfilter.filter.operation.NoOperationException;
+import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -604,7 +604,7 @@ public abstract class AbstractTypeProvider {
 				System.err.println( op.toString() );
 				System.err.println( op.getJoins(Collections.emptyMap()) );
 				break;
-			} catch (NoOperationException e) {
+			} catch (UnformalizableQuery e) {
 				if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering) {
 					throw new InvalidParameterException(e.getLocalizedMessage());
 				}

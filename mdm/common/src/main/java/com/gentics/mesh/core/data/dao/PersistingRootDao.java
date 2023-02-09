@@ -65,6 +65,13 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 		return this::findByUuid;
 	}
 
+	/**
+	 * Check if the sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * 
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
 	static boolean shouldSort(String sortBy, SortOrder sortOrder) {
 		return StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED;
 	}

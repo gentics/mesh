@@ -16,7 +16,7 @@ import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.FilterQuery;
-import com.gentics.graphqlfilter.filter.operation.NoOperationException;
+import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -87,7 +87,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 			NodeContent::getContainer);
 	}
 
-	public FilterOperation<?> createFilterOperation(Map<String, ?> filterArgument) throws NoOperationException  {
+	public FilterOperation<?> createFilterOperation(Map<String, ?> filterArgument) throws UnformalizableQuery  {
 		return createFilterOperation(new FilterQuery<>(ElementType.NODE, "", filterArgument));
 	}
 }

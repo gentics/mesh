@@ -8,15 +8,13 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -239,7 +237,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 		applyPagingAndPermChecks(stream, clazz, perm);
 
-		if (StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED) {
+		if (PersistingRootDao.shouldSort(sortBy, sortOrder)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.relationDirection(vertexDirection)
