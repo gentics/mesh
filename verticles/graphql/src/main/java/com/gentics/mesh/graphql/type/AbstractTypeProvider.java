@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -593,10 +594,24 @@ public abstract class AbstractTypeProvider {
 		PagingParameters pagingInfo = getPagingInfo(env);
 		GraphQLContext gc = env.getContext();
 
+		if (filterArgument == null) {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo);
+		}
+
 		NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
+		String envNativeFilter = Optional.<String>ofNullable(env.getArgument("nativeFilter")).orElse("ifPossible");
 		switch (nativeQueryFiltering) {
 		case ON_DEMAND:
-			// break if disallowed in the query instance
+			if ("never".equals(envNativeFilter)) {
+				break;
+			}
+			boolean invalid = true;
+			if ("only".equals(envNativeFilter) || "ifPossible".equals(envNativeFilter)) {
+				invalid = false;
+			}
+			if (invalid) {
+				throw new InvalidParameterException("Unsupported 'nativeFilter' parameter value: " + envNativeFilter);
+			}
 		case ALWAYS:
 			try {
 				FilterOperation<?> op = NodeFilter.filter(gc).createFilterOperation(filterArgument);
@@ -605,18 +620,14 @@ public abstract class AbstractTypeProvider {
 				System.err.println( op.getJoins(Collections.emptyMap()) );
 				break;
 			} catch (UnformalizableQuery e) {
-				if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering) {
+				if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || "only".equals(envNativeFilter)) {
 					throw new InvalidParameterException(e.getLocalizedMessage());
 				}
 			}			
 		case OFF:
 			break;
 		}
-		
-		if (filterArgument != null) {
-			return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
-		} else {
-			return new DynamicStreamPageImpl<>(stream, pagingInfo);
-		}
+	
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
 	}
 }

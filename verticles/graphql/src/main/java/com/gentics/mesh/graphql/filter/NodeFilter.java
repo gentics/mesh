@@ -57,7 +57,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 		List<FilterField<NodeContent, ?>> filters = new ArrayList<>();
 		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
 		filters
-			.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer(), Pair.pair(OWNER, "schema")));
+			.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer(), Pair.pair("schema", "uuid")));
 		filters.add(new MappedFilter<>(OWNER, "created", "Filters by node creation timestamp", DateFilter.filter(),
 			content -> content.getNode().getCreationTimestamp()));
 		filters.add(new MappedFilter<>(OWNER, "creator", "Filters by creator", UserFilter.filter(),
