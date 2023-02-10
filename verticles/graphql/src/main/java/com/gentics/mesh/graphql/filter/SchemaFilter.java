@@ -71,7 +71,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 		String owner = ElementType.SCHEMA.name();
 		List<FilterField<HibSchema, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid), 
-				Optional.of(query -> Comparison.eq(new FieldOperand<>(ElementType.SCHEMA, "uuid"), query.makeValueOperand(true)))));
+				Optional.of(query -> Comparison.eq(new FieldOperand<>(ElementType.SCHEMA, "uuid", query.getMaybeJoins(), Optional.empty()), query.makeValueOperand(true)))));
 		filters.add(new MappedFilter<>(owner, "isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));

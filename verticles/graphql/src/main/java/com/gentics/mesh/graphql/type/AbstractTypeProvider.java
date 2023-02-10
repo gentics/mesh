@@ -612,13 +612,14 @@ public abstract class AbstractTypeProvider {
 			if (invalid) {
 				throw new InvalidParameterException("Unsupported 'nativeFilter' parameter value: " + envNativeFilter);
 			}
+			// else fall through into the native filtering
 		case ALWAYS:
 			try {
 				FilterOperation<?> op = NodeFilter.filter(gc).createFilterOperation(filterArgument);
 				System.err.println( op.toSql() );
 				System.err.println( op.toString() );
 				System.err.println( op.getJoins(Collections.emptyMap()) );
-				break;
+				return new DynamicStreamPageImpl<>(stream, pagingInfo); // TODO apply native filter
 			} catch (UnformalizableQuery e) {
 				if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || "only".equals(envNativeFilter)) {
 					throw new InvalidParameterException(e.getLocalizedMessage());
@@ -627,7 +628,7 @@ public abstract class AbstractTypeProvider {
 		case OFF:
 			break;
 		}
-	
+		// Old Java filtering fallback
 		return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
 	}
 }

@@ -229,6 +229,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
+		System.err.println("QUERY:\n\t" + text.toString());
 		if (fetchPlan != null) {
 			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
 
