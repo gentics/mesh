@@ -1297,6 +1297,50 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	}
 
+	/**
+	 * Test changing the field order
+	 */
+	@Test
+	public void testChangeFieldOrder() {
+		// Create schema with two fields
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("dummy");
+		request.addField(FieldUtil.createStringFieldSchema("first_text"));
+		request.addField(FieldUtil.createStringFieldSchema("second_text"));
+		request.setAutoPurge(true);
+		request.validate();
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), schemaResponse.toReference()));
+
+		// Create node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("dummy");
+		nodeCreateRequest.setParentNodeUuid(tx(() -> folder("2015").getUuid()));
+		nodeCreateRequest.getFields().put("first_text", new StringFieldImpl().setString("value of first_text"));
+		nodeCreateRequest.getFields().put("second_text", new StringFieldImpl().setString("value of second_text"));
+		NodeResponse draftResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		assertThat(draftResponse).hasVersion("0.1");
+
+		// update schema (switch order of fields)
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
+		updateRequest.setName("dummy");
+		updateRequest.addField(FieldUtil.createStringFieldSchema("second_text"));
+		updateRequest.addField(FieldUtil.createStringFieldSchema("first_text"));
+		updateRequest.validate();
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+		}, COMPLETED, 1);
+
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid())))
+			.hasSchemaVersion("dummy", "2.0")
+			.hasVersion("0.1")
+			.hasStringField("first_text", "value of first_text")
+			.hasStringField("second_text", "value of second_text");
+	}
+
 	private HibSchema createDummySchemaWithChanges(String oldFieldName, String newFieldName, boolean setAddRaw) {
 		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 
