@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -62,9 +63,12 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public abstract class AbstractTypeProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(AbstractTypeProvider.class);
 	public static final String LINK_TYPE_NAME = "LinkType";
 	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
@@ -581,54 +585,68 @@ public abstract class AbstractTypeProvider {
 		HibProject project = tx.getProject(gc);
 
 		List<String> languageTags = getLanguageArgument(env);
-		PagingParameters pagingInfo = getPagingInfo(env);
 		ContainerType type = getNodeVersion(env);
+		Map<String, ?> filterArgument = env.getArgument("filter");
+		Predicate<NodeContent> javaFilter = null;
+		Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
 
-		Stream<NodeContent> contents = nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo.getSortBy(), pagingInfo.getOrder());
+		if (filterArgument != null) {
+			NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
+			String envNativeFilter = Optional.<String>ofNullable(env.getArgument("nativeFilter")).orElse("ifPossible");
+			switch (nativeQueryFiltering) {
+			case ON_DEMAND:
+				if ("never".equals(envNativeFilter)) {
+					javaFilter = NodeFilter.filter(gc).createPredicate(filterArgument);
+					break;
+				}
+				boolean invalid = true;
+				if ("only".equals(envNativeFilter) || "ifPossible".equals(envNativeFilter)) {
+					invalid = false;
+				}
+				if (invalid) {
+					throw new InvalidParameterException("Unsupported 'nativeFilter' parameter value: " + envNativeFilter);
+				}
+				// else fall through into the native filtering
+			case ALWAYS:
+				try {
+					FilterOperation<?> op = NodeFilter.filter(gc).createFilterOperation(filterArgument);
+					System.err.println( op.toSql() );
+					System.err.println( op.toString() );
+					System.err.println( op.getJoins(Collections.emptyMap()) );
+					maybeNativeFilter = Optional.of(op);
+					break;
+				} catch (UnformalizableQuery e) {
+					log.warn("The query filter cannot be formalized: {}", e, filterArgument);
+					if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || "only".equals(envNativeFilter)) {
+						throw new InvalidParameterException(e.getLocalizedMessage());
+					} else {
+						log.warn("Trying to apply old Java filtering");
+					}// fall through into the old filtering
+				}			
+			case OFF:
+				if ("only".equals(envNativeFilter)) {
+					throw new InvalidParameterException("Conflicting params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
+				}
+				javaFilter = NodeFilter.filter(gc).createPredicate(filterArgument);
+				break;
+			}
+		}
+		PagingParameters pagingInfo = getPagingInfo(env);
+		return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, maybeNativeFilter), pagingInfo, javaFilter);
+	}
 
-		return applyNodeFilter(env, contents);
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter) {
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter);
 	}
 
 	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream) {
 		Map<String, ?> filterArgument = env.getArgument("filter");
-		PagingParameters pagingInfo = getPagingInfo(env);
 		GraphQLContext gc = env.getContext();
+		Predicate<NodeContent> predicate = null;
 
-		if (filterArgument == null) {
-			return new DynamicStreamPageImpl<>(stream, pagingInfo);
+		if (filterArgument != null) {
+			predicate = NodeFilter.filter(gc).createPredicate(filterArgument);
 		}
-
-		NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
-		String envNativeFilter = Optional.<String>ofNullable(env.getArgument("nativeFilter")).orElse("ifPossible");
-		switch (nativeQueryFiltering) {
-		case ON_DEMAND:
-			if ("never".equals(envNativeFilter)) {
-				break;
-			}
-			boolean invalid = true;
-			if ("only".equals(envNativeFilter) || "ifPossible".equals(envNativeFilter)) {
-				invalid = false;
-			}
-			if (invalid) {
-				throw new InvalidParameterException("Unsupported 'nativeFilter' parameter value: " + envNativeFilter);
-			}
-			// else fall through into the native filtering
-		case ALWAYS:
-			try {
-				FilterOperation<?> op = NodeFilter.filter(gc).createFilterOperation(filterArgument);
-				System.err.println( op.toSql() );
-				System.err.println( op.toString() );
-				System.err.println( op.getJoins(Collections.emptyMap()) );
-				return new DynamicStreamPageImpl<>(stream, pagingInfo); // TODO apply native filter
-			} catch (UnformalizableQuery e) {
-				if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || "only".equals(envNativeFilter)) {
-					throw new InvalidParameterException(e.getLocalizedMessage());
-				}
-			}			
-		case OFF:
-			break;
-		}
-		// Old Java filtering fallback
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
+		return applyNodeFilter(stream, getPagingInfo(env), predicate);
 	}
 }

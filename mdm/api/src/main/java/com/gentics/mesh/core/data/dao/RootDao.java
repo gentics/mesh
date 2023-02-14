@@ -4,9 +4,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -14,11 +16,11 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -52,7 +54,7 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @param permission
 	 *            Needed permission
 	 */
-	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, String sortBy, SortOrder sortOrder);
+	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Find the visible elements and return a paged result.

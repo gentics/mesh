@@ -3,11 +3,13 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -26,7 +28,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -34,6 +35,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -153,8 +155,8 @@ public class MicroschemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibMicroschema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, String sortBy, SortOrder sortOrder) {
-		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission, sortBy, sortOrder);
+			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission, sorting, maybeFilter);
 	}
 
 	@Override

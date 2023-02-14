@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
@@ -35,10 +36,16 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 
 	protected Class<?> vertexClass;
 	protected String edgeLabel;
+	protected Optional<String> maybeCustomFilter;
 	protected Direction relationDirection = Direction.OUT;
 
 	public MeshOrientGraphQuery(Graph iGraph) {
 		super(iGraph);
+	}
+
+	public MeshOrientGraphQuery filter(Optional<String> maybeCustomFilter) {
+		this.maybeCustomFilter = maybeCustomFilter;
+		return this;
 	}
 
 	/**
@@ -131,6 +138,15 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(vertexClass.getSimpleName());
 			text.append("' ");
 		}
+	
+		maybeCustomFilter.ifPresent(filter -> {
+			if (vertexClass != null) {
+				text.append(QUERY_FILTER_AND);				
+			} else {
+				text.append(QUERY_WHERE);
+			}
+			text.append(filter);
+		});
 
 		// Build the order clause
 		if (propsAndDirs != null && propsAndDirs.length > 0) {
@@ -160,14 +176,12 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
-
+System.err.println(text);
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
 		if (fetchPlan != null) {
 			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
-
 			query.setFetchPlan(fetchPlan);
-
 			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
 					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
 		} else {

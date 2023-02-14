@@ -2,12 +2,14 @@ package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -23,7 +25,6 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -72,19 +74,19 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param permission
 	 *            Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, String sortBy, SortOrder sortOrder) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (PersistingRootDao.shouldSort(sortBy, sortOrder)) {
+		if (PersistingRootDao.shouldSort(sorting)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.vertexClass(getPersistanceClass())
 					.edgeLabel(getRootLabel().toUpperCase());
 			query.has(Direction.IN.name().toLowerCase(), id());
-			itemEdges = query.edgesOrdered(new String[] { sortBy + " " + sortOrder.getValue()}).spliterator();
+			itemEdges = query.edgesOrdered(new String[] { sorting.getSortBy() + " " + sorting.getOrder().getValue()}).spliterator();
 		} else {
 			String idx = "e." + getRootLabel().toLowerCase() + "_out";
 			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();

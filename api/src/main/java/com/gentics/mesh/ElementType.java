@@ -42,6 +42,10 @@ public enum ElementType {
 	 * @return
 	 */
 	public static final Optional<ElementType> parse(String name) {
-		return Optional.ofNullable(name).map(String::toUpperCase).flatMap(id -> Optional.ofNullable(Enum.valueOf(ElementType.class, id)));
+		try {
+			return Optional.ofNullable(Enum.valueOf(ElementType.class, name.toUpperCase()));
+		} catch (IllegalArgumentException | NullPointerException e) {
+			return Optional.empty();
+		}
 	}
 }

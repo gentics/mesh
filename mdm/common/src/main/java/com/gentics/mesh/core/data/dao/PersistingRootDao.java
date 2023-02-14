@@ -8,6 +8,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.SortingParameters;
 
 /**
  * A sister interface to {@link PersistingDao}, applicable to the entities,
@@ -74,5 +75,16 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	 */
 	static boolean shouldSort(String sortBy, SortOrder sortOrder) {
 		return StringUtils.isNotBlank(sortBy) && sortOrder != null && sortOrder != SortOrder.UNSORTED;
+	}
+
+	/**
+	 * Check if the sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * 
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
+	static boolean shouldSort(SortingParameters sorting) {
+		return sorting == null ? false : shouldSort(sorting.getSortBy(), sorting.getOrder());
 	}
 }

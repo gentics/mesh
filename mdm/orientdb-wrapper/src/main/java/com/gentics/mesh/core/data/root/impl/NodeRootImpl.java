@@ -10,10 +10,12 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -35,11 +37,11 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -96,12 +98,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, String sortBy, SortOrder sortOrder) {
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
 		UserDao userDao = tx.userDao();
 
-		return findAll(tx.getProject(ac).getUuid(), sortBy, sortOrder)
+		return findAll(tx.getProject(ac).getUuid(), sorting, maybeFilter)
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
@@ -113,7 +115,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	private Stream<Vertex> findAll(String projectUuid) {
-		return findAll(projectUuid, null, null);
+		return findAll(projectUuid, null, Optional.empty());
 	}
 
 	/**
@@ -124,13 +126,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param sortOrder
 	 * @return
 	 */
-	private Stream<Vertex> findAll(String projectUuid, String sortBy, SortOrder sortOrder) {
+	private Stream<Vertex> findAll(String projectUuid, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
 			new Object[]{projectUuid},
-			sortBy,
-			sortOrder
+			sorting,
+			maybeFilter.map(this::parseFilter)
 		));
 	}
 

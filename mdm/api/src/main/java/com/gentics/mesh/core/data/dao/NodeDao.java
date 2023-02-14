@@ -3,10 +3,12 @@ package com.gentics.mesh.core.data.dao;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -21,7 +23,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -36,6 +37,7 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.path.Path;
 
 /**
@@ -429,16 +431,17 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 
 	/**
 	 * Fetch all contents for the provided project in the action context branch and the container type, considering the sorting parameters.
-	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions. An optional initial data filtering may be applied.
 	 * @param project
 	 * @param ac
 	 * @param languageTags
 	 * @param type
 	 * @param sortBy
 	 * @param sortOrder
+	 * @param maybeFilter
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, String sortBy, SortOrder sortOrder);
+	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.

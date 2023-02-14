@@ -56,17 +56,17 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 	protected List<FilterField<NodeContent, ?>> getFilters() {
 		List<FilterField<NodeContent, ?>> filters = new ArrayList<>();
 		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
-		filters
-			.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), content -> content.getNode().getSchemaContainer(), Pair.pair("schema", "uuid")));
+		filters.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), 
+			content -> content.getNode().getSchemaContainer(), Pair.pair("schema", "uuid")));
 		filters.add(new MappedFilter<>(OWNER, "created", "Filters by node creation timestamp", DateFilter.filter(),
 			content -> content.getNode().getCreationTimestamp()));
 		filters.add(new MappedFilter<>(OWNER, "creator", "Filters by creator", UserFilter.filter(),
-			content -> content.getNode().getCreator()));
+			content -> content.getNode().getCreator(), Pair.pair("creator", "uuid")));
 		filters.add(new MappedFilter<>(OWNER, "edited", "Filters by node update timestamp", DateFilter.filter(),
-			content -> content.getContainer().getLastEditedTimestamp()));
+			content -> content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", "CONTENT.last_edited_timestamp")));
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
-			content -> content.getContainer().getEditor()));
-		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity()));
+			content -> content.getContainer().getEditor(), Pair.pair("content", "CONTENT.editor")));
+		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", "fields")));
 
 		return filters;
 	}
@@ -78,7 +78,7 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 			.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
-		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false, Optional.of(ElementType.NODE.name()));
+		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false, Optional.of("CONTENT"));
 	}
 
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {

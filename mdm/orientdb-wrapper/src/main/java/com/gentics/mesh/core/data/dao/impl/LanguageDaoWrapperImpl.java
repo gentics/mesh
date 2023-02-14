@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -18,10 +20,10 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -55,8 +57,8 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	/**
 	 * @see LanguageRoot
 	 */
-	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission, String sortBy, SortOrder sortOrder) {
-		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission, sortBy, sortOrder);
+	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission, sorting, maybeFilter);
 	}
 
 	/**

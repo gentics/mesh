@@ -233,6 +233,13 @@ public interface Database extends TxFactory {
 	String getElementVersion(HibElement element);
 
 	/**
+	 * Check if the database supports own filtering, e.g. SQL.
+	 * 
+	 * @return
+	 */
+	boolean supportsNativeFiltering();
+
+	/**
 	 * Locate all vertices for the given type.
 	 * 
 	 * @param classOfVertex

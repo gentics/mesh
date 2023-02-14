@@ -1,14 +1,16 @@
 package com.gentics.mesh.graphdb.spi;
 
 import java.util.Iterator;
+import java.util.Optional;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.EdgeFrame;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -30,21 +32,20 @@ public interface GraphDatabase extends Database {
 	 * @return
 	 */
 	default Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
-		return getVertices(classOfVertex, fieldNames, fieldValues, null, null);
+		return getVertices(classOfVertex, fieldNames, fieldValues, null, Optional.empty());
 	}
 
 	/**
-	 * Utilize the index and locate the matching vertices, considering sorting parameters.
+	 * Utilize the index and locate the matching vertices, considering sorting parameters. Optionally, data fetch filtering may be applied.
 	 *
 	 * @param classOfVertex
 	 * @param fieldNames
 	 * @param fieldValues
-	 * @param sortBy
-	 * @param sortOrder
+	 * @param sorting
+	 * @param maybeFilter
 	 * @return
 	 */
-	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, String sortBy,
-			SortOrder sortOrder);
+	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, SortingParameters sorting, Optional<String> maybeFilter);
 
 	/**
 	 * Utilize the index and locate the matching vertices for the given parameters and the given range.

@@ -23,9 +23,9 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -39,7 +39,6 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.TxAction0;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
@@ -66,6 +65,7 @@ import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.util.ETag;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -325,15 +325,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, String sortBy, SortOrder sortOrder) {
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, SortingParameters sorting, Optional<String> maybeFilter) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
-		if (PersistingRootDao.shouldSort(sortBy, sortOrder)) {
+		if (PersistingRootDao.shouldSort(sorting)) {
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph)
 					.relationDirection(Direction.OUT)
 					.vertexClass((Class<? extends MeshVertex>) classOfVertex);
 			query.hasAll(fieldNames, fieldValues);
-			ret = query.verticesOrdered(new String[] { sortBy + " " + sortOrder.getValue()}).iterator();
+			query.filter(maybeFilter);
+			ret = query.verticesOrdered(new String[] { sorting.getSortBy() + " " + sorting.getOrder().getValue()}).iterator();
 		} else {
 			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
 		}
@@ -808,5 +809,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 			diskQuotaChecker.cancel(true);
 			diskQuotaChecker = null;
 		}
+	}
+
+	@Override
+	public boolean supportsNativeFiltering() {
+		return false;
 	}
 }

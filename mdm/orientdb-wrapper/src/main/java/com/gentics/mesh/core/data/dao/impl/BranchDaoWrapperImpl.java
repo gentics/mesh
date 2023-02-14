@@ -5,12 +5,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -33,7 +35,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -41,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -115,8 +117,8 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 
 	@Override
 	public Stream<? extends HibBranch> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, String sortBy, SortOrder sortOrder) {
-		return toGraph(root).getBranchRoot().findAllStream(ac, permission, sortBy, sortOrder);
+			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getBranchRoot().findAllStream(ac, permission, sorting, maybeFilter);
 	}
 
 	@Override

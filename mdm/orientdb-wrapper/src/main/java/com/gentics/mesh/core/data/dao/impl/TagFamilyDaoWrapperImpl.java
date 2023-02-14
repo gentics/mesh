@@ -2,11 +2,13 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -22,10 +24,11 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
+
 import dagger.Lazy;
 
 /**
@@ -110,8 +113,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 
 	@Override
 	public Stream<? extends HibTagFamily> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, String sortBy, SortOrder sortOrder) {
-		return toGraph(root).getTagFamilyRoot().findAllStream(ac, permission, sortBy, sortOrder);
+			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getTagFamilyRoot().findAllStream(ac, permission, sorting, maybeFilter);
 	}
 
 	@Override

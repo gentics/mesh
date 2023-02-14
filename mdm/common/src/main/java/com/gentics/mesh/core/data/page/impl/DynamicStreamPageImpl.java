@@ -1,10 +1,10 @@
 package com.gentics.mesh.core.data.page.impl;
 
-import com.gentics.mesh.parameter.PagingParameters;
-
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Streaming page implementation.
@@ -14,8 +14,7 @@ import java.util.stream.Stream;
 public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {
-		super(pagingInfo);
-		init(stream);
+		this(stream, pagingInfo, null);
 	}
 
 	/**
@@ -30,7 +29,7 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 	 */
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<? super T> filter) {
 		super(pagingInfo);
-		init(stream.filter(filter));
+		init(filter != null ? stream.filter(filter) : stream);
 	}
 
 	private void init(Stream<? extends T> stream) {

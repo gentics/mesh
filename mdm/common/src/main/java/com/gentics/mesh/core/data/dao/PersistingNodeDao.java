@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
@@ -42,6 +43,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -98,6 +100,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PublishParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -196,10 +199,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, String sortBy, SortOrder sortOrder) {
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		ContentDao contentDao = Tx.get().contentDao();
 
-		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, sortBy, sortOrder)
+		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, sorting, maybeFilter)
 				// Now lets try to load the containers for those found nodes - apply the language fallback
 				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
 				// Filter nodes without a container

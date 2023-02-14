@@ -3,11 +3,13 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
@@ -31,7 +33,6 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -190,8 +192,8 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibSchema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, String sortBy, SortOrder sortOrder) {
-		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission, sortBy, sortOrder);
+			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission, sorting, maybeFilter);
 	}
 
 	@Override
