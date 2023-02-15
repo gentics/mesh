@@ -77,19 +77,19 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:
-			return new FieldMappedFilter<>(name, description, StringFilter.filter(),
+			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
 				node -> getOrNull(node.getString(name), HibStringField::getString), schemaName);
 		case HTML:
-			return new FieldMappedFilter<>(name, description, StringFilter.filter(),
+			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
 				node -> getOrNull(node.getHtml(name), HibHtmlField::getHTML), schemaName);
 		case DATE:
-			return new FieldMappedFilter<>(name, description, DateFilter.filter(),
+			return new FieldMappedFilter<>(type, name, description, DateFilter.filter(),
 				node -> getOrNull(node.getDate(name), HibDateField::getDate), schemaName);
 		case BOOLEAN:
-			return new FieldMappedFilter<>(name, description, BooleanFilter.filter(),
+			return new FieldMappedFilter<>(type, name, description, BooleanFilter.filter(),
 				node -> getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schemaName);
 		case NUMBER:
-			return new FieldMappedFilter<>(name, description, NumberFilter.filter(),
+			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
 				node -> getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
 		// TODO correctly implement other types
 		case BINARY:

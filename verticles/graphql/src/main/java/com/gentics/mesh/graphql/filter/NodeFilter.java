@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
@@ -74,8 +73,8 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 	private MainFilter<NodeContent> createAllFieldFilters() {
 		HibProject project = Tx.get().getProject(context);
 		SchemaDao schemaDao = Tx.get().schemaDao();
-		List<FilterField<NodeContent, ?>> schemaFields = StreamSupport
-			.stream(schemaDao.findAll(project).spliterator(), false)
+		List<FilterField<NodeContent, ?>> schemaFields = schemaDao.findAll(project)
+			.stream()
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
 		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false, Optional.of("CONTENT"));

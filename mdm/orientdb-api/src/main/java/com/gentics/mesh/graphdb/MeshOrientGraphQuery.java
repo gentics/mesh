@@ -209,6 +209,16 @@ System.err.println(text);
 
 		// Build the query params, including the labels (including the one provided with vertexClass).
 		final List<Object> queryParams = manageFilters(text);
+
+		maybeCustomFilter.ifPresent(filter -> {
+			if (vertexClass != null) {
+				text.append(QUERY_FILTER_AND);
+			} else {
+				text.append(QUERY_WHERE);
+			}
+			text.append(filter);
+		});
+
 		if (!((OrientBaseGraph) graph).isUseClassForVertexLabel())
 			manageLabels(queryParams.size() > 0, text);
 

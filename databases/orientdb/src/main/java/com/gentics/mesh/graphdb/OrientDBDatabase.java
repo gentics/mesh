@@ -25,7 +25,6 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -324,17 +323,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Orient.instance().shutdown();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, SortingParameters sorting, Optional<String> maybeFilter) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
-		if (PersistingRootDao.shouldSort(sorting)) {
+		if (PersistingRootDao.shouldSort(sorting) || maybeFilter.isPresent()) {
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph)
 					.relationDirection(Direction.OUT)
 					.vertexClass((Class<? extends MeshVertex>) classOfVertex);
 			query.hasAll(fieldNames, fieldValues);
 			query.filter(maybeFilter);
-			ret = query.verticesOrdered(new String[] { sorting.getSortBy() + " " + sorting.getOrder().getValue()}).iterator();
+			ret = query.verticesOrdered(
+					PersistingRootDao.shouldSort(sorting)
+					? new String[] { sorting.getSortBy() + " " + sorting.getOrder().getValue()}
+					: new String[] {}
+				).iterator();
 		} else {
 			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
 		}

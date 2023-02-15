@@ -145,9 +145,14 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 					Pair<Class, String> dst = joinIntoPair(join.second);
 
 					// If this field is joined to the content, we bypass the join in favor of edge navigation.
-					// TODO customize container type
+					// TODO customize container type (currently PUBLISHED is hardcoded)
 					if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
-						leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + dst.getRight() + "`";
+						if ("fields".equals(dst.getRight())) {
+							String typeSuffix = left.getJoins().entrySet().stream().filter(e -> !"NODE.content".equals(e.getKey())).map(e -> "-" + e.getValue()).limit(1).collect(Collectors.joining());
+							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
+						} else {
+							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + dst.getRight() + "`";
+						}
 						return StringUtils.EMPTY;
 					}
 

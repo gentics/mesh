@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
@@ -47,7 +46,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 		Tx tx = Tx.get();
 		SchemaDao schemaDao = tx.schemaDao();
 		HibProject project = tx.getProject(context);
-		List<GraphQLEnumValueDefinition> values = StreamSupport.stream(schemaDao.findAll(project).spliterator(), false)
+		List<GraphQLEnumValueDefinition> values = schemaDao.findAll(project).stream()
 			.map(schema -> {
 				String name = schema.getName();
 				return GraphQLEnumValueDefinition
