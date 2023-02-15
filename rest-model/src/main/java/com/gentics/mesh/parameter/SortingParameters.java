@@ -30,7 +30,6 @@ public interface SortingParameters extends ParameterProvider {
 	 */
 	default SortOrder getOrder() {
 		return SortOrder.valueOfName(getParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY));
-
 	}
 
 	/**

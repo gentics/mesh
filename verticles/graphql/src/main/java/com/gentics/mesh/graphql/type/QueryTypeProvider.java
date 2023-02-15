@@ -412,6 +412,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createLanguageTagArg(true))
 			.argument(createNodeVersionArg())
 			.argument(NodeFilter.filter(context).createFilterArgument())
+			.argument(createNativeFilterArg())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 			.dataFetcher(env -> {
 				String query = env.getArgument("query");
@@ -633,6 +634,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// Shared argument types
 		additionalTypes.add(createLinkEnumType());
 		additionalTypes.add(createNodeEnumType());
+		additionalTypes.add(createNativeFilterEnumType());
+		additionalTypes.add(createSortOrderEnumType());
 
 		Versioned.doSince(2, context, () -> {
 			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));

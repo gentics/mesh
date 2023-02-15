@@ -11,7 +11,6 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +48,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.model.NativeFilter;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -70,12 +70,30 @@ public abstract class AbstractTypeProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractTypeProvider.class);
 	public static final String LINK_TYPE_NAME = "LinkType";
+	public static final String NATIVE_FILTER_NAME = "NativeFilter";
+	public static final String SORT_ORDER_NAME = "SortOrder";
 	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
 	private final MeshOptions options;
 
 	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
+	}
+
+	public GraphQLEnumType createSortOrderEnumType() {
+		GraphQLEnumType nativeFilterEnum = newEnum().name(SORT_ORDER_NAME).description("Sort order")
+				.value(SortOrder.ASCENDING.getValue().toUpperCase(), SortOrder.ASCENDING, "Ascending")
+				.value(SortOrder.DESCENDING.getValue().toUpperCase(), SortOrder.DESCENDING, "Descending")
+				.value(SortOrder.UNSORTED.name(), SortOrder.UNSORTED, "No sorting").build();
+			return nativeFilterEnum;
+	}
+
+	public GraphQLEnumType createNativeFilterEnumType() {
+		GraphQLEnumType nativeFilterEnum = newEnum().name(NATIVE_FILTER_NAME).description("Usage of native database-level filtering, instead of default provided by Mesh")
+				.value(NativeFilter.IF_POSSIBLE.name(), NativeFilter.IF_POSSIBLE, "Try native filter first, fall back to Mesh otherwise")
+				.value(NativeFilter.ONLY.name(), NativeFilter.ONLY, "Force native filters only")
+				.value(NativeFilter.NEVER.name(), NativeFilter.NEVER, "Force default Mesh filtering").build();
+			return nativeFilterEnum;
 	}
 
 	/**
@@ -105,7 +123,7 @@ public abstract class AbstractTypeProvider {
 		arguments.add(newArgument().name("sortBy").description("Field to sort the elements by").type(GraphQLString).build());
 
 		// #sortOrder
-		arguments.add(newArgument().name("sortOrder").defaultValue(SortOrder.ASCENDING.getValue()).description("Order to sort the elements in").type(GraphQLString).build());
+		arguments.add(newArgument().name("sortOrder").type(new GraphQLTypeReference(SORT_ORDER_NAME)).defaultValue(SortOrder.UNSORTED).description("Order to sort the elements in").build());
 		return arguments;
 	}
 
@@ -265,6 +283,11 @@ public abstract class AbstractTypeProvider {
 	public GraphQLArgument createLinkTypeArg() {
 		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF).description(
 			"Specify the resolve type").build();
+	}
+
+	public GraphQLArgument createNativeFilterArg() {
+		return newArgument().name("nativeFilter").type(new GraphQLTypeReference(NATIVE_FILTER_NAME)).defaultValue(NativeFilter.IF_POSSIBLE).description(
+			"Specify the native filtering").build();
 	}
 
 	public GraphQLArgument createNodeVersionArg() {
@@ -563,9 +586,9 @@ public abstract class AbstractTypeProvider {
 		if (StringUtils.isNotBlank(sortBy)) {
 			parameters.setSortBy(sortBy);
 		}
-		String sortOrder = env.getArgument("sortOrder");
-		if (StringUtils.isNotBlank(sortOrder)) {
-			parameters.setSortOrder(sortOrder);
+		SortOrder sortOrder = env.getArgument("sortOrder");
+		if (sortOrder != null) {
+			parameters.setSortOrder(sortOrder.toString());
 		}
 		parameters.validate();
 		return parameters;
@@ -592,15 +615,15 @@ public abstract class AbstractTypeProvider {
 
 		if (filterArgument != null) {
 			NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
-			String envNativeFilter = Optional.<String>ofNullable(env.getArgument("nativeFilter")).orElse("ifPossible");
+			NativeFilter envNativeFilter = env.getArgument("nativeFilter");
 			switch (nativeQueryFiltering) {
 			case ON_DEMAND:
-				if ("never".equals(envNativeFilter)) {
+				if (NativeFilter.NEVER.equals(envNativeFilter)) {
 					javaFilter = NodeFilter.filter(gc).createPredicate(filterArgument);
 					break;
 				}
 				boolean invalid = true;
-				if ("only".equals(envNativeFilter) || "ifPossible".equals(envNativeFilter)) {
+				if (NativeFilter.ONLY.equals(envNativeFilter) || NativeFilter.IF_POSSIBLE.equals(envNativeFilter)) {
 					invalid = false;
 				}
 				if (invalid) {
@@ -609,22 +632,18 @@ public abstract class AbstractTypeProvider {
 				// else fall through into the native filtering
 			case ALWAYS:
 				try {
-					FilterOperation<?> op = NodeFilter.filter(gc).createFilterOperation(filterArgument);
-					System.err.println( op.toSql() );
-					System.err.println( op.toString() );
-					System.err.println( op.getJoins(Collections.emptyMap()) );
-					maybeNativeFilter = Optional.of(op);
+					maybeNativeFilter = Optional.of(NodeFilter.filter(gc).createFilterOperation(filterArgument));
 					break;
 				} catch (UnformalizableQuery e) {
 					log.warn("The query filter cannot be formalized: {}", e, filterArgument);
-					if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || "only".equals(envNativeFilter)) {
+					if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || NativeFilter.ONLY.equals(envNativeFilter)) {
 						throw new InvalidParameterException(e.getLocalizedMessage());
 					} else {
 						log.warn("Trying to apply old Java filtering");
 					}// fall through into the old filtering
 				}			
 			case OFF:
-				if ("only".equals(envNativeFilter)) {
+				if (NativeFilter.NEVER.equals(envNativeFilter)) {
 					throw new InvalidParameterException("Conflicting params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
 				}
 				javaFilter = NodeFilter.filter(gc).createPredicate(filterArgument);

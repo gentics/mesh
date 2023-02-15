@@ -114,6 +114,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				return applyNodeFilter(env, nodes);
 			}, NODE_PAGE_TYPE_NAME)
 				.argument(NodeFilter.filter(context).createFilterArgument())
+				.argument(createNativeFilterArg())
 				.argument(createLanguageTagArg(true)));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");

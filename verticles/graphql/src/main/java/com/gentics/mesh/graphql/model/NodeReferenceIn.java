@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.util.Lazy;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
