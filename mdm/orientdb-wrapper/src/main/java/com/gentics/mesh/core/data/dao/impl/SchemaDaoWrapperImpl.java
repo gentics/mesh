@@ -43,7 +43,6 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -192,8 +191,8 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibSchema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission, sorting, maybeFilter);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getSchemaContainerRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override

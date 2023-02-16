@@ -1,5 +1,10 @@
 package com.gentics.mesh.parameter;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+
 import com.gentics.mesh.core.rest.SortOrder;
 
 /**
@@ -15,44 +20,30 @@ public interface SortingParameters extends ParameterProvider {
 	SortOrder DEFAULT_SORT_ORDER = SortOrder.UNSORTED;
 
 	/**
-	 * Return the sort by parameter value.
-	 * 
-	 * @return Field to be sorted by
-	 */
-	default String getSortBy() {
-		return getParameter(SortingParameters.SORT_BY_PARAMETER_KEY);
-	}
-
-	/**
-	 * Return the sortorder.
+	 * Get the sort parameters map.
 	 * 
 	 * @return
 	 */
-	default SortOrder getOrder() {
-		return SortOrder.valueOfName(getParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY));
+	default Map<String, SortOrder> getSort() {
+		String sortBy = getParameter(SortingParameters.SORT_BY_PARAMETER_KEY);
+		SortOrder sortOrder = SortOrder.valueOfName(getParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY));
+		if (StringUtils.isNotBlank(sortBy) && sortOrder != null) {
+			return Collections.singletonMap(sortBy, sortOrder);
+		} else {
+			return Collections.emptyMap();
+		}
 	}
 
 	/**
-	 * Set the sort by parameter.
+	 * Put a sort map.
 	 * 
 	 * @param sortBy
+	 * @param order
 	 * @return
 	 */
-	default SortingParameters setSortBy(String sortBy) {
+	default SortingParameters putSort(String sortBy, SortOrder order) {
 		setParameter(SortingParameters.SORT_BY_PARAMETER_KEY, sortBy);
-		return this;
-	}
-
-	/**
-	 * Set the used sort order.
-	 * 
-	 * @param sortBy
-	 *            Sort order
-	 * @return Fluent API
-	 * 
-	 */
-	default SortingParameters setSortOrder(String sortBy) {
-		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, sortBy);
+		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, order.toString());
 		return this;
 	}
 }

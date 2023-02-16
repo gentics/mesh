@@ -45,7 +45,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -176,9 +175,9 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		Project graphProject = toGraph(project);
-		return graphProject.getNodeRoot().findAllStream(ac, perm, sorting, maybeFilter);
+		return graphProject.getNodeRoot().findAllStream(ac, perm, paging, maybeFilter);
 	}
 
 	@Override

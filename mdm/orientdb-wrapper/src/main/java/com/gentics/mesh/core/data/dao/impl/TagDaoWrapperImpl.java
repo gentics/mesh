@@ -34,7 +34,6 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -173,8 +172,8 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public Stream<? extends HibTag> findAllStream(HibTagFamily root, InternalActionContext ac,
-			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return toGraph(root).findAllStream(ac, permission, sorting, maybeFilter);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override

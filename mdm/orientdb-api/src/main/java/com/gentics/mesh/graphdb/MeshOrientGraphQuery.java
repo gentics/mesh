@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,7 +37,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 
 	protected Class<?> vertexClass;
 	protected String edgeLabel;
-	protected Optional<String> maybeCustomFilter;
+	protected Optional<String> maybeCustomFilter = Optional.empty();
 	protected Direction relationDirection = Direction.OUT;
 
 	public MeshOrientGraphQuery(Graph iGraph) {
@@ -44,7 +45,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	}
 
 	public MeshOrientGraphQuery filter(Optional<String> maybeCustomFilter) {
-		this.maybeCustomFilter = maybeCustomFilter;
+		this.maybeCustomFilter = Optional.ofNullable(maybeCustomFilter).flatMap(Function.identity());
 		return this;
 	}
 

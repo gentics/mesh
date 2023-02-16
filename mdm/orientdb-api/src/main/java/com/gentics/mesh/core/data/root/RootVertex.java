@@ -2,10 +2,12 @@ package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -32,7 +34,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -74,19 +75,24 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param permission
 	 *            Needed permission
 	 */
-	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (PersistingRootDao.shouldSort(sorting)) {
+		if (PersistingRootDao.shouldSort(paging)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.vertexClass(getPersistanceClass())
 					.edgeLabel(getRootLabel().toUpperCase());
 			query.has(Direction.IN.name().toLowerCase(), id());
-			itemEdges = query.edgesOrdered(new String[] { sorting.getSortBy() + " " + sorting.getOrder().getValue()}).spliterator();
+			if (paging.getPerPage() != null) {
+				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+				query.limit(paging.getPerPage().intValue());
+			}
+			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()])).spliterator();
 		} else {
 			String idx = "e." + getRootLabel().toLowerCase() + "_out";
 			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();

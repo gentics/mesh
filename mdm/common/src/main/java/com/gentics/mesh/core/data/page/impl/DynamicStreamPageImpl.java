@@ -13,8 +13,18 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 
+	private final boolean ignorePage;
+
+	/**
+	 * Creates a new page with a filter applied to the stream
+	 *
+	 * @param stream
+	 *            a stream of elements to be paged
+	 * @param pagingInfo
+	 *            paging info the user requested
+	 */
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {
-		this(stream, pagingInfo, null);
+		this(stream, pagingInfo, null, false);		
 	}
 
 	/**
@@ -27,8 +37,25 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 	 * @param filter
 	 *            the filter to be applied to the stream
 	 */
-	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<? super T> filter) {
+	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, boolean ignorePage) {
+		this(stream, pagingInfo, null, ignorePage);		
+	}
+
+	/**
+	 * Creates a new page with a filter applied to the stream
+	 *
+	 * @param stream
+	 *            a stream of elements to be paged
+	 * @param pagingInfo
+	 *            paging info the user requested
+	 * @param filter
+	 *            the filter to be applied to the stream
+	 * @param ignorePage
+	 *            Should the page number be ignored at paged data fetching? This may be useful, if the provided data has already been paged out by the database.
+	 */
+	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<? super T> filter, boolean ignorePage) {
 		super(pagingInfo);
+		this.ignorePage = ignorePage;
 		init(filter != null ? stream.filter(filter) : stream);
 	}
 
@@ -41,7 +68,7 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 			});
 
 		// Apply paging - skip to lower bounds
-		if (lowerBound != null) {
+		if (!ignorePage && lowerBound != null) {
 			stream = stream.skip(lowerBound);
 		}
 
@@ -59,4 +86,12 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 		}).iterator();
 	}
 
+	/**
+	 * Is paging offset ignored at this instance?
+	 * 
+	 * @return
+	 */
+	public boolean isPageIgnored() {
+		return ignorePage;
+	}
 }

@@ -37,7 +37,6 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.path.Path;
 
 /**
@@ -430,18 +429,17 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	}
 
 	/**
-	 * Fetch all contents for the provided project in the action context branch and the container type, considering the sorting parameters.
+	 * Fetch all contents for the provided project in the action context branch and the container type, considering the paging parameters.
 	 * If the content is published, checks for read published permissions, otherwise check for read permissions. An optional initial data filtering may be applied.
 	 * @param project
 	 * @param ac
 	 * @param languageTags
 	 * @param type
-	 * @param sortBy
-	 * @param sortOrder
+	 * @param paging
 	 * @param maybeFilter
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
+	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.

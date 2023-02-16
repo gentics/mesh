@@ -64,7 +64,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -99,8 +98,8 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
@@ -199,10 +198,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		ContentDao contentDao = Tx.get().contentDao();
 
-		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, sorting, maybeFilter)
+		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, maybeFilter)
 				// Now lets try to load the containers for those found nodes - apply the language fallback
 				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
 				// Filter nodes without a container

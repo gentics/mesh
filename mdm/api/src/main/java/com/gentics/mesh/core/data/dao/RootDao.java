@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -47,14 +46,16 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 
 	/**
 	 * Return an iterator of all elements, considering the sorting parameters. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
-	 * permissions.
+	 * permissions. Paging/sorting data may also be applied.
 	 *
 	 * @param ac
 	 *            The context of the request
+	 * @param paging
+	 *            Paging information object that contains page / sort options
 	 * @param permission
 	 *            Needed permission
 	 */
-	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
+	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Find the visible elements and return a paged result.

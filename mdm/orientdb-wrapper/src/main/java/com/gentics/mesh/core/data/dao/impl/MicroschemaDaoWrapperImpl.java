@@ -35,7 +35,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -155,8 +154,8 @@ public class MicroschemaDaoWrapperImpl
 
 	@Override
 	public Stream<? extends HibMicroschema> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission, sorting, maybeFilter);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getMicroschemaContainerRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override

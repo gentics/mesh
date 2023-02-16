@@ -42,7 +42,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -117,8 +116,8 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 
 	@Override
 	public Stream<? extends HibBranch> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return toGraph(root).getBranchRoot().findAllStream(ac, permission, sorting, maybeFilter);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getBranchRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override

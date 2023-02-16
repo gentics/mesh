@@ -366,9 +366,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				CompletableFuture<List<NodeContent>> future = childrenLoader.load(content.getNode(), dataLoaderContext);
 
 				return future.thenApply(contents -> {
-					return applyNodeFilter(env, contents.stream()
-							.filter(item -> item.getContainer() != null)
-					);
+					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), false);
 				});
 			}, NODE_PAGE_TYPE_NAME)
 				.argument(createLanguageTagArg(false))

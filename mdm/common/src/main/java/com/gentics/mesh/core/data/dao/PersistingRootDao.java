@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Map;
 import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.StringUtils;
@@ -78,13 +79,22 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	}
 
 	/**
-	 * Check if the sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * Check if the REST API sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
 	 * 
-	 * @param sortBy
-	 * @param sortOrder
+	 * @param sorting
+	 * @return
+	 */
+	static boolean shouldSort(Map<String, SortOrder> sorting) {
+		return sorting == null ? false : sorting.entrySet().stream().allMatch(e -> shouldSort(e.getKey(), e.getValue()));
+	}
+
+	/**
+	 * Check if the REST API sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * 
+	 * @param sorting
 	 * @return
 	 */
 	static boolean shouldSort(SortingParameters sorting) {
-		return sorting == null ? false : shouldSort(sorting.getSortBy(), sorting.getOrder());
+		return sorting == null ? false : shouldSort(sorting.getSort());
 	}
 }

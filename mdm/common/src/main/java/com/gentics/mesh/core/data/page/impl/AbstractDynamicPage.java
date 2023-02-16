@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.page.impl;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,9 +24,7 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 
 	protected Long perPage;
 
-	protected String sortBy;
-
-	protected SortOrder sortOrder;
+	protected Map<String, SortOrder> sort;
 
 	protected Long lowerBound;
 
@@ -58,8 +57,7 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 		} else {
 			this.lowerBound = (pageNumber - 1) * perPage;
 		}
-		this.sortBy = pagingInfo.getSortBy();
-		this.sortOrder = pagingInfo.getOrder();
+		this.sort = pagingInfo.getSort();
 	}
 
 	@Override

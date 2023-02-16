@@ -1,0 +1,75 @@
+package com.gentics.mesh.parameter.impl;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.raml.model.ParamType;
+import org.raml.model.parameter.QueryParameter;
+
+import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.SortingParameters;
+
+public class SortingParametersImpl extends AbstractParameters implements SortingParameters {
+
+	private final Map<String, SortOrder> sort = new HashMap<>();
+
+	public SortingParametersImpl() {
+		
+	}
+
+	public SortingParametersImpl(String sortBy, SortOrder order) {
+		super();
+		putSort(sortBy, order);
+	}
+
+	public SortingParametersImpl(ActionContext ac) {
+		super(ac);
+	}
+
+	@Override
+	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
+		Map<String, QueryParameter> parameters = new HashMap<>();
+
+		// sort by
+		QueryParameter sortByParameter = new QueryParameter();
+		sortByParameter.setDescription("Field name to sort the result by.");
+		sortByParameter.setExample("name");
+		sortByParameter.setRequired(false);
+		sortByParameter.setType(ParamType.STRING);
+		parameters.put(SortingParameters.SORT_BY_PARAMETER_KEY, sortByParameter);
+
+		// sort order
+		QueryParameter sortOrderParameter = new QueryParameter();
+		sortOrderParameter.setDescription("Field order (ASC/DESC/UNSORTED) to sort the result by.");
+		sortOrderParameter.setDefaultValue(SortingParameters.DEFAULT_SORT_ORDER.name());
+		sortOrderParameter.setExample(SortOrder.ASCENDING.name());
+		sortOrderParameter.setRequired(false);
+		sortOrderParameter.setType(ParamType.STRING);
+		parameters.put(SortingParameters.SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
+
+		return parameters;
+	}
+
+	@Override
+	public String getName() {
+		return "Sorting parameters";
+	}
+
+	@Override
+	public SortingParameters putSort(String sortBy, SortOrder order) {
+		sort.put(sortBy, order);
+		return this;
+	}
+
+	@Override
+	public Map<String, SortOrder> getSort() {
+		return Stream.of(sort.entrySet().stream(), SortingParameters.super.getSort().entrySet().stream())
+				.flatMap(Function.identity())
+				.collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> a));
+	}
+}

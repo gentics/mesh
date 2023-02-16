@@ -54,4 +54,14 @@ public interface PagingParameters extends ParameterProvider, SortingParameters {
 		}
 		return this;
 	}
+
+	/**
+	 * Get zero-based page value. Useful to insert into the zero-based paged data fetching mechanisms.
+	 * 
+	 * @return
+	 */
+	default int getActualPage() {
+		int page = getPage();
+		return page < 1 ? 0 : (page - 1);
+	}
 }

@@ -120,10 +120,12 @@ public abstract class AbstractTypeProvider {
 		arguments.add(newArgument().name("perPage").description("Max count of elements per page").type(GraphQLLong).build());
 
 		// #sortBy
-		arguments.add(newArgument().name("sortBy").description("Field to sort the elements by").type(GraphQLString).build());
+		arguments.add(newArgument().name("sortBy")/*.deprecate("Use 'sort' argument to set multiple sort targets")*/.description("Field to sort the elements by").type(GraphQLString).build());
 
 		// #sortOrder
-		arguments.add(newArgument().name("sortOrder").type(new GraphQLTypeReference(SORT_ORDER_NAME)).defaultValue(SortOrder.UNSORTED).description("Order to sort the elements in").build());
+		arguments.add(newArgument().name("sortOrder")/*.deprecate("Use 'sort' argument to set multiple sort targets")*/.type(new GraphQLTypeReference(SORT_ORDER_NAME)).defaultValue(SortOrder.UNSORTED).description("Order to sort the elements in").build());
+		// TODO support several sorting arguments via new 'sort' GQL parameter { field1:ORDER, field2:ORDER,.. fieldN: ORDER }
+
 		return arguments;
 	}
 
@@ -583,12 +585,9 @@ public abstract class AbstractTypeProvider {
 			parameters.setPerPage(perPage);
 		}
 		String sortBy = env.getArgument("sortBy");
-		if (StringUtils.isNotBlank(sortBy)) {
-			parameters.setSortBy(sortBy);
-		}
 		SortOrder sortOrder = env.getArgument("sortOrder");
-		if (sortOrder != null) {
-			parameters.setSortOrder(sortOrder.toString());
+		if (StringUtils.isNotBlank(sortBy) && sortOrder != null) {
+			parameters.putSort(sortBy, sortOrder);
 		}
 		parameters.validate();
 		return parameters;
@@ -651,14 +650,14 @@ public abstract class AbstractTypeProvider {
 			}
 		}
 		PagingParameters pagingInfo = getPagingInfo(env);
-		return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, maybeNativeFilter), pagingInfo, javaFilter);
+		return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, maybeNativeFilter), pagingInfo, javaFilter, maybeNativeFilter.isPresent() && pagingInfo.getPerPage() != null);
 	}
 
-	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter) {
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter);
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter, boolean ignorePaging) {
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter, ignorePaging);
 	}
 
-	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream) {
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging) {
 		Map<String, ?> filterArgument = env.getArgument("filter");
 		GraphQLContext gc = env.getContext();
 		Predicate<NodeContent> predicate = null;
@@ -666,6 +665,6 @@ public abstract class AbstractTypeProvider {
 		if (filterArgument != null) {
 			predicate = NodeFilter.filter(gc).createPredicate(filterArgument);
 		}
-		return applyNodeFilter(stream, getPagingInfo(env), predicate);
+		return applyNodeFilter(stream, getPagingInfo(env), predicate, ignorePaging);
 	}
 }

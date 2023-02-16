@@ -89,7 +89,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						.filter(content -> content.getContainer() != null)
 						.filter(content1 -> gc.hasReadPerm(content1, type));
 
-					return applyNodeFilter(env, contents);
+					return applyNodeFilter(env, contents, false);
 
 				}));
 

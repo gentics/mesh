@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 import dagger.Lazy;
 
@@ -57,8 +56,8 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	/**
 	 * @see LanguageRoot
 	 */
-	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission, sorting, maybeFilter);
+	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	/**

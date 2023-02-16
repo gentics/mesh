@@ -41,7 +41,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -98,12 +97,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
 		UserDao userDao = tx.userDao();
 
-		return findAll(tx.getProject(ac).getUuid(), sorting, maybeFilter)
+		return findAll(tx.getProject(ac).getUuid(), paging, maybeFilter)
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
@@ -126,12 +125,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param sortOrder
 	 * @return
 	 */
-	private Stream<Vertex> findAll(String projectUuid, SortingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+	private Stream<Vertex> findAll(String projectUuid, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
 			new Object[]{projectUuid},
-			sorting,
+			paging,
 			maybeFilter.map(this::parseFilter)
 		));
 	}

@@ -111,7 +111,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				SchemaDao schemaDao = tx.schemaDao();
 				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type);
 
-				return applyNodeFilter(env, nodes);
+				return applyNodeFilter(env, nodes, false);
 			}, NODE_PAGE_TYPE_NAME)
 				.argument(NodeFilter.filter(context).createFilterArgument())
 				.argument(createNativeFilterArg())

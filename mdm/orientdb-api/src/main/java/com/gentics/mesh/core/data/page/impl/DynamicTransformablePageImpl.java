@@ -2,9 +2,11 @@ package com.gentics.mesh.core.data.page.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.List;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -237,14 +239,15 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 		applyPagingAndPermChecks(stream, clazz, perm);
 
-		if (PersistingRootDao.shouldSort(sortBy, sortOrder)) {
+		if (PersistingRootDao.shouldSort(sort)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.relationDirection(vertexDirection)
 					.edgeLabel(rootLabel)
 					.vertexClass(clazz);
 			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
-			itemEdges = query.edgesOrdered(new String[] { sortBy + " " + sortOrder.getValue()}).spliterator();
+			List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()])).spliterator();
 		} else {
 			// Iterate over all vertices that are managed by this root vertex
 			itemEdges = graph.getEdges(indexName, indexKey).spliterator();

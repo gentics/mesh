@@ -12,14 +12,13 @@ import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.SortingParameters;
 
 /**
  * A {@link PagingParametersImpl} can be used to add additional paging parameters to the rest requests.
  */
-public class PagingParametersImpl extends AbstractParameters implements PagingParameters {
+public class PagingParametersImpl extends SortingParametersImpl implements PagingParameters {
+
 
 	public PagingParametersImpl(ActionContext ac) {
 		super(ac);
@@ -36,11 +35,10 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	}
 
 	public PagingParametersImpl(long page, Long perPage, String sortBy, SortOrder order) {
-		super();
+		super(sortBy, order);
 		setPage(page);
 		setPerPage(perPage);
-		setSortOrder(order.toString());
-		setSortBy(sortBy);
+		putSort(sortBy, order);
 	}
 
 	/**
@@ -83,7 +81,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
-		Map<String, QueryParameter> parameters = new HashMap<>();
+		Map<String, QueryParameter> parameters = new HashMap<>(super.getRAMLParameters());
 		// page
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDefaultValue(String.valueOf(DEFAULT_PAGE));
@@ -101,22 +99,6 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		perPageParameter.setType(ParamType.NUMBER);
 		parameters.put(PER_PAGE_PARAMETER_KEY, perPageParameter);
 
-		// sort by
-		QueryParameter sortByParameter = new QueryParameter();
-		sortByParameter.setDescription("Field name to sort the result by.");
-		sortByParameter.setExample("name");
-		sortByParameter.setRequired(false);
-		sortByParameter.setType(ParamType.STRING);
-		parameters.put(SortingParameters.SORT_BY_PARAMETER_KEY, sortByParameter);
-
-		// sort order
-		QueryParameter sortOrderParameter = new QueryParameter();
-		sortOrderParameter.setDescription("Field order (asc/desc) to sort the result by.");
-		sortOrderParameter.setDefaultValue(SortingParameters.DEFAULT_SORT_ORDER.getValue());
-		sortOrderParameter.setExample(SortOrder.ASCENDING.getValue());
-		sortOrderParameter.setRequired(false);
-		sortOrderParameter.setType(ParamType.STRING);
-		parameters.put(SortingParameters.SORT_ORDER_PARAMETER_KEY, sortOrderParameter);
 		return parameters;
 	}
 
