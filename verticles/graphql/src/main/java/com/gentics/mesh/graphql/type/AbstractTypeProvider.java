@@ -23,6 +23,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.graphqlfilter.Sorting;
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
@@ -71,21 +72,12 @@ public abstract class AbstractTypeProvider {
 	private static final Logger log = LoggerFactory.getLogger(AbstractTypeProvider.class);
 	public static final String LINK_TYPE_NAME = "LinkType";
 	public static final String NATIVE_FILTER_NAME = "NativeFilter";
-	public static final String SORT_ORDER_NAME = "SortOrder";
 	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
 	private final MeshOptions options;
 
 	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
-	}
-
-	public GraphQLEnumType createSortOrderEnumType() {
-		GraphQLEnumType nativeFilterEnum = newEnum().name(SORT_ORDER_NAME).description("Sort order")
-				.value(SortOrder.ASCENDING.getValue().toUpperCase(), SortOrder.ASCENDING, "Ascending")
-				.value(SortOrder.DESCENDING.getValue().toUpperCase(), SortOrder.DESCENDING, "Descending")
-				.value(SortOrder.UNSORTED.name(), SortOrder.UNSORTED, "No sorting").build();
-			return nativeFilterEnum;
 	}
 
 	public GraphQLEnumType createNativeFilterEnumType() {
@@ -123,7 +115,7 @@ public abstract class AbstractTypeProvider {
 		arguments.add(newArgument().name("sortBy")/*.deprecate("Use 'sort' argument to set multiple sort targets")*/.description("Field to sort the elements by").type(GraphQLString).build());
 
 		// #sortOrder
-		arguments.add(newArgument().name("sortOrder")/*.deprecate("Use 'sort' argument to set multiple sort targets")*/.type(new GraphQLTypeReference(SORT_ORDER_NAME)).defaultValue(SortOrder.UNSORTED).description("Order to sort the elements in").build());
+		arguments.add(newArgument().name("sortOrder")/*.deprecate("Use 'sort' argument to set multiple sort targets")*/.type(new GraphQLTypeReference(Sorting.SORT_ORDER_NAME)).defaultValue(SortOrder.UNSORTED).description("Order to sort the elements in").build());
 		// TODO support several sorting arguments via new 'sort' GQL parameter { field1:ORDER, field2:ORDER,.. fieldN: ORDER }
 
 		return arguments;

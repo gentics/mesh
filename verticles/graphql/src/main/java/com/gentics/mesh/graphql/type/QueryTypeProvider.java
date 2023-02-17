@@ -47,6 +47,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.Sorting;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -404,6 +405,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
+		NodeFilter nodeFilter = NodeFilter.filter(context);
 		root.field(newFieldDefinition().name("nodes")
 			.description("Load a page of nodes via the regular nodes list or via a search.")
 			.argument(createPagingArgs())
@@ -411,7 +413,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.argument(createUuidsArg("Node uuids"))
 			.argument(createLanguageTagArg(true))
 			.argument(createNodeVersionArg())
-			.argument(NodeFilter.filter(context).createFilterArgument())
+			.argument(nodeFilter.createFilterArgument())
+			.argument(nodeFilter.createSortArgument())
 			.argument(createNativeFilterArg())
 			.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
 			.dataFetcher(env -> {
@@ -635,7 +638,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(createLinkEnumType());
 		additionalTypes.add(createNodeEnumType());
 		additionalTypes.add(createNativeFilterEnumType());
-		additionalTypes.add(createSortOrderEnumType());
+		additionalTypes.add(Sorting.getSortingEnumType());
 
 		Versioned.doSince(2, context, () -> {
 			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));

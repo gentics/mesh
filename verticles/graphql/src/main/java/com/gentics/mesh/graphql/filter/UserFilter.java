@@ -51,6 +51,15 @@ public class UserFilter extends StartMainFilter<HibUser> {
 	}
 
 	@Override
+	public GraphQLInputType getSortingType() {
+		if (byRef) {
+			return GraphQLTypeReference.typeRef(NAME);
+		} else {
+			return super.getSortingType();
+		}
+	}
+
+	@Override
 	protected List<FilterField<HibUser, ?>> getFilters() {
 		String owner = ElementType.USER.name();
 		List<FilterField<HibUser, ?>> filters = new ArrayList<>();
