@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.StringUtils;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
@@ -62,7 +63,14 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 
 	@Override
 	public SortingParameters putSort(String sortBy, SortOrder order) {
-		sort.put(sortBy, order);
+		if (StringUtils.isNotBlank(sortBy) && order != null) {
+			sort.put(sortBy, order);
+		}
+		return this;
+	}
+
+	public SortingParameters putSort(Map<String, SortOrder> otherSort) {
+		sort.putAll(otherSort);
 		return this;
 	}
 

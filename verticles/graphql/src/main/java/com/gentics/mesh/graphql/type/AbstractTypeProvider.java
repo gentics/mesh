@@ -11,17 +11,22 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.Sorting;
 import com.gentics.graphqlfilter.filter.StartFilter;
@@ -567,7 +572,7 @@ public abstract class AbstractTypeProvider {
 	 * @return Loaded paging parameters
 	 */
 	protected PagingParameters getPagingInfo(DataFetchingEnvironment env) {
-		PagingParameters parameters = new PagingParametersImpl();
+		PagingParametersImpl parameters = new PagingParametersImpl();
 		Long page = env.getArgument("page");
 		if (page != null) {
 			parameters.setPage(page);
@@ -581,12 +586,31 @@ public abstract class AbstractTypeProvider {
 		if (StringUtils.isNotBlank(sortBy) && sortOrder != null) {
 			parameters.putSort(sortBy, sortOrder);
 		}
+		Map<String, ?> sortArgument = env.getArgument("sort");
+		parameters.putSort(parseGraphQlSort(sortArgument, Optional.empty()));
 		parameters.validate();
 		return parameters;
 	}
 
+	@SuppressWarnings("unchecked")
+	private static final Map<String, SortOrder> parseGraphQlSort(Map<String, ?> sort, Optional<String> prefix) {
+		if (sort == null) {
+			return Collections.emptyMap();
+		}
+		return sort.entrySet().stream().flatMap(entry -> sortOrderFromGraphQlSorting(entry.getValue())
+				.map(order -> Stream.of(Pair.of(prefix.map(p -> p + "." + entry.getKey()).orElse(entry.getKey()), order)))
+				.orElseGet(() -> {
+					if (!Map.class.isInstance(entry.getValue())) {
+						throw new IllegalArgumentException("Unexpected sort value for key '" + entry.getKey() + "':"  + entry.getValue());
+					}
+					return parseGraphQlSort((Map<String, Object>) entry.getValue(), Optional.ofNullable(prefix.map(p -> p + "." + entry.getKey()).orElse(entry.getKey())))
+							.entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue()));
+				})
+			).collect(Collectors.toMap(e -> e.getLeft(), e -> e.getRight(), (a, b) -> a)) ;
+	}
+
 	/**
-	 * Fetches nodes and applies filters
+	 * Fetches nodes and applies filters, either database-native or java.
 	 *
 	 * @param env
 	 *            the environment of the request
@@ -645,10 +669,27 @@ public abstract class AbstractTypeProvider {
 		return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, maybeNativeFilter), pagingInfo, javaFilter, maybeNativeFilter.isPresent() && pagingInfo.getPerPage() != null);
 	}
 
+	/**
+	 * Apply Java filtering to a stream.
+	 * 
+	 * @param stream
+	 * @param pagingInfo
+	 * @param javaFilter
+	 * @param ignorePaging
+	 * @return
+	 */
 	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter, boolean ignorePaging) {
 		return new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter, ignorePaging);
 	}
 
+	/**
+	 * Apply GraphQL filter to a stream as Java filter.
+	 * 
+	 * @param env
+	 * @param stream
+	 * @param ignorePaging
+	 * @return
+	 */
 	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging) {
 		Map<String, ?> filterArgument = env.getArgument("filter");
 		GraphQLContext gc = env.getContext();
@@ -658,5 +699,30 @@ public abstract class AbstractTypeProvider {
 			predicate = NodeFilter.filter(gc).createPredicate(filterArgument);
 		}
 		return applyNodeFilter(stream, getPagingInfo(env), predicate, ignorePaging);
+	}
+
+	/**
+	 * Map GraphQL {@link Sorting} value onto a Mesh {@link SortOrder}.
+	 * 
+	 * @param sorting
+	 * @return
+	 */
+	private static final Optional<SortOrder> sortOrderFromGraphQlSorting(Object sorting) {
+		if (sorting == null) {
+			return Optional.of(SortOrder.UNSORTED);
+		} else if (sorting instanceof Sorting) {
+			Sorting s = Sorting.class.cast(sorting);
+			switch (s) {
+			case ASCENDING:
+				return Optional.of(SortOrder.ASCENDING);
+			case DESCENDING:
+				return Optional.of(SortOrder.DESCENDING);
+			case UNSORTED:
+				return Optional.of(SortOrder.UNSORTED);
+			}
+			throw new IllegalStateException("Impossible case of unsupported Sorting value " + sorting);
+		} else {
+			return Optional.empty();
+		}
 	}
 }
