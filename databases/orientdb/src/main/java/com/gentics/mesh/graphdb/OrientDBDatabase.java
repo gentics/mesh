@@ -821,9 +821,4 @@ public class OrientDBDatabase extends AbstractDatabase {
 			diskQuotaChecker = null;
 		}
 	}
-
-	@Override
-	public boolean supportsNativeFiltering() {
-		return false;
-	}
 }
