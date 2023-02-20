@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,18 +42,22 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 
@@ -116,6 +121,34 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	public String getAPIPath(T element, InternalActionContext ac) {
 		// TODO FIXME remove this method, must be implemented in all derived classes
 		throw new RuntimeException("Not implemented");
+	}
+
+	protected <S extends SortingParameters> S mapSorting(S sorting) {
+		Map<String, SortOrder> items = sorting.getSort();
+		sorting.clearSort();
+		items.entrySet().stream().forEach(entry -> {
+			String key = entry.getKey();
+			String[] keyParts = key.split("\\.");
+			if (keyParts.length > 1) {
+				// We expect format of 'fields.<schema_name>'.<field_name>
+				if ("fields".equals(keyParts[0]) && keyParts.length > 2) {
+					HibSchema schema = Tx.get().schemaDao().findByName(keyParts[1]);
+					if (schema == null) {
+						throw new IllegalArgumentException("No schema found for sorting request: " + key);
+					}
+					FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[2]);
+					if (field == null) {
+						throw new IllegalArgumentException("No field found for sorting request: " + key);
+					}
+					key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
+				} else {
+					throw new IllegalArgumentException("The sort key is currently not supported: " + key + ". Either an entity field (e.g. 'uuid') or node fields (e.g. 'fields.<schema_name>.<field_name>') are implemented.");
+				}
+				// TODO implement for User + nodeReference
+			}
+			sorting.putSort(key,  entry.getValue());
+		});
+		return sorting;
 	}
 
 	/**

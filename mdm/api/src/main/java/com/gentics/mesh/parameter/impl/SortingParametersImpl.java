@@ -80,4 +80,10 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 				.flatMap(Function.identity())
 				.collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> a));
 	}
+
+	@Override
+	public SortingParameters clearSort() {
+		sort.clear();
+		return SortingParameters.super.clearSort();
+	}
 }

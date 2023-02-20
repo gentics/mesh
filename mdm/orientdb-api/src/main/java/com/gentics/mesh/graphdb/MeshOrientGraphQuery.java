@@ -24,6 +24,9 @@ import com.tinkerpop.blueprints.impls.orient.OrientElementIterable;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * A query with sorting capabilities.
  * 
@@ -31,6 +34,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientVertex;
  *
  */
 public class MeshOrientGraphQuery extends OrientGraphQuery {
+
+	private static final Logger log = LoggerFactory.getLogger(MeshOrientGraphQuery.class);
 
 	protected static final String QUERY_SELECT = "select ";
 	protected static final String QUERY_FROM = "from ";
@@ -177,7 +182,8 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
-System.err.println(text);
+		log.error("EDGE QUERY: {}", text);
+
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
 		if (fetchPlan != null) {
@@ -251,10 +257,10 @@ System.err.println(text);
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		
+		log.error("VERTEX QUERY: {}", text);
+
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
-		System.err.println("QUERY:\n\t" + text.toString());
 		if (fetchPlan != null) {
 			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
 

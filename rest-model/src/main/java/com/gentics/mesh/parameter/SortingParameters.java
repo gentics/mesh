@@ -46,4 +46,10 @@ public interface SortingParameters extends ParameterProvider {
 		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, order.toString());
 		return this;
 	}
+
+	default SortingParameters clearSort() {
+		setParameter(SortingParameters.SORT_BY_PARAMETER_KEY, null);
+		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, null);
+		return this;
+	}
 }

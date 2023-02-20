@@ -130,7 +130,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
 			new Object[]{projectUuid},
-			paging,
+			mapSorting(paging),
 			maybeFilter.map(this::parseFilter)
 		));
 	}
