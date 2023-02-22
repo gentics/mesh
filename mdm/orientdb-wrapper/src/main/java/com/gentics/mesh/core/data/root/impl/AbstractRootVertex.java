@@ -9,7 +9,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,6 +18,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperand;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -55,6 +56,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.SortingParameters;
@@ -75,6 +77,16 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	abstract public String getRootLabel();
+
+	/**
+	 * Override this method to map a GraphQL entity field name to its OrientDB counterpart.
+	 * 
+	 * @param gqlName
+	 * @return
+	 */
+	protected String mapGraphQlFieldName(String gqlName) {
+		return gqlName;
+	}
 
 	@Override
 	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
@@ -123,6 +135,13 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		throw new RuntimeException("Not implemented");
 	}
 
+	/**
+	 * Map default sorting argument to the one acceptable by {@link MeshOrientGraphQuery}.
+	 * 
+	 * @param <S>
+	 * @param sorting
+	 * @return
+	 */
 	protected <S extends SortingParameters> S mapSorting(S sorting) {
 		Map<String, SortOrder> items = sorting.getSort();
 		sorting.clearSort();
@@ -170,18 +189,22 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 				// Left comparison operand
 				Object[] leftValue = new Object[] {left.getValue()};
-				Optional<graphql.util.Pair<String, String>> maybeLeftJoin = left.getJoins().entrySet().stream().map(e -> graphql.util.Pair.pair(e.getKey(), e.getValue())).findAny();
-				Optional<graphql.util.Pair<String, String>> maybeRightJoin = right.getJoins().entrySet().stream().map(e -> graphql.util.Pair.pair(e.getKey(), e.getValue())).findAny();
 
-				String qlLeft = maybeLeftJoin.map(join -> {
-					Pair<Class, String> src = joinIntoPair(join.first);
-					Pair<Class, String> dst = joinIntoPair(join.second);
+				String qlLeft = left.getJoins().entrySet().stream().map(join -> {
+					Pair<Class, String> src = joinIntoPair(join.getKey());
+					Pair<Class, String> dst = joinIntoPair(join.getValue());
+
+					// Case for schema name mapped
+					if (src.getKey() == null || dst.getKey() == null) {
+						return null;
+					}
 
 					// If this field is joined to the content, we bypass the join in favor of edge navigation.
 					// TODO customize container type (currently PUBLISHED is hardcoded)
 					if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
 						if ("fields".equals(dst.getRight())) {
-							String typeSuffix = left.getJoins().entrySet().stream().filter(e -> !"NODE.content".equals(e.getKey())).map(e -> "-" + e.getValue()).limit(1).collect(Collectors.joining());
+							// We filter out current (mapped to the ElementType) join, as we know that it never contains the schema information
+							String typeSuffix = left.getJoins().entrySet().stream().map(e -> joinIntoPair(e.getValue())).filter(e -> e.getKey() == null).map(e -> "-" + e.getValue()).findAny().orElse(StringUtils.EMPTY);
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
 						} else {
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + dst.getRight() + "`";
@@ -197,10 +220,10 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 						// Otherwise we mimic joins (unsupported in OrientDB) with subqueries
 						return " " + src.getRight() + " IN ( SELECT " + dst.getRight() + " FROM " + dst.getLeft().getSimpleName() + " WHERE ";
 					}
-				}).orElse(StringUtils.EMPTY);
+				}).filter(ql -> !Objects.isNull(ql)).limit(1).collect(Collectors.joining());
 
 				// Currently we don't support joins in right operand.
-				Object qlRight = maybeRightJoin.map(unsupported -> {
+				Object qlRight = right.getJoins().entrySet().stream().findAny().map(unsupported -> {
 					throw new IllegalArgumentException("Joins for filter RVALUE are currently unsupported: " + unsupported);
 				}).orElseGet(() -> {
 					// Special case for date/time values
@@ -227,9 +250,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	protected Pair<Class, String> joinIntoPair(String join) {
-		String[] parts = join.split("\\.", 2);
-		Class cls = ElementType.parse(parts[0]).map(etype -> {
+	protected Pair<Class, String> joinIntoPair(JoinPart join) {
+		return ElementType.parse(join.getTable()).map(etype -> {
 			Class clss;
 			switch (etype) {
 			case BRANCH:
@@ -277,18 +299,23 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			default:
 				throw new IllegalStateException("FIXME: unexpected element type, that should be supported " + etype);
 			}
-			return clss;
+			return Pair.of(clss, mapGraphQlFieldName(join.getField()));
 		}).orElseGet(() -> {
-			switch (parts[0]) {
+			switch (join.getTable()) {
 			case "CONTENT":
-				return NodeGraphFieldContainerImpl.class;
+				return Pair.of(NodeGraphFieldContainerImpl.class, mapGraphQlFieldName(join.getField()));
 			case "MICRONODE":
-				return MicroschemaContainerImpl.class;
+				return Pair.of(MicroschemaContainerImpl.class, mapGraphQlFieldName(join.getField()));
 			default:
-				throw new IllegalArgumentException("Unsupported element type: " + parts[0]);
+				if (Tx.get().schemaDao().findByName(join.getTable()) != null) {
+					return Pair.of(null, join.getField());
+				} else if (Tx.get().microschemaDao().findByName(join.getTable()) != null) {
+					return Pair.of(null, join.getField());
+				} else {
+					throw new IllegalArgumentException("Unsupported element type: " + join.getTable());
+				}
 			}
-		});
-		return Pair.of(cls, parts[1]);
+		});		
 	}
 
 	/**

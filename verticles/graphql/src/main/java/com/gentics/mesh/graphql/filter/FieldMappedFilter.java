@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import com.gentics.graphqlfilter.filter.Filter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
+import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.graphqlfilter.util.FilterUtil;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -45,7 +46,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 	}
 
 	@Override
-	public Map<String, String> getJoins() {
-		return FilterUtil.addFluent(super.getJoins(), Collections.singletonMap(schemaName, fieldType.name().toLowerCase()));
+	public Map<JoinPart, JoinPart> getJoins() {
+		return FilterUtil.addFluent(super.getJoins(), Collections.singletonMap(new JoinPart("CONTENT", schemaName), new JoinPart(schemaName, fieldType.name().toLowerCase())));
 	}
 }

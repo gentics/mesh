@@ -15,6 +15,7 @@ import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.FilterQuery;
+import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -56,16 +57,16 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 		List<FilterField<NodeContent, ?>> filters = new ArrayList<>();
 		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
 		filters.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), 
-			content -> content.getNode().getSchemaContainer(), Pair.pair("schema", "uuid")));
+			content -> content.getNode().getSchemaContainer(), Pair.pair("schema", new JoinPart(ElementType.SCHEMA.name(), "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "created", "Filters by node creation timestamp", DateFilter.filter(),
 			content -> content.getNode().getCreationTimestamp()));
 		filters.add(new MappedFilter<>(OWNER, "creator", "Filters by creator", UserFilter.filter(),
-			content -> content.getNode().getCreator(), Pair.pair("creator", "uuid")));
+			content -> content.getNode().getCreator(), Pair.pair("creator", new JoinPart(ElementType.USER.name(), "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "edited", "Filters by node update timestamp", DateFilter.filter(),
-			content -> content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", "CONTENT.last_edited_timestamp")));
+			content -> content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", new JoinPart("CONTENT", "edited"))));
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
-			content -> content.getContainer().getEditor(), Pair.pair("content", "CONTENT.editor")));
-		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", "fields")));
+			content -> content.getContainer().getEditor(), Pair.pair("content", new JoinPart("CONTENT", "editor"))));
+		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
 
 		return filters;
 	}
