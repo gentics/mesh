@@ -272,6 +272,15 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected NodeResponse updateForm(String fileName, boolean permission, boolean expectSuccess) throws IOException {
 		String uuid = createForm("create.json", true, true);
+		Optional<SchemaResponse> formSchema = loadSchema(SchemaService.getSchemaName(uuid));
+
+		assertThat(formSchema).as("Form Schema").isPresent();
+
+		// Do not unassign the schema if the update request is not expected to succeed, since this will cause problems in the assertions later on.
+		if (expectSuccess) {
+			call(() -> server.client().unassignSchemaFromProject(PROJECT_NAME, formSchema.get().getUuid()));
+		}
+
 		Request updateRequest = new Request.Builder()
 			.url(projectUrl("/forms/" + uuid))
 			.headers(auth(permission))
@@ -283,6 +292,8 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 			assertThat(response.isSuccessful())
 					.as(String.format("Response success %d (%s)", response.code(), response.message()))
 					.isEqualTo(expectSuccess);
+
+			assertThat(loadSchema(SchemaService.getSchemaName(uuid))).as("Update form Schema").isPresent();
 
 			if (expectSuccess) {
 				NodeResponse updatedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
@@ -324,12 +335,12 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	}
 
 	/**
-	 * Try to load schema with given name
+	 * Try to load schema with given name and assigned to {@link #PROJECT_NAME}.
 	 * @param name schema name
 	 * @return optional schema response
 	 */
 	protected Optional<SchemaResponse> loadSchema(String name) {
-		return call(() -> server.client().findSchemas(new PagingParametersImpl().setPerPage(Long.MAX_VALUE))).getData().stream()
+		return call(() -> server.client().findSchemas(PROJECT_NAME, new PagingParametersImpl().setPerPage(Long.MAX_VALUE))).getData().stream()
 			.filter(schema -> name.equals(schema.getName())).findFirst().map(e -> Optional.of(e)).orElse(Optional.empty());
 	}
 
