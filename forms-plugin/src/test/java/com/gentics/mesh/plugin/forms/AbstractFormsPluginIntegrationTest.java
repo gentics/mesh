@@ -274,7 +274,10 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 
 		assertThat(formSchema).as("Form Schema").isPresent();
 
-		call(() -> server.client().unassignSchemaFromProject(PROJECT_NAME, formSchema.get().getUuid()));
+		// Do not unassign the schema if the update request is not expected to succeed, since this will cause problems in the assertions later on.
+		if (expectSuccess) {
+			call(() -> server.client().unassignSchemaFromProject(PROJECT_NAME, formSchema.get().getUuid()));
+		}
 
 		Request updateRequest = new Request.Builder()
 			.url(projectUrl("/forms/" + uuid))
