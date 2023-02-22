@@ -287,6 +287,9 @@
 | *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
 | Override the timeout for the cache if index mappings
 
+| *MESH_GRAPHQL_SLOW_THRESHOLD*
+| Override the configured slow graphQl query threshold.
+
 | *MESH_S3_BINARY_BUCKET*
 | Override the configured AWS S3 bucket.
 
