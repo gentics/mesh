@@ -849,7 +849,11 @@ public class FormService {
 	private Single<GenericMessageResponse> updateSchema(String projectName, NodeResponse formNode, SchemaResponse schema) throws FormsError {
 		log.info("Updating schema {} with uuid {}", schema.getName(), schema.getUuid());
 		SchemaUpdateRequest updateRequest = getSchema(formNode, new SchemaUpdateRequest());
-		return  userClient.updateSchema(schema.getUuid(), updateRequest).toSingle();
+		return  userClient.updateSchema(schema.getUuid(), updateRequest).toSingle()
+			.flatMap(updateResponse ->
+				// Make sure the schema is assigned to the project, just in case.
+				userClient.assignSchemaToProject(projectName, schema.getUuid()).toCompletable()
+					.andThen(Single.just(updateResponse)));
 	}
 
 	/**
