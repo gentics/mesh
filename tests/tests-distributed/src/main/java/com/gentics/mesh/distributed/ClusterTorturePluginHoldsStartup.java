@@ -19,7 +19,7 @@ public class ClusterTorturePluginHoldsStartup extends AbstractClusterTortureTest
 	public void testSecondaryBackupCreated() throws Exception {
 		torture((a, b, c) -> {
 			MeshContainer serverB2 = prepareSlave("dockerCluster" + clusterPostFix, "nodeB2", randomToken(), true, true, 1)
-					.withPlugin(new File("../core/target/test-plugins/failing-first/target/failing-first-plugin-0.0.1-SNAPSHOT.jar"), "failing-first.jar");
+					.withPlugin(new File("../tests-core/target/test-plugins/test-plugins/failing-first/target/failing-first-plugin-0.0.1-SNAPSHOT.jar"), "failing-first.jar");
 			serverB2.start();
 			serverB2.awaitStartup(STARTUP_TIMEOUT);
 			login(serverB2);
