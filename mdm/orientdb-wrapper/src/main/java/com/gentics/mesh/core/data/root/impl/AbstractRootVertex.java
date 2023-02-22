@@ -241,7 +241,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	/**
-	 * Parse join string in the form of `table.field` into pair of Mesh element class and field.
+	 * Parse join into pair of Mesh element class and field.
 	 * 
 	 * @see ElementType
 	 * @see MeshElement
