@@ -11,7 +11,7 @@
 = Mesh Forms Plugin
 
 [[v1.6.31]]
-== 1.6.31 (TBD)
+== 1.6.31 (2023-02-22)
 
 icon:check[] Forms: Make sure a forms schema is assigned to the respective project when a form is updated.
 
