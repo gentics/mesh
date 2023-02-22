@@ -29,6 +29,13 @@ icon:check[] Core: The node migration process has been improved to reduce resour
 
 icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
 
+[[v1.8.18]]
+== 1.8.18 (22.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
 [[v1.8.17]]
 == 1.8.17 (26.01.2023)
 
