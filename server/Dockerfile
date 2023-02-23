@@ -1,8 +1,5 @@
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.16.1_1
 
-# Install dependencies
-RUN apk update && apk add rsync
-
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
 ENV MESH_GRAPH_DB_DIRECTORY=/graphdb
@@ -27,7 +24,8 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir /mesh/data && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
-    chmod 770 /mesh -R
+    chmod 770 /mesh -R && \
+    apk update && apk add rsync
 ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
 
