@@ -1,5 +1,8 @@
 FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.16.1_1
 
+# Install dependencies
+RUN apk update && apk add rsync
+
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
 ENV MESH_GRAPH_DB_DIRECTORY=/graphdb
