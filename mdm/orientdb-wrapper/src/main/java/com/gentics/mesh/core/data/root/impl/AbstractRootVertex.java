@@ -195,7 +195,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 					Pair<Class, String> dst = joinIntoPair(join.getValue());
 
 					// Case for schema name mapped
-					if (src.getKey() == null || dst.getKey() == null) {
+					if (src == null || dst == null) {
 						return null;
 					}
 
@@ -203,8 +203,11 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 					// TODO customize container type (currently PUBLISHED is hardcoded)
 					if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
 						if ("fields".equals(dst.getRight())) {
-							// We filter out current (mapped to the ElementType) join, as we know that it never contains the schema information
-							String typeSuffix = left.getJoins().entrySet().stream().map(e -> joinIntoPair(e.getValue())).filter(e -> e.getKey() == null).map(e -> "-" + e.getValue()).findAny().orElse(StringUtils.EMPTY);
+							// Looking for a CONTENT/<schema_name> = <schema_name>.<field_name>/<field_type> mapping
+							String typeSuffix = left.getJoins().entrySet().stream()
+									.filter(e -> "CONTENT".equals(e.getKey().getTable()) && e.getValue().getTable().equals(e.getKey().getField() + "." + left.getValue()))
+									.map(e -> "-" + e.getValue().getField()).findAny().orElse(StringUtils.EMPTY);
+							//String typeSuffix = left.getJoins().entrySet().stream().map(e -> joinIntoPair(e.getValue())).filter(e -> e.getKey() == null).map(e -> "-" + e.getValue()).findAny().orElse(StringUtils.EMPTY);
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
 						} else {
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + dst.getRight() + "`";
@@ -307,13 +310,14 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 			case "MICRONODE":
 				return Pair.of(MicroschemaContainerImpl.class, mapGraphQlFieldName(join.getField()));
 			default:
-				if (Tx.get().schemaDao().findByName(join.getTable()) != null) {
-					return Pair.of(null, join.getField());
-				} else if (Tx.get().microschemaDao().findByName(join.getTable()) != null) {
-					return Pair.of(null, join.getField());
-				} else {
-					throw new IllegalArgumentException("Unsupported element type: " + join.getTable());
-				}
+				return null;
+//				if (Tx.get().schemaDao().findByName(join.getTable()) != null) {
+//					return Pair.of(null, join.getField());
+//				} else if (Tx.get().microschemaDao().findByName(join.getTable()) != null) {
+//					return Pair.of(null, join.getField());
+//				} else {
+//					throw new IllegalArgumentException("Unsupported element type: " + join.getTable());
+//				}
 			}
 		});		
 	}

@@ -23,7 +23,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
 	 */
 	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, String schemaName) {
-		super("content", name, description, delegate, mapper);
+		super("CONTENT", name, description, delegate, mapper);
 		this.schemaName = schemaName;
 		this.fieldType = fieldType;
 	}
@@ -47,6 +47,6 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 
 	@Override
 	public Map<JoinPart, JoinPart> getJoins() {
-		return FilterUtil.addFluent(super.getJoins(), Collections.singletonMap(new JoinPart("CONTENT", schemaName), new JoinPart(schemaName, fieldType.name().toLowerCase())));
+		return FilterUtil.addFluent(super.getJoins(), Collections.singletonMap(new JoinPart("CONTENT", schemaName), new JoinPart(schemaName + "." + getName(), fieldType.name().toLowerCase())));
 	}
 }
