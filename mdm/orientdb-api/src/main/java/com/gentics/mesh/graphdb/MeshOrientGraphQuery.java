@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	 * @param propsAndDirs sorting parameters, in a form of 'field sortOrder', 'field sortOrder', etc.
 	 * @return
 	 */
-	public Iterable<Edge> edgesOrdered(String[] propsAndDirs) {
+	public Iterable<Edge> edgesOrdered(String[] propsAndDirs, Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
 		if (limit == 0)
 			return Collections.emptyList();
 
@@ -137,12 +138,25 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			} else {
 				text.append(QUERY_WHERE);
 			}
+			maybeFermaTypes.ifPresentOrElse(types -> {
+				text.append(" [");
+				text.append(" '");
+				text.append(vertexClass.getSimpleName());
+				text.append("' ");
+				types.stream().forEach(ft -> {
+					text.append(",'");
+					text.append(ft.getSimpleName());
+					text.append("'");
+				});
+				text.append("] CONTAINS ");
+			}, () -> {
+				text.append(" '");
+				text.append(vertexClass.getSimpleName());
+				text.append("' = ");
+			});
 			text.append(relationDirection.name().toLowerCase());
 			text.append("V().");
-			text.append(ElementFrame.TYPE_RESOLUTION_KEY);
-			text.append(" = '");
-			text.append(vertexClass.getSimpleName());
-			text.append("' ");
+			text.append(ElementFrame.TYPE_RESOLUTION_KEY);			
 		}
 	
 		maybeCustomFilter.ifPresent(filter -> {
@@ -182,7 +196,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		log.error("EDGE QUERY: {}", text);
+		log.debug("EDGE QUERY: {}", text);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
@@ -257,7 +271,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		log.error("VERTEX QUERY: {}", text);
+		log.debug("VERTEX QUERY: {}", text);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.

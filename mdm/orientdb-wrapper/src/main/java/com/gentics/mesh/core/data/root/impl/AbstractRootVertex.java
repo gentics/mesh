@@ -143,6 +143,9 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	 * @return
 	 */
 	protected <S extends SortingParameters> S mapSorting(S sorting) {
+		if (sorting == null) {
+			return sorting;
+		}
 		Map<String, SortOrder> items = sorting.getSort();
 		sorting.clearSort();
 		items.entrySet().stream().forEach(entry -> {

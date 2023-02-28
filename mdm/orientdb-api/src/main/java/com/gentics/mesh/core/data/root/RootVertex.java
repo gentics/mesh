@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -92,7 +93,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 				query.limit(paging.getPerPage().intValue());
 			}
 			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
-			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()])).spliterator();
+			Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
+			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()]), maybeVariations).spliterator();
 		} else {
 			String idx = "e." + getRootLabel().toLowerCase() + "_out";
 			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
@@ -289,4 +291,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return
 	 */
 	Result<? extends HibRole> getRolesWithPerm(HibBaseElement vertex, InternalPermission perm);
+
+	/**
+	 * Get extensions/variations of the ferma graph persistence class.
+	 * 
+	 * @return
+	 */
+	default Optional<? extends Collection<Class<? extends T>>> getPersistenceClassVariations() {
+		return Optional.empty();
+	}
 }

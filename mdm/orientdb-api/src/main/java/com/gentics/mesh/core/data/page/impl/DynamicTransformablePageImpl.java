@@ -2,7 +2,9 @@ package com.gentics.mesh.core.data.page.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
@@ -83,7 +85,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	public DynamicTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, InternalPermission perm,
 		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(root.getPersistanceClass(), root.getRootLabel(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
+		init(root.getPersistanceClass(), root.getRootLabel(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm, root.getPersistenceClassVariations());
 	}
 
 	/**
@@ -113,7 +115,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	public DynamicTransformablePageImpl(HibUser requestUser, String rootLabel, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
 		InternalPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(clazz, rootLabel, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm);
+		init(clazz, rootLabel, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm, Optional.empty());
 	}
 
 	/**
@@ -224,9 +226,10 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Framed graph used to re-frame the resulting elements
 	 * @param perm
 	 *            Graph permission to filter by
+	 * @param optional 
 	 */
 	private void init(Class<? extends T> clazz, String rootLabel, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
-		InternalPermission perm) {
+		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {
 
 		Spliterator<Edge> itemEdges;
 		// Iterate over all vertices that are managed by this root vertex
@@ -247,7 +250,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 					.vertexClass(clazz);
 			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
 			List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
-			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()])).spliterator();
+			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()]), maybeVariations).spliterator();
 		} else {
 			// Iterate over all vertices that are managed by this root vertex
 			itemEdges = graph.getEdges(indexName, indexKey).spliterator();
