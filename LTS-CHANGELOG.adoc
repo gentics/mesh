@@ -442,7 +442,7 @@ icon:plus[] Core: Added support for storing/referencing the binary data at Amazo
 [[v1.6.12]]
 == 1.6.12 (02.06.2021)
 
-icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` enrsync curl iputils busybox-extras tar nanovironment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
 when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
 
 icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
