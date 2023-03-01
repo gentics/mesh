@@ -24,7 +24,8 @@ RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir /mesh/data && \
     mkdir -p /mesh/elasticsearch/data && \
     chown 1000:0 /mesh -R && \
-    chmod 770 /mesh -R
+    chmod 770 /mesh -R && \
+    apk update && apk add rsync curl iputils busybox-extras tar nano && rm -rf /var/cache/apk/*
 ADD --chown=1000:0 ./live.sh /mesh/live.sh
 ADD --chown=1000:0 ./target/mesh-server*jar /mesh/mesh.jar
 

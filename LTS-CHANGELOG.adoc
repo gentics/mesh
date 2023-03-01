@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v.1.8.19]]
+== 1.8.19 (TBD)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
 [[v1.8.18]]
 == 1.8.18 (22.02.2023)
 
@@ -437,7 +442,7 @@ icon:plus[] Core: Added support for storing/referencing the binary data at Amazo
 [[v1.6.12]]
 == 1.6.12 (02.06.2021)
 
-icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` environment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
+icon:plus[] Clustering: The `cluster.topologyChangeReadOnly` setting and `MESH_CLUSTER_TOPOLOGY_CHANGE_READONLY` enrsync curl iputils busybox-extras tar nanovironment setting have been added. By enabling this flag, Mesh will be automatically set in `readOnly` mode,
 when the cluster topology changes, which will let reading requests pass and writing requests fail (immediately), instead of blocking all requests, which happens when the `cluster.topologyLockTimeout` is set to a positive value.
 
 icon:check[] Plugins: If plugin initialization fails due to topology changes (e.g. the OrientDB needs to be synchronized from another node), the plugin will be set to
