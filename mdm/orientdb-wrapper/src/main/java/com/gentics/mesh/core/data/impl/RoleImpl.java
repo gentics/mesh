@@ -37,6 +37,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse> implements Ro
 		index.createIndex(vertexIndex(RoleImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
+		addUserTrackingRelation(RoleImpl.class);
 	}
 
 	@Override

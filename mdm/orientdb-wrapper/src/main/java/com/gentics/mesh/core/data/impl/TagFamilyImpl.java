@@ -65,6 +65,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
+		addUserTrackingRelation(TagFamilyImpl.class);
 	}
 
 	@Override

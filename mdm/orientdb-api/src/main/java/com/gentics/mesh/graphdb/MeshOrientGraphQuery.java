@@ -10,6 +10,7 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.madl.frame.ElementFrame;
@@ -335,8 +336,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 					Map<String, GraphRelationship> relation = GraphRelationships.findRelation(currentMapping);
 					if (relation != null && !sanitizedPart.endsWith(pathPart)
 							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
-						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart)
-								: relation.get("*");
+						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
 						if (useEdgeFilters 
 								&& relationMapping != null 
 								&& StringUtils.isNotBlank(relationMapping.getEdgeFieldName())) {
@@ -350,6 +350,20 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 							text.append("'].");
 							text.append(vertexLookupDirOpposite.name().toLowerCase());
 							text.append("V()");
+						} else if (relationMapping != null && MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
+							//(select emailAddress from UserImpl where UserImpl.uuid = NodeImpl.outE('HAS_FIELD_CONTAINER')[edgeType='P'].inV()[0].`editor`)
+							text.append("(SELECT `");
+							text.append(pathParts.length > 1 ? pathParts[1] : pathPart); // TODO check this
+							text.append("` FROM ");
+							text.append(relationMapping.getRelatedVertexClass().getSimpleName());
+							text.append(" WHERE ");
+							text.append(relationMapping.getRelatedVertexClass().getSimpleName());
+							text.append(".uuid = ");
+							text.append(currentMapping.getSimpleName());
+							text.append(".`");
+							text.append(pathPart);
+							text.append("`)");
+							break;
 						} else {
 							text.append(vertexLookupDir.name().toLowerCase());
 							text.append("('");

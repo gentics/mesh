@@ -66,6 +66,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 		index.createIndex(vertexIndex(ProjectImpl.class)
 			.withField("name", FieldType.STRING)
 			.unique());
+		addUserTrackingRelation(ProjectImpl.class);
 	}
 
 	@Override

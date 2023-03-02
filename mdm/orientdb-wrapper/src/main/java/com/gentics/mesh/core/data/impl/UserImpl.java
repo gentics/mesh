@@ -91,6 +91,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
 		GraphRelationships.addRelation(UserImpl.class, NodeImpl.class, "nodeReference", HAS_NODE_REFERENCE, StringUtils.EMPTY, StringUtils.EMPTY);
+		addUserTrackingRelation(UserImpl.class);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.impl.JobImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -82,6 +83,17 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		index.createIndex(vertexIndex(MeshVertexImpl.class)
 			.withField("uuid", FieldType.STRING)
 			.unique());
+	}
+
+	/**
+	 * Add a default user tracking relation, where applicable.
+	 * 
+	 * @param <K>
+	 * @param keyClass
+	 */
+	public static <K extends MeshVertex> void addUserTrackingRelation(Class<K> keyClass) {
+		GraphRelationships.addRelation(keyClass, UserImpl.class, "creator");
+		GraphRelationships.addRelation(keyClass, UserImpl.class, "editor");
 	}
 
 	@Override
@@ -244,10 +256,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 						throw new IllegalArgumentException("No field found for sorting request: " + key);
 					}
 					key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
+				} else if ("creator".equals(keyParts[0]) || "editor".equals(keyParts[0])) {
+					// pass it
 				} else {
 					throw new IllegalArgumentException("The sort key is currently not supported: " + key + ". Either an entity field (e.g. 'uuid') or node fields (e.g. 'fields.<schema_name>.<field_name>') are implemented.");
 				}
-				// TODO implement for User + nodeReference
 			}
 			sorting.putSort(key,  entry.getValue());
 		});

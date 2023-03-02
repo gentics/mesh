@@ -133,6 +133,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 
 		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.PUBLISHED.getCode());
+		addUserTrackingRelation(NodeImpl.class);
 	}
 
 	@Override

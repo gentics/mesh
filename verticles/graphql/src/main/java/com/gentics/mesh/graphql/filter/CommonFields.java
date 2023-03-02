@@ -8,10 +8,14 @@ import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.graphqlfilter.filter.operation.JoinPart;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
+
+import graphql.util.Pair;
 
 /**
  * Common fields that can be composed in various types
@@ -78,11 +82,7 @@ public final class CommonFields {
 	 */
 	@Deprecated
 	public static <T extends HibUserTracking> List<FilterField<T, Map<String, ?>>> userTrackingFilter(String owner, UserFilter userFilter) {
-		return Arrays.asList(
-			new MappedFilter<>(owner, "created", "Filters by creation timestamp", DateFilter.filter(), HibUserTracking::getCreationTimestamp),
-			new MappedFilter<>(owner, "edited", "Filters by update timestamp", DateFilter.filter(), HibUserTracking::getLastEditedTimestamp),
-			new MappedFilter<>(owner, "creator", "Filters by creator", userFilter, HibUserTracking::getCreator),
-			new MappedFilter<>(owner, "editor", "Filters by editor", userFilter, HibUserTracking::getEditor));
+		return hibUserTrackingFilter(owner, userFilter);
 	}
 
 	/**
@@ -95,7 +95,7 @@ public final class CommonFields {
 		return Arrays.asList(
 			new MappedFilter<>(owner, "created", "Filters by creation timestamp", DateFilter.filter(), HibUserTracking::getCreationTimestamp),
 			new MappedFilter<>(owner, "edited", "Filters by update timestamp", DateFilter.filter(), HibUserTracking::getLastEditedTimestamp),
-			new MappedFilter<>(owner, "creator", "Filters by creator", userFilter, HibUserTracking::getCreator),
-			new MappedFilter<>(owner, "editor", "Filters by editor", userFilter, HibUserTracking::getEditor));
+			new MappedFilter<>(owner, "creator", "Filters by creator", userFilter, HibUserTracking::getCreator, Pair.pair("creator", new JoinPart(ElementType.USER.name(), "uuid"))),
+			new MappedFilter<>(owner, "editor", "Filters by editor", userFilter, HibUserTracking::getEditor, Pair.pair("editor", new JoinPart(ElementType.USER.name(), "uuid"))));
 	}
 }

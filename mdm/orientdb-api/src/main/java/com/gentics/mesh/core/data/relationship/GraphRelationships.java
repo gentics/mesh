@@ -15,10 +15,27 @@ import com.gentics.mesh.core.data.MeshVertex;
  */
 public class GraphRelationships {
 
+	/**
+	 * Add a relation between entities through an edge.
+	 */
 	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName, String relationName, String edgeFieldName, String defaultEdgeFieldFilterValue) {
 		Map<String, GraphRelationship> relations = VERTEX_RELATIONS.getOrDefault(keyClass, new HashMap<>());
 		relations.put(mappingName, new GraphRelationship(relationName, valueClass, edgeFieldName, defaultEdgeFieldFilterValue));
 		VERTEX_RELATIONS.put(keyClass, relations);
+	}
+
+	/**
+	 * Add a relation between entities through UUID.
+	 * 
+	 * @param <K>
+	 * @param <V>
+	 * @param keyClass
+	 * @param valueClass
+	 * @param mappingName
+	 * @param relationName
+	 */
+	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName) {
+		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, null, null);
 	}
 
 	/**
