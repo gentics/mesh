@@ -5,15 +5,15 @@ import java.util.List;
 import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.group.HibGroup;
 
 /**
  * Filters groups in GraphQl. This filter should be used whenever a list of groups is returned.
  */
-public class GroupFilter extends StartMainFilter<HibGroup> {
+public class GroupFilter extends EntityFilter<HibGroup> {
 
+	private static final ElementType ELEMENT = ElementType.GROUP;
 	private static final String NAME = "GroupFilter";
 
 	private static GroupFilter instance;
@@ -31,16 +31,21 @@ public class GroupFilter extends StartMainFilter<HibGroup> {
 	}
 
 	private GroupFilter() {
-		super(NAME, "Filters groups", Optional.of(ElementType.GROUP.name()));
+		super(NAME, "Filters groups", Optional.of(ELEMENT.name()));
 	}
 
 	@Override
 	protected List<FilterField<HibGroup, ?>> getFilters() {
-		String owner = ElementType.GROUP.name();
+		String owner = ELEMENT.name();
 		List<FilterField<HibGroup, ?>> filters = new ArrayList<>();
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner));
 		return filters;
+	}
+
+	@Override
+	protected ElementType getEntityType() {
+		return ELEMENT;
 	}
 }

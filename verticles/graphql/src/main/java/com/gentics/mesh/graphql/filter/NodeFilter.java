@@ -2,7 +2,6 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -11,12 +10,8 @@ import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
-import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.graphqlfilter.filter.operation.FilterQuery;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
-import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -30,10 +25,11 @@ import graphql.util.Pair;
 /**
  * Filters nodes.
  */
-public class NodeFilter extends StartMainFilter<NodeContent> {
+public class NodeFilter extends EntityFilter<NodeContent> {
 
+	private static final ElementType ELEMENT = ElementType.NODE;
 	private static final String NAME = "NodeFilter";
-	private static final String OWNER = ElementType.NODE.name();
+	private static final String OWNER = ELEMENT.name();
 
 	/**
 	 * Create a node filter for the given context.
@@ -87,7 +83,8 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 			NodeContent::getContainer);
 	}
 
-	public FilterOperation<?> createFilterOperation(Map<String, ?> filterArgument) throws UnformalizableQuery  {
-		return createFilterOperation(new FilterQuery<>(ElementType.NODE, "", filterArgument));
+	@Override
+	protected ElementType getEntityType() {
+		return ELEMENT;
 	}
 }

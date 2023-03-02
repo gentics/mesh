@@ -7,7 +7,6 @@ import java.util.Optional;
 import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
-import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -18,8 +17,9 @@ import graphql.schema.GraphQLTypeReference;
 /**
  * Filters users in GraphQl. This filter should be used whenever a list of users is returned.
  */
-public class UserFilter extends StartMainFilter<HibUser> {
+public class UserFilter extends EntityFilter<HibUser> {
 
+	private static final ElementType ELEMENT = ElementType.USER;
 	private static final String NAME = "UserFilter";
 
 	private static UserFilter instance;
@@ -37,7 +37,7 @@ public class UserFilter extends StartMainFilter<HibUser> {
 	}
 
 	private UserFilter(boolean byRef) {
-		super(NAME, "Filters users", Optional.of(ElementType.USER.name()));
+		super(NAME, "Filters users", Optional.of(ELEMENT.name()));
 		this.byRef = byRef;
 	}
 
@@ -61,7 +61,7 @@ public class UserFilter extends StartMainFilter<HibUser> {
 
 	@Override
 	protected List<FilterField<HibUser, ?>> getFilters() {
-		String owner = ElementType.USER.name();
+		String owner = ELEMENT.name();
 		List<FilterField<HibUser, ?>> filters = new ArrayList<>();
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner, new UserFilter(true)));
@@ -71,5 +71,10 @@ public class UserFilter extends StartMainFilter<HibUser> {
 		filters.add(new MappedFilter<>(owner, "emailAddress", "Filters by email address", StringFilter.filter(), HibUser::getEmailAddress));
 		filters.add(new MappedFilter<>(owner, "forcedPasswordChange", "Filters by forced password change flag", BooleanFilter.filter(), HibUser::isForcedPasswordChange));
 		return filters;
+	}
+
+	@Override
+	protected ElementType getEntityType() {
+		return ELEMENT;
 	}
 }

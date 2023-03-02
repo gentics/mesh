@@ -41,15 +41,10 @@ import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
  */
 public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> extends MeshVertex, HasPermissionsRoot, ElementResolver<HibBaseElement, T> {
-
-	public static final Logger log = LoggerFactory.getLogger(RootVertex.class);
 
 	@Override
 	default boolean checkReadPermissionBeforeApplyingPermissions() {
@@ -196,8 +191,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		if (t != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t
-				.getId(), id()));
+			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()));
 			if (edges.iterator().hasNext()) {
 				return t;
 			}
@@ -300,4 +294,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	default Optional<? extends Collection<Class<? extends T>>> getPersistenceClassVariations() {
 		return Optional.empty();
 	}
+
+	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter);
 }

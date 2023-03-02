@@ -384,7 +384,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .tags
 			newFieldDefinition().name("tags")
-				.argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.argument(createPagingArgs(false)).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					Tx tx = Tx.get();
 					TagDao tagDao = tx.tagDao();
@@ -414,7 +414,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("referencedBy")
 				.description("Loads nodes that reference this node.")
-				.argument(createPagingArgs())
+				.argument(createPagingArgs(false))
 				.argument(nodeReferenceFilter(context).createFilterArgument())
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))

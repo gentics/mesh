@@ -21,9 +21,6 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * A DAO for the entities, that has an one-to-many connection to other entities,
  * i.e. root-leaves dependencies. This DAO allows operation on leaf entities, when a root entity is given. 
@@ -34,8 +31,6 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <L> leaf entity type
  */
 public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends Dao<L> {
-
-	public static final Logger log = LoggerFactory.getLogger(RootDao.class);
 
 	/**
 	 * Return a of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item.

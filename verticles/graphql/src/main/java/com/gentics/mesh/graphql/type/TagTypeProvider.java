@@ -70,7 +70,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		tagType.field(newFieldDefinition().name("nodes").description("Nodes which are tagged with the tag.")
 				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
-				.argument(createPagingArgs())
+				.argument(createPagingArgs(false))
 				.argument(createLanguageTagArg(true))
 				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {

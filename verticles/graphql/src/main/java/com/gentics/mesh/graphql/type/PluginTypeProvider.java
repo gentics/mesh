@@ -78,7 +78,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 	}
 
 	public GraphQLFieldDefinition createPluginPageField() {
-		return newFieldDefinition().name("plugins").description("Load plugins").argument(createPagingArgs())
+		return newFieldDefinition().name("plugins").description("Load plugins").argument(createPagingArgs(false))
 			.type(new GraphQLTypeReference(PLUGIN_PAGE_TYPE_NAME)).dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
 				if (!gc.getUser().isAdmin()) {

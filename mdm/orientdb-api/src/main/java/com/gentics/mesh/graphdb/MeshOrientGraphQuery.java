@@ -232,7 +232,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		final List<Object> queryParams = manageFilters(text);
 
 		maybeCustomFilter.ifPresent(filter -> {
-			if (vertexClass != null) {
+			if (text.indexOf(QUERY_WHERE) > 0) {
 				text.append(QUERY_FILTER_AND);
 			} else {
 				text.append(QUERY_WHERE);

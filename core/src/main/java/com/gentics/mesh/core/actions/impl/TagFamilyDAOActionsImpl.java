@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
@@ -106,4 +107,9 @@ public class TagFamilyDAOActionsImpl implements TagFamilyDAOActions {
 		return tagFamilyDao.getETag(tagFamily, ac);
 	}
 
+	@Override
+	public Page<? extends HibTagFamily> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
+			FilterOperation<?> extraFilter) {
+		return ctx.tx().tagFamilyDao().findAll(ctx.ac(), pagingInfo, extraFilter);
+	}
 }

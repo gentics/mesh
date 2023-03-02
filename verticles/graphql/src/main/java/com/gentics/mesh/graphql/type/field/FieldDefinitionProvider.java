@@ -335,7 +335,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.name(schema.getName())
 			.description(schema.getLabel())
 			.type(new GraphQLList(type))
-			.argument(createPagingArgs());
+			.argument(createPagingArgs(false));
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists

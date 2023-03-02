@@ -72,7 +72,7 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 
 		// .tags
 		branchType
-			.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
+			.field(newFieldDefinition().name("tags").argument(createPagingArgs(false)).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
 				env) -> {
 				GraphQLContext gc = env.getContext();
 				HibBranch branch = env.getSource();

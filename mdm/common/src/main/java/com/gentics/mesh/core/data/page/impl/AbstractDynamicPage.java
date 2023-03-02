@@ -21,8 +21,8 @@ import com.gentics.mesh.util.ValidationUtil;
 public abstract class AbstractDynamicPage<T> implements Page<T> {
 
 	protected long pageNumber;
-
 	protected Long perPage;
+	protected boolean ignoreStreamPaging;
 
 	protected Map<String, SortOrder> sort;
 
@@ -46,9 +46,14 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 	protected Iterator<? extends T> visibleItems;
 
 	public AbstractDynamicPage(PagingParameters pagingInfo) {
+		this(pagingInfo, false);
+	}
+
+	public AbstractDynamicPage(PagingParameters pagingInfo, boolean ignoreStreamPaging) {
 		ValidationUtil.validate(pagingInfo);
 		this.pageNumber = pagingInfo.getPage();
 		this.perPage = pagingInfo.getPerPage();
+		this.ignoreStreamPaging = ignoreStreamPaging;
 
 		if (perPage == null) {
 			this.lowerBound = null;

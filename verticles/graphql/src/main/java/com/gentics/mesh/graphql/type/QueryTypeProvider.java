@@ -408,7 +408,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 		root.field(newFieldDefinition().name("nodes")
 			.description("Load a page of nodes via the regular nodes list or via a search.")
-			.argument(createPagingArgs())
+			.argument(createPagingArgs(true))
 			.argument(createQueryArg())
 			.argument(createUuidsArg("Node uuids"))
 			.argument(createLanguageTagArg(true))

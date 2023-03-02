@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
-import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
+import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FieldOperand;
 import com.gentics.mesh.ElementType;
@@ -27,8 +27,9 @@ import graphql.schema.GraphQLEnumValueDefinition;
 /**
  * Filter schemas.
  */
-public class SchemaFilter extends MainFilter<HibSchema> {
+public class SchemaFilter extends EntityFilter<HibSchema> {
 
+	private static final ElementType ELEMENT = ElementType.SCHEMA;
 	private static final String NAME = "SchemaFilter";
 
 	public static SchemaFilter filter(GraphQLContext context) {
@@ -38,7 +39,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 	private final GraphQLContext context;
 
 	private SchemaFilter(GraphQLContext context) {
-		super(NAME, "Filters schemas", Optional.of(ElementType.SCHEMA.name()));
+		super(NAME, "Filters schemas", Optional.of(ELEMENT.name()));
 		this.context = context;
 	}
 
@@ -67,10 +68,10 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 
 	@Override
 	protected List<FilterField<HibSchema, ?>> getFilters() {
-		String owner = ElementType.SCHEMA.name();
+		String owner = ELEMENT.name();
 		List<FilterField<HibSchema, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid), 
-				Optional.of(query -> Comparison.eq(new FieldOperand<>(ElementType.SCHEMA, "uuid", query.getMaybeJoins(), Optional.empty()), query.makeValueOperand(true)))));
+				Optional.of(query -> Comparison.eq(new FieldOperand<>(ELEMENT, "uuid", query.getMaybeJoins(), Optional.empty()), query.makeValueOperand(true)))));
 		filters.add(new MappedFilter<>(owner, "isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
@@ -80,5 +81,10 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 
 	private SchemaVersionModel getLatestVersion(HibSchema schema) {
 		return JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
+	}
+
+	@Override
+	protected ElementType getEntityType() {
+		return ELEMENT;
 	}
 }

@@ -13,8 +13,6 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 
-	private final boolean ignorePage;
-
 	/**
 	 * Creates a new page with a filter applied to the stream
 	 *
@@ -54,8 +52,7 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 	 *            Should the page number be ignored at paged data fetching? This may be useful, if the provided data has already been paged out by the database.
 	 */
 	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<? super T> filter, boolean ignorePage) {
-		super(pagingInfo);
-		this.ignorePage = ignorePage;
+		super(pagingInfo, ignorePage);
 		init(filter != null ? stream.filter(filter) : stream);
 	}
 
@@ -68,14 +65,14 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 			});
 
 		// Apply paging - skip to lower bounds
-		if (!ignorePage && lowerBound != null) {
+		if (!ignoreStreamPaging && lowerBound != null) {
 			stream = stream.skip(lowerBound);
 		}
 
 		visibleItems = stream.map(item -> {
 			// Only add elements to the list if those elements are part of selected the page
 			long elementsInPage = pageCounter.get();
-			if (lowerBound == null || elementsInPage < perPage) {
+			if (ignoreStreamPaging || lowerBound == null || elementsInPage < perPage) {
 				elementsOfPage.add(item);
 				pageCounter.incrementAndGet();
 			} else {
@@ -92,6 +89,6 @@ public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 	 * @return
 	 */
 	public boolean isPageIgnored() {
-		return ignorePage;
+		return ignoreStreamPaging;
 	}
 }

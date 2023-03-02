@@ -107,16 +107,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
-	@Override
-	protected String mapGraphQlFieldName(String gqlName) {
-		switch (gqlName) {
-		case "edited":
-			return "last_edited_timestamp";
-		default: 
-			return super.mapGraphQlFieldName(gqlName);
-		}
-	}
-
 	/**
 	 * Finds all nodes of a project.
 	 * 

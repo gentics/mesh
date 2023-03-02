@@ -16,8 +16,6 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.reactivex.Completable;
-
 /**
  * DAO for {@link HibJob}.
  */

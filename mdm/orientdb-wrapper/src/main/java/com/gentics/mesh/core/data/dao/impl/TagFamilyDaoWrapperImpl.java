@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -175,5 +176,11 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 		HibTagFamily tf = super.createPersisted(root, uuid);
 		tf.setProject(root);
 		return tf;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return new DynamicStreamPageImpl(boot.get().meshRoot().getTagFamilyRoot().findAllStream(ac, InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)), pagingInfo, true);
 	}
 }
