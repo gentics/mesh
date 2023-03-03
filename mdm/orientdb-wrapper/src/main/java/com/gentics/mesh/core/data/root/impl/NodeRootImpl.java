@@ -187,4 +187,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		permissionChanged = super.applyPermissions(authUser, batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
 	}
+
+	@Override
+	protected String mapGraphQlFieldNameForSorting(String gqlName) {
+		if ("edited".equals(gqlName)) {
+			return "fields.last_edited_timestamp";
+		}
+		return super.mapGraphQlFieldNameForSorting(gqlName);
+	}
 }

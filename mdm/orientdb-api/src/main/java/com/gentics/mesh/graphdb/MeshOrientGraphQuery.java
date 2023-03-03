@@ -267,7 +267,6 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(SKIP);
 			text.append(skip);
 		}
-
 		if (limit > 0 && limit < Integer.MAX_VALUE) {
 			text.append(LIMIT);
 			text.append(limit);
@@ -301,6 +300,25 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	private static final String sanitizeInput(String input) {
 		// Keep match opposite to FieldSchemaContainer.NAME_REGEX!
 		return input.replaceAll("[^.@a-zA-Z0-9_-]", StringUtils.EMPTY);
+	}
+
+	/**
+	 * Check if field name contains an edge reference, and escape it accordingly.
+	 * 
+	 * @param sb
+	 * @param fieldName
+	 * @return
+	 */
+	private static final StringBuilder escapeFieldNameIfRequired(StringBuilder sb, String fieldName) {
+		boolean escape = !fieldName.contains("(") && !fieldName.contains(")");
+		if (escape) {
+			sb.append("`");
+		}
+		sb.append(fieldName);
+		if (escape) {
+			sb.append("`");
+		}
+		return sb;
 	}
 	
 	/**
@@ -337,38 +355,38 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 					if (relation != null && !sanitizedPart.endsWith(pathPart)
 							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
 						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
-						if (useEdgeFilters 
-								&& relationMapping != null 
-								&& StringUtils.isNotBlank(relationMapping.getEdgeFieldName())) {
-							text.append(vertexLookupDir.name().toLowerCase());
-							text.append("E('");
-							text.append(relationMapping.getEdgeName());
-							text.append("')[");
-							text.append(relationMapping.getEdgeFieldName());
-							text.append("='");
-							text.append(relation.get(pathPart) != null ? relationMapping.getDefaultEdgeFieldFilterValue() : pathPart); 
-							text.append("'].");
-							text.append(vertexLookupDirOpposite.name().toLowerCase());
-							text.append("V()");
-						} else if (relationMapping != null && MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
-							//(select emailAddress from UserImpl where UserImpl.uuid = NodeImpl.outE('HAS_FIELD_CONTAINER')[edgeType='P'].inV()[0].`editor`)
-							text.append("(SELECT `");
-							text.append(pathParts.length > 1 ? pathParts[1] : pathPart); // TODO check this
-							text.append("` FROM ");
-							text.append(relationMapping.getRelatedVertexClass().getSimpleName());
-							text.append(" WHERE ");
-							text.append(relationMapping.getRelatedVertexClass().getSimpleName());
-							text.append(".uuid = ");
-							text.append(currentMapping.getSimpleName());
-							text.append(".`");
-							text.append(pathPart);
-							text.append("`)");
-							break;
+						if (useEdgeFilters && relationMapping != null) {
+							if (MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
+								text.append("(SELECT `");
+								text.append(pathParts.length > 1 ? pathParts[1] : pathPart); // TODO check this
+								text.append("` FROM ");
+								text.append(relationMapping.getRelatedVertexClass().getSimpleName());
+								text.append(" WHERE uuid = $parent.$current.");
+								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
+								text.append(")");
+								// For UUID-based relations we need no more iterations
+								break;
+							} else if (StringUtils.isBlank(relationMapping.getEdgeName())) {
+								text.append("(");
+								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
+								text.append(")");
+							} else {
+								text.append(vertexLookupDir.name().toLowerCase());
+								text.append("E('");
+								text.append(relationMapping.getEdgeName());
+								text.append("')[");
+								text.append(relationMapping.getEdgeFieldName());
+								text.append("='");
+								text.append(relation.get(pathPart) != null ? relationMapping.getDefaultEdgeFieldFilterValue() : pathPart); 
+								text.append("'].");
+								text.append(vertexLookupDirOpposite.name().toLowerCase());
+								text.append("V()");
+							}
 						} else {
 							text.append(vertexLookupDir.name().toLowerCase());
-							text.append("('");
-							text.append(relationMapping.getEdgeName());
-							text.append("')");
+							text.append("(");
+							escapeFieldNameIfRequired(text, relationMapping.getEdgeName());
+							text.append(")");
 						}
 						text.append("[0].");
 						currentMapping = relationMapping.getRelatedVertexClass();

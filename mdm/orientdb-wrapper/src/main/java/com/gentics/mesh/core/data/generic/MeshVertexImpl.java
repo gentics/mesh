@@ -242,20 +242,23 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		Map<String, SortOrder> items = sorting.getSort();
 		sorting.clearSort();
 		items.entrySet().stream().forEach(entry -> {
-			String key = entry.getKey();
+			String key = mapGraphQlFieldNameForSorting(entry.getKey());
 			String[] keyParts = key.split("\\.");
 			if (keyParts.length > 1) {
 				// We expect format of 'fields.<schema_name>'.<field_name>
-				if ("fields".equals(keyParts[0]) && keyParts.length > 2) {
-					HibSchema schema = Tx.get().schemaDao().findByName(keyParts[1]);
-					if (schema == null) {
-						throw new IllegalArgumentException("No schema found for sorting request: " + key);
+				if ("fields".equals(keyParts[0])) {
+					if (keyParts.length > 2) {
+						HibSchema schema = Tx.get().schemaDao().findByName(keyParts[1]);
+						if (schema == null) {
+							throw new IllegalArgumentException("No schema found for sorting request: " + key);
+						}
+						FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[2]);
+						if (field == null) {
+							throw new IllegalArgumentException("No field found for sorting request: " + key);
+						}
+						key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
 					}
-					FieldSchema field = schema.getLatestVersion().getSchema().getFieldsAsMap().get(keyParts[2]);
-					if (field == null) {
-						throw new IllegalArgumentException("No field found for sorting request: " + key);
-					}
-					key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
+					// else process as non-schema content field
 				} else if ("creator".equals(keyParts[0]) || "editor".equals(keyParts[0])) {
 					// pass it
 				} else {
@@ -348,6 +351,16 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 */
 	protected String mapGraphQlFieldName(String gqlName) {
 		return gqlName;
+	}
+
+	/**
+	 * Override this method to map a GraphQL entity field name to its OrientDB counterpart.
+	 * 
+	 * @param gqlName
+	 * @return
+	 */
+	protected String mapGraphQlFieldNameForSorting(String gqlName) {
+		return mapGraphQlFieldName(gqlName);
 	}
 
 	/**

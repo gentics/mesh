@@ -35,7 +35,7 @@ public class GraphRelationships {
 	 * @param relationName
 	 */
 	public static <K extends MeshVertex, V extends MeshVertex> void addRelation(Class<K> keyClass, Class<V> valueClass, String mappingName) {
-		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, null, null);
+		addRelation(keyClass, valueClass, mappingName, MeshVertex.UUID_KEY, mappingName, null);
 	}
 
 	/**
