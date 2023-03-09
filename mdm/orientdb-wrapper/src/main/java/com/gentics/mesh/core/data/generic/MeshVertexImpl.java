@@ -354,7 +354,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	/**
-	 * Override this method to map a GraphQL entity field name to its OrientDB counterpart.
+	 * Override this method to map a GraphQL entity field name to its OrientDB counterpart, specially prepared for a sorting. 
+	 * Equals to {@link MeshVertexImpl#mapGraphQlFieldName(String)} most of the time.
 	 * 
 	 * @param gqlName
 	 * @return
