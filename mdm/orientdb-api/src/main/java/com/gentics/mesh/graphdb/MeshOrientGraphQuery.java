@@ -347,11 +347,9 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 				String sanitizedPart = sanitizeInput(sortParts[0]);
 				String[] pathParts = sanitizedPart.split("\\.");
 				text.append(", ");
-				if (isEdgeRequest) {
-					text.append(relationDirection.name().toLowerCase() + "V().");
-				}
-				for (String pathPart : pathParts) {
-					Map<String, GraphRelationship> relation = GraphRelationships.findRelation(currentMapping);
+				Map<String, GraphRelationship> relation = GraphRelationships.findRelation(currentMapping);
+				for (int i = 0; i < pathParts.length; i++) {
+					String pathPart = pathParts[i];
 					if (relation != null && !sanitizedPart.endsWith(pathPart)
 							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
 						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
@@ -362,15 +360,27 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 								text.append("` FROM ");
 								text.append(relationMapping.getRelatedVertexClass().getSimpleName());
 								text.append(" WHERE uuid = $parent.$current.");
+								if (i < 1 && isEdgeRequest) {
+									text.append(relationDirection.name().toLowerCase());
+									text.append("V().");
+								}
 								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
 								text.append(")");
 								// For UUID-based relations we need no more iterations
 								break;
 							} else if (StringUtils.isBlank(relationMapping.getEdgeName())) {
+								if (i < 1 && isEdgeRequest) {
+									text.append(relationDirection.name().toLowerCase());
+									text.append("V().");
+								}
 								text.append("(");
 								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
 								text.append(")");
 							} else {
+								if (i < 1 && isEdgeRequest) {
+									text.append(relationDirection.name().toLowerCase());
+									text.append("V().");
+								}
 								text.append(vertexLookupDir.name().toLowerCase());
 								text.append("E('");
 								text.append(relationMapping.getEdgeName());
@@ -383,6 +393,10 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 								text.append("V()");
 							}
 						} else {
+							if (i < 1 && isEdgeRequest) {
+								text.append(relationDirection.name().toLowerCase());
+								text.append("V().");
+							}
 							text.append(vertexLookupDir.name().toLowerCase());
 							text.append("(");
 							escapeFieldNameIfRequired(text, relationMapping.getEdgeName());
@@ -391,6 +405,10 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 						text.append("[0].");
 						currentMapping = relationMapping.getRelatedVertexClass();
 					} else {
+						if (i < 1 && isEdgeRequest) {
+							text.append(relationDirection.name().toLowerCase());
+							text.append("V().");
+						}
 						text.append("`");
 						text.append(pathPart);
 						text.append("`");
