@@ -334,7 +334,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					.vertexClass((Class<? extends MeshVertex>) classOfVertex);
 			query.hasAll(fieldNames, fieldValues);
 			query.filter(maybeFilter);
-			if (paging.getPerPage() != null) {
+			if (PersistingRootDao.shouldPage(paging)) {
 				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
 				query.limit(paging.getPerPage().intValue());
 			}

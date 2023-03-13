@@ -277,7 +277,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	protected String parseFilter(FilterOperation<?> filter) {
+	public String parseFilter(FilterOperation<?> filter) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" ( ");
 		String parsedFilter = filter.maybeCombination()
@@ -349,7 +349,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 * @param gqlName
 	 * @return
 	 */
-	protected String mapGraphQlFieldName(String gqlName) {
+	public String mapGraphQlFieldName(String gqlName) {
 		return gqlName;
 	}
 
@@ -360,7 +360,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 * @param gqlName
 	 * @return
 	 */
-	protected String mapGraphQlFieldNameForSorting(String gqlName) {
+	public String mapGraphQlFieldNameForSorting(String gqlName) {
 		return mapGraphQlFieldName(gqlName);
 	}
 
@@ -374,7 +374,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	protected Pair<Class, String> joinIntoPair(JoinPart join) {
+	public Pair<Class, String> joinIntoPair(JoinPart join) {
 		return ElementType.parse(join.getTable()).map(etype -> {
 			Class clss;
 			switch (etype) {

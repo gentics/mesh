@@ -102,7 +102,22 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type);
+	default Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+		return getChildren(nodes, ac, branchUuid, languageTags, type, null, Optional.empty());
+	}
+
+	/**
+	 * Return all content of the provided type using language fallback for each node in the given branch.
+	 * This will also check for permissions.
+	 * @param nodes
+	 * @param ac
+	 * @param branchUuid
+	 * @param languageTags
+	 * @param type
+	 * @param maybeFilter an optional filter to apply
+	 * @return
+	 */
+	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.

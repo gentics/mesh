@@ -25,6 +25,7 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -241,15 +243,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<HibNode> getChildren(String branchUuid) {
-		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid), NodeImpl.class));
+	public Result<HibNode> getChildren(String branchUuid, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(this::parseFilter)), NodeImpl.class));
 	}
 
-	private Iterator<Vertex> getUnframedChildren(String branchUuid) {
+	private Iterator<Vertex> getUnframedChildren(String branchUuid, PagingParameters sorting, Optional<String> maybeFilter) {
 		return db().getVertices(
 			NodeImpl.class,
 			new String[] { BRANCH_PARENTS_KEY_PROPERTY },
-			new Object[] { branchParentEntry(branchUuid, getUuid()).encode() });
+			new Object[] { branchParentEntry(branchUuid, getUuid()).encode() },
+			sorting, maybeFilter);
 	}
 
 	@Override
@@ -257,7 +260,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		HibUser user = ac.getUser();
 		Tx tx = GraphDBTx.getGraphTx();
 		UserDao userDao = tx.userDao();
-		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid()))
+		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid(), null, Optional.empty()))
 			.filter(node -> userDao.hasPermissionForId(user, node.getId(), perm))
 			.map(node -> graph.frameElementExplicit(node, NodeImpl.class));
 	}

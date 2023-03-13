@@ -78,7 +78,7 @@ public abstract class AbstractTypeProvider {
 	public static final String NATIVE_FILTER_NAME = "NativeFilter";
 	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
-	private final MeshOptions options;
+	protected final MeshOptions options;
 
 	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
@@ -452,8 +452,7 @@ public abstract class AbstractTypeProvider {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
 			.description(description)
-			.argument(createPagingArgs(true))
-			.argument(createNativeFilterArg())
+			.argument(createPagingArgs(filterProvider != null))
 			.argument(createQueryArg()).type(new GraphQLTypeReference(pageTypeName))
 			.dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
@@ -470,7 +469,7 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					if (filterProvider != null && filter != null) {
-						Pair<Predicate<T>, Optional<FilterOperation<?>>> filters = parseFilters(env, filterProvider);
+						Pair<Predicate<T>, Optional<FilterOperation<?>>> filters = parseFilters(env, filterProvider, options.getGraphQLOptions().getNativeQueryFiltering());
 						return filters.getRight().map(filter1 -> actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filter1))
 								.orElse((Page) actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filters.getLeft()));
 					} else {
@@ -480,7 +479,10 @@ public abstract class AbstractTypeProvider {
 			});
 
 		if (filterProvider != null) {
-			fieldDefBuilder.argument(filterProvider.createFilterArgument()).argument(filterProvider.createSortArgument());
+			fieldDefBuilder
+				.argument(createNativeFilterArg())
+				.argument(filterProvider.createFilterArgument())
+				.argument(filterProvider.createSortArgument());
 		}
 		return fieldDefBuilder.build();
 	}
@@ -500,13 +502,13 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher<?> dataFetcher,
 		String referenceTypeName) {
-		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();
+		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName, false).build();
 	}
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
-		DataFetcher<?> dataFetcher, String pageTypeName) {
+		DataFetcher<?> dataFetcher, String pageTypeName, boolean deprecateSorting) {
 		return newFieldDefinition().name(name).description(description)
-			.argument(createPagingArgs(false))
+			.argument(createPagingArgs(deprecateSorting))
 			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference(pageTypeName))
 			.dataFetcher(dataFetcher);
@@ -634,7 +636,7 @@ public abstract class AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 
 		NodeFilter nodeFilter = NodeFilter.filter(gc);
-		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
+		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter, options.getGraphQLOptions().getNativeQueryFiltering());
 
 		PagingParameters pagingInfo = getPagingInfo(env);
 		return applyNodeFilter((filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) 
@@ -643,14 +645,13 @@ public abstract class AbstractTypeProvider {
 			pagingInfo, filters.getLeft(), filters.getRight().isPresent() && pagingInfo.getPerPage() != null);
 	}
 
-	protected <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
+	public static <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider, NativeQueryFiltering nativeQueryFiltering) {
 		GraphQLContext gc = env.getContext();
 		Map<String, ?> filterArgument = env.getArgument("filter");
 		Predicate<T> javaFilter = null;
 		Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
 
 		if (filterArgument != null) {
-			NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
 			NativeFilter envNativeFilter = env.getArgumentOrDefault("nativeFilter", NativeFilter.IF_POSSIBLE);
 			switch (nativeQueryFiltering) {
 			case ON_DEMAND:

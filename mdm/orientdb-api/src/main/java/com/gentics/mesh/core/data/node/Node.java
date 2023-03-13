@@ -2,8 +2,10 @@ package com.gentics.mesh.core.data.node;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -46,7 +48,11 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 
 	Result<HibNode> getChildren();
 
-	Result<HibNode> getChildren(String branchUuid);
+	default Result<HibNode> getChildren(String branchUuid) {
+		return getChildren(branchUuid, null, Optional.empty());
+	}
+
+	Result<HibNode> getChildren(String branchUuid, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.

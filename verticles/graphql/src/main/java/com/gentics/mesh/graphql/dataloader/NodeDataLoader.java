@@ -10,11 +10,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.dataloader.BatchLoaderWithContext;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -25,9 +30,9 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
+import com.gentics.mesh.parameter.PagingParameters;
+
 import io.vertx.core.Promise;
-import org.apache.commons.lang3.tuple.Pair;
-import org.dataloader.BatchLoaderWithContext;
 
 /**
  * Implements batching and caching for nodes using the data loader pattern
@@ -81,7 +86,7 @@ public class NodeDataLoader {
 			Set<HibNode> keysForPartition = new HashSet<>(keysByContext.getValue());
 			List<String> languageTags = keysByContext.getKey().getLanguageTags();
 			ContainerType type = keysByContext.getKey().getType();
-			childrenByNode.putAll(tx.nodeDao().getChildren(keysForPartition, context, branchUuid, languageTags, type));
+			childrenByNode.putAll(tx.nodeDao().getChildren(keysForPartition, context, branchUuid, languageTags, type, keysByContext.getKey().getPaging(), keysByContext.getKey().getMaybeNativeFilter()));
 		});
 
 		List<List<NodeContent>> results = new ArrayList<>();
@@ -190,16 +195,23 @@ public class NodeDataLoader {
 	 */
 	public static class Context {
 		private ContainerType type;
+		
 		private String languageTags = "";
+
+		private Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
+
+		private PagingParameters paging;
 
 		public Context(ContainerType type) {
 			this.type = type;
 		}
 
-		public Context(ContainerType type, List<String> languageTags) {
+		public Context(ContainerType type, List<String> languageTags, Optional<FilterOperation<?>> maybeNativeFilter, PagingParameters pagingInfo) {
 			this.type = type;
 			// we are using linked hashset to deduplicate languageTags while still preserving order
 			this.languageTags = String.join(",", new LinkedHashSet<>(languageTags));
+			this.maybeNativeFilter = maybeNativeFilter;
+			this.paging = pagingInfo;
 		}
 
 		public ContainerType getType() {
@@ -225,6 +237,14 @@ public class NodeDataLoader {
 		@Override
 		public int hashCode() {
 			return Objects.hash(type, languageTags);
+		}
+
+		public Optional<FilterOperation<?>> getMaybeNativeFilter() {
+			return maybeNativeFilter;
+		}
+
+		public PagingParameters getPaging() {
+			return paging;
 		}
 	}
 }

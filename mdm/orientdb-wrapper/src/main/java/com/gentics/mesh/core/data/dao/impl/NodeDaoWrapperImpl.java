@@ -144,17 +144,17 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
 		return nodes.stream()
-				.map(node -> Pair.of(node, getContentFromNode(Tx.get(), user, node, branchUuid, languageTags, type)))
+				.map(node -> Pair.of(node, getContentFromNode(Tx.get(), user, node, branchUuid, languageTags, type, sorting, maybeFilter)))
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type) {
+	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		UserDao userDao = tx.userDao();
 		ContentDao contentDao = tx.contentDao();
-		return toGraph(sourceNode).getChildren(branchUuid)
+		return toGraph(sourceNode).getChildren(branchUuid, sorting, maybeFilter)
 				.stream()
 				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
 				.map(node -> {

@@ -7,11 +7,16 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -100,6 +105,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .nodes
+		NodeFilter nodeFilter = NodeFilter.filter(context);
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 				Tx tx = Tx.get();
@@ -109,11 +115,13 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
 				SchemaDao schemaDao = tx.schemaDao();
+				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter, options.getGraphQLOptions().getNativeQueryFiltering());
 				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type);
 
 				return applyNodeFilter(env, nodes, false);
-			}, NODE_PAGE_TYPE_NAME)
-				.argument(NodeFilter.filter(context).createFilterArgument())
+			}, NODE_PAGE_TYPE_NAME, true)
+				.argument(nodeFilter.createFilterArgument())
+				.argument(createNativeFilterArg())
 				.argument(createNativeFilterArg())
 				.argument(createLanguageTagArg(true)));
 

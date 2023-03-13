@@ -160,7 +160,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	protected String mapGraphQlFieldName(String gqlName) {
+	public String mapGraphQlFieldName(String gqlName) {
 		switch (gqlName) {
 		case "edited":
 			return "last_edited_timestamp";
