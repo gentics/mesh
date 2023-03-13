@@ -9,6 +9,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.SortingParameters;
 
 /**
@@ -79,7 +80,7 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	}
 
 	/**
-	 * Check if the REST API sort params request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
+	 * Check if the sort params map request sorting. Used for choosing of picking the sort-enabled or unsorted (performant) data fetcher.
 	 * 
 	 * @param sorting
 	 * @return
@@ -96,5 +97,26 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	 */
 	static boolean shouldSort(SortingParameters sorting) {
 		return sorting == null ? false : shouldSort(sorting.getSort());
+	}
+
+	/**
+	 * Check if REST API paging params actually request pagination.
+	 * 
+	 * @param paging
+	 * @return
+	 */
+	static boolean shouldPage(PagingParameters paging) {
+		return paging == null ? false : shouldPage(paging.getPerPage(), paging.getPage());
+	}
+
+	/**
+	 * Check if paging params actually request pagination.
+	 * 
+	 * @param perPage
+	 * @param page
+	 * @return
+	 */
+	static boolean shouldPage(Long perPage, int page) {
+		return perPage != null && perPage > 0 && page > 0;
 	}
 }

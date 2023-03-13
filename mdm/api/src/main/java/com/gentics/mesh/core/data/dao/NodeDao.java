@@ -425,7 +425,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
-		return findAllContent(project, ac, languageTags, type, null, null);
+		return findAllContent(project, ac, languageTags, type, null, Optional.empty());
 	}
 
 	/**

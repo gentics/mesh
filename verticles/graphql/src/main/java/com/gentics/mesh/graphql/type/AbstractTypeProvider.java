@@ -636,7 +636,10 @@ public abstract class AbstractTypeProvider {
 		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
-		return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()), pagingInfo, filters.getLeft(), filters.getRight().isPresent() && pagingInfo.getPerPage() != null);
+		return applyNodeFilter(filters.getRight()
+				.map(nf -> nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()))
+				.orElseGet(() -> nodeDao.findAllContent(project, gc, languageTags, type)), 
+			pagingInfo, filters.getLeft(), filters.getRight().isPresent() && pagingInfo.getPerPage() != null);
 	}
 
 	protected <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
