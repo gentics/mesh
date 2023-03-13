@@ -4,6 +4,7 @@ import java.net.ServerSocket;
 import java.util.function.Consumer;
 
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.etc.config.search.MappingMode;
 
 public enum MeshOptionChanger {
@@ -32,6 +33,10 @@ public enum MeshOptionChanger {
 		}
 	}), BATCH_MIGRATION(options -> {
 		options.getContentOptions().setBatchSize(2);
+	}), GRAPHQL_FORCE_NATIVE_FILTER(options -> {
+		options.getGraphQLOptions().setNativeQueryFiltering(NativeQueryFiltering.ALWAYS);
+	}), GRAPHQL_FORCE_JAVA_FILTER(options -> {
+		options.getGraphQLOptions().setNativeQueryFiltering(NativeQueryFiltering.OFF);
 	});
 
 	public final Consumer<MeshOptions> changer;
