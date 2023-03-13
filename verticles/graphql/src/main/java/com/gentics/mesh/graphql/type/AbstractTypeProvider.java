@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -636,9 +637,9 @@ public abstract class AbstractTypeProvider {
 		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
-		return applyNodeFilter(filters.getRight()
-				.map(nf -> nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()))
-				.orElseGet(() -> nodeDao.findAllContent(project, gc, languageTags, type)), 
+		return applyNodeFilter((filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) 
+				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
+				: nodeDao.findAllContent(project, gc, languageTags, type), 
 			pagingInfo, filters.getLeft(), filters.getRight().isPresent() && pagingInfo.getPerPage() != null);
 	}
 
