@@ -61,7 +61,7 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 		filters.add(new MappedFilter<>(OWNER, "edited", "Filters by node update timestamp", DateFilter.filter(),
 			content -> content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", new JoinPart("CONTENT", "edited"))));
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
-			content -> content.getContainer().getEditor(), Pair.pair("content", new JoinPart("CONTENT", "editor"))));
+			content -> content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
 
 		return filters;
