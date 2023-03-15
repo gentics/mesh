@@ -154,6 +154,12 @@ stage("Setup Build Environment") {
 
 			stage("Maven Build") {
 				if (Boolean.valueOf(params.runMavenBuild)) {
+					def mvnExtraArgs = ""
+					
+					if (Boolean.valueOf(params.runDeployTesting)) {
+						mvnExtraArgs += "-Dmaven.test.skip"
+					}
+
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							echo "Setup of GPG"
@@ -163,7 +169,7 @@ stage("Setup Build Environment") {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
 						} else {
-							sh "mvn -B -DskipTests clean package"
+							sh "mvn -B -DskipTests " + mvnExtraArgs + " clean package"
 						}
 					}
 				} else {
