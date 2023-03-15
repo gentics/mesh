@@ -284,6 +284,8 @@ stage("Setup Build Environment") {
 				}
 			}
 		} catch (Exception e) {
+			// Temporary
+			sh 'cat /home/jenkins/agent/workspace/mesh_ci-dev-test1/tests/tests-core/target/test-plugins/test-plugins/build.log'
 			if (currentBuild.result == null || currentBuild.currentResult == "STABLE") {
 				currentBuild.result = 'FAILURE'
 				currentBuild.currentResult = 'FAILURE'
