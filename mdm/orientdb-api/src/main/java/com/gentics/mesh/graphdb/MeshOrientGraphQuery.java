@@ -404,6 +404,9 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 						}
 						text.append("[0].");
 						currentMapping = relationMapping.getRelatedVertexClass();
+					} else if (i == 1 && "fields".equals(pathParts[0]) && pathParts.length > 2) {
+						// skip the schema name
+						continue;
 					} else {
 						if (i < 1 && isEdgeRequest) {
 							text.append(relationDirection.name().toLowerCase());

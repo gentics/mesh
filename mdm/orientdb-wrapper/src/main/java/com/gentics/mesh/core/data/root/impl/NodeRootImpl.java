@@ -190,8 +190,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public String mapGraphQlFieldNameForSorting(String gqlName) {
-		if ("edited".equals(gqlName)) {
-			return "fields.last_edited_timestamp";
+		switch (gqlName) {
+		case "edited": return "fields.last_edited_timestamp";
+		case "editor": return "fields.editor";
 		}
 		return super.mapGraphQlFieldNameForSorting(gqlName);
 	}

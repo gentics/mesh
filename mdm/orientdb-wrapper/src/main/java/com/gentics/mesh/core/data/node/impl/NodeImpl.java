@@ -414,4 +414,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
 		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
 	}
+
+	@Override
+	public String mapGraphQlFieldName(String gqlName) {
+		switch (gqlName) {
+		case "editor": return "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`editor`";
+		}
+		return super.mapGraphQlFieldName(gqlName);
+	}
 }

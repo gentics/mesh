@@ -33,4 +33,14 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 	protected <T> boolean shouldUpdate(T restValue, T graphValue) {
 		return restValue != null && !restValue.equals(graphValue);
 	}
+
+	@Override
+	public String mapGraphQlFieldName(String gqlName) {
+		switch (gqlName) {
+		case "edited": return "last_edited_timestamp";
+		case "created":	return "creation_timestamp";
+		default: 
+			return super.mapGraphQlFieldName(gqlName);
+		}
+	}
 }

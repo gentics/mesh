@@ -281,7 +281,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		if (maybeFilter.isPresent()) {
 			ContentDao contentDao = Tx.get().contentDao();
 			// TODO use an actual version, not the schema
-			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schema", Optional.empty(), Optional.of("schema")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getId(), false));
+			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schema", Optional.empty(), Optional.of("schema")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getUuid(), true));
 			FilterOperation allFilter = maybeFilter.map(filter -> (FilterOperation) Combiner.and(Arrays.asList(schemaVersionFilter, filter))).orElse(schemaVersionFilter);
 			return findAllStream(Tx.get().getProject(ac), ac, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, Optional.of(allFilter)).map(node -> {
 				HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);

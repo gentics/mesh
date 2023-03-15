@@ -162,13 +162,10 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public String mapGraphQlFieldName(String gqlName) {
 		switch (gqlName) {
-		case "edited":
-			return "last_edited_timestamp";
-		case "created":
-			return "creation_timestamp";
-		default: 
-			return super.mapGraphQlFieldName(gqlName);
+		case "edited": return "last_edited_timestamp";
+		case "created":	return "creation_timestamp";
 		}
+		return super.mapGraphQlFieldName(gqlName);
 	}
 
 	/**
