@@ -209,11 +209,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac,
+			List<String> languageTags, ContainerType type, PagingParameters paging,	Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
 		SchemaDao schemaDao = tx.schemaDao();
 		ContentDao contentDao = tx.contentDao();
-		return schemaDao.findNodes(schemaVersion, tx.getBranch(ac).getUuid(),
+		Stream<NodeContent> contentStream = schemaDao.findNodes(schemaVersion, tx.getBranch(ac).getUuid(),
 				ac.getUser(),
 				ContainerType.forVersion(ac.getVersioningParameters().getVersion())).stream()
 				.map(node -> {
@@ -221,6 +222,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 					return new NodeContent(node, container, languageTags, type);
 				})
 				.filter(content -> content.getContainer() != null);
+// The stream is most probably pages elsewhere 
+//		if (PersistingRootDao.shouldPage(paging)) {
+//			contentStream.skip(paging.getActualPage() * paging.getPage()).limit(paging.getActualPage());
+//		}
+		return contentStream;
 	}
 
 	/**

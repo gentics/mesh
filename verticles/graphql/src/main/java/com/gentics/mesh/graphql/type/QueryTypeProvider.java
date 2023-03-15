@@ -254,7 +254,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			.filter(content -> content.getContainer() != null)
 			.filter(content1 -> gc.hasReadPerm(content1, type)).collect(Collectors.toList());
 
-		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream(), false)).errors(errors).build();
+		return DataFetcherResult.<Page<NodeContent>>newResult().data(applyNodeFilter(env, contents.stream(), false, false)).errors(errors).build();
 	}
 
 	/**

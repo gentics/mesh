@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -367,13 +368,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
 				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter, options.getGraphQLOptions().getNativeQueryFiltering());
-
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags, filters.getValue(), getPagingInfo(env));
+				PagingParameters pagingInfo = getPagingInfo(env);
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags, filters.getValue(), pagingInfo);
 				DataLoader<HibNode, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
 				CompletableFuture<List<NodeContent>> future = childrenLoader.load(content.getNode(), dataLoaderContext);
 
 				return future.thenApply(contents -> {
-					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), false);
+					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 				});
 			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))

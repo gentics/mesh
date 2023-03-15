@@ -642,7 +642,7 @@ public abstract class AbstractTypeProvider {
 		return applyNodeFilter((filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) 
 				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
 				: nodeDao.findAllContent(project, gc, languageTags, type), 
-			pagingInfo, filters.getLeft(), filters.getRight().isPresent() && pagingInfo.getPerPage() != null);
+			pagingInfo, filters.getLeft(), filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo));
 	}
 
 	public static <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider, NativeQueryFiltering nativeQueryFiltering) {
@@ -711,8 +711,8 @@ public abstract class AbstractTypeProvider {
 	 * @param ignorePaging
 	 * @return
 	 */
-	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging) {
-		Map<String, ?> filterArgument = env.getArgument("filter");
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging, boolean ignoreFiltering) {
+		Map<String, ?> filterArgument = ignoreFiltering ? null : env.getArgument("filter");
 		GraphQLContext gc = env.getContext();
 		Predicate<NodeContent> predicate = null;
 

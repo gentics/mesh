@@ -465,7 +465,22 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type);
+	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+		return findAllContent(schemaVersion, ac, languageTags, type, null, Optional.empty());
+	}
+
+	/**
+	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type. Optionally, paging and filtering are applied
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions
+	 * @param schemaVersion
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param paging
+	 * @param maybeFilter
+	 * @return
+	 */
+	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Stream the hierarchical patch of the node.

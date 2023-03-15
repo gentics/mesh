@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +21,12 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.filter.operation.Combiner;
+import com.gentics.graphqlfilter.filter.operation.Comparison;
+import com.gentics.graphqlfilter.filter.operation.FieldOperand;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
+import com.gentics.mesh.ElementType;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -39,6 +45,7 @@ import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -265,5 +272,23 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 				setParentNode(node, newBranch.getUuid(), oldParent);
 			}
 		});
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac,
+			List<String> languageTags, ContainerType type, PagingParameters paging,	Optional<FilterOperation<?>> maybeFilter) {
+		if (maybeFilter.isPresent()) {
+			ContentDao contentDao = Tx.get().contentDao();
+			// TODO use an actual version, not the schema
+			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schema", Optional.empty(), Optional.of("schema")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getId(), false));
+			FilterOperation allFilter = maybeFilter.map(filter -> (FilterOperation) Combiner.and(Arrays.asList(schemaVersionFilter, filter))).orElse(schemaVersionFilter);
+			return findAllStream(Tx.get().getProject(ac), ac, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, Optional.of(allFilter)).map(node -> {
+				HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
+				return new NodeContent(node, container, languageTags, type);
+			}).filter(content -> content.getContainer() != null);
+		} else {
+			return NodeDaoWrapper.super.findAllContent(schemaVersion, ac, languageTags, type, paging, maybeFilter);
+		}
 	}
 }

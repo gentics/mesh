@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -33,6 +34,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.PagingParameters;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -114,14 +116,15 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
+				PagingParameters pagingInfo = getPagingInfo(env);
 				SchemaDao schemaDao = tx.schemaDao();
 				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter, options.getGraphQLOptions().getNativeQueryFiltering());
-				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type);
+				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type, pagingInfo, filters.getRight());
 
-				return applyNodeFilter(env, nodes, false);
+				return applyNodeFilter(env, nodes, filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(nodeFilter.createFilterArgument())
-				.argument(createNativeFilterArg())
+				.argument(nodeFilter.createSortArgument())
 				.argument(createNativeFilterArg())
 				.argument(createLanguageTagArg(true)));
 
