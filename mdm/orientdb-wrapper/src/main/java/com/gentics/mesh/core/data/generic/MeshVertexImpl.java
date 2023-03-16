@@ -288,7 +288,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 				FilterOperand<?> right = filters.second;
 
 				// Left comparison operand
-				Object[] leftValue = new Object[] {joinIntoPair(new JoinPart(left.maybeGetOwner().orElse(StringUtils.EMPTY), String.valueOf(left.getValue()))).getValue()};
+				Pair<Class, String> leftJoin = joinIntoPair(new JoinPart(left.maybeGetOwner().orElse(StringUtils.EMPTY), String.valueOf(left.getValue())));
+				Object[] leftValue = new Object[] {leftJoin != null ? leftJoin.getValue() : String.valueOf(getFilterOperandValue(left))};
 
 				String qlLeft = left.getJoins().entrySet().stream().map(join -> {
 					Pair<Class, String> src = joinIntoPair(join.getKey());
@@ -329,18 +330,22 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 				Object qlRight = right.getJoins().entrySet().stream().findAny().map(unsupported -> {
 					throw new IllegalArgumentException("Joins for filter RVALUE are currently unsupported: " + unsupported);
 				}).orElseGet(() -> {
-					// Special case for date/time values
-					if (right.getValue() instanceof Instant) {
-						return Instant.class.cast(right.getValue()).toEpochMilli();
-					} else {
-						return right.toSql();
-					}
+					return getFilterOperandValue(right);
 				});
 				return qlLeft + leftValue[0] + " " + filter.getOperator() + " " + qlRight + (StringUtils.isNotBlank(qlLeft) ? " ) " : "");
 			}).orElseThrow(() -> new IllegalStateException("Filter " + filter.getOperator() + " is neither combination nor comparison.")));
 		sb.append(parsedFilter);
 		sb.append(" ) ");
 		return sb.toString();
+	}
+
+	private Object getFilterOperandValue(FilterOperand<?> op) {
+		// Special case for date/time values
+		if (op.getValue() instanceof Instant) {
+			return Instant.class.cast(op.getValue()).toEpochMilli();
+		} else {
+			return op.toSql();
+		}
 	}
 
 	/**

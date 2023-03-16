@@ -86,7 +86,7 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	 * @return
 	 */
 	static boolean shouldSort(Map<String, SortOrder> sorting) {
-		return sorting == null ? false : sorting.entrySet().stream().allMatch(e -> shouldSort(e.getKey(), e.getValue()));
+		return (sorting == null || sorting.size() < 1) ? false : sorting.entrySet().stream().allMatch(e -> shouldSort(e.getKey(), e.getValue()));
 	}
 
 	/**

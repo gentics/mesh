@@ -367,14 +367,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
-				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter, options.getGraphQLOptions().getNativeQueryFiltering());
+				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 				PagingParameters pagingInfo = getPagingInfo(env);
 				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags, filters.getValue(), pagingInfo);
 				DataLoader<HibNode, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
 				CompletableFuture<List<NodeContent>> future = childrenLoader.load(content.getNode(), dataLoaderContext);
 
 				return future.thenApply(contents -> {
-					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
+					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), 
+							(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 				});
 			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))

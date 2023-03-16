@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.Sorting;
+import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.action.DAOActions;
@@ -469,7 +470,7 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					if (filterProvider != null && filter != null) {
-						Pair<Predicate<T>, Optional<FilterOperation<?>>> filters = parseFilters(env, filterProvider, options.getGraphQLOptions().getNativeQueryFiltering());
+						Pair<Predicate<T>, Optional<FilterOperation<?>>> filters = parseFilters(env, filterProvider);
 						return filters.getRight().map(filter1 -> actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filter1))
 								.orElse((Page) actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filters.getLeft()));
 					} else {
@@ -636,23 +637,24 @@ public abstract class AbstractTypeProvider {
 		ContainerType type = getNodeVersion(env);
 
 		NodeFilter nodeFilter = NodeFilter.filter(gc);
-		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter, options.getGraphQLOptions().getNativeQueryFiltering());
+		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
 		return applyNodeFilter((filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) 
 				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
 				: nodeDao.findAllContent(project, gc, languageTags, type), 
-			pagingInfo, filters.getLeft(), filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo));
+			pagingInfo, filters.getLeft(), (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo));
 	}
 
-	public static <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider, NativeQueryFiltering nativeQueryFiltering) {
+	public <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
 		GraphQLContext gc = env.getContext();
 		Map<String, ?> filterArgument = env.getArgument("filter");
+		NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
 		Predicate<T> javaFilter = null;
 		Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
 
+		NativeFilter envNativeFilter = env.getArgumentOrDefault("nativeFilter", NativeFilter.IF_POSSIBLE);
 		if (filterArgument != null) {
-			NativeFilter envNativeFilter = env.getArgumentOrDefault("nativeFilter", NativeFilter.IF_POSSIBLE);
 			switch (nativeQueryFiltering) {
 			case ON_DEMAND:
 				if (NativeFilter.NEVER.equals(envNativeFilter)) {
@@ -672,7 +674,8 @@ public abstract class AbstractTypeProvider {
 					maybeNativeFilter = Optional.of(filterProvider.createFilterOperation(filterArgument));
 					break;
 				} catch (UnformalizableQuery e) {
-					log.warn("The query filter cannot be formalized: {}", e, filterArgument);
+					log.warn("The query filter cannot be formalized: {}", filterArgument);
+					log.debug(e);
 					if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || NativeFilter.ONLY.equals(envNativeFilter)) {
 						throw new InvalidParameterException(e.getLocalizedMessage());
 					} else {
@@ -687,7 +690,11 @@ public abstract class AbstractTypeProvider {
 				break;
 			}
 		}
-		return Pair.of(javaFilter, maybeNativeFilter);
+		return Pair.of(javaFilter, maybeNativeFilter
+				.or(() -> Optional.of(PersistingRootDao.shouldPage(getPagingInfo(env)))
+						// We force native filtering, if paging is asked
+						.filter(b -> b && (NativeFilter.ONLY.equals(envNativeFilter) || NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering)))
+						.map(yes -> Comparison.dummy(true))));
 	}
 
 	/**
