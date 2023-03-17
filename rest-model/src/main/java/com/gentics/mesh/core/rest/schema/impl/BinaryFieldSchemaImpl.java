@@ -27,6 +27,10 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@JsonPropertyDescription("The extracting behaviour for this field.")
 	private BinaryExtractOptions binaryExtractOptions;
 
+	@JsonProperty("checkServiceUrl")
+	@JsonPropertyDescription("The URL for the optional service which checks uploaded binaries before making them available.")
+	private String checkServiceUrl;
+
 	@Override
 	public String[] getAllowedMimeTypes() {
 		return allowedMimeTypes;
@@ -92,6 +96,17 @@ public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements Binary
 	@Override
 	public BinaryFieldSchema setBinaryExtractOptions(BinaryExtractOptions extract) {
 		this.binaryExtractOptions = extract;
+		return this;
+	}
+
+	@Override
+	public String getCheckServiceUrl() {
+		return checkServiceUrl;
+	}
+
+	@Override
+	public BinaryFieldSchemaImpl setCheckServiceUrl(String checkServiceUrl) {
+		this.checkServiceUrl = checkServiceUrl;
 		return this;
 	}
 }
