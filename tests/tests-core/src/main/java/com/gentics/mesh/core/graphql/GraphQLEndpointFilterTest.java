@@ -7,6 +7,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import java.io.IOException;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -14,6 +15,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
+import com.gentics.mesh.test.category.FailingTests;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.json.JsonArray;

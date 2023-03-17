@@ -87,9 +87,9 @@ public abstract class AbstractTypeProvider {
 
 	public GraphQLEnumType createNativeFilterEnumType() {
 		GraphQLEnumType nativeFilterEnum = newEnum().name(NATIVE_FILTER_NAME).description("Usage of native database-level filtering, instead of default provided by Mesh")
-				.value(NativeFilter.IF_POSSIBLE.name(), NativeFilter.IF_POSSIBLE, "Try native filter first, fall back to Mesh otherwise")
-				.value(NativeFilter.ONLY.name(), NativeFilter.ONLY, "Force native filters only")
-				.value(NativeFilter.NEVER.name(), NativeFilter.NEVER, "Force default Mesh filtering").build();
+				.value(NativeFilter.IF_POSSIBLE.name(), NativeFilter.IF_POSSIBLE, "Try native filter first, fall back to Mesh otherwise. Does not apply native paging, if no filter is specified.")
+				.value(NativeFilter.ONLY.name(), NativeFilter.ONLY, "Force native filters only. If no filtering but paging is specified, apply the native paging.")
+				.value(NativeFilter.NEVER.name(), NativeFilter.NEVER, "Force default Mesh filtering and paging. Ignored, if sorting is specified.").build();
 			return nativeFilterEnum;
 	}
 
@@ -292,7 +292,7 @@ public abstract class AbstractTypeProvider {
 
 	public GraphQLArgument createNativeFilterArg() {
 		return newArgument().name("nativeFilter").type(new GraphQLTypeReference(NATIVE_FILTER_NAME)).defaultValue(NativeFilter.IF_POSSIBLE).description(
-			"Specify the native filtering").build();
+			"Specify whether the native database-level filtering should be used.").build();
 	}
 
 	public GraphQLArgument createNodeVersionArg() {
