@@ -8,15 +8,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
@@ -42,18 +33,21 @@ import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryCheckRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
-
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -65,6 +59,19 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @see BinaryUploadHandler
@@ -140,7 +147,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 
 	/**
 	 * Handle a request to create a new field.
-	 * 
+	 *
 	 * @param ac
 	 * @param nodeUuid
 	 *            UUID of the node which should be updated
@@ -271,127 +278,190 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		String hash = context.getHash();
 		String binaryUuid = context.getBinaryUuid();
 
-		return db.singleTxWriteLock((batch, tx) -> {
-			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-			HibProject project = tx.getProject(ac);
-			HibBranch branch = tx.getBranch(ac);
-			NodeDao nodeDao = tx.nodeDao();
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+		return db.singleTxWriteLock(
+			(batch, tx) -> {
+				PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
+				HibProject project = tx.getProject(ac);
+				HibBranch branch = tx.getBranch(ac);
+				NodeDao nodeDao = tx.nodeDao();
+				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
-			// We need to check whether someone else has stored the binary in the meanwhile
-			HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
-			if (binary == null) {
-				binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
-			}
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
+				// We need to check whether someone else has stored the binary in the meanwhile
+				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
+				if (binary == null) {
+					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
+				}
+				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
 
-			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+				// Load the current latest draft
+				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
-			if (latestDraftVersion == null) {
-				// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
-				// TODO Maybe it would be better to just create a new field container for the language?
-				// In that case we would also need to:
-				// * check for segment field conflicts
-				// * update display name
-				// * fail if mandatory fields are missing
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
+				if (latestDraftVersion == null) {
+					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
+					// TODO Maybe it would be better to just create a new field container for the language?
+					// In that case we would also need to:
+					// * check for segment field conflicts
+					// * update display name
+					// * fail if mandatory fields are missing
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
 
-			// Load the base version field container in order to create the diff
-			HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
-			if (baseVersionContainer == null) {
-				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
-			}
+				// Load the base version field container in order to create the diff
+				HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				if (baseVersionContainer == null) {
+					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
+				}
 
-			List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
-			List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+				List<FieldContainerChange> baseVersionDiff = contentDao.compareTo(baseVersionContainer, latestDraftVersion);
+				List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 
-			// Compare both sets of change sets
-			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
-				.collect(Collectors.toList());
+				// Compare both sets of change sets
+				List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains)
+					.collect(Collectors.toList());
 
-			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-			if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+				// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+				if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
 
-				// Check whether a conflict has been detected
-				if (intersect.size() > 0) {
-					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
-					for (FieldContainerChange fcc : intersect) {
-						conflictException.addConflict(fcc.getFieldCoordinates());
+					// Check whether a conflict has been detected
+					if (intersect.size() > 0) {
+						NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+						conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+						conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+						for (FieldContainerChange fcc : intersect) {
+							conflictException.addConflict(fcc.getFieldCoordinates());
+						}
+						throw conflictException;
 					}
-					throw conflictException;
 				}
-			}
 
-			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-			if (fieldSchema == null) {
-				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-			}
-			if (!(fieldSchema instanceof BinaryFieldSchema)) {
-				// TODO Add support for other field types
-				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-			}
-
-			// Create a new node version field container to store the upload
-			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
-				latestDraftVersion,
-				true);
-
-			// Get the potential existing field
-			HibBinaryField oldField = (HibBinaryField) contentDao.detachField(newDraftVersion.getBinary(fieldName));
-
-			// Create the new field
-			HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
-
-			// Reuse the existing properties
-			if (oldField != null) {
-				oldField.copyTo(field);
-
-				// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
-				if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(upload.contentType())) {
-					field.setImageDominantColor(null);
+				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
+				if (!(fieldSchema instanceof BinaryFieldSchema)) {
+					// TODO Add support for other field types
+					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+				}
+
+				// Create a new node version field container to store the upload
+				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
+					latestDraftVersion,
+					true);
+
+				// Get the potential existing field
+				HibBinaryField oldField = (HibBinaryField) contentDao.detachField(newDraftVersion.getBinary(fieldName));
+
+				// Create the new field
+				HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
+
+				// Reuse the existing properties
+				if (oldField != null) {
+					oldField.copyTo(field);
+
+					// If the old field was an image and the current upload is not an image we need to reset the custom image specific attributes.
+					if (oldField.hasProcessableImage() && !NodeUtil.isProcessableImage(upload.contentType())) {
+						field.setImageDominantColor(null);
+					}
+				}
+
+				// Now set the field infos. This will override any copied values as well.
+				field.setFileName(upload.fileName());
+				field.setMimeType(upload.contentType());
+				field.getBinary().setSize(upload.size());
+
+				for (Consumer<HibBinaryField> modifier : fieldModifier) {
+					modifier.accept(field);
+				}
+
+				// Now get rid of the old field
+				newDraftVersion.removeField(oldField);
+
+				// If the binary field is the segment field, we need to update the webroot info in the node
+				// TODO FIXME This is already called in `PersistingContentDao.connectFieldContainer()`. Normally one should not update a container without reconnecting versions,
+				// but currently MeshLocalClient does this, which may be illegal. The check and call below should be removed, once MeshLocalClientImpl is improved.
+				if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
+					contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
+				}
+
+				if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
+					contentDao.purge(latestDraftVersion);
+				}
+
+				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
+
+				BinaryCheckContext checkContext = new BinaryCheckContext()
+					.setNode(nodeDao.transformToRestSync(node, ac, 0))
+					.setCheckServiceUrl(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl());
+
+				if (checkContext.needsCheck()) {
+					String checkSecret = UUIDUtil.randomUUID();
+
+					field.setCheckStatus(BinaryCheckStatus.POSTPONED);
+					field.setCheckSecret(checkSecret);
+
+					checkContext.setCheckSecret(checkSecret)
+						.setFilename(upload.fileName())
+						.setContentType(upload.contentType());
+				} else {
+					field.setCheckStatus(BinaryCheckStatus.ACCEPTED);
+				}
+
+				return checkContext;
+			})
+			.flatMap(checkContext -> {
+				if (checkContext.needsCheck()) {
+					performBinaryCheck(nodeUuid, fieldName, checkContext);
+				}
+
+				return Single.just(checkContext.getNode());
+			});
+	}
+
+	/**
+	 * If the check service URL is set for the binary field, the check request is performed and the
+	 * {@link com.gentics.mesh.core.rest.node.field.BinaryField#setCheckStatus(BinaryCheckStatus) check status} is
+	 * updated accordingly.
+	 *
+	 * @param nodeUuid The UUID of the node.
+	 * @param fieldName The binary field name
+	 * @param ctx Needed data for performing a binary check request.
+	 */
+	private void performBinaryCheck(String nodeUuid, String fieldName, BinaryCheckContext ctx) throws IOException {
+		HttpServerConfig serverOptions = options.getHttpServerOptions();
+		int port = serverOptions.getPort();
+		String host = serverOptions.getHost();
+
+		if ("0.0.0.0".equals(host)) {
+			host = "127.0.0.1";
+		}
+
+		String baseUrl = new MeshRestClientConfig.Builder().setHost(host).setPort(port).build().getBaseUrl();
+		BinaryCheckRequest checkRequest = new BinaryCheckRequest()
+			.setFilename(ctx.getFilename())
+			.setMimeType(ctx.getContentType())
+			.setDownloadUrl(String.format("%s/nodes/%s/binary/%s?secret=%s", baseUrl, nodeUuid, fieldName, ctx.getCheckSecret()))
+			.setCallbackUrl(String.format("%s/nodes/%s/binary/%s/checkCallback?secret=%s", baseUrl, nodeUuid, fieldName, ctx.getCheckSecret()));
+
+		OkHttpClient client = new OkHttpClient.Builder().build();
+		Request request = new Request.Builder()
+			.url(ctx.getCheckServiceUrl())
+			.post(RequestBody.create(MediaType.parse("application/json"), checkRequest.toJson()))
+			.build();
+
+		try (Response response = client.newCall(request).execute()) {
+			if (!response.isSuccessful()) {
+				log.warn("Request to binary check service returned unexpected status: {}", response.code());
 			}
-
-			// Now set the field infos. This will override any copied values as well.
-			field.setFileName(upload.fileName());
-			field.setMimeType(upload.contentType());
-			field.getBinary().setSize(upload.size());
-
-			for (Consumer<HibBinaryField> modifier : fieldModifier) {
-				modifier.accept(field);
-			}
-
-			// Now get rid of the old field
-			newDraftVersion.removeField(oldField);
-
-			// If the binary field is the segment field, we need to update the webroot info in the node
-			// TODO FIXME This is already called in `PersistingContentDao.connectFieldContainer()`. Normally one should not update a container without reconnecting versions,
-			// but currently MeshLocalClient does this, which may be illegal. The check and call below should be removed, once MeshLocalClientImpl is improved.
-			if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(newDraftVersion).getSchema().getSegmentField())) {
-				contentDao.updateWebrootPathInfo(newDraftVersion, branch.getUuid(), "node_conflicting_segmentfield_upload");
-			}
-
-			if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
-				contentDao.purge(latestDraftVersion);
-			}
-
-			batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
-
-			return nodeDao.transformToRestSync(node, ac, 0);
-		});
+		}
 	}
 
 	/**
 	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
 	 * {@link BinaryStorage} if desired.
-	 * 
+	 *
 	 * @param ctx
 	 * @return Consumers which modify the graph field
 	 */

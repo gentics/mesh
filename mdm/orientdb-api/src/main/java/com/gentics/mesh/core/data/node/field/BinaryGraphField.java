@@ -6,6 +6,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -36,11 +37,15 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	String BINARY_ALT_KEY = "metadata-alt";
 
-	String PLAIN_TEXT_KEY = "plainText"; 
+	String BINARY_CHECK_STATUS = "check-status";
+
+	String BINARY_CHECK_SECRET = "check-secret";
+
+	String PLAIN_TEXT_KEY = "plainText";
 
 	/**
 	 * Return the binary filename.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getFileName() {
@@ -49,7 +54,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the binary filename.
-	 * 
+	 *
 	 * @param fileName
 	 * @return Fluent API
 	 */
@@ -60,14 +65,14 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Increment any found postfix number in the filename.
-	 * 
+	 *
 	 * e.g:
 	 * <ul>
 	 * <li>test.txt -> test_1.txt</li>
 	 * <li>test -> test_1</li>
 	 * <li>test.blub.txt -> test.blub_1.txt</li>
 	 * <ul>
-	 * 
+	 *
 	 */
 	default void postfixFileName() {
 		String oldName = getFileName();
@@ -79,7 +84,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the binary mime type of the node.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getMimeType() {
@@ -88,7 +93,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the binary mime type of the node.
-	 * 
+	 *
 	 * @param mimeType
 	 * @return Fluent API
 	 */
@@ -99,7 +104,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the binary image dominant color.
-	 * 
+	 *
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
@@ -110,7 +115,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the binary image dominant color.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getImageDominantColor() {
@@ -119,7 +124,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the stored focal point of the image.
-	 * 
+	 *
 	 * @return Focal point or null if no focal point has been set
 	 */
 	default FocalPoint getImageFocalPoint() {
@@ -133,7 +138,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the image focal point.
-	 * 
+	 *
 	 * @param point
 	 */
 	default BinaryGraphField setImageFocalPoint(FocalPoint point) {
@@ -144,28 +149,28 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the uuid of the binary field.
-	 * 
+	 *
 	 * @return
 	 */
 	String getUuid();
 
 	/**
 	 * Set the uuid of the binary field.
-	 * 
+	 *
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
 
 	/**
 	 * Return the referenced binary.
-	 * 
+	 *
 	 * @return
 	 */
 	HibBinary getBinary();
 
 	/**
 	 * Set the metadata property.
-	 * 
+	 *
 	 * @param key
 	 * @param value
 	 */
@@ -173,14 +178,14 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the metadata properties.
-	 * 
+	 *
 	 * @return
 	 */
 	Map<String, String> getMetadataProperties();
 
 	/**
 	 * Set the location information.
-	 * 
+	 *
 	 * @param loc
 	 */
 	default void setLocation(Location loc) {
@@ -195,7 +200,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the location latitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Double getLocationLatitude() {
@@ -204,7 +209,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the location latitude.
-	 * 
+	 *
 	 * @param lat
 	 */
 	default void setLocationLatitude(Double lat) {
@@ -213,7 +218,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the location longitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Double getLocationLongitude() {
@@ -222,7 +227,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the location longitude.
-	 * 
+	 *
 	 * @param lon
 	 */
 	default void setLocationLongitude(Double lon) {
@@ -231,7 +236,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Return the location altitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Integer getLocationAltitude() {
@@ -240,7 +245,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 
 	/**
 	 * Set the location altitude.
-	 * 
+	 *
 	 * @param alt
 	 */
 	default void setLocationAltitude(Integer alt) {
@@ -275,4 +280,45 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 */
 	String getPlainText();
 
+	/**
+	 * Return the check status of the binary (one of ACCEPTED, DENIED or POSTPONED).
+	 * @return The check status of the binary.
+	 */
+	@Override
+	default BinaryCheckStatus getCheckStatus() {
+		Object status = property(BINARY_CHECK_STATUS);
+
+		return status == null ? null : BinaryCheckStatus.valueOf(status.toString());
+	}
+
+	/**
+	 * Set the check status of the binary (one of ACCEPTED, DENIED or POSTPONDED).
+	 * @param checkStatus The check status to set.
+	 * @return Fluent API.
+	 */
+	@Override
+	default BinaryGraphField setCheckStatus(BinaryCheckStatus checkStatus) {
+		property(BINARY_CHECK_STATUS, checkStatus);
+		return this;
+	}
+
+	/**
+	 * Return the check secret of the binary.
+	 * @return The check secret of the binary.
+	 */
+	@Override
+	default String getCheckSecret() {
+		return property(BINARY_CHECK_SECRET);
+	}
+
+	/**
+	 * Set the check secret of the binary.
+	 * @param checkSecret The binaries check secret.
+	 * @return Fluent API.
+	 */
+	@Override
+	default BinaryGraphField setCheckSecret(String checkSecret) {
+		property(BINARY_CHECK_SECRET, checkSecret);
+		return this;
+	}
 }
