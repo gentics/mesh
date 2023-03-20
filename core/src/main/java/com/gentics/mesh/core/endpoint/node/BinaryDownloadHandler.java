@@ -18,12 +18,16 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Objects;
 
 /**
  * Handler for binary or s3binary download requests.
@@ -46,7 +50,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 	/**
 	 * Handle the binary or s3binary download request.
-	 * 
+	 *
 	 * @param rc
 	 *            The routing context for the request.
 	 * @param uuid
@@ -78,12 +82,26 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
+
+				// The binary can only be downloaded if it has been accepted, or the current request provided the check
+				// secret (which should only be known to the check service).
+				if (field.getCheckStatus() != BinaryCheckStatus.ACCEPTED && !Objects.equals(field.getCheckSecret(), rc.queryParams().get("secret"))) {
+					throw error(NOT_FOUND, "error_binaryfield_not_accepted", fieldName);
+				}
+
 				binaryFieldResponseHandler.handle(rc, field);
 			} else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
 				S3HibBinaryField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}
+
+				// The binary can only be downloaded if it has been accepted, or the current request provided the check
+				// secret (which should only be known to the check service).
+				if (field.getCheckStatus() != BinaryCheckStatus.ACCEPTED && !Objects.equals(field.getCheckSecret(), rc.queryParams().get("secret"))) {
+					throw error(NOT_FOUND, "error_binaryfield_not_accepted", fieldName);
+				}
+
 				s3binaryFieldResponseHandler.handle(rc, node, field);
 			} else {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);

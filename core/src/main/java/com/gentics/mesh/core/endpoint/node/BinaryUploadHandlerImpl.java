@@ -28,21 +28,17 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryCheckRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
-import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
@@ -59,15 +55,9 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -76,7 +66,7 @@ import java.util.stream.Collectors;
 /**
  * @see BinaryUploadHandler
  */
-public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUploadHandler {
+public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler implements BinaryUploadHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(BinaryUploadHandlerImpl.class);
 
@@ -92,23 +82,24 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 
 	private FileSystem fs;
 
-	private final MeshOptions options;
-
 	private final Binaries binaries;
 
 	private final WriteLock writeLock;
 
 	@Inject
-	public BinaryUploadHandlerImpl(ImageManipulator imageManipulator,
-		Database db,
-		Lazy<BootstrapInitializer> boot,
-		BinaryFieldResponseHandler binaryFieldResponseHandler,
-		BinaryStorage binaryStorage,
-		BinaryProcessorRegistryImpl binaryProcessorRegistry,
-		HandlerUtilities utils, Vertx rxVertx,
-		MeshOptions options,
-		Binaries binaries,
-		WriteLock writeLock) {
+	public BinaryUploadHandlerImpl(
+			ImageManipulator imageManipulator,
+			Database db,
+			Lazy<BootstrapInitializer> boot,
+			BinaryFieldResponseHandler binaryFieldResponseHandler,
+			BinaryStorage binaryStorage,
+			BinaryProcessorRegistryImpl binaryProcessorRegistry,
+			HandlerUtilities utils, Vertx rxVertx,
+			MeshOptions options,
+			Binaries binaries,
+			WriteLock writeLock) {
+		super(options);
+
 		this.db = db;
 		this.boot = boot;
 
@@ -116,7 +107,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
 		this.fs = rxVertx.fileSystem();
-		this.options = options;
 		this.binaries = binaries;
 		this.writeLock = writeLock;
 	}
@@ -420,43 +410,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			});
 	}
 
-	/**
-	 * If the check service URL is set for the binary field, the check request is performed and the
-	 * {@link com.gentics.mesh.core.rest.node.field.BinaryField#setCheckStatus(BinaryCheckStatus) check status} is
-	 * updated accordingly.
-	 *
-	 * @param nodeUuid The UUID of the node.
-	 * @param fieldName The binary field name
-	 * @param ctx Needed data for performing a binary check request.
-	 */
-	private void performBinaryCheck(String nodeUuid, String fieldName, BinaryCheckContext ctx) throws IOException {
-		HttpServerConfig serverOptions = options.getHttpServerOptions();
-		int port = serverOptions.getPort();
-		String host = serverOptions.getHost();
-
-		if ("0.0.0.0".equals(host)) {
-			host = "127.0.0.1";
-		}
-
-		String baseUrl = new MeshRestClientConfig.Builder().setHost(host).setPort(port).build().getBaseUrl();
-		BinaryCheckRequest checkRequest = new BinaryCheckRequest()
-			.setFilename(ctx.getFilename())
-			.setMimeType(ctx.getContentType())
-			.setDownloadUrl(String.format("%s/nodes/%s/binary/%s?secret=%s", baseUrl, nodeUuid, fieldName, ctx.getCheckSecret()))
-			.setCallbackUrl(String.format("%s/nodes/%s/binary/%s/checkCallback?secret=%s", baseUrl, nodeUuid, fieldName, ctx.getCheckSecret()));
-
-		OkHttpClient client = new OkHttpClient.Builder().build();
-		Request request = new Request.Builder()
-			.url(ctx.getCheckServiceUrl())
-			.post(RequestBody.create(MediaType.parse("application/json"), checkRequest.toJson()))
-			.build();
-
-		try (Response response = client.newCall(request).execute()) {
-			if (!response.isSuccessful()) {
-				log.warn("Request to binary check service returned unexpected status: {}", response.code());
-			}
-		}
-	}
 
 	/**
 	 * Processes the upload and set the binary information (e.g.: image dimensions) within the provided field. The binary data will be stored in the
