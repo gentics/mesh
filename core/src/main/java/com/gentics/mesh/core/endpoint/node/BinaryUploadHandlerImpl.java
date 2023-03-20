@@ -70,8 +70,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 
 	private static final Logger log = LoggerFactory.getLogger(BinaryUploadHandlerImpl.class);
 
-	private final Database db;
-
 	private final Lazy<BootstrapInitializer> boot;
 
 	private final BinaryStorage binaryStorage;
@@ -98,11 +96,9 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			MeshOptions options,
 			Binaries binaries,
 			WriteLock writeLock) {
-		super(options);
+		super(db, options);
 
-		this.db = db;
 		this.boot = boot;
-
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
@@ -228,6 +224,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 
 	}
+
 
 	private boolean fileNotExists(String binaryUuid) {
 		return !new File(binaryStorage.getFilePath(binaryUuid)).exists();

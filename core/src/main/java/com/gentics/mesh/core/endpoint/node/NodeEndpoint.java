@@ -198,6 +198,25 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			binaryUploadHandler.handleUpdateField(ac, uuid, fieldName, attributes);
 		});
 
+		InternalEndpointRoute checkCallback = createRoute();
+		checkCallback.path("/:nodeUuid/binary/:fieldName/checkCallback");
+		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		checkCallback.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		checkCallback.method(POST);
+		checkCallback.produces(APPLICATION_JSON);
+		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
+		checkCallback.exampleResponse(NO_CONTENT, "");
+		checkCallback.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		checkCallback.description("Set the check status for the binaryfield with the given name.");
+		checkCallback.events(NODE_UPDATED);
+		checkCallback.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = wrap(rc);
+
+			binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
+		});
+
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
 		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
@@ -250,6 +269,25 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 			s3binaryUploadHandler.handleUpdateField(ac, uuid, fieldName);
+		});
+
+		InternalEndpointRoute checkCallback = createRoute();
+		checkCallback.path("/:nodeUuid/binary/:fieldName/checkCallback");
+		checkCallback.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		checkCallback.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		checkCallback.method(POST);
+		checkCallback.produces(APPLICATION_JSON);
+		checkCallback.exampleRequest(nodeExamples.getExampleBinaryCheckCallbackParameters());
+		checkCallback.exampleResponse(NO_CONTENT, "");
+		checkCallback.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		checkCallback.description("Set the check status for the binaryfield with the given name.");
+		checkCallback.events(NODE_UPDATED);
+		checkCallback.blockingHandler(rc -> {
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			InternalActionContext ac = wrap(rc);
+
+			s3binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldMetadataExtraction = createRoute();

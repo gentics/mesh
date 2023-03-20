@@ -54,7 +54,6 @@ import io.vertx.reactivex.core.Vertx;
 public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler implements S3BinaryUploadHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(S3BinaryUploadHandlerImpl.class);
-	private final Database db;
 	private final S3BinaryStorage s3BinaryStorage;
 	private final HandlerUtilities utils;
 	private final S3Binaries s3binaries;
@@ -66,9 +65,8 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 			HandlerUtilities utils, Vertx rxVertx,
 			MeshOptions options,
 			S3Binaries s3binaries) {
-		super(options);
+		super(db, options);
 
-		this.db = db;
 		this.s3BinaryStorage = s3BinaryStorage;
 		this.utils = utils;
 		this.s3binaries = s3binaries;
