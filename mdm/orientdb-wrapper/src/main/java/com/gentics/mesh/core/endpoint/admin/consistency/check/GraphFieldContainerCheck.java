@@ -9,12 +9,14 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
@@ -124,6 +126,9 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 				}
 			}
 		}
+
+		// initial GFC must not have another initial as a previous GFC for the same branch
+		checkInitialUniqueness(container, previous, result, attemptRepair);
 
 		// GFC must either have a next GFC, or must be the draft GFC for a Node
 		if (!contentDao.hasNextVersion(container) && !contentDao.isDraft(container)) {
@@ -307,4 +312,53 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		return null;
 	}
 
+	/**
+	 * Check whether the container is the only INITIAL for its node (for all branches)
+	 * @param container GFC to check
+	 * @param previous previous GFC (may be null)
+	 * @param result check result
+	 * @param attemptRepair true to attempt repair
+	 */
+	private void checkInitialUniqueness(NodeGraphFieldContainer container, HibNodeFieldContainer previous, ConsistencyCheckResult result, boolean attemptRepair) {
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+		String uuid = container.getUuid();
+
+		if (contentDao.isInitial(container) && previous != null) {
+			Set<String> branchUuids = contentDao.getBranches(container, INITIAL);
+
+			String nodeInfo = "unknown";
+			try {
+				HibNode node = contentDao.getNode(container);
+				nodeInfo = node.getUuid();
+			} catch (Exception e) {
+				log.debug("Could not load node uuid", e);
+			}
+
+			Set<String> branchesWithConflict = new HashSet<>();
+			while (previous != null) {
+				for (String branchUuid : branchUuids) {
+					// do not check for branches, where we already found a conflicting edge
+					if (branchesWithConflict.contains(branchUuid)) {
+						continue;
+					}
+					if (contentDao.isInitial(previous, branchUuid)) {
+						branchesWithConflict.add(branchUuid);
+						boolean repaired = false;
+						if (attemptRepair) {
+							// remove the INITIAL edge
+							Iterator<? extends HibNodeFieldContainerEdge> edgeIterator = contentDao.getContainerEdges(container, INITIAL, branchUuid);
+							if (edgeIterator.hasNext()) {
+								contentDao.removeEdge(edgeIterator.next());
+								repaired = true;
+							}
+						}
+						result.addInconsistency(String.format(
+								"GraphFieldContainer of Node {%s} is INITIAL for branch %s and has another INITIAL GFC for the branch as a previous version",
+								nodeInfo, branchUuid), uuid, MEDIUM, repaired, DELETE);
+					}
+				}
+				previous = previous.getPreviousVersion();
+			}
+		}
+	}
 }
