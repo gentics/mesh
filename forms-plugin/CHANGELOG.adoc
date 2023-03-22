@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.6.32]]
+== 1.6.32 (TBD)
+
+icon:check[] Forms: Fixes the `lang` parameter for the list forms endpoint. When the `lang` parameter is not used, forms in all languages will be returned, otherwise only forms of the given languages are returned. Note that english forms will always be included, due to the forms plugin root node being english.
+
 [[v1.6.31]]
 == 1.6.31 (2023-02-22)
 
