@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.9.8]]
+== 1.9.8 (2023-03-22)
+
+icon:check[] Forms: Fixes the `lang` parameter for the list forms endpoint. When the `lang` parameter is not used, forms in all languages will be returned, otherwise only forms of the given languages are returned. Note that english forms will always be included, due to the forms plugin root node being english.
+
 [[v1.9.7]]
 == 1.9.7 (2023-02-22)
 
@@ -51,6 +56,11 @@ CAUTION: The plugin requires Mesh >= 1.9.3 to run.
 icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
+[[v1.8.11]]
+== 1.8.11 (2023-03-22)
+
+icon:check[] Forms: Fixes the `lang` parameter for the list forms endpoint. When the `lang` parameter is not used, forms in all languages will be returned, otherwise only forms of the given languages are returned. Note that english forms will always be included, due to the forms plugin root node being english.
 
 [[v1.8.10]]
 == 1.8.10 (2023-02-22)
@@ -118,6 +128,11 @@ icon:check[] Forms: Fixed an issue where no form data was loaded when the form w
 == 1.8.0 (2022-03-25)
 
 icon:plus[] The dependency to Gentics Mesh has been updated to 1.8.1.
+
+[[v1.6.32]]
+== 1.6.32 (2023-03-022)
+
+icon:check[] Forms: Fixes the `lang` parameter for the list forms endpoint. When the `lang` parameter is not used, forms in all languages will be returned, otherwise only forms of the given languages are returned. Note that english forms will always be included, due to the forms plugin root node being english.
 
 [[v1.6.31]]
 == 1.6.31 (2023-02-22)

@@ -1,10 +1,6 @@
-query Forms($perPage: Long = 2147483647, $page: Long = 1, $rootNodeUuid: String) {
+query Forms($perPage: Long = 2147483647, $page: Long = 1, $rootNodeUuid: String, $lang: [String]) {
   node (uuid: $rootNodeUuid) {
-    children (perPage: $perPage, page: $page, filter: {
-      schema: {
-        is: form
-      }
-    }) {
+    children (perPage: $perPage, page: $page, lang: $lang, filter: {schema: {is: form}}) {
       elements {
         uuid
         fields {

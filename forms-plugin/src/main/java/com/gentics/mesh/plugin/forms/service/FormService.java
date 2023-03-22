@@ -345,82 +345,94 @@ public class FormService {
 	 * Retrieves all forms (optionally paged) and sends them to the client in the format:
 	 *
 	 * <pre>
-	   {
-			"totalCount" : 4,
-			"currentPage" : 1,
-			"pageCount" : 1,
-			"perPage" : 1000000,
-			"forms" : [ {
-				 "uuid" : "29a53fee7af6468da53fee7af6568d75",
-				 "name" : "Formular Test 1"
-			 }, {
-				 "uuid" : "05a0c76f7d5940dfa0c76f7d5960df23",
-				 "name" : "Formular Nr. 2"
-			 }, {
-				 "uuid" : "5a1e034b14ef480f9e034b14efa80fe3",
-				 "name" : "Formular Nr. 3"
-			 }, {
-				 "uuid" : "33b96c62cb754b74b96c62cb75db74bb",
-				 "name" : "Formular Nr. 4"
-			 } ]
-	   }
+	 * {
+	 * 		"totalCount" : 4,
+	 * 		"currentPage" : 1,
+	 * 		"pageCount" : 1,
+	 * 		"perPage" : 1000000,
+	 * 		"forms" : [ {
+	 * 			"uuid" : "29a53fee7af6468da53fee7af6568d75",
+	 * 			"name" : "Formular Test 1"
+	 * 		}, {
+	 * 			"uuid" : "05a0c76f7d5940dfa0c76f7d5960df23",
+	 * 			"name" : "Formular Nr. 2"
+	 * 		}, {
+	 * 			"uuid" : "5a1e034b14ef480f9e034b14efa80fe3",
+	 * 			"name" : "Formular Nr. 3"
+	 * 		}, {
+	 * 			"uuid" : "33b96c62cb754b74b96c62cb75db74bb",
+	 * 			"name" : "Formular Nr. 4"
+	 * 		} ]
+	 * }
 	 * </pre>
+	 *
 	 * @param projectName project name
 	 * @param pagingParams paging parameters
+	 * @param requestedLanguages The languages for the forms to list. Note that the language of the Forms root node (en)
+	 * 		will always be included.
 	 * @return single json object
 	 */
-	public Single<JsonObject> list(String projectName, JsonObject pagingParams) {
+	public Single<JsonObject> list(String projectName, JsonObject pagingParams, String[] requestedLanguages) {
 		try {
 			String graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("forms.graphql"), StandardCharsets.UTF_8);
 
-			return statusService.getRootNode(projectName, userClient)
+			Single<String[]> languages = requestedLanguages == null || requestedLanguages.length == 0
+				? statusService.languageFallback(projectName)
+				: Single.just(requestedLanguages);
+
+			return languages
+				.flatMap(lang -> statusService.getRootNode(projectName, userClient)
 					.flatMap(rootNode -> {
-						JsonObject variables = new JsonObject().mergeIn(pagingParams, true).put("rootNodeUuid", rootNode.getUuid());
+						JsonObject variables = new JsonObject()
+							.mergeIn(pagingParams, true)
+							.put("rootNodeUuid", rootNode.getUuid())
+							.put("lang", Arrays.asList(lang));
+
 						return userClient
-								.graphql(projectName,
-										new GraphQLRequest().setQuery(graphQlQuery).setVariables(variables))
-								.toSingle();
-					})				.flatMap(graphQlResponse -> {
-					// log all errors
-					if (graphQlResponse.getErrors() != null) {
-						for (GraphQLError error : graphQlResponse.getErrors()) {
-							log.warn("Error in graphql response {}", error.toJson());
+							.graphql(projectName, new GraphQLRequest().setQuery(graphQlQuery).setVariables(variables))
+							.toSingle();
+					})
+					.flatMap(graphQlResponse -> {
+						// log all errors
+						if (graphQlResponse.getErrors() != null) {
+							for (GraphQLError error : graphQlResponse.getErrors()) {
+								log.warn("Error in graphql response {}", error.toJson());
+							}
 						}
-					}
 
-					JsonObject clientResponse = new JsonObject();
-					if (graphQlResponse.getData() == null) {
-						return Single.error(new FormsError(500, "Found no data in graphql response"));
-					}
+						JsonObject clientResponse = new JsonObject();
+						if (graphQlResponse.getData() == null) {
+							return Single.error(new FormsError(500, "Found no data in graphql response"));
+						}
 
-					if (!graphQlResponse.getData().containsKey("node")) {
-						return Single.error(new FormsError(500, "Found no 'node' in graphql response"));
-					}
-					JsonObject node = graphQlResponse.getData().getJsonObject("node");
-					if (!node.containsKey("children")) {
-						return Single.error(new FormsError(500, "Found no 'node.children' in graphql response"));
-					}
-					JsonObject children = node.getJsonObject("children");
-					if (!children.containsKey("elements")) {
-						return Single.error(new FormsError(500, "Found no 'node.children.elements' in graphql response"));
-					}
-					JsonArray forms = children.getJsonArray("elements");
-					pagingService.addPagingInfoToResponse(clientResponse, children);
+						if (!graphQlResponse.getData().containsKey("node")) {
+							return Single.error(new FormsError(500, "Found no 'node' in graphql response"));
+						}
+						JsonObject node = graphQlResponse.getData().getJsonObject("node");
+						if (!node.containsKey("children")) {
+							return Single.error(new FormsError(500, "Found no 'node.children' in graphql response"));
+						}
+						JsonObject children = node.getJsonObject("children");
+						if (!children.containsKey("elements")) {
+							return Single.error(new FormsError(500, "Found no 'node.children.elements' in graphql response"));
+						}
+						JsonArray forms = children.getJsonArray("elements");
+						pagingService.addPagingInfoToResponse(clientResponse, children);
 
-					// make response flat
-					List<JsonObject> clientForms = new ArrayList<>(forms.size());
-					for (int i = 0; i < forms.size(); i++) {
-						JsonObject form = forms.getJsonObject(i);
-						JsonObject clientForm = new JsonObject();
-						clientForm.put("uuid", form.getString("uuid"));
-						clientForm.put("name", form.getJsonObject("fields").getString("name"));
-						clientForm.put("cms_id", form.getJsonObject("fields").getValue("cms_id"));
-						clientForms.add(clientForm);
-					}
-					clientResponse.put("forms", new JsonArray(clientForms));
+						// make response flat
+						List<JsonObject> clientForms = new ArrayList<>(forms.size());
+						for (int i = 0; i < forms.size(); i++) {
+							JsonObject form = forms.getJsonObject(i);
+							JsonObject clientForm = new JsonObject();
+							clientForm.put("uuid", form.getString("uuid"));
+							clientForm.put("name", form.getJsonObject("fields").getString("name"));
+							clientForm.put("cms_id", form.getJsonObject("fields").getValue("cms_id"));
+							clientForms.add(clientForm);
+						}
+						clientResponse.put("forms", new JsonArray(clientForms));
 
-					return Single.just(clientResponse);
-				});
+						return Single.just(clientResponse);
+					}));
 		} catch (IOException e) {
 			return Single.error(e);
 		}
