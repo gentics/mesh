@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>mesh-search-plugin-base</artifactId>
 		<groupId>com.gentics.mesh.plugin.commercial</groupId>
-		<version>1.6.32-SNAPSHOT</version>
+		<version>1.6.32</version>
 	</parent>
 
 	<artifactId>mesh-search-plugin-extension-api</artifactId>
