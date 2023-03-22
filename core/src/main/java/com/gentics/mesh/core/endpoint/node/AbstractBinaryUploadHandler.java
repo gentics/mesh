@@ -11,6 +11,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.binary.Binaries;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
@@ -22,7 +24,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.BinaryCheckUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
@@ -52,11 +53,15 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractBinaryUploadHandler.class);
 
+	private static final String EMPTY_SHA_512_HASH = "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e";
+
 	protected final Database db;
+	protected final Binaries binaries;
 	protected final MeshOptions options;
 
-	public AbstractBinaryUploadHandler(Database db, MeshOptions options) {
+	public AbstractBinaryUploadHandler(Database db, Binaries binaries, MeshOptions options) {
 		this.db = db;
+		this.binaries = binaries;
 		this.options = options;
 	}
 
@@ -142,7 +147,7 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 					}
 
 					// Load the current latest draft
-					HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+					HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
 
 					if (latestDraftVersion == null) {
 						// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
@@ -205,15 +210,30 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 						throw error(BAD_REQUEST, "error_binaryfield_not_found_with_name", fieldName);
 					}
 
+					if (oldField.getCheckStatus() != BinaryCheckStatus.POSTPONED) {
+						throw error(BAD_REQUEST, "error_binaryfield_check_already_performed", fieldName);
+					}
+
+					if (!checkSecret.equals(oldField.getCheckSecret())) {
+						throw error(BAD_REQUEST, "error_binaryfield_invalid_check_secret", fieldName);
+					}
+
+					BinaryCheckUpdateRequest request = ac.fromJson(BinaryCheckUpdateRequest.class);
+					HibBinary newBinary;
+
+					if (request.getStatus() == BinaryCheckStatus.ACCEPTED) {
+						newBinary = oldField.getBinary();
+					} else {
+						HibBinary existingBinary = binaries.findByHash(EMPTY_SHA_512_HASH).runInExistingTx(tx);
+
+						newBinary = existingBinary != null ? existingBinary : binaries.create(EMPTY_SHA_512_HASH, 0).runInExistingTx(tx);
+					}
+
 					// Create the new field
-					HibBinaryField field = newDraftVersion.createBinary(fieldName, oldField.getBinary());
+					HibBinaryField field = newDraftVersion.createBinary(fieldName, newBinary);
 
 					// Reuse the existing properties
 					oldField.copyTo(field);
-
-					if (!checkSecret.equals(field.getCheckSecret())) {
-						throw error(BAD_REQUEST, "error_binaryfield_invalid_check_secret", fieldName);
-					}
 
 					// Now get rid of the old field
 					newDraftVersion.removeField(oldField);
@@ -229,11 +249,8 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 						contentDao.purge(latestDraftVersion);
 					}
 
-					batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
-
-					BinaryCheckUpdateRequest request = ac.fromJson(BinaryCheckUpdateRequest.class);
-
 					field.setCheckStatus(request.getStatus());
+					batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 
 					return nodeDao.transformToRestSync(node, ac, 0);
 				})

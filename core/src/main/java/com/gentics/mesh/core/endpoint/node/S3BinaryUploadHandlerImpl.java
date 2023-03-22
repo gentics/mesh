@@ -65,7 +65,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 			HandlerUtilities utils, Vertx rxVertx,
 			MeshOptions options,
 			S3Binaries s3binaries) {
-		super(db, options);
+		super(db, null, options);
 
 		this.s3BinaryStorage = s3BinaryStorage;
 		this.utils = utils;

@@ -80,8 +80,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 
 	private FileSystem fs;
 
-	private final Binaries binaries;
-
 	private final WriteLock writeLock;
 
 	@Inject
@@ -96,14 +94,13 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			MeshOptions options,
 			Binaries binaries,
 			WriteLock writeLock) {
-		super(db, options);
+		super(db, binaries, options);
 
 		this.boot = boot;
 		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
 		this.fs = rxVertx.fileSystem();
-		this.binaries = binaries;
 		this.writeLock = writeLock;
 	}
 
