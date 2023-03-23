@@ -8,6 +8,7 @@ import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
 import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.PagingService;
 
+import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 
@@ -26,8 +27,9 @@ public class ListFormsHandler extends AbstractFormsHandler {
 	@Override
 	public Completable handle(PluginContext context) {
 		JsonObject pagingParams = pagingService.extractPagingParams(context);
+		String[] languages = ParameterUtil.getLanguages(context);
 
-		return formService.list(context.project().getString("name"), pagingParams).doOnEvent((response, t) -> {
+		return formService.list(context.project().getString("name"), pagingParams, languages).doOnEvent((response, t) -> {
 			if (response != null) {
 				context.response().end(response.encodePrettily());
 			}

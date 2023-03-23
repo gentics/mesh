@@ -1,15 +1,14 @@
 package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.gentics.mesh.plugin.forms.model.FormType;
 import org.junit.Before;
@@ -111,28 +110,20 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testListForms() throws IOException {
+		setLanguages(PROJECT_NAME, Arrays.asList("en", "de", "it"));
+
 		createForm("list1.json");
 		createForm("list2.json");
 		createForm("list3.json");
 
-		Request listRequest = new Request.Builder()
-				.url(projectUrl("/forms"))
-				.headers(auth(permission))
-				.get()
-				.build();
-		Response response = client().newCall(listRequest).execute();
-
-		if (permission) {
-			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-
-			String responseBody = response.body().string();
-			int totalCount = JsonPath.read(responseBody, "$.totalCount");
-			assertThat(totalCount).as("Total count").isEqualTo(3);
-			List<String> names = JsonPath.read(responseBody, "$.forms[*].name");
-			assertThat(names).as("Form names").containsOnly("Form List 1", "Form List 2", "Form List 3");
-		} else {
-			assertForbidden(response);
-		}
+		doTestListForms(new String[0], new String[] { "Form List 1", "Form List 2", "Form List 3" });
+		doTestListForms(new String[] { "en" }, new String[] { "Form List 1" });
+		doTestListForms(new String[] { "de" }, new String[] { "Form List 1", "Form List 2" });
+		doTestListForms(new String[] { "it" }, new String[] { "Form List 1", "Form List 3" });
+		doTestListForms(new String[] { "en", "de" }, new String[] { "Form List 1", "Form List 2" });
+		doTestListForms(new String[] { "en", "it" }, new String[] { "Form List 1", "Form List 3" });
+		doTestListForms(new String[] { "de", "it" }, new String[] { "Form List 1", "Form List 2", "Form List 3" });
+		doTestListForms(new String[] { "en", "de", "it" }, new String[] { "Form List 1", "Form List 2", "Form List 3" });
 	}
 
 	/**
@@ -235,6 +226,34 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 			assertThat(optionalNode).as("Form Node").isPresent();
 			assertThat(optionalNode.get().getParentNode().getSchema().getName()).as("Parent schema").isEqualTo(SchemaService.PLUGIN_SCHEMA_NAME);
 			assertThat(loadSchema(SchemaService.getSchemaName(nodeResponse.getUuid()))).as("Form Schema").isPresent();
+		}
+	}
+
+	/**
+	 * Perform a list forms request for the given language.
+	 *
+	 * @param lang The language to add to the request.
+	 * @param expectedForms The forms expected to be returned.
+	 */
+	private void doTestListForms(String[] lang, String[] expectedForms) throws IOException {
+		String langParams = Arrays.stream(lang).map(l -> String.format("lang=%s", l)).collect(Collectors.joining("&", "?", ""));
+		Request listRequest = new Request.Builder()
+			.url(projectUrl("/forms") + langParams)
+			.headers(auth(permission))
+			.get()
+			.build();
+		Response response = client().newCall(listRequest).execute();
+
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+			String responseBody = response.body().string();
+			int totalCount = JsonPath.read(responseBody, "$.totalCount");
+			assertThat(totalCount).as("Total count").isEqualTo(expectedForms.length);
+			List<String> names = JsonPath.read(responseBody, "$.forms[*].name");
+			assertThat(names).as("Form names").containsOnly(expectedForms);
+		} else {
+			assertForbidden(response);
 		}
 	}
 }
