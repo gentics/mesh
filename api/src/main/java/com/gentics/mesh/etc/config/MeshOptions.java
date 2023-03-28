@@ -24,6 +24,7 @@ public abstract class MeshOptions implements Option {
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
 	public static final int DEFAULT_PLUGIN_TIMEOUT = 120;
+	public static final long DEFAULT_MIGRATION_TRIGGER_INTERVAL = 60_000;
 
 	public static final String MESH_DEFAULT_LANG_ENV = "MESH_DEFAULT_LANG";
 	public static final String MESH_LANGUAGES_FILE_PATH_ENV = "MESH_LANGUAGES_FILE_PATH";
@@ -39,7 +40,9 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_ENV = "MESH_INITIAL_ADMIN_PASSWORD";
 	public static final String MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET_ENV = "MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET";
 	public static final String MESH_MAX_PURGE_BATCH_SIZE = "MESH_MAX_PURGE_BATCH_SIZE";
-	private static final String MESH_MAX_MIGRATION_BATCH_SIZE = "MESH_MAX_MIGRATION_BATCH_SIZE";
+	public static final String MESH_MAX_MIGRATION_BATCH_SIZE = "MESH_MAX_MIGRATION_BATCH_SIZE";
+	public static final String MESH_MIGRATION_TRIGGER_INTERVAL = "MESH_MIGRATION_TRIGGER_INTERVAL";
+
 
 	// TODO remove this setting. There should not be a default max depth. This is no longer needed once we remove the expand all parameter
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
@@ -142,6 +145,11 @@ public abstract class MeshOptions implements Option {
 	@JsonPropertyDescription("The maximum amount of entities to be migrated in a single transaction. This setting affects schema, microschema and branch migrations")
 	@EnvironmentVariable(name = MESH_MAX_MIGRATION_BATCH_SIZE, description = "Override the maximum migration batch size")
 	private int migrationMaxBatchSize = 50;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering. Default: " + DEFAULT_MIGRATION_TRIGGER_INTERVAL + " ms.")
+	@EnvironmentVariable(name = MESH_MIGRATION_TRIGGER_INTERVAL, description = "Override the migration trigger interval")
+	private long migrationTriggerInterval = DEFAULT_MIGRATION_TRIGGER_INTERVAL;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
@@ -518,6 +526,20 @@ public abstract class MeshOptions implements Option {
 	@Setter
 	public void setMigrationMaxBatchSize(int migrationMaxBatchSize) {
 		this.migrationMaxBatchSize = migrationMaxBatchSize;
+	}
+
+	/**
+	 * Get the automatic job migration trigger interval in ms.
+	 * @return interval in ms
+	 */
+	public long getMigrationTriggerInterval() {
+		return migrationTriggerInterval;
+	}
+
+	@Setter
+	public MeshOptions setMigrationTriggerInterval(long migrationTriggerInterval) {
+		this.migrationTriggerInterval = migrationTriggerInterval;
+		return this;
 	}
 
 	/**

@@ -42,6 +42,8 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 	private final HttpClient httpClient;
 	private final MeshOptions options;
 
+	private static final Set<Pattern> blacklistPathPatternSet = createBlacklistPatternSet();
+
 	private static final Set<Pattern> whiteListPathPatternSet = createWhitelistPatternSet();
 
 	@Inject
@@ -75,7 +77,7 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 			return;
 		}
 
-		if (isWhitelisted(path)) {
+		if (isWhitelisted(path) && !isBlacklisted(path)) {
 			if (log.isDebugEnabled()) {
 				log.debug("URI {" + requestURI + "} with method {" + method.name() + "} is whitelisted. Skipping delegation");
 			}
@@ -226,6 +228,26 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 
 	}
 
+	/**
+	 * Check whether the given path is blacklisted (meaning: should be delegated to the master, even if also whitelisted)
+	 * @param path path to check
+	 * @return true iff the path is blacklisted
+	 */
+	public static boolean isBlacklisted(String path) {
+		for (Pattern pattern : blacklistPathPatternSet) {
+			Matcher m = pattern.matcher(path);
+			if (m.matches()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check whether the given path is whitelisted (meaning: should not be delegated to the master)
+	 * @param path path to check
+	 * @return true iff the path is whitelisted
+	 */
 	public static boolean isWhitelisted(String path) {
 		for (Pattern pattern : whiteListPathPatternSet) {
 			Matcher m = pattern.matcher(path);
@@ -234,6 +256,13 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 			}
 		}
 		return false;
+	}
+
+	private static Set<Pattern> createBlacklistPatternSet() {
+		Set<Pattern> patterns = new HashSet<>();
+		patterns.add(Pattern.compile("/api/v[0-9]+/admin/processJobs"));
+		patterns.add(Pattern.compile("/api/v[0-9]+/admin/jobs/.*/process"));
+		return patterns;
 	}
 
 	private static Set<Pattern> createWhitelistPatternSet() {
