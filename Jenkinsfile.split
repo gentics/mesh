@@ -26,7 +26,10 @@ properties([
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 final def splits = 20;
 final def runs = 20;
-final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
+final def imagePrefixStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
+final def imagePrefixTest	   = "gtx-docker-releases-test-system.docker.apa-it.at/";
+
+def imagePrefix = imagePrefixStaging;
 
 stage("Setup Build Environment") {
 	node("mesh-root-worker-11") {
@@ -209,6 +212,12 @@ stage("Setup Build Environment") {
 
 			stage("Docker Build") {
 				if (Boolean.valueOf(params.runDocker)) {
+					if (Boolean.valueOf(params.runDeployTesting)) {
+						def branchName = GitHelper.fetchCurrentBranchName();
+						version = branchName;
+						imagePrefix = imagePrefixTest;
+					}
+
 					// demo
 					sh "rm demo/default/target/*sources.jar || true"
 					sh "rm demo/default/target/*javadoc.jar || true"
@@ -253,6 +262,11 @@ stage("Setup Build Environment") {
 			stage("Deploy") {
 				if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting)) {
 					if (Boolean.valueOf(params.runDocker)) {
+						if (Boolean.valueOf(params.runDeployTesting)) {
+							def branchName = GitHelper.fetchCurrentBranchName();
+							version = branchName;
+							imagePrefix = imagePrefixTest;
+						}
 						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 							sh 'docker login -u $repoUsername -p $repoPassword gtx-docker-releases-staging-mesh.docker.apa-it.at'
 
