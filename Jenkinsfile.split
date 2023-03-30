@@ -26,10 +26,10 @@ properties([
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 final def splits = 20;
 final def runs = 20;
-final def imagePrefixStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
-final def imagePrefixTest	   = "gtx-docker-releases-test-system.docker.apa-it.at/";
+final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at";
+final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
 
-def imagePrefix = imagePrefixStaging;
+def registryHost = registryHostStaging;
 
 stage("Setup Build Environment") {
 	node("mesh-root-worker-11") {
@@ -214,18 +214,18 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runDocker)) {
 					if (Boolean.valueOf(params.runDeployTesting)) {
 						version = branchName;
-						imagePrefix = imagePrefixTest;
+						registryHost = registryHostTest;
 					}
 
 					// demo
 					sh "rm demo/default/target/*sources.jar || true"
 					sh "rm demo/default/target/*javadoc.jar || true"
-					sh "cd demo/default ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
+					sh "cd demo/default ; docker build --network=host -t " + registryHost + "/gentics/mesh-demo:latest -t " + registryHost + "/gentics/mesh-demo:" + version + " . "
 
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
-					sh "cd server ; docker build --network=host -t " + imagePrefix + "gentics/mesh:latest -t " + imagePrefix + "gentics/mesh:" + version + " . "
+					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
 				} else {
 					echo "Docker build skipped.."
 				}
@@ -263,18 +263,18 @@ stage("Setup Build Environment") {
 					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
 							version = branchName;
-							imagePrefix = imagePrefixTest;
+							registryHost = registryHostTest;
 						}
 						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-							sh 'docker login -u $repoUsername -p $repoPassword gtx-docker-releases-staging-mesh.docker.apa-it.at'
+							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 
 							if (Boolean.valueOf(params.runDeploy)) {
-								sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:latest'
-								sh 'docker push ' + imagePrefix + 'gentics/mesh:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh-demo:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
 							}
 
-							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:' + version
-							sh 'docker push ' + imagePrefix + 'gentics/mesh:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh-demo:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
 						}
 					}
 				} else {
