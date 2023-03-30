@@ -213,7 +213,6 @@ stage("Setup Build Environment") {
 			stage("Docker Build") {
 				if (Boolean.valueOf(params.runDocker)) {
 					if (Boolean.valueOf(params.runDeployTesting)) {
-						def branchName = GitHelper.fetchCurrentBranchName();
 						version = branchName;
 						imagePrefix = imagePrefixTest;
 					}
@@ -263,7 +262,6 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting)) {
 					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
-							def branchName = GitHelper.fetchCurrentBranchName();
 							version = branchName;
 							imagePrefix = imagePrefixTest;
 						}
