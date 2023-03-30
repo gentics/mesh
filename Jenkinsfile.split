@@ -20,6 +20,7 @@ properties([
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
+		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing")
 	])
 ])
 
@@ -56,8 +57,12 @@ stage("Setup Build Environment") {
 				}
 				
 				if (Boolean.valueOf(params.runDeployTesting)) {
-					echo "Building version test build with name: " + branchName
-					version = MavenHelper.transformSnapshotToReleaseVersion(version) + '-' + branchName
+					if (params.testingVersion?.trim()) {
+						version = params.testingVersion.trim()
+					} else {
+						version = MavenHelper.transformSnapshotToReleaseVersion(version) + '-' + branchName
+					}
+					echo "Building version test build with name: " + version
 					MavenHelper.setVersion(version)
 				}
 			}
