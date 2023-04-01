@@ -15,17 +15,22 @@ properties([
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
+		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
-		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
+		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step."),
+		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
 	])
 ])
 
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 final def splits = 20;
 final def runs = 20;
-final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/";
+final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at";
+final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
+
+def registryHost = registryHostStaging;
 
 stage("Setup Build Environment") {
 	node("mesh-root-worker-11") {
@@ -50,10 +55,20 @@ stage("Setup Build Environment") {
 					sh "git commit -m 'Raise version'"
 					GitHelper.addTag(version, 'Release of version ' + version)
 				}
+				
+				if (Boolean.valueOf(params.runDeployTesting)) {
+					if (params.testingVersion?.trim()) {
+						version = params.testingVersion.trim()
+					} else {
+						version = MavenHelper.transformSnapshotToReleaseVersion(version) + '-' + branchName
+					}
+					echo "Building version test build with name: " + version
+					MavenHelper.setVersion(version)
+				}
 			}
 
 			stage("Prebuild") {
-				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) ) {
+				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) || Boolean.valueOf(params.runDeployTesting)) {
 					def extraFlags = ""
 					if (Boolean.valueOf(params.runSonar)) {
 						extraFlags = "-Djacoco.skip=false"
@@ -202,15 +217,20 @@ stage("Setup Build Environment") {
 
 			stage("Docker Build") {
 				if (Boolean.valueOf(params.runDocker)) {
+					if (Boolean.valueOf(params.runDeployTesting)) {
+						version = branchName;
+						registryHost = registryHostTest;
+					}
+
 					// demo
 					sh "rm demo/default/target/*sources.jar || true"
 					sh "rm demo/default/target/*javadoc.jar || true"
-					sh "cd demo/default ; docker build --network=host -t " + imagePrefix + "gentics/mesh-demo:latest -t " + imagePrefix + "gentics/mesh-demo:" + version + " . "
+					sh "cd demo/default ; docker build --network=host -t " + registryHost + "/gentics/mesh-demo:latest -t " + registryHost + "/gentics/mesh-demo:" + version + " . "
 
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
-					sh "cd server ; docker build --network=host -t " + imagePrefix + "gentics/mesh:latest -t " + imagePrefix + "gentics/mesh:" + version + " . "
+					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
 				} else {
 					echo "Docker build skipped.."
 				}
@@ -244,14 +264,22 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Deploy") {
-				if (Boolean.valueOf(params.runDeploy)) {
+				if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting)) {
 					if (Boolean.valueOf(params.runDocker)) {
+						if (Boolean.valueOf(params.runDeployTesting)) {
+							version = branchName;
+							registryHost = registryHostTest;
+						}
 						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-							sh 'docker login -u $repoUsername -p $repoPassword gtx-docker-releases-staging-mesh.docker.apa-it.at'
-							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:latest'
-							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:' + version
-							sh 'docker push ' + imagePrefix + 'gentics/mesh:latest'
-							sh 'docker push ' + imagePrefix + 'gentics/mesh:' + version
+							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
+
+							if (Boolean.valueOf(params.runDeploy)) {
+								sh 'docker push ' + registryHost + '/gentics/mesh-demo:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
+							}
+
+							sh 'docker push ' + registryHost + '/gentics/mesh-demo:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
 						}
 					}
 				} else {
@@ -273,6 +301,8 @@ stage("Setup Build Environment") {
 				}
 			}
 		} catch (Exception e) {
+			// Temporary
+			sh 'cat /home/jenkins/agent/workspace/mesh_ci-dev-test1/tests/tests-core/target/test-plugins/test-plugins/build.log'
 			if (currentBuild.result == null || currentBuild.currentResult == "STABLE") {
 				currentBuild.result = 'FAILURE'
 				currentBuild.currentResult = 'FAILURE'
