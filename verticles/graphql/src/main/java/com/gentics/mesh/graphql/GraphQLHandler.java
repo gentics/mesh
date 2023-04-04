@@ -23,6 +23,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
 import com.gentics.mesh.etc.config.GraphQLOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
@@ -99,6 +100,8 @@ public class GraphQLHandler {
 
 					DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
 					DataLoaderOptions options = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
+					// TODO this is inefficient, but otherwise we can't easily tell if a filter is native ready without parsing each it ahead of time.
+					options.setCachingEnabled(graphQLOptions.getNativeQueryFiltering() == NativeQueryFiltering.OFF);
 					dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, options));
 					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, options));
 					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, options));
