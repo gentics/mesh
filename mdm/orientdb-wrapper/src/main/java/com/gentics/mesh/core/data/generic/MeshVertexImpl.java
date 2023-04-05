@@ -42,6 +42,7 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.impl.JobImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -66,12 +67,16 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**BranchRootImpl
  * @see MeshVertex
  */
 @GraphElement
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, HibBaseElement {
+
+	private static final Logger log = LoggerFactory.getLogger(MeshVertexImpl.class);
 
 	private String uuid;
 
@@ -322,7 +327,20 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 						return StringUtils.EMPTY; 
 					} else {
 						// Otherwise we mimic joins (unsupported in OrientDB) with subqueries
-						return " " + src.getRight() + " IN ( SELECT " + dst.getRight() + " FROM " + dst.getLeft().getSimpleName() + " WHERE ";
+						String srcField = src.getRight();
+						Map<String, GraphRelationship> srcRelations = GraphRelationships.findRelation(src.getKey());
+						if (srcRelations != null) {
+							GraphRelationship relation = srcRelations.get(src.getValue());
+							if (relation != null) {
+								if (relation.getRelatedVertexClass() != dst.getKey()) {
+									log.error("Mismatch in requested and found relations for {}.{}: requested {}, found {}", src.getKey(), src.getValue(), dst.getKey(), relation.getRelatedVertexClass());
+									// TODO throw?
+								} else {
+									srcField = relation.getEdgeFieldName();
+								}
+							}
+						}
+						return " " + srcField + " IN ( SELECT " + dst.getRight() + " FROM " + dst.getLeft().getSimpleName() + " WHERE ";
 					}
 				}).filter(ql -> !Objects.isNull(ql)).limit(1).collect(Collectors.joining());
 
