@@ -279,15 +279,16 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	 * Parse a filter operation into the OrientDB's WHERE clause.
 	 * 
 	 * @param filter
+	 * @param ctype container type to filter out
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public String parseFilter(FilterOperation<?> filter) {
+	public String parseFilter(FilterOperation<?> filter, ContainerType ctype) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" ( ");
 		String parsedFilter = filter.maybeCombination()
 			// If combination, parse each distinctly
-			.map(filters -> filters.stream().map(this::parseFilter).collect(Collectors.joining(" " + filter.getOperator() + " ")))
+			.map(filters -> filters.stream().map(f -> parseFilter(f, ctype)).collect(Collectors.joining(" " + filter.getOperator() + " ")))
 			.orElseGet(() -> filter.maybeComparison().map(filters -> {
 				FilterOperand<?> left = filters.first;
 				FilterOperand<?> right = filters.second;
@@ -304,9 +305,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 					if (src == null || dst == null) {
 						return null;
 					}
-
 					// If this field is joined to the content, we bypass the join in favor of edge navigation.
-					// TODO customize container type (currently PUBLISHED is hardcoded)
 					if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
 						if ("fields".equals(dst.getRight())) {
 							// Looking for a CONTENT/<schema_name> = <schema_name>.<field_name>/<field_type> mapping
@@ -314,9 +313,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 									.filter(e -> "CONTENT".equals(e.getKey().getTable()) && e.getValue().getTable().equals(e.getKey().getField() + "." + left.getValue()))
 									.map(e -> "-" + e.getValue().getField()).findAny().orElse(StringUtils.EMPTY);
 							//String typeSuffix = left.getJoins().entrySet().stream().map(e -> joinIntoPair(e.getValue())).filter(e -> e.getKey() == null).map(e -> "-" + e.getValue()).findAny().orElse(StringUtils.EMPTY);
-							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
+							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ctype.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
 						} else {
-							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`" + dst.getRight() + "`";
+							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ctype.getCode() + "'].inV()[0].`" + dst.getRight() + "`";
 						}
 						return StringUtils.EMPTY;
 					}
@@ -336,7 +335,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 									log.error("Mismatch in requested and found relations for {}.{}: requested {}, found {}", src.getKey(), src.getValue(), dst.getKey(), relation.getRelatedVertexClass());
 									// TODO throw?
 								} else {
-									srcField = relation.getEdgeFieldName();
+									srcField = relation.getEdgeFieldName().replace("[edgeType='" + ContainerType.PUBLISHED.getCode() + "']", "[edgeType='" + ctype.getCode() + "']");
 								}
 							}
 						}

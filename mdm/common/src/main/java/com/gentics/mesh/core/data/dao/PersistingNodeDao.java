@@ -116,6 +116,19 @@ import io.vertx.core.logging.LoggerFactory;
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
 
+	/**
+	 * Stream nodes with content of particular type.
+	 * 
+	 * @param project
+	 * @param ac
+	 * @param internalPermission
+	 * @param type
+	 * @param paging
+	 * @param maybeFilter
+	 * @return
+	 */
+	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission internalPermission, PagingParameters paging, Optional<ContainerType> maybeType, Optional<FilterOperation<?>> maybeFilter);
+
 	@Override
 	default NodeReference transformToReference(HibNode node, InternalActionContext ac) {
 		CommonTx tx = CommonTx.get();
@@ -201,7 +214,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		ContentDao contentDao = Tx.get().contentDao();
 
-		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, maybeFilter)
+		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, Optional.ofNullable(type), maybeFilter)
 				// Now lets try to load the containers for those found nodes - apply the language fallback
 				.map(node -> new NodeContent(node, contentDao.findVersion(node, ac, languageTags, type), languageTags, type))
 				// Filter nodes without a container
@@ -1944,6 +1957,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
 		return create(user, version, project, null);
+	}
+
+	@Override
+	default Stream<? extends HibNode> findAllStream(HibProject root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return findAllStream(root, ac, permission, paging, Optional.empty(), maybeFilter);
 	}
 
 	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {

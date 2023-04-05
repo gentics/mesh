@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -31,7 +32,7 @@ public interface GraphDatabase extends Database {
 	 * @return
 	 */
 	default Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
-		return getVertices(classOfVertex, fieldNames, fieldValues, null, Optional.empty());
+		return getVertices(classOfVertex, fieldNames, fieldValues, null, Optional.empty(), Optional.empty());
 	}
 
 	/**
@@ -44,7 +45,7 @@ public interface GraphDatabase extends Database {
 	 * @param maybeFilter
 	 * @return
 	 */
-	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<String> maybeFilter);
+	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter);
 
 	/**
 	 * Utilize the index and locate the matching vertices for the given parameters and the given range.

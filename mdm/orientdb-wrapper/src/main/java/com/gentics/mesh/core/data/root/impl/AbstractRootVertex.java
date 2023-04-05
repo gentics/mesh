@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -154,8 +155,9 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				new String[] {},
 				new Object[]{},
 				mapSorting(pagingInfo),
-				Optional.ofNullable(parseFilter(extraFilter))
-			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));;
+				Optional.empty(),
+				Optional.ofNullable(parseFilter(extraFilter, ContainerType.PUBLISHED))
+			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
 	}
 

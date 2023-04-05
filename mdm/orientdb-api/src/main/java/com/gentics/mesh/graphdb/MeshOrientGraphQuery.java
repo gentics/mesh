@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
@@ -197,6 +198,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
+		System.err.println(text);
 		log.debug("EDGE QUERY: {}", text);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
@@ -213,7 +215,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		}
 	}
 	
-	public Iterable<Vertex> verticesOrdered(String[] propsAndDirs) {
+	public Iterable<Vertex> verticesOrdered(String[] propsAndDirs, Optional<ContainerType> maybeContainerType) {
 		if (limit == 0)
 			return Collections.emptyList();
 
@@ -271,19 +273,23 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		log.debug("VERTEX QUERY: {}", text);
+
+		String sqlQuery = maybeContainerType.map(ctype -> text.toString().replace("[edgeType='" + ContainerType.PUBLISHED.getCode() + "']", "[edgeType='" + ctype.getCode() + "']")).orElseGet(() -> text.toString());
+
+		System.err.println(sqlQuery);
+		log.debug("VERTEX QUERY: {}", sqlQuery);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
 		if (fetchPlan != null) {
-			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
+			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(sqlQuery);
 
 			query.setFetchPlan(fetchPlan);
 
 			return new OrientElementIterable<Vertex>(((OrientBaseGraph) graph),
 					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
 		} else {
-			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(text.toString(), queryParams.toArray()), false)
+			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams.toArray()), false)
 				.map(oresult -> (Vertex) new OrientVertex((OrientBaseGraph) graph, oresult.toElement()))
 				.iterator();
 		}

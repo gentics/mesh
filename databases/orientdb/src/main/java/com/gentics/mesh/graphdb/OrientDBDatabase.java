@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -325,7 +326,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<String> maybeFilter) {
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
 		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
@@ -345,7 +346,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			} else {
 				sorted = new String[0];
 			}
-			ret = query.verticesOrdered(sorted).iterator();
+			ret = query.verticesOrdered(sorted, maybeContainerType).iterator();
 		} else {
 			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
 		}
@@ -353,9 +354,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues,
-		String rangeKey, long start,
-		long end) {
+	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start, long end) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
 		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;

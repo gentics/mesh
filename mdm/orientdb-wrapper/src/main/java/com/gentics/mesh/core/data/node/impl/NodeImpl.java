@@ -138,8 +138,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.PUBLISHED.getCode());
 		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "creator");
-		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "editor", MeshVertex.UUID_KEY, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType = '" + ContainerType.PUBLISHED.getCode() + "'].inv()[0].editor", null);
-		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "edited", null, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType = '" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].last_edited_timestamp", null);
+		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "editor", MeshVertex.UUID_KEY, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inv()[0].editor", null);
+		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "edited", null, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].last_edited_timestamp", null);
 	}
 
 	@Override
@@ -243,8 +243,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<HibNode> getChildren(String branchUuid, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(this::parseFilter)), NodeImpl.class));
+	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
+		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> parseFilter(f, containerType))), NodeImpl.class));
 	}
 
 	private Iterator<Vertex> getUnframedChildren(String branchUuid, PagingParameters sorting, Optional<String> maybeFilter) {
@@ -252,7 +252,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeImpl.class,
 			new String[] { BRANCH_PARENTS_KEY_PROPERTY },
 			new Object[] { branchParentEntry(branchUuid, getUuid()).encode() },
-			sorting, maybeFilter);
+			sorting, Optional.empty(), maybeFilter);
 	}
 
 	@Override

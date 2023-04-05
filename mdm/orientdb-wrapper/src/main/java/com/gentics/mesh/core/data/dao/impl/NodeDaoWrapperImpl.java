@@ -161,7 +161,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	private List<NodeContent> getContentFromNode(Tx tx, HibUser user, HibNode sourceNode, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
 		UserDao userDao = tx.userDao();
 		ContentDao contentDao = tx.contentDao();
-		return toGraph(sourceNode).getChildren(branchUuid, sorting, maybeFilter)
+		return toGraph(sourceNode).getChildren(branchUuid, type, sorting, maybeFilter)
 				.stream()
 				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
 				.map(node -> {
@@ -182,9 +182,9 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeType, Optional<FilterOperation<?>> maybeFilter) {
 		Project graphProject = toGraph(project);
-		return graphProject.getNodeRoot().findAllStream(ac, perm, paging, maybeFilter);
+		return graphProject.getNodeRoot().findAllStream(ac, perm, paging, maybeType, maybeFilter);
 	}
 
 	@Override

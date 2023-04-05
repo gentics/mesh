@@ -49,10 +49,10 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	Result<HibNode> getChildren();
 
 	default Result<HibNode> getChildren(String branchUuid) {
-		return getChildren(branchUuid, null, Optional.empty());
+		return getChildren(branchUuid, ContainerType.PUBLISHED, null, Optional.empty());
 	}
 
-	Result<HibNode> getChildren(String branchUuid, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
+	Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.

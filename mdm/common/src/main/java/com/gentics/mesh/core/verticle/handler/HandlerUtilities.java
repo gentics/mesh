@@ -44,6 +44,7 @@ import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -168,7 +169,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
-		createOrUpdateElement(ac, null, uuid, actions);
+		createOrUpdateElement(ac, null, uuid, null, actions);
 	}
 
 	/**
@@ -179,10 +180,12 @@ public class HandlerUtilities {
 	 *            Parent element to be used for the operation
 	 * @param uuid
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
+	 * @param name
+	 *            Name of the element to update. If provided, Mesh will try using it to locate an existing entity, considering its uniqueness
 	 * @param actions
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
-		String uuid, DAOActions<T, RM> actions) {
+		String uuid, String name, DAOActions<T, RM> actions) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, (batch, tx) -> {
@@ -198,8 +201,16 @@ public class HandlerUtilities {
 					}
 					element = actions.loadByUuid(context(tx, ac, parent), uuid, InternalPermission.UPDATE_PERM, false);
 				}
+				// 2. If not found, load the element using the given name, if provided
+				if (element == null && StringUtils.isNotBlank(name)) {
+					Object parent = null;
+					if (parentLoader != null) {
+						parent = parentLoader.apply(tx);
+					}
+					element = actions.loadByName(context(tx, ac, parent), name, InternalPermission.UPDATE_PERM, false);
+				}
 
-				// Check whether we need to update a found element or whether we need to create a new one.
+				// 3. Check whether we need to update a found element or whether we need to create a new one.
 				if (element != null) {
 					final T updateElement = element;
 					actions.update(tx, updateElement, ac, batch);
