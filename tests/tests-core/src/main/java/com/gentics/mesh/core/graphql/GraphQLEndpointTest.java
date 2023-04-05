@@ -189,6 +189,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/users", true, false, "draft"),
 			Arrays.asList("filtering/groups", true, false, "draft"),
 			Arrays.asList("filtering/roles", true, false, "draft"),
+			Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
 			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
 			Arrays.asList("node/versionslist", true, false, "draft"),
 			Arrays.asList("permissions", true, false, "draft"),

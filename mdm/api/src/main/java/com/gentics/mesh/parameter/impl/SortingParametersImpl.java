@@ -1,6 +1,7 @@
 package com.gentics.mesh.parameter.impl;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,7 +18,7 @@ import com.gentics.mesh.parameter.SortingParameters;
 
 public class SortingParametersImpl extends AbstractParameters implements SortingParameters {
 
-	private final Map<String, SortOrder> sort = new HashMap<>();
+	private final Map<String, SortOrder> sort = new LinkedHashMap<>();
 
 	public SortingParametersImpl() {
 		
@@ -78,7 +79,7 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 	public Map<String, SortOrder> getSort() {
 		return Stream.of(sort.entrySet().stream(), SortingParameters.super.getSort().entrySet().stream())
 				.flatMap(Function.identity())
-				.collect(Collectors.toUnmodifiableMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> a));
+				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> a, LinkedHashMap::new));
 	}
 
 	@Override
