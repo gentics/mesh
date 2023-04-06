@@ -30,7 +30,7 @@ public class DevRunner {
 
 	/**
 	 * Start the dev runner.
-	 * 
+	 *
 	 * @param args
 	 * @throws Exception
 	 */
@@ -46,6 +46,7 @@ public class DevRunner {
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 
 		options.getSearchOptions().disable();
+		options.getStorageOptions().setStartServer(true);
 
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {

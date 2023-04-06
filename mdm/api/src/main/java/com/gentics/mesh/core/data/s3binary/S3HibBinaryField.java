@@ -6,10 +6,8 @@ import java.util.Objects;
 
 import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.node.field.HibBasicField;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.data.node.field.HibImageDataField;
-import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.S3BinaryFieldImpl;
@@ -109,32 +107,6 @@ public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3Bin
 
 	@Override
 	S3HibBinary getBinary();
-
-	/**
-	 * Get the binaries check status (ACCEPTED, DENIED or POSTPONED).
-	 * @return The binaries check status.
-	 */
-	BinaryCheckStatus getCheckStatus();
-
-	/**
-	 * Set the binaries check status (ACCEPTED, DENIED or POSTPONED).
-	 * @param checkStatus The check status to set.
-	 * @return Fluent API.
-	 */
-	S3HibBinaryField setCheckStatus(BinaryCheckStatus checkStatus);
-
-	/**
-	 * Get the binaries check secret.
-	 * @return The binaries check secret.
-	 */
-	String getCheckSecret();
-
-	/**
-	 * Set the binaries check secret.
-	 * @param checkSecret The binaries check secret.
-	 * @return Fluent API.
-	 */
-	S3HibBinaryField setCheckSecret(String checkSecret);
 
 	default boolean s3BinaryFieldEquals(Object obj) {
 		if (getClass().isInstance(obj)) {

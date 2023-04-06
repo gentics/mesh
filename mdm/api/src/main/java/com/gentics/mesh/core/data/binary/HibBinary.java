@@ -14,14 +14,14 @@ public interface HibBinary extends HibImageDataElement {
 
 	/**
 	 * Return the SHA512Sum of the binary.
-	 * 
+	 *
 	 * @return
 	 */
 	String getSHA512Sum();
 
 	/**
 	 * Set the SHA 512 Checksum
-	 * 
+	 *
 	 * @param sha512sum
 	 * @return
 	 */

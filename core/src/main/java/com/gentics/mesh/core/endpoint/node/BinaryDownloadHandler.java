@@ -85,7 +85,8 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 				// The binary can only be downloaded if it has been accepted, or the current request provided the check
 				// secret (which should only be known to the check service).
-				if (field.getCheckStatus() != BinaryCheckStatus.ACCEPTED && !Objects.equals(field.getCheckSecret(), rc.queryParams().get("secret"))) {
+				if (field.getBinary().getCheckStatus() != BinaryCheckStatus.ACCEPTED
+						&& !Objects.equals(field.getBinary().getCheckSecret(), rc.queryParams().get("secret"))) {
 					throw error(NOT_FOUND, "error_binaryfield_not_accepted", fieldName);
 				}
 
@@ -98,7 +99,8 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 				// The binary can only be downloaded if it has been accepted, or the current request provided the check
 				// secret (which should only be known to the check service).
-				if (field.getCheckStatus() != BinaryCheckStatus.ACCEPTED && !Objects.equals(field.getCheckSecret(), rc.queryParams().get("secret"))) {
+				if (field.getBinary().getCheckStatus() != BinaryCheckStatus.ACCEPTED
+						&& !Objects.equals(field.getBinary().getCheckSecret(), rc.queryParams().get("secret"))) {
 					throw error(NOT_FOUND, "error_binaryfield_not_accepted", fieldName);
 				}
 

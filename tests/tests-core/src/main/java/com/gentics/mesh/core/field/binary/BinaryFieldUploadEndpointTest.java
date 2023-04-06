@@ -28,11 +28,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.test.MeshOptionChanger;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import org.apache.commons.io.FileUtils;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -62,9 +67,25 @@ import com.gentics.mesh.util.VersionNumber;
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.junit.MockServerRule;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
 
-@MeshTestSetting(testSize = FULL, startServer = true)
+@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.SHORT_BINARY_CHECK_INTERVAL)
 public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
+
+	@Rule
+	public final MockServerRule mockServer = new MockServerRule(this);
+
+	private MockServerClient mockServerClient;
+
+	@Before
+	public void setup() {
+		mockServerClient
+			.when(HttpRequest.request("/check").withMethod("POST"))
+			.respond(rq -> HttpResponse.response(new JsonObject().put("status", "ACCEPTED").encode()));
+	}
 
 	@Test
 	public void testUploadWithNoPerm() throws IOException {
@@ -362,7 +383,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	/**
 	 * Test whether the implementation works as expected when you update the node binary data to an image and back to a non image. The image related fields
 	 * should disappear.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -447,15 +468,23 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testUpload() throws Exception {
+	public void testUploadWithoutCheck() throws Exception {
+		doTestUpload(false);
+	}
 
+	@Test
+	public void testUploadWithCheck() throws Exception {
+		doTestUpload(true);
+	}
+
+	private void doTestUpload(boolean useBinaryCheck) throws Exception {
 		String contentType = "application/blub";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 		HibNode node = folder("news");
 		String uuid = tx(() -> node.getUuid());
 		try (Tx tx = tx()) {
-			prepareSchema(node, "", "binary");
+			prepareSchema(node, "", "binary", useBinaryCheck ? "http://fake.check/url" : null);
 			tx.success();
 		}
 		MeshCoreAssertion.assertThat(testContext).hasUploads(0, 0).hasTempFiles(0).hasTempUploads(0);
@@ -472,6 +501,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		assertNull("The data did contain image information.", binaryField.getDominantColor());
 		assertNull("The data did contain image information.", binaryField.getWidth());
 		assertNull("The data did contain image information.", binaryField.getHeight());
+		assertEquals("The binary must be accepted immediately", BinaryCheckStatus.ACCEPTED, binaryField.getCheckStatus());
 
 		MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "binary"));
 		assertNotNull(downloadResponse);
@@ -546,7 +576,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Assert that deleting a binary node will also remove the stored binary file.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	@Test
@@ -618,9 +648,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Assert that deleting one node will not affect the binary of another node which uses the same binary (binary of the binaryfield).
-	 * 
+	 *
 	 * @throws IOException
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	@Test
 	public void testDeleteBinaryNodeDeduplication() throws IOException, InterruptedException {
@@ -784,21 +814,69 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testFlowableDownload() throws IOException {
+	public void testFlowableDownloadWithoutCheckService() throws IOException, InterruptedException {
+		doTestFlowableDownload(false);
+	}
+
+	@Test
+	public void testFlowableDownloadWithCheckService() throws IOException, InterruptedException {
+		doTestFlowableDownload(true);
+	}
+
+	/**
+	 * Perform the actual download test.
+	 *
+	 * <p>
+	 *     When {@code useCheckService} is {@code true}, the respective property in the binary field is set
+	 *     and the download is expected to fail.
+	 * </p>
+	 *
+	 * @param useCheckService Whether to set the check service URL for the test.
+	 */
+	public void doTestFlowableDownload(boolean useCheckService) throws IOException, InterruptedException {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
 		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
-			prepareSchema(node, "", fieldName);
+			prepareSchema(node, "", fieldName, useCheckService ? "http://localhost:" + mockServer.getPort() + "/check" : null);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
 			int size = uploadImage(node, "en", fieldName, fileName, contentType);
 
-			MeshBinaryResponse downloadResponse = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName));
+			MeshBinaryResponse downloadResponse = null;
+
+			try {
+				downloadResponse = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).blockingGet();
+				if (useCheckService) {
+					fail("Download must not succeed when check service URL is given");
+				}
+			} catch (Exception e) {
+				assertThat(e.getCause())
+					.as("Download exception")
+					.matches(
+						cause -> {
+							if (!(cause instanceof MeshRestClientMessageException)) {
+								return false;
+							}
+
+							MeshRestClientMessageException restClientException = (MeshRestClientMessageException) cause;
+
+							return restClientException.getStatusCode() == HttpResponseStatus.NOT_FOUND.code()
+								&& restClientException.getMessage().contains("was not accepted yet");
+						},
+						"must be 404 because binary was not accepted yet");
+			}
+
+			if (useCheckService) {
+				Thread.sleep(10_000);
+				// Nothing more to check, the download failed as expected.
+				return;
+			}
+
 			assertNotNull(downloadResponse);
 			byte[] bytes = downloadResponse.getFlowable().reduce(ArrayUtils::addAll).blockingGet();
 			assertEquals(size, bytes.length);

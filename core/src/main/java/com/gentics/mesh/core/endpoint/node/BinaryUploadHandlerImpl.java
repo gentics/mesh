@@ -55,6 +55,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -90,7 +91,8 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			BinaryFieldResponseHandler binaryFieldResponseHandler,
 			BinaryStorage binaryStorage,
 			BinaryProcessorRegistryImpl binaryProcessorRegistry,
-			HandlerUtilities utils, Vertx rxVertx,
+			HandlerUtilities utils,
+			Vertx rxVertx,
 			MeshOptions options,
 			Binaries binaries,
 			WriteLock writeLock) {
@@ -269,19 +271,18 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				HibBranch branch = tx.getBranch(ac);
 				NodeDao nodeDao = tx.nodeDao();
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-
-				// We need to check whether someone else has stored the binary in the meanwhile
-				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
-				if (binary == null) {
-					binary = binaries.create(binaryUuid, hash, upload.size()).runInExistingTx(tx);
-				}
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
-
 				// Load the current latest draft
 				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+				}
+
+				if (!(fieldSchema instanceof BinaryFieldSchema)) {
+					// TODO Add support for other field types
+					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+				}
 
 				if (latestDraftVersion == null) {
 					// latestDraftVersion = node.createGraphFieldContainer(language, branch, ac.getUser());
@@ -290,6 +291,22 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 					// * check for segment field conflicts
 					// * update display name
 					// * fail if mandatory fields are missing
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
+
+				// We need to check whether someone else has stored the binary in the meanwhile
+				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
+
+				if (binary == null) {
+					BinaryCheckStatus checkStatus = StringUtils.isNotBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())
+						? BinaryCheckStatus.POSTPONED
+						: BinaryCheckStatus.ACCEPTED;
+
+					binary = binaries.create(binaryUuid, hash, upload.size(), checkStatus).runInExistingTx(tx);
+				}
+
+				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
@@ -321,14 +338,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 					}
 				}
 
-				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-				if (fieldSchema == null) {
-					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-				}
-				if (!(fieldSchema instanceof BinaryFieldSchema)) {
-					// TODO Add support for other field types
-					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
-				}
 
 				// Create a new node version field container to store the upload
 				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
@@ -376,31 +385,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 
-				BinaryCheckContext checkContext = new BinaryCheckContext()
-					.setNode(nodeDao.transformToRestSync(node, ac, 0))
-					.setCheckServiceUrl(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl());
-
-				if (checkContext.needsCheck()) {
-					String checkSecret = UUIDUtil.randomUUID();
-
-					field.setCheckStatus(BinaryCheckStatus.POSTPONED);
-					field.setCheckSecret(checkSecret);
-
-					checkContext.setCheckSecret(checkSecret)
-						.setFilename(upload.fileName())
-						.setContentType(upload.contentType());
-				} else {
-					field.setCheckStatus(BinaryCheckStatus.ACCEPTED);
-				}
-
-				return checkContext;
-			})
-			.flatMap(checkContext -> {
-				if (checkContext.needsCheck()) {
-					performBinaryCheck(nodeUuid, fieldName, checkContext);
-				}
-
-				return Single.just(checkContext.getNode());
+				return nodeDao.transformToRestSync(node, ac, 0);
 			});
 	}
 

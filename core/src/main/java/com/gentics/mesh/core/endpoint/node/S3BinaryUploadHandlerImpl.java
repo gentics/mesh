@@ -47,6 +47,7 @@ import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Handler for s3binary upload requests. This class is responsible only for the creation of the necessary Mesh fields. The real upload is done between the client and the AWS.
@@ -205,31 +206,14 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 				batch.add(s3HibBinary.onCreated(nodeUuid, s3ObjectKey));
 
-				BinaryCheckContext checkContext = new BinaryCheckContext()
-					.setNode(nodeDao.transformToRestSync(node, ac, 0))
-					.setCheckServiceUrl(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl());
-
-				if (checkContext.needsCheck()) {
-					String checkSecret = UUIDUtil.randomUUID();
-
-					field.setCheckStatus(BinaryCheckStatus.POSTPONED);
-					field.setCheckSecret(checkSecret);
-
-					checkContext.setCheckSecret(checkSecret)
-						.setFilename(s3HibBinary.getFileName())
-						.setContentType(s3HibBinary.getMimeType());
+				if (StringUtils.isNotBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+					field.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+					field.getBinary().setCheckSecret(UUIDUtil.randomUUID());
 				} else {
-					field.setCheckStatus(BinaryCheckStatus.ACCEPTED);
+					field.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
 				}
 
-				return checkContext;
-			})
-			.flatMap(checkContext -> {
-				if (checkContext.needsCheck()) {
-					performBinaryCheck(nodeUuid, fieldName, checkContext);
-				}
-
-				return Single.just(checkContext.getNode());
+				return nodeDao.transformToRestSync(node, ac, 0);
 			});
 	}
 }

@@ -5,7 +5,6 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
-import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -238,47 +237,5 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	 */
 	default void setFileSize(Long fileSize) {
 		property(S3_FILE_SIZE, fileSize);
-	}
-
-	/**
-	 * Return the check status of the binary (one of ACCEPTED, DENIED or POSTPONED).
-	 * @return The check status of the binary.
-	 */
-	@Override
-	default BinaryCheckStatus getCheckStatus() {
-		Object status = property(S3_BINARY_CHECK_STATUS);
-
-		return status == null ? null : BinaryCheckStatus.valueOf(status.toString());
-	}
-
-	/**
-	 * Set the check status of the binary (one of ACCEPTED, DENIED or POSTPONDED).
-	 * @param checkStatus The check status to set.
-	 * @return Fluent API.
-	 */
-	@Override
-	default S3BinaryGraphField setCheckStatus(BinaryCheckStatus checkStatus) {
-		property(S3_BINARY_CHECK_STATUS, checkStatus);
-		return this;
-	}
-
-	/**
-	 * Return the check secret of the binary.
-	 * @return The check secret of the binary.
-	 */
-	@Override
-	default String getCheckSecret() {
-		return property(S3_BINARY_CHECK_SECRET);
-	}
-
-	/**
-	 * Set the check secret of the binary.
-	 * @param checkSecret The binaries check secret.
-	 * @return Fluent API.
-	 */
-	@Override
-	default S3BinaryGraphField setCheckSecret(String checkSecret) {
-		property(S3_BINARY_CHECK_SECRET, checkSecret);
-		return this;
 	}
 }

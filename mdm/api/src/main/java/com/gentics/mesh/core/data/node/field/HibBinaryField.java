@@ -37,6 +37,7 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 			restModel.setSha512sum(binary.getSHA512Sum());
 			restModel.setWidth(binary.getImageWidth());
 			restModel.setHeight(binary.getImageHeight());
+			restModel.setCheckStatus(binary.getCheckStatus());
 		}
 
 		restModel.setFocalPoint(getImageFocalPoint());
@@ -46,7 +47,6 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 		restModel.setMetadata(metaData);
 
 		restModel.setPlainText(getPlainText());
-		restModel.setCheckStatus(getCheckStatus());
 
 		return restModel;
 	}
@@ -80,7 +80,9 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 			String hashSumB = binaryB != null ? binaryB.getSHA512Sum() : null;
 			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
 
-			boolean checkStatus = Objects.equals(getCheckStatus(), binaryField.getCheckStatus());
+			BinaryCheckStatus statusA = binaryA != null ? binaryA.getCheckStatus() : null;
+			BinaryCheckStatus statusB = binaryB != null ? binaryB.getCheckStatus() : null;
+			boolean checkStatus = Objects.equals(statusA, statusB);
 
 			return filename && mimetype && sha512sum && checkStatus;
 		}
@@ -129,7 +131,14 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
 
-			boolean matchingCheckStatus = Objects.equals(getCheckStatus(), binaryField.getCheckStatus());
+			boolean matchingCheckStatus = true;
+
+			if (binaryField.getCheckStatus() != null) {
+				BinaryCheckStatus statusA = getBinary() != null ? getBinary().getCheckStatus() : null;
+				BinaryCheckStatus statusB = binaryField.getCheckStatus();
+
+				matchingCheckStatus = Objects.equals(statusA, statusB);
+			}
 
 			return matchingFilename
 				&& matchingMimetype
@@ -147,30 +156,4 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 	default String getDisplayName() {
 		return getFileName();
 	}
-
-	/**
-	 * Get the binaries check status (ACCEPTED, DENIED or POSTPONED).
-	 * @return The binaries check status.
-	 */
-	BinaryCheckStatus getCheckStatus();
-
-	/**
-	 * Set the binaries check status (ACCEPTED, DENIED or POSTPONED).
-	 * @param checkStatus The check status to set.
-	 * @return Fluent API.
-	 */
-	HibBinaryField setCheckStatus(BinaryCheckStatus checkStatus);
-
-	/**
-	 * Get the binaries check secret.
-	 * @return The binaries check secret.
-	 */
-	String getCheckSecret();
-
-	/**
-	 * Set the binaries check secret.
-	 * @param checkSecret The binaries check secret.
-	 * @return Fluent API.
-	 */
-	HibBinaryField setCheckSecret(String checkSecret);
 }

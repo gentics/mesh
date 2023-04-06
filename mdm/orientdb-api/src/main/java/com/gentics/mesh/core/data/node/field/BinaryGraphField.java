@@ -6,7 +6,6 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -36,10 +35,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	String BINARY_LON_KEY = "metadata-lon";
 
 	String BINARY_ALT_KEY = "metadata-alt";
-
-	String BINARY_CHECK_STATUS = "check-status";
-
-	String BINARY_CHECK_SECRET = "check-secret";
 
 	String PLAIN_TEXT_KEY = "plainText";
 
@@ -279,46 +274,4 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	String getPlainText();
-
-	/**
-	 * Return the check status of the binary (one of ACCEPTED, DENIED or POSTPONED).
-	 * @return The check status of the binary.
-	 */
-	@Override
-	default BinaryCheckStatus getCheckStatus() {
-		Object status = property(BINARY_CHECK_STATUS);
-
-		return status == null ? null : BinaryCheckStatus.valueOf(status.toString());
-	}
-
-	/**
-	 * Set the check status of the binary (one of ACCEPTED, DENIED or POSTPONDED).
-	 * @param checkStatus The check status to set.
-	 * @return Fluent API.
-	 */
-	@Override
-	default BinaryGraphField setCheckStatus(BinaryCheckStatus checkStatus) {
-		property(BINARY_CHECK_STATUS, checkStatus);
-		return this;
-	}
-
-	/**
-	 * Return the check secret of the binary.
-	 * @return The check secret of the binary.
-	 */
-	@Override
-	default String getCheckSecret() {
-		return property(BINARY_CHECK_SECRET);
-	}
-
-	/**
-	 * Set the check secret of the binary.
-	 * @param checkSecret The binaries check secret.
-	 * @return Fluent API.
-	 */
-	@Override
-	default BinaryGraphField setCheckSecret(String checkSecret) {
-		property(BINARY_CHECK_SECRET, checkSecret);
-		return this;
-	}
 }
