@@ -198,7 +198,6 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		System.err.println(text);
 		log.debug("EDGE QUERY: {}", text);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
@@ -276,7 +275,6 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 
 		String sqlQuery = maybeContainerType.map(ctype -> text.toString().replace("[edgeType='" + ContainerType.PUBLISHED.getCode() + "']", "[edgeType='" + ctype.getCode() + "']")).orElseGet(() -> text.toString());
 
-		System.err.println(sqlQuery);
 		log.debug("VERTEX QUERY: {}", sqlQuery);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
