@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.8.21]]
+== 1.8.21 (TBD)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+
 [[v1.8.20]]
 == 1.8.20 (22.03.2023)
 
@@ -128,7 +133,7 @@ icon:check[] Core: Possible errors during node migrations in branches have been 
 
 icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` can be used to configure automatic retries for requests to Mesh which failed due to a network error. By default retries are disabled. A value of -1 for `retryDelayMs` will automatically calculate a delay such that all tries are performed in the timespan of the call timeout configured for the Ok HTTP client.
 
-icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
+icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the liveness probe to return an unhealthy status.
 
 icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
 
