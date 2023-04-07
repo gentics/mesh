@@ -22,6 +22,23 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.10.4]]
+== 1.10.4 (23.03.2023)
+
+icon:check[] Core: If a node has more that one INITIAL content for a language in a branch, this can now be repaired with the consistency repair tool.
+
+[[v1.10.3]]
+== 1.10.3 (08.03.2023)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
+[[v1.10.2]]
+== 1.10.2 (22.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
 [[v1.10.1]]
 == 1.10.1 (26.01.2023)
 
