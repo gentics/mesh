@@ -230,7 +230,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			.flatMapSingleElement(user -> db.singleTx(user.getDelegate()::getUuid).flatMap(uuid -> {
 				// Compare the stored and current token id to see whether the current token is different.
 				// In that case a sync must be invoked.
-				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(user.getDelegate().getUuid());
+				String lastSeenTokenId = TOKEN_ID_LOG.getIfPresent(uuid);
 				if (lastSeenTokenId == null || !lastSeenTokenId.equals(cachingId)) {
 					return assertReadOnlyDeactivated().andThen(db.singleTx(tx -> {
 						HibUser admin = tx.userDao().findByUsername("admin");
