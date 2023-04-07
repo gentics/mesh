@@ -16,12 +16,17 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.SortingParameters;
 
+/**
+ * The sorting parameters may be added to the REST request.
+ * 
+ * @author plyhun
+ *
+ */
 public class SortingParametersImpl extends AbstractParameters implements SortingParameters {
 
 	private final Map<String, SortOrder> sort = new LinkedHashMap<>();
 
 	public SortingParametersImpl() {
-		
 	}
 
 	public SortingParametersImpl(String sortBy, SortOrder order) {

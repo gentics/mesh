@@ -127,8 +127,7 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			FilterOperation<?> extraFilter) {
+	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().tagDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

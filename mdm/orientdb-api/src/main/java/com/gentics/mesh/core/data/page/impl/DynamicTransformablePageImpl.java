@@ -15,6 +15,7 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -226,7 +227,8 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Framed graph used to re-frame the resulting elements
 	 * @param perm
 	 *            Graph permission to filter by
-	 * @param optional 
+	 * @param maybeVariations 
+	 *            Variations of an entity type to fetch. Currently subclasses of {@link HibJob} are used here.
 	 */
 	private void init(Class<? extends T> clazz, String rootLabel, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
 		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {

@@ -93,8 +93,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			FilterOperation<?> extraFilter) {
+	public Page<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().jobDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

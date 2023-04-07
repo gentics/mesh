@@ -112,8 +112,7 @@ public class SchemaDAOActionsImpl implements SchemaDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			FilterOperation<?> extraFilter) {
+	public Page<? extends HibSchema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().schemaDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
@@ -77,12 +78,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (PersistingRootDao.shouldSort(paging)) {
+		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
 					.vertexClass(getPersistanceClass())
 					.edgeLabel(getRootLabel().toUpperCase());
 			query.has(Direction.IN.name().toLowerCase(), id());
+			query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED)));
 			if (paging.getPerPage() != null) {
 				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
 				query.limit(paging.getPerPage().intValue());

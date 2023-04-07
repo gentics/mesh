@@ -100,8 +100,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			FilterOperation<?> extraFilter) {
+	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return new DynamicStreamPageImpl<>(ctx.tx().branchDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)), pagingInfo, true);
 	}
 

@@ -2,9 +2,11 @@ package com.gentics.mesh.core.data;
 
 import java.util.Set;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
@@ -60,4 +62,13 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 * @return
 	 */
 	Set<String> getRoleUuidsForPerm(InternalPermission permission);
+
+	/**
+	 * Parse a filter operation into the OrientDB's WHERE clause.
+	 * 
+	 * @param filter
+	 * @param ctype container type to filter out
+	 * @return
+	 */
+	String parseFilter(FilterOperation<?> filter, ContainerType ctype);
 }

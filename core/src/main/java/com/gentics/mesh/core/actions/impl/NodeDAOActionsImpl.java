@@ -102,8 +102,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			FilterOperation<?> extraFilter) {
+	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return new DynamicStreamPageImpl<>(ctx.tx().nodeDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)), pagingInfo, true);
 	}
 

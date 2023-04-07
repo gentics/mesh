@@ -94,8 +94,7 @@ public class ProjectDAOActionsImpl implements ProjectDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibProject> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			FilterOperation<?> extraFilter) {
+	public Page<? extends HibProject> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().projectDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

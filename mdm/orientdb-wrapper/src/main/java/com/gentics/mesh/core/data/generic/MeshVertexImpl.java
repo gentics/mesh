@@ -275,13 +275,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		return sorting;
 	}
 
-	/**
-	 * Parse a filter operation into the OrientDB's WHERE clause.
-	 * 
-	 * @param filter
-	 * @param ctype container type to filter out
-	 * @return
-	 */
+	@Override
 	@SuppressWarnings("rawtypes")
 	public String parseFilter(FilterOperation<?> filter, ContainerType ctype) {
 		StringBuilder sb = new StringBuilder();

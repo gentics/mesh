@@ -38,7 +38,6 @@ public class PagingParametersImpl extends SortingParametersImpl implements Pagin
 		super(sortBy, order);
 		setPage(page);
 		setPerPage(perPage);
-		putSort(sortBy, order);
 	}
 
 	/**
