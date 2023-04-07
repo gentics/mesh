@@ -22,6 +22,18 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.11.0]]
+== 1.11.0 (TBD)
+
+icon:plus[] Core: A support of database level filtering/sorting has been added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `OFF` (old filtering), `ALWAYS` (DB filtering is forced), 
+`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
+
+icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GrathQL parameter `nativeFilter` 
+is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
+Please note that not all the currently existing filters are supported by the DB.
+
+icon:plus[] OrientDB: Basic support for DB filtering/sorting is added.
+
 [[v1.10.4]]
 == 1.10.4 (23.03.2023)
 
