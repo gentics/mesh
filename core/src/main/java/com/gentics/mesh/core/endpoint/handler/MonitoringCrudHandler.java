@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
@@ -62,12 +63,18 @@ public class MonitoringCrudHandler {
 				throw error(SERVICE_UNAVAILABLE, "error_internal");
 			}
 		}
-
 		if (!liveness.isLive()) {
-			log.warn("Liveness was set to false due to {}", liveness.getError());
-			throw error(SERVICE_UNAVAILABLE, "error_internal");
+			Mesh mesh = boot.mesh();
+			switch (mesh.getStatus()) {
+			case BACKUP:
+			case RESTORE:
+				log.info("Mesh is temporary unavailable due to {}, but is still alive", mesh.getStatus());
+				break;
+			default:
+				log.warn("Liveness was set to false due to {}", liveness.getError());
+				throw error(SERVICE_UNAVAILABLE, "error_internal");
+			}
 		}
-
 		rc.response().setStatusCode(200).end();
 	}
 
@@ -90,22 +97,18 @@ public class MonitoringCrudHandler {
 				throw error(SERVICE_UNAVAILABLE, "error_internal");
 			}
 		}
-
 		if (!liveness.isLive()) {
 			log.warn("Liveness was set to false due to {}", liveness.getError());
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
-
 		if (clusterManager != null && !clusterManager.isLocalNodeOnline()) {
 			log.warn("Local node is not online - Failing readiness probe");
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
-
 		if (!db.isHealthy()) {
 			log.warn("Failing DB health check");
 			throw error(SERVICE_UNAVAILABLE, "error_internal");
 		}
-
 		MeshStatus status = boot.mesh().getStatus();
 		if (!status.equals(MeshStatus.READY)) {
 			log.warn("Status is {" + status.name() + "} - Failing readiness probe");
