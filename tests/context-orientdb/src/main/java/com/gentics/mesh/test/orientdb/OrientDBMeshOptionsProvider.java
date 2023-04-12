@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.orientdb;
 
-
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
@@ -12,6 +11,7 @@ public class OrientDBMeshOptionsProvider implements MeshOptionsProvider {
 	
 	public OrientDBMeshOptionsProvider() {
 		meshOptions = OptionsLoader.generateDefaultConfig(OrientDBMeshOptions.class, null);
+		meshOptions.getStorageOptions().getAdministrationOptions().setEnabled(true);
 	}
 	
 	@Override

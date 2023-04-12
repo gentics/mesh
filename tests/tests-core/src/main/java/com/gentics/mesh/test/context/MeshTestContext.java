@@ -41,6 +41,7 @@ import org.testcontainers.utility.DockerImageName;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
+import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.db.Database;
@@ -389,6 +390,7 @@ public class MeshTestContext implements TestRule {
 			.build();
 
 		monitoringClient = MonitoringRestClient.create(monitoringClientConfig);
+
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.clear().blockingAwait();
 		}
@@ -798,7 +800,7 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public ElasticsearchProcessVerticle getElasticSearchVerticle() {
-		return ((AbstractBootstrapInitializer) meshDagger.boot()).loader.get().getSearchVerticle();
+		return ((CoreVerticleLoader) ((AbstractBootstrapInitializer) meshDagger.boot()).loader.get()).getSearchVerticle();
 	}
 
 	public static ContainerProxy getProxy() {

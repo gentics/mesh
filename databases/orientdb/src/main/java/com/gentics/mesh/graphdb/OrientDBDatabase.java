@@ -67,6 +67,7 @@ import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexCursor;
@@ -194,6 +195,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 		if (txProvider != null) {
 			txProvider.close();
+			txProvider = null;
 		}
 	}
 
@@ -317,6 +319,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void shutdown() {
 		stopDiskQuotaChecker();
 		Orient.instance().shutdown();
+		ODatabaseDocumentTx.closeAll();
 	}
 
 	@Override
@@ -748,6 +751,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 				return false;
 			}
 		}
+	}
+
+	/**
+	 * Check if the database is currently running.
+	 * 
+	 * @return
+	 */
+	public boolean isRunning() {
+		return Orient.instance().isActive();
 	}
 
 	/**

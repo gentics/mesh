@@ -129,7 +129,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	public Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry;
 
 	@Inject
-	public Lazy<CoreVerticleLoader> loader;
+	public Lazy<VerticleLoader> loader;
 
 	@Inject
 	public HighLevelChangelogSystem highlevelChangelogSystem;
@@ -614,7 +614,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		}
 
 		registerEventHandlers();
-
 	}
 
 	/**

@@ -470,6 +470,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		if (server != null) {
 			log.info("Stopping OrientDB Server");
 			server.shutdown();
+			server = null;
 		}
 	}
 

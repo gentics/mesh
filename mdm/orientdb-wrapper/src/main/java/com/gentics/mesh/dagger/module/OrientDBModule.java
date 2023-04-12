@@ -20,6 +20,8 @@ import com.gentics.mesh.changelog.highlevel.OrientDBHighLevelChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
+import com.gentics.mesh.cli.OrientDBCoreVerticleLoader;
+import com.gentics.mesh.cli.VerticleLoader;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -132,6 +134,9 @@ import dagger.Provides;
  */
 @Module(includes = { OrientDBCoreModule.class })
 public abstract class OrientDBModule {
+
+	@Binds
+	abstract VerticleLoader verticleLoader(OrientDBCoreVerticleLoader e);
 
 	@Binds
 	abstract HighLevelChangesList highLevelChangesList(OrientDBHighLevelChangesList e);

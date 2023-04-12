@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
+import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -538,7 +539,7 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	default ElasticsearchProcessVerticle getSearchVerticle() {
-		return ((AbstractBootstrapInitializer) boot()).loader.get().getSearchVerticle();
+		return ((CoreVerticleLoader) ((AbstractBootstrapInitializer) boot()).loader.get()).getSearchVerticle();
 	}
 
 	/**

@@ -34,6 +34,7 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public void close() {
+		context.close();
 	}
 
 	@Override
