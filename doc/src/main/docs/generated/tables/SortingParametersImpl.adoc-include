@@ -12,16 +12,6 @@
 | false
 | Field order (ASC/DESC/UNSORTED) to sort the result by.
 
-| page
-| number  (default: 1) 
-| false
-| Number of page to be loaded.
-
-| perPage
-| number 
-| false
-| Number of elements per page.
-
 | sortBy
 | string 
 | false

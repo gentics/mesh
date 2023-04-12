@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 64
+  eventPoolSize: 24
   eventBus:
     checkInterval: 30000
     warnThreshold: 60000
@@ -56,7 +56,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 64
+  verticleAmount: 24
   serverTokens: true
   maxFormAttributeSize: -1
 monitoring:
@@ -131,6 +131,7 @@ debugInfo:
 graphQL:
   slowThreshold: 60000
   asyncWaitTimeout: 120000
+  nativeQueryFiltering: "ON_DEMAND"
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"
