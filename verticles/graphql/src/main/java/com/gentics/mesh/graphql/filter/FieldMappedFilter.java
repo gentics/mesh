@@ -1,12 +1,13 @@
 package com.gentics.mesh.graphql.filter;
 
 import java.util.Collections;
-import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.gentics.graphqlfilter.filter.Filter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
+import com.gentics.graphqlfilter.filter.operation.Join;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.graphqlfilter.util.FilterUtil;
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -46,7 +47,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 	}
 
 	@Override
-	public Map<JoinPart, JoinPart> getJoins() {
-		return FilterUtil.addFluent(super.getJoins(), Collections.singletonMap(new JoinPart("CONTENT", schemaName), new JoinPart(schemaName + "." + getName(), fieldType.name().toLowerCase())));
+	public Set<Join> getJoins() {
+		return FilterUtil.addFluent(super.getJoins(), Collections.singleton(new Join(new JoinPart("CONTENT", schemaName), new JoinPart(schemaName + "." + getName(), fieldType.name().toLowerCase()))));
 	}
 }

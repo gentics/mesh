@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
@@ -291,9 +291,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 				Pair<Class, String> leftJoin = joinIntoPair(new JoinPart(left.maybeGetOwner().orElse(StringUtils.EMPTY), String.valueOf(left.getValue())));
 				Object[] leftValue = new Object[] {leftJoin != null ? leftJoin.getValue() : String.valueOf(getFilterOperandValue(left))};
 
-				String qlLeft = left.getJoins().entrySet().stream().map(join -> {
-					Pair<Class, String> src = joinIntoPair(join.getKey());
-					Pair<Class, String> dst = joinIntoPair(join.getValue());
+				String qlLeft = left.getJoins().stream().map(join -> {
+					Pair<Class, String> src = joinIntoPair(join.getLeft());
+					Pair<Class, String> dst = joinIntoPair(join.getRight());
 
 					// Case for schema name mapped
 					if (src == null || dst == null) {
@@ -303,9 +303,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 					if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
 						if ("fields".equals(dst.getRight())) {
 							// Looking for a CONTENT/<schema_name> = <schema_name>.<field_name>/<field_type> mapping
-							String typeSuffix = left.getJoins().entrySet().stream()
-									.filter(e -> "CONTENT".equals(e.getKey().getTable()) && e.getValue().getTable().equals(e.getKey().getField() + "." + left.getValue()))
-									.map(e -> "-" + e.getValue().getField()).findAny().orElse(StringUtils.EMPTY);
+							String typeSuffix = left.getJoins().stream()
+									.filter(e -> "CONTENT".equals(e.getLeft().getTable()) && e.getRight().getTable().equals(e.getLeft().getField() + "." + left.getValue()))
+									.map(e -> "-" + e.getRight().getField()).findAny().orElse(StringUtils.EMPTY);
 							//String typeSuffix = left.getJoins().entrySet().stream().map(e -> joinIntoPair(e.getValue())).filter(e -> e.getKey() == null).map(e -> "-" + e.getValue()).findAny().orElse(StringUtils.EMPTY);
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ctype.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
 						} else {
@@ -338,7 +338,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 				}).filter(ql -> !Objects.isNull(ql)).limit(1).collect(Collectors.joining());
 
 				// Currently we don't support joins in right operand.
-				Object qlRight = right.getJoins().entrySet().stream().findAny().map(unsupported -> {
+				Object qlRight = right.getJoins().stream().findAny().map(unsupported -> {
 					throw new IllegalArgumentException("Joins for filter RVALUE are currently unsupported: " + unsupported);
 				}).orElseGet(() -> {
 					return getFilterOperandValue(right);
