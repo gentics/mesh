@@ -32,7 +32,7 @@ public class GraphQLOptions implements Option {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Enables the native database level filtering for queries. Default: ON_DEMAND")
-	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
+	@EnvironmentVariable(name = MESH_GRAPHQL_NATIVE_QUERY_FILTERING, description = "Override the configured graphQl async wait timeout.")
 	private NativeQueryFiltering nativeQueryFiltering = DEFAULT_NATIVE_QUERY_FILTERING;
 
 	/**
