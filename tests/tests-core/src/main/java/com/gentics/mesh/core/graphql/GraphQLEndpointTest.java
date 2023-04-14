@@ -181,6 +181,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("user-query", true, false, "draft"),
 			Arrays.asList("microschema-projects-query", true, false, "draft"),
 			Arrays.asList("node-version-published-query", true, false, "published"),
+			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
+			Arrays.asList("node/versionslist", true, false, "draft"),
+			Arrays.asList("permissions", true, false, "draft"),
+			Arrays.asList("user-node-reference", true, false, "draft"),
 			Arrays.asList("filtering/children", true, false, "draft"),
 			Arrays.asList("filtering/nodes", true, false, "draft"),
 			Arrays.asList("filtering/nodes-en", true, false, "draft"),
@@ -190,10 +194,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/groups", true, false, "draft"),
 			Arrays.asList("filtering/roles", true, false, "draft"),
 			Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
-			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
-			Arrays.asList("node/versionslist", true, false, "draft"),
-			Arrays.asList("permissions", true, false, "draft"),
-			Arrays.asList("user-node-reference", true, false, "draft")
+			Arrays.asList("filtering/nodes-string-field-java", true, false, "draft"),
+			Arrays.asList("filtering/nodes-string-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-boolean-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-number-field-java", true, false, "draft"),
+			Arrays.asList("filtering/nodes-number-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-date-field-native", true, false, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have six parts.
@@ -496,7 +502,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-		//System.out.println(jsonResponse.encodePrettily());
+		System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
 			assertThat(jsonResponse)
 					.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
