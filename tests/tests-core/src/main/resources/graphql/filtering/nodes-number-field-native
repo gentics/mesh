@@ -1,0 +1,172 @@
+{
+	numberEqualsUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {equals: 42.1}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberEqualsUltimateAnswer.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberNotEqualsUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {ne: 42.1}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberNotEqualsUltimateAnswer.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	numberGreaterThanUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {gt: 42}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberGreaterThanUltimateAnswer.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberGreaterEqualsThanUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {gte: 42}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberGreaterEqualsThanUltimateAnswer.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberLessThanUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {lt: 42}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberLessThanUltimateAnswer.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberLessEqualsThanUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {lte: 42}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberLessEqualsThanUltimateAnswer.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {isNull: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberIsNull.elements.length()=8]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberIsNotNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {isNull: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberIsNotNull.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberOneOfFail: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {oneOf: [0.0, 1.1, 2.2, 3.3]}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberOneOfFail.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	numberOneOfSuccess: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {oneOf: [-42.1, 42.1]}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberOneOfSuccess.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]
