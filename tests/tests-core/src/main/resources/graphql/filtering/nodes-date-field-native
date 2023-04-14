@@ -1,0 +1,206 @@
+{
+	dateEquals: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {equals: "2012-07-11T08:55:21Z"}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateEquals.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateNotEquals: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {ne: "2013-07-11T08:55:21Z"}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateNotEquals.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	dateIsBefore: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {before: "2012-07-11T08:55:22Z"}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsBefore.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateIsAfter: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {after: "2012-07-11T08:55:20Z"}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsAfter.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateIsPast: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {isPast: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsPast.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateIsNotPast: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {isPast: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsNotPast.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateIsFuture: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {isFuture: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsFuture.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateIsNotFuture: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {isFuture: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsNotFuture.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+		
+	dateIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {isNull: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsNull.elements.length()=8]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateIsNotNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {isNull: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateIsNotNull.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateOneOfFail: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {oneOf: ["2012-07-11T08:55:20Z", "2012-07-11T08:55:22Z"]}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateOneOfFail.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	dateOneOfSuccess: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        date: {oneOf: ["2012-07-11T08:55:20Z", "2012-07-11T08:55:21Z", "2012-07-11T08:55:22Z"]}
+	      }
+	    }
+	  }) {
+	    # [$.data.dateOneOfSuccess.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]
