@@ -144,11 +144,15 @@ public class OrientDBAdminHandler extends AdminHandler {
 			if (!ac.getUser().isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
+			Mesh mesh = boot.mesh();
+			MeshStatus oldStatus = mesh.getStatus();
+			mesh.setStatus(MeshStatus.BACKUP);
 			String exportDir = ((OrientDBMeshOptions)options).getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
 			vertx.eventBus().publish(GRAPH_EXPORT_START.address, null);
 			db.exportDatabase(exportDir);
 			vertx.eventBus().publish(GRAPH_EXPORT_FINISHED.address, null);
+			mesh.setStatus(oldStatus);
 			return message(ac, "export_finished");
 		}, model -> ac.send(model, OK));
 	}
@@ -166,14 +170,16 @@ public class OrientDBAdminHandler extends AdminHandler {
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
 			.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
 		try {
-
+			Mesh mesh = boot.mesh();
+			MeshStatus oldStatus = mesh.getStatus();
+			mesh.setStatus(MeshStatus.RESTORE);
 			vertx.eventBus().publish(GRAPH_IMPORT_START.address, null);
 			db.importDatabase(latestFile.getAbsolutePath());
 			boot.globalCacheClear();
 			// TODO apply changelog after import
 			// TODO flush references, clear & init project routers 
 			vertx.eventBus().publish(GRAPH_IMPORT_FINISHED.address, null);
-
+			mesh.setStatus(oldStatus);
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
 		} catch (IOException e) {
 			ac.fail(e);
