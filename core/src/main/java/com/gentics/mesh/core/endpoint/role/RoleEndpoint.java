@@ -19,6 +19,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -32,12 +34,12 @@ public class RoleEndpoint extends AbstractInternalEndpoint {
 	private RoleCrudHandlerImpl crudHandler;
 
 	public RoleEndpoint() {
-		super("roles", null);
+		super("roles", null, null, null);
 	}
 
 	@Inject
-	public RoleEndpoint(MeshAuthChainImpl chain, RoleCrudHandlerImpl crudHandler) {
-		super("roles", chain);
+	public RoleEndpoint(MeshAuthChainImpl chain, RoleCrudHandlerImpl crudHandler, LocalConfigApi localConfigApi, Database db) {
+		super("roles", chain, localConfigApi, db);
 		this.crudHandler = crudHandler;
 	}
 

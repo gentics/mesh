@@ -42,7 +42,6 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import io.reactivex.Completable;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -51,11 +50,9 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	private static Logger log = LoggerFactory.getLogger(OrientDBBootstrapInitializerImpl.class);
 
-	@Inject
-	public ChangelogSystem changelogSystem;
+	protected final ChangelogSystem changelogSystem;
 
-	@Inject
-	public OrientDBDatabase db;
+	protected OrientDBDatabase db;
 
 	private MeshRoot meshRoot;
 
@@ -79,10 +76,12 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	});
 	
 	@Inject
-	public OrientDBBootstrapInitializerImpl() {
+	public OrientDBBootstrapInitializerImpl(ChangelogSystem changelogSystem, OrientDBDatabase db) {
 		super();
+		this.changelogSystem = changelogSystem;
+		this.db = db;
 	}
-	
+
 	@Override
 	public void initDatabaseTypes() {
 		// Update graph indices and vertex types (This may take some time)

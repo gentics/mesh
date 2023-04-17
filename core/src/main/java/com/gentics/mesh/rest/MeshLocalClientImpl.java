@@ -147,75 +147,83 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	public MeshAuthUser user;
 
-	@Inject
-	public UserCrudHandler userCrudHandler;
+	protected final UserCrudHandler userCrudHandler;
+
+	protected final RoleCrudHandlerImpl roleCrudHandler;
+
+	protected final GroupCrudHandler groupCrudHandler;
+
+	protected final SchemaCrudHandler schemaCrudHandler;
+
+	protected final MicroschemaCrudHandler microschemaCrudHandler;
+
+	protected final TagCrudHandler tagCrudHandler;
+
+	protected final TagFamilyCrudHandler tagFamilyCrudHandler;
+
+	protected final ProjectCrudHandler projectCrudHandler;
+
+	protected final NodeCrudHandler nodeCrudHandler;
+
+	protected final BinaryUploadHandlerImpl fieldAPIHandler;
+
+	protected final S3BinaryUploadHandlerImpl s3fieldAPIHandler;
+
+	protected final S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
+
+	protected final WebRootHandler webrootHandler;
+
+	protected final WebRootFieldHandler webrootFieldHandler;
+
+	protected final AdminHandler adminHandler;
+
+	protected final AdminIndexHandler adminIndexHandler;
+
+	protected final AuthenticationRestHandler authRestHandler;
+
+	protected final UtilityHandler utilityHandler;
+
+	protected final BranchCrudHandler branchCrudHandler;
+
+	protected final PluginHandler pluginHandler;
+
+	protected final Vertx vertx;
+
+	protected final BootstrapInitializer boot;
 
 	@Inject
-	public RoleCrudHandlerImpl roleCrudHandler;
-
-	@Inject
-	public GroupCrudHandler groupCrudHandler;
-
-	@Inject
-	public SchemaCrudHandler schemaCrudHandler;
-
-	@Inject
-	public MicroschemaCrudHandler microschemaCrudHandler;
-
-	@Inject
-	public TagCrudHandler tagCrudHandler;
-
-	@Inject
-	public TagFamilyCrudHandler tagFamilyCrudHandler;
-
-	@Inject
-	public ProjectCrudHandler projectCrudHandler;
-
-	@Inject
-	public NodeCrudHandler nodeCrudHandler;
-
-	@Inject
-	public BinaryUploadHandlerImpl fieldAPIHandler;
-
-	@Inject
-	public S3BinaryUploadHandlerImpl s3fieldAPIHandler;
-
-	@Inject
-	public S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
-
-	@Inject
-	public WebRootHandler webrootHandler;
-
-	@Inject
-	public WebRootFieldHandler webrootFieldHandler;
-
-	@Inject
-	public AdminHandler adminHandler;
-
-	@Inject
-	public AdminIndexHandler adminIndexHandler;
-
-	@Inject
-	public AuthenticationRestHandler authRestHandler;
-
-	@Inject
-	public UtilityHandler utilityHandler;
-
-	@Inject
-	public BranchCrudHandler branchCrudHandler;
-
-	@Inject
-	public PluginHandler pluginHandler;
-
-	@Inject
-	public Vertx vertx;
-
-	@Inject
-	public BootstrapInitializer boot;
-
-	@Inject
-	public MeshLocalClientImpl() {
-
+	public MeshLocalClientImpl(UserCrudHandler userCrudHandler, RoleCrudHandlerImpl roleCrudHandler,
+			GroupCrudHandler groupCrudHandler, SchemaCrudHandler schemaCrudHandler,
+			MicroschemaCrudHandler microschemaCrudHandler, TagCrudHandler tagCrudHandler,
+			TagFamilyCrudHandler tagFamilyCrudHandler, ProjectCrudHandler projectCrudHandler,
+			NodeCrudHandler nodeCrudHandler, BinaryUploadHandlerImpl fieldAPIHandler,
+			S3BinaryUploadHandlerImpl s3fieldAPIHandler,
+			S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, WebRootHandler webrootHandler,
+			WebRootFieldHandler webrootFieldHandler, AdminHandler adminHandler, AdminIndexHandler adminIndexHandler,
+			AuthenticationRestHandler authRestHandler, UtilityHandler utilityHandler,
+			BranchCrudHandler branchCrudHandler, PluginHandler pluginHandler, Vertx vertx, BootstrapInitializer boot) {
+		this.userCrudHandler = userCrudHandler;
+		this.roleCrudHandler = roleCrudHandler;
+		this.groupCrudHandler = groupCrudHandler;
+		this.schemaCrudHandler = schemaCrudHandler;
+		this.microschemaCrudHandler = microschemaCrudHandler;
+		this.tagCrudHandler = tagCrudHandler;
+		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
+		this.projectCrudHandler = projectCrudHandler;
+		this.nodeCrudHandler = nodeCrudHandler;
+		this.fieldAPIHandler = fieldAPIHandler;
+		this.s3fieldAPIHandler = s3fieldAPIHandler;
+		this.s3BinaryMetadataExtractionHandler = s3BinaryMetadataExtractionHandler;
+		this.webrootHandler = webrootHandler;
+		this.webrootFieldHandler = webrootFieldHandler;
+		this.adminHandler = adminHandler;
+		this.adminIndexHandler = adminIndexHandler;
+		this.authRestHandler = authRestHandler;
+		this.utilityHandler = utilityHandler;
+		this.branchCrudHandler = branchCrudHandler;
+		this.pluginHandler = pluginHandler;
+		this.vertx = vertx;
+		this.boot = boot;
 	}
 
 	private Map<String, HibProject> projects = new HashMap<>();
