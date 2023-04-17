@@ -24,6 +24,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -38,12 +40,12 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 	private GroupCrudHandler crudHandler;
 
 	public GroupEndpoint() {
-		super("groups", null);
+		super("groups", null, null, null);
 	}
 
 	@Inject
-	public GroupEndpoint(MeshAuthChainImpl chain, GroupCrudHandler crudHandler) {
-		super("groups", chain);
+	public GroupEndpoint(MeshAuthChainImpl chain, GroupCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db) {
+		super("groups", chain, localConfigApi, db);
 		this.crudHandler = crudHandler;
 	}
 

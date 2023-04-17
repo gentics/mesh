@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -38,12 +40,12 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 	private SchemaLock schemaLock;
 
 	public SchemaEndpoint() {
-		super("schemas", null);
+		super("schemas", null, null, null);
 	}
 
 	@Inject
-	public SchemaEndpoint(MeshAuthChainImpl chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock) {
-		super("schemas", chain);
+	public SchemaEndpoint(MeshAuthChainImpl chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock, LocalConfigApi localConfigApi, Database db) {
+		super("schemas", chain, localConfigApi, db);
 		this.crudHandler = crudHandler;
 		this.schemaLock = schemaLock;
 	}

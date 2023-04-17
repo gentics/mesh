@@ -16,6 +16,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -37,12 +39,12 @@ public class UserEndpoint extends RolePermissionHandlingEndpoint {
 	private UserTokenAuthHandler userTokenHandler;
 
 	public UserEndpoint() {
-		super("users", null);
+		super("users", null, null, null);
 	}
 
 	@Inject
-	public UserEndpoint(MeshAuthChainImpl chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler) {
-		super("users", chain);
+	public UserEndpoint(MeshAuthChainImpl chain, UserCrudHandler userCrudHandler, UserTokenAuthHandler userTokenHandler, LocalConfigApi localConfigApi, Database db) {
+		super("users", chain, localConfigApi, db);
 		this.crudHandler = userCrudHandler;
 		this.userTokenHandler = userTokenHandler;
 	}

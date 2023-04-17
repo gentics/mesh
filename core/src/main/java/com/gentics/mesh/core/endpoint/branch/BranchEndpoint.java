@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -41,12 +43,12 @@ public class BranchEndpoint extends RolePermissionHandlingProjectEndpoint {
 	private BranchCrudHandler crudHandler;
 
 	public BranchEndpoint() {
-		super("branches", null, null);
+		super("branches", null, null, null, null);
 	}
 
 	@Inject
-	public BranchEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, BranchCrudHandler crudHandler) {
-		super("branches", chain, boot);
+	public BranchEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, BranchCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db) {
+		super("branches", chain, boot, localConfigApi, db);
 		this.crudHandler = crudHandler;
 	}
 
