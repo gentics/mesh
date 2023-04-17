@@ -1,38 +1,4 @@
 {
-	nameEquals2015: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {equals: "2015"}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameEquals2015.elements.length()=1]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
-
-	nameNotEquals2015: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {notEquals: "2015"}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameNotEquals2015.elements.length()=8]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
-	}
-
 	nameIsNull: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -66,7 +32,39 @@
 	      }	      
 	    }
 	}
-	
+	nameEquals2015: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {equals: "2015"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameEquals2015.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	nameNotEquals2015: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {notEquals: "2015"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameNotEquals2015.elements.length()=8]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }	     
+	    }
+	}
 	nameOneOf: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {

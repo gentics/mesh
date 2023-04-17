@@ -502,7 +502,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-		System.out.println(jsonResponse.encodePrettily());
+		//System.out.println(jsonResponse.encodePrettily());
 		if (assertion == null) {
 			assertThat(jsonResponse)
 					.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
