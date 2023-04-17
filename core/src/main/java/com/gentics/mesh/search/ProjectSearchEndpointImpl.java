@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -41,7 +42,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	public final TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectSearchEndpointImpl() {
-		super("search", null, null);
+		super("search", null, null, null, null);
 		this.db = null;
 		this.nodeSearchHandler = null;
 		this.tagSearchHandler = null;
@@ -50,8 +51,8 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 
 	@Inject
 	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
-		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler) {
-		super("search", chain, boot);
+		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler, LocalConfigApi localConfigApi) {
+		super("search", chain, boot, localConfigApi, db);
 		this.db = db;
 		this.nodeSearchHandler = nodeSearchHandler;
 		this.tagSearchHandler = tagSearchHandler;

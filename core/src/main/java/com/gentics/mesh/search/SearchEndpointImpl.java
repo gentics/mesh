@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -47,46 +48,58 @@ import com.gentics.mesh.search.index.user.UserSearchHandler;
  */
 public class SearchEndpointImpl extends AbstractInternalEndpoint implements SearchEndpoint {
 
-	@Inject
-	AdminIndexHandler adminHandler;
+	protected final AdminIndexHandler adminHandler;
+
+	protected final UserSearchHandler userSearchHandler;
+
+	protected final GroupSearchHandler groupSearchHandler;
+
+	protected final RoleSearchHandler roleSearchHandler;
+
+	protected final NodeSearchHandler nodeSearchHandler;
+
+	protected final TagSearchHandler tagSearchHandler;
+
+	protected final TagFamilySearchHandler tagFamilySearchHandler;
+
+	protected final ProjectSearchHandler projectSearchHandler;
+
+	protected final SchemaSearchHandler schemaContainerSearchHandler;
+
+	protected final MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
-	UserSearchHandler userSearchHandler;
-
-	@Inject
-	GroupSearchHandler groupSearchHandler;
-
-	@Inject
-	RoleSearchHandler roleSearchHandler;
-
-	@Inject
-	NodeSearchHandler nodeSearchHandler;
-
-	@Inject
-	TagSearchHandler tagSearchHandler;
-
-	@Inject
-	TagFamilySearchHandler tagFamilySearchHandler;
-
-	@Inject
-	ProjectSearchHandler projectSearchHandler;
-
-	@Inject
-	SchemaSearchHandler schemaContainerSearchHandler;
-
-	@Inject
-	MicroschemaSearchHandler microschemaContainerSearchHandler;
-
-	@Inject
-	Database db;
-
-	@Inject
-	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler) {
-		super("search", chain);
+	public SearchEndpointImpl(MeshAuthChainImpl chain, NodeSearchHandler searchHandler, AdminIndexHandler adminHandler,
+			UserSearchHandler userSearchHandler, GroupSearchHandler groupSearchHandler,
+			RoleSearchHandler roleSearchHandler, NodeSearchHandler nodeSearchHandler, TagSearchHandler tagSearchHandler,
+			TagFamilySearchHandler tagFamilySearchHandler, ProjectSearchHandler projectSearchHandler,
+			SchemaSearchHandler schemaContainerSearchHandler,
+			MicroschemaSearchHandler microschemaContainerSearchHandler, LocalConfigApi localConfigApi, Database db) {
+		super("search", chain, localConfigApi, db);
+		this.adminHandler = adminHandler;
+		this.userSearchHandler = userSearchHandler;
+		this.groupSearchHandler = groupSearchHandler;
+		this.roleSearchHandler = roleSearchHandler;
+		this.nodeSearchHandler = nodeSearchHandler;
+		this.tagSearchHandler = tagSearchHandler;
+		this.tagFamilySearchHandler = tagFamilySearchHandler;
+		this.projectSearchHandler = projectSearchHandler;
+		this.schemaContainerSearchHandler = schemaContainerSearchHandler;
+		this.microschemaContainerSearchHandler = microschemaContainerSearchHandler;
 	}
 
 	public SearchEndpointImpl() {
-		super("search", null);
+		super("search", null, null, null);
+		this.adminHandler = null;
+		this.userSearchHandler = null;
+		this.groupSearchHandler = null;
+		this.roleSearchHandler = null;
+		this.nodeSearchHandler = null;
+		this.tagSearchHandler = null;
+		this.tagFamilySearchHandler = null;
+		this.projectSearchHandler = null;
+		this.schemaContainerSearchHandler = null;
+		this.microschemaContainerSearchHandler = null;
 	}
 
 	@Override

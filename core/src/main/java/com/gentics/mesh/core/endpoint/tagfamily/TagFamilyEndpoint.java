@@ -23,7 +23,9 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.PathParameters;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -50,13 +52,13 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	private TagCrudHandler tagCrudHandler;
 
 	public TagFamilyEndpoint() {
-		super("tagFamilies", null, null);
+		super("tagFamilies", null, null, null, null);
 	}
 
 	@Inject
 	public TagFamilyEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
-		TagFamilyCrudHandler tagFamilyCrudHandler) {
-		super("tagFamilies", chain, boot);
+		TagFamilyCrudHandler tagFamilyCrudHandler, LocalConfigApi localConfigApi, Database db) {
+		super("tagFamilies", chain, boot, localConfigApi, db);
 		this.tagCrudHandler = tagCrudHandler;
 		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
 	}
