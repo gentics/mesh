@@ -20,7 +20,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        number: {ne: 42.1}
+	        number: {notEquals: 42.1}
 	      }
 	    }
 	  }) {

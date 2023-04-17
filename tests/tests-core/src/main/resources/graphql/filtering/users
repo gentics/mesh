@@ -1,0 +1,27 @@
+{
+	nonAdminsSorted: users( sort:{username:ASCENDING} 
+		filter:{ edited: { isNull:false}   username: { notEquals: "admin"}}) 
+	{
+		# [$.data.nonAdminsSorted.totalCount=3]
+		totalCount
+		elements {
+		 uuid created creator { uuid username } edited editor { uuid username } username firstname lastname emailAddress nodeReference {schema {name}}
+	}}
+	nonAdmins: users(
+		filter:{ edited: { isNull:false}   username: { notEquals: "admin"}}) 
+	{
+		# [$.data.nonAdmins.totalCount=3]
+		totalCount
+		elements {
+		 uuid created creator { uuid username } edited editor { uuid username } username firstname lastname emailAddress nodeReference {schema {name}}
+	}}
+	admins: users(
+		filter:{ edited: { isNull:false}   username: { equals: "admin"}}) 
+	{
+		# [$.data.admins.totalCount=1]
+		totalCount
+		elements {
+		 uuid created creator { uuid username } edited editor { uuid username } username firstname lastname emailAddress nodeReference {schema {name}}
+	}}
+}
+# [$.errors=<is-undefined>]

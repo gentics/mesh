@@ -20,7 +20,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        date: {ne: "2013-07-11T08:55:21Z"}
+	        date: {notEquals: "2013-07-11T08:55:21Z"}
 	      }
 	    }
 	  }) {
