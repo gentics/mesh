@@ -3,6 +3,8 @@ package com.gentics.mesh.core.endpoint.node;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
@@ -55,14 +57,14 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 	private S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
 
 	public NodeEndpoint() {
-		super("nodes", null, null);
+		super("nodes", null, null, null, null);
 	}
 
 	@Inject
 	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandlerImpl binaryUploadHandler,
 		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler,
-						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler) {
-		super("nodes", chain, boot);
+						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, LocalConfigApi localConfigApi, Database db) {
+		super("nodes", chain, boot, localConfigApi, db);
 		this.crudHandler = crudHandler;
 		this.binaryUploadHandler = binaryUploadHandler;
 		this.binaryTransformHandler = binaryTransformHandler;

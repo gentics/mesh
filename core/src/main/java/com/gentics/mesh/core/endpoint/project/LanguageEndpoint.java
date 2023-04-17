@@ -11,6 +11,8 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
 import io.vertx.ext.web.Route;
@@ -23,8 +25,8 @@ import io.vertx.ext.web.Route;
 public class LanguageEndpoint extends AbstractProjectEndpoint {
 
 	@Inject
-	public LanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot) {
-		super("languages", chain, boot);
+	public LanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db) {
+		super("languages", chain, boot, localConfigApi, db);
 	}
 
 	@Override

@@ -3,8 +3,6 @@ package com.gentics.mesh.router.route;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -32,15 +30,15 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
 	protected RouterStorage routerStorage;
 
-	@Inject
-	public LocalConfigApi localConfigApi;
+	protected final LocalConfigApi localConfigApi;
 
-	@Inject
-	public Database db;
+	protected final Database db;
 
-	protected AbstractInternalEndpoint(String basePath, MeshAuthChainImpl chain) {
+	protected AbstractInternalEndpoint(String basePath, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db) {
 		this.basePath = basePath;
 		this.chain = chain;
+		this.localConfigApi = localConfigApi;
+		this.db = db;
 	}
 
 	@Override

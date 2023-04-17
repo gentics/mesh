@@ -9,6 +9,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -22,14 +24,14 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	private MeshBasicAuthLoginHandler basicAuthLoginHandler;
 
 	@Inject
-	public AuthenticationEndpoint(MeshAuthChainImpl chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler) {
-		super("auth", chain);
+	public AuthenticationEndpoint(MeshAuthChainImpl chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler, LocalConfigApi localConfigApi, Database db) {
+		super("auth", chain, localConfigApi, db);
 		this.authRestHandler = authRestHandler;
 		this.basicAuthLoginHandler = basicAuthHandler;
 	}
 
 	public AuthenticationEndpoint() {
-		super("auth", null);
+		super("auth", null, null, null);
 	}
 
 	@Override
