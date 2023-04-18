@@ -2,21 +2,28 @@ package com.gentics.mesh.core.data.page.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -29,7 +36,7 @@ import com.tinkerpop.blueprints.Vertex;
  *
  * @param <T>
  */
-public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends AbstractDynamicPage<T> {
+public class DynamicNonTransformablePageImpl<T extends HibCoreElement<?>> extends AbstractDynamicPage<T> {
 
 	private HibUser requestUser;
 
@@ -78,7 +85,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	public DynamicNonTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, InternalPermission perm,
 		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm);
+		init(root.getPersistanceClass(), root.getRootLabel(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm, root.getPersistenceClassVariations());
 	}
 
 	/**
@@ -86,8 +93,10 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 *
 	 * @param requestUser
 	 *            User which is used to check permissions
+	 * @param rootLabel
+	 *            Label of a root vertex
 	 * @param indexName
-	 *            Name of the index which should be used to lookup the elements
+	 *            Name of the index which should be used to lookup the elements, derived from root label
 	 * @param indexKey
 	 *            Key to be used for the index lookup
 	 * @param dir
@@ -103,10 +112,10 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 * @param frameExplicitly
 	 *            Whether to frame the found value explicitily
 	 */
-	public DynamicNonTransformablePageImpl(HibUser requestUser, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
+	public DynamicNonTransformablePageImpl(HibUser requestUser, String rootLabel, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
 		InternalPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(clazz, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm);
+		init(clazz, rootLabel, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm, Optional.empty());
 	}
 
 	/**
@@ -216,19 +225,28 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement> extends A
 	 * @param perm
 	 *            Graph permission to filter by
 	 */
-	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
-		InternalPermission perm) {
+	private void init(Class<? extends T> clazz, String rootLabel, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
+		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {
 
 		// Iterate over all vertices that are managed by this root vertex
-		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
-		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
-
-			// Get the vertex from the edge
-			.map(itemEdge -> {
-				return itemEdge.getVertex(vertexDirection);
-			});
-		applyPagingAndPermChecks(stream, clazz, perm);
-
+		Spliterator<Edge> itemEdges;
+		if (PersistingRootDao.shouldSort(sort)) {
+			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
+					.relationDirection(vertexDirection)
+					.edgeLabel(rootLabel)
+					.vertexClass(clazz);
+			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
+			List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()]), maybeVariations).spliterator();
+		} else {
+			// Iterate over all vertices that are managed by this root vertex
+			itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+		}
+		applyPagingAndPermChecks(StreamSupport.stream(itemEdges, false)
+				// Get the vertex from the edge
+				.map(itemEdge -> {
+					return itemEdge.getVertex(vertexDirection);
+				}), clazz, perm);
 	}
-
 }

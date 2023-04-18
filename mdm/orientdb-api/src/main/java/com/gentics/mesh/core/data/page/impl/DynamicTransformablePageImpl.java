@@ -234,16 +234,6 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {
 
 		Spliterator<Edge> itemEdges;
-		// Iterate over all vertices that are managed by this root vertex
-		itemEdges = graph.getEdges(indexName, indexKey).spliterator();
-		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
-			// Get the vertex from the edge
-			.map(itemEdge -> {
-				return itemEdge.getVertex(vertexDirection);
-			});
-
-		applyPagingAndPermChecks(stream, clazz, perm);
-
 		if (PersistingRootDao.shouldSort(sort)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
