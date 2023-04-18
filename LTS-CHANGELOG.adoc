@@ -20,7 +20,9 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.8.21]]
 == 1.8.21 (TBD)
 
-icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
 [[v1.8.20]]
 == 1.8.20 (22.03.2023)
