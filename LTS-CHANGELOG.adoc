@@ -20,6 +20,10 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.8.21]]
 == 1.8.21 (TBD)
 
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
+
 icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
 be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
 
@@ -136,7 +140,7 @@ icon:check[] Core: Possible errors during node migrations in branches have been 
 
 icon:plus[] Java Rest Client: The new options `maxRetries` and `retryDelayMs` can be used to configure automatic retries for requests to Mesh which failed due to a network error. By default retries are disabled. A value of -1 for `retryDelayMs` will automatically calculate a delay such that all tries are performed in the timespan of the call timeout configured for the Ok HTTP client.
 
-icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the livenes probe to return an unhealthy status.
+icon:check[] Plugins: Fixes plugin initialization such that plugins that failed to load will cause the liveness probe to return an unhealthy status.
 
 icon:check[] Cluster: The plugin initialization now waits not only for the write quorum being reached, but for the node availability as well, during the startup.
 

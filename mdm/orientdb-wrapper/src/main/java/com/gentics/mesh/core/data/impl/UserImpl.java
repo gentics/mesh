@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.Optional;
 import java.util.Spliterator;
@@ -41,6 +42,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -88,6 +90,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
+		// TODO this may affect a lot of user, so we'd play fair here and check before applying this.		
+		index.createIndex(vertexIndex(UserImpl.class)
+				.withField(USERNAME_PROPERTY_KEY, FieldType.STRING)
+				.unique());
 	}
 
 	@Override
