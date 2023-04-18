@@ -24,6 +24,11 @@ icon:check[] Core: The name of a Mesh user is now forced to be unique on a datab
 
 CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
+icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
+be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
+
+icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
 [[v1.8.20]]
 == 1.8.20 (22.03.2023)
 

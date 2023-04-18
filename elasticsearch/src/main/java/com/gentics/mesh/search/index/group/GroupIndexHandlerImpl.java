@@ -32,16 +32,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implements GroupIndexHandler {
 
-	@Inject
-	GroupTransformer transformer;
+	protected final GroupTransformer transformer;
 
-	@Inject
-	GroupMappingProvider mappingProvider;
+	protected final GroupMappingProvider mappingProvider;
 
 	@Inject
 	public GroupIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, GroupTransformer transformer, GroupMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override
