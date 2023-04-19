@@ -18,12 +18,22 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.9.14]]
-== 1.9.14 (TBD)
+== 1.9.14 (19.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
 icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
 be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
 
 icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+icon:check[] Clustering: when running in CUD coordination mode, the requests to trigger job migration were not delegated to the current master. This has been fixed now.
 
 [[v1.9.13]]
 == 1.9.13 (22.03.2023)
@@ -55,12 +65,22 @@ icon:check[] Core: The node migration process has been improved to reduce resour
 icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
 
 [[v1.8.21]]
-== 1.8.21 (TBD)
+== 1.8.21 (19.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
 icon:check[] Monitoring: Calling the `/health/ready` endpoint while restoring an OrientDB backup would block the request. If too many requests were blocked in this way, Mesh would
 be considered not live any more. This has been fixed now, during a restore, the endpoint `/health/ready` will now fail immediately while the liveness status will be maintained.
 
 icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+icon:check[] Clustering: when running in CUD coordination mode, the requests to trigger job migration were not delegated to the current master. This has been fixed now.
 
 [[v1.8.20]]
 == 1.8.20 (22.03.2023)
