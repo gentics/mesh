@@ -12,4 +12,10 @@ public interface JobProcessor {
 	 * @return completable
 	 */
 	Completable process();
+
+	/**
+	 * Check whether jobs are currently being processed
+	 * @return true when jobs are processed, false if not
+	 */
+	boolean isProcessing();
 }

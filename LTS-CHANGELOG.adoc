@@ -29,6 +29,12 @@ be considered not live any more. This has been fixed now, during a restore, the 
 
 icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
 
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+icon:check[] Clustering: when running in CUD coordination mode, the requests to trigger job migration were not delegated to the current master. This has been fixed now.
+
 [[v1.8.20]]
 == 1.8.20 (22.03.2023)
 

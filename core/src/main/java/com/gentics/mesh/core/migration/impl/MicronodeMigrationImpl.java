@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -62,8 +63,10 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 	private final WriteLock writeLock;
 
 	@Inject
-	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options) {
-		super(db, binaryFieldHandler, metrics, batchProvider, options);
+	public MicronodeMigrationImpl(Database db, BinaryUploadHandlerImpl binaryFieldHandler, MetricsService metrics,
+			Provider<EventQueueBatch> batchProvider, WriteLock writeLock, MeshOptions options,
+			RequestDelegator delegator) {
+		super(db, binaryFieldHandler, metrics, batchProvider, options, delegator);
 		this.writeLock = writeLock;
 	}
 
@@ -130,7 +133,11 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 						log.error("Encountered migration error.", error);
 					}
 				}
-				result = Completable.error(new CompositeException(errorsDetected));
+				if (errorsDetected.size() == 1) {
+					result = Completable.error(errorsDetected.get(0));
+				} else {
+					result = Completable.error(new CompositeException(errorsDetected));
+				}
 			}
 			return result;
 		});
