@@ -1,43 +1,9 @@
 {
-	booleanIsNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        boolean: {isNull: true}
-	      }
-	    }
-	  }) {
-	    # [$.data.booleanIsNull.elements.length()=8]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
-	}
-	
-	booleanIsNotNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        boolean: {isNull: false}
-	      }
-	    }
-	  }) {
-	    # [$.data.booleanIsNotNull.elements.length()=1]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
-	}
-
 	booleanEqualsTrue: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        boolean: {equals:true}
+	        boolean: true
 	      }
 	    }
 	  }) {
@@ -54,7 +20,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        boolean: {equals:false}
+	        boolean: false
 	      }
 	    }
 	  }) {
