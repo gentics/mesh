@@ -43,6 +43,7 @@ nodeName: null
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
 migrationMaxBatchSize: 50
+migrationTriggerInterval: 60000
 httpServer:
   port: 8080
   sslPort: 8443
