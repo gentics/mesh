@@ -46,10 +46,12 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.AbstractMigrationHandler;
+import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.node.SchemaMigrationCause;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
+import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
@@ -74,8 +76,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 
 	@Inject
 	public NodeMigrationImpl(Database db, BinaryUploadHandlerImpl nodeFieldAPIHandler, MetricsService metrics, Provider<EventQueueBatch> batchProvider,
-							 WriteLock writeLock, MeshOptions options) {
-		super(db, nodeFieldAPIHandler, metrics, batchProvider, options);
+							 WriteLock writeLock, MeshOptions options, RequestDelegator delegator) {
+		super(db, nodeFieldAPIHandler, metrics, batchProvider, options, delegator);
 		migrationGauge = metrics.longGauge(NODE_MIGRATION_PENDING);
 		this.writeLock = writeLock;
 	}
@@ -227,7 +229,18 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 						migrationGauge.decrementAndGet();
 					}
 				});
-			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);			
+
+				// when containers is not empty, something bad happened and we need to let the migration fail immediately
+				if (!containers.isEmpty()) {
+					if (errorsDetected.size() > 1) {
+						return Completable.error(new CompositeException(errorsDetected));
+					} else if (errorsDetected.size() == 1) {
+						return Completable.error(errorsDetected.get(0));
+					} else {
+						return Completable.error(new MigrationAbortedException("Not all containers of the current batch were migrated."));
+					}
+				}
+			} while (batchSize > 0 && currentBatch > 0 && currentBatch >= batchSize);
 
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
@@ -237,7 +250,11 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 						log.error("Encountered migration error.", error);
 					}
 				}
-				result = Completable.error(new CompositeException(errorsDetected));
+				if (errorsDetected.size() == 1) {
+					result = Completable.error(errorsDetected.get(0));
+				} else {
+					result = Completable.error(new CompositeException(errorsDetected));
+				}
 			}
 			return result;
 		});

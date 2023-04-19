@@ -74,6 +74,9 @@
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
 
+| *MESH_MIGRATION_TRIGGER_INTERVAL*
+| Override the migration trigger interval
+
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
 

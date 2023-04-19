@@ -16,6 +16,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
+import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
 
 import com.gentics.mesh.core.rest.job.JobWarningList;
@@ -118,13 +119,17 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * @param failureMessage
 	 */
 	public MigrationStatusHandler error(Throwable error, String failureMessage) {
-		HibJob job = getJob();
-		setStatus(FAILED);
-		log.error("Error handling migration", error);
+		if (error instanceof MigrationAbortedException) {
+			log.error("Migration has been aborted", error);
+		} else {
+			HibJob job = getJob();
+			setStatus(FAILED);
+			log.error("Error handling migration", error);
 
-		job.setStopTimestamp();
-		job.setError(error);
-		commit(job);
+			job.setStopTimestamp();
+			job.setError(error);
+			commit(job);
+		}
 		return this;
 	}
 
