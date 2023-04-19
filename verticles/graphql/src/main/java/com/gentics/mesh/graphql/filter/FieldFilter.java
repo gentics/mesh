@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.DateFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
@@ -85,7 +86,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			return new FieldMappedFilter<>(type, name, description, DateFilter.filter(),
 				node -> getOrNull(node.getDate(name), HibDateField::getDate), schemaName);
 		case BOOLEAN:
-			return new FieldMappedFilter<>(type, name, description, NullableBooleanFilter.filter(),
+			return new FieldMappedFilter<>(type, name, description, BooleanFilter.filter(),
 				node -> getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schemaName);
 		case NUMBER:
 			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
