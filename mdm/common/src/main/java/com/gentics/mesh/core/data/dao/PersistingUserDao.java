@@ -154,7 +154,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param creator
 	 * @return
 	 */
-	default HibUser init(HibUser user, String username, HibUser creator) {
+	private HibUser init(HibUser user, String username, HibUser creator) {
+		HibUser conflicting = findByUsername(username);
+		if (conflicting != null && !conflicting.getUuid().equals(user.getUuid())) {
+			throw conflict(conflicting.getUuid(), username, "user_conflicting_username");
+		}
 		user.setUsername(username);
 		user.enable();
 		user.generateBucketId();
@@ -497,12 +501,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			throw error(FORBIDDEN, "error_missing_perm", userRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		String groupUuid = requestModel.getGroupUuid();
-		String userName = requestModel.getUsername();
-		HibUser conflictingUser = findByUsername(userName);
-		if (conflictingUser != null) {
-			throw conflict(conflictingUser.getUuid(), userName, "user_conflicting_username");
-		}
-
 		HibUser user = create(requestModel.getUsername(), requestUser, uuid);
 		user.setFirstname(requestModel.getFirstname());
 		user.setUsername(requestModel.getUsername());

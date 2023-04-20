@@ -16,7 +16,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class DemoAppEndpoint extends AbstractInternalEndpoint {
 
 	public DemoAppEndpoint(MeshOptions options) {
-		super("demo", null);
+		super("demo", null, null, null);
 	}
 
 	@Override

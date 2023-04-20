@@ -30,6 +30,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
@@ -66,8 +67,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	@Inject
 	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
-		HandlerUtilities handlerUtilities) {
-		super("admin", chain);
+		HandlerUtilities handlerUtilities, LocalConfigApi localConfigApi, Database db) {
+		super("admin", chain, localConfigApi, db);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
@@ -79,7 +80,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	}
 
 	public AdminEndpoint() {
-		super("admin", null);
+		super("admin", null, null, null);
 	}
 
 	@Override
