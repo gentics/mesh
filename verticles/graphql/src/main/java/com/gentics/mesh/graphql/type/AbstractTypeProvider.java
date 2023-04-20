@@ -689,12 +689,13 @@ public abstract class AbstractTypeProvider {
 				javaFilter = filterProvider.createPredicate(filterArgument);
 				break;
 			}
+		} else {
+			if (nativeQueryFiltering == NativeQueryFiltering.ALWAYS || envNativeFilter == NativeFilter.ONLY) {
+				// Force native filtering with `1 = 1` dummy filter
+				maybeNativeFilter = Optional.of(Comparison.dummy(true));
+			}
 		}
-		return Pair.of(javaFilter, maybeNativeFilter
-				.or(() -> Optional.of(PersistingRootDao.shouldPage(getPagingInfo(env)))
-						// We force native filtering, if paging is asked
-						.filter(b -> b && (NativeFilter.ONLY.equals(envNativeFilter) || NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering)))
-						.map(yes -> Comparison.dummy(true))));
+		return Pair.of(javaFilter, maybeNativeFilter);
 	}
 
 	/**
