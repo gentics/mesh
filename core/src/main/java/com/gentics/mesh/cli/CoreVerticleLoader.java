@@ -29,28 +29,30 @@ public class CoreVerticleLoader {
 
 	private static Logger log = LoggerFactory.getLogger(CoreVerticleLoader.class);
 
-	@Inject
-	public Provider<RestAPIVerticle> restVerticle;
+	protected final Provider<RestAPIVerticle> restVerticle;
 
-	@Inject
-	public Provider<MonitoringServerVerticle> monitoringServerVerticle;
+	protected final Provider<MonitoringServerVerticle> monitoringServerVerticle;
 
-	@Inject
-	public JobWorkerVerticleImpl jobWorkerVerticle;
+	protected final JobWorkerVerticleImpl jobWorkerVerticle;
 
-	@Inject
-	public Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
+	protected final Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider;
 	private ElasticsearchProcessVerticle elasticsearchProcessVerticle;
 
-	@Inject
-	public MeshOptions meshOptions;
+	protected final MeshOptions meshOptions;
 
 	private final Vertx rxVertx;
 	private String searchVerticleId;
 
 	@Inject
-	public CoreVerticleLoader(Vertx rxVertx) {
+	public CoreVerticleLoader(Vertx rxVertx, Provider<RestAPIVerticle> restVerticle,
+			Provider<MonitoringServerVerticle> monitoringServerVerticle, JobWorkerVerticleImpl jobWorkerVerticle,
+			Provider<ElasticsearchProcessVerticle> elasticsearchProcessVerticleProvider, MeshOptions meshOptions) {
 		this.rxVertx = rxVertx;
+		this.restVerticle = restVerticle;
+		this.monitoringServerVerticle = monitoringServerVerticle;
+		this.jobWorkerVerticle = jobWorkerVerticle;
+		this.elasticsearchProcessVerticleProvider = elasticsearchProcessVerticleProvider;
+		this.meshOptions = meshOptions;
 	}
 
 	private JsonObject defaultConfig;

@@ -9,6 +9,8 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -18,8 +20,8 @@ import com.gentics.mesh.router.route.AbstractInternalEndpoint;
  */
 public abstract class RolePermissionHandlingEndpoint extends AbstractInternalEndpoint {
 
-	protected RolePermissionHandlingEndpoint(String basePath, MeshAuthChainImpl chain) {
-		super(basePath, chain);
+	protected RolePermissionHandlingEndpoint(String basePath, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db) {
+		super(basePath, chain, localConfigApi, db);
 	}
 
 	/**

@@ -35,6 +35,8 @@ public class JobProcessorImpl implements JobProcessor {
 	final Map<JobType, SingleJobProcessor> jobProcessors;
 	private Database db;
 
+	private boolean processing = false;
+
 	@Inject
 	public JobProcessorImpl(Map<JobType, SingleJobProcessor> jobProcessors, Database db) {
 		this.jobProcessors = jobProcessors;
@@ -47,7 +49,16 @@ public class JobProcessorImpl implements JobProcessor {
 				.map(this::process)
 				.collect(Collectors.toList());
 
-		return Completable.concat(jobsActions);
+		return Completable.concat(jobsActions).doOnSubscribe(d -> {
+			processing = true;
+		}).doAfterTerminate(() -> {
+			processing = false;
+		});
+	}
+
+	@Override
+	public boolean isProcessing() {
+		return processing;
 	}
 
 	private List<? extends HibJob> getJobsToExecute() {

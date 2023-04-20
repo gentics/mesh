@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -34,12 +36,12 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 	private MicroschemaCrudHandler crudHandler;
 
 	public MicroschemaEndpoint() {
-		super("microschemas", null);
+		super("microschemas", null, null, null);
 	}
 
 	@Inject
-	public MicroschemaEndpoint(MeshAuthChainImpl chain, MicroschemaCrudHandler crudHandler) {
-		super("microschemas", chain);
+	public MicroschemaEndpoint(MeshAuthChainImpl chain, MicroschemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db) {
+		super("microschemas", chain, localConfigApi, db);
 		this.crudHandler = crudHandler;
 	}
 
