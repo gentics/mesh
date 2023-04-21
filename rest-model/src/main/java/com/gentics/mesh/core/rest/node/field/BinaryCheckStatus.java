@@ -20,6 +20,5 @@ public enum BinaryCheckStatus {
 	/** The check service denied the binary. */
 	DENIED,
 	/** The check from the check service is still running. */
-	POSTPONED,
-	CANCELLED
+	POSTPONED
 }

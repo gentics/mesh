@@ -26,7 +26,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a minimal valid test schema..
-	 * 
+	 *
 	 * @return
 	 */
 	public static SchemaCreateRequest createMinimalValidSchemaCreateRequest() {
@@ -45,7 +45,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a minimal valid test schema create request.
-	 * 
+	 *
 	 * @return
 	 */
 	public static SchemaCreateRequest createSchemaCreateRequest() {
@@ -57,7 +57,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a minimal valid test microschema.
-	 * 
+	 *
 	 * @return
 	 */
 	public static MicroschemaVersionModel createMinimalValidMicroschema() {
@@ -69,7 +69,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a minimal valid test microschema.
-	 * 
+	 *
 	 * @return
 	 */
 	public static MicroschemaUpdateRequest createMinimalValidMicroschemaUpdateRequest() {
@@ -81,7 +81,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create minimal create request.
-	 * 
+	 *
 	 * @return
 	 */
 	public static MicroschemaCreateRequest createMinimalValidMicroschemaCreateRequest() {
@@ -93,7 +93,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a new string field schema.
-	 * 
+	 *
 	 * @param name
 	 *            Name of the field schema
 	 * @return
@@ -106,7 +106,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a string field and set the given value.
-	 * 
+	 *
 	 * @param stringValue
 	 * @return
 	 */
@@ -138,7 +138,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a number field and set the given value.
-	 * 
+	 *
 	 * @param numberValue
 	 * @return
 	 */
@@ -150,7 +150,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a boolean field and set the given value.
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 */
@@ -168,7 +168,7 @@ public final class FieldUtil {
 
 	/**
 	 * Create a node field and set the uuid as node reference.
-	 * 
+	 *
 	 * @param uuid
 	 * @return
 	 */
@@ -255,8 +255,13 @@ public final class FieldUtil {
 	}
 
 	public static BinaryFieldSchema createBinaryFieldSchema(String name) {
+		return createBinaryFieldSchema(name, "");
+	}
+
+	public static BinaryFieldSchema createBinaryFieldSchema(String name, String checkServiceUrl) {
 		BinaryFieldSchema field = new BinaryFieldSchemaImpl();
 		field.setName(name);
+		field.setCheckServiceUrl(checkServiceUrl);
 		return field;
 	}
 
