@@ -334,41 +334,49 @@ public class TestDataProvider {
 		GroupDao groupDao = Tx.get().groupDao();
 		RoleDao roleDao = Tx.get().roleDao();
 
-		String password = "test123";
-		String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
-
-		log.debug("Creating user with username: " + username + " and password: " + password);
-
-		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		HibUser user = userDao.create(username, null);
-		// Precomputed hash since hashing takes some time and we want to keep out tests
-		// fast
-		userDao.updatePasswordHash(user, hashedPassword);
-		user.setFirstname(firstname);
-		user.setLastname(lastname);
-		user.setEmailAddress(email);
-
-		user.setCreator(user);
-		user.setCreationTimestamp();
-		user.setEditor(user);
-		user.setLastEditedTimestamp();
-		users.put(username, user);
-
 		String groupName = username + "_group";
-		HibGroup group = groupDao.create(groupName, user);
-		groupDao.addUser(group, user);
-		group.setCreator(user);
-		group.setCreationTimestamp();
-		group.setEditor(user);
-		group.setLastEditedTimestamp();
-		groups.put(groupName, group);
-
 		String roleName = username + "_role";
-		HibRole role = roleDao.create(roleName, user);
-		groupDao.addRole(group, role);
-		roleDao.grantPermissions(role, role, READ_PERM);
-		roles.put(roleName, role);
 
+		HibUser user = userDao.findByUsername(username);
+		HibGroup group = groupDao.findByName(groupName);
+		HibRole role = roleDao.findByName(roleName);
+		String password = "test123";
+
+		if (user == null) {
+			String hashedPassword = "$2a$10$n/UeWGbY9c1FHFyCqlVsY.XvNYmZ7Jjgww99SF94q/B5nomYuquom";
+
+			log.debug("Creating user with username: " + username + " and password: " + password);
+
+			String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
+			user = userDao.create(username, null);
+			// Precomputed hash since hashing takes some time and we want to keep out tests
+			// fast
+			userDao.updatePasswordHash(user, hashedPassword);
+			user.setFirstname(firstname);
+			user.setLastname(lastname);
+			user.setEmailAddress(email);
+
+			user.setCreator(user);
+			user.setCreationTimestamp();
+			user.setEditor(user);
+			user.setLastEditedTimestamp();
+			users.put(username, user);
+		}
+		if (group == null) {
+			group = groupDao.create(groupName, user);
+			groupDao.addUser(group, user);
+			group.setCreator(user);
+			group.setCreationTimestamp();
+			group.setEditor(user);
+			group.setLastEditedTimestamp();
+			groups.put(groupName, group);
+		}
+		if (role == null) {
+			role = roleDao.create(roleName, user);
+			groupDao.addRole(group, role);
+			roleDao.grantPermissions(role, role, READ_PERM);
+			roles.put(roleName, role);
+		}
 		return new UserInfo(user, group, role, password);
 	}
 
