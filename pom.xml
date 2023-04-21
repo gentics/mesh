@@ -22,8 +22,8 @@
 		<!-- Tests -->
 		<surefire.forkcount>1</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
-		<skip.unit.tests>true</skip.unit.tests>
-		<skip.cluster.tests>true</skip.cluster.tests>
+		<skip.unit.tests>false</skip.unit.tests>
+		<skip.cluster.tests>false</skip.cluster.tests>
 		<surefire.excludedGroups></surefire.excludedGroups>
 		<surefire.groups></surefire.groups>
 		<skip.vertx-hazelcast>true</skip.vertx-hazelcast>
