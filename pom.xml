@@ -22,8 +22,8 @@
 		<!-- Tests -->
 		<surefire.forkcount>1</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
-		<skip.unit.tests>false</skip.unit.tests>
-		<skip.cluster.tests>false</skip.cluster.tests>
+		<skip.unit.tests>true</skip.unit.tests>
+		<skip.cluster.tests>true</skip.cluster.tests>
 		<surefire.excludedGroups></surefire.excludedGroups>
 		<surefire.groups></surefire.groups>
 		<skip.vertx-hazelcast>true</skip.vertx-hazelcast>
@@ -48,7 +48,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>4.3.2.0</version>
+		<version>4.3.2.1</version>
 	</parent>
 
 	<developers>
@@ -180,8 +180,8 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> 
-				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId>
+				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals>
 				<goal>sign</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

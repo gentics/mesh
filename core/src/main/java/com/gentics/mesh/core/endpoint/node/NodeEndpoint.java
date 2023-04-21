@@ -214,7 +214,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 
-			s3binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
+			binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
 		});
 
 		InternalEndpointRoute imageTransform = createRoute();
@@ -287,7 +287,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 
-			binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
+			s3binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldMetadataExtraction = createRoute();

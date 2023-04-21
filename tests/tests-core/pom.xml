@@ -78,18 +78,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mock-server</groupId>
-			<artifactId>mockserver-netty</artifactId>
-			<version>5.14.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mock-server</groupId>
 			<artifactId>mockserver-junit-rule</artifactId>
-			<version>5.14.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.25</version>
+			<version>5.9.0</version>
 		</dependency>
 	</dependencies>
 

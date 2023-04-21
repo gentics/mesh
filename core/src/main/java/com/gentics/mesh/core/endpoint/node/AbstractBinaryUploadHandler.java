@@ -123,12 +123,13 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 				}
 
 				BinaryCheckUpdateRequest request = ac.fromJson(BinaryCheckUpdateRequest.class);
-				HibBinary newBinary;
+				HibBinary newBinary = null;
 
 				if (request.getStatus() == BinaryCheckStatus.ACCEPTED) {
 					newBinary = binaryField.getBinary();
 					newBinary.setCheckStatus(BinaryCheckStatus.ACCEPTED);
-				} else {
+				} else if (binaries != null) {
+					// The S3 implementation does not handle the binary data itself.
 					HibBinary existingBinary = binaries.findByHash(EMPTY_SHA_512_HASH).runInExistingTx(tx);
 
 					newBinary = existingBinary != null
@@ -136,7 +137,7 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 						: binaries.create(EMPTY_SHA_512_HASH, 0, BinaryCheckStatus.DENIED).runInExistingTx(tx);
 				}
 
-				if (newBinary != binaryField.getBinary()) {
+				if (newBinary != null && newBinary != binaryField.getBinary()) {
 					// Create the new field
 					HibBinaryField field = nodeFieldContainer.createBinary(fieldName, newBinary);
 
