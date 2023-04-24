@@ -34,6 +34,8 @@ Please note that not all the currently existing filters are supported by the DB.
 
 icon:plus[] OrientDB: Basic support for DB filtering/sorting is added.
 
+icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added. The syntax is analogous to SQL operator `LIKE`, accepting wildcards `%` as a zeroable set of characters, and `_` as a non-zeroable character.
+
 [[v1.10.5]]
 == 1.10.5 (19.04.2023)
 

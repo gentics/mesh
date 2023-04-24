@@ -1,37 +1,4 @@
 {
-	nameIsNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {isNull: true}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameIsNull.elements.length()=3]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
-	}
-	
-	nameIsNotNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {isNull: false}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameIsNotNull.elements.length()=6]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }	      
-	    }
-	}
 	nameEquals2015: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -48,7 +15,38 @@
 	      }
 	    }
 	}
-
+	nameLike201_: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {like: "201_"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameLike201_.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	nameEndsWith15: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {like: "%15"}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameEndsWith15.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
 	nameNotEquals2015: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -79,6 +77,38 @@
 	      schema {
 	        name
 	      }	      
+	    }
+	}
+	nameIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {isNull: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameIsNull.elements.length()=3]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	nameIsNotNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {isNull: false}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameIsNotNull.elements.length()=6]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
 	    }
 	}
 }
