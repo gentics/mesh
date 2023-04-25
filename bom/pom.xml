@@ -25,7 +25,7 @@
 		<spring.security.version>5.5.7</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
-		<orientdb.version>3.2.10</orientdb.version>
+		<orientdb.version>3.2.18</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
 		<jackson.version>2.13.2</jackson.version>
 		<jackson-databind.version>2.13.2</jackson-databind.version>
@@ -501,6 +501,12 @@
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-orientdb</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.orientechnologies</groupId>
+				<artifactId>orientdb-studio</artifactId>
+				<version>${orientdb.version}</version>
+				<type>zip</type>
 			</dependency>
 			<dependency>
 				<groupId>com.tinkerpop.gremlin</groupId>

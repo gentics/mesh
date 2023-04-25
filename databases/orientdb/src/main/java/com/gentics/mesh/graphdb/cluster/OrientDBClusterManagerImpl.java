@@ -73,7 +73,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	private static final String ORIENTDB_PLUGIN_FOLDERNAME = "orientdb-plugins";
 
-	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-3.1.6.zip";
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio.zip";
 
 	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
 
@@ -347,7 +347,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		ClusterStatusResponse response = new ClusterStatusResponse();
 		if (hazelcastPlugin != null) {
 			ODocument distribCfg = hazelcastPlugin.getClusterConfiguration();
-			ODocument dbConfig = (ODocument) hazelcastPlugin.getConfigurationMap().get("database.storage");
+			ODocument dbConfig = (ODocument) hazelcastPlugin.getOnlineDatabaseConfiguration("storage");
 			ODocument serverConfig = dbConfig.field("servers");
 
 			Collection<ODocument> members = distribCfg.field("members");
