@@ -649,7 +649,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			ROLES newORole = isSelf ? ROLES.MASTER : ROLES.REPLICA;
 			newCfg.setServerRole(server, newORole);
 		}
-		plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
+		plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg);
 	}
 
 	@Override
@@ -693,7 +693,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			// the plugin won't detect them
 			// see https://github.com/orientechnologies/orientdb/blob/3.1.x/distributed/src/main/java/com/orientechnologies/orient/server/distributed/impl/ODistributedAbstractPlugin.java#L441
 			newCfg.override(newCfg.getDocument());
-			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
+			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg);
 		} else {
 			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 		}

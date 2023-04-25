@@ -22,6 +22,13 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.10.6]]
+== 1.10.6 (TBD)
+
+icon:check[] OrientDB: The included OrientDB version has been updated to version `3.2.18`.
+
+icon:check[] OrientDB: The included OrientDB Studio has been updated to version `3.2.18`.
+
 [[v1.10.5]]
 == 1.10.5 (19.04.2023)
 
