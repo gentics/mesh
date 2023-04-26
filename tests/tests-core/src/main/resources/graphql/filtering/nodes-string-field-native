@@ -51,11 +51,11 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        name: {notEquals: "2015"}
+	        name: {notEquals: "2015" isNull: false}
 	      }
 	    }
 	  }) {
-	    # [$.data.nameNotEquals2015.elements.length()=8]
+	    # [$.data.nameNotEquals2015.elements.length()=5]
 	    elements {
 	      uuid
 	      schema {
@@ -79,22 +79,6 @@
 	      }	      
 	    }
 	}
-	nameIsNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {isNull: true}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameIsNull.elements.length()=3]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
 	nameIsNotNull: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -104,6 +88,22 @@
 	    }
 	  }) {
 	    # [$.data.nameIsNotNull.elements.length()=6]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	nameIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        name: {isNull: true}
+	      }
+	    }
+	  }) {
+	    # [$.data.nameIsNull.elements.length()=3]
 	    elements {
 	      uuid
 	      schema {
