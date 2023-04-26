@@ -87,7 +87,7 @@ public class MeshOrientGraphVertexQuery extends MeshOrientGraphQuery<Vertex, Opt
 
 		String sqlQuery = maybeContainerType.map(ctype -> text.toString().replace("[edgeType='" + ContainerType.PUBLISHED.getCode() + "']", "[edgeType='" + ctype.getCode() + "']")).orElseGet(() -> text.toString());
 
-		System.out.println("VERTEX QUERY: "+ sqlQuery);
+		log.debug("VERTEX QUERY: {}", sqlQuery);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.

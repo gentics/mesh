@@ -124,17 +124,18 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		System.out.println("EDGE QUERY: "+ text);
+		String sqlQuery = text.toString();
+		log.debug("EDGE QUERY: {}", sqlQuery);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API.
 		if (fetchPlan != null) {
-			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
+			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(sqlQuery);
 			query.setFetchPlan(fetchPlan);
 			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
 					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
 		} else {
-			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(text.toString(), queryParams.toArray()), false)
+			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams.toArray()), false)
 					.map(oresult -> (Edge) new OrientEdgeImpl((OrientBaseGraph) graph, oresult.toElement()))
 					.iterator();
 		}
