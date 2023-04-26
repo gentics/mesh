@@ -4,10 +4,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +51,7 @@ import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
@@ -56,7 +61,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldType;
@@ -276,10 +280,27 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
+	public Optional<String> permissionFilter(HibUser user, InternalPermission permission, Optional<String> maybeOwner, Optional<ContainerType> containerType) {
+		if (user.isAdmin()) {
+			return Optional.empty();
+		}
+		List<InternalPermission> perms;
+		if (permission == InternalPermission.READ_PUBLISHED_PERM && containerType.filter(ContainerType.PUBLISHED::equals).isPresent()) {
+			perms = Arrays.asList(permission, InternalPermission.READ_PERM);
+		} else {
+			perms = Collections.singletonList(permission);
+		}
+		return Optional.of(perms.stream().map(perm -> String.format(" ( %s%s CONTAINS (SELECT inV().uuid FROM %s WHERE outV().uuid = '%s' LIMIT 1)) ", 
+				maybeOwner.map(owner -> owner + ".").orElse(StringUtils.EMPTY), perm.propertyKey(), GraphRelationships.ASSIGNED_TO_ROLE, user.getUuid())).collect(Collectors.joining(" OR ")));
+	}
+
+	@Override
 	@SuppressWarnings("rawtypes")
 	public String parseFilter(FilterOperation<?> filter, ContainerType ctype) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" ( ");
+		if (filter.shouldBracket()) {
+			sb.append(" ( ");
+		}
 		String parsedFilter = filter.maybeCombination()
 			// If combination, parse each distinctly
 			.map(filters -> filters.stream().map(f -> parseFilter(f, ctype)).collect(Collectors.joining(" " + filter.getOperator() + " ")))
@@ -344,9 +365,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 					return getFilterOperandValue(right);
 				});
 				return qlLeft + leftValue[0] + " " + filter.getOperator() + " " + qlRight + (StringUtils.isNotBlank(qlLeft) ? " ) " : "");
-			}).orElseThrow(() -> new IllegalStateException("Filter " + filter.getOperator() + " is neither combination nor comparison.")));
+			}).orElseGet(() -> filter.toSql()));
 		sb.append(parsedFilter);
-		sb.append(" ) ");
+		if (filter.shouldBracket()) {
+			sb.append(" ) ");
+		}
 		return sb.toString();
 	}
 

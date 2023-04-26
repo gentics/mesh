@@ -156,7 +156,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 				new Object[]{},
 				mapSorting(pagingInfo),
 				Optional.empty(),
-				Optional.ofNullable(parseFilter(extraFilter, ContainerType.PUBLISHED))
+				Optional.ofNullable(parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), InternalPermission.READ_PUBLISHED_PERM, Optional.empty()))
 			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
 	}

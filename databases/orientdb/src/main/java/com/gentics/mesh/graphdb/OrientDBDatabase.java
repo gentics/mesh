@@ -30,7 +30,6 @@ import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
@@ -324,15 +323,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		Orient.instance().shutdown();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
 		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
-			MeshOrientGraphQuery query = new MeshOrientGraphQuery(orientBaseGraph)
-					.relationDirection(Direction.OUT)
-					.vertexClass((Class<? extends MeshVertex>) classOfVertex);
+			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(orientBaseGraph, classOfVertex);
+			query.relationDirection(Direction.OUT);
 			query.hasAll(fieldNames, fieldValues);
 			query.filter(maybeFilter);
 			if (PersistingRootDao.shouldPage(paging)) {
@@ -346,7 +343,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			} else {
 				sorted = new String[0];
 			}
-			ret = query.verticesOrdered(sorted, maybeContainerType).iterator();
+			query.setOrderPropsAndDirs(sorted);
+			ret = query.fetch(maybeContainerType).iterator();
 		} else {
 			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
 		}

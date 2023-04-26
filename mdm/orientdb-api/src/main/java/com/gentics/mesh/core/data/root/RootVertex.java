@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
+import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -80,18 +80,18 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		Spliterator<Edge> itemEdges;
 		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
-					.vertexClass(getPersistanceClass())
-					.edgeLabel(getRootLabel().toUpperCase());
+			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
+
+			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
 			query.has(Direction.IN.name().toLowerCase(), id());
-			query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED)));
+			query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()"))));
 			if (paging.getPerPage() != null) {
 				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
 				query.limit(paging.getPerPage().intValue());
 			}
-			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 			Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
-			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()]), maybeVariations).spliterator();
+			itemEdges = query.fetch(maybeVariations).spliterator();
 		} else {
 			String idx = "e." + getRootLabel().toLowerCase() + "_out";
 			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();

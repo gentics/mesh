@@ -1,31 +1,18 @@
 package com.gentics.mesh.graphdb;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
-import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.madl.frame.ElementFrame;
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientEdge;
-import com.tinkerpop.blueprints.impls.orient.OrientElementIterable;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -35,24 +22,27 @@ import io.vertx.core.logging.LoggerFactory;
  * 
  * @author plyhun
  *
+ * @param <T> result element type
+ * @param <P> extra parameter type
  */
-public class MeshOrientGraphQuery extends OrientGraphQuery {
+abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQuery {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshOrientGraphQuery.class);
+	protected static final Logger log = LoggerFactory.getLogger(MeshOrientGraphQuery.class);
 
 	protected static final String QUERY_SELECT = "select ";
 	protected static final String QUERY_FROM = "from ";
 
-	protected Class<?> vertexClass;
-	protected String edgeLabel;
 	protected Optional<String> maybeCustomFilter = Optional.empty();
+	protected String[] orderPropsAndDirs = null;
 	protected Direction relationDirection = Direction.OUT;
+	protected final Class<?> vertexClass;
 
-	public MeshOrientGraphQuery(Graph iGraph) {
+	public MeshOrientGraphQuery(Graph iGraph, Class<?> vertexClass) {
 		super(iGraph);
+		this.vertexClass = vertexClass;
 	}
 
-	public MeshOrientGraphQuery filter(Optional<String> maybeCustomFilter) {
+	public MeshOrientGraphQuery<T, P> filter(Optional<String> maybeCustomFilter) {
 		this.maybeCustomFilter = Optional.ofNullable(maybeCustomFilter).flatMap(Function.identity());
 		return this;
 	}
@@ -64,7 +54,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	 * @param value
 	 * @return
 	 */
-	public MeshOrientGraphQuery hasAll(final String[] key, final Object[] value) {
+	public MeshOrientGraphQuery<T, P> hasAll(final String[] key, final Object[] value) {
 		for (int i = 0; i < key.length; i++) {
 			super.has(key[i], value[i]);
 		}
@@ -77,222 +67,21 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	 * @param relationDirection
 	 * @return
 	 */
-	public MeshOrientGraphQuery relationDirection(Direction relationDirection) {
+	public MeshOrientGraphQuery<T, P> relationDirection(Direction relationDirection) {
 		this.relationDirection = relationDirection;
 		return this;
 	}
 
 	/**
-	 * Set a vertex class, that will be used as a first label in {@link OrientGraphQuery#labels(String...)}
+	 * Fetch the results of this query.
 	 * 
-	 * @param vertexClass
+	 * @param propsAndDirs 
+	 * @param extraParam
 	 * @return
 	 */
-	public MeshOrientGraphQuery vertexClass(Class<?> vertexClass) {
-		this.vertexClass = vertexClass;
-		return this;
-	}
-
-	/**
-	 * Set an edge label, that will be used as a first label in {@link OrientGraphQuery#labels(String...)}
-	 * 
-	 * @param edgeLabel
-	 * @return
-	 */
-	public MeshOrientGraphQuery edgeLabel(String edgeLabel) {
-		this.edgeLabel = edgeLabel;
-		return this;
-	}
-
-	/**
-	 * Retrieve the ordered edges
-	 * 
-	 * @param propsAndDirs sorting parameters, in a form of 'field sortOrder', 'field sortOrder', etc.
-	 * @return
-	 */
-	public Iterable<Edge> edgesOrdered(String[] propsAndDirs, Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
-		if (limit == 0)
-			return Collections.emptyList();
-
-		final StringBuilder text = new StringBuilder(512);
-
-		// First build the fields to retrieve and sort by
-		text.append(QUERY_SELECT);
-		text.append("*");		
-		// Explicit fetch plan is not supported by a newer SQL API, so we use it
-		// to tell apart the usage of a new and old API. On the other hand,
-		// the old SQL API does not support custom edge filtering.
-		buildOrderFieldRequest(text, propsAndDirs, true, fetchPlan == null);
-		text.append(" ");
-		text.append(QUERY_FROM);
-		text.append(OrientBaseGraph.encodeClassName(edgeLabel));
-		text.append(" ");
-
-		// Build the query params
-		final List<Object> queryParams = manageFilters(text);
-		if (!((OrientBaseGraph) graph).isUseClassForVertexLabel())
-			manageLabels(queryParams.size() > 0, text);
-		
-		// Build the extra query param for the target vertex name, if specified with the 'vertexClass'
-		if (vertexClass != null) {
-			if (hasContainers != null && hasContainers.size() > 0) {
-				text.append(QUERY_FILTER_AND);				
-			} else {
-				text.append(QUERY_WHERE);
-			}
-			maybeFermaTypes.ifPresentOrElse(types -> {
-				text.append(" [");
-				text.append(" '");
-				text.append(vertexClass.getSimpleName());
-				text.append("' ");
-				types.stream().forEach(ft -> {
-					text.append(",'");
-					text.append(ft.getSimpleName());
-					text.append("'");
-				});
-				text.append("] CONTAINS ");
-			}, () -> {
-				text.append(" '");
-				text.append(vertexClass.getSimpleName());
-				text.append("' = ");
-			});
-			text.append(relationDirection.name().toLowerCase());
-			text.append("V().");
-			text.append(ElementFrame.TYPE_RESOLUTION_KEY);			
-		}
+	public abstract Iterable<T> fetch(P extraParam);
 	
-		maybeCustomFilter.ifPresent(filter -> {
-			if (vertexClass != null) {
-				text.append(QUERY_FILTER_AND);				
-			} else {
-				text.append(QUERY_WHERE);
-			}
-			text.append(filter);
-		});
-
-		// Build the order clause
-		if (propsAndDirs != null && propsAndDirs.length > 0) {
-			text.append(ORDERBY);
-			// format: path.name direction, e.g. 'fields.fullname desc'
-			for (String propAndDir : propsAndDirs) {
-				if (!propAndDir.equals(propsAndDirs[0])) {
-					text.append(", ");
-				}
-				String[] sortParts = propAndDir.split(" ");
-				String sanitizedPart = sanitizeInput(sortParts[0]);
-				text.append("`");
-				text.append(sanitizedPart.replace(".", "-"));
-				text.append("`");
-				if (sortParts.length > 1) {
-					text.append(" ");
-					text.append(sortParts[1]);
-				}
-			}
-		}
-		if (skip > 0 && skip < Integer.MAX_VALUE) {
-			text.append(SKIP);
-			text.append(skip);
-		}
-
-		if (limit > 0 && limit < Integer.MAX_VALUE) {
-			text.append(LIMIT);
-			text.append(limit);
-		}
-		log.debug("EDGE QUERY: {}", text);
-
-		// Explicit fetch plan is not supported by a newer SQL API, so we use it
-		// to tell apart the usage of a new and old API.
-		if (fetchPlan != null) {
-			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(text.toString());
-			query.setFetchPlan(fetchPlan);
-			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
-					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
-		} else {
-			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(text.toString(), queryParams.toArray()), false)
-					.map(oresult -> (Edge) new OrientEdgeImpl((OrientBaseGraph) graph, oresult.toElement()))
-					.iterator();
-		}
-	}
 	
-	public Iterable<Vertex> verticesOrdered(String[] propsAndDirs, Optional<ContainerType> maybeContainerType) {
-		if (limit == 0)
-			return Collections.emptyList();
-
-		final StringBuilder text = new StringBuilder(512);
-
-		// First build the fields to retrieve and sort by
-		text.append(QUERY_SELECT);
-		text.append("*");
-		// Explicit fetch plan is not supported by a newer SQL API, so we use it
-		// to tell apart the usage of a new and old API. On the other hand,
-		// the old SQL API does not support custom edge filtering.
-		buildOrderFieldRequest(text, propsAndDirs, false, fetchPlan == null);		
-		text.append(QUERY_FROM);
-		text.append(OrientBaseGraph.encodeClassName(vertexClass.getSimpleName()));
-
-		// Build the query params, including the labels (including the one provided with vertexClass).
-		final List<Object> queryParams = manageFilters(text);
-
-		maybeCustomFilter.ifPresent(filter -> {
-			if (text.indexOf(QUERY_WHERE) > 0) {
-				text.append(QUERY_FILTER_AND);
-			} else {
-				text.append(QUERY_WHERE);
-			}
-			text.append(filter);
-		});
-
-		if (!((OrientBaseGraph) graph).isUseClassForVertexLabel())
-			manageLabels(queryParams.size() > 0, text);
-
-		// Build the order clause
-		if (propsAndDirs != null && propsAndDirs.length > 0) {
-			text.append(ORDERBY);
-			// format: path.name direction, e.g. 'fields.fullname desc'
-			for (String propAndDir : propsAndDirs) {
-				if (!propAndDir.equals(propsAndDirs[0])) {
-					text.append(", ");
-				}
-				String[] sortParts = propAndDir.split(" ");
-				String sanitizedPart = sanitizeInput(sortParts[0]);
-				text.append("`");
-				text.append(sanitizedPart.replace(".", "-"));
-				text.append("`");
-				if (sortParts.length > 1) {
-					text.append(" ");
-					text.append(sortParts[1]);
-				}
-			}
-		}
-		if (skip > 0 && skip < Integer.MAX_VALUE) {
-			text.append(SKIP);
-			text.append(skip);
-		}
-		if (limit > 0 && limit < Integer.MAX_VALUE) {
-			text.append(LIMIT);
-			text.append(limit);
-		}
-
-		String sqlQuery = maybeContainerType.map(ctype -> text.toString().replace("[edgeType='" + ContainerType.PUBLISHED.getCode() + "']", "[edgeType='" + ctype.getCode() + "']")).orElseGet(() -> text.toString());
-
-		log.debug("VERTEX QUERY: {}", sqlQuery);
-
-		// Explicit fetch plan is not supported by a newer SQL API, so we use it
-		// to tell apart the usage of a new and old API.
-		if (fetchPlan != null) {
-			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(sqlQuery);
-
-			query.setFetchPlan(fetchPlan);
-
-			return new OrientElementIterable<Vertex>(((OrientBaseGraph) graph),
-					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
-		} else {
-			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams.toArray()), false)
-				.map(oresult -> (Vertex) new OrientVertex((OrientBaseGraph) graph, oresult.toElement()))
-				.iterator();
-		}
-	}
-
 	/**
 	 * Sanitize the 'orderBy' input against
 	 * 1. chars disallowed in the field naming
@@ -301,7 +90,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	 * @param input
 	 * @return
 	 */
-	private static final String sanitizeInput(String input) {
+	protected static final String sanitizeInput(String input) {
 		// Keep match opposite to FieldSchemaContainer.NAME_REGEX!
 		return input.replaceAll("[^.@a-zA-Z0-9_-]", StringUtils.EMPTY);
 	}
@@ -313,7 +102,7 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	 * @param fieldName
 	 * @return
 	 */
-	private static final StringBuilder escapeFieldNameIfRequired(StringBuilder sb, String fieldName) {
+	protected static final StringBuilder escapeFieldNameIfRequired(StringBuilder sb, String fieldName) {
 		boolean escape = !fieldName.contains("(") && !fieldName.contains(")");
 		if (escape) {
 			sb.append("`");
@@ -340,12 +129,12 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 	 * @param isEdgeRequest
 	 * @param useEdgeFilters
 	 */
-	protected void buildOrderFieldRequest(StringBuilder text, String[] propsAndDirs, boolean isEdgeRequest, boolean useEdgeFilters) {
-		if (propsAndDirs != null && propsAndDirs.length > 0) {
+	protected void buildOrderFieldRequest(StringBuilder text, boolean isEdgeRequest, boolean useEdgeFilters) {
+		if (orderPropsAndDirs != null && orderPropsAndDirs.length > 0) {
 			// format: path.name direction, e.g. 'fields.fullname desc'
 			Direction vertexLookupDir = isEdgeRequest ? relationDirection.opposite() : relationDirection;
 			Direction vertexLookupDirOpposite = vertexLookupDir.opposite();
-			for (String propAndDir : propsAndDirs) {
+			for (String propAndDir : orderPropsAndDirs) {
 				String[] sortParts = propAndDir.split(" ");
 				Class<?> currentMapping = vertexClass;
 				String sanitizedPart = sanitizeInput(sortParts[0]);
@@ -429,16 +218,12 @@ public class MeshOrientGraphQuery extends OrientGraphQuery {
 		}
 		text.append(" ");
 	}
-	
-	/**
-	 * For whatever reason Tinkerpop Blueprints ORM did not provide an edge entity, so it has to be done manually.
-	 * 
-	 * @author plyhun
-	 *
-	 */
-	private final class OrientEdgeImpl extends OrientEdge {
-		public OrientEdgeImpl(final OrientBaseGraph rawGraph, final OIdentifiable rawEdge) {
-			super(rawGraph, rawEdge);
-		}
+
+	public String[] getOrderPropsAndDirs() {
+		return orderPropsAndDirs;
+	}
+
+	public void setOrderPropsAndDirs(String[] orderPropsAndDirs) {
+		this.orderPropsAndDirs = orderPropsAndDirs;
 	}
 }

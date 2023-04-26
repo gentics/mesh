@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
+import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -236,13 +236,12 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		Spliterator<Edge> itemEdges;
 		if (PersistingRootDao.shouldSort(sort)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-			MeshOrientGraphQuery query = new MeshOrientGraphQuery(ograph.getBaseGraph())
-					.relationDirection(vertexDirection)
-					.edgeLabel(rootLabel)
-					.vertexClass(clazz);
+			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), clazz, rootLabel);
+			query.relationDirection(vertexDirection);
 			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
 			List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
-			itemEdges = query.edgesOrdered(sortParams.toArray(new String[sortParams.size()]), maybeVariations).spliterator();
+			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
+			itemEdges = query.fetch(maybeVariations).spliterator();
 		} else {
 			// Iterate over all vertices that are managed by this root vertex
 			itemEdges = graph.getEdges(indexName, indexKey).spliterator();

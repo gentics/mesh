@@ -243,8 +243,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter) {
-		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> parseFilter(f, containerType))), NodeImpl.class));
+	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter, Optional<HibUser> maybeUser) {
+		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> maybeUser
+				.map(user -> parseFilter(f, containerType, user, containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.empty()))
+				.orElseGet(() -> parseFilter(f, containerType)))), NodeImpl.class));
 	}
 
 	private Iterator<Vertex> getUnframedChildren(String branchUuid, PagingParameters sorting, Optional<String> maybeFilter) {
@@ -348,7 +350,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			? item -> true
 			: item -> languageTags.stream().anyMatch(languageTag -> contentDao.getFieldContainer(item, languageTag, branchUuid, type) != null);
 
-		return getChildren(branchUuid).stream()
+		return getChildren(branchUuid, Optional.of(requestUser)).stream()
 			.filter(languageFilter.and(item -> userRoot.hasPermission(requestUser, item, perm)));
 	}
 

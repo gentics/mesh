@@ -102,7 +102,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		HibUser user = ac.getUser();
 		UserDao userDao = tx.userDao();
 
-		return findAll(tx.getProject(ac).getUuid(), paging, maybeContainerType, maybeFilter)
+		return findAll(user, perm, tx.getProject(ac).getUuid(), paging, maybeContainerType, maybeFilter)
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
@@ -113,8 +113,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param projectUuid
 	 * @return
 	 */
-	private Stream<Vertex> findAll(String projectUuid) {
-		return findAll(projectUuid, null, Optional.empty(), Optional.empty());
+	private Stream<Vertex> findAll(HibUser user, InternalPermission perm, String projectUuid) {
+		return findAll(user, perm, projectUuid, null, Optional.empty(), Optional.empty());
 	}
 
 	/**
@@ -125,14 +125,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param sortOrder
 	 * @return
 	 */
-	private Stream<Vertex> findAll(String projectUuid, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter) {
+	private Stream<Vertex> findAll(HibUser user, InternalPermission perm, String projectUuid, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
 			new Object[]{projectUuid},
 			mapSorting(paging),
 			maybeContainerType,
-			maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED)))
+			maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
 		));
 	}
 
@@ -144,7 +144,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 		UserDao userDao = Tx.get().userDao();
 
-		return findAll(Tx.get().getProject(ac).getUuid()).filter(item -> {
+		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
