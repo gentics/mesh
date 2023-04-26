@@ -8,12 +8,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -27,6 +21,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
+import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
@@ -39,15 +35,17 @@ import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.util.UUIDUtil;
-
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.core.Vertx;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Handler for s3binary upload requests. This class is responsible only for the creation of the necessary Mesh fields. The real upload is done between the client and the AWS.
@@ -63,10 +61,11 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 	public S3BinaryUploadHandlerImpl(
 			Database db,
 			S3BinaryStorage s3BinaryStorage,
-			HandlerUtilities utils, Vertx rxVertx,
+			HandlerUtilities utils,
 			MeshOptions options,
-			S3Binaries s3binaries) {
-		super(db, null, options);
+			S3Binaries s3binaries,
+			BinaryStorage binaryStorage) {
+		super(db, null, binaryStorage, options);
 
 		this.s3BinaryStorage = s3BinaryStorage;
 		this.utils = utils;

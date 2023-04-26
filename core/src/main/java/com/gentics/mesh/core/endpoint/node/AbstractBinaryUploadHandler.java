@@ -13,11 +13,13 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
+import io.reactivex.Flowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -40,11 +43,14 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 
 	protected final Database db;
 	protected final Binaries binaries;
+	protected final BinaryStorage binaryStorage;
+
 	protected final MeshOptions options;
 
-	public AbstractBinaryUploadHandler(Database db, Binaries binaries, MeshOptions options) {
+	public AbstractBinaryUploadHandler(Database db, Binaries binaries, BinaryStorage binaryStorage, MeshOptions options) {
 		this.db = db;
 		this.binaries = binaries;
+		this.binaryStorage = binaryStorage;
 		this.options = options;
 	}
 
@@ -81,18 +87,18 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 
 		db.singleTxWriteLock(
 			(batch, tx) -> {
-				PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-				HibProject project = tx.getProject(ac);
-				HibBranch branch = tx.getBranch(ac);
-				NodeDao nodeDao = tx.nodeDao();
-				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+				CommonTx ctx = tx.unwrap();
 				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				HibNodeFieldContainer nodeFieldContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				HibProject project = tx.getProject(ac);
+				HibBranch branch = tx.getBranch(ac);
+				NodeDao nodeDao = tx.nodeDao();
+				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+				HibNodeFieldContainer nodeFieldContainer = ctx.contentDao().findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 
 				if (nodeFieldContainer == null) {
 					throw error(BAD_REQUEST, "object_not_found_for_uuid_version", nodeUuid, nodeVersion);
@@ -123,44 +129,16 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 				}
 
 				BinaryCheckUpdateRequest request = ac.fromJson(BinaryCheckUpdateRequest.class);
-				HibBinary newBinary = null;
+				HibBinary binary = binaryField.getBinary();
 
-				if (request.getStatus() == BinaryCheckStatus.ACCEPTED) {
-					newBinary = binaryField.getBinary();
-					newBinary.setCheckStatus(BinaryCheckStatus.ACCEPTED);
-				} else if (binaries != null) {
-					// The S3 implementation does not handle the binary data itself.
-					HibBinary existingBinary = binaries.findByHash(EMPTY_SHA_512_HASH).runInExistingTx(tx);
+				binary.setCheckStatus(request.getStatus());
 
-					newBinary = existingBinary != null
-						? existingBinary
-						: binaries.create(EMPTY_SHA_512_HASH, 0, BinaryCheckStatus.DENIED).runInExistingTx(tx);
+				if (request.getStatus() == BinaryCheckStatus.DENIED) {
+					binaryStorage.delete(binary.getUuid())
+						.andThen(binaryStorage.store(Flowable.empty(), binary.getUuid()))
+						.subscribe();
+					ctx.persist(binary);
 				}
-
-				if (newBinary != null && newBinary != binaryField.getBinary()) {
-					// Create the new field
-					HibBinaryField field = nodeFieldContainer.createBinary(fieldName, newBinary);
-
-					// Reuse the existing properties
-					binaryField.copyTo(field);
-
-					// Now get rid of the old field
-					nodeFieldContainer.removeField(binaryField);
-
-					// If the binary field is the segment field, we need to update the webroot info in the node
-					// TODO FIXME This is already called in `PersistingContentDao.connectFieldContainer()`. Normally one should not update a container without reconnecting versions,
-					// but currently MeshLocalClient does this, which may be illegal. The check and call below should be removed, once MeshLocalClientImpl is improved.
-					if (field.getFieldKey().equals(contentDao.getSchemaContainerVersion(nodeFieldContainer).getSchema().getSegmentField())) {
-						contentDao.updateWebrootPathInfo(nodeFieldContainer, branch.getUuid(), "node_conflicting_segmentfield_upload");
-					}
-
-					if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled(nodeFieldContainer) && contentDao.isPurgeable(nodeFieldContainer)) {
-						contentDao.purge(nodeFieldContainer);
-					}
-				}
-
-				// TODO: Do we need this update, when only the check status of the binary was changed? This was not necessarily done on the DRAFT version.
-				// batch.add(contentDao.onUpdated(nodeFieldContainer, branch.getUuid(), DRAFT));
 
 				return nodeDao.transformToRestSync(node, ac, 0);
 			})

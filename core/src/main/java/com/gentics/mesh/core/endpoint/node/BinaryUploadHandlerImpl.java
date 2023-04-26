@@ -73,8 +73,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 
 	private final Lazy<BootstrapInitializer> boot;
 
-	private final BinaryStorage binaryStorage;
-
 	private final BinaryProcessorRegistryImpl binaryProcessorRegistry;
 
 	private final HandlerUtilities utils;
@@ -96,10 +94,9 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			MeshOptions options,
 			Binaries binaries,
 			WriteLock writeLock) {
-		super(db, binaries, options);
+		super(db, binaries, binaryStorage, options);
 
 		this.boot = boot;
-		this.binaryStorage = binaryStorage;
 		this.binaryProcessorRegistry = binaryProcessorRegistry;
 		this.utils = utils;
 		this.fs = rxVertx.fileSystem();
