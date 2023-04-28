@@ -48,6 +48,10 @@ public class Configuration {
 	@JsonPropertyDescription("List of projects for which the comments plugin is enabled")
 	private List<String> projectNames;
 
+	@JsonProperty(defaultValue = "license.key")
+	@JsonPropertyDescription("Path to the license key file.")
+	private String licenseKey = "license.key";
+
 	private String schemaPrefix = DEFAULT_SCHEMA_PREFIX;
 	private boolean allowAnonymous = DEFAULT_ALLOW_ANONYMOUS;
 	private boolean requiresApproval = DEFAULT_REQUIRES_APPROVAL;
@@ -199,5 +203,13 @@ public class Configuration {
 	public Configuration setMailResolveLinks(LinkType mailResolveLinks) {
 		this.mailResolveLinks = mailResolveLinks;
 		return this;
+	}
+
+	public String getLicenseKey() {
+		return licenseKey;
+	}
+
+	public void setLicenseKey(String licenseKey) {
+		this.licenseKey = licenseKey;
 	}
 }
