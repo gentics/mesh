@@ -2,7 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
-import static com.gentics.mesh.test.MeshOptionChanger.RANDOM_ES_PORT;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.RANDOM_ES_PORT;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
