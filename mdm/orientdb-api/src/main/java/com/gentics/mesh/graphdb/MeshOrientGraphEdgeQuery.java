@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
@@ -124,7 +125,7 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 			text.append(LIMIT);
 			text.append(limit);
 		}
-		String sqlQuery = text.toString();
+		String sqlQuery = text.toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
 		log.debug("EDGE QUERY: {}", sqlQuery);
 
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it

@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,7 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.parameter.SortingParameters;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
@@ -290,8 +292,9 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		} else {
 			perms = Collections.singletonList(permission);
 		}
-		return Optional.of(perms.stream().map(perm -> String.format(" ( %s%s CONTAINS (SELECT inV().uuid FROM %s WHERE outV().uuid = '%s' LIMIT 1)) ", 
-				maybeOwner.map(owner -> owner + ".").orElse(StringUtils.EMPTY), perm.propertyKey(), GraphRelationships.ASSIGNED_TO_ROLE, user.getUuid())).collect(Collectors.joining(" OR ")));
+		String roleUuids = StreamUtil.toStream(GraphDBTx.getGraphTx().userDao().getRoles(user)).map(role -> String.format("'%s'", role.getUuid())).collect(Collectors.joining(",", "[", "]"));
+		return Optional.of(perms.stream().map(perm -> String.format(" ( %s%s CONTAINSANY %s) ", 
+				maybeOwner.map(owner -> owner + ".").orElse(StringUtils.EMPTY), perm.propertyKey(), roleUuids)).collect(Collectors.joining(" OR ")));
 	}
 
 	@Override
@@ -349,7 +352,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 									log.error("Mismatch in requested and found relations for {}.{}: requested {}, found {}", src.getKey(), src.getValue(), dst.getKey(), relation.getRelatedVertexClass());
 									// TODO throw?
 								} else {
-									srcField = relation.getEdgeFieldName().replace("[edgeType='" + ContainerType.PUBLISHED.getCode() + "']", "[edgeType='" + ctype.getCode() + "']");
+									srcField = relation.getEdgeFieldName().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ctype.getCode() + "']");
 								}
 							}
 						}
@@ -372,10 +375,13 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		return sb.toString();
 	}
 
+	@SuppressWarnings("unchecked")
 	private Object getFilterOperandValue(FilterOperand<?> op) {
 		// Special case for date/time values
 		if (op.getValue() instanceof Instant) {
 			return Instant.class.cast(op.getValue()).toEpochMilli();
+		} else if (op.getValue() instanceof Iterable && Iterable.class.cast(op.getValue()).iterator().next() instanceof Instant) {
+			return StreamSupport.stream(Iterable.class.cast(op.getValue()).spliterator(), false).map(v -> Long.toString(Instant.class.cast(v).toEpochMilli())).collect(Collectors.joining(",", "[", "]"));
 		} else {
 			return op.toSql();
 		}

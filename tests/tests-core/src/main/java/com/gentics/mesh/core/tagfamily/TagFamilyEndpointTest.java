@@ -482,10 +482,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				for (HibNode node : tagDao.getNodes(tag, branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
-						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT,
-								ContainerType.PUBLISHED)) {
-							for (HibNodeFieldContainer fieldContainer : tx.contentDao()
-									.getFieldContainers(node, branch, containerType)) {
+						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
+							for (HibNodeFieldContainer fieldContainer : tx.contentDao().getFieldContainers(node, branch, containerType)) {
 								HibSchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(
@@ -498,7 +496,6 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 					}
 				}
 			}
-
 			assertThat(trackingSearchProvider()).hasEvents(storeCount + 1, 0, 0, 0, 0);
 		}
 	}

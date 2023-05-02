@@ -136,10 +136,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withPostfix("branch_parents")
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 
-		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.PUBLISHED.getCode());
+		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.INITIAL.getCode());
 		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "creator");
-		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "editor", MeshVertex.UUID_KEY, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inv()[0].editor", null);
-		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "edited", null, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].last_edited_timestamp", null);
+		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "editor", MeshVertex.UUID_KEY, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.INITIAL.getCode() + "'].inv()[0].editor", null);
+		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "edited", null, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.INITIAL.getCode() + "'].inV()[0].last_edited_timestamp", null);
 	}
 
 	@Override
@@ -420,7 +420,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public String mapGraphQlFieldName(String gqlName) {
 		switch (gqlName) {
-		case "editor": return "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.PUBLISHED.getCode() + "'].inV()[0].`editor`";
+		case "editor": return "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.INITIAL.getCode() + "'].inV()[0].`editor`";
 		}
 		return super.mapGraphQlFieldName(gqlName);
 	}

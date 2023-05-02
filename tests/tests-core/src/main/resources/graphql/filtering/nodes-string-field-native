@@ -15,22 +15,6 @@
 	      }
 	    }
 	}
-	nameLike201_: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        name: {like: "201_"}
-	      }
-	    }
-	  }) {
-	    # [$.data.nameLike201_.elements.length()=2]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
 	nameEndsWith15: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {

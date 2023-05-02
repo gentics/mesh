@@ -127,7 +127,7 @@ public abstract class AbstractTypeProvider {
 		arguments.add(applyDeprecation.apply(newArgument()).name("sortBy").description("Field to sort the elements by").type(GraphQLString).build());
 
 		// #sortOrder
-		arguments.add(applyDeprecation.apply(newArgument()).name("sortOrder").type(new GraphQLTypeReference(Sorting.SORT_ORDER_NAME)).defaultValue(SortOrder.UNSORTED).description("Order to sort the elements in").build());
+		arguments.add(applyDeprecation.apply(newArgument()).name("sortOrder").type(new GraphQLTypeReference(Sorting.SORT_ORDER_NAME)).description("Order to sort the elements in").build());
 
 		return arguments;
 	}
@@ -737,9 +737,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	private static final Optional<SortOrder> sortOrderFromGraphQlSorting(Object sorting) {
-		if (sorting == null) {
-			return Optional.of(SortOrder.UNSORTED);
-		} else if (sorting instanceof Sorting) {
+		if (sorting != null && sorting instanceof Sorting) {
 			Sorting s = Sorting.class.cast(sorting);
 			switch (s) {
 			case ASCENDING:

@@ -94,6 +94,6 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 * @return
 	 */
 	default String parseFilter(FilterOperation<?> filter, ContainerType ctype, HibUser user, InternalPermission permission, Optional<String> maybeOwner) {
-		return parseFilter(filter, ContainerType.PUBLISHED) + permissionFilter(user, permission, maybeOwner, Optional.ofNullable(ctype)).map(permFilter -> " AND " + permFilter).orElse(StringUtils.EMPTY);
+		return parseFilter(filter, ctype) + permissionFilter(user, permission, maybeOwner, Optional.ofNullable(ctype)).map(permFilter -> " AND " + permFilter).orElse(StringUtils.EMPTY);
 	}
 }

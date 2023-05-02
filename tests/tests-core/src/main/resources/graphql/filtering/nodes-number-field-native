@@ -1,21 +1,4 @@
 {
-	numberEqualsUltimateAnswer: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        number: {equals: 42.1}
-	      }
-	    }
-	  }) {
-	    # [$.data.numberEqualsUltimateAnswer.elements.length()=1]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
-	
 	numberNotEqualsUltimateAnswer: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -161,6 +144,23 @@
 	    }
 	  }) {
 	    # [$.data.numberOneOfSuccess.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	numberEqualsUltimateAnswer: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        number: {equals: 42.1}
+	      }
+	    }
+	  }) {
+	    # [$.data.numberEqualsUltimateAnswer.elements.length()=1]
 	    elements {
 	      uuid
 	      schema {
