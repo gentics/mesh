@@ -11,14 +11,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Uuid of the used binary data.
-	 * 
+	 *
 	 * @return
 	 */
 	String getBinaryUuid();
 
 	/**
 	 * Set the Uuid of the used binary data.
-	 * 
+	 *
 	 * @param uuid
 	 * @return
 	 */
@@ -26,14 +26,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the binary filesize.
-	 * 
+	 *
 	 * @return Filesize in bytes
 	 */
 	long getFileSize();
 
 	/**
 	 * Set the binary filesize.
-	 * 
+	 *
 	 * @param fileSize
 	 *            Filesize in bytes
 	 * @return Fluent API
@@ -42,14 +42,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the image height.
-	 * 
+	 *
 	 * @return Image height
 	 */
 	Integer getHeight();
 
 	/**
 	 * Set the image height.
-	 * 
+	 *
 	 * @param height
 	 *            Image height
 	 * @return Fluent API
@@ -58,14 +58,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the width of the image.
-	 * 
+	 *
 	 * @return Image width
 	 */
 	Integer getWidth();
 
 	/**
 	 * Set the width of the image.
-	 * 
+	 *
 	 * @param width
 	 *            Image width
 	 * @return Fluent API
@@ -74,14 +74,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the binary mimetype.
-	 * 
+	 *
 	 * @return Binary mimetype
 	 */
 	String getMimeType();
 
 	/**
 	 * Set the binary mimetype.
-	 * 
+	 *
 	 * @param mimeType
 	 *            Binary mimetype
 	 * @return Fluent API
@@ -90,14 +90,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the sha512 checksum.
-	 * 
+	 *
 	 * @return Checksum
 	 */
 	String getSha512sum();
 
 	/**
 	 * Set the binary sha512 checksum.
-	 * 
+	 *
 	 * @param sha512sum
 	 *            Checksum
 	 * @return Fluent API
@@ -106,14 +106,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the binary filename of the node (may be null when no binary value was set)
-	 * 
+	 *
 	 * @return Filename
 	 */
 	String getFileName();
 
 	/**
 	 * Set the binary filename.
-	 * 
+	 *
 	 * @param fileName
 	 *            Filename
 	 * @return Fluent API
@@ -122,14 +122,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the dominant color of the image.
-	 * 
+	 *
 	 * @return
 	 */
 	String getDominantColor();
 
 	/**
 	 * Set the dominant color of the image.
-	 * 
+	 *
 	 * @param dominantColor
 	 * @return
 	 */
@@ -137,14 +137,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the currently configured focal point.
-	 * 
+	 *
 	 * @return
 	 */
 	FocalPoint getFocalPoint();
 
 	/**
 	 * Set the focal point.
-	 * 
+	 *
 	 * @param point
 	 * @return
 	 */
@@ -152,7 +152,7 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Set the focal point.
-	 * 
+	 *
 	 * @param x
 	 * @param y
 	 * @return
@@ -164,7 +164,7 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Check whether contains any values.
-	 * 
+	 *
 	 * @return
 	 */
 	@JsonIgnore
@@ -172,14 +172,14 @@ public interface BinaryField extends Field {
 
 	/**
 	 * Return the binary metadata.
-	 * 
+	 *
 	 * @return
 	 */
 	BinaryMetadata getMetadata();
 
 	/**
 	 * Set the binary metadata.
-	 * 
+	 *
 	 * @param metaData
 	 * @return
 	 */
@@ -204,4 +204,32 @@ public interface BinaryField extends Field {
 	 */
 	BinaryField setPlainText(String text);
 
+	/**
+	 * Returns the binary check status.
+	 *
+	 * @return The binary check status.
+	 */
+	BinaryCheckStatus getCheckStatus();
+
+	/**
+	 * Set the binary check status.
+	 * @param checkStatus The check status.
+	 *
+	 * @return Fluent API.
+	 */
+	BinaryField setCheckStatus(BinaryCheckStatus checkStatus);
+
+	/**
+	 * Returns the binary check secret.
+	 *
+	 * @return The binary check secret.
+	 */
+	String getCheckSecret();
+
+	/**
+	 * Set the binary check secret.
+	 * @param checkSecret The binary check secret.
+	 * @return Fluent API.
+	 */
+	BinaryField setCheckSecret(String checkSecret);
 }

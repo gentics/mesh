@@ -32,6 +32,8 @@ public enum MeshOptionChanger {
 		}
 	}), BATCH_MIGRATION(options -> {
 		options.getContentOptions().setBatchSize(2);
+	}), SHORT_BINARY_CHECK_INTERVAL(options -> {
+		options.getUploadOptions().setCheckInterval(5_000);
 	});
 
 	public final Consumer<MeshOptions> changer;

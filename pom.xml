@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>1.10.6-SNAPSHOT</version>
+	<version>2.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -48,7 +48,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>4.3.2.0</version>
+		<version>4.3.2.1</version>
 	</parent>
 
 	<developers>
@@ -180,8 +180,8 @@
 					<tag>${project.artifactId}-${project.version}</tag>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId> 
-				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals> 
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-gpg-plugin</artifactId>
+				<executions> <execution> <id>sign-artifacts</id> <phase>verify</phase> <goals>
 				<goal>sign</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

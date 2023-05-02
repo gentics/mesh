@@ -328,6 +328,25 @@ public class NodeExamples extends AbstractExamples {
 		return parameters;
 	}
 
+	public Map<String, List<FormParameter>> getExampleBinaryCheckCallbackParameters() {
+		Map<String, List<FormParameter>> parameters = new HashMap<>();
+		FormParameter statusParameter = new FormParameter();
+		statusParameter.setExample("DENIED");
+		statusParameter.setType(ParamType.STRING);
+		statusParameter.setDescription("The result of the binary check. One of ACCEPTED or DENIED.");
+		statusParameter.setRequired(true);
+		parameters.put("status", Arrays.asList(statusParameter));
+
+		FormParameter reasonParameter = new FormParameter();
+		reasonParameter.setExample("Malware detected");
+		reasonParameter.setType(ParamType.STRING);
+		reasonParameter.setDescription("The reason why the binary was denied.");
+		reasonParameter.setRequired(false);
+		parameters.put("reason", Arrays.asList(reasonParameter));
+
+		return parameters;
+	}
+
 	public NodeVersionsResponse createVersionsList() {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		List<VersionInfo> list = new ArrayList<>();

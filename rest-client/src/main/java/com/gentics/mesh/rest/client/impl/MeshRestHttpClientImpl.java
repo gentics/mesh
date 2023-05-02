@@ -51,6 +51,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.BinaryCheckUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -58,6 +59,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
@@ -108,6 +110,9 @@ import com.gentics.mesh.parameter.BackupParameters;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.client.BinaryCheckParametersImpl;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -1194,6 +1199,34 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
 			transformRequest);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> updateNodeBinaryFieldCheckStatus(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+			String fieldKey, String secret, String branchUuid, BinaryCheckStatus status, String reason) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(languageTag, "language must not be null");
+		Objects.requireNonNull(nodeVersion, "version must not be null");
+		Objects.requireNonNull(fieldKey, "field key must not be null");
+		Objects.requireNonNull(secret, "secret must not be null");
+		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
+		Objects.requireNonNull(status, "status must not be null");
+
+		BinaryCheckUpdateRequest updateRequest = new BinaryCheckUpdateRequest()
+			.setStatus(status)
+			.setReason(reason);
+		ParameterProvider[] parameters = new ParameterProvider[] {
+			new NodeParametersImpl().setLanguages(languageTag),
+			new VersioningParametersImpl().setVersion(nodeVersion).setBranch(branchUuid),
+			new BinaryCheckParametersImpl().setSecret(secret)
+		};
+
+		return prepareRequest(
+			POST,
+			"/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + "/checkCallback" + getQuery(parameters),
+			NodeResponse.class,
+			updateRequest);
 	}
 
 	@Override

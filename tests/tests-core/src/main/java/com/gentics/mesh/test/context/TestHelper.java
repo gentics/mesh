@@ -147,7 +147,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Return the uuid of the initial project branch.
-	 * 
+	 *
 	 * @return
 	 */
 	default String initialBranchUuid() {
@@ -187,7 +187,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Return the http port used by the mesh http server.
-	 * 
+	 *
 	 * @return
 	 */
 	default int port() {
@@ -208,7 +208,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Return uuid of the news folder.
-	 * 
+	 *
 	 * @return
 	 */
 	default String folderUuid() {
@@ -285,7 +285,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Returns the news overview node which has no tags.
-	 * 
+	 *
 	 * @return
 	 */
 	default HibNode content() {
@@ -378,9 +378,9 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, Field field) {
 		tx(tx -> {
-			prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()		
+			prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
 				.map(TestHelper::fieldIntoSchema)
-				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty()); 
+				.map(schema -> schema.setName(fieldKey)).collect(Collectors.toList()), Optional.empty());
 			tx.success();
 		});
 
@@ -481,7 +481,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Migrate the node from one branch to another.
-	 * 
+	 *
 	 * @param projectName
 	 *            project name
 	 * @param uuid
@@ -581,7 +581,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Delete the schema with the given uuid.
-	 * 
+	 *
 	 * @param uuid
 	 */
 	default public void deleteSchema(String uuid) {
@@ -601,20 +601,33 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	/**
-	 * Prepare the schema of the given node by adding the binary content field to its schema fields. This method will also update the clientside schema storage.
-	 * 
+	 * Prepare the schema of the given node by adding the binary content field without a binary check URL to its schema fields. This method will also update the clientside schema storage.
+	 *
 	 * @param node
 	 * @param mimeTypeWhitelist
 	 * @param binaryFieldName
 	 * @throws IOException
 	 */
 	default public void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
-		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"), true);
+		prepareSchema(node, mimeTypeWhitelist, binaryFieldName, null);
 	}
-	
+
+	/**
+	 * Prepare the schema of the given node by adding the binary content field to its schema fields. This method will also update the clientside schema storage.
+	 *
+	 * @param node
+	 * @param mimeTypeWhitelist
+	 * @param binaryFieldName
+	 * @param checkServiceUrl
+	 * @throws IOException
+	 */
+	default void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName, String checkServiceUrl) throws IOException {
+		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setCheckServiceUrl(checkServiceUrl).setName(binaryFieldName).setLabel("Binary content"), true);
+	}
+
 	/**
 	 * Prepare the schema of the given node by adding a new field to its schema fields. This method will also update the clientside schema storage.
-	 * 
+	 *
 	 * @param node
 	 * @param fieldSchema filled field
 	 * @throws IOException
@@ -735,7 +748,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Creates a new role, group and user and connects these elements.
-	 * 
+	 *
 	 * @param name
 	 */
 	default Rug createUserGroupRole(String name) {
@@ -876,7 +889,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 
 	/**
 	 * Load the resource and return the buffer with the data.
-	 * 
+	 *
 	 * @param path
 	 * @return
 	 * @throws IOException
@@ -937,7 +950,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 			FieldList<?> fieldList = (FieldList<?>) field;
 			return new ListFieldSchemaImpl().setListType(fieldList.getItemType());
 		default:
-			break;		
+			break;
 		}
 		throw new IllegalArgumentException("Unsupported Field type: " + field.getType());
 	}

@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -14,12 +15,12 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 
 	/**
 	 * Copy the values of this field to the specified target field.
-	 * 
+	 *
 	 * @param target
 	 * @return Fluent API
 	 */
 	HibBinaryField copyTo(HibBinaryField target);
-	
+
 	@Override
 	HibBinary getBinary();
 
@@ -36,6 +37,7 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 			restModel.setSha512sum(binary.getSHA512Sum());
 			restModel.setWidth(binary.getImageWidth());
 			restModel.setHeight(binary.getImageHeight());
+			restModel.setCheckStatus(binary.getCheckStatus());
 		}
 
 		restModel.setFocalPoint(getImageFocalPoint());
@@ -45,6 +47,7 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 		restModel.setMetadata(metaData);
 
 		restModel.setPlainText(getPlainText());
+
 		return restModel;
 	}
 
@@ -55,7 +58,7 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 
 	/**
 	 * Common comparison code.
-	 * 
+	 *
 	 * @param obj
 	 * @return
 	 */
@@ -76,7 +79,12 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 			String hashSumA = binaryA != null ? binaryA.getSHA512Sum() : null;
 			String hashSumB = binaryB != null ? binaryB.getSHA512Sum() : null;
 			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
-			return filename && mimetype && sha512sum;
+
+			BinaryCheckStatus statusA = binaryA != null ? binaryA.getCheckStatus() : null;
+			BinaryCheckStatus statusB = binaryB != null ? binaryB.getCheckStatus() : null;
+			boolean checkStatus = Objects.equals(statusA, statusB);
+
+			return filename && mimetype && sha512sum && checkStatus;
 		}
 		if (obj instanceof BinaryField) {
 			BinaryField binaryField = (BinaryField) obj;
@@ -122,8 +130,25 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 				BinaryMetadata restMetadata = binaryField.getMetadata();
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata;
+
+			boolean matchingCheckStatus = true;
+
+			if (binaryField.getCheckStatus() != null) {
+				BinaryCheckStatus statusA = getBinary() != null ? getBinary().getCheckStatus() : null;
+				BinaryCheckStatus statusB = binaryField.getCheckStatus();
+
+				matchingCheckStatus = Objects.equals(statusA, statusB);
+			}
+
+			return matchingFilename
+				&& matchingMimetype
+				&& matchingFocalPoint
+				&& matchingDominantColor
+				&& matchingSha512sum
+				&& matchingMetadata
+				&& matchingCheckStatus;
 		}
+
 		return false;
 	}
 

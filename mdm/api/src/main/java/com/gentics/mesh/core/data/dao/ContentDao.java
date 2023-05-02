@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -202,7 +203,7 @@ public interface ContentDao {
 
 	/**
 	 * Return the mount of elements.
-	 * 
+	 *
 	 * @return
 	 */
 	long globalCount();
@@ -488,7 +489,7 @@ public interface ContentDao {
 
 	/**
 	 * Gets all NodeField edges that reference this node.
-	 * 
+	 *
 	 * @return
 	 */
 	Stream<HibNodeField> getInboundReferences(HibNode node);
@@ -552,6 +553,13 @@ public interface ContentDao {
 	 * @return
 	 */
 	HibNode getNode(HibNodeFieldContainer content);
+
+	/**
+	 * Get the node field container for the given field.
+	 * @param field The field to get the node field container for.
+	 * @return The node field container for the given field.
+	 */
+	HibNodeFieldContainer getNodeFieldContainer(HibField field);
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -737,7 +745,7 @@ public interface ContentDao {
 
 	/**
 	 * Return the schema version for the given content
-	 * 
+	 *
 	 * @param content
 	 * @return
 	 */
@@ -958,7 +966,7 @@ public interface ContentDao {
 
 	/**
 	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.
-	 * 
+	 *
 	 * @param node
 	 * @param ac
 	 * @param languageTags

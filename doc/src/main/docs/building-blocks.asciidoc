@@ -159,7 +159,7 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | link:++/docs/api#schemas__post++[```POST {apiLatest}/schemas/```]
 
 | Get all schemas
-| link:++/docs/api#schemas__get++[```GET {apiLatest}/schemas/```]    
+| link:++/docs/api#schemas__get++[```GET {apiLatest}/schemas/```]
 
 | Get a schema
 | link:++/docs/api#schemas__schemaUuid__get++[```GET {apiLatest}/schemas/:schemaUuid```]
@@ -204,7 +204,7 @@ In addition to the above, certain types expose additional properties with which 
 
 The `elasticsearch` property of a schema field can be used to fine-tune the Elasticsearch integration. The property can contain additional options which can be used to influence how the field information is added to the search index.
 
-A typical example is the addition of a *raw* field. Sometimes it may be useful to store a field in the Elasticsearch index without being tokenized first. 
+A typical example is the addition of a *raw* field. Sometimes it may be useful to store a field in the Elasticsearch index without being tokenized first.
 This is useful for link:https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-term-query.html[term queries] which are used to find the *exact* term specified in the query.
 
 By default no *raw* field will be added to the search index. You can however use the `elasticsearch` property to add this field to the index.
@@ -313,16 +313,18 @@ A ```micronode```/```node``` listType must have an ```allow``` property, which a
 
 ===== Binary
 The binary field type is used to store binary data, e.g., image, video, audio and documents.
-Depending on the actual data and configuration, Gentics Mesh will store related metadata e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominantColor```. Gentics Mesh will set values for all metadata properties automatically when uploading an image. The meta data properties ```mimeType```, ```dominantColor``` and ```fileName``` can be changed on subsequent update requests.
-See the link:{{< relref "features.asciidoc" >}}#_metadata_handling[file upload documentation] for more information.
+Depending on the actual data and configuration, Gentics Mesh will store related metadata e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominantColor```. Gentics Mesh will set values for all metadata properties automatically when uploading an image. The meta data properties ```mimeType```, ```dominantColor``` and ```fileName``` can be changed on subsequent update requests. See the link:{{< relref "features.asciidoc" >}}#_metadata_handling[file upload documentation] for more information.
 
 The ```required``` property indicates if the field is mandatory or not.
+
+The ```checkServiceUrl`` (string) property indicates whether binaries must be checked by an external service before being available for download. When the property is set, new binaries will have a check status of `POSTPONED` until the check service sets the status to either `ACCEPTED` or `DENIED`. Requests for binaries with a status other than `ACCEPTED` will result in a _404 Not Found_ response with the information that the binary has not been accepted (yet). Mesh will regularly send requests to the configured check service to validate the uploaded binary data, which is expected to send the result to the binary check callback endpoint. See the link:{{< relref "features.asciidoc" >}}#binarycheck[file upload documentation] for more information.
 
 The ```extract``` property controls how Gentics Mesh will extract data from the uploaded binary.
 
 `extract.content` (boolean):: Extracts and sends plain text content to Elasticsearch if available.
 
 `extract.metadata` (boolean):: Extracts and sends metadata to Elasticsearch. An example for metadata is exif data from JPGs.
+
 
 Example of a complete binary field schema:
 
@@ -333,6 +335,7 @@ Example of a complete binary field schema:
     "label" : "Binary Content",
     "required" : false,
     "type" : "binary",
+    "checkServiceUrl": "http://localhost:3000/check",
     "extract": {
         "content": true,
         "metadata": false
@@ -509,7 +512,7 @@ include::content/docs/api/response{apiLatest}/\{project\}/tagFamilies/\{tagFamil
 == User
 
 Gentics Mesh *users* can be physical persons or client apps interacting with elements in Gentics Mesh. Both have a user object counterpart in Gentics Mesh.
-This user object has a standard set of properties, e.g.```firstname```, ```lastname```, ```username```, and ```emailAddress``` , which can be extended by referencing a custom user object. 
+This user object has a standard set of properties, e.g.```firstname```, ```lastname```, ```username```, and ```emailAddress``` , which can be extended by referencing a custom user object.
 
 TIP: Gentics Mesh supports *user management for your apps*! The property ```nodeReference``` is used for storing additional user-related data based on a schema you define, thus allowing for extensible user profiles.
 

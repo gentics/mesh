@@ -10,12 +10,13 @@ import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 /**
  * Persistence-aware extension to {@link BinaryDao}
- * 
+ *
  * @author plyhun
  *
  */
@@ -25,7 +26,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 
 	/**
 	 * Get a binary storage implementation.
-	 * 
+	 *
 	 * @return
 	 */
 	Binaries binaries();
@@ -36,8 +37,13 @@ public interface PersistingBinaryDao extends BinaryDao {
 	}
 
 	@Override
-	default Transactional<? extends HibBinary> create(String uuid, String hash, Long size) {
-		return binaries().create(uuid, hash, size);
+	default Transactional<Stream<? extends HibBinary>> findByCheckStatus(BinaryCheckStatus checkStatus) {
+		return binaries().findByCheckStatus(checkStatus);
+	}
+
+	@Override
+	default Transactional<? extends HibBinary> create(String uuid, String hash, Long size, BinaryCheckStatus checkStatus) {
+		return binaries().create(uuid, hash, size, checkStatus);
 	}
 
 	@Override

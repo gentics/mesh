@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -1266,6 +1267,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<NodeResponse> updateNodeBinaryFieldCheckStatus(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+			String fieldKey, String secret, String branchUuid, BinaryCheckStatus status, String reason) {
+		return null;
+	}
+
+	@Override
 	public MeshRequest<S3RestResponse> updateNodeS3BinaryField(String projectName, String nodeUuid, String fieldKey, S3BinaryUploadRequest request, ParameterProvider... parameters) {
 
 		LocalActionContextImpl<S3RestResponse> ac = createContext(S3RestResponse.class, parameters);
@@ -1361,7 +1368,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	/**
 	 * Add the project to the list of projects which will be used by the context object.
-	 * 
+	 *
 	 * @param name
 	 * @param project
 	 */

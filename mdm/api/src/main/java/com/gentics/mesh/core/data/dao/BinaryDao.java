@@ -7,6 +7,7 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.db.Transactional;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -55,6 +56,14 @@ public interface BinaryDao extends Dao<HibBinary> {
 	Transactional<? extends HibBinary> findByHash(String hash);
 
 	/**
+	 * Find the binaries with the specified check status.
+	 *
+	 * @param checkStatus The check status to filter for.
+	 * @return A stream of matching binaries.
+	 */
+	Transactional<Stream<? extends HibBinary>> findByCheckStatus(BinaryCheckStatus checkStatus);
+
+	/**
 	 * Create a new binary.
 	 *
 	 * @param uuid
@@ -65,22 +74,22 @@ public interface BinaryDao extends Dao<HibBinary> {
 	 *            Size in bytes
 	 * @return
 	 */
-	Transactional<? extends HibBinary> create(String uuid, String hash, Long size);
+	Transactional<? extends HibBinary> create(String uuid, String hash, Long size, BinaryCheckStatus checkStatus);
 
 	/**
 	 * Create a new binary.
-	 * 
+	 *
 	 * @param hash
 	 * @param size
 	 * @return
 	 */
-	default Transactional<? extends HibBinary> create(String hash, long size) {
-		return create(UUIDUtil.randomUUID(), hash, size);
+	default Transactional<? extends HibBinary> create(String hash, long size, BinaryCheckStatus checkStatus) {
+		return create(UUIDUtil.randomUUID(), hash, size, checkStatus);
 	}
 
 	/**
 	 * Return a stream of binaries.
-	 * 
+	 *
 	 * @return
 	 */
 	Transactional<Stream<HibBinary>> findAll();

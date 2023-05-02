@@ -34,9 +34,13 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	String S3_FILE_SIZE = "s3FileSize";
 
+	String S3_BINARY_CHECK_STATUS = "check-status";
+
+	String S3_BINARY_CHECK_SECRET = "check-secret";
+
 	/**
 	 * Return the S3 binary filename.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getFileName() {
@@ -45,7 +49,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the S3 binary filename.
-	 * 
+	 *
 	 * @param fileName
 	 * @return Fluent API
 	 */
@@ -56,7 +60,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Return the S3 binary mime type of the node.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getMimeType() {
@@ -65,7 +69,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the S3 binary mime type of the node.
-	 * 
+	 *
 	 * @param mimeType
 	 * @return Fluent API
 	 */
@@ -76,7 +80,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the S3 binary image dominant color.
-	 * 
+	 *
 	 * @param dominantColor
 	 * @return Fluent API
 	 */
@@ -87,7 +91,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Return the S3 binary image dominant color.
-	 * 
+	 *
 	 * @return
 	 */
 	default String getImageDominantColor() {
@@ -96,7 +100,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Return the stored focal point of the image.
-	 * 
+	 *
 	 * @return Focal point or null if no focal point has been set
 	 */
 	default FocalPoint getImageFocalPoint() {
@@ -117,7 +121,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the location information.
-	 * 
+	 *
 	 * @param loc
 	 */
 	default void setLocation(Location loc) {
@@ -132,7 +136,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Return the location latitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Double getLocationLatitude() {
@@ -141,7 +145,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the location latitude.
-	 * 
+	 *
 	 * @param lat
 	 */
 	default void setLocationLatitude(Double lat) {
@@ -150,7 +154,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Return the location longitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Double getLocationLongitude() {
@@ -159,7 +163,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the location longitude.
-	 * 
+	 *
 	 * @param lon
 	 */
 	default void setLocationLongitude(Double lon) {
@@ -168,7 +172,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Return the location altitude.
-	 * 
+	 *
 	 * @return
 	 */
 	default Integer getLocationAltitude() {
@@ -177,7 +181,7 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	/**
 	 * Set the location altitude.
-	 * 
+	 *
 	 * @param alt
 	 */
 	default void setLocationAltitude(Integer alt) {
@@ -234,5 +238,4 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 	default void setFileSize(Long fileSize) {
 		property(S3_FILE_SIZE, fileSize);
 	}
-
 }
