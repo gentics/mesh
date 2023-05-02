@@ -327,7 +327,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 							String typeSuffix = left.getJoins().stream()
 									.filter(e -> "CONTENT".equals(e.getLeft().getTable()) && e.getRight().getTable().equals(e.getLeft().getField() + "." + left.getValue()))
 									.map(e -> "-" + e.getRight().getField()).findAny().orElse(StringUtils.EMPTY);
-							//String typeSuffix = left.getJoins().entrySet().stream().map(e -> joinIntoPair(e.getValue())).filter(e -> e.getKey() == null).map(e -> "-" + e.getValue()).findAny().orElse(StringUtils.EMPTY);
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ctype.getCode() + "'].inV()[0].`" + left.getValue() + typeSuffix + "`";
 						} else {
 							leftValue[0] = "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ctype.getCode() + "'].inV()[0].`" + dst.getRight() + "`";

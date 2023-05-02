@@ -2,6 +2,12 @@ package com.gentics.mesh.graphql.model;
 
 import java.util.Optional;
 
+/**
+ * GraphQL query parameter for adhoc managing the native query feature.
+ * 
+ * @author plyhun
+ *
+ */
 public enum NativeFilter {
 	NEVER("never"),
 	ONLY("only"),
@@ -19,10 +25,10 @@ public enum NativeFilter {
 
 	public static final Optional<NativeFilter> parse(String value) {
 		return Optional.ofNullable(value).map(text -> {
-			switch (text) {
+			switch (text.toLowerCase()) {
 			case "never": return NEVER;
 			case "only": return ONLY;
-			case "ifPossible": return IF_POSSIBLE;
+			case "ifpossible": return IF_POSSIBLE;
 			default: return null;
 			}
 		}).flatMap(Optional::ofNullable);

@@ -746,8 +746,6 @@ public abstract class AbstractTypeProvider {
 				return Optional.of(SortOrder.ASCENDING);
 			case DESCENDING:
 				return Optional.of(SortOrder.DESCENDING);
-			case UNSORTED:
-				return Optional.of(SortOrder.UNSORTED);
 			}
 			throw new IllegalStateException("Impossible case of unsupported Sorting value " + sorting);
 		} else {

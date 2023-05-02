@@ -93,7 +93,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 		type.createVertexType(UserImpl.class, MeshVertexImpl.class);
 		index.createIndex(edgeIndex(ASSIGNED_TO_ROLE).withOut());
 
-		// TODO this may affect a lot of user, so we'd play fair here and check before applying this.		
 		index.createIndex(vertexIndex(UserImpl.class)
 				.withField(USERNAME_PROPERTY_KEY, FieldType.STRING)
 				.unique());
