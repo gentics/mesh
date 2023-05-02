@@ -15,11 +15,11 @@ public class LicenseService {
 
 	private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
-	private final String LICENSE_KEY_PATH;
+	private final String licenseKeyPath;
 
 
 	public LicenseService(String licenseKey) {
-		this.LICENSE_KEY_PATH = licenseKey;
+		this.licenseKeyPath = licenseKey;
 	}
 
 	/**
@@ -27,15 +27,15 @@ public class LicenseService {
 	 *
 	 * @return true if license is sufficient
 	 */
-	public boolean isLicenseSufficient() {
+	public boolean isLicenseSufficient(LicensedPlugin licensedPlugin) {
 		if (!init()) {
 			return false;
 		}
-		var isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(LicensedPlugin.MCP);
+		var isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(licensedPlugin);
 
 		if (!isLicensed) {
 			logger.error(
-					String.format("Feature %s is not licensed", LicensedPlugin.MCP.getProductName()));
+					String.format("Feature %s is not licensed", licensedPlugin.getProductName()));
 		}
 
 		return isLicensed;
@@ -48,17 +48,24 @@ public class LicenseService {
 	 * @return true if initializing was successfully (e.g. valid license.key file)
 	 */
 	private boolean init() {
-		var licenseKeyFile = new File(this.LICENSE_KEY_PATH);
+		var licenseKeyFile = new File(this.licenseKeyPath);
 
 		if (!licenseKeyFile.exists()) {
-			logger.error(String.format("License key file does not exists at {%s}", this.LICENSE_KEY_PATH));
+			logger.error(String.format("License key file does not exists at {%s}", this.licenseKeyPath));
 			return false;
 		}
 
 		LicenseChecker.init(List.of(LicensedPlugin.values()), LicensedPlugin.MCP, licenseKeyFile,
 				true,
 				true);
-		LicenseChecker.doLicenseCheck(true, null, null);
+
+		try {
+			LicenseChecker.doLicenseCheck(true, null, null);
+		}
+		catch (Exception exception) {
+			logger.error("License check failed. ", exception);
+			return false;
+		}
 
 		return true;
 	}

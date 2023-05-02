@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.comment.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.plugin.comment.model.AnonymousCommentField;
 import com.gentics.mesh.plugin.comment.service.MailService;
@@ -33,6 +34,7 @@ public class Configuration {
 	public static final Map<MailService.Template, String> DEFAULT_MAIL_SUBJECTS = defaultMailSubjects();
 	public static final String DEFAULT_NODE_CONFIG_FIELD = null;
 	public static final LinkType DEFAULT_MAIL_RESOLVE_LINKS = LinkType.SHORT;
+	public static final String LICENSE_KEY_ENV = "LICENSE_KEY";
 
 	private static Map<MailService.Template, String> defaultMailSubjects() {
 		HashMap<MailService.Template, String> map = new HashMap<>();
@@ -50,6 +52,7 @@ public class Configuration {
 
 	@JsonProperty(defaultValue = "license.key")
 	@JsonPropertyDescription("Path to the license key file.")
+	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "Override the license key.")
 	private String licenseKey = "license.key";
 
 	private String schemaPrefix = DEFAULT_SCHEMA_PREFIX;
