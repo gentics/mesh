@@ -138,6 +138,7 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 	public Completable initialize() {
 		try {
 			this.configuration = readConfig(Configuration.class);
+			this.configuration.overrideWithEnv();
 
 			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
 			licenseService.isLicenseSufficient(LicensedPlugin.MCP);

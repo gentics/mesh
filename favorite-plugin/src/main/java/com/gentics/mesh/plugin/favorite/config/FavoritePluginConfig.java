@@ -3,6 +3,8 @@ package com.gentics.mesh.plugin.favorite.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

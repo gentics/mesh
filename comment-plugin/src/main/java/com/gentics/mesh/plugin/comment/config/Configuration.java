@@ -3,9 +3,11 @@ package com.gentics.mesh.plugin.comment.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.etc.config.env.Option;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.plugin.comment.model.AnonymousCommentField;
 import com.gentics.mesh.plugin.comment.service.MailService;
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import io.vertx.ext.mail.MailConfig;
 
 import java.util.ArrayList;
@@ -20,7 +22,7 @@ import static com.gentics.mesh.plugin.comment.model.AnonymousCommentField.EMAIL;
 /**
  * Central comment plugin configuration.
  */
-public class Configuration {
+public class Configuration extends LicenseConfiguration {
 
 	public static final boolean DEFAULT_REQUIRES_APPROVAL = false;
 	public static final String DEFAULT_SCHEMA_PREFIX = "comment_";
@@ -34,7 +36,6 @@ public class Configuration {
 	public static final Map<MailService.Template, String> DEFAULT_MAIL_SUBJECTS = defaultMailSubjects();
 	public static final String DEFAULT_NODE_CONFIG_FIELD = null;
 	public static final LinkType DEFAULT_MAIL_RESOLVE_LINKS = LinkType.SHORT;
-	public static final String LICENSE_KEY_ENV = "LICENSE_KEY";
 
 	private static Map<MailService.Template, String> defaultMailSubjects() {
 		HashMap<MailService.Template, String> map = new HashMap<>();
@@ -49,11 +50,6 @@ public class Configuration {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of projects for which the comments plugin is enabled")
 	private List<String> projectNames;
-
-	@JsonProperty(defaultValue = "license.key")
-	@JsonPropertyDescription("Path to the license key file.")
-	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "Override the default licence key file.")
-	private String licenseKey = "license.key";
 
 	private String schemaPrefix = DEFAULT_SCHEMA_PREFIX;
 	private boolean allowAnonymous = DEFAULT_ALLOW_ANONYMOUS;
@@ -208,11 +204,4 @@ public class Configuration {
 		return this;
 	}
 
-	public String getLicenseKey() {
-		return licenseKey;
-	}
-
-	public void setLicenseKey(String licenseKey) {
-		this.licenseKey = licenseKey;
-	}
 }

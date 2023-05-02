@@ -9,3 +9,5 @@ mesh.lock
 dependency-reduced-pom.xml
 debuginfo
 *.orig
+comment-plugin/data
+comment-plugin/config

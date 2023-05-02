@@ -64,7 +64,7 @@
 	</network>
 	<users>
 		<user name="root" password="finger" resources="*" />
-		<user name="admin" password="finger" resources="*" />
+		<user name="admin" password="admin" resources="*" />
 	</users>
 	<properties>
 		<entry name="profiler.enabled" value="false" />

@@ -7,7 +7,10 @@ import com.gentics.license.feature.LicenseKeyFeature;
  */
 public enum LicensedPlugin implements LicenseKeyFeature {
 
-	MCP("Mesh Comment Plugin");
+	MCP("Mesh Comment Plugin"),
+
+	MEP("Mesh Export Plugin");
+
 
 	private final String productName;
 
