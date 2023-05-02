@@ -5,11 +5,9 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.HibBinaryDataElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -23,11 +21,12 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
-
 import io.vertx.ext.web.RoutingContext;
-import org.apache.commons.lang3.StringUtils;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * Handler for binary or s3binary download requests.
@@ -77,6 +76,10 @@ public class BinaryDownloadHandler extends AbstractHandler {
 			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
+
+			Predicate<HibBinaryDataElement> notAccepted = binary -> binary.getCheckStatus() != BinaryCheckStatus.ACCEPTED
+				&& !Objects.equals(binary.getCheckSecret(), rc.queryParams().get("secret"));
+
 			if ((fieldSchema instanceof BinaryFieldSchema)) {
 				HibBinaryField field = fieldContainer.getBinary(fieldName);
 				if (field == null) {
@@ -85,8 +88,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 				// The binary can only be downloaded if it has been accepted, or the current request provided the check
 				// secret (which should only be known to the check service).
-				if (field.getBinary().getCheckStatus() != BinaryCheckStatus.ACCEPTED
-						&& !Objects.equals(field.getBinary().getCheckSecret(), rc.queryParams().get("secret"))) {
+				if (notAccepted.test(field.getBinary())) {
 					throw error(NOT_FOUND, "error_binaryfield_not_accepted", fieldName);
 				}
 
@@ -99,8 +101,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 				// The binary can only be downloaded if it has been accepted, or the current request provided the check
 				// secret (which should only be known to the check service).
-				if (field.getBinary().getCheckStatus() != BinaryCheckStatus.ACCEPTED
-						&& !Objects.equals(field.getBinary().getCheckSecret(), rc.queryParams().get("secret"))) {
+				if (notAccepted.test(field.getBinary())) {
 					throw error(NOT_FOUND, "error_binaryfield_not_accepted", fieldName);
 				}
 
