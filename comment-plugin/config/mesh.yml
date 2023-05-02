@@ -6,10 +6,6 @@ updateCheck: true
 vertxOptions:
   workerPoolSize: 20
   eventPoolSize: 16
-  eventBus:
-    checkInterval: 30000
-    warnThreshold: 60000
-    errorThreshold: 120000
 s3options:
   enabled: false
   bucket: null
@@ -39,10 +35,9 @@ s3options:
 tempDirectory: "data/tmp"
 pluginDirectory: "plugins"
 pluginTimeout: 120
-nodeName: "Adored Wynaut"
+nodeName: "Hidden Shelmet"
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
-migrationMaxBatchSize: 50
 httpServer:
   port: 8080
   sslPort: 8443
@@ -58,7 +53,6 @@ httpServer:
   trustedCertPaths: []
   verticleAmount: 16
   serverTokens: true
-  maxFormAttributeSize: -1
 monitoring:
   enabled: true
   port: 8081
@@ -107,7 +101,7 @@ upload:
   metadataWhitelist: null
 security:
   tokenExpirationTime: 3600
-  keystorePassword: "8e4a4ac10d4e4a0fb79b343e4d2bab64"
+  keystorePassword: "4efbeaec9a134b31b232c20453671c5c"
   keystorePath: "config/keystore.jceks"
   algorithm: "HS256"
   enableAnonymousAccess: true
@@ -143,5 +137,5 @@ storage:
   clusterJoinTimeout: 500000
   diskQuota:
     checkInterval: 10000
-    warnThreshold: "3G"
-    readOnlyThreshold: "1G"
+    warnThreshold: "10%"
+    readOnlyThreshold: "2%"
