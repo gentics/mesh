@@ -21,10 +21,10 @@ public class LicenseService {
 
 	/**
 	 * Checks if the feature has a valid license
-	 *
+	 * @param licensedPlugin the plugin to check for a valid license
 	 */
 	public void isLicenseSufficient(LicensedPlugin licensedPlugin) throws MeshPluginException {
-		init();
+		init(licensedPlugin);
 		var isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(licensedPlugin);
 
 		if (!isLicensed) {
@@ -34,8 +34,9 @@ public class LicenseService {
 
 	/**
 	 * Initialize the LicenseChecker. Reads the license.key file and register available features
+	 * @param licensedPlugin the plugin to initialize
 	 */
-	private void init() throws MeshPluginException {
+	private void init(LicensedPlugin licensedPlugin) throws MeshPluginException {
 		var licenseKeyFile = new File(this.licenseKeyPath);
 
 		if (!licenseKeyFile.exists()) {
@@ -43,7 +44,7 @@ public class LicenseService {
 		}
 
 		try {
-			LicenseChecker.init(List.of(LicensedPlugin.values()), LicensedPlugin.MCP, licenseKeyFile,
+			LicenseChecker.init(List.of(LicensedPlugin.values()), licensedPlugin, licenseKeyFile,
 					true,
 					true);
 			LicenseChecker.doLicenseCheck(true, null, null);

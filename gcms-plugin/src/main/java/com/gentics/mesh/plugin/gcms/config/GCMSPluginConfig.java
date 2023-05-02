@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 
 /**
  * Configuration POJO
  */
-public class GCMSPluginConfig implements Option {
+public class GCMSPluginConfig extends LicenseConfiguration {
 	public final static String PUBLIC_KEY_PATH_ENV = "MESH_GCMS_PLUGIN_PUBLIC_KEY_PATH";
 
 	public final static String ISSUER_CONFIG_ENV = "MESH_GCMS_PLUGIN_ISSUER";

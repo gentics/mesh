@@ -6,6 +6,8 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 import static io.vertx.core.http.HttpMethod.PUT;
 
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -108,6 +110,10 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			if (configuration == null) {
 				configuration = new FormsConfig();
 			}
+			configuration.overrideWithEnv();
+
+			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+			licenseService.isLicenseSufficient(LicensedPlugin.MFRS);
 
 			return component(null).statusService().initialize();
 		} catch (Exception e) {

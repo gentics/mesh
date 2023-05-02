@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.env.Option;
 
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KeycloakPluginConfig implements Option {
+public class KeycloakPluginConfig extends LicenseConfiguration {
 
 	public static final String ENV_PREFIX = "MESH_PLUGIN_KEYCLOAK_";
 

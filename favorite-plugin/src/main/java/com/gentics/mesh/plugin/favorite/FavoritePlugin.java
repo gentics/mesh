@@ -4,6 +4,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.favorite.config.FavoritePluginConfig;
@@ -58,21 +60,23 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	public Completable initialize() {
-
 		try {
 			configuration = readConfig(FavoritePluginConfig.class);
-		} catch (IOException e) {
-			log.error("Could not read configuration file: {}", e.getMessage());
+			if (configuration == null) {
+				configuration = new FavoritePluginConfig();
+			}
+			configuration.overrideWithEnv();
+
+			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+			licenseService.isLicenseSufficient(LicensedPlugin.MFAV);
+
+			meshPluginService = new MeshPluginService(getRxVertx(), adminClient(), getStorageDir());
+			return initializeMeshProjects(configuration.getProjects());
+		} catch (Exception e) {
+			return Completable.error(e);
 		}
-		if (configuration == null) {
-			configuration = new FavoritePluginConfig();
-		}
-		meshPluginService = new MeshPluginService(getRxVertx(), adminClient(), getStorageDir());
-		return initializeMeshProjects(configuration.getProjects());
-
-
-
 	}
+
 	private Completable initializeMeshProjects(List<String> projectName) {
 		return meshPluginService.prepareProjects(
 				projectName,

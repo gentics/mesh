@@ -2,6 +2,9 @@ package com.gentics.mesh.plugin.mustread;
 
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.MeshPluginException;
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.mustread.config.FieldNamesConfig;
 import com.gentics.mesh.plugin.mustread.config.MustReadConfig;
@@ -49,13 +52,22 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
 
     @Override
     public Completable initialize() {
-        getProjectCreateConsumer().register();
+        try {
+            getProjectCreateConsumer().register();
 
-        // FolderInitializer after SchemaInitializer because folder is based on schema
-        SchemaInitializer schemaInitializer = new SchemaInitializer(adminClient(), getConfiguration(), getLogHelper(), getSchemaController());
-        FolderInitializer folderInitializer = new FolderInitializer(adminClient(), getConfiguration(), getLogHelper(), getNodeController());
+            MustReadConfig configuration = getConfiguration();
+            configuration.overrideWithEnv();
 
-        return schemaInitializer.initialize().andThen(folderInitializer.initialize());
+            LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+            licenseService.isLicenseSufficient(LicensedPlugin.MMRD);
+            // FolderInitializer after SchemaInitializer because folder is based on schema
+            SchemaInitializer schemaInitializer = new SchemaInitializer(adminClient(), configuration, getLogHelper(), getSchemaController());
+            FolderInitializer folderInitializer = new FolderInitializer(adminClient(), configuration, getLogHelper(), getNodeController());
+
+            return schemaInitializer.initialize().andThen(folderInitializer.initialize());
+        } catch (MeshPluginException e) {
+            return Completable.error(e);
+        }
     }
 
     private void initializeConfig() throws IOException {

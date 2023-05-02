@@ -7,9 +7,23 @@ import com.gentics.license.feature.LicenseKeyFeature;
  */
 public enum LicensedPlugin implements LicenseKeyFeature {
 
-	MCP("Mesh Comment Plugin"),
+	MCMT("Mesh Comment Plugin"),
 
-	MEP("Mesh Export Plugin");
+	MEXP("Mesh Export Plugin"),
+
+	MFAV("Mesh Favourite Plugin"),
+
+	MFRS("Mesh Forms Plugin"),
+
+	GCMS("Mesh GCMS Plugin"),
+
+	MKC("Mesh Keycloak Plugin"),
+
+	MLKE("Mesh Like Plugin"),
+
+	MMRD("Mesh Must Read Plugin"),
+
+	MSRH("Mesh Search Plugin");
 
 
 	private final String productName;

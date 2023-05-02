@@ -4,6 +4,8 @@ import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.search.config.SearchConfiguration;
 import com.gentics.mesh.plugin.search.dagger.DaggerInitializationComponent;
@@ -54,8 +56,11 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 				log.info("No configuration found, using defaults");
 				config = new SearchConfiguration();
 			}
-
+			config.overrideWithEnv();
 			config.validate(getStorageDir());
+
+			LicenseService licenseService = new LicenseService(config.getLicenseKey());
+			licenseService.isLicenseSufficient(LicensedPlugin.MSRH);
 
 			InitializationComponent init = DaggerInitializationComponent.builder()
 				.configuration(config)

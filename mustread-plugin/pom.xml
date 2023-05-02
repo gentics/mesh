@@ -21,6 +21,10 @@
 
 
 	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh.plugin.commercial</groupId>
+			<artifactId>mesh-commercial-plugins-common</artifactId>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>

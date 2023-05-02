@@ -65,7 +65,7 @@ public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportCo
 				config.overrideWithEnv();
 
 				LicenseService licenseService = new LicenseService(config.getLicenseKey());
-				licenseService.isLicenseSufficient(LicensedPlugin.MEP);
+				licenseService.isLicenseSufficient(LicensedPlugin.MEXP);
 
 				// Setup JSON Validation and serialization
 				ObjectMapper mapper = JsonUtil.getMapper();
