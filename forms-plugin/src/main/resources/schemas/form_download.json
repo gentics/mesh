@@ -1,0 +1,41 @@
+{
+	"name": "formgenerator_download",
+	"displayField": "name",
+	"container": false,
+	"fields": [
+		{
+			"name": "name",
+			"label": "",
+			"type": "string",
+			"required": true
+		},
+		{
+			"name": "ready",
+			"label": "",
+			"type": "boolean",
+			"required": true
+		},
+		{
+			"name": "type",
+			"label": "",
+			"type": "string",
+			"required": true
+		},
+		{
+			"name": "options",
+			"label": "",
+			"type": "string",
+			"required": false
+		},
+		{
+			"name": "download",
+			"label": "",
+			"type": "binary",
+			"required": false,
+			"extract": {
+				"content": false,
+				"metadata": false
+			}
+		}
+	]
+}

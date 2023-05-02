@@ -3,13 +3,17 @@ package com.gentics.mesh.plugin.forms;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -543,5 +547,24 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+	/**
+	 * Get the CSV records from the input export as a set of lines.
+	 * @param export The export.
+	 * @return The entries in the CSV export.
+	 */
+	protected Set<String> getExportRecords(String export) throws IOException {
+		Set<String> records = new HashSet<>();
+
+		try (BufferedReader in = new BufferedReader(new StringReader(export))) {
+			String line;
+
+			while ((line = in.readLine()) != null) {
+				records.add(line);
+			}
+		}
+
+		return records;
 	}
 }

@@ -814,18 +814,4 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			assertForbidden(zipDownloadResponse);
 		}
 	}
-
-	private Set<String> getExportRecords(String export) throws IOException {
-		Set<String> records = new HashSet<>();
-
-		try (BufferedReader in = new BufferedReader(new StringReader(export))) {
-			String line;
-
-			while ((line = in.readLine()) != null) {
-				records.add(line);
-			}
-		}
-
-		return records;
-	}
 }

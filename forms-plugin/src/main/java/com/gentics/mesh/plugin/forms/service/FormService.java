@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
@@ -41,6 +42,7 @@ import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.reactivex.Completable;
 import io.reactivex.Emitter;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -67,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -161,6 +164,7 @@ public class FormService {
 	private static final Logger log = LoggerFactory.getLogger(FormService.class);
 
 	public static final String FIELD_FORM_TYPE = "type";
+	public static final String DOWNLOADS_FOLDER_NAME = "Downloads";
 
 	private static final int CHILDREN_BATCH_SIZE = 100;
 
@@ -497,8 +501,98 @@ public class FormService {
 					}).flatMap(updatedForm -> {
 						return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
+					}).flatMap(updatedForm -> {
+						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME)
+							.andThen(Single.just(updatedForm));
 					});
 		});
+	}
+
+	/**
+	 * Get the UUID of the form folder node with the name {@code folderName}
+	 * which is a child of the node with UIUD {@code formUuid}.
+	 *
+	 * @param projectName The project name.
+	 * @param formUuid The form UUID to load a form folder for.
+	 * @param lang The requested language.
+	 * @param folderName The name of the form folder.
+	 * @return A {@code Single} with the UUID of the specified folder.
+	 */
+	public Single<String> getFormFolderUuid(String projectName, String formUuid, String[] lang, String folderName) {
+		if (StringUtils.isBlank(folderName)) {
+			return Single.error(new Exception("Folder name must not be empty"));
+		}
+
+		String query;
+
+		try {
+			query = IOUtils.toString(FormsPlugin.class.getResource("findFormFolders.graphql"), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			return Single.error(e);
+		}
+
+		GraphQLRequest request = new GraphQLRequest()
+			.setQuery(query)
+			.setVariables(new JsonObject().put("formUuid", formUuid).put("lang", Arrays.asList(lang)));
+
+		return userClient.graphql(projectName, request).toSingle()
+			.map(rs -> Optional.ofNullable(rs.getData())
+				.map(data -> data.getJsonObject("node"))
+				.map(node -> node.getJsonObject("children"))
+				.map(children -> children.getJsonArray("elements"))
+				.orElse(new JsonArray())
+				.stream()
+				.filter(o -> o instanceof JsonObject && folderName.equals(((JsonObject) o).getString("displayName")))
+				.map(o -> ((JsonObject) o).getString("uuid"))
+				.findFirst())
+			.flatMap(folderUuid -> {
+				if (folderUuid.isPresent()) {
+					return Single.just(folderUuid.get());
+				}
+
+				NodeCreateRequest createRequest = new NodeCreateRequest()
+					.setParentNodeUuid(formUuid)
+					.setLanguage("en")
+					.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME);
+
+				createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
+
+				return userClient.createNode(projectName, createRequest).toSingle()
+					.map(NodeResponse::getUuid);
+			});
+	}
+
+	private Completable ensureFormFolders(String projectName, String formUuid, String lang, String ...folderNames) throws IOException {
+		Set<String> requiredFolders = new HashSet<>(Arrays.asList(folderNames));
+		GraphQLRequest request = new GraphQLRequest()
+			.setQuery(IOUtils.toString(FormsPlugin.class.getResource("findFormFolders.graphql"), StandardCharsets.UTF_8))
+			.setVariables(new JsonObject().put("formUuid", formUuid).put("lang", lang));
+
+		return userClient.graphql(projectName, request).toSingle()
+			.map(rs -> Optional.ofNullable(rs.getData())
+				.map(data -> data.getJsonObject("node"))
+				.map(node -> node.getJsonObject("children"))
+				.map(children -> children.getJsonArray("elements"))
+				.orElse(new JsonArray())
+				.stream()
+				.filter(o -> o instanceof JsonObject)
+				.map(o -> ((JsonObject) o).getString("displayName"))
+				.collect(Collectors.toSet()))
+			.flatMapObservable(existingFolders -> {
+				requiredFolders.removeAll(existingFolders);
+
+				return Observable.fromIterable(requiredFolders);
+			})
+			.flatMapCompletable(folderName -> {
+				NodeCreateRequest createRequest = new NodeCreateRequest()
+					.setParentNodeUuid(formUuid)
+					.setLanguage("en")
+					.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME);
+
+				createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
+
+				return userClient.createNode(projectName, createRequest).toCompletable();
+			});
 	}
 
 	/**

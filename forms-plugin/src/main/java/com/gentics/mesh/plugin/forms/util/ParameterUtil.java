@@ -1,8 +1,13 @@
 package com.gentics.mesh.plugin.forms.util;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.export.ExportFormat;
+import com.gentics.mesh.plugin.forms.export.Exporter;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 /**
  * Utilities for handling of parameters
@@ -11,7 +16,7 @@ public final class ParameterUtil {
 	/**
 	 * Get the languages contained in the request as query parameter "lang". If the
 	 * query parameter is not found, an empty array will be returned
-	 * 
+	 *
 	 * @param context plugin context
 	 * @return string array of languages
 	 */
@@ -70,5 +75,26 @@ public final class ParameterUtil {
 		} else {
 			return defaultValue;
 		}
+	}
+
+	/**
+	 * Extract export related options from the request.
+	 *
+	 * @param context The current request context.
+	 * @param configuration The plugin configuration.
+	 * @return A string describing the export options for the current request.
+	 */
+	public static String getExportOptions(PluginContext context, FormsConfig configuration) {
+		boolean publishedOnly = Optional.ofNullable(context.queryParams().get(FormDataService.PARAM_PUBLISHED_ONLY))
+			.map(Boolean::parseBoolean)
+			.orElse(true);
+		ExportFormat format = ReflectionUtils.getEnumValue(
+			ExportFormat.class,
+			context.request().getParam(Exporter.PARAM_FORMAT),
+			configuration.getDefaultExportFormat());
+
+		return new StringBuilder("publishedOnly=").append(publishedOnly)
+			.append(",format=").append(format.toString())
+			.toString();
 	}
 }

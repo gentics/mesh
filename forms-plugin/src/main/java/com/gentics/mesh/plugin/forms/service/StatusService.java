@@ -1,31 +1,20 @@
 package com.gentics.mesh.plugin.forms.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.parameter.LinkType;
-import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
-import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
+import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.SchemaInitializer;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -34,30 +23,66 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
-
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.core.Vertx;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service for handling activation status of the plugin for projects
  */
 @Singleton
 public class StatusService {
+
+	private static final Logger log = LoggerFactory.getLogger(StatusService.class);
+
 	private final MeshRestClient adminClient;
 
 	private final MeshRestClient userClient;
 
 	private final SchemaInitializer schemaInitializer;
+	private final MeshPluginService meshPluginService;
 
 	private final String pluginRootNodeQuery;
+	private final Vertx rxVertx;
+	private final int purgeInterval;
 
 	@Inject
-	public StatusService(@AdminClient MeshRestClient adminClient, @UserClient @Nullable MeshRestClient userClient,
-			SchemaInitializer schemaInitializer) {
+	public StatusService(
+			@AdminClient MeshRestClient adminClient,
+			@UserClient @Nullable MeshRestClient userClient,
+			SchemaInitializer schemaInitializer,
+			MeshPluginService meshPluginService,
+			io.vertx.core.Vertx vertx,
+			FormsConfig config) {
 		this.adminClient = adminClient;
 		this.userClient = userClient;
 		this.schemaInitializer = schemaInitializer;
+		this.meshPluginService = meshPluginService;
+		this.rxVertx = Vertx.newInstance(vertx);
+		this.purgeInterval = config.getDownloadPurgeInterval();
 
 		try {
 			pluginRootNodeQuery = IOUtils.toString(FormsPlugin.class.getResource("forms_plugin_node.graphql"), "UTF-8");
@@ -67,11 +92,33 @@ public class StatusService {
 	}
 
 	/**
-	 * Initialize the plugin
+	 * Initialize the plugin.
+	 *
+	 * <p>
+	 *     Creates the storage directory if it does not already exist.
+	 * </p>
+	 *
+	 * @param storageDirPath The path to the storage directory for the plugin.
 	 * @return completable
 	 */
-	public Completable initialize() {
-		return projectsWithPluginRootNode().flatMapCompletable(project -> schemaInitializer.initialize(project.getName()));
+	public Completable initialize(String storageDirPath) {
+		return rxVertx.fileSystem().rxMkdirs(storageDirPath)
+			.andThen(projectsWithPluginRootNode()
+				.doOnNext(project -> {
+					if (purgeInterval <= 0) {
+						log.warn("Download purge interval is less than 1, download purge disabled");
+
+						return;
+					}
+
+					Handler<Long> purgeHandler = purgeDownloadsHandler(project.getName());
+
+					// Start the first purge in a minute to make sure the purge is started at least once after startup  ...
+					rxVertx.setTimer(Duration.of(1, ChronoUnit.MINUTES).toMillis(), purgeHandler);
+					// ... and schedule one purge per day.
+					rxVertx.setPeriodic(Duration.of(1, ChronoUnit.DAYS).toMillis(), purgeHandler);
+				})
+				.flatMapCompletable(project -> schemaInitializer.initialize(project.getName())));
 	}
 
 	/**
@@ -245,20 +292,23 @@ public class StatusService {
 	}
 
 	/**
-	 * Load the FormsPlugin Root Node for the project
+	 * Load the FormsPlugin Root Node for the project.
+	 *
 	 * @param projectName project name
 	 * @param client client to use
 	 * @return single node response
 	 */
 	public Single<NodeResponse> getRootNode(String projectName, MeshRestClient client) {
-		return getPathPrefixOfDefaultBranch(projectName).flatMap(pathPrefix -> {
-			return client
-					.webroot(projectName, pathPrefix + "/Forms Plugin",
-							new GenericParametersImpl().setETag(false).setFields("fields", "uuid"))
+		return getPathPrefixOfDefaultBranch(projectName)
+			.flatMap(pathPrefix -> {
+				String path = pathPrefix + StringUtils.prependIfMissing(SchemaInitializer.PATH_FORMS_PLUGIN_ROOT, "/");
+				GenericParameters params = new GenericParametersImpl().setETag(false).setFields("fields", "uuid");
+
+				return client.webroot(projectName, path, params)
 					.toSingle()
 					.doAfterSuccess(MeshWebrootResponse::close)
 					.map(MeshWebrootResponse::getNodeResponse);
-		});
+			});
 	}
 
 	/**
@@ -271,5 +321,97 @@ public class StatusService {
 				.flatMapObservable(branchesListResponse -> Observable.fromIterable(branchesListResponse.getData()))
 				.filter(branch -> branch.getLatest() != null && branch.getLatest())
 				.map(branch -> branch.getPathPrefix()).first("");
+	}
+
+	/**
+	 * Create a handler for {@link Vertx#setTimer(long, Handler)} or
+	 * {@link Vertx#setPeriodic(long, Handler)} that will delete old download
+	 * nodes.
+	 *
+	 * @param projectName The project to purge.
+	 * @return A timer/periodic handler that will delete old downloads.
+	 */
+	private Handler<Long> purgeDownloadsHandler(String projectName) {
+		return timerId -> purgeDownloads(projectName);
+	}
+
+	/**
+	 * Delete all download nodes (schema {@code form_download}) which are
+	 * older than one day.
+	 *
+	 * @param projectName The project to purge.
+	 */
+	private void purgeDownloads(String projectName) {
+		String graphQlQuery;
+		String purgeThreshold = ZonedDateTime.now(ZoneOffset.UTC)
+			.minus(Duration.ofDays(purgeInterval))
+			.truncatedTo(ChronoUnit.DAYS)
+			.format(DateTimeFormatter.ISO_DATE_TIME);
+		JsonObject graphQlVariables = new JsonObject().put("purgeThreshold", purgeThreshold);
+
+		try {
+			graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormDownloadsToPurge.graphql"), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			log.error("Could not load GraphQL query for download purge: {}", e, e.getMessage());
+
+			return;
+		}
+
+		GraphQLRequest request = new GraphQLRequest().setQuery(graphQlQuery).setVariables(graphQlVariables);
+
+		adminClient.graphql(projectName, request).toSingle()
+			.flatMapCompletable(rs -> {
+				Optional<JsonObject> nodes = Optional.ofNullable(rs.getData())
+					.map(data -> data.getJsonObject("schema"))
+					.map(schema -> schema.getJsonObject("nodes"));
+				Optional<JsonArray> elements = nodes.map(n -> n.getJsonArray("elements")).filter(ar -> !ar.isEmpty());
+
+				if (!elements.isPresent()) {
+					log.debug("No download nodes to purge");
+
+					return Completable.complete();
+				}
+
+				return purgeElements(projectName, elements.get())
+					.andThen(purgeNextPage(projectName, nodes.get().getBoolean("hasNextPage")));
+			})
+			.doOnError(cause -> log.error("Error while purging old downloads: {}", cause.getMessage()))
+			.subscribe();
+	}
+
+	/**
+	 * Delete the given nodes from the given project.
+	 *
+	 * <p>
+	 * The JSON array {@code objects} must contain JSON objects with a
+	 * {@code uuid} field.
+	 * </p>
+	 *
+	 * @param projectName The project to purge.
+	 * @param objects The nodes to purge.
+	 * @return A {@code Completable} that completes when all nodes are deleted.
+	 */
+	private Completable purgeElements(String projectName, JsonArray objects) {
+		return Observable.fromIterable(objects)
+			.doOnSubscribe(ignored -> log.debug("Purging {} old download node(s)", objects.size()))
+			.cast(JsonObject.class)
+			.map(obj -> obj.getString("uuid"))
+			.flatMapCompletable(uuid -> adminClient.deleteNode(projectName, uuid).toCompletable());
+	}
+
+	/**
+	 * Call {@link #purgeDownloads(String)} for the given project again, if
+	 * there are still elements left.
+	 *
+	 * @param projectName The project to purge.
+	 * @param hasNextPage Whether there are still elements left to delete.
+	 * @return A {@code Completable} that completes when all remaining nodes are deleted.
+	 */
+	private Completable purgeNextPage(String projectName, boolean hasNextPage) {
+		return Completable.fromAction(() -> {
+			if (hasNextPage) {
+				purgeDownloads(projectName);
+			}
+		});
 	}
 }

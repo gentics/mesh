@@ -8,7 +8,7 @@ import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import com.google.common.base.Strings;
-import com.google.common.net.HttpHeaders;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -17,10 +17,13 @@ import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVFormat.Predefined;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.io.output.StringBuilderWriter;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,13 +60,14 @@ public class CsvExporter extends Exporter {
 	 *
 	 * @param adminClient mesh rest client
 	 * @param context The routing context of the export request
+	 * @param storageDir The plugins storage directory.
 	 * @param uuid The UUID of the form to be exported
 	 * @param schemaName The schema name of the form to be exported
 	 * @param options The export options
 	 * @param baseUrl The base URL for file downloads
 	 */
-	protected CsvExporter(MeshRestClient adminClient, PluginContext context, String uuid, String schemaName, ExportOptions options, String baseUrl) {
-		super(adminClient, context, uuid, schemaName, options, baseUrl);
+	protected CsvExporter(MeshRestClient adminClient, PluginContext context, File storageDir, String uuid, String schemaName, ExportOptions options, String baseUrl) {
+		super(adminClient, context, storageDir, uuid, schemaName, options, baseUrl);
 
 		Predefined format = ReflectionUtils.getEnumValue(
 			Predefined.class,
@@ -78,7 +82,12 @@ public class CsvExporter extends Exporter {
 	}
 
 	@Override
-	protected Single<String> internalExport(GraphQLResponse response) {
+	public ExportFormat format() {
+		return ExportFormat.CSV;
+	}
+
+	@Override
+	protected Single<ExportData> internalExport(GraphQLResponse response) {
 		// log all errors
 		if (response.getErrors() != null) {
 			for (GraphQLError error : response.getErrors()) {
@@ -94,11 +103,32 @@ public class CsvExporter extends Exporter {
 
 		JsonArray dataFields = formData.getJsonArray("data");
 
-		StringBuilderWriter writer = new StringBuilderWriter();
-		// UTF-8 BOM to detect the correct encoding
-		writer.write("\ufeff");
+		File exportFile;
+		OutputStreamWriter writer;
 
-		CSVFormat format = baseFormat
+		try {
+			exportFile = File.createTempFile("form-export", "." + format().fileExtension, storageDir);
+		} catch (IOException e) {
+			log.error("Could not create temporary file for export: {}", e, e.getMessage());
+
+			return Single.error(e);
+		}
+
+		try {
+			writer = new FileWriter(exportFile);
+			// UTF-8 BOM to detect the correct encoding
+			writer.write("\ufeff");
+
+			log.debug("Writing export to temporary file: {}", exportFile.getAbsolutePath());
+		} catch (IOException e) {
+			log.error("Could not write to temporary export file: {}", e, e.getMessage());
+
+			exportFile.delete();
+
+			return Single.error(e);
+		}
+
+		CSVFormat csvFormat = baseFormat
 			.withHeader(getHeaders(dataFields))
 			.withQuote('"')
 			.withIgnoreEmptyLines(false)
@@ -109,7 +139,7 @@ public class CsvExporter extends Exporter {
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 
-		try (CSVPrinter csv = new CSVPrinter(writer, format)) {
+		try (CSVPrinter csv = new CSVPrinter(writer, csvFormat)) {
 			csv.printRecords(records);
 			csv.flush();
 		} catch (IOException e) {
@@ -117,13 +147,13 @@ public class CsvExporter extends Exporter {
 			return Single.error(e);
 		}
 
-		String ret = writer.toString();
+		ExportFormat exportFormat = format();
+		ExportData exportData = new ExportData(
+			exportFormat,
+			exportFile.getAbsolutePath(),
+			getDownloadFilename(formData.getString("formName"), exportFormat.fileExtension));
 
-		context.response()
-			.putHeader(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-			.putHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(formData.getString("formName"), "csv"));
-
-		return Single.just(ret);
+		return Single.just(exportData);
 	}
 
 	/**

@@ -16,6 +16,10 @@ import io.vertx.core.logging.LoggerFactory;
  */
 @Singleton
 public class SchemaInitializer {
+
+	public static final String PATH_FORMS_PLUGIN_ROOT = "/Forms Plugin";
+	public static final String PATH_DOWNLOADS_SEGMENT = "/Downloads";
+
 	private static final Logger log = LoggerFactory.getLogger(SchemaInitializer.class);
 
 	private final MeshRestClient adminClient;
@@ -23,6 +27,8 @@ public class SchemaInitializer {
 	private final MeshPluginService meshPluginService;
 
 	public static final String SCHEMA_NAME = "form";
+	public static final String DOWNLOAD_SCHEMA_NAME = "form_download";
+	public static final String FOLDER_SCHEMA_NAME = "form_folder";
 	public static final String PLUGIN_SCHEMA_NAME = "forms_plugin";
 
 	@Inject
@@ -38,7 +44,7 @@ public class SchemaInitializer {
 	 */
 	public Completable initialize(String projectName) {
 		return meshPluginService.prepareProject(projectName,
-			meshPluginService.ensureSchemas(SCHEMA_NAME, PLUGIN_SCHEMA_NAME),
+			meshPluginService.ensureSchemas(SCHEMA_NAME, DOWNLOAD_SCHEMA_NAME, PLUGIN_SCHEMA_NAME, FOLDER_SCHEMA_NAME),
 			this::initRootNode
 		);
 	}
@@ -49,7 +55,6 @@ public class SchemaInitializer {
 	 * @return
 	 */
 	private Completable initRootNode(String projectName) {
-		return meshPluginService.ensureFolders(projectName, PLUGIN_SCHEMA_NAME, "/Forms Plugin", true)
-			.ignoreElement();
+		return meshPluginService.ensureFolders(projectName, PLUGIN_SCHEMA_NAME, PATH_FORMS_PLUGIN_ROOT, true).ignoreElement();
 	}
 }

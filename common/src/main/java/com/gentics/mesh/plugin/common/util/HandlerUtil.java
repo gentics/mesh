@@ -3,6 +3,7 @@ package com.gentics.mesh.plugin.common.util;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.common.MeshPluginException;
 import com.gentics.mesh.plugin.common.handler.MimeTypes;
@@ -276,6 +277,48 @@ public class HandlerUtil {
 			.setStatusCode(status)
 			.putHeader(HttpHeaders.CONTENT_TYPE, contentType)
 			.putHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+	}
+
+	/**
+	 * Returns an event handler that will set the response status code
+	 * accordingly and end the response by sending the UUID of the given
+	 * node response as JSON.
+	 *
+	 * @param rc The current routing context.
+	 * @param fieldName The name for the JSON field to contain the nodes UUID.
+	 * @param verboseErrorHandler Whether to add the error message as response body
+	 * @return An event handler that will handle any errors, or send the given nodes UUID as JSON
+	 */
+	public static BiConsumer<? super NodeResponse, ? super Throwable> nodeUuidHandler(RoutingContext rc, String fieldName, boolean verboseErrorHandler) {
+		return (delegate, error)  -> {
+			if (delegate != null) {
+				rc.response()
+					.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypes.APPLICATION_JSON_UTF8)
+					.end(new JsonObject().put(fieldName, delegate.getUuid()).encode());
+			} else {
+				handleError(rc, error, verboseErrorHandler);
+			}
+		};
+	}
+
+	/**
+	 * Returns an event handler that will set the response status code
+	 * accordingly and end the response by sending the data as JSON.
+	 *
+	 * @param rc The current routing context.
+	 * @param verboseErrorHandler Whether to add the error message as response body
+	 * @return An event handler that will handle any errors, or send the response as JSON
+	 */
+	public static BiConsumer<JsonObject, ? super Throwable> jsonObjectHandler(RoutingContext rc, boolean verboseErrorHandler) {
+		return (delegate, error)  -> {
+			if (delegate != null) {
+				rc.response()
+					.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypes.APPLICATION_JSON_UTF8)
+					.end(delegate.encode());
+			} else {
+				handleError(rc, error, verboseErrorHandler);
+			}
+		};
 	}
 
 	/**

@@ -1,0 +1,21 @@
+query($folderUuid: String, $type: String, $options: String) {
+  node(uuid: $folderUuid) {
+    children(lang: ["en"], filter: {and: [
+      {schema: {is: form_download}},
+      {fields: {form_download: {type: {equals: $type}}}},
+      {fields: {form_download: {options: {equals: $options}}}}
+	]}) {
+      elements {
+        uuid
+        created
+        fields {
+          ... on form_download {
+            type
+            ready
+            options
+          }
+        }
+      }
+    }
+  }
+}

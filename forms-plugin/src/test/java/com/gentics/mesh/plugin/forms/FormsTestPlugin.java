@@ -52,6 +52,7 @@ public class FormsTestPlugin extends FormsPlugin {
 		T config = super.readConfig(clazz);
 		if (config instanceof FormsConfig) {
 			configuration = (FormsConfig) config;
+			configuration.setTesting(true);
 		}
 		return config;
 	}

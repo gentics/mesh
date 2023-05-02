@@ -22,6 +22,8 @@ public class FormsConfig {
 
 	private String userMailSubject;
 
+	private int downloadPurgeInterval = 1;
+
 	private ExportFormat defaultExportFormat = ExportFormat.CSV;
 
 	private ReCaptchaOptions reCaptcha;
@@ -52,6 +54,8 @@ public class FormsConfig {
 
 	@JsonProperty("export")
 	private ExportOptions exportOptions = new ExportOptions();
+
+	private boolean testing;
 
 	public String getFromAddress() {
 		return fromAddress;
@@ -91,6 +95,16 @@ public class FormsConfig {
 
 	public void setUserMailSubject(String userMailSubject) {
 		this.userMailSubject = userMailSubject;
+	}
+
+	public int getDownloadPurgeInterval() {
+		return downloadPurgeInterval;
+	}
+
+	public FormsConfig setDownloadPurgeInterval(int downloadPurgeInterval) {
+		this.downloadPurgeInterval = downloadPurgeInterval;
+
+		return this;
 	}
 
 	public void setDefaultExportFormat(ExportFormat defaultExportFormat) {
@@ -224,6 +238,16 @@ public class FormsConfig {
 
 	public FormsConfig setExportOptions(ExportOptions exportOptions) {
 		this.exportOptions = exportOptions;
+
+		return this;
+	}
+
+	public boolean isTesting() {
+		return testing;
+	}
+
+	public FormsConfig setTesting(boolean testing) {
+		this.testing = testing;
 
 		return this;
 	}

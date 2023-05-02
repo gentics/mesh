@@ -1,7 +1,6 @@
 package com.gentics.mesh.plugin.forms.dagger;
 
 import java.io.File;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
@@ -11,15 +10,19 @@ import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.StorageDir;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.handler.downloads.CheckDownloadHandler;
+import com.gentics.mesh.plugin.forms.handler.downloads.DownloadHandler;
+import com.gentics.mesh.plugin.forms.handler.downloads.RequestExportHandler;
 import com.gentics.mesh.plugin.forms.handler.DeleteFormDataHandler;
-import com.gentics.mesh.plugin.forms.handler.ExportHandler;
+import com.gentics.mesh.plugin.forms.handler.downloads.ExportHandler;
 import com.gentics.mesh.plugin.forms.handler.FindFormDataHandler;
-import com.gentics.mesh.plugin.forms.handler.LoadFilesZipHandler;
+import com.gentics.mesh.plugin.forms.handler.downloads.LoadFilesZipHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataBinaryHandler;
 import com.gentics.mesh.plugin.forms.handler.LoadFormDataHandler;
 import com.gentics.mesh.plugin.forms.handler.PostDataHandler;
 import com.gentics.mesh.plugin.forms.handler.PostJsonDataHandler;
 import com.gentics.mesh.plugin.forms.handler.RenderFormDataHandler;
+import com.gentics.mesh.plugin.forms.handler.downloads.RequestFilesZipHandler;
 import com.gentics.mesh.plugin.forms.handler.UpdatePostedDataHandler;
 import com.gentics.mesh.plugin.forms.handler.UpdatePostedJsonDataHandler;
 import com.gentics.mesh.plugin.forms.handler.form.DeleteFormHandler;
@@ -95,6 +98,12 @@ public interface FormsPluginComponent {
 
 	ExportHandler exportHandler();
 
+	RequestExportHandler requestExportHandler();
+
+	CheckDownloadHandler checkDownloadHandler();
+
+	DownloadHandler downloadHandler();
+
 	LoadFormDataHandler loadFormDataHandler();
 
 	FindFormDataHandler findFormDataHandler();
@@ -106,6 +115,9 @@ public interface FormsPluginComponent {
 	RenderFormDataHandler renderFormDataHandler();
 
 	LoadFilesZipHandler loadFilesZipHandler();
+
+	RequestFilesZipHandler requestFilesZipHandler();
+
 
 	@Component.Builder
 	interface Builder {

@@ -95,8 +95,13 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 		projectRouter.route("/forms/:formUuid/data/:formDataUuid/binary/:binaryFieldName").method(GET).blockingHandler(fromComponent(FormsPluginComponent::loadFormDataBinaryHandler));
 
 		projectRouter.route("/forms/:formUuid/export").method(GET).handler(fromComponent(FormsPluginComponent::exportHandler));
+		projectRouter.route("/forms/:formUuid/export").method(POST).handler(fromComponent(FormsPluginComponent::requestExportHandler));
 
 		projectRouter.route("/forms/:formUuid/binaries").method(GET).produces("application/zip").handler(fromComponent(FormsPluginComponent::loadFilesZipHandler));
+		projectRouter.route("/forms/:formUuid/binaries").method(POST).handler(fromComponent(FormsPluginComponent::requestFilesZipHandler));
+
+		projectRouter.route("/forms/:formUuid/download/:downloadType/status").method(GET).handler(fromComponent(FormsPluginComponent::checkDownloadHandler));
+		projectRouter.route("/forms/:formUuid/download/:downloadUuid").method(GET).handler(fromComponent(FormsPluginComponent::downloadHandler));
 
 		return projectRouter;
 	}
@@ -109,7 +114,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 				configuration = new FormsConfig();
 			}
 
-			return component(null).statusService().initialize();
+			return component(null).statusService().initialize(getStorageDir().getAbsolutePath());
 		} catch (Exception e) {
 			return Completable.error(e);
 		}
