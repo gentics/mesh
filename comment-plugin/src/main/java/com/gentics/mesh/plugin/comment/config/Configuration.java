@@ -52,7 +52,7 @@ public class Configuration {
 
 	@JsonProperty(defaultValue = "license.key")
 	@JsonPropertyDescription("Path to the license key file.")
-	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "Override the license key.")
+	@EnvironmentVariable(name = LICENSE_KEY_ENV, description = "Override the default licence key file.")
 	private String licenseKey = "license.key";
 
 	private String schemaPrefix = DEFAULT_SCHEMA_PREFIX;

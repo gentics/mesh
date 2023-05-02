@@ -140,9 +140,7 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 			this.configuration = readConfig(Configuration.class);
 
 			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
-			if (!licenseService.isLicenseSufficient(LicensedPlugin.MCP)) {
-				throw new MeshPluginException(String.format("License insufficient. Plugin %s is not licensed", this.id()));
-			}
+			licenseService.isLicenseSufficient(LicensedPlugin.MCP);
 
 			InitializationComponent component = DaggerInitializationComponent.builder()
 				.configuration(configuration)
