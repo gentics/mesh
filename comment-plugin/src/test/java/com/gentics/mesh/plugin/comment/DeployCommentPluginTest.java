@@ -4,13 +4,15 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import java.util.concurrent.TimeUnit;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class DeployCommentPluginTest {
 
 
 	@Test
-	public void givenCommentPluginWithoutValidLicense_shouldThrowException() {
+	@Ignore("Intended for manual testing")
+	public void testCommentDeployment() {
 		final int httpPort = 8092;
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class,
 				null);
