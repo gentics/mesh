@@ -1,10 +1,11 @@
 package com.gentics.mesh.plugin.mustread.config;
 
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
-public class MustReadConfig {
+public class MustReadConfig extends LicenseConfiguration {
     private List<ProjectConfig> projects;
 
     private String nodeListParameterName;

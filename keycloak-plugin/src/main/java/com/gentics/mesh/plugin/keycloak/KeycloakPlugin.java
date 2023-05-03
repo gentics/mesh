@@ -8,6 +8,9 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.plugin.AbstractCommercialPlugin;
 import com.gentics.mesh.plugin.auth.AuthServicePlugin;
 import com.gentics.mesh.plugin.auth.MappingResult;
+import com.gentics.mesh.plugin.common.MeshPluginException;
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -56,11 +59,17 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	public Completable initialize() {
 		return loadConfig(KeycloakPluginConfig.class)
 				.doOnSuccess(KeycloakPluginConfig::overrideWithEnv)
+				.doOnSuccess(this::performLicenseCheck)
 				.ignoreElement()
 				// TODO Make loading of public keys non-blocking
 				.andThen(Completable.defer(this::loadPublicKeys))
 				.andThen(loadMapperScript())
 				.andThen(initializeRolesAndGroups());
+	}
+
+	private void performLicenseCheck(KeycloakPluginConfig configuration) throws MeshPluginException {
+		LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+		licenseService.isLicenseSufficient(LicensedPlugin.MKC);
 	}
 
 

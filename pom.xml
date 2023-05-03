@@ -19,6 +19,7 @@
 		<!--  Don't forget to also update dependencyManagement section! -->
 		<mesh.version>1.10.0</mesh.version>
 		<netty.version>4.1.78.Final</netty.version>
+		<license.checker.version>1.0-SNAPSHOT</license.checker.version>
 	</properties>
 
 	<modules>

@@ -9,6 +9,8 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.AbstractPlugin;
 import com.gentics.mesh.plugin.RestPlugin;
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.export.dagger.DaggerExportPluginComponent;
 import com.gentics.mesh.plugin.export.dagger.ExportPluginComponent;
@@ -58,14 +60,18 @@ public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportCo
 	public Completable initialize() {
 		return Completable.defer(() -> {
 			try {
+				// Setup the configuration
+				PluginConfiguration config = readConfig(PluginConfiguration.class);
+				config.overrideWithEnv();
+
+				LicenseService licenseService = new LicenseService(config.getLicenseKey());
+				licenseService.isLicenseSufficient(LicensedPlugin.MEXP);
+
 				// Setup JSON Validation and serialization
 				ObjectMapper mapper = JsonUtil.getMapper();
 				SimpleModule module = new SimpleModule("export-plugin");
 				module.addSerializer(ConstraintViolation.class, new ConstraintViolationSerializer());
 				mapper.registerModule(module);
-
-				// Setup the configuration
-				PluginConfiguration config = readConfig(PluginConfiguration.class);
 
 				if (config == null) {
 					//get JSON

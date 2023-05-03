@@ -1,6 +1,7 @@
 package com.gentics.mesh.plugin.forms.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import com.gentics.mesh.plugin.forms.export.ExportFormat;
 
 import javax.annotation.Nonnull;
@@ -10,7 +11,7 @@ import java.util.Map;
 /**
  * Configuration POJO
  */
-public class FormsConfig {
+public class FormsConfig extends LicenseConfiguration {
 
 	private String fromAddress;
 

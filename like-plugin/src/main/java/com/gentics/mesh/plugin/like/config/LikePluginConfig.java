@@ -1,8 +1,9 @@
 package com.gentics.mesh.plugin.like.config;
 
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import java.util.List;
 
-public class LikePluginConfig {
+public class LikePluginConfig extends LicenseConfiguration {
 	private final static String DEFAULT_CONFIG_FIELD = "likes";
 
 	private List<String> projects;

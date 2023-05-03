@@ -4,6 +4,8 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -71,6 +73,13 @@ public class LikePlugin extends AbstractPlugin implements RestPlugin {
 	public Completable initialize() {
 		try {
 			configuration = readConfig(LikePluginConfig.class);
+			if (configuration == null) {
+				configuration = new LikePluginConfig();
+			}
+			configuration.overrideWithEnv();
+
+			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+			licenseService.isLicenseSufficient(LicensedPlugin.MLKE);
 
 			// initialize schemas, etc.
 			return component(null).schemaInitializer().initialize();

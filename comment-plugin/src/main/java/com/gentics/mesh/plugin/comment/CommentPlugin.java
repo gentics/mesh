@@ -4,6 +4,8 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import com.gentics.mesh.plugin.common.license.LicenseService;
+import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -135,6 +137,11 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 	public Completable initialize() {
 		try {
 			this.configuration = readConfig(Configuration.class);
+			this.configuration.overrideWithEnv();
+
+			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+			licenseService.isLicenseSufficient(LicensedPlugin.MCMT);
+
 			InitializationComponent component = DaggerInitializationComponent.builder()
 				.configuration(configuration)
 				.adminClient(adminClient())

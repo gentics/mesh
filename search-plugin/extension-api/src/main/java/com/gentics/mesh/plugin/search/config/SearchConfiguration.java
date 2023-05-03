@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.etc.config.env.EnvironmentVariable;
+import com.gentics.mesh.plugin.common.license.LicenseConfiguration;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SearchConfiguration {
+public class SearchConfiguration extends LicenseConfiguration {
 
 	public static final String SEARCH_PAGE_SIZE = "SEARCH_PAGE_SIZE";
 	public static final String SEARCH_PROJECTS = "SEARCH_PROJECTS";
