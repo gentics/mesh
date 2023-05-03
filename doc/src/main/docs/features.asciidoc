@@ -25,7 +25,7 @@ There are two properties when defining a link:{{< relref "building-blocks.asciid
 [[example]]
 Let us consider the following example on the basis of our demo app to demonstrate how these properties work together to support navigation menus, breadcrumbs and pretty URLs:
 
-image::../images/GenticsMesh-ContentTree-Example.png[Gentics Mesh Example of organizing content in a node tree,role="img-responsive"] 
+image::../images/GenticsMesh-ContentTree-Example.png[Gentics Mesh Example of organizing content in a node tree,role="img-responsive"]
 
 Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Ford GT_ in category _Automobiles_.
 
@@ -36,7 +36,7 @@ The schema _vehicle_ has the ```container``` property set to ```false```. The sc
 [[prettyurls]]
 == Pretty URLs
 
-Instead of relying on UUIDs to link your content, you can use pretty URLs like https://yourapp.com/automobiles/ford-gt. For each node, Gentics Mesh will provide you with a human readable path. 
+Instead of relying on UUIDs to link your content, you can use pretty URLs like https://yourapp.com/automobiles/ford-gt. For each node, Gentics Mesh will provide you with a human readable path.
 Likewise, you can query your content using WebRoot paths instead of using UUIDs (see <<webroot,WebRoot API>>).
 
 The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
@@ -1286,6 +1286,38 @@ The plainText can be accessed via the `plainText` field in GraphQL. The same fie
 
 NOTE: The parser limit of documents also affects the metadata extraction. In-line attributes of PDF files will only be added to the list of metadata when the parser limit is set high enough. A `parserLimit` of `-1` can be used to fully parse documents and to ensure that all attributes are identified.
 
+[[binarycheck]]
+=== Asynchronous binary check
+
+When the schema for a binary field contains the `checkServiceUrl` property, new binaries are created with a check status of `POSTPONED`. Mesh will regularly send a request for each postponed binary to the respective check service with the following payload:
+
+Example check request payload:
+[source, json]
+----
+{
+  "filename" : "test.zip",
+  "mimeType" : "application/zip",
+  "downloadUrl" : "http://MESH_HOST:MESH_PORT/api/v1/Test/nodes/a881e329c6de4fccb4dce5fa69e32aaa/binary/binaryTest?secret=979be709e3a94467bdeece6fece6d858&lang=en&branch=f339e2a7f4ce4fee86e07a5f981a10a6&version=0.2",
+  "callbackUrl" : "http://MESH_HOST:MESH_PORT/api/v1/Test/nodes/a881e329c6de4fccb4dce5fa69e32aaa/binary/binaryTest/checkCallback?secret=979be709e3a94467bdeece6fece6d858&lang=en&branch=f339e2a7f4ce4fee86e07a5f981a10a6&version=0.2"
+}
+----
+
+The check service can use the given `downloadUrl` to download the binary to perform the actual check. The check service must send the result to the callback URL by posting a JSON with the fields `status` (must be `ACCEPTED` or `DENIED`) and `reason` which contains the reason a file was denied.
+
+Example check result payload:
+[source, json]
+----
+{
+    "status": "DENIED",
+    "reason": "Maximum filesize exceeded"
+}
+----
+
+Mesh will set the status of the binary accordingly and if the status is `DENIED` will delete the actual binary data for that file. The file itself is not deleted but truncated to length zero.
+
+A simple example check service is available in the link:{{< relref "platforms.asciidoc" >}}#_java[Platforms & Clients section].
+
+NOTE: The check result request to Mesh must be authenticated as a user that has permission to actually change the binary.
 
 [[multilanguage]]
 == Multi-Language
@@ -1315,21 +1347,21 @@ NOTE: In order to work properly, the fallback mechanism requires all nodes to ha
 
 === Overview
 
-Permissions allow to equip different groups of users with access to the content of your project. 
+Permissions allow to equip different groups of users with access to the content of your project.
 
-In Gentics Mesh, we distinguish the concepts of 
+In Gentics Mesh, we distinguish the concepts of
 link:{{< relref "building-blocks.asciidoc" >}}#_user[user], link:{{< relref "building-blocks.asciidoc" >}}#_group[group], and link:{{< relref "building-blocks.asciidoc" >}}#_role[role] for managing different needs of access.
 
 * A user represents a physical person or a client app that needs to interact with your content.
-* Groups are used to gather users of same content needs and access levels, e.g. administrators, editors, and users of your app. 
+* Groups are used to gather users of same content needs and access levels, e.g. administrators, editors, and users of your app.
 * A role describes a set of permissions on other elements in Gentics Mesh, e.g. nodes, tags, schemas, users.
 
 By assigning a role to a group, the role's permissions are efficiently granted to a set of users.
 
-NOTE: For reasons of readability, we will describe granting permissions to users though technically, permissions are granted to a specific role and applied to users via groups. 
+NOTE: For reasons of readability, we will describe granting permissions to users though technically, permissions are granted to a specific role and applied to users via groups.
 
 // TODO image (anonymous, and other roles having different permissions)
-//image::../GenticsMesh-User-Groups-Roles-Demo.png[How User, Groups, Roles & Permissions are organized in Gentics Mesh Demo Example,role="img-responsive"] 
+//image::../GenticsMesh-User-Groups-Roles-Demo.png[How User, Groups, Roles & Permissions are organized in Gentics Mesh Demo Example,role="img-responsive"]
 
 [caption=]
 .Permissions in Gentics Mesh
@@ -1364,13 +1396,13 @@ https://demo.getmesh.io{apiLatest}/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?v
 ...
   "permissions" : {
     "create" : false,        //create other nodes
-    "read" : false,          //read all versions of the node 
+    "read" : false,          //read all versions of the node
     "update" : false,        //update the node
     "delete" : false,        //delete the node
     "publish" : false,       //publish or unpublish the node
     "readPublished" : true   //read the published version of the node
   }
-...  
+...
 -----
 
 
@@ -1439,7 +1471,7 @@ RESPONSE
     "delete": false,
     "publish": false,
     "readPublished": true
-} 
+}
 -----
 
 Alternatively, you can use query the element using the respective API endpoint (e.g. link:++/docs/api#project__nodes__get++[```GET {apiLatest}/projectName/nodes```]) and use the ```role``` query parameter to find out another role's (i.e. ```anonymous```) permissions on the element:
@@ -1480,7 +1512,7 @@ The endpoint link:/docs/api/#users__userUuid__permissions__path__get[```GET {api
 [TIP]
 https://demo.getmesh.io{apiLatest}/users/5fb9654c0b734e87b9654c0b736e8701/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
 
-=== Assigning & Revoking Permissions 
+=== Assigning & Revoking Permissions
 
 The link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST {apiLatest}/roles/:roleUuid/permissions/:path```] API endpoint can be used to assign or revoke permissions to/from a role.
 
@@ -1489,15 +1521,15 @@ The link:/docs/api#roles__roleUuid__permissions__pathToElement__post[```POST {ap
 * Furthermore, the endpoint offers the property ```recursive``` for applying permissions recursively on child elements to which the requesting user has read access..
 
 //COMMENT: This info is interesting for mesh developers, not mesh API users.
-//In order to ensure that roles are able to invoke CRUD operations on objects they have created or would have been able to create in the first place, CRUD permissions are assigned to those roles. 
+//In order to ensure that roles are able to invoke CRUD operations on objects they have created or would have been able to create in the first place, CRUD permissions are assigned to those roles.
 
-//This is demonstrated by the following example:  
+//This is demonstrated by the following example:
 
 //* User John is assigned to Role A. Role A grants him to create a new child Node in a parent Node.
 //* User Mary is assigned to Role B. Role B grants her to also create a new child //Node in the same parent Node.
 //* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
 
-Following, we go through all Gentics Mesh objects that can be subject to permissions.  
+Following, we go through all Gentics Mesh objects that can be subject to permissions.
 
 ==== How to grant Permissions on Users
 
@@ -1550,13 +1582,13 @@ All possible role permissions on users are summarized in the following table.
 [options="header"]
 |======
 | Role permission       | Element path        | Permission  | Recursive
-| Can create new users  | ```/users```        | Create      | false 
-| Can read all users    | ```/users```        | Read        | true 
-| Can update all users  | ```/users```        | Update      | true 
-| Can delete all users  | ```/users```        | Delete      | true 
-| Can read user         | ```/users/:uuid```  | Read        | false 
-| Can update user       | ```/users/:uuid```  | Update      | false 
-| Can delete user       | ```/users/:uuid```  | Delete      | false 
+| Can create new users  | ```/users```        | Create      | false
+| Can read all users    | ```/users```        | Read        | true
+| Can update all users  | ```/users```        | Update      | true
+| Can delete all users  | ```/users```        | Delete      | true
+| Can read user         | ```/users/:uuid```  | Read        | false
+| Can update user       | ```/users/:uuid```  | Update      | false
+| Can delete user       | ```/users/:uuid```  | Delete      | false
 |======
 
 ==== How to grant Permissions on Groups
@@ -1613,16 +1645,16 @@ All possible role permissions on groups are summarized in the following table.
 [options="header"]
 |======
 | Role permission        | Element path         | Permission  | Recursive
-| Can create new groups  | ```/groups```        | Create      | false 
-| Can read all groups    | ```/groups```        | Read        | true 
-| Can update all groups  | ```/groups```        | Update      | true 
-| Can delete all groups  | ```/groups```        | Delete      | true 
-| Can read group         | ```/groups/:uuid```  | Read        | false 
-| Can update group       | ```/groups/:uuid```  | Update      | false 
-| Can delete group       | ```/groups/:uuid```  | Delete      | false 
-| Can read group and its users   | ```/groups/:uuid```| Read        | true 
-| Can update group and its users | ```/groups/:uuid```| Update      | true 
-| Can delete group and its users | ```/groups/:uuid```| Delete      | true 
+| Can create new groups  | ```/groups```        | Create      | false
+| Can read all groups    | ```/groups```        | Read        | true
+| Can update all groups  | ```/groups```        | Update      | true
+| Can delete all groups  | ```/groups```        | Delete      | true
+| Can read group         | ```/groups/:uuid```  | Read        | false
+| Can update group       | ```/groups/:uuid```  | Update      | false
+| Can delete group       | ```/groups/:uuid```  | Delete      | false
+| Can read group and its users   | ```/groups/:uuid```| Read        | true
+| Can update group and its users | ```/groups/:uuid```| Update      | true
+| Can delete group and its users | ```/groups/:uuid```| Delete      | true
 |======
 
 ==== How to Grant Permissions on Roles
@@ -1633,7 +1665,7 @@ By granting permissions on roles, you effectively grant users the right to chang
 * Granting permissions on ```/roles``` recursively will affect all roles to which the requesting user has read access.
 
 ===== Example
-The following example shows how to grant the ```Editor Role``` role permissions to create new roles and subsequently manage them (i.e., ```read```, ```update```, ```delete```) but no access to existing roles. 
+The following example shows how to grant the ```Editor Role``` role permissions to create new roles and subsequently manage them (i.e., ```read```, ```update```, ```delete```) but no access to existing roles.
 
 NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
@@ -1675,13 +1707,13 @@ All possible role permissions on roles are summarized in the following table.
 [options="header"]
 |======
 | Role permission       | Element path        | Permission  | Recursive
-| Can create new roles  | ```/roles```        | Create      | false 
-| Can read all roles    | ```/roles```        | Read        | true 
-| Can update all roles  | ```/roles```        | Update      | true 
-| Can delete all roles  | ```/roles```        | Delete      | true 
-| Can read role         | ```/roles/:uuid```  | Read        | false 
-| Can update role       | ```/roles/:uuid```  | Update      | false 
-| Can delete role       | ```/roles/:uuid```  | Delete      | false 
+| Can create new roles  | ```/roles```        | Create      | false
+| Can read all roles    | ```/roles```        | Read        | true
+| Can update all roles  | ```/roles```        | Update      | true
+| Can delete all roles  | ```/roles```        | Delete      | true
+| Can read role         | ```/roles/:uuid```  | Read        | false
+| Can update role       | ```/roles/:uuid```  | Update      | false
+| Can delete role       | ```/roles/:uuid```  | Delete      | false
 |======
 
 ==== How to Grant Permissions on Schemas
@@ -1696,13 +1728,13 @@ Permissions on a single or multiple schemas are applied via ```/schemas/:uuid```
 [options="header"]
 |======
 | Role permission                           | Element path          | Permission  | Recursive
-| Can create new schemas                    | ```/schemas```        | Create      | false 
-| Can read all schemas, and create nodes    | ```/schemas```        | Read        | true 
-| Can update all schemas                    | ```/schemas```        | Update      | true 
-| Can delete all schemas                    | ```/schemas```        | Delete      | true 
-| Can read schema, and create nodes         | ```/schemas/:uuid```  | Read        | false 
-| Can update schema                         | ```/schemas/:uuid```  | Update      | false 
-| Can delete schema                         | ```/schemas/:uuid```  | Delete      | false 
+| Can create new schemas                    | ```/schemas```        | Create      | false
+| Can read all schemas, and create nodes    | ```/schemas```        | Read        | true
+| Can update all schemas                    | ```/schemas```        | Update      | true
+| Can delete all schemas                    | ```/schemas```        | Delete      | true
+| Can read schema, and create nodes         | ```/schemas/:uuid```  | Read        | false
+| Can update schema                         | ```/schemas/:uuid```  | Update      | false
+| Can delete schema                         | ```/schemas/:uuid```  | Delete      | false
 |======
 
 ==== How to Grant Permissions on Microschemas
@@ -1717,13 +1749,13 @@ Permissions on a single or multiple microschemas are applied via ```/microschema
 [options="header"]
 |======
 | Role permission                                     | Element path               | Permission  | Recursive
-| Can create new microschemas                         | ```/microschemas```        | Create      | false 
-| Can read all microschemas, and create micronodes    | ```/microschemas```        | Read        | true 
-| Can update all microschemas                         | ```/microschemas```        | Update      | true 
-| Can delete all microschemas                         | ```/microschemas```        | Delete      | true 
-| Can read microschemas, and create micronodes        | ```/microschemas/:uuid```  | Read        | false 
-| Can update microschemas                             | ```/microschemas/:uuid```  | Update      | false 
-| Can delete microschemas                             | ```/microschemas/:uuid```  | Delete      | false 
+| Can create new microschemas                         | ```/microschemas```        | Create      | false
+| Can read all microschemas, and create micronodes    | ```/microschemas```        | Read        | true
+| Can update all microschemas                         | ```/microschemas```        | Update      | true
+| Can delete all microschemas                         | ```/microschemas```        | Delete      | true
+| Can read microschemas, and create micronodes        | ```/microschemas/:uuid```  | Read        | false
+| Can update microschemas                             | ```/microschemas/:uuid```  | Update      | false
+| Can delete microschemas                             | ```/microschemas/:uuid```  | Delete      | false
 |======
 
 
@@ -1739,17 +1771,17 @@ Permissions on a single or multiple projects are applied via ```/projects/:uuid`
 [options="header"]
 |======
 | Role permission                                      | Element path           | Permission     | Recursive
-| Can create new project                               | ```/projects```        | Create         | false 
-| Can read all projects and sub elements               | ```/projects```        | Read           | true 
-| Can update all projects and sub elements             | ```/projects```        | Update         | true 
-| Can delete all projects and sub elements             | ```/projects```        | Delete         | true 
-| Can read published nodes and subnodes of all project | ```/projects```        | Read Published | true 
-| Can un/publish nodes and subnodes of all project     | ```/projects```        | Publish        | true 
-| Can read project and sub elements                    | ```/projects/:uuid```  | Read           | true 
-| Can update project and sub elements                  | ```/projects/:uuid```  | Update         | true 
-| Can delete project and sub elements                  | ```/projects/:uuid```  | Delete         | true 
-| Can read published nodes and subnodes of project     | ```/projects/:uuid```  | Read Published | true 
-| Can un/publish nodes and subnodes of project         | ```/projects/:uuid```  | Publish        | true 
+| Can create new project                               | ```/projects```        | Create         | false
+| Can read all projects and sub elements               | ```/projects```        | Read           | true
+| Can update all projects and sub elements             | ```/projects```        | Update         | true
+| Can delete all projects and sub elements             | ```/projects```        | Delete         | true
+| Can read published nodes and subnodes of all project | ```/projects```        | Read Published | true
+| Can un/publish nodes and subnodes of all project     | ```/projects```        | Publish        | true
+| Can read project and sub elements                    | ```/projects/:uuid```  | Read           | true
+| Can update project and sub elements                  | ```/projects/:uuid```  | Update         | true
+| Can delete project and sub elements                  | ```/projects/:uuid```  | Delete         | true
+| Can read published nodes and subnodes of project     | ```/projects/:uuid```  | Read Published | true
+| Can un/publish nodes and subnodes of project         | ```/projects/:uuid```  | Publish        | true
 |======
 
 ==== How to Grant Permissions on Tag Families
@@ -1764,18 +1796,18 @@ In order to grant permission on tag families the ```/:projectName/tagFamilies```
 [options="header"]
 |======
 | Role permission                                      | Element path                           | Permission     | Recursive
-| Can create new tag families                          | ```/:projectName/tagFamilies```        | Create         | false 
-| Can create new tag families and tags for tagFamilies | ```/:projectName/tagFamilies```        | Create         | true 
-| Can read all tag families and tags                   | ```/:projectName/tagFamilies```        | Read           | true 
-| Can update all tag families and tags                 | ```/:projectName/tagFamilies```        | Update         | true 
-| Can delete all tag families and tags                 | ```/:projectName/tagFamilies```        | Delete         | true 
-| Can create tags in tag family                        | ```/:projectName/tagFamilies/:uuid```  | Create         | false 
-| Can read tag family                                  | ```/:projectName/tagFamilies/:uuid```  | Read           | false 
-| Can update tag family                                | ```/:projectName/tagFamilies/:uuid```  | Update         | false 
-| Can delete tag family                                | ```/:projectName/tagFamilies/:uuid```  | Delete         | false 
-| Can read tag family and tags                         | ```/:projectName/tagFamilies/:uuid```  | Read           | true 
-| Can update tag family and tags                       | ```/:projectName/tagFamilies/:uuid```  | Update         | true 
-| Can delete tag family and tags                       | ```/:projectName/tagFamilies/:uuid```  | Delete         | true 
+| Can create new tag families                          | ```/:projectName/tagFamilies```        | Create         | false
+| Can create new tag families and tags for tagFamilies | ```/:projectName/tagFamilies```        | Create         | true
+| Can read all tag families and tags                   | ```/:projectName/tagFamilies```        | Read           | true
+| Can update all tag families and tags                 | ```/:projectName/tagFamilies```        | Update         | true
+| Can delete all tag families and tags                 | ```/:projectName/tagFamilies```        | Delete         | true
+| Can create tags in tag family                        | ```/:projectName/tagFamilies/:uuid```  | Create         | false
+| Can read tag family                                  | ```/:projectName/tagFamilies/:uuid```  | Read           | false
+| Can update tag family                                | ```/:projectName/tagFamilies/:uuid```  | Update         | false
+| Can delete tag family                                | ```/:projectName/tagFamilies/:uuid```  | Delete         | false
+| Can read tag family and tags                         | ```/:projectName/tagFamilies/:uuid```  | Read           | true
+| Can update tag family and tags                       | ```/:projectName/tagFamilies/:uuid```  | Update         | true
+| Can delete tag family and tags                       | ```/:projectName/tagFamilies/:uuid```  | Delete         | true
 |======
 
 ==== How to Grant Permissions on Tags
@@ -1790,23 +1822,23 @@ In order to grant permission on tags the ```/:projectName/tagFamilies/:uuid/tags
 [options="header"]
 |======
 | Role permission                | Element path                                     | Permission     | Recursive
-| Can create tags in tag family  | ```/:projectName/tagFamilies/:uuid/tags```       | Create         | false 
-| Can read tag family            | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | false 
-| Can update tag family          | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | false 
-| Can delete tag family          | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | false 
-| Can read tag family and tags   | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | true 
-| Can update tag family and tags | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | true 
-| Can delete tag family and tags | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | true 
-| Can read tag                   | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Read           | false 
-| Can update tag                 | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Update         | false 
-| Can delete tag                 | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Delete         | false 
+| Can create tags in tag family  | ```/:projectName/tagFamilies/:uuid/tags```       | Create         | false
+| Can read tag family            | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | false
+| Can update tag family          | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | false
+| Can delete tag family          | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | false
+| Can read tag family and tags   | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | true
+| Can update tag family and tags | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | true
+| Can delete tag family and tags | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | true
+| Can read tag                   | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Read           | false
+| Can update tag                 | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Update         | false
+| Can delete tag                 | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Delete         | false
 |======
 
 ==== How to Grant Permissions on Nodes
 
 Permissions on a single or multiple nodes are applied via ```/:projectName/nodes``` and ```/:projectName/nodes/:uuid``` path:
 
-* ```/:projectName/nodes/:uuid``` is used to grant permissions on single nodes. 
+* ```/:projectName/nodes/:uuid``` is used to grant permissions on single nodes.
 * ```/:projectName/nodes``` together with property ```recursive=true``` can be used to quickly grant permissions on all node of the project to which the requesting user has read access.
 * In order to grant permissions on sub trees of the content tree ```/:projectName/nodes/:uuid``` together with property ```recursive=true``` is to be used.
 
@@ -1815,24 +1847,24 @@ Permissions on a single or multiple nodes are applied via ```/:projectName/nodes
 [options="header"]
 |======
 | Role permission                                           | Element path                    | Permission    | Recursive
-| Can create new sub nodes in all nodes of the project      | ```/:projectName/nodes```       | Create        | true 
-| Can read all project nodes (and all node versions)        | ```/:projectName/nodes```       | Read          | true 
-| Can update all nodes of the project                       | ```/:projectName/nodes```       | Update        | true 
-| Can delete all nodes of the project                       | ```/:projectName/nodes```       | Delete        | true 
-| Can read the published version of all project nodes       | ```/:projectName/nodes```       | ReadPublished | true 
-| Can publish/unpublish all nodes of the project            | ```/:projectName/nodes```       | Publish       | true 
-| Can create new sub nodes in specified node                | ```/:projectName/nodes/:uuid``` | Create        | false 
-| Can read specified node                                   | ```/:projectName/nodes/:uuid``` | Read          | false 
-| Can update specified node                                 | ```/:projectName/nodes/:uuid``` | Update        | false 
-| Can delete specified node                                 | ```/:projectName/nodes/:uuid``` | Delete        | false 
-| Can read the published version specified node             | ```/:projectName/nodes/:uuid``` | ReadPublished | false 
-| Can publish/unpublish specified node                      | ```/:projectName/nodes/:uuid``` | Publish       | false 
-| Can create new sub nodes in specified node & sub nodes    | ```/:projectName/nodes/:uuid``` | Create        | true 
-| Can read specified node & sub nodes                       | ```/:projectName/nodes/:uuid``` | Read          | true 
-| Can update specified node & sub nodes                     | ```/:projectName/nodes/:uuid``` | Update        | true 
-| Can delete specified node & sub nodes                     | ```/:projectName/nodes/:uuid``` | Delete        | true 
-| Can read the published version specified node & sub nodes | ```/:projectName/nodes/:uuid``` | ReadPublished | true 
-| Can publish/unpublish specified node & sub nodes          | ```/:projectName/nodes/:uuid``` | Publish       | true 
+| Can create new sub nodes in all nodes of the project      | ```/:projectName/nodes```       | Create        | true
+| Can read all project nodes (and all node versions)        | ```/:projectName/nodes```       | Read          | true
+| Can update all nodes of the project                       | ```/:projectName/nodes```       | Update        | true
+| Can delete all nodes of the project                       | ```/:projectName/nodes```       | Delete        | true
+| Can read the published version of all project nodes       | ```/:projectName/nodes```       | ReadPublished | true
+| Can publish/unpublish all nodes of the project            | ```/:projectName/nodes```       | Publish       | true
+| Can create new sub nodes in specified node                | ```/:projectName/nodes/:uuid``` | Create        | false
+| Can read specified node                                   | ```/:projectName/nodes/:uuid``` | Read          | false
+| Can update specified node                                 | ```/:projectName/nodes/:uuid``` | Update        | false
+| Can delete specified node                                 | ```/:projectName/nodes/:uuid``` | Delete        | false
+| Can read the published version specified node             | ```/:projectName/nodes/:uuid``` | ReadPublished | false
+| Can publish/unpublish specified node                      | ```/:projectName/nodes/:uuid``` | Publish       | false
+| Can create new sub nodes in specified node & sub nodes    | ```/:projectName/nodes/:uuid``` | Create        | true
+| Can read specified node & sub nodes                       | ```/:projectName/nodes/:uuid``` | Read          | true
+| Can update specified node & sub nodes                     | ```/:projectName/nodes/:uuid``` | Update        | true
+| Can delete specified node & sub nodes                     | ```/:projectName/nodes/:uuid``` | Delete        | true
+| Can read the published version specified node & sub nodes | ```/:projectName/nodes/:uuid``` | ReadPublished | true
+| Can publish/unpublish specified node & sub nodes          | ```/:projectName/nodes/:uuid``` | Publish       | true
 
 |======
 
@@ -2301,13 +2333,13 @@ include::content/docs/api/request{apiLatest}/schemas/\{schemaUuid\}/changes/requ
 
 == Executing migrations
 
-Migrations can potentially affect a huge amount of nodes depending on the size of your project. As such the migration could take some time to complete. 
+Migrations can potentially affect a huge amount of nodes depending on the size of your project. As such the migration could take some time to complete.
 This is why we designed migrations in ways that they can be executed asynchronously.
-Various operations in Gentics Mesh (e.g. Schema update, assigning versions to branches, creating branches) may trigger migrations. 
+Various operations in Gentics Mesh (e.g. Schema update, assigning versions to branches, creating branches) may trigger migrations.
 Before the migration is being executed a job is added to the job queue. You can view the queue via the `{apiLatest}/admin/jobs` endpoint.
 These jobs will be processed and execute the actual migration.
 
-By default updating a schema will create a new schema version and the nodes will be migrated to that new version. 
+By default updating a schema will create a new schema version and the nodes will be migrated to that new version.
 If you want to defer this operation you can set the `updateAssignedBranches` query parameter to false when updating a schema/microschemaModel.
 This leads to a new schema version being created but the version would not be linked to your current branch and no migration would be invoked.
 

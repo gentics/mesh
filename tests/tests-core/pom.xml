@@ -76,6 +76,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.mock-server</groupId>
+			<artifactId>mockserver-junit-rule</artifactId>
+			<version>5.9.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

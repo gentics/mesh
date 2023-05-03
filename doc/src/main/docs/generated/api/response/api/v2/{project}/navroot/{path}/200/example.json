@@ -100,7 +100,8 @@
         "focalPoint" : {
           "x" : 0.1,
           "y" : 0.2
-        }
+        },
+        "checkStatus" : "POSTPONED"
       },
       "location" : {
         "microschema" : {
@@ -250,7 +251,8 @@
           "focalPoint" : {
             "x" : 0.1,
             "y" : 0.2
-          }
+          },
+          "checkStatus" : "POSTPONED"
         },
         "location" : {
           "microschema" : {

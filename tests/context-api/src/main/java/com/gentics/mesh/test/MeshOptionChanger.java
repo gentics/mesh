@@ -37,6 +37,8 @@ public enum MeshOptionChanger {
 		options.getGraphQLOptions().setNativeQueryFiltering(NativeQueryFiltering.ALWAYS);
 	}), GRAPHQL_FORCE_JAVA_FILTER(options -> {
 		options.getGraphQLOptions().setNativeQueryFiltering(NativeQueryFiltering.OFF);
+	}), SHORT_BINARY_CHECK_INTERVAL(options -> {
+		options.getUploadOptions().setCheckInterval(5_000);
 	});
 
 	public final Consumer<MeshOptions> changer;

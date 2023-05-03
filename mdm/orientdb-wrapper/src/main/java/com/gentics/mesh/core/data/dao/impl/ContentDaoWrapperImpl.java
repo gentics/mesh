@@ -13,6 +13,9 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.user.HibUser;
 import org.apache.commons.lang3.StringUtils;
 
@@ -137,6 +140,11 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNode getNode(HibNodeFieldContainer content) {
 		return content.getNode();
+	}
+
+	@Override
+	public HibNodeFieldContainer getNodeFieldContainer(HibField field) {
+		return ((MeshEdgeImpl) field).getImpl().outV(NodeGraphFieldContainerImpl.class).nextOrNull();
 	}
 
 	@Override

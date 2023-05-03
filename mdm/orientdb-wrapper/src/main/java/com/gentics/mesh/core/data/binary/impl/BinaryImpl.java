@@ -25,7 +25,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	/**
 	 * Initialize the vertex type and index.
-	 * 
+	 *
 	 * @param type
 	 * @param index
 	 */
@@ -33,6 +33,8 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 		type.createVertexType(BinaryImpl.class, MeshVertexImpl.class);
 		index.createIndex(vertexIndex(BinaryImpl.class)
 			.withField(Binary.SHA512SUM_KEY, FieldType.STRING)
+			.withField(Binary.BINARY_CHECK_STATUS_KEY, FieldType.STRING)
+			.withField(Binary.BINARY_CHECK_SECRET_KEY, FieldType.STRING)
 			.unique());
 	}
 

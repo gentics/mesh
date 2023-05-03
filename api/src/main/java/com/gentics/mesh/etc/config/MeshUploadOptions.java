@@ -21,6 +21,7 @@ public class MeshUploadOptions implements Option {
 	public static final String DEFAULT_TEMP_DIR = "data" + File.separator + "tmp" + File.separator + "file-uploads";;
 	public static final int DEFAULT_DOCUMENT_PARSER_LIMIT = 40_000;
 	public static final boolean DEFAULT_UPLOAD_PARSER_FLAG = true;
+	public static final long DEFAULT_CHECK_INTERVAL = 60_000;
 
 	public static final String MESH_BINARY_DIR_ENV = "MESH_BINARY_DIR";
 	public static final String MESH_BINARY_UPLOAD_TEMP_DIR_ENV = "MESH_BINARY_UPLOAD_TEMP_DIR";
@@ -28,6 +29,7 @@ public class MeshUploadOptions implements Option {
 	public static final String MESH_BINARY_DOCUMENT_PARSER_LIMIT_ENV = "MESH_BINARY_DOCUMENT_PARSER_LIMIT";
 	public static final String MESH_BINARY_DOCUMENT_PARSER_ENV = "MESH_BINARY_DOCUMENT_PARSER";
 	public static final String MESH_BINARY_METADATA_WHITELIST_ENV = "MESH_BINARY_METADATA_WHITELIST";
+	public static final String MESH_BINARY_CHECK_INTERVAL = "MESH_BINARY_CHECK_INTERVAL";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The upload size limit in bytes. Default: " + DEFAULT_FILEUPLOAD_BYTE_LIMIT + " (" + DEFAULT_FILEUPLOAD_MB_LIMIT + " MB)")
@@ -60,6 +62,11 @@ public class MeshUploadOptions implements Option {
 	@JsonPropertyDescription("If set, the parser will only extract metadata with the keys specified in the list.")
 	@EnvironmentVariable(name = MESH_BINARY_METADATA_WHITELIST_ENV, description = "Override the metadata whitelist")
 	private Set<String> metadataWhitelist;
+
+	@JsonProperty
+	@JsonPropertyDescription("Interval in milliseconds for performing binary check requests for binary fields where a check service URL is defined. For values less than one the check is disabled. (default: 60000).")
+	@EnvironmentVariable(name = MESH_BINARY_CHECK_INTERVAL, description = "Override the binary check interval")
+	private long checkInterval = DEFAULT_CHECK_INTERVAL;
 
 	/**
 	 * Return the upload limit in bytes.
@@ -181,6 +188,25 @@ public class MeshUploadOptions implements Option {
 	 */
 	public MeshUploadOptions setMetadataWhitelist(Set<String> metadataWhitelist) {
 		this.metadataWhitelist = metadataWhitelist;
+		return this;
+	}
+
+	/**
+	 * Get the binary check interval.
+	 *
+	 * @return The binary check interval.
+	 */
+	public long getCheckInterval() {
+		return checkInterval;
+	}
+
+	/**
+	 * Set the binary check interval.
+	 * @param checkInterval The binary check interval.
+	 * @return Fluent API
+	 */
+	public MeshUploadOptions setCheckInterval(long checkInterval) {
+		this.checkInterval = checkInterval;
 		return this;
 	}
 }

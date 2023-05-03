@@ -12,6 +12,11 @@
 | string
 | Uuid of the binary data. Two fields which share the same binary data will also share the same Uuid.
 
+| checkStatus
+| true
+| string
+| Status of the external binary check (one of ACCEPTED, DENIED or POSTPONED). The binary field is only accessible when the status is ACCEPTED.
+
 | dominantColor
 | false
 | string

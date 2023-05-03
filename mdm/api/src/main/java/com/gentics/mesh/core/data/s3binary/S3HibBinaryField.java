@@ -24,7 +24,7 @@ public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3Bin
 	 * @param key
 	 */
 	void setS3ObjectKey(String key);
-	   
+
     /**
 	 * Return the S3 Object Key that serves as reference to AWS
 	 *
@@ -52,7 +52,7 @@ public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3Bin
 
 	/**
 	 * Return the binary metadata.
-	 * 
+	 *
 	 * @return
 	 */
 	default S3BinaryMetadata getMetadata() {

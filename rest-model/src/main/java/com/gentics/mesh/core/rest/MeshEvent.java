@@ -679,7 +679,11 @@ public enum MeshEvent {
 
 	S3BINARY_METADATA_EXTRACTED("mesh.s3binary.metadata.extracted",
 			S3BinaryEventModel.class,
-		"Emitted when the metadata of a S3 binary field is extracted.");
+		"Emitted when the metadata of a S3 binary field is extracted."),
+
+	BINARY_CHECK_REQUEST("mesh.binary.check.request",
+		null,
+		"Event will cause requests to the binary check service for binary fields which are marked as POSTPONED");
 
 	public final String address;
 	public final Class<? extends MeshEventModel> bodyModel;
@@ -718,7 +722,7 @@ public enum MeshEvent {
 
 	/**
 	 * Invoke the given runnable and wait for the event.
-	 * 
+	 *
 	 * @param mesh
 	 * @param event
 	 * @param runnable
@@ -730,7 +734,7 @@ public enum MeshEvent {
 
 	/**
 	 * Invoke the given runnable and wait for the event.
-	 * 
+	 *
 	 * @param vertx
 	 * @param event
 	 * @param runnable
@@ -756,7 +760,7 @@ public enum MeshEvent {
 
 	/**
 	 * Async await for the given event.
-	 * 
+	 *
 	 * @param mesh
 	 * @param event
 	 * @return
@@ -773,7 +777,7 @@ public enum MeshEvent {
 
 	/**
 	 * Trigger the job processing event via the mesh server API. This is only possible in embedded mode or within plugins.
-	 * 
+	 *
 	 * @param mesh
 	 */
 	public static void triggerJobWorker(Mesh mesh) {
@@ -782,9 +786,9 @@ public enum MeshEvent {
 
 	/**
 	 * Trigger the job processing event via the Vert.x API. This is only possible in embedded mode or within plugins.
-	 * 
+	 *
 	 * @param eb event bus
-	 * @param options current Mesh options 
+	 * @param options current Mesh options
 	 */
 	public static void triggerJobWorker(EventBus eb, MeshOptions options) {
 		eb.publish(JOB_WORKER_ADDRESS + options.getNodeName(), null);
@@ -792,7 +796,7 @@ public enum MeshEvent {
 
 	/**
 	 * Returns a list of all events which are publicly exposed via the eventbus websocket bridge.
-	 * 
+	 *
 	 * @return
 	 */
 	public static List<MeshEvent> publicEvents() {
@@ -815,7 +819,7 @@ public enum MeshEvent {
 
 	/**
 	 * Return the example model for the event.
-	 * 
+	 *
 	 * @return
 	 */
 	public MeshEventModel example() {

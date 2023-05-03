@@ -38,6 +38,7 @@ import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -66,6 +67,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Handler for binary or s3binary transformer requests.
@@ -238,7 +240,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	/**
 	 * Handle image transformation. This operation will utilize the binary data of the existing field and apply the transformation options. The new binary data
 	 * will be stored and the field will be updated accordingly.
-	 * 
+	 *
 	 * @param rc
 	 *            routing context
 	 * @param uuid
@@ -281,12 +283,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 				NodeDao nodeDao = tx.nodeDao();
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-	
+
 				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 				}
-	
+
 				HibNodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
 				HibBinaryField field = loadBinaryField(container, fieldName);
 				// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
@@ -442,7 +444,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 			// Check whether the binary was already stored.
 			if (binary == null) {
 				// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
-				binary = binaries.create(context.getBinaryUuid(), hash, result.getSize()).runInExistingTx(tx);
+				BinaryFieldSchema fieldSchema = (BinaryFieldSchema) latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+				BinaryCheckStatus checkStatus = StringUtils.isBlank(fieldSchema.getCheckServiceUrl())
+					? BinaryCheckStatus.ACCEPTED
+					: BinaryCheckStatus.POSTPONED;
+
+				binary = binaries.create(context.getBinaryUuid(), hash, result.getSize(), checkStatus).runInExistingTx(tx);
 			} else {
 				if (log.isDebugEnabled()) {
 					log.debug("Data of resized image with hash {" + hash + "} has already been stored. Skipping store.");

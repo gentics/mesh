@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -724,6 +726,12 @@ public class RestUpdaters {
 		String text = binaryField.getPlainText();
 		if (text != null) {
 			graphBinaryField.setPlainText(text);
+		}
+
+		if (StringUtils.isBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+			graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
+		} else {
+			graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
 		}
 
 		// Don't update image width, height, SHA checksum - those are immutable
