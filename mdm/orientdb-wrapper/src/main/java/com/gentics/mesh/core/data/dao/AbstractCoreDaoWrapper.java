@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Optional;
+
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -70,7 +72,14 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 	@SuppressWarnings("unchecked")
 	@Override
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
-		return ((RootVertex<? extends T>) getRoot()).findAll(ac, pagingInfo, extraFilter);
+		return ((RootVertex<? extends T>) getRoot()).findAll(ac, pagingInfo, Optional.ofNullable(extraFilter));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+		RootVertex<? extends T> root = ((RootVertex<? extends T>) getRoot());
+		return PersistingRootDao.shouldSort(pagingInfo) ? root.findAll(ac, pagingInfo, Optional.empty()) : root.findAll(ac, pagingInfo);
 	}
 
 	/**

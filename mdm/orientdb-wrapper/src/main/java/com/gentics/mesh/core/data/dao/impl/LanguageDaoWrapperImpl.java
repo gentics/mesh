@@ -63,13 +63,6 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	/**
 	 * @see LanguageRoot
 	 */
-	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
 	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibLanguage> extraFilter) {
 		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));
 	}

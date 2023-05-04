@@ -73,11 +73,6 @@ public class SchemaDaoWrapperImpl
 	}
 
 	@Override
-	public Page<? extends HibSchema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return getRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public Page<? extends HibSchema> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<HibSchema> extraFilter) {
 		Project graphProject = toGraph(project);

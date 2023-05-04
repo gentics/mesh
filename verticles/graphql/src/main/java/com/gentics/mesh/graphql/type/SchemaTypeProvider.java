@@ -121,7 +121,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type, pagingInfo, filters.getRight());
 
-				return applyNodeFilter(env, nodes, (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
+				return applyNodeFilter(env, nodes, filters.getRight().isPresent()  && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(nodeFilter.createFilterArgument())
 				.argument(nodeFilter.createSortArgument())

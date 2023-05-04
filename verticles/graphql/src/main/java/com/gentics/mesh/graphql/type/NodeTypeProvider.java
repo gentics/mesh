@@ -375,7 +375,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				return future.thenApply(contents -> {
 					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), 
-							(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
+							filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 				});
 			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))

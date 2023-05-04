@@ -102,13 +102,6 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac,
-			PagingParameters pagingInfo) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public HibBranch getLatestBranch(HibProject project) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().getLatestBranch();

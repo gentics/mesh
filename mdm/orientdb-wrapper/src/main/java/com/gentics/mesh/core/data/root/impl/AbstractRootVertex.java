@@ -149,14 +149,14 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	}
 
 	@Override
-	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
 		Stream<? extends T> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},
 				new Object[]{},
 				mapSorting(pagingInfo),
 				Optional.empty(),
-				Optional.ofNullable(parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), InternalPermission.READ_PUBLISHED_PERM, Optional.empty()))
+				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), InternalPermission.READ_PUBLISHED_PERM, Optional.empty()))
 			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
 	}

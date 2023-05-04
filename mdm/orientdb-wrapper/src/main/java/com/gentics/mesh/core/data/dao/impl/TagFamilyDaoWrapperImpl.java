@@ -15,6 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
@@ -94,13 +95,6 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public Page<? extends TagFamily> findAll(HibProject project, InternalActionContext ac,
-			PagingParameters pagingInfo) {
-		Project graphProject = toGraph(project);
-		return graphProject.getTagFamilyRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public HibTagFamily findByName(String name) {
 		return boot.get().meshRoot().getTagFamilyRoot().findByName(name);
 	}
@@ -151,7 +145,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 
 	@Override
 	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getTagFamilyRoot().findAll(ac, pagingInfo);
+		TagFamilyRoot root = boot.get().meshRoot().getTagFamilyRoot();
+		return PersistingRootDao.shouldSort(pagingInfo) ? root.findAll(ac, pagingInfo, Optional.empty()) : root.findAll(ac, pagingInfo);
 	}
 
 	@Override

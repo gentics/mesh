@@ -79,12 +79,6 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
-	public Page<? extends Microschema> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();
-		return microschemaRoot.findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public Page<? extends HibMicroschema> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 		Predicate<HibMicroschema> extraFilter) {
 		MicroschemaRoot microschemaRoot = boot.get().meshRoot().getMicroschemaContainerRoot();

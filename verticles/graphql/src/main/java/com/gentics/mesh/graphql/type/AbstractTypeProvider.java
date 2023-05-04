@@ -640,7 +640,7 @@ public abstract class AbstractTypeProvider {
 		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
-		return applyNodeFilter((filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) 
+		return applyNodeFilter(filters.getRight().isPresent() 
 				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
 				: nodeDao.findAllContent(project, gc, languageTags, type), 
 			pagingInfo, filters.getLeft(), (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo));
@@ -693,9 +693,12 @@ public abstract class AbstractTypeProvider {
 				break;
 			}
 		} else {
-			if (nativeQueryFiltering == NativeQueryFiltering.ALWAYS || envNativeFilter == NativeFilter.ONLY) {
+			if (nativeQueryFiltering == NativeQueryFiltering.ALWAYS || envNativeFilter == NativeFilter.ONLY || PersistingRootDao.shouldSort(getPagingInfo(env))) {
 				// Force native filtering with `1 = 1` dummy filter
 				maybeNativeFilter = Optional.of(Comparison.dummy(true));
+				if (nativeQueryFiltering == NativeQueryFiltering.NEVER) {
+					log.warn("A sorting is requested with native query filtering turned off. This may result in performance penalries!");
+				}
 			}
 		}
 		return Pair.of(javaFilter, maybeNativeFilter);

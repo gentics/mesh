@@ -198,11 +198,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
-	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo,
 			Predicate<HibTag> extraFilter) {
 		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));

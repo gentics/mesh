@@ -78,7 +78,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
+		if (maybeFilter.isPresent()) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
 
@@ -297,5 +297,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		return Optional.empty();
 	}
 
-	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter);
+	/**
+	 * Find all entities with an optional native filter.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @param maybeExtraFilter
+	 * @return
+	 */
+	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter);
 }
