@@ -640,7 +640,7 @@ public abstract class AbstractTypeProvider {
 		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
-		return applyNodeFilter(filters.getRight().isPresent() 
+		return applyNodeFilter(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)
 				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
 				: nodeDao.findAllContent(project, gc, languageTags, type), 
 			pagingInfo, filters.getLeft(), (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo));
