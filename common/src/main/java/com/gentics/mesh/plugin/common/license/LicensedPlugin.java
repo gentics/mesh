@@ -13,9 +13,10 @@ public enum LicensedPlugin implements LicenseKeyFeature {
 
 	MFAV("Mesh Favourite Plugin"),
 
-	MFRS("Mesh Forms Plugin"),
+	// Feature and plugin license are the same
+	FORMS("Mesh Forms Plugin"),
 
-	GCMS("Mesh GCMS Plugin"),
+	MGCMS("Mesh GCMS Plugin"),
 
 	MKC("Mesh Keycloak Plugin"),
 

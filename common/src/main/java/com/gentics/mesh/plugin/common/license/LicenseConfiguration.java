@@ -7,7 +7,7 @@ import com.gentics.mesh.etc.config.env.Option;
 
 public class LicenseConfiguration implements Option {
 
-	private static final String LICENSE_KEY_ENV = "LICENSE_KEY";
+	private static final String LICENSE_KEY_ENV = "LICENSEKEY";
 
 	@JsonProperty(defaultValue = "config/license.key")
 	@JsonPropertyDescription("Path to the license key file.")

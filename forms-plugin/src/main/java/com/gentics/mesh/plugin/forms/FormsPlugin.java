@@ -118,7 +118,7 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			configuration.overrideWithEnv();
 
 			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
-			licenseService.isLicenseSufficient(LicensedPlugin.MFRS);
+			licenseService.isLicenseSufficient(LicensedPlugin.FORMS);
 
 			return component(null).statusService().initialize(getStorageDir().getAbsolutePath());
 		} catch (Exception e) {
