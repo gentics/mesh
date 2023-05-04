@@ -21,7 +21,7 @@ public enum NativeQueryFiltering {
 	/**
 	 * Force old Java filtering.
 	 */
-	OFF(0);
+	NEVER(0);
 
 	private final int level;
 

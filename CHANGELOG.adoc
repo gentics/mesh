@@ -25,7 +25,7 @@ include::content/docs/variables.adoc-include[]
 [[v2.0.0]]
 == 2.0.0 (TBD)
 
-icon:plus[] Core: A support of database level filtering/sorting has been added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `OFF` (old filtering), `ALWAYS` (DB filtering is forced), 
+icon:plus[] Core: A support of database level filtering/sorting has been added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering), `ALWAYS` (DB filtering is forced), 
 `ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
 
 icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 

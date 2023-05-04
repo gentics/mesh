@@ -101,7 +101,7 @@ public class GraphQLHandler {
 					DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
 					DataLoaderOptions options = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
 					// TODO this is inefficient, but otherwise we can't easily tell if a filter is native ready without parsing each of it ahead of time.
-					options.setCachingEnabled(graphQLOptions.getNativeQueryFiltering() == NativeQueryFiltering.OFF);
+					options.setCachingEnabled(graphQLOptions.getNativeQueryFiltering() == NativeQueryFiltering.NEVER);
 					dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, options));
 					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, options));
 					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, options));

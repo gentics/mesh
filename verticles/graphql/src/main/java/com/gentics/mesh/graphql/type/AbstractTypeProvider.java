@@ -670,20 +670,23 @@ public abstract class AbstractTypeProvider {
 				}
 				// else fall through into the native filtering
 			case ALWAYS:
+				if (NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering) && NativeFilter.NEVER.equals(envNativeFilter)) {
+					throw new InvalidParameterException("Conflicting params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
+				}
 				try {
 					maybeNativeFilter = Optional.of(filterProvider.createFilterOperation(filterArgument));
 					break;
 				} catch (UnformalizableQuery e) {
 					log.warn("The query filter cannot be formalized: {}", filterArgument);
 					log.debug(e);
-					if (NativeQueryFiltering.ALWAYS == nativeQueryFiltering || NativeFilter.ONLY.equals(envNativeFilter)) {
-						throw new InvalidParameterException(e.getLocalizedMessage());
+					if (NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering) || NativeFilter.ONLY.equals(envNativeFilter)) {
+						throw new InvalidParameterException("Cannot proceed with an unformalizable query on params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
 					} else {
-						log.warn("Trying to apply old Java filtering");
+						log.info("Trying to apply old Java filtering");
 					}// fall through into the old filtering
 				}			
-			case OFF:
-				if (NativeFilter.NEVER.equals(envNativeFilter)) {
+			case NEVER:
+				if (NativeFilter.ONLY.equals(envNativeFilter)) {
 					throw new InvalidParameterException("Conflicting params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
 				}
 				javaFilter = filterProvider.createPredicate(filterArgument);
