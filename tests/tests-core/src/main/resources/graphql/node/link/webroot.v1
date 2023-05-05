@@ -7,7 +7,10 @@
 	
 				# [$.data.node.fields.htmlLink=Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
 				htmlLink(linkType: FULL)
-	
+
+				# [$.data.node.fields.emptyLink=Link to nowhere: /api/v1/dummy/webroot/error/404]
+				emptyLink(linkType: FULL)
+
 				# [$.data.node.fields.string=some string]
 				string(linkType: FULL)
 	
