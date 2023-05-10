@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.schema.HibAddFieldChange;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
@@ -84,8 +85,10 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 *            Container which contains the expected migration changes
 	 * @param touchedFields
 	 *            Set of touched fields (will be modified)
+	 * @param addedFields
+	 *            Set of added fields (will be modified)
 	 */
-	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields) {
+	protected void prepareMigration(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion, Set<String> touchedFields, Set<String> addedFields) {
 		HibSchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			// if either the type changes or the field is removed, the field is "touched"
@@ -95,6 +98,8 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				touchedFields.add(((HibFieldTypeChange) change).getFieldName());
 			} else if (change instanceof HibRemoveFieldChange) {
 				touchedFields.add(((HibRemoveFieldChange) change).getFieldName());
+			} else if (change instanceof HibAddFieldChange) {
+				addedFields.add(((HibAddFieldChange) change).getFieldName());
 			}
 
 			change = change.getNextChange();

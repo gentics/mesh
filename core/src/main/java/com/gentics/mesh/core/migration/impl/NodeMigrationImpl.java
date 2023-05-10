@@ -161,12 +161,14 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			String branchUuid = db.tx(() -> branch.getUuid());
 			String fromUuud = db.tx(() -> fromVersion.getUuid());
 			String toUuid = db.tx(() -> context.getToVersion().getUuid());
+			boolean autoPurge = db.tx(() -> context.getToVersion().isAutoPurgeEnabled());
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
+			Set<String> addedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					prepareMigration(reloadVersion(fromVersion), touchedFields);
+					prepareMigration(reloadVersion(fromVersion), touchedFields, addedFields);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
@@ -211,14 +213,23 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					return Completable.complete();
 				}
 
+				// determine, whether we can do a "quick" migration (which will not create new
+				// versions of the content, but just modify existing contents to point to the
+				// new schema version)
+				boolean doQuickMigration = touchedFields.isEmpty() && addedFields.isEmpty() && autoPurge;
+
 				errorsDetected = migrateLoop(containers, cause, status, (batch, containerList, errors) -> {
 					try (WriteLock lock = writeLock.lock(context)) {
 						beforeBatchMigration(containerList, context);
 						List<Pair<HibNodeFieldContainer, HibNodeFieldContainer>> toPurge = new ArrayList<>();
 						for (HibNodeFieldContainer container : containerList) {
-							Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
-							if (toPurgePair != null) {
-								toPurge.add(toPurgePair);
+							if (doQuickMigration) {
+								migrateContainerQuick(context, batch, container, errors);
+							} else {
+								Pair<HibNodeFieldContainer, HibNodeFieldContainer> toPurgePair = migrateContainer(context, batch, container, errors, touchedFields);
+								if (toPurgePair != null) {
+									toPurge.add(toPurgePair);
+								}
 							}
 						}
 
@@ -449,6 +460,55 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			if (!touchedFields.contains(graphField.getFieldKey())) {
 				graphField.cloneTo(newContainer);
 			}
+		}
+	}
+
+	/**
+	 * Do a quick migration by only changing the reference to the schema version (content itself stays untouched)
+	 * @param ac action context
+	 * @param batch event queue batch
+	 * @param container container to migrate
+	 * @param errorsDetected list collecting the detected errors
+	 */
+	private void migrateContainerQuick(NodeMigrationActionContext ac, EventQueueBatch batch,
+			HibNodeFieldContainer container, List<Exception> errorsDetected) {
+		ContentDao contentDao = Tx.get().contentDao();
+
+		String containerUuid = container.getUuid();
+		HibNode node = contentDao.getNode(container);
+		String parentNodeUuid = node.getUuid();
+		if (log.isDebugEnabled()) {
+			log.debug("Migrating container {" + containerUuid + "} of node {" + parentNodeUuid + "}");
+		}
+
+		HibBranch branch = reloadBranch(ac.getBranch());
+		HibSchemaVersion toVersion = reloadVersion(ac.getToVersion());
+		try {
+			String languageTag = container.getLanguageTag();
+			ac.getNodeParameters().setLanguages(languageTag);
+			ac.getVersioningParameters().setVersion("draft");
+
+			HibNodeFieldContainer oldPublished = contentDao.getFieldContainer(node, languageTag, branch.getUuid(),
+					PUBLISHED);
+
+			// 1. Check whether there is any other published container which we need to handle separately
+			if (oldPublished != null && !oldPublished.equals(container)) {
+				// We only need to migrate the container if the container's schema version is also "old"
+				boolean hasSameOldSchemaVersion = container != null && container.getSchemaContainerVersion().getId()
+						.equals(container.getSchemaContainerVersion().getId());
+				if (hasSameOldSchemaVersion) {
+					oldPublished.setSchemaContainerVersion(toVersion);
+					batch.add(contentDao.onUpdated(oldPublished, branch.getUuid(), PUBLISHED));
+				}
+			}
+
+			// 2. Migrate the draft container. This will also update the draft edge.
+			container.setSchemaContainerVersion(toVersion);
+			batch.add(contentDao.onUpdated(container, branch.getUuid(), DRAFT));
+		} catch (Exception e1) {
+			log.error("Error while handling container {" + containerUuid + "} of node {" + parentNodeUuid
+					+ "} during schema migration.", e1);
+			errorsDetected.add(e1);
 		}
 	}
 }
