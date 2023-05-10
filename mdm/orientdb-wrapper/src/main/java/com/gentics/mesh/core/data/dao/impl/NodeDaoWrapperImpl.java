@@ -210,6 +210,11 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
+	public Collection<? extends HibNode> findByUuidGlobal(Collection<String> uuids) {
+		return uuids.stream().map(uuid -> findByUuidGlobal(uuid)).filter(n -> n != null).collect(Collectors.toList());
+	}
+
+	@Override
 	public long globalCount() {
 		return boot.get().meshRoot().nodeCount();
 	}

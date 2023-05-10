@@ -908,8 +908,7 @@ public interface ContentDao {
 
 	/**
 	 * Return a stream of all the edges of a container.
-	 * @param type
-	 * @param branchUuid
+	 * @param container
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
