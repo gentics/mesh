@@ -1,0 +1,29 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+        ... on folder {
+		    fields {
+				# [$.data.node.fields.html=some html]
+				html(linkType: MEDIUM)
+
+				# [$.data.node.fields.htmlLink=Link: /dummy/News/News%20Overview.en.html]
+				htmlLink(linkType: MEDIUM)
+
+				# [$.data.node.fields.emptyLink=Link to nowhere: /dummy/error/404]
+				emptyLink(linkType: MEDIUM)
+
+				# [$.data.node.fields.string=some string]
+				string(linkType: MEDIUM)
+
+				# [$.data.node.fields.stringLink=Link: /dummy/News/News%20Overview.en.html]
+				stringLink(linkType: MEDIUM)
+
+				# [$.data.node.fields.stringList[3]=D Link: /dummy/News/News%20Overview.en.html]
+				stringList(linkType: MEDIUM)
+
+				# [$.data.node.fields.htmlList[3]=D Link: /dummy/News/News%20Overview.en.html]
+				htmlList(linkType: MEDIUM)
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

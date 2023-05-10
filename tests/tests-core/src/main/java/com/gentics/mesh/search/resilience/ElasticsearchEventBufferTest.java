@@ -13,7 +13,7 @@ import java.io.IOException;
 
 import static com.gentics.mesh.core.rest.MeshEvent.INDEX_SYNC_REQUEST;
 import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6_TOXIC;
-import static com.gentics.mesh.test.MeshOptionChanger.SMALL_EVENT_BUFFER;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.SMALL_EVENT_BUFFER;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 

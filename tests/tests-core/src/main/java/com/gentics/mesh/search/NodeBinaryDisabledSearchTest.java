@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.MeshOptionChanger.EXCLUDE_BINARY_SEARCH;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.EXCLUDE_BINARY_SEARCH;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;

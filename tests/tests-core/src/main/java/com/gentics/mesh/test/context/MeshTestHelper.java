@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.apache.commons.io.IOUtils;
@@ -97,11 +96,6 @@ public final class MeshTestHelper {
 		json.put("query", new JsonObject().put("range", new JsonObject().put(fieldName,
 			new JsonObject().put("from", from).put("to", to).put("include_lower", true).put("include_upper", true).put("boost", 1))));
 		return json.encodePrettily();
-	}
-
-	public static <T> Consumer<T> noopConsumer() {
-		return t -> {
-		};
 	}
 	
 	public static File extractResource(String path) throws IOException {

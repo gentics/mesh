@@ -12,6 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.test.AWSTestMode;
 import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.SSLTestMode;
@@ -164,8 +165,13 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
-		public MeshOptionChanger optionChanger() {
+		public MeshCoreOptionChanger optionChanger() {
 			return delegate.optionChanger();
+		}
+
+		@Override
+		public Class<? extends MeshOptionChanger> customOptionChanger() {
+			return delegate.customOptionChanger();
 		}
 	}
 

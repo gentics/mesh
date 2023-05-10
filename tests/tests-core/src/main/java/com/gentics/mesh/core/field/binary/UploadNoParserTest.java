@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.MeshOptionChanger.NO_UPLOAD_PARSER;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.NO_UPLOAD_PARSER;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertNull;

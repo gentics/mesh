@@ -6,7 +6,7 @@
     <parent>
         <artifactId>mesh</artifactId>
         <groupId>com.gentics.mesh</groupId>
-        <version>1.10.6-SNAPSHOT</version>
+        <version>1.10.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>hazelcast3-cluster-manager</artifactId>
