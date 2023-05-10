@@ -3,7 +3,7 @@ package com.gentics.mesh.core.user;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
-import static com.gentics.mesh.test.MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.INITIAL_ADMIN_PASSWORD;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 

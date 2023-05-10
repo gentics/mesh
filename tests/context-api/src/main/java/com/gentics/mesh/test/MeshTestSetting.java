@@ -3,6 +3,8 @@ package com.gentics.mesh.test;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import com.gentics.mesh.test.MeshOptionChanger.NoOptionChanger;
+
 /**
  * 
  */
@@ -84,5 +86,7 @@ public @interface MeshTestSetting {
 	 * 
 	 * @return
 	 */
-	MeshOptionChanger optionChanger() default MeshOptionChanger.NO_CHANGE;
+	MeshCoreOptionChanger optionChanger() default MeshCoreOptionChanger.NO_CHANGE;
+
+	Class<? extends MeshOptionChanger> customOptionChanger() default NoOptionChanger.class;
 }
