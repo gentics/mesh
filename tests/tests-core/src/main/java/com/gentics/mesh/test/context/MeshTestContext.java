@@ -3,7 +3,6 @@ package com.gentics.mesh.test.context;
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ElasticsearchTestMode.UNREACHABLE;
-import static com.gentics.mesh.test.context.MeshTestHelper.noopConsumer;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -19,7 +18,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import javax.net.ssl.SSLContext;
@@ -62,8 +60,8 @@ import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.ElasticsearchProcessVerticle;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshInstanceProvider;
-import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestActions;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -127,8 +125,6 @@ public class MeshTestContext implements TestRule {
 	private CountDownLatch idleLatch;
 	private MessageConsumer<Object> idleConsumer;
 
-	private Consumer<MeshOptions> optionChanger = noopConsumer();
-
 	private Mesh mesh;
 
 	private MeshTestContextProvider meshTestContextProvider;
@@ -164,7 +160,7 @@ public class MeshTestContext implements TestRule {
 	public void setup(MeshTestSetting settings) throws Exception {
 		meshTestContextProvider.getInstanceProvider().initMeshData(settings, meshDagger);
 		initFolders(mesh.getOptions());
-		boolean setAdminPassword = settings.optionChanger() != MeshOptionChanger.INITIAL_ADMIN_PASSWORD;
+		boolean setAdminPassword = settings.optionChanger() != MeshCoreOptionChanger.INITIAL_ADMIN_PASSWORD;
 		setupData(mesh.getOptions(), setAdminPassword);
 		listenToSearchIdleEvent();
 		switch (settings.elasticsearch()) {
@@ -289,7 +285,6 @@ public class MeshTestContext implements TestRule {
 			toxiproxy.stop();
 			network.close();
 		}
-		optionChanger = noopConsumer();
 		meshTestContextProvider.getInstanceProvider().teardownStorage();
 	}
 
@@ -663,8 +658,8 @@ public class MeshTestContext implements TestRule {
 			Set<JsonObject> jwks = KeycloakUtils.loadJWKs("http", keycloak.getHost(), keycloak.getMappedPort(8080), realmName);
 			meshOptions.getAuthenticationOptions().setPublicKeys(jwks);
 		}
-		settings.optionChanger().changer.accept(meshOptions);
-		optionChanger.accept(meshOptions);
+		settings.optionChanger().change(meshOptions);
+		settings.customOptionChanger().getConstructor().newInstance().change(meshOptions);
 		return meshOptions;
 	}
 
@@ -807,11 +802,6 @@ public class MeshTestContext implements TestRule {
 
 	public static ElasticsearchContainer elasticsearchContainer() {
 		return elasticsearch;
-	}
-
-	public MeshTestContext setOptionChanger(Consumer<MeshOptions> optionChanger) {
-		this.optionChanger = optionChanger;
-		return this;
 	}
 
 	public MeshComponent getMeshComponent() {
