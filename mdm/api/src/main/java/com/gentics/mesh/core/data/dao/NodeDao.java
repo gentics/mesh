@@ -267,7 +267,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
 
 	/**
-	 * Return a string path for each of the provided node for the given branch, container type with language fallbacks
+	 * Return a string path for each of the provided node for the current branch, container type with language fallbacks
 	 * @param sourceNodes
 	 * @param ac
 	 * @param type
@@ -275,6 +275,17 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags);
+
+	/**
+	 * Return a string path for each of the provided node for the given branch, container type with language fallbacks
+	 * @param sourceNodes collection of source nodes
+	 * @param branchUuid branch UUID
+	 * @param ac action context
+	 * @param type container type
+	 * @param languageTags optional language tags
+	 * @return map of path per node
+	 */
+	Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags);
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
@@ -395,6 +406,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 	HibNode findByUuidGlobal(String uuid);
+
+	/**
+	 * Find the nodes by UID globally.<br>
+	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
+	 * Use {@link NodeDao#findByUuid(HibCoreElement, String)}} with the valid project binding instead.
+	 * 
+	 * @param uuids collection of UUIDs
+	 * @return collection of nodes
+	 */
+	Collection<? extends HibNode> findByUuidGlobal(Collection<String> uuids);
 
 	/**
 	 * Count all the nodes globally.<br>

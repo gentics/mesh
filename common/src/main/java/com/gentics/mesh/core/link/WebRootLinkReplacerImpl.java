@@ -6,9 +6,17 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -64,62 +73,15 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			return content;
 		}
 
-		List<String> segments = new ArrayList<>();
-		int pos = 0;
-		int lastPos = 0;
-		int length = content.length();
-
-		// 1. Tokenize the content
-		while (lastPos < length) {
-			pos = content.indexOf(START_TAG, lastPos);
-			if (pos == -1) {
-				// add last string segment
-				if (lastPos < length) {
-					segments.add(content.substring(lastPos));
-				}
-				break;
-			}
-			int endPos = content.indexOf(END_TAG, pos);
-			if (endPos == -1) {
-				// add last string segment
-				if (lastPos < length) {
-					segments.add(content.substring(lastPos));
-				}
-				break;
-			}
-
-			// add intermediate string segment
-			if (lastPos < pos) {
-				segments.add(content.substring(lastPos, pos));
-			}
-
-			// 2. Parse the link and invoke resolving
-			String link = content.substring(pos + START_TAG.length(), endPos);
-			// Strip away the quotes. We only care about the argument values
-			// double quotes may be escaped
-			link = link.replaceAll("\\\\\"", "");
-			link = link.replaceAll("'", "");
-			link = link.replaceAll("\"", "");
-			String[] linkArguments = link.split(",");
-			if (linkArguments.length == 3) {
-				// Branch in link argument always comes last (third argument)
-				branch = linkArguments[2].trim();
-			}
-			if (linkArguments.length >= 2) {
-				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName, linkArguments[1].trim()));
-			} else if (languageTags != null) {
-				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName,
-					languageTags.toArray(new String[languageTags.size()])));
-			} else {
-				segments.add(resolve(ac, branch, edgeType, linkArguments[0], type, projectName));
-			}
-
-			lastPos = endPos + END_TAG.length();
+		List<ContentSegment> segments = new ArrayList<>();
+		if (languageTags != null) {
+			segments = tokenize(content, branch, languageTags.toArray(new String[languageTags.size()]));
+		} else {
+			segments = tokenize(content, branch);
 		}
 
-		// 3.: Buildup the new content
-		StringBuilder renderedContent = new StringBuilder(length);
-		segments.stream().forEachOrdered(obs -> renderedContent.append(obs));
+		StringBuilder renderedContent = new StringBuilder(content.length());
+		segments.stream().forEachOrdered(seg -> renderedContent.append(seg.render(this, ac, edgeType, type, projectName)));
 
 		return renderedContent.toString();
 	}
@@ -247,6 +209,193 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		default:
 			throw error(BAD_REQUEST, "Cannot render link with type " + type);
 		}
+	}
+
+	@Override
+	public Map<String, String> replaceMany(InternalActionContext ac, String branch, ContainerType edgeType,
+			List<String> contents, LinkType linkType, String projectName, String... languageTags) {
+		if (edgeType == null) {
+			edgeType = ContainerType.DRAFT;
+		}
+		Tx tx = Tx.get();
+		NodeDao nodeDao = tx.nodeDao();
+		BranchDao branchDao = tx.branchDao();
+
+		// 1. tokenize all contents
+		Map<String, List<ContentSegment>> segmentListsByContent = contents.stream()
+				.collect(Collectors.toMap(Function.identity(), c -> tokenize(c, branch, languageTags)));
+
+		// 2. collect the list of target nodeUuids (per branch)
+		Map<String, Set<String>> branchesPerNodeUuid = new HashMap<>();
+		segmentListsByContent.values().stream().flatMap(list -> list.stream()).forEach(segment -> {
+			segment.getTargetUuid().ifPresent(targetUuid -> {
+				String targetBranch = segment.getBranch().orElse(branch);
+				branchesPerNodeUuid.computeIfAbsent(targetUuid, key -> new HashSet<>()).add(targetBranch);
+			});
+		});
+
+		// 3. load the nodes by their UUIDs
+		Map<String, ? extends HibNode> nodeMap = nodeDao.findByUuidGlobal(branchesPerNodeUuid.keySet()).stream().collect(Collectors.toMap(HibNode::getUuid, Function.identity()));
+
+		// 4. load paths of the nodes
+		Map<HibBranch, Map<HibNode, String>> pathsPerBranchAndNode = new HashMap<>();
+		for (Entry<String, Set<String>> entry : branchesPerNodeUuid.entrySet()) {
+			String nodeUuid = entry.getKey();
+			HibNode node = nodeMap.get(nodeUuid);
+			if (node != null) {
+				HibProject theirProject = node.getProject();
+
+				for (String branchUuidOrName : entry.getValue()) {
+					HibBranch theirBranch = branchDao.findBranchOrLatest(theirProject, branchUuidOrName);
+					pathsPerBranchAndNode.computeIfAbsent(theirBranch, k -> new HashMap<>()).put(node, null);
+				}
+			}
+		}
+		for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+			HibBranch currentBranch = entry.getKey();
+			Set<HibNode> nodes = entry.getValue().keySet();
+			entry.setValue(nodeDao.getPaths(nodes, currentBranch.getUuid(), ac, edgeType, languageTags));
+		}
+
+		// 5. adapt paths to link type
+		switch (linkType) {
+		case SHORT:
+			HibProject txProject = tx.getProject(ac);
+			HibBranch txBranch = tx.getBranch(ac);
+			for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+				HibBranch currentBranch = entry.getKey();
+				Map<HibNode, String> pathMap = entry.getValue();
+				for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
+					HibNode node = entry2.getKey();
+					if (txProject == null || !txBranch.equals(currentBranch)) {
+						String path = entry2.getValue();
+						entry2.setValue(generateSchemeAuthorityForNode(node, currentBranch) + path);
+					}
+				}
+			}
+			break;
+		case MEDIUM:
+			for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+				Map<HibNode, String> pathMap = entry.getValue();
+				for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
+					HibNode node = entry2.getKey();
+					String path = entry2.getValue();
+					entry2.setValue("/" + node.getProject().getName() + path);
+				}
+			}
+			break;
+		case FULL:
+			String baseRoute = VersionUtils.baseRoute(ac.getApiVersion()) + "/";
+			for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+				HibBranch currentBranch = entry.getKey();
+				Map<HibNode, String> pathMap = entry.getValue();
+				for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
+					HibNode node = entry2.getKey();
+					String path = entry2.getValue();
+					entry2.setValue(
+							baseRoute + node.getProject().getName() + "/webroot" + path + branchQueryParameter(currentBranch));
+				}
+			}
+			break;
+		default:
+			throw error(BAD_REQUEST, "Cannot render link with type " + linkType);
+		}
+
+		// 6. reconstruct content with replaced links
+		Map<String, String> result = new HashMap<>();
+		for (String content : contents) {
+			StringBuilder renderedContent = new StringBuilder(content.length());
+			List<ContentSegment> segments = segmentListsByContent.get(content);
+			segments.stream().forEachOrdered(seg -> {
+				seg.getTargetUuid().ifPresentOrElse(nodeUuid -> {
+					String currentBranch = seg.getBranch().orElse(branch);
+					HibNode node = nodeMap.get(nodeUuid);
+					if (node != null) {
+						HibBranch theirBranch = branchDao.findBranchOrLatest(node.getProject(), currentBranch);
+						renderedContent.append(pathsPerBranchAndNode.getOrDefault(theirBranch, Collections.emptyMap()).getOrDefault(node, ""));
+					} else {
+						switch (linkType) {
+						case SHORT:
+							renderedContent.append("/error/404");
+							break;
+						case MEDIUM:
+							renderedContent.append("/" + projectName + "/error/404");
+							break;
+						case FULL:
+							renderedContent.append(VersionUtils.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404");
+							break;
+						default:
+							throw error(BAD_REQUEST, "Cannot render link with type " + linkType);
+						}
+					}
+				}, () -> {
+					renderedContent.append(seg.toString());
+				});
+			});
+			result.put(content, renderedContent.toString());
+		}
+
+		return result;
+	}
+
+	@Override
+	public List<ContentSegment> tokenize(String content, String branch, String... languageTags) {
+		if (isEmpty(content)) {
+			return Collections.emptyList();
+		}
+
+		List<ContentSegment> segments = new ArrayList<>();
+		int pos = 0;
+		int lastPos = 0;
+		int length = content.length();
+
+		// 1. Tokenize the content
+		while (lastPos < length) {
+			pos = content.indexOf(START_TAG, lastPos);
+			if (pos == -1) {
+				// add last string segment
+				if (lastPos < length) {
+					segments.add(new StringContentSegment(content.substring(lastPos)));
+				}
+				break;
+			}
+			int endPos = content.indexOf(END_TAG, pos);
+			if (endPos == -1) {
+				// add last string segment
+				if (lastPos < length) {
+					segments.add(new StringContentSegment(content.substring(lastPos)));
+				}
+				break;
+			}
+
+			// add intermediate string segment
+			if (lastPos < pos) {
+				segments.add(new StringContentSegment(content.substring(lastPos, pos)));
+			}
+
+			// 2. Parse the link and invoke resolving
+			String link = content.substring(pos + START_TAG.length(), endPos);
+			// Strip away the quotes. We only care about the argument values
+			// double quotes may be escaped
+			link = link.replaceAll("\\\\\"", "");
+			link = link.replaceAll("'", "");
+			link = link.replaceAll("\"", "");
+			String[] linkArguments = link.split(",");
+			if (linkArguments.length == 3) {
+				// Branch in link argument always comes last (third argument)
+				branch = linkArguments[2].trim();
+			}
+			if (linkArguments.length >= 2) {
+				segments.add(new LinkContentSegment(linkArguments[0], branch, linkArguments[1].trim()));
+			} else if (languageTags.length > 0) {
+				segments.add(new LinkContentSegment(linkArguments[0], branch, languageTags));
+			} else {
+				segments.add(new LinkContentSegment(linkArguments[0], branch));
+			}
+
+			lastPos = endPos + END_TAG.length();
+		}
+		return segments;
 	}
 
 	/**

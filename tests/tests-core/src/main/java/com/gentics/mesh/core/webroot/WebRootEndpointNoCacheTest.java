@@ -2,7 +2,7 @@ package com.gentics.mesh.core.webroot;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.MeshOptionChanger.NO_PATH_CACHE;
+import static com.gentics.mesh.test.MeshCoreOptionChanger.NO_PATH_CACHE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 

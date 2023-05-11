@@ -31,22 +31,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
-import com.gentics.mesh.rest.client.MeshRestClientMessageException;
-import com.gentics.mesh.test.MeshOptionChanger;
-import com.google.common.net.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.json.JsonObject;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.junit.MockServerRule;
+import org.mockserver.model.HttpRequest;
+import org.mockserver.model.HttpResponse;
+import org.mockserver.verify.VerificationTimes;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -58,6 +52,7 @@ import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -67,21 +62,26 @@ import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.VersionNumber;
+import com.google.common.net.HttpHeaders;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.test.core.TestUtils;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.junit.MockServerRule;
-import org.mockserver.model.HttpRequest;
-import org.mockserver.model.HttpResponse;
-import org.mockserver.verify.VerificationTimes;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.SHORT_BINARY_CHECK_INTERVAL)
+@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshCoreOptionChanger.SHORT_BINARY_CHECK_INTERVAL)
 public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Rule
