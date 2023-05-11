@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.9.15]]
+== 1.9.15 (10.05.2023)
+
+icon:check[] GraphQL: Performance of queries that return large amounts of nodes with link resolving in fields or getting node fields has been improved.
+
 [[v1.9.14]]
 == 1.9.14 (19.04.2023)
 

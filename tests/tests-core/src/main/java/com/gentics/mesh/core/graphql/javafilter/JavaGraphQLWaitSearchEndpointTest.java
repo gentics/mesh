@@ -8,11 +8,11 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.graphql.GraphQLWaitSearchEndpointTest;
 import com.gentics.mesh.test.ElasticsearchTestMode;
-import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.GRAPHQL_FORCE_JAVA_FILTER)
+@MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true, optionChanger = MeshCoreOptionChanger.GRAPHQL_FORCE_JAVA_FILTER)
 public class JavaGraphQLWaitSearchEndpointTest extends GraphQLWaitSearchEndpointTest {
 
 	public JavaGraphQLWaitSearchEndpointTest(ElasticsearchTestMode elasticsearch) throws Exception {

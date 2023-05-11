@@ -15,14 +15,23 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.dataloader.BatchLoaderWithContext;
+import org.dataloader.DataLoader;
 
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -57,6 +66,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
@@ -70,6 +80,7 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.Promise;
 
 @Singleton
 public class FieldDefinitionProvider extends AbstractTypeProvider {
@@ -77,11 +88,61 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public static final String BINARY_FIELD_TYPE_NAME = "BinaryField";
 	public static final String S3_BINARY_FIELD_TYPE_NAME = "S3BinaryField";
 
+	/**
+	 * Key for the data loader, which efficiently replaces links in contents
+	 */
+	public static final String LINK_REPLACER_DATA_LOADER_KEY = "linkReplaceLoader";
+
 	@Inject
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	@Inject
 	public WebRootLinkReplacerImpl linkReplacer;
+
+	/**
+	 * Partition the keys by context and call the consumer for each part
+	 * @param <T> result type
+	 * @param keyContexts map of keys to contexts
+	 * @param consumer consumer
+	 */
+	private static void partitioningByLinkTypeAndText(List<DataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, List<String>> consumer) {
+		Map<Pair<LinkType, String>, List<String>> partitionedKeys = keys.stream()
+			.map(key -> Pair.of(Pair.of(key.linkType, key.languageTag), key.content))
+			.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toList())));
+
+		partitionedKeys.forEach(consumer::accept);
+	}
+
+	/**
+	 * DataLoader implementation that replaces links in contents
+	 */
+	public BatchLoaderWithContext<DataLoaderKey, String> LINK_REPLACER_LOADER = (keys, environment) -> {
+		Promise<List<String>> promise = Promise.promise();
+		GraphQLContext gc = environment.getContext();
+		String branchUuid = Tx.get().getBranch(gc).getUuid();
+		String projectName = Tx.get().getProject(gc).getName();
+
+		Map<DataLoaderKey, String> resolvedByContent = new HashMap<>();
+
+		partitioningByLinkTypeAndText(keys, (pair, contents) -> {
+			LinkType type = pair.getLeft();
+			String languageTag = pair.getRight();
+
+			Map<String, String> replacedByContent = linkReplacer.replaceMany(gc, branchUuid, null, contents, type, projectName, languageTag);
+			for (Entry<String, String> entry : replacedByContent.entrySet()) {
+				String content = entry.getKey();
+				String replaced = entry.getValue();
+
+				DataLoaderKey key = new DataLoaderKey(content, type, languageTag);
+				resolvedByContent.put(key, replaced);
+			}
+		});
+
+		List<String> resolvedContents = keys.stream().map(key -> resolvedByContent.getOrDefault(key, "")).collect(Collectors.toList());
+		promise.complete(resolvedContents);
+
+		return promise.future().toCompletionStage();
+	};
 
 	@Inject
 	public FieldDefinitionProvider(MeshOptions options) {
@@ -287,8 +348,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = htmlField.getHTML();
-					return linkReplacer.replace(gc, tx.getBranch(gc)
-						.getUuid(), null, content, type, tx.getProject(gc).getName(), Arrays.asList(container.getLanguageTag()));
+
+					if (type != null && type != LinkType.OFF) {
+						DataLoader<DataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
+						return linkedContentLoader.load(new DataLoaderKey(content, type, container.getLanguageTag()));
+					} else {
+						return content;
+					}
 				}
 				return null;
 			}).build();
@@ -304,8 +370,13 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					LinkType type = getLinkType(env);
 					String content = field.getString();
-					return linkReplacer.replace(gc, tx.getBranch(gc)
-						.getUuid(), null, content, type, tx.getProject(gc).getName(), Arrays.asList(container.getLanguageTag()));
+
+					if (type != null && type != LinkType.OFF) {
+						DataLoader<DataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
+						return linkedContentLoader.load(new DataLoaderKey(content, type, container.getLanguageTag()));
+					} else {
+						return content;
+					}
 				}
 				return null;
 			}).build();
@@ -509,12 +580,63 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						List<String> languageTags = getLanguageArgument(env, source);
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-						HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
-						return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
+
+						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
+						DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+						return contentLoader.load(node, context).thenApply((containers) -> {
+							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+							return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
+						});
 					}
 				}
 				return null;
 			}).build();
 	}
 
+	/**
+	 * Keys for the DataLoader (containing content, link type and language)
+	 */
+	public static class DataLoaderKey {
+		/**
+		 * Content
+		 */
+		protected final String content;
+
+		/**
+		 * Link Type
+		 */
+		protected final LinkType linkType;
+
+		/**
+		 * Language
+		 */
+		protected final String languageTag;
+
+		/**
+		 * Create an instance
+		 * @param content content
+		 * @param linkType link type
+		 * @param languageTag language
+		 */
+		public DataLoaderKey(String content, LinkType linkType, String languageTag) {
+			this.content = content;
+			this.linkType = linkType;
+			this.languageTag = languageTag;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof DataLoaderKey) {
+				DataLoaderKey other = (DataLoaderKey) obj;
+				return other.linkType == linkType && StringUtils.equals(other.languageTag, languageTag) && StringUtils.equals(other.content, content);
+			} else {
+				return false;
+			}
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(content, linkType, languageTag);
+		}
+	}
 }

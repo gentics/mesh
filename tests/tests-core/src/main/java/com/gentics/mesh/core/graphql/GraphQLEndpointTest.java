@@ -171,6 +171,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("node-fields-query", true, false, "draft"),
 			Arrays.asList("node-fields-no-microschema-query", false, false, "draft"),
 			Arrays.asList("node/link/webroot", true, false, "draft"),
+			Arrays.asList("node/link/webroot-medium", true, false, "draft"),
+			Arrays.asList("node/link/webroot-short", true, false, "draft"),
 			Arrays.asList("node/link/children", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
 			Arrays.asList("node/link/webroot-language", true, false, "draft"),
 			Arrays.asList("node/link/reference", true, false, "draft"),
@@ -290,6 +292,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			htmlLinkFieldSchema.setName("htmlLink");
 			schema.addField(htmlLinkFieldSchema);
 
+			HtmlFieldSchema emptyLinkFieldSchema = new HtmlFieldSchemaImpl();
+			emptyLinkFieldSchema.setName("emptyLink");
+			schema.addField(emptyLinkFieldSchema);
+
 			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName("string");
 			schema.addField(stringFieldSchema);
@@ -368,6 +374,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// htmlLink
 			container.createHTML("htmlLink").setHtml("Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
+
+			// emptyLink
+			container.createHTML("emptyLink").setHtml("Link to nowhere: {{mesh.link(\"00000000000000000000000000000000\", \"en\")}}");
 
 			// string
 			container.createString("string").setString("some string");

@@ -19,12 +19,12 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.test.ElasticsearchTestMode;
-import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.BATCH_MIGRATION)
+@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshCoreOptionChanger.BATCH_MIGRATION)
 public class BatchedNodeMigrationSearchTest extends NodeMigrationSearchTest {
 
 	public BatchedNodeMigrationSearchTest(ElasticsearchTestMode elasticsearch) throws Exception {

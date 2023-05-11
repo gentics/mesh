@@ -16,13 +16,13 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.ElasticsearchTestMode;
-import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
 @RunWith(Parameterized.class)
-@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshOptionChanger.ES_STRICT_MODE)
+@MeshTestSetting(testSize = FULL, startServer = true, optionChanger = MeshCoreOptionChanger.ES_STRICT_MODE)
 public class NodeSearchEndpointStrictModeTest extends AbstractNodeSearchEndpointTest {
 
 	public NodeSearchEndpointStrictModeTest(ElasticsearchTestMode elasticsearch) throws Exception {

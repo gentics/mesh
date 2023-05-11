@@ -1161,6 +1161,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags) {
+		return getPaths(sourceNodes, Tx.get().getBranch(ac).getUuid(), ac, type, languageTags);
+	}
+
+	@Override
+	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags) {
 		ContentDao contentDao = Tx.get().contentDao();
 		Map<HibNode, List<HibNode>> breadcrumbPerNode = getBreadcrumbNodesMap(sourceNodes, ac);
 
@@ -1169,7 +1174,6 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		Set<HibNode> allNodes = new HashSet<>(sourceNodes);
 		allNodes.addAll(allAncestors);
 
-		String branchUuid = Tx.get().getBranch(ac).getUuid();
 		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branchUuid, type);
 		List<String> languages = Arrays.asList(languageTags);
 		BranchDao branchDao = Tx.get().branchDao();
