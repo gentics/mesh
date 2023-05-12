@@ -28,6 +28,9 @@ public class NodeUpdateRequest implements FieldContainer {
 	@JsonPropertyDescription("List of tags that should be used to tag the node.")
 	private List<TagReference> tags;
 
+	@JsonProperty(required = false)
+	private boolean publish = false;
+
 	public NodeUpdateRequest() {
 	}
 
@@ -109,4 +112,12 @@ public class NodeUpdateRequest implements FieldContainer {
 		return this;
 	}
 
+	public boolean isPublish() {
+		return publish;
+	}
+
+	public NodeUpdateRequest setPublish(boolean publish) {
+		this.publish = publish;
+		return this;
+	}
 }

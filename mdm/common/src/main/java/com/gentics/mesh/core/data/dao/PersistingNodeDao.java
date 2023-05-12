@@ -1003,6 +1003,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			updateTags(node, ac, batch, requestModel.getTags());
 		}
 
+		if (requestModel.isPublish()) {
+			HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+			// Invoke a store of the document since it must now also be added to the published index
+			batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+		}
+
 		return node;
 	}
 
@@ -1414,6 +1420,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			latestDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser());
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 			batch.add(contentDao.onCreated(latestDraftVersion, branch.getUuid(), DRAFT));
+
+			if (requestModel.isPublish()) {
+				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+				// Invoke a store of the document since it must now also be added to the published index
+				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+			}
+
 			return true;
 		} else {
 			String version = requestModel.getVersion();
@@ -1490,6 +1503,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 				latestDraftVersion = newDraftVersion;
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
+
+				if (requestModel.isPublish()) {
+					HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+					// Invoke a store of the document since it must now also be added to the published index
+					batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+				}
+
 				return true;
 			}
 		}
