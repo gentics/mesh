@@ -213,7 +213,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 	@Override
 	public Map<String, String> replaceMany(InternalActionContext ac, String branch, ContainerType edgeType,
-			List<String> contents, LinkType linkType, String projectName, String... languageTags) {
+			Set<String> contents, LinkType linkType, String projectName, String... languageTags) {
 		if (edgeType == null) {
 			edgeType = ContainerType.DRAFT;
 		}
