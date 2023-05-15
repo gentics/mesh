@@ -74,7 +74,7 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 			.stream()
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
-		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false, Optional.of("CONTENT"));
+		return MainFilter.mainFilter("NodeFieldFilter", "Filters by fields", schemaFields, false, Optional.of("CONTENT"));
 	}
 
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {

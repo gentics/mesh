@@ -19,20 +19,21 @@ import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
- * Filters by the fields of a node with a certain schema.
+ * Filters by the fields of a (micro)node with a certain schema.
  */
 public class FieldFilter extends MainFilter<HibFieldContainer> {
 	private static final String NAME_PREFIX = "FieldFilter.";
 
 	// TODO Remove this after all types are supported
 	private static final Set<String> availableTypes = Stream.of(
-		FieldTypes.STRING, FieldTypes.HTML, FieldTypes.DATE, FieldTypes.BOOLEAN, FieldTypes.NUMBER).map(FieldTypes::toString)
+		FieldTypes.STRING, FieldTypes.HTML, FieldTypes.DATE, FieldTypes.BOOLEAN, FieldTypes.NUMBER, FieldTypes.MICRONODE).map(FieldTypes::toString)
 		.collect(Collectors.toSet());
 
 	/**
@@ -43,15 +44,17 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	 * @param container
 	 *            The schema model to create the filter for
 	 */
-	public static FieldFilter filter(GraphQLContext context, SchemaVersionModel container) {
-		return context.getOrStore(NAME_PREFIX + container.getName(), () -> new FieldFilter(container));
+	public static FieldFilter filter(GraphQLContext context, FieldSchemaContainerVersion container) {
+		return context.getOrStore(NAME_PREFIX + container.getName(), () -> new FieldFilter(container, context));
 	}
 
-	private final SchemaVersionModel schema;
+	private final FieldSchemaContainerVersion schema;
+	private final GraphQLContext context;
 
-	private FieldFilter(SchemaVersionModel container) {
+	private FieldFilter(FieldSchemaContainerVersion container, GraphQLContext context) {
 		super(container.getName() + "FieldFilter", "Filters by fields", Optional.empty());
 		this.schema = container;
+		this.context = context;
 	}
 
 	@Override
@@ -78,25 +81,27 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 		switch (type) {
 		case STRING:
 			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
-				node -> getOrNull(node.getString(name), HibStringField::getString), schemaName);
+				node -> node == null ? null : getOrNull(node.getString(name), HibStringField::getString), schemaName);
 		case HTML:
 			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
-				node -> getOrNull(node.getHtml(name), HibHtmlField::getHTML), schemaName);
+				node -> node == null ? null : getOrNull(node.getHtml(name), HibHtmlField::getHTML), schemaName);
 		case DATE:
 			return new FieldMappedFilter<>(type, name, description, DateFilter.filter(),
-				node -> getOrNull(node.getDate(name), HibDateField::getDate), schemaName);
+				node -> node == null ? null : getOrNull(node.getDate(name), HibDateField::getDate), schemaName);
 		case BOOLEAN:
 			return new FieldMappedFilter<>(type, name, description, BooleanFilter.filter(),
-				node -> getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schemaName);
+				node -> node == null ? null : getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schemaName);
 		case NUMBER:
 			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
-				node -> getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
+				node -> node == null ? null : getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
+		case MICRONODE:
+			return new FieldMappedFilter<>(type, name, description, MicronodeFilter.filter(context), 
+				node -> node == null ? null : getOrNull(node.getMicronode(name), HibMicronodeField::getMicronode), schemaName);
 		// TODO correctly implement other types
 		case BINARY:
 		case S3BINARY:
 		case LIST:
 		case NODE:
-		case MICRONODE:
 		default:
 			throw new RuntimeException("Unexpected type " + type);
 		}

@@ -32,7 +32,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 	@Override
 	public Predicate<HibFieldContainer> createPredicate(Q query) {
 		// Return always true if the node is not of the provided schema.
-		Predicate<HibFieldContainer> schemaCheck = node -> !node.getSchemaContainerVersion().getName().equals(schemaName);
+		Predicate<HibFieldContainer> schemaCheck = node -> node != null && !node.getSchemaContainerVersion().getName().equals(schemaName);
 		Predicate<HibFieldContainer> predicate = super.createPredicate(query);
 		return schemaCheck.or(predicate);
 	}
