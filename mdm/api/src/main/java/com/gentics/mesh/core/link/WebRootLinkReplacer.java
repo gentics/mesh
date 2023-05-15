@@ -2,6 +2,7 @@ package com.gentics.mesh.core.link;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -128,7 +129,7 @@ public interface WebRootLinkReplacer {
 	 * @return map of the original contents to the contents with replaced links
 	 */
 	Map<String, String> replaceMany(InternalActionContext ac, String branch, ContainerType edgeType,
-			List<String> contents, LinkType linkType, String projectName, String... languageTags);
+			Set<String> contents, LinkType linkType, String projectName, String... languageTags);
 
 	/**
 	 * Tokenize the content into a list of {@link ContentSegment}s
