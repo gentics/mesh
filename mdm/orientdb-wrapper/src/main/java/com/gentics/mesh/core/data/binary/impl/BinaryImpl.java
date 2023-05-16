@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.binary.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.util.Base64;
-
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -20,8 +18,6 @@ import com.gentics.mesh.madl.field.FieldType;
  * @see Binary
  */
 public class BinaryImpl extends MeshVertexImpl implements Binary {
-
-	private static final Base64.Encoder BASE64 = Base64.getEncoder();
 
 	/**
 	 * Initialize the vertex type and index.
@@ -49,5 +45,4 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 		bac.add(storage.delete(getUuid()));
 		getElement().remove();
 	}
-
 }

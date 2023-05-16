@@ -24,7 +24,7 @@ public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> {
 	}
 
 	private NodeReferenceFilter(GraphQLContext context) {
-		super("NodeReferenceFilter", "Filters by incoming node references.", Optional.empty()); // TODO empty?
+		super(NAME, "Filters by incoming node references.", Optional.empty()); // TODO empty?
 		this.context = context;
 	}
 

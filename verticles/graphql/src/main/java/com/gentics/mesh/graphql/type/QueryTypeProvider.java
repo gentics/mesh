@@ -68,6 +68,7 @@ import com.gentics.mesh.core.rest.error.UuidNotFoundException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
+import com.gentics.mesh.graphql.filter.MicronodeFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.filter.RoleFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
@@ -587,6 +588,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();
+
+		additionalTypes.add(NodeFilter.filter(context).createType());
+		additionalTypes.add(NodeFilter.filter(context).createSortingType());
+		additionalTypes.add(MicronodeFilter.filter(context).createType());
+		additionalTypes.add(MicronodeFilter.filter(context).createSortingType());
 
 		additionalTypes.add(schemaTypeProvider.createType(context));
 		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));

@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
+import graphql.schema.GraphQLInputType;
+import graphql.schema.GraphQLTypeReference;
 import graphql.util.Pair;
 
 /**
@@ -28,8 +30,8 @@ import graphql.util.Pair;
 public class NodeFilter extends EntityFilter<NodeContent> {
 
 	private static final ElementType ELEMENT = ElementType.NODE;
-	private static final String NAME = "NodeFilter";
 	private static final String OWNER = ELEMENT.name();
+	private static final String NAME = "NodeFilter";
 
 	/**
 	 * Create a node filter for the given context.
@@ -63,7 +65,6 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
 			content -> content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
-
 		return filters;
 	}
 
@@ -86,5 +87,23 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 	@Override
 	protected ElementType getEntityType() {
 		return ELEMENT;
+	}
+
+	@Override
+	public GraphQLInputType getType() {
+		return GraphQLTypeReference.typeRef(getName());
+	}
+
+	@Override
+	public GraphQLInputType getSortingType() {
+		return GraphQLTypeReference.typeRef(getSortingName());
+	}
+
+	public final GraphQLInputType createType() {
+		return super.getType();
+	}
+
+	public final GraphQLInputType createSortingType() {
+		return super.getSortingType();
 	}
 }

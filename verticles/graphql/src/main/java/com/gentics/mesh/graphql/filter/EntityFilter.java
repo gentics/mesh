@@ -35,5 +35,10 @@ public abstract class EntityFilter<T> extends StartMainFilter<T> {
 		return createFilterOperation(new FilterQuery<>(getEntityType(), StringUtils.EMPTY, filterArgument));
 	}
 
+	/**
+	 * Get servered root entity type.
+	 * 
+	 * @return
+	 */
 	protected abstract ElementType getEntityType();
 }
