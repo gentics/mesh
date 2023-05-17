@@ -680,7 +680,8 @@ public abstract class AbstractTypeProvider {
 					log.warn("The query filter cannot be formalized: {}", filterArgument);
 					log.debug(e);
 					if (NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering) || NativeFilter.ONLY.equals(envNativeFilter)) {
-						throw new InvalidParameterException("Cannot proceed with an unformalizable query on params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
+						throw new InvalidParameterException("Cannot proceed with an unformalizable query on params: requested GraphQL 'nativeFilter' = " + envNativeFilter 
+								+ ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering + ", failed filter = " + e.getFilter());
 					} else {
 						log.info("Trying to apply old Java filtering");
 					}// fall through into the old filtering

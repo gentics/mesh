@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ import graphql.util.Pair;
  * @author plyhun
  *
  */
-public class MicronodeFilter extends MainFilter<HibMicronode> {
+public class MicronodeFilter extends MainFilter<HibMicronode> implements ReferencedFilter<HibMicronode, Map<String, ?>> {
 
 	private static final String NAME = "MicronodeFilter";
 	private final static String OWNER = "MICRONODE";
@@ -86,11 +87,13 @@ public class MicronodeFilter extends MainFilter<HibMicronode> {
 		return GraphQLTypeReference.typeRef(getSortingName());
 	}
 
-	public final GraphQLInputType createType() {
+	@Override
+	public GraphQLInputType createType() {
 		return super.getType();
 	}
 
-	public final GraphQLInputType createSortingType() {
+	@Override
+	public GraphQLInputType createSortingType() {
 		return super.getSortingType();
 	}
 }

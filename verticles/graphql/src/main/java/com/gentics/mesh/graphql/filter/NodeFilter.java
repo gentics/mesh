@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ import graphql.util.Pair;
 /**
  * Filters nodes.
  */
-public class NodeFilter extends EntityFilter<NodeContent> {
+public class NodeFilter extends EntityFilter<NodeContent> implements ReferencedFilter<NodeContent, Map<String, ?>> {
 
 	private static final ElementType ELEMENT = ElementType.NODE;
 	private static final String OWNER = ELEMENT.name();
@@ -67,7 +68,7 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 			content -> content == null ? null : content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
 		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by referenced entities", ListFilter.nodeReferenceListFilter(context),
-				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
+				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()), Pair.pair("uuid", new JoinPart("REFERENCE", "value"))));
 		return filters;
 	}
 
@@ -102,11 +103,13 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 		return GraphQLTypeReference.typeRef(getSortingName());
 	}
 
-	public final GraphQLInputType createType() {
+	@Override
+	public GraphQLInputType createType() {
 		return super.getType();
 	}
 
-	public final GraphQLInputType createSortingType() {
+	@Override
+	public GraphQLInputType createSortingType() {
 		return super.getSortingType();
 	}
 }
