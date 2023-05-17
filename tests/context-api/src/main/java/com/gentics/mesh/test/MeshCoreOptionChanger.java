@@ -40,9 +40,9 @@ public enum MeshCoreOptionChanger implements MeshOptionChanger {
 	}), BATCH_MIGRATION(options -> {
 		options.getContentOptions().setBatchSize(2);
 	}), GRAPHQL_FORCE_NATIVE_FILTER(options -> {
-		options.getGraphQLOptions().setNativeQueryFiltering(NativeQueryFiltering.ALWAYS);
+		options.setNativeQueryFiltering(NativeQueryFiltering.ALWAYS);
 	}), GRAPHQL_FORCE_JAVA_FILTER(options -> {
-		options.getGraphQLOptions().setNativeQueryFiltering(NativeQueryFiltering.NEVER);
+		options.setNativeQueryFiltering(NativeQueryFiltering.NEVER);
 	}), SHORT_BINARY_CHECK_INTERVAL(options -> {
 		options.getUploadOptions().setCheckInterval(5_000);
 	});

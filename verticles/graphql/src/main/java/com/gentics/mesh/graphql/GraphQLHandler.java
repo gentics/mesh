@@ -21,7 +21,6 @@ import org.dataloader.DataLoaderRegistry;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.error.AbstractUnavailableException;
-import com.gentics.mesh.etc.config.GraphQLOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -67,12 +66,12 @@ public class GraphQLHandler {
 
 	private Timer graphQlTimer;
 
-	private GraphQLOptions graphQLOptions;
+	private MeshOptions options;
 
 	@Inject
 	public GraphQLHandler(MetricsService metrics, MeshOptions options) {
-		graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
-		graphQLOptions = options.getGraphQLOptions();
+		this.graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
+		this.options = options;
 	}
 
 	/**
@@ -100,14 +99,14 @@ public class GraphQLHandler {
 					GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc)).instrumentation(new DataLoaderDispatcherInstrumentation()).build();
 
 					DataLoaderRegistry dataLoaderRegistry = new DataLoaderRegistry();
-					DataLoaderOptions options = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
+					DataLoaderOptions dlOptions = DataLoaderOptions.newOptions().setBatchLoaderContextProvider(() -> gc);
 					// TODO this is inefficient, but otherwise we can't easily tell if a filter is native ready without parsing each of it ahead of time.
-					options.setCachingEnabled(graphQLOptions.getNativeQueryFiltering() == NativeQueryFiltering.NEVER);
-					dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, options));
-					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, options));
-					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, options));
-					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, options));
-					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.fieldDefProvider.LINK_REPLACER_LOADER, options));
+					dlOptions.setCachingEnabled(options.getNativeQueryFiltering() == NativeQueryFiltering.NEVER);
+					dataLoaderRegistry.register(NodeDataLoader.CONTENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CONTENT_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.fieldDefProvider.LINK_REPLACER_LOADER, dlOptions));
 
 					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()
@@ -122,7 +121,7 @@ public class GraphQLHandler {
 						// blocked worker threads.
 						// Therefore, we use the "async approach" for calling GraphQL and wait for the result with a timeout.
 						ExecutionResult result = graphQL.executeAsync(executionInput)
-								.get(graphQLOptions.getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
+								.get(options.getGraphQLOptions().getAsyncWaitTimeout(), TimeUnit.MILLISECONDS);
 						List<GraphQLError> errors = result.getErrors();
 						JsonObject response = new JsonObject();
 						if (!errors.isEmpty()) {
@@ -147,7 +146,7 @@ public class GraphQLHandler {
 					} catch (TimeoutException | InterruptedException | ExecutionException e) {
 						// If an error happens while "waiting" for the result, we log the GraphQL query here.
 						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
-								graphQLOptions.getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
+								options.getGraphQLOptions().getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
 								loggableVariables.get());
 						gc.fail(e);
 						promise.fail(e);
@@ -157,7 +156,7 @@ public class GraphQLHandler {
 				promise.fail(e);
 			} finally {
 				long duration = sample.stop(graphQlTimer);
-				Long slowThreshold = graphQLOptions.getSlowThreshold();
+				Long slowThreshold = options.getGraphQLOptions().getSlowThreshold();
 				if (loggableQuery.get() != null && slowThreshold != null && slowThreshold.longValue() > 0) {
 					long durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.NANOSECONDS);
 					if (durationMs > slowThreshold) {

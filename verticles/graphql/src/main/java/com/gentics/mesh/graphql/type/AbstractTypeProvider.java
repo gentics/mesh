@@ -649,7 +649,7 @@ public abstract class AbstractTypeProvider {
 	public <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
 		GraphQLContext gc = env.getContext();
 		Map<String, ?> filterArgument = env.getArgument("filter");
-		NativeQueryFiltering nativeQueryFiltering = options.getGraphQLOptions().getNativeQueryFiltering();
+		NativeQueryFiltering nativeQueryFiltering = options.getNativeQueryFiltering();
 		Predicate<T> javaFilter = null;
 		Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
 
