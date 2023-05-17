@@ -28,10 +28,10 @@ import graphql.util.Pair;
  * @author plyhun
  *
  */
-public class MicronodeFilter extends EntityFilter<HibMicronode> {
+public class MicronodeFilter extends MainFilter<HibMicronode> {
 
-	private static final ElementType ELEMENT = ElementType.NODE;
 	private static final String NAME = "MicronodeFilter";
+	private final static String OWNER = "MICRONODE";
 
 	/**
 	 * Create a micronode filter for the given context.
@@ -46,16 +46,17 @@ public class MicronodeFilter extends EntityFilter<HibMicronode> {
 	private final GraphQLContext context;
 
 	private MicronodeFilter(GraphQLContext context) {
-		super(NAME, "Filters Micronodes", Optional.of("MICRONODE"));
+		super(NAME, "Filters Micronodes", Optional.of(OWNER));
 		this.context = context;
 	}
 
 	@Override
 	protected List<FilterField<HibMicronode, ?>> getFilters() {
 		List<FilterField<HibMicronode, ?>> filters = new ArrayList<>();
-		filters.add(new MappedFilter<>("MICRONODE", "microschema", "Filters by microschema", MicroschemaFilter.filter(context), 
-			content -> content.getSchemaContainerVersion().getSchemaContainer(), Pair.pair("microschema", new JoinPart(ElementType.MICROSCHEMA.name(), "uuid"))));
-		filters.add(new MappedFilter<>("MICRONODE", "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("microcontent", new JoinPart("MICROCONTENT", "fields"))));
+		filters.add(FilterField.isNull());
+		filters.add(new MappedFilter<>(OWNER, "microschema", "Filters by microschema", MicroschemaFilter.filter(context), 
+			content -> content == null ? null : content.getSchemaContainerVersion().getSchemaContainer(), Pair.pair("microschema", new JoinPart(ElementType.MICROSCHEMA.name(), "uuid"))));
+		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("microcontent", new JoinPart("MICROCONTENT", "fields"))));
 		return filters;
 	}
 
@@ -66,11 +67,11 @@ public class MicronodeFilter extends EntityFilter<HibMicronode> {
 			.stream()
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
-		return MainFilter.mainFilter("MicronodeFieldFilter", "Filters by fields", schemaFields, false, Optional.of("MICROCONTENT"));
+		return MainFilter.mainFilter("MicronodeFieldFilter", "Filters by fields", schemaFields, true, Optional.of("MICROCONTENT"));
 	}
 
 	private FilterField<HibMicronode, ?> createFieldFilter(HibMicroschema schema) {
-		return new MappedFilter<>("MICRONODE", schema.getName(), "Filters by fields of the " + schema.getName() + " microschema",
+		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " microschema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
 			content -> content);
 	}
@@ -91,10 +92,5 @@ public class MicronodeFilter extends EntityFilter<HibMicronode> {
 
 	public final GraphQLInputType createSortingType() {
 		return super.getSortingType();
-	}
-
-	@Override
-	protected ElementType getEntityType() {
-		return ELEMENT;
 	}
 }

@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -75,6 +76,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	 *            The field schema to create the filter for
 	 */
 	private FilterField<HibFieldContainer, ?> createFieldFilter(FieldSchema fieldSchema) {
+		String owner = schema instanceof MicroschemaVersionModel ? "MICROCONTENT" : "CONTENT";
 		String schemaName = schema.getName();
 		String name = fieldSchema.getName();
 		String description = "Filters by the field " + name;
@@ -106,10 +108,10 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			return new FieldMappedFilter<>(type, name, description, listReferenceMap.getLeft(), 
 					listReferenceMap.getRight(), schemaName);
 		case BINARY:
-			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter(), 
+			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter(owner), 
 					node -> node == null ? null : getOrNull(node.getBinary(name), Function.identity()), schemaName);
 		case S3BINARY:
-			return new FieldMappedFilter<>(type, name, description, S3BinaryFieldFilter.filter(), 
+			return new FieldMappedFilter<>(type, name, description, S3BinaryFieldFilter.filter(owner), 
 					node -> node == null ? null : getOrNull(node.getS3Binary(name), Function.identity()), schemaName);
 		default:
 			throw new RuntimeException("Unexpected type " + type);

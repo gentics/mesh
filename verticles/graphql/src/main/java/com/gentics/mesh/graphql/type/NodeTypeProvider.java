@@ -437,7 +437,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (filterInput != null) {
 						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
 					}
-
 					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
 				}).build(),
 

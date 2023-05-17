@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.model.NodeReferenceIn;
 
 import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLTypeReference;
@@ -55,16 +56,18 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 		List<FilterField<NodeContent, ?>> filters = new ArrayList<>();
 		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), content -> content.getNode().getUuid()));
 		filters.add(new MappedFilter<>(OWNER, "schema", "Filters by schema", SchemaFilter.filter(context), 
-			content -> content.getNode().getSchemaContainer(), Pair.pair("schema", new JoinPart(ElementType.SCHEMA.name(), "uuid"))));
+			content -> content == null ? null : content.getNode().getSchemaContainer(), Pair.pair("schema", new JoinPart(ElementType.SCHEMA.name(), "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "created", "Filters by node creation timestamp", DateFilter.filter(),
-			content -> content.getNode().getCreationTimestamp()));
+			content -> content == null ? null : content.getNode().getCreationTimestamp()));
 		filters.add(new MappedFilter<>(OWNER, "creator", "Filters by creator", UserFilter.filter(),
-			content -> content.getNode().getCreator(), Pair.pair("creator", new JoinPart(ElementType.USER.name(), "uuid"))));
+			content -> content == null ? null : content.getNode().getCreator(), Pair.pair("creator", new JoinPart(ElementType.USER.name(), "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "edited", "Filters by node update timestamp", DateFilter.filter(),
-			content -> content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", new JoinPart("CONTENT", "edited"))));
+			content -> content == null ? null : content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", new JoinPart("CONTENT", "edited"))));
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
-			content -> content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
+			content -> content == null ? null : content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
+		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by referenced entities", ListFilter.nodeReferenceListFilter(context),
+				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		return filters;
 	}
 
@@ -81,7 +84,7 @@ public class NodeFilter extends EntityFilter<NodeContent> {
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
 		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
-			NodeContent::getContainer);
+			content -> content == null ? null : content.getContainer());
 	}
 
 	@Override

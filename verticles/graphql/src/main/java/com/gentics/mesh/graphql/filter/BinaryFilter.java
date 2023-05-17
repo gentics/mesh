@@ -33,14 +33,14 @@ public class BinaryFilter extends ImageDataFilter<HibBinary> {
 	}
 
 	private BinaryFilter(String name, String description) {
-		super(name, description);
+		super(name, description, "BINARY");
 	}
 
 	@Override
 	public List<FilterField<HibBinary, ?>> getFilters() {
 		List<FilterField<HibBinary, ?>> filters = super.getFilters();
-		filters.add(new MappedFilter<>(OWNER, "checksum", "Filters by SHA512 checksum", StringFilter.filter(),
-				content -> content.getSHA512Sum()));
+		filters.add(new MappedFilter<>(owner, "checksum", "Filters by SHA512 checksum", StringFilter.filter(),
+				content -> content == null ? null : content.getSHA512Sum()));
 		return filters;
 	}
 }

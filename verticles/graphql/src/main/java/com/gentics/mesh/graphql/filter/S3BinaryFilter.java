@@ -33,14 +33,14 @@ public class S3BinaryFilter extends ImageDataFilter<S3HibBinary> {
 	}
 
 	private S3BinaryFilter(String name, String description) {
-		super(name, description);
+		super(name, description, "S3BINARY");
 	}
 
 	@Override
 	public List<FilterField<S3HibBinary, ?>> getFilters() {
 		List<FilterField<S3HibBinary, ?>> filters = super.getFilters();
-		filters.add(new MappedFilter<>(OWNER, "key", "Filters by S3 object key", StringFilter.filter(),
-				content -> content.getS3ObjectKey()));
+		filters.add(new MappedFilter<>(owner, "key", "Filters by S3 object key", StringFilter.filter(),
+				content -> content == null ? null : content.getS3ObjectKey()));
 		return filters;
 	}
 }

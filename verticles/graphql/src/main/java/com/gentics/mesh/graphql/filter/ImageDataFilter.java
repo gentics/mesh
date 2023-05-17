@@ -7,40 +7,35 @@ import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.EnumFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 
-public abstract class ImageDataFilter<T extends HibImageDataElement> extends EntityFilter<T> {
+public abstract class ImageDataFilter<T extends HibImageDataElement> extends MainFilter<T> {
 
-	protected static final ElementType ELEMENT = ElementType.NODE;
-	protected static final String OWNER = ELEMENT.name();
+	protected final String owner;
 
-	protected ImageDataFilter(String name, String description) {
-		super(name, description, Optional.of(OWNER));
-	}
-
-	@Override
-	protected ElementType getEntityType() {
-		return ELEMENT;
+	protected ImageDataFilter(String name, String description, String owner) {
+		super(name, description, Optional.of(owner));
+		this.owner = owner;
 	}
 
 	@Override
 	protected List<FilterField<T, ?>> getFilters() {
 		List<FilterField<T, ?>> filters = new ArrayList<>();
-		filters.add(new MappedFilter<>(OWNER, "uuid", "Filters by uuid", StringFilter.filter(), 
-				content -> content.getUuid()));
-		filters.add(new MappedFilter<>(OWNER, "size", "Filters by file size", NumberFilter.filter(),
-			content -> new BigDecimal(content.getSize())));
-		filters.add(new MappedFilter<>(OWNER, "width", "Filters by width", NumberFilter.filter(),
-			content -> new BigDecimal(content.getImageWidth())));
-		filters.add(new MappedFilter<>(OWNER, "height", "Filters by height", NumberFilter.filter(),
-				content -> new BigDecimal(content.getImageHeight())));
-		filters.add(new MappedFilter<>(OWNER, "checkStatus", "Filters by virus check status", EnumFilter.filter(BinaryCheckStatus.class),
-				content -> content.getCheckStatus()));
+		filters.add(new MappedFilter<>(owner, "uuid", "Filters by uuid", StringFilter.filter(), 
+				content -> content == null ? null : content.getUuid()));
+		filters.add(new MappedFilter<>(owner, "size", "Filters by file size", NumberFilter.filter(),
+			content -> content == null ? null : new BigDecimal(content.getSize())));
+		filters.add(new MappedFilter<>(owner, "width", "Filters by width", NumberFilter.filter(),
+			content -> content == null ? null : new BigDecimal(content.getImageWidth())));
+		filters.add(new MappedFilter<>(owner, "height", "Filters by height", NumberFilter.filter(),
+				content -> content == null ? null : new BigDecimal(content.getImageHeight())));
+		filters.add(new MappedFilter<>(owner, "checkStatus", "Filters by virus check status", EnumFilter.filter(BinaryCheckStatus.class),
+				content -> content == null ? null : content.getCheckStatus()));
 		return filters;
 	}
 }

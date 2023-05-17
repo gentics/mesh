@@ -70,6 +70,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.GroupFilter;
 import com.gentics.mesh.graphql.filter.MicronodeFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.filter.NodeReferenceFilter;
 import com.gentics.mesh.graphql.filter.RoleFilter;
 import com.gentics.mesh.graphql.filter.UserFilter;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
@@ -593,6 +594,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(NodeFilter.filter(context).createSortingType());
 		additionalTypes.add(MicronodeFilter.filter(context).createType());
 		additionalTypes.add(MicronodeFilter.filter(context).createSortingType());
+		additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context).createType());
+		additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context).createSortingType());
 
 		additionalTypes.add(schemaTypeProvider.createType(context));
 		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
