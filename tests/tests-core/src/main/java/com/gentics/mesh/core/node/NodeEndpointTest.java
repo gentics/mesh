@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -61,6 +63,8 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -71,6 +75,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -2133,5 +2138,231 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		List<NodeReference> breadcrumb = node.getNodeResponse().getBreadcrumb();
 		assertEquals(1, breadcrumb.size());
 		assertEquals(node.getNodeResponse().getUuid(), breadcrumb.get(0).getUuid());
+	}
+
+	/**
+	 * Test creating a node without publishing it
+	 */
+	@Test
+	public void testCreateAndDoNotPublishNode() {
+		NodeResponse created = create(false);
+		assertThat(created).hasVersion("0.1").hasLanguageVariant("en", false);
+	}
+
+	/**
+	 * Test creating a node and publishing it with the same call
+	 */
+	@Test
+	public void testCreateAndPublishNode() {
+		NodeResponse created = create(true);
+		assertThat(created).hasVersion("1.0").hasLanguageVariant("en", true);
+	}
+
+	/**
+	 * Test upserting a node without publishing it
+	 */
+	@Test
+	public void testUpsertAndDoNotPublishNode() {
+		String uuid = UUIDUtil.randomUUID();
+		upsert(uuid, "Created", false);
+		NodeResponse updated = upsert(uuid, "Updated", false);
+		assertThat(updated).hasVersion("0.2").hasLanguageVariant("en", false);
+	}
+
+	/**
+	 * Test upserting a node and publishing it with the same call
+	 */
+	@Test
+	public void testUpsertAndPublishNode() {
+		String uuid = UUIDUtil.randomUUID();
+		upsert(uuid, "Created", true);
+		NodeResponse updated = upsert(uuid, "Updated", true);
+		assertThat(updated).hasVersion("2.0").hasLanguageVariant("en", true);
+	}
+
+	/**
+	 * Test updating a node without publishing it
+	 */
+	@Test
+	public void testUpdateAndNoNotPublishNode() {
+		NodeResponse created = create(false);
+		NodeResponse updated = update(created, false);
+		assertThat(updated).hasVersion("0.2").hasLanguageVariant("en", false);
+	}
+
+	/**
+	 * Test updating a node and publishing it with the same call
+	 */
+	@Test
+	public void testUpdateAndPublishNode() {
+		NodeResponse created = create(false);
+		NodeResponse updated = update(created, true);
+		assertThat(updated).hasVersion("1.0").hasLanguageVariant("en", true);
+	}
+
+	/**
+	 * Test creating a node and not setting role permissions
+	 */
+	@Test
+	public void testCreateNodeAndDoNotSetRolePermissions() {
+		NodeResponse created = create(false);
+		RoleReference testRole = tx(() -> role().transformToReference());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(testRole);
+	}
+
+	/**
+	 * Test creating a node and setting role permissions
+	 */
+	@Test
+	public void testCreateNodeAndSetRolePermissions() {
+		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		NodeResponse created = create(false, anonymous.getName());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
+	 * Test upserting a node and not setting role permissions
+	 */
+	@Test
+	public void testUpsertNodeAndDoNotSetRolePermissions() {
+		String uuid = UUIDUtil.randomUUID();
+		upsert(uuid, "Created", false);
+		NodeResponse updated = upsert(uuid, "Updated", false);
+		RoleReference testRole = tx(() -> role().transformToReference());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, updated.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(testRole);
+	}
+
+	/**
+	 * Test upserting a node and setting role permissions
+	 */
+	@Test
+	public void testUpsertNodeAndSetRolePermissions() {
+		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		String uuid = UUIDUtil.randomUUID();
+		upsert(uuid, "Created", false);
+		NodeResponse updated = upsert(uuid, "Updated", false, anonymous.getName());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, updated.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
+	 * Test updating a node and not setting role permissions
+	 */
+	@Test
+	public void testUpdateNodeAndDoNotSetRolePermissions() {
+		RoleReference testRole = tx(() -> role().transformToReference());
+		NodeResponse created = create(false);
+		update(created, false);
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(testRole);
+	}
+
+	/**
+	 * Test updating a node and setting role permissions
+	 */
+	@Test
+	public void testUpdateNodeAndSetRolePermissions() {
+		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		NodeResponse created = create(false);
+		update(created, false, anonymous.getName());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
+	 * Create a node, optionally publish it (while creating), optionally set role permissions
+	 * @param publish true to publish
+	 * @param roles optional roles to set
+	 * @return node response
+	 */
+	protected NodeResponse create(boolean publish, String... roles) {
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+		if (publish) {
+			request.setPublish(true);
+		}
+		if (roles.length > 0) {
+			request.setGrant(new ObjectPermissionGrantRequest().setReadPublished(
+					Stream.of(roles).map(name -> new RoleReference().setName(name)).collect(Collectors.toList()))
+					.setExclusive(true));
+		}
+
+		return call(() -> client().createNode(PROJECT_NAME, request));
+	}
+
+	/**
+	 * Create a node, optionally publish it, optionally set role permissions
+	 * @param uuid Node UUID
+	 * @param title title
+	 * @param publish true to publish
+	 * @param roles optional roles to set
+	 * @return node response
+	 */
+	protected NodeResponse upsert(String uuid, String title, boolean publish, String... roles) {
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+		NodeUpsertRequest request = new NodeUpsertRequest();
+		request.setSchemaName("content");
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField(title));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+		if (publish) {
+			request.setPublish(true);
+		}
+		if (roles.length > 0) {
+			request.setGrant(new ObjectPermissionGrantRequest().setReadPublished(
+					Stream.of(roles).map(name -> new RoleReference().setName(name)).collect(Collectors.toList()))
+					.setExclusive(true));
+		}
+
+		return call(() -> client().upsertNode(PROJECT_NAME, uuid, request));
+	}
+
+	/**
+	 * Update the given node, optionally publish it (while updating), optionally set role permissions
+	 * @param node node to update
+	 * @param publish true to publish
+	 * @param roles optional roles to set
+	 * @return node response
+	 */
+	protected NodeResponse update(NodeResponse node, boolean publish, String... roles) {
+		NodeUpdateRequest request = new NodeUpdateRequest();
+		request.setLanguage(node.getLanguage());
+		request.setVersion("draft");
+		request.getFields().put("title", FieldUtil.createStringField("some new title"));
+		if (publish) {
+			request.setPublish(true);
+		}
+		if (roles.length > 0) {
+			request.setGrant(new ObjectPermissionGrantRequest().setReadPublished(
+					Stream.of(roles).map(name -> new RoleReference().setName(name)).collect(Collectors.toList()))
+					.setExclusive(true));
+		}
+
+		return call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request));
 	}
 }
