@@ -139,7 +139,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			listFieldGetter = node -> node.getStringList(name);
 			break;
 		case HTML:
-			listFilter = ListFilter.stringListFilter();
+			listFilter = ListFilter.htmlListFilter();
 			listFieldGetter = node -> node.getHTMLList(name);
 			break;
 		case MICRONODE:

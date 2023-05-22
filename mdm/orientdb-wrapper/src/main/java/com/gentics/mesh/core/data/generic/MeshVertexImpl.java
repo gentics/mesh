@@ -1,10 +1,11 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.impl.TagImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.impl.JobImpl;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
@@ -315,6 +317,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 				Pair<Class, String> leftJoin = joinIntoPair(new JoinPart(left.maybeGetOwner().orElse(StringUtils.EMPTY), String.valueOf(left.getValue())));
 				Object[] leftValue = new Object[] {leftJoin != null ? leftJoin.getValue() : String.valueOf(getFilterOperandValue(left))};
 
+				// Currently we don't support joins in right operand.
+				Object qlRight = right.getJoins().stream().findAny().map(unsupported -> {
+					throw new IllegalArgumentException("Joins for filter RVALUE are currently unsupported: " + unsupported);
+				}).orElseGet(() -> {
+					return getFilterOperandValue(right);
+				});
 				String qlLeft = left.getJoins().stream().map(join -> {
 					Pair<Class, String> src = joinIntoPair(join.getLeft());
 					Pair<Class, String> dst = joinIntoPair(join.getRight());
@@ -323,9 +331,20 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 					if (src == null || dst == null) {
 						return null;
 					}
-					// If this field is joined to the content, we bypass the join in favor of edge navigation.
-					if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
+					if (NodeContent.class.equals(dst.getLeft())) {
+						// referencedBy
+						// TODO union list items like `(inE('HAS_FIELD').outV().inE('HAS_FIELD_CONTAINER').outV().CONDITION) OR (inE('HAS_ITEM').outV().inE('HAS_LIST').outV().inE('HAS_FIELD_CONTAINER').outV().CONDITION)`
+						leftValue[0] = "inE('" + HAS_FIELD + "').outV().inE('" + HAS_FIELD_CONTAINER + "').outV().`" + dst.getRight() + "`"  + filter.getOperator() + " " + qlRight 
+								+ "  OR "
+								+ "inE('" + HAS_ITEM + "').outV().inE('" + HAS_LIST + "').outV().inE('" + HAS_FIELD_CONTAINER + "').outV().`" + dst.getRight() + "`";
+						return StringUtils.EMPTY;
+					} else if (Collection.class.equals(dst.getLeft()) && "count".equals(dst.getRight())) {
+						// TODO FIXME count case
+						leftValue[0] = " count(" + left.getValue() + ") ";
+					} else if (NodeGraphFieldContainerImpl.class.equals(dst.getLeft())) {
+						// If this field is joined to the content, we bypass the join in favor of edge navigation.
 						if ("fields".equals(dst.getRight())) {
+							// fields case
 							// Looking for a CONTENT/<schema_name> = <schema_name>.<field_name>/<field_type> mapping
 							String typeSuffix = left.getJoins().stream()
 									.filter(e -> "CONTENT".equals(e.getLeft().getTable()) && e.getRight().getTable().equals(e.getLeft().getField() + "." + left.getValue()))
@@ -359,13 +378,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 						return " " + srcField + " IN ( SELECT " + dst.getRight() + " FROM " + dst.getLeft().getSimpleName() + " WHERE ";
 					}
 				}).filter(ql -> !Objects.isNull(ql)).limit(1).collect(Collectors.joining());
-
-				// Currently we don't support joins in right operand.
-				Object qlRight = right.getJoins().stream().findAny().map(unsupported -> {
-					throw new IllegalArgumentException("Joins for filter RVALUE are currently unsupported: " + unsupported);
-				}).orElseGet(() -> {
-					return getFilterOperandValue(right);
-				});
 				return qlLeft + leftValue[0] + " " + filter.getOperator() + " " + qlRight + (StringUtils.isNotBlank(qlLeft) ? " ) " : "");
 			}).orElseGet(() -> filter.toSql()));
 		sb.append(parsedFilter);
@@ -474,7 +486,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 				return Pair.of(NodeGraphFieldContainerImpl.class, mapGraphQlFieldName(join.getField()));
 			case "MICRONODE":
 				return Pair.of(MicroschemaContainerImpl.class, mapGraphQlFieldName(join.getField()));
+			case "LIST":
+				return Pair.of(Collection.class, mapGraphQlFieldName(join.getField()));
+			case "REFERENCELIST":
+				return Pair.of(NodeContent.class, mapGraphQlFieldName(join.getField()));
 			default:
+				log.warn("Unsupported join item: " + join);
 				return null;
 			}
 		});		
