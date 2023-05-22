@@ -14,6 +14,7 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
@@ -55,8 +56,8 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	protected List<FilterField<Collection<T>, ?>> getFilters() {
 		return Arrays.asList(
 				FilterField.isNull(),
-				new MappedFilter<>("LIST", "count", "Filter over item count", NumberFilter.filter(), val -> val == null ? BigDecimal.ZERO : new BigDecimal(val.size())),
-
+				new MappedFilter<>(getOwner().orElse("LIST"), "count", "Filter over item count", NumberFilter.filter(), 
+						val -> val == null ? BigDecimal.ZERO : new BigDecimal(val.size())),
 				FilterField.<Collection<T>, Q>create("allItemsMatch", "Checks if all list items match the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().allMatch(item -> itemFilter.createPredicate(query).test(item)), 
 						Optional.empty(), true),
