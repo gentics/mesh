@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.9.16]]
-== 1.9.16 (TBD)
+== 1.9.16 (22.05.2023)
 
 icon:check[] GraphQL: Link resolving in graphql queries could cause an internal error (due to a DuplicateKeyException), which has been fixed now.
 
