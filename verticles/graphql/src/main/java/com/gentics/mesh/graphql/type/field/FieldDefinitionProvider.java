@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -104,10 +105,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param keyContexts map of keys to contexts
 	 * @param consumer consumer
 	 */
-	private static void partitioningByLinkTypeAndText(List<DataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, List<String>> consumer) {
-		Map<Pair<LinkType, String>, List<String>> partitionedKeys = keys.stream()
+	private static void partitioningByLinkTypeAndText(List<DataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, Set<String>> consumer) {
+		Map<Pair<LinkType, String>, Set<String>> partitionedKeys = keys.stream()
 			.map(key -> Pair.of(Pair.of(key.linkType, key.languageTag), key.content))
-			.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toList())));
+			.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toSet())));
 
 		partitionedKeys.forEach(consumer::accept);
 	}
