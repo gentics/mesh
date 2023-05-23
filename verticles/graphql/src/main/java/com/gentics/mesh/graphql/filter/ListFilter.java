@@ -14,15 +14,19 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.graphqlfilter.filter.operation.ComparisonOperation;
+import com.gentics.graphqlfilter.filter.operation.FilterOperand;
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.FilterQuery;
+import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.operation.ListItemOperationOperand;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
-
-import graphql.schema.GraphQLList;
 
 /**
  * List filter.
@@ -33,6 +37,12 @@ import graphql.schema.GraphQLList;
  * @param <Q> value type
  */
 public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
+
+	public static final String OP_COUNT = "count";
+	public static final String OP_ALL_ITEMS_MATCH = "allMatch";
+	public static final String OP_ANY_ITEM_MATCHES = "anyMatch";
+	public static final String OP_NONE_MATCH = "noneMatch";
+	public static final String OP_ANY_NOT_MATCH = "anyNotMatch";
 
 	private static ListFilter<String, ?> stringListFilterInstance;
 	private static ListFilter<String, ?> htmlListFilterInstance;
@@ -56,27 +66,91 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	protected List<FilterField<Collection<T>, ?>> getFilters() {
 		return Arrays.asList(
 				FilterField.isNull(),
-				new MappedFilter<>(getOwner().orElse("LIST"), "count", "Filter over item count", NumberFilter.filter(), 
+				new MappedFilter<>(getOwner().orElse("LIST"), OP_COUNT, "Filter over item count", NumberFilter.filter(), 
 						val -> val == null ? BigDecimal.ZERO : new BigDecimal(val.size())),
-				FilterField.<Collection<T>, Q>create("allItemsMatch", "Checks if all list items match the given predicate", itemFilter.getType(), 
+				FilterField.<Collection<T>, Q>create(OP_ALL_ITEMS_MATCH, "Checks if all list items match the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().allMatch(item -> itemFilter.createPredicate(query).test(item)), 
-						Optional.empty(), true),
-				FilterField.<Collection<T>, Q>create("anyItemMatch", "Checks if any list item matches the given predicate", itemFilter.getType(), 
+						Optional.of((query) -> wrap(OP_ALL_ITEMS_MATCH, query)), true),
+				FilterField.<Collection<T>, Q>create(OP_ANY_ITEM_MATCHES, "Checks if any list item matches the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().anyMatch(item -> itemFilter.createPredicate(query).test(item)), 
-						Optional.empty(), true),
-				FilterField.<Collection<T>, Collection<Q>>create("anyItemMatchAllOf", "Checks if any list item matches all the given predicates", GraphQLList.list(itemFilter.getType()), 
-						query -> val -> val != null && val.stream().anyMatch(item -> query.stream().allMatch(qitem -> itemFilter.createPredicate(qitem).test(item))), 
-						Optional.empty(), true),
-				FilterField.<Collection<T>, Collection<Q>>create("allItemsMatchAllOf", "Checks if every list item matches all the given predicates", GraphQLList.list(itemFilter.getType()), 
-						query -> val -> val != null && val.stream().allMatch(item -> query.stream().allMatch(qitem -> itemFilter.createPredicate(qitem).test(item))), 
-						Optional.empty(), true),
-				FilterField.<Collection<T>, Collection<Q>>create("anyItemMatchAnyOf", "Checks if any list item matches any of the given predicates", GraphQLList.list(itemFilter.getType()), 
-						query -> val -> val != null && val.stream().anyMatch(item -> query.stream().anyMatch(qitem -> itemFilter.createPredicate(qitem).test(item))), 
-						Optional.empty(), true),
-				FilterField.<Collection<T>, Collection<Q>>create("allItemsMatchAnyOf", "Checks if every list item matches any of the given predicates", GraphQLList.list(itemFilter.getType()), 
-						query -> val -> val != null && val.stream().allMatch(item -> query.stream().anyMatch(qitem -> itemFilter.createPredicate(qitem).test(item))), 
-						Optional.empty(), true)
+						Optional.of((query) -> wrap(OP_ANY_ITEM_MATCHES, query)), true),
+				FilterField.<Collection<T>, Q>create(OP_NONE_MATCH, "Checks if no list items match the given predicate", itemFilter.getType(), 
+						query -> val -> val != null && val.stream().noneMatch(item -> itemFilter.createPredicate(query).test(item)), 
+						Optional.of((query) -> wrap(OP_NONE_MATCH, query)), true),
+				FilterField.<Collection<T>, Q>create(OP_ANY_NOT_MATCH, "Checks if any list item does not match the given predicate", itemFilter.getType(), 
+						query -> val -> val != null && val.stream().anyMatch(item -> !itemFilter.createPredicate(query).test(item)), 
+						Optional.of((query) -> wrap(OP_ANY_NOT_MATCH, query)), true)
 			);
+	}
+
+	protected final FilterOperation<?> wrap(String operation, FilterQuery<?, Q> query) {
+		FilterOperation<?> filterOperation;
+		try {
+			filterOperation = itemFilter.createFilterOperation(query);
+		} catch (UnformalizableQuery e) {
+			throw new IllegalArgumentException(e);
+		}
+		return new ComparisonOperation() {
+			
+			@Override
+			public String getOperator() {
+				switch (operation) {
+				case OP_ANY_ITEM_MATCHES: 
+					return "<";
+				case OP_ANY_NOT_MATCH:
+					return ">";
+				case OP_NONE_MATCH:
+				case OP_ALL_ITEMS_MATCH: 
+					return "=";
+				default: throw new IllegalStateException("Unexpected list operation:" + operation);
+				}
+			}
+			
+			@Override
+			public FilterOperand<?> getRight() {
+				return new ListItemOperationOperand(filterOperation, getOwner(), true);
+			}
+			
+			@Override
+			public FilterOperand<?> getLeft() {
+				switch (operation) {
+				case OP_ANY_ITEM_MATCHES:
+					return new LiteralOperand<>(1L, false);
+				case OP_NONE_MATCH:
+					return new LiteralOperand<>(0L, false);
+				case OP_ANY_NOT_MATCH:
+				case OP_ALL_ITEMS_MATCH:
+					return new ListItemOperationOperand(filterOperation, getOwner(), false);
+				default: throw new IllegalStateException("Unexpected list operation:" + operation);
+				}
+			}
+		};
+		/*
+		return new CombinerOperation() {
+			
+			@Override
+			public String toSql() {
+				try {
+					return itemFilter.createFilterOperation(query).toSql();
+				} catch (UnformalizableQuery e) {
+					throw new IllegalArgumentException(e);
+				}
+			}
+			
+			@Override
+			public String getOperator() {
+				return operation;
+			}
+			
+			@Override
+			public List<FilterOperation<?>> getOperands() {
+				try {
+					return Collections.singletonList(itemFilter.createFilterOperation(query));
+				} catch (UnformalizableQuery e) {
+					throw new IllegalArgumentException(e);
+				}
+			}
+		};*/
 	}
 
 	public static final ListFilter<String, ?> stringListFilter() {
