@@ -106,7 +106,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 		case LIST:
 			Pair<Filter<Collection<?>, ?>, Function<HibFieldContainer, Collection<?>>> listReferenceMap = listReferenceMapper(name, fieldSchema);
 			return new FieldMappedFilter<>(type, name, description, listReferenceMap.getLeft(), 
-					listReferenceMap.getRight(), schemaName);
+					listReferenceMap.getRight(), schemaName, fieldSchema.maybeGetListField().map(ListFieldSchema::getListType).map(FieldTypes::valueByName));
 		case BINARY:
 			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter(owner), 
 					node -> node == null ? null : getOrNull(node.getBinary(name), Function.identity()), schemaName);

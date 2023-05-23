@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.filter;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -19,14 +20,23 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, Q> {
 	private final String schemaName;
 	private final FieldTypes fieldType;
+	private final Optional<FieldTypes> maybeItemType;
 
 	/**
 	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
 	 */
 	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, String schemaName) {
+		this(fieldType, name, description, delegate, mapper, schemaName, Optional.empty());
+	}
+
+	/**
+	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
+	 */
+	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, String schemaName, Optional<FieldTypes> maybeItemType) {
 		super("CONTENT", name, description, delegate, mapper);
 		this.schemaName = schemaName;
 		this.fieldType = fieldType;
+		this.maybeItemType = maybeItemType;
 	}
 
 	@Override
@@ -48,6 +58,15 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 
 	@Override
 	public Set<Join> getJoins() {
-		return FilterUtil.addFluent(super.getJoins(), Collections.singleton(new Join(new JoinPart("CONTENT", schemaName), new JoinPart(schemaName + "." + getName(), fieldType.name().toLowerCase()))));
+		JoinPart fieldTypePart = new JoinPart(schemaName + "." + getName(), fieldType.name().toLowerCase());
+		Join mainFieldTypeJoin = new Join(new JoinPart("CONTENT", schemaName), fieldTypePart);
+		Set<Join> fieldJoins = maybeItemType
+				.map(itemType -> Set.of(mainFieldTypeJoin, new Join(fieldTypePart, new JoinPart(fieldType.name().toLowerCase(), itemType.name().toLowerCase()))))
+				.orElseGet(() -> Collections.singleton(mainFieldTypeJoin));
+		return FilterUtil.addFluent(super.getJoins(), fieldJoins);
+	}
+
+	public Optional<FieldTypes> getMaybeItemType() {
+		return maybeItemType;
 	}
 }
