@@ -1502,6 +1502,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			// Check whether the request still contains data which needs to be updated.
+			boolean updated = false;
 			if (!requestModel.getFields().isEmpty()) {
 
 				// Create new field container as clone of the existing
@@ -1518,20 +1519,21 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				latestDraftVersion = newDraftVersion;
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 
-				if (requestModel.getGrant() != null) {
-					grantRolePermissions(node, ac, requestModel.getGrant());
-				}
-
-				if (requestModel.isPublish()) {
-					HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
-					// Invoke a store of the document since it must now also be added to the published index
-					batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
-				}
-
-				return true;
+				updated = true;
 			}
+
+			if (requestModel.getGrant() != null) {
+				grantRolePermissions(node, ac, requestModel.getGrant());
+			}
+
+			if (requestModel.isPublish()) {
+				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+				// Invoke a store of the document since it must now also be added to the published index
+				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+			}
+
+			return updated;
 		}
-		return false;
 	}
 
 	@Override

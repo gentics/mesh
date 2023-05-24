@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -2180,13 +2179,21 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(updated).hasVersion("2.0").hasLanguageVariant("en", true);
 	}
 
+	@Test
+	public void testEmptyUpsertAndPublishNode() {
+		String uuid = UUIDUtil.randomUUID();
+		upsert(uuid, "Created", false);
+		NodeResponse updated = upsert(uuid, null, true);
+		assertThat(updated).hasVersion("1.0").hasLanguageVariant("en", true);
+	}
+
 	/**
 	 * Test updating a node without publishing it
 	 */
 	@Test
 	public void testUpdateAndNoNotPublishNode() {
 		NodeResponse created = create(false);
-		NodeResponse updated = update(created, false);
+		NodeResponse updated = update(created, "some new title", false);
 		assertThat(updated).hasVersion("0.2").hasLanguageVariant("en", false);
 	}
 
@@ -2196,7 +2203,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateAndPublishNode() {
 		NodeResponse created = create(false);
-		NodeResponse updated = update(created, true);
+		NodeResponse updated = update(created, "some new title", true);
+		assertThat(updated).hasVersion("1.0").hasLanguageVariant("en", true);
+	}
+
+	@Test
+	public void testEmptyUpdateAndPublishNode() {
+		NodeResponse created = create(false);
+		NodeResponse updated = update(created, null, true);
 		assertThat(updated).hasVersion("1.0").hasLanguageVariant("en", true);
 	}
 
@@ -2257,13 +2271,28 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	/**
+	 * Test upserting a node and setting role permissions
+	 */
+	@Test
+	public void testEmptyUpsertNodeAndSetRolePermissions() {
+		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		String uuid = UUIDUtil.randomUUID();
+		upsert(uuid, "Created", false);
+		NodeResponse updated = upsert(uuid, null, false, anonymous.getName());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, updated.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
 	 * Test updating a node and not setting role permissions
 	 */
 	@Test
 	public void testUpdateNodeAndDoNotSetRolePermissions() {
 		RoleReference testRole = tx(() -> role().transformToReference());
 		NodeResponse created = create(false);
-		update(created, false);
+		update(created, "some new title", false);
 
 		ObjectPermissionResponse rolePermissions = call(
 				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
@@ -2277,7 +2306,21 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateNodeAndSetRolePermissions() {
 		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
 		NodeResponse created = create(false);
-		update(created, false, anonymous.getName());
+		update(created, "some new title", false, anonymous.getName());
+
+		ObjectPermissionResponse rolePermissions = call(
+				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
+		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
+	 * Test updating a node and setting role permissions
+	 */
+	@Test
+	public void testEmptyUpdateNodeAndSetRolePermissions() {
+		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		NodeResponse created = create(false);
+		update(created, null, false, anonymous.getName());
 
 		ObjectPermissionResponse rolePermissions = call(
 				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
@@ -2325,7 +2368,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeUpsertRequest request = new NodeUpsertRequest();
 		request.setSchemaName("content");
 		request.setLanguage("en");
-		request.getFields().put("title", FieldUtil.createStringField(title));
+		if (title != null) {
+			request.getFields().put("title", FieldUtil.createStringField(title));
+		}
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
@@ -2345,15 +2390,18 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	/**
 	 * Update the given node, optionally publish it (while updating), optionally set role permissions
 	 * @param node node to update
+	 * @param title title
 	 * @param publish true to publish
 	 * @param roles optional roles to set
 	 * @return node response
 	 */
-	protected NodeResponse update(NodeResponse node, boolean publish, String... roles) {
+	protected NodeResponse update(NodeResponse node, String title, boolean publish, String... roles) {
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage(node.getLanguage());
 		request.setVersion("draft");
-		request.getFields().put("title", FieldUtil.createStringField("some new title"));
+		if (title != null) {
+			request.getFields().put("title", FieldUtil.createStringField(title));
+		}
 		if (publish) {
 			request.setPublish(true);
 		}
