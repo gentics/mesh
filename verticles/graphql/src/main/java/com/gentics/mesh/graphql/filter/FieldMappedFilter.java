@@ -66,6 +66,12 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 		return FilterUtil.addFluent(super.getJoins(), fieldJoins);
 	}
 
+	@Override
+	public boolean isSortable() {
+		// No sorting for list filters (yet).
+		return delegate.isSortable() && maybeItemType.isEmpty();
+	}
+
 	public Optional<FieldTypes> getMaybeItemType() {
 		return maybeItemType;
 	}

@@ -63,4 +63,9 @@ public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> implem
 	public final GraphQLInputType createSortingType() {
 		return super.getSortingType();
 	}
+
+	@Override
+	public boolean isSortable() {
+		return false;
+	}
 }
