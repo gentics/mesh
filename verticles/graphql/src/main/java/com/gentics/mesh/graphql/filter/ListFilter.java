@@ -1,6 +1,5 @@
 package com.gentics.mesh.graphql.filter;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +45,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 
 	private static ListFilter<String, ?> stringListFilterInstance;
 	private static ListFilter<String, ?> htmlListFilterInstance;
-	private static ListFilter<BigDecimal, ?> numberListFilterInstance;
+	private static ListFilter<Number, ?> numberListFilterInstance;
 	private static ListFilter<Boolean, ?> booleanListFilterInstance;
 	private static ListFilter<Long, ?> dateListFilterInstance;
 	private static ListFilter<NodeContent, ?> nodeListFilterInstance;
@@ -67,7 +66,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 		return Arrays.asList(
 				FilterField.isNull(),
 				new MappedFilter<>(getOwner().orElse("LIST"), OP_COUNT, "Filter over item count", NumberFilter.filter(), 
-						val -> val == null ? BigDecimal.ZERO : new BigDecimal(val.size())),
+						val -> val == null ? 0 : val.size()),
 				FilterField.<Collection<T>, Q>create(OP_ALL_ITEMS_MATCH, "Checks if all list items match the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().allMatch(item -> itemFilter.createPredicate(query).test(item)), 
 						Optional.of((query) -> wrap(OP_ALL_ITEMS_MATCH, query)), true),
@@ -125,32 +124,6 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 				}
 			}
 		};
-		/*
-		return new CombinerOperation() {
-			
-			@Override
-			public String toSql() {
-				try {
-					return itemFilter.createFilterOperation(query).toSql();
-				} catch (UnformalizableQuery e) {
-					throw new IllegalArgumentException(e);
-				}
-			}
-			
-			@Override
-			public String getOperator() {
-				return operation;
-			}
-			
-			@Override
-			public List<FilterOperation<?>> getOperands() {
-				try {
-					return Collections.singletonList(itemFilter.createFilterOperation(query));
-				} catch (UnformalizableQuery e) {
-					throw new IllegalArgumentException(e);
-				}
-			}
-		};*/
 	}
 
 	public static final ListFilter<String, ?> stringListFilter() {
@@ -167,7 +140,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 		return htmlListFilterInstance;
 	}
 
-	public static final ListFilter<BigDecimal, ?> numberListFilter() {
+	public static final ListFilter<Number, ?> numberListFilter() {
 		if (numberListFilterInstance == null) {
 			numberListFilterInstance = new ListFilter<>("NumberListFilter", "Filters number lists", NumberFilter.filter(), Optional.of("NUMBERLIST"));
 		}

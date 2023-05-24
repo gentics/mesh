@@ -61,6 +61,7 @@ import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
@@ -585,17 +586,22 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(GraphQLContext context) {
-		HibProject project = Tx.get().getProject(context);
+		CommonTx tx = CommonTx.get();
+		HibProject project = tx.getProject(context);
 		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 
 		Set<GraphQLType> additionalTypes = new HashSet<>();
 
+		additionalTypes.add(UserFilter.filter().createType());
+		additionalTypes.add(UserFilter.filter().createSortingType());
+
 		additionalTypes.add(NodeFilter.filter(context).createType());
 		additionalTypes.add(NodeFilter.filter(context).createSortingType());
-		additionalTypes.add(MicronodeFilter.filter(context).createType());
-		additionalTypes.add(MicronodeFilter.filter(context).createSortingType());
 		additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context).createType());
 		additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context).createSortingType());
+
+		additionalTypes.add(MicronodeFilter.filter(context).createType());
+		additionalTypes.add(MicronodeFilter.filter(context).createSortingType());
 
 		additionalTypes.add(schemaTypeProvider.createType(context));
 		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));

@@ -38,4 +38,10 @@ public abstract class ImageDataFilter<T extends HibImageDataElement> extends Mai
 				content -> content == null ? null : content.getCheckStatus()));
 		return filters;
 	}
+
+	@Override
+	public boolean isSortable() {
+		// TODO implement later
+		return false;
+	}
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphql.filter;
 
+import static graphql.schema.GraphQLEnumType.newEnum;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
@@ -106,11 +109,21 @@ public class NodeFilter extends EntityFilter<NodeContent> implements ReferencedF
 
 	@Override
 	public GraphQLInputType createType() {
-		return super.getType();
+		CommonTx tx = CommonTx.get();
+		if (tx.count(tx.microschemaDao().getPersistenceClass()) < 1) {
+			return newEnum().name(getName()).description("Empty placeholder for " + getName() + ". Currently no micronodes available").value("EMPTY").build();
+		} else {
+			return super.getType();
+		}		
 	}
 
 	@Override
 	public GraphQLInputType createSortingType() {
-		return super.getSortingType();
+		CommonTx tx = CommonTx.get();
+		if (tx.count(tx.microschemaDao().getPersistenceClass()) < 1) {
+			return newEnum().name(getSortingName()).description("Empty placeholder for " + getSortingName() + ". Currently no micronodes available").value("EMPTY").build();
+		} else {
+			return super.getSortingType();
+		}
 	}
 }

@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
  */
 public class S3BinaryFilter extends ImageDataFilter<S3HibBinary> {
 
-	private static final String NAME = "BinaryFilter";
+	private static final String NAME = "S3BinaryFilter";
 
 	private static S3BinaryFilter instance;
 

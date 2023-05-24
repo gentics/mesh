@@ -1,0 +1,93 @@
+{
+	count: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	      	stringList: {
+		      count: {gte: 0}
+		    }
+	      }
+	    }
+	  }) {
+	    # [$.data.count.elements.length()=9]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	anyMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        stringList: {
+	          anyMatch: {equals: "A"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	allMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        stringList: {
+	          allMatch: {equals: "A"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.allMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	noneMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        stringList: {
+	          noneMatch: {equals: "X"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.noneMatch.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	anyNotMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        stringList: {
+	          anyNotMatch: {equals: "D"}
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyNotMatch.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]
