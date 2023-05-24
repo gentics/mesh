@@ -59,11 +59,9 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runDeployTesting)) {
 					if (params.testingVersion?.trim()) {
 						version = params.testingVersion.trim()
-					} else {
-						version = MavenHelper.transformSnapshotToReleaseVersion(version) + '-' + branchName
+						echo "Building version test build with name: " + version
+						MavenHelper.setVersion(version)
 					}
-					echo "Building version test build with name: " + version
-					MavenHelper.setVersion(version)
 				}
 			}
 
