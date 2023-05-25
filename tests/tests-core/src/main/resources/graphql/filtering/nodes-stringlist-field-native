@@ -40,7 +40,7 @@
 	    fields: {
 	      folder: {
 	        stringList: {
-	          noneMatch: {equals: "X"}
+	          noneMatch: {equals: "X"} isNull:false
 	        }
 	      }
 	    }

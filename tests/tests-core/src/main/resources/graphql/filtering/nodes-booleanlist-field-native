@@ -40,7 +40,7 @@
 	    fields: {
 	      folder: {
 	        booleanList: {
-	          noneMatch: false
+	          noneMatch: false isNull:false
 	        }
 	      }
 	    }

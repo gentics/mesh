@@ -40,7 +40,7 @@
 	    fields: {
 	      folder: {
 	        numberList: {
-	          noneMatch: {equals: 100500}
+	          noneMatch: {equals: 100500} isNull:false
 	        }
 	      }
 	    }

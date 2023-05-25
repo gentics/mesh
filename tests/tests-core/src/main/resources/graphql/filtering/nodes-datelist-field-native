@@ -40,7 +40,7 @@
 	    fields: {
 	      folder: {
 	        dateList: {
-	          noneMatch: {equals: "2012-07-11T08:55:21Z"}
+	          noneMatch: {equals: "2012-07-11T08:55:21Z"} isNull:false
 	        }
 	      }
 	    }

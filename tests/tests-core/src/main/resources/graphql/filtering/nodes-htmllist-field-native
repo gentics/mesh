@@ -40,7 +40,7 @@
 	    fields: {
 	      folder: {
 	        htmlList: {
-	          noneMatch: {equals: "X"}
+	          noneMatch: {equals: "X"} isNull:false
 	        }
 	      }
 	    }
