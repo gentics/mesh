@@ -1,22 +1,4 @@
 {
-	count: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	      	booleanList: {
-		      count: {gte: 0}
-		    }
-	      }
-	    }
-	  }) {
-	    # [$.data.count.elements.length()=9]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
 	anyMatch: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -82,6 +64,24 @@
 	    }
 	  }) {
 	    # [$.data.anyNotMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	count: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	      	booleanList: {
+		      count: {gte: 0}
+		    }
+	      }
+	    }
+	  }) {
+	    # [$.data.count.elements.length()=9]
 	    elements {
 	      uuid
 	      schema {

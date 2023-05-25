@@ -38,8 +38,8 @@ import com.gentics.mesh.graphql.model.NodeReferenceIn;
 public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 
 	public static final String OP_COUNT = "count";
-	public static final String OP_ALL_ITEMS_MATCH = "allMatch";
-	public static final String OP_ANY_ITEM_MATCHES = "anyMatch";
+	public static final String OP_ALL_MATCH = "allMatch";
+	public static final String OP_ANY_MATCH = "anyMatch";
 	public static final String OP_NONE_MATCH = "noneMatch";
 	public static final String OP_ANY_NOT_MATCH = "anyNotMatch";
 
@@ -67,12 +67,12 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 				FilterField.isNull(),
 				new MappedFilter<>(getOwner().orElse("LIST"), OP_COUNT, "Filter over item count", NumberFilter.filter(), 
 						val -> val == null ? 0 : val.size()),
-				FilterField.<Collection<T>, Q>create(OP_ALL_ITEMS_MATCH, "Checks if all list items match the given predicate", itemFilter.getType(), 
+				FilterField.<Collection<T>, Q>create(OP_ALL_MATCH, "Checks if all list items match the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().allMatch(item -> itemFilter.createPredicate(query).test(item)), 
-						Optional.of((query) -> wrap(OP_ALL_ITEMS_MATCH, query)), true),
-				FilterField.<Collection<T>, Q>create(OP_ANY_ITEM_MATCHES, "Checks if any list item matches the given predicate", itemFilter.getType(), 
+						Optional.of((query) -> wrap(OP_ALL_MATCH, query)), true),
+				FilterField.<Collection<T>, Q>create(OP_ANY_MATCH, "Checks if any list item matches the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().anyMatch(item -> itemFilter.createPredicate(query).test(item)), 
-						Optional.of((query) -> wrap(OP_ANY_ITEM_MATCHES, query)), true),
+						Optional.of((query) -> wrap(OP_ANY_MATCH, query)), true),
 				FilterField.<Collection<T>, Q>create(OP_NONE_MATCH, "Checks if no list items match the given predicate", itemFilter.getType(), 
 						query -> val -> val != null && val.stream().noneMatch(item -> itemFilter.createPredicate(query).test(item)), 
 						Optional.of((query) -> wrap(OP_NONE_MATCH, query)), true),
@@ -94,34 +94,33 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 			@Override
 			public String getOperator() {
 				switch (operation) {
-				case OP_ANY_ITEM_MATCHES: 
-					return "<";
+				case OP_ANY_MATCH: 
 				case OP_ANY_NOT_MATCH:
-					return ">";
+					return "NOT IN";
 				case OP_NONE_MATCH:
-				case OP_ALL_ITEMS_MATCH: 
-					return "=";
+				case OP_ALL_MATCH: 
+					return "IN";
 				default: throw new IllegalStateException("Unexpected list operation:" + operation);
 				}
 			}
 			
 			@Override
 			public FilterOperand<?> getRight() {
-				return new ListItemOperationOperand(filterOperation, getOwner(), true);
+				switch (operation) {
+				case OP_ANY_MATCH: 
+				case OP_NONE_MATCH:
+					return new ListItemOperationOperand(filterOperation, getOwner(), false, false);
+				case OP_ANY_NOT_MATCH:
+					return new ListItemOperationOperand(filterOperation, getOwner(), true, false);
+				case OP_ALL_MATCH: 
+					return new ListItemOperationOperand(filterOperation, getOwner(), true, true);
+				default: throw new IllegalStateException("Unexpected list operation:" + operation);
+				}
 			}
 			
 			@Override
 			public FilterOperand<?> getLeft() {
-				switch (operation) {
-				case OP_ANY_ITEM_MATCHES:
-					return new LiteralOperand<>(1L, false);
-				case OP_NONE_MATCH:
-					return new LiteralOperand<>(0L, false);
-				case OP_ANY_NOT_MATCH:
-				case OP_ALL_ITEMS_MATCH:
-					return new ListItemOperationOperand(filterOperation, getOwner(), false);
-				default: throw new IllegalStateException("Unexpected list operation:" + operation);
-				}
+				return new LiteralOperand<>(0, false);
 			}
 		};
 	}
