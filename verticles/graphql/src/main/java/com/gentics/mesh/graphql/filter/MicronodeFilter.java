@@ -77,7 +77,7 @@ public class MicronodeFilter extends MainFilter<HibMicronode> implements TypeRef
 	private FilterField<HibMicronode, ?> createFieldFilter(HibMicroschema schema) {
 		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " microschema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
-			content -> content);
+			content -> content, Pair.pair(schema.getUuid(), new JoinPart(schema.getName(), schema.getLatestVersion().getUuid())));
 	}
 
 	@Override

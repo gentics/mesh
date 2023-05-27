@@ -206,7 +206,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/nodes-numberlist-field-native", true, false, "draft"),
 			Arrays.asList("filtering/nodes-booleanlist-field-native", true, false, "draft"),
 			Arrays.asList("filtering/nodes-datelist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft")
+			Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-node-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have six parts.

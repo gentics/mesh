@@ -192,6 +192,13 @@ public interface FieldSchemaContainer extends RestModel {
 	FieldSchemaContainer setFields(List<FieldSchema> fields);
 
 	/**
+	 * Does this model describe a microschema?
+	 * 
+	 * @return
+	 */
+	boolean isMicroschema();
+
+	/**
 	 * Validate the schema for correctness.
 	 */
 	default void validate() {

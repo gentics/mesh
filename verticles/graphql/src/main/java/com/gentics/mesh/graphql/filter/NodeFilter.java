@@ -89,7 +89,7 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
 		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
-			content -> content == null ? null : content.getContainer());
+			content -> content == null ? null : content.getContainer(), Pair.pair(schema.getUuid(), new JoinPart(schema.getName(), schema.getLatestVersion().getUuid())));
 	}
 
 	@Override

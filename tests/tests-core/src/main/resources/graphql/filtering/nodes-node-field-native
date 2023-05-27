@@ -1,0 +1,36 @@
+{
+	nodeRefTeaserLike: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeRef: {node: {schema: {is: content} fields: { content: { teaser: { like: "%_english_name" } } }}}
+	      }
+	    }
+	  }) {
+	    # [$.data.nodeRefTeaserLike.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	nodeRefIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeRef: {isNull:true}
+	      }
+	    }
+	  }) {
+	    # [$.data.nodeRefIsNull.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

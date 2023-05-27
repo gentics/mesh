@@ -49,9 +49,9 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	private final FieldSchemaContainerVersion schema;
 	private final GraphQLContext context;
 
-	private FieldFilter(FieldSchemaContainerVersion container, GraphQLContext context) {
-		super(container.getName() + "FieldFilter", "Filters by fields", Optional.empty());
-		this.schema = container;
+	private FieldFilter(FieldSchemaContainerVersion schemaVersion, GraphQLContext context) {
+		super(schemaVersion.getName() + "FieldFilter", "Filters by fields", Optional.empty());
+		this.schema = schemaVersion;
 		this.context = context;
 	}
 
@@ -69,42 +69,41 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	 *            The field schema to create the filter for
 	 */
 	private FilterField<HibFieldContainer, ?> createFieldFilter(FieldSchema fieldSchema) {
-		String schemaName = schema.getName();
 		String name = fieldSchema.getName();
 		String description = "Filters by the field " + name;
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:
 			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getString(name), HibStringField::getString), schemaName);
+				node -> node == null ? null : getOrNull(node.getString(name), HibStringField::getString), schema);
 		case HTML:
 			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getHtml(name), HibHtmlField::getHTML), schemaName);
+				node -> node == null ? null : getOrNull(node.getHtml(name), HibHtmlField::getHTML), schema);
 		case DATE:
 			return new FieldMappedFilter<>(type, name, description, DateFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getDate(name), HibDateField::getDate), schemaName);
+				node -> node == null ? null : getOrNull(node.getDate(name), HibDateField::getDate), schema);
 		case BOOLEAN:
 			return new FieldMappedFilter<>(type, name, description, BooleanFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schemaName);
+				node -> node == null ? null : getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schema);
 		case NUMBER:
 			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
+				node -> node == null ? null : getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schema);
 		case MICRONODE:
 			return new FieldMappedFilter<>(type, name, description, EntityReferenceFilter.micronodeFieldFilter(context, "MICRONODEFIELD"),
-				node -> node == null ? null : getOrNull(node.getMicronode(name), Function.identity()), schemaName);
+				node -> node == null ? null : getOrNull(node.getMicronode(name), Function.identity()), schema);
 		case NODE:
 			return new FieldMappedFilter<>(type, name, description, EntityReferenceFilter.nodeFieldFilter(context, "NODEFIELD"),
-				node -> node == null ? null : getOrNull(node.getNode(name), Function.identity()), schemaName);
+				node -> node == null ? null : getOrNull(node.getNode(name), Function.identity()), schema);
 		case LIST:
 			Pair<Filter<Collection<?>, ?>, Function<HibFieldContainer, Collection<?>>> listReferenceMap = listReferenceMapper(name, fieldSchema);
 			return new FieldMappedFilter<>(type, name, description, listReferenceMap.getLeft(), 
-					listReferenceMap.getRight(), schemaName, fieldSchema.maybeGetListField().map(ListFieldSchema::getListType).map(FieldTypes::valueByName));
+					listReferenceMap.getRight(), schema, fieldSchema.maybeGetListField().map(ListFieldSchema::getListType).map(FieldTypes::valueByName));
 		case BINARY:
 			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter("BINARYFIELD"), 
-					node -> node == null ? null : getOrNull(node.getBinary(name), Function.identity()), schemaName);
+					node -> node == null ? null : getOrNull(node.getBinary(name), Function.identity()), schema);
 		case S3BINARY:
 			return new FieldMappedFilter<>(type, name, description, S3BinaryFieldFilter.filter("S3BINARYFIELD"), 
-					node -> node == null ? null : getOrNull(node.getS3Binary(name), Function.identity()), schemaName);
+					node -> node == null ? null : getOrNull(node.getS3Binary(name), Function.identity()), schema);
 		default:
 			throw new RuntimeException("Unexpected type " + type);
 		}
