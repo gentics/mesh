@@ -17,19 +17,12 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibListField;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -76,7 +69,6 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	 *            The field schema to create the filter for
 	 */
 	private FilterField<HibFieldContainer, ?> createFieldFilter(FieldSchema fieldSchema) {
-		String owner = schema instanceof MicroschemaVersionModel ? "MICROCONTENT" : "CONTENT";
 		String schemaName = schema.getName();
 		String name = fieldSchema.getName();
 		String description = "Filters by the field " + name;
@@ -98,20 +90,20 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
 				node -> node == null ? null : getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schemaName);
 		case MICRONODE:
-			return new FieldMappedFilter<>(type, name, description, MicronodeFilter.filter(context), 
-				node -> node == null ? null : getOrNull(node.getMicronode(name), HibMicronodeField::getMicronode), schemaName);
+			return new FieldMappedFilter<>(type, name, description, EntityReferenceFilter.micronodeFieldFilter(context, "MICRONODEFIELD"),
+				node -> node == null ? null : getOrNull(node.getMicronode(name), Function.identity()), schemaName);
 		case NODE:
-			return new FieldMappedFilter<>(type, name, description, NodeFilter.filter(context),
-					nodeReferenceMapper(name), schemaName);
+			return new FieldMappedFilter<>(type, name, description, EntityReferenceFilter.nodeFieldFilter(context, "NODEFIELD"),
+				node -> node == null ? null : getOrNull(node.getNode(name), Function.identity()), schemaName);
 		case LIST:
 			Pair<Filter<Collection<?>, ?>, Function<HibFieldContainer, Collection<?>>> listReferenceMap = listReferenceMapper(name, fieldSchema);
 			return new FieldMappedFilter<>(type, name, description, listReferenceMap.getLeft(), 
 					listReferenceMap.getRight(), schemaName, fieldSchema.maybeGetListField().map(ListFieldSchema::getListType).map(FieldTypes::valueByName));
 		case BINARY:
-			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter(owner), 
+			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter("BINARYFIELD"), 
 					node -> node == null ? null : getOrNull(node.getBinary(name), Function.identity()), schemaName);
 		case S3BINARY:
-			return new FieldMappedFilter<>(type, name, description, S3BinaryFieldFilter.filter(owner), 
+			return new FieldMappedFilter<>(type, name, description, S3BinaryFieldFilter.filter("S3BINARYFIELD"), 
 					node -> node == null ? null : getOrNull(node.getS3Binary(name), Function.identity()), schemaName);
 		default:
 			throw new RuntimeException("Unexpected type " + type);
@@ -161,24 +153,6 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			throw new RuntimeException("Unexpected list type " + listType);
 		}
 		return Pair.of(listFilter, node -> node == null ? null : getOrNull(listFieldGetter.apply(node), HibListField::getValues));
-	}
-
-	private Function<HibFieldContainer, NodeContent> nodeReferenceMapper(String name) {
-		return node -> node == null ? null : getOrNull(node.getNode(name), val -> {
-			if (val == null) {
-				return null;
-			}
-			HibNode fieldNode = val.getNode();
-			if (fieldNode == null) {
-				return null;
-			} 
-			HibNodeFieldContainerEdge edge = Tx.get().contentDao().getFieldEdges(fieldNode, Tx.get().getBranch(context).getUuid(), ContainerType.PUBLISHED).nextOrNull();
-			if (edge == null) {
-				return null;
-			} else {
-				return new NodeContent(fieldNode, edge.getNodeContainer(), List.of(edge.getLanguageTag()), edge.getType());
-			}
-		});
 	}
 
 	private static <T, R> R getOrNull(T nullableValue, Function<T, R> mapper) {

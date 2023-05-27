@@ -32,7 +32,7 @@ import graphql.util.Pair;
  * @author plyhun
  *
  */
-public class MicronodeFilter extends MainFilter<HibMicronode> implements ReferencedFilter<HibMicronode, Map<String, ?>> {
+public class MicronodeFilter extends MainFilter<HibMicronode> implements TypeReferencedFilter<HibMicronode, Map<String, ?>> {
 
 	private static final String NAME = "MicronodeFilter";
 	private final static String OWNER = "MICRONODE";

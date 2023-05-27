@@ -32,7 +32,7 @@ import graphql.util.Pair;
 /**
  * Filters nodes.
  */
-public class NodeFilter extends EntityFilter<NodeContent> implements ReferencedFilter<NodeContent, Map<String, ?>> {
+public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferencedFilter<NodeContent, Map<String, ?>> {
 
 	private static final ElementType ELEMENT = ElementType.NODE;
 	private static final String OWNER = ELEMENT.name();

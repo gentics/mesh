@@ -9,12 +9,7 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
-public interface HibNodeField extends HibListableField {
-
-	Logger log = LoggerFactory.getLogger(HibNodeField.class);
+public interface HibNodeField extends HibListableField, HibReferenceField<HibNode> {
 
 	/**
 	 * Returns the node for this field.
@@ -53,4 +48,9 @@ public interface HibNodeField extends HibListableField {
 	 * @return
 	 */
 	Optional<String> getMicronodeFieldName();
+
+	@Override
+	default HibNode getReferencedEntity() {
+		return getNode();
+	}
 }

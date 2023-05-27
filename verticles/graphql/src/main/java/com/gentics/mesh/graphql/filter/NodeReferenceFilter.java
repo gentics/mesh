@@ -21,7 +21,7 @@ import graphql.util.Pair;
 /**
  * Filters incoming node references.
  */
-public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> implements ReferencedFilter<NodeReferenceIn, Map<String, ?>> {
+public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> implements TypeReferencedFilter<NodeReferenceIn, Map<String, ?>> {
 	private final GraphQLContext context;
 	private static final String NAME = "NodeReferenceFilter";
 

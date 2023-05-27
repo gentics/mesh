@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.node.field.HibBasicField;
 import com.gentics.mesh.core.data.node.field.HibDisplayField;
 import com.gentics.mesh.core.data.node.field.HibImageDataField;
+import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
 import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.S3BinaryFieldImpl;
@@ -17,7 +18,7 @@ import com.gentics.mesh.handler.ActionContext;
 /**
  * MDM interface for the s3binary field information.
  */
-public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3BinaryField>, HibDeletableField, HibDisplayField {
+public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3BinaryField>, HibDeletableField, HibDisplayField, HibReferenceField<S3HibBinary> {
 
 	/**
 	 * Set the S3 Object key
@@ -72,6 +73,11 @@ public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3Bin
 			metaData.getLocation().setAlt(alt);
 		}
 		return metaData;
+	}
+
+	@Override
+	default S3HibBinary getReferencedEntity() {
+		return getBinary();
 	}
 
 	@Override

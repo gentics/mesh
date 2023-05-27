@@ -122,6 +122,11 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 			public FilterOperand<?> getLeft() {
 				return new LiteralOperand<>(0, false);
 			}
+
+			@Override
+			public String getInitiatingFilterName() {
+				return query.getInitiatingFilterName();
+			}
 		};
 	}
 

@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;
@@ -280,8 +281,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		if (maybeFilter.isPresent()) {
 			ContentDao contentDao = Tx.get().contentDao();
 			// TODO use an actual version, not the schema
-			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schema", Optional.empty(), Optional.of("schema")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getUuid(), true));
-			FilterOperation allFilter = maybeFilter.map(filter -> (FilterOperation) Combiner.and(Arrays.asList(schemaVersionFilter, filter))).orElse(schemaVersionFilter);
+			FilterOperation<?> schemaVersionFilter = Comparison.eq(new FieldOperand<>(ElementType.NODE, "schema", Optional.empty(), Optional.of("schema")), new LiteralOperand<>(schemaVersion.getSchemaContainer().getUuid(), true), StringUtils.EMPTY);
+			FilterOperation allFilter = maybeFilter.map(filter -> (FilterOperation) Combiner.and(Arrays.asList(schemaVersionFilter, filter), StringUtils.EMPTY)).orElse(schemaVersionFilter);
 			return findAllStream(Tx.get().getProject(ac), ac, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, Optional.of(allFilter)).map(node -> {
 				HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
 				return new NodeContent(node, container, languageTags, type);

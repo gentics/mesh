@@ -30,7 +30,8 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 	}
 
 	/**
-	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
+	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema. 
+	 * If a filter points to the list field, a list item type is provided.
 	 */
 	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, String schemaName, Optional<FieldTypes> maybeItemType) {
 		super("CONTENT", name, description, delegate, mapper);
@@ -72,6 +73,11 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, 
 		return delegate.isSortable() && maybeItemType.isEmpty();
 	}
 
+	/**
+	 * Return a list item type, if this filter points to a list field.
+	 * 
+	 * @return
+	 */
 	public Optional<FieldTypes> getMaybeItemType() {
 		return maybeItemType;
 	}

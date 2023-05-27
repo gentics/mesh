@@ -696,7 +696,7 @@ public abstract class AbstractTypeProvider {
 		} else {
 			if (nativeQueryFiltering == NativeQueryFiltering.ALWAYS || envNativeFilter == NativeFilter.ONLY || PersistingRootDao.shouldSort(getPagingInfo(env))) {
 				// Force native filtering with `1 = 1` dummy filter
-				maybeNativeFilter = Optional.of(Comparison.dummy(true));
+				maybeNativeFilter = Optional.of(Comparison.dummy(true, ""));
 				if (nativeQueryFiltering == NativeQueryFiltering.NEVER) {
 					log.warn("A sorting is requested with native query filtering turned off. This may result in performance penalries!");
 				}

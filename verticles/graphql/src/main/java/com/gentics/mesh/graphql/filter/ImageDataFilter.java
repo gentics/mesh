@@ -19,7 +19,7 @@ public abstract class ImageDataFilter<T extends HibImageDataElement> extends Mai
 	protected final String owner;
 
 	protected ImageDataFilter(String name, String description, String owner) {
-		super(name, description, Optional.of(owner));
+		super(name, description, Optional.empty());
 		this.owner = owner;
 	}
 

@@ -32,7 +32,7 @@ public abstract class EntityFilter<T> extends StartMainFilter<T> {
 	 * @throws UnformalizableQuery
 	 */
 	public FilterOperation<?> createFilterOperation(Map<String, ?> filterArgument) throws UnformalizableQuery  {
-		return createFilterOperation(new FilterQuery<>(getEntityType(), StringUtils.EMPTY, filterArgument));
+		return createFilterOperation(new FilterQuery<>(getEntityType(), getName(), StringUtils.EMPTY, filterArgument));
 	}
 
 	/**

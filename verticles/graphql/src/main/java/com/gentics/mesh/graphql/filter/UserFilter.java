@@ -18,7 +18,7 @@ import graphql.schema.GraphQLTypeReference;
 /**
  * Filters users in GraphQl. This filter should be used whenever a list of users is returned.
  */
-public class UserFilter extends EntityFilter<HibUser> implements ReferencedFilter<HibUser, Map<String, ?>> {
+public class UserFilter extends EntityFilter<HibUser> implements TypeReferencedFilter<HibUser, Map<String, ?>> {
 
 	private static final ElementType ELEMENT = ElementType.USER;
 	private static final String NAME = "UserFilter";

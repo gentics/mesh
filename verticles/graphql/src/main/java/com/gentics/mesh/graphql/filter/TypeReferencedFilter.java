@@ -6,14 +6,14 @@ import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLTypeReference;
 
 /**
- * Externally/recursively referenced type. Both {@link ReferencedFilter#createType()} and {@link ReferencedFilter#createSortingType()} should be explicitly called on creation.
+ * Externally/recursively referenced type. Both {@link TypeReferencedFilter#createType()} and {@link TypeReferencedFilter#createSortingType()} should be explicitly called on creation.
  * 
  * @author plyhun
  *
  * @param <T>
  * @param <Q>
  */
-public interface ReferencedFilter<T, Q> extends NamedFilter<T, Q>{
+public interface TypeReferencedFilter<T, Q> extends NamedFilter<T, Q>{
 
 	@Override
 	default GraphQLInputType getType() {
