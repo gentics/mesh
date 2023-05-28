@@ -21,13 +21,15 @@ import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.FilterQuery;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -68,7 +70,7 @@ public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceF
 	protected final <I> FilterOperation<?> wrapReferencingEdgeFilter(String fieldName, FilterQuery<?, I> query, Filter<?, I> edgeFilter) {
 		FilterOperation<?> filterOperation;
 		try {
-			filterOperation = edgeFilter.createFilterOperation(query);
+			filterOperation = edgeFilter.createFilterOperation(query).maybeSetFilterId(maybeGetFilterId());
 		} catch (UnformalizableQuery e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -93,6 +95,11 @@ public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceF
 			public String getInitiatingFilterName() {
 				return query.getInitiatingFilterName();
 			}
+
+			@Override
+			public Optional<String> maybeGetFilterId() {
+				return filterOperation.maybeGetFilterId();
+			}
 		};
 	}
 
@@ -100,22 +107,32 @@ public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceF
 		return wrapReferencingEdgeFilter(referenceType, query, referenceFilter);
 	}
 
-	public static final EntityReferenceFilter<HibNode, HibNodeField, ?> nodeFieldFilter(GraphQLContext context, String owner) {
+	public static final EntityReferenceFilter<HibNode, HibNodeField, ?> nodeFieldFilter(GraphQLContext context, String owner) {	
+		String branchUuid;
+		if (StringUtils.isBlank(context.getVersioningParameters().getBranch())) {
+			HibProject project = Tx.get().getProject(context);
+			branchUuid = project.getLatestBranch().getUuid();
+		} else {
+			branchUuid = context.getVersioningParameters().getBranch();
+		}
+		List<String> languageTags = context.getNodeParameters().getLanguageList(CommonTx.get().data().options());
 		return nodeFieldFilterInstances.computeIfAbsent(owner, o -> new EntityReferenceFilter<>("NodeFieldBaseFilter", "Filters node field", "node", new MappedFilter<>("NODE", "content", "Filters over field node content", 
 				NodeFilter.filter(context), fieldNode -> {
+					System.err.println("node " + fieldNode);
 					if (fieldNode == null) { 
 						return null;
-					} else {
-						HibNodeFieldContainerEdge edge = Tx.get().contentDao().getFieldEdges(fieldNode, Tx.get().getBranch(context).getUuid(), ContainerType.PUBLISHED).nextOrNull();
-						if (edge == null) {
-							return null;
-						} else {
-							return new NodeContent(fieldNode, edge.getNodeContainer(), List.of(edge.getLanguageTag()), edge.getType());
-						}
+					} else {	
+						ContainerType ctype = ContainerType.PUBLISHED;
+						HibNodeFieldContainer content = Tx.get().contentDao().findVersion(fieldNode, languageTags, branchUuid, ctype.getHumanCode());
+						if (content == null) {
+							ctype = ContainerType.forVersion(context.getVersioningParameters().getVersion());
+							content = Tx.get().contentDao().findVersion(fieldNode, languageTags, branchUuid, ctype.getHumanCode());
+						}						
+						return new NodeContent(fieldNode, content, languageTags, ctype);
 					} }), Optional.of(o)));
 	}
 
 	public static final EntityReferenceFilter<HibMicronode, HibMicronodeField, ?> micronodeFieldFilter(GraphQLContext context, String owner) {
-		return micronodeFieldFilterInstances.computeIfAbsent(owner, o -> new EntityReferenceFilter<>("MicroodeFieldBaseFilter", "Filters micronode field", "micronode", MicronodeFilter.filter(context), Optional.of(o)));
+		return micronodeFieldFilterInstances.computeIfAbsent(owner, o -> new EntityReferenceFilter<>("MicronodeFieldBaseFilter", "Filters micronode field", "micronode", MicronodeFilter.filter(context), Optional.of(o)));
 	}
 }

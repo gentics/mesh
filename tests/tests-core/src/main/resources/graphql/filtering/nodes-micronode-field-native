@@ -1,13 +1,13 @@
 {
-	nodeRefTeaserLike: nodes(filter: {
+	micronodeAddressLike: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        nodeRef: {node: {schema: {is: content} fields: { content: { slug: { like: "%.html" } } }}}
+	        micronode: {micronode: {microschema: {is: vcard} fields: { vcard: { address: { like: "%where" } } }}}
 	      }
 	    }
 	  }) {
-	    # [$.data.nodeRefTeaserLike.elements.length()=1]
+	    # [$.data.micronodeAddressLike.elements.length()=1]
 	    elements {
 	      uuid
 	      schema {
@@ -16,15 +16,15 @@
 	    }
 	}
 	
-	nodeRefIsNull: nodes(filter: {
+	micronodeIsNull: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        nodeRef: {isNull:true}
+	        micronode: {isNull:true}
 	      }
 	    }
 	  }) {
-	    # [$.data.nodeRefIsNull.elements.length()=1]
+	    # [$.data.micronodeIsNull.elements.length()=8]
 	    elements {
 	      uuid
 	      schema {

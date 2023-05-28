@@ -80,7 +80,7 @@ public abstract class SchemaElementFilter<
 		String owner = getEntityType().name();
 		List<FilterField<SC, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.create("is", "Filters by " + getSchemaElementName(), schemaElementEnum(), uuid -> schema -> schema != null && schema.getUuid().equals(uuid), 
-				Optional.of(query -> Comparison.eq(new FieldOperand<>(getEntityType(), "uuid", query.getMaybeJoins(), Optional.empty()), query.makeValueOperand(true), query.getInitiatingFilterName()))));
+				Optional.of(query -> Comparison.eq(new FieldOperand<>(getEntityType(), "uuid", query.maybeGetJoins(), Optional.empty()), query.makeValueOperand(true), query.getInitiatingFilterName()))));
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner));

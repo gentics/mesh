@@ -85,7 +85,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	protected final FilterOperation<?> wrap(String operation, FilterQuery<?, Q> query) {
 		FilterOperation<?> filterOperation;
 		try {
-			filterOperation = itemFilter.createFilterOperation(query);
+			filterOperation = itemFilter.createFilterOperation(query).maybeSetFilterId(maybeGetFilterId());
 		} catch (UnformalizableQuery e) {
 			throw new IllegalArgumentException(e);
 		}

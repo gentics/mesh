@@ -20,7 +20,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        sBbinary: {isNull:true}
+	        s3Binary: {isNull:true}
 	      }
 	    }
 	  }) {
@@ -50,7 +50,7 @@
 	    }
 	}
 
-	s3binaryIsBinaryAccepted: nodes(filter: {
+	s3binaryIsBinaryKeyLike: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
@@ -58,7 +58,7 @@
 	      }
 	    }
 	  }) {
-	    # [$.data.s3binaryIsBinaryAccepted.elements.length()=1]
+	    # [$.data.s3binaryIsBinaryKeyLike.elements.length()=1]
 	    elements {
 	      uuid
 	      schema {

@@ -208,6 +208,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("filtering/nodes-datelist-field-native", true, false, "draft"),
 			Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft"),
 			Arrays.asList("filtering/nodes-node-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-micronode-field-native", true, false, "draft"),
 			Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
 			Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft")
 		)
@@ -406,7 +407,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// s3binary
 			S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
-			container.createS3Binary("s3Binary", s3binary);
+			container.createS3Binary("s3Binary", s3binary).setImageDominantColor("00FF00");
 
 			// stringList
 			HibStringFieldList stringList = container.createStringList("stringList");

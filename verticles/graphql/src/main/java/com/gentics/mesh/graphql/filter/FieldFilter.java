@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibListField;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -42,16 +43,18 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	 * @param container
 	 *            The schema model to create the filter for
 	 */
-	public static FieldFilter filter(GraphQLContext context, FieldSchemaContainerVersion container) {
+	public static FieldFilter filter(GraphQLContext context, HibFieldSchemaVersionElement<?,?,?,?,?> container) {
 		return context.getOrStore(NAME_PREFIX + container.getClass().getSimpleName() + "." + container.getName(), () -> new FieldFilter(container, context));
 	}
 
 	private final FieldSchemaContainerVersion schema;
+	private final String versionUuid;
 	private final GraphQLContext context;
 
-	private FieldFilter(FieldSchemaContainerVersion schemaVersion, GraphQLContext context) {
+	private FieldFilter(HibFieldSchemaVersionElement<?,?,?,?,?> schemaVersion, GraphQLContext context) {
 		super(schemaVersion.getName() + "FieldFilter", "Filters by fields", Optional.empty());
-		this.schema = schemaVersion;
+		this.schema = schemaVersion.getSchema();
+		this.versionUuid = schemaVersion.getUuid();
 		this.context = context;
 	}
 
@@ -152,6 +155,11 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			throw new RuntimeException("Unexpected list type " + listType);
 		}
 		return Pair.of(listFilter, node -> node == null ? null : getOrNull(listFieldGetter.apply(node), HibListField::getValues));
+	}
+
+	@Override
+	public Optional<String> maybeGetFilterId() {
+		return Optional.of(versionUuid);
 	}
 
 	private static <T, R> R getOrNull(T nullableValue, Function<T, R> mapper) {
