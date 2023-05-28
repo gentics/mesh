@@ -16,23 +16,6 @@
 	    }
 	}
 	
-	binaryIsNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        binary: {isNull:true}
-	      }
-	    }
-	  }) {
-	    # [$.data.binaryIsNull.elements.length()=8]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
-	
 	binaryIsBinaryAccepted: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -42,6 +25,23 @@
 	    }
 	  }) {
 	    # [$.data.binaryIsBinaryAccepted.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	binaryIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        binary: {isNull:true}
+	      }
+	    }
+	  }) {
+	    # [$.data.binaryIsNull.elements.length()=8]
 	    elements {
 	      uuid
 	      schema {

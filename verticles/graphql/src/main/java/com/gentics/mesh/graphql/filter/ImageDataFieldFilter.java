@@ -30,7 +30,11 @@ public abstract class ImageDataFieldFilter<E extends HibImageDataElement, T exte
 		filters.add(makeWrappedFieldFilter("plainText", "Filters by text data", StringFilter.filter(), HibImageDataField::getPlainText));
 		filters.add(makeWrappedFieldFilter("altitude", "Filters by altitude", NumberFilter.filter(), HibImageDataField::getLocationAltitude));
 		filters.add(makeWrappedFieldFilter("latitude", "Filters by latitude", NumberFilter.filter(), HibImageDataField::getLocationLatitude));
-		filters.add(makeWrappedFieldFilter("longitude", "Filters by longitude", NumberFilter.filter(), HibImageDataField::getLocationLongitude));		
+		filters.add(makeWrappedFieldFilter("longitude", "Filters by longitude", NumberFilter.filter(), HibImageDataField::getLocationLongitude));	
+		filters.add(makeWrappedFieldFilter("focalPointX", "Filters by longitude", NumberFilter.filter(), 
+				edge -> (edge != null && edge.getImageFocalPoint() != null) ? edge.getImageFocalPoint().getX() : null));	
+		filters.add(makeWrappedFieldFilter("focalPointY", "Filters by longitude", NumberFilter.filter(), 
+				edge -> (edge != null && edge.getImageFocalPoint() != null) ? edge.getImageFocalPoint().getY() : null));	
 		return filters;
 	}
 

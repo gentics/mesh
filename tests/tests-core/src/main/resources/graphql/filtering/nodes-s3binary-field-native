@@ -15,24 +15,7 @@
 	      }
 	    }
 	}
-	
-	s3binaryIsNull: nodes(filter: {
-	    schema: {is: folder}
-	    fields: {
-	      folder: {
-	        s3Binary: {isNull:true}
-	      }
-	    }
-	  }) {
-	    # [$.data.s3binaryIsNull.elements.length()=8]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
-	
+
 	s3binaryIsBinaryAccepted: nodes(filter: {
 	    schema: {is: folder}
 	    fields: {
@@ -59,6 +42,23 @@
 	    }
 	  }) {
 	    # [$.data.s3binaryIsBinaryKeyLike.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	s3binaryIsNull: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        s3Binary: {isNull:true}
+	      }
+	    }
+	  }) {
+	    # [$.data.s3binaryIsNull.elements.length()=8]
 	    elements {
 	      uuid
 	      schema {
