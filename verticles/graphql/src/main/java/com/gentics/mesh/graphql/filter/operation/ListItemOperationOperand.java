@@ -19,12 +19,14 @@ public class ListItemOperationOperand implements FilterOperand<FilterOperation<?
 	private final Optional<String> maybeOwner;
 	private final boolean negate;
 	private final boolean checkIfExists;
+	private final boolean referenceItem; 
 
-	public ListItemOperationOperand(FilterOperation<?> filterOperation, Optional<String> maybeOwner, boolean negate, boolean checkIfExists) {
+	public ListItemOperationOperand(FilterOperation<?> filterOperation, Optional<String> maybeOwner, boolean negate, boolean checkIfExists, boolean referenceItem) {
 		this.filterOperation = filterOperation;
 		this.maybeOwner = maybeOwner;
 		this.negate = negate;
 		this.checkIfExists = checkIfExists;
+		this.referenceItem = referenceItem;
 	}
 
 	@Override
@@ -58,5 +60,9 @@ public class ListItemOperationOperand implements FilterOperand<FilterOperation<?
 
 	public boolean isCheckIfExists() {
 		return checkIfExists;
+	}
+
+	public boolean isReferenceItem() {
+		return referenceItem;
 	}
 }

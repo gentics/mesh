@@ -71,8 +71,8 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 			content -> content == null ? null : content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
 		// TODO referencedBy is not yet ready for native filtering
-		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by referenced entities", ListFilter.nodeReferenceListFilter(context),
-				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()) /*, Pair.pair("references", new JoinPart("REFERENCE", "value"))*/));
+//		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by referenced entities", ListFilter.nodeReferenceListFilter(context),
+//				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()) /*, Pair.pair("references", new JoinPart("REFERENCE", "value"))*/));
 		return filters;
 	}
 
