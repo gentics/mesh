@@ -3,7 +3,7 @@
 	    schema: {is: folder}
 	    fields: {
 	      folder: {
-	        micronode: {micronode: {microschema: {is: vcard} fields: { vcard: { address: { like: "%where" } } }}}
+	        micronode: {micronode: {microschema: {is: vcard} fields: { vcard: { address: { equals: "Somewhere" } } }}}
 	      }
 	    }
 	  }) {

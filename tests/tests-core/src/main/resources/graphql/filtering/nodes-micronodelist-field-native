@@ -8,7 +8,7 @@
 	          	microschema: {is: vcard} 
 				fields: {
 					 vcard: {
-						 address: { like: "%where"}
+						 address: { equals: "Somewhere"}
 					}
 				}
 	          }
