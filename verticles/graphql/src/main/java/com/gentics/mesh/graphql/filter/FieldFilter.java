@@ -48,13 +48,13 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 	}
 
 	private final FieldSchemaContainerVersion schema;
-	private final String versionUuid;
+	private final String schemaUuid;
 	private final GraphQLContext context;
 
 	private FieldFilter(HibFieldSchemaVersionElement<?,?,?,?,?> schemaVersion, GraphQLContext context) {
 		super(schemaVersion.getName() + "FieldFilter", "Filters by fields", Optional.empty());
 		this.schema = schemaVersion.getSchema();
-		this.versionUuid = schemaVersion.getUuid();
+		this.schemaUuid = schemaVersion.getSchemaContainer().getUuid();
 		this.context = context;
 	}
 
@@ -159,7 +159,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 
 	@Override
 	public Optional<String> maybeGetFilterId() {
-		return Optional.of(versionUuid);
+		return Optional.of(schemaUuid);
 	}
 
 	private static <T, R> R getOrNull(T nullableValue, Function<T, R> mapper) {
