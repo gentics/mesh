@@ -21,17 +21,14 @@ import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.FilterQuery;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.data.HibElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
-import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.operation.EntityReferenceOperationOperand;
 
@@ -108,28 +105,20 @@ public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceF
 	}
 
 	public static final EntityReferenceFilter<HibNode, HibNodeField, ?> nodeFieldFilter(GraphQLContext context, String owner) {	
-		String branchUuid;
-		if (StringUtils.isBlank(context.getVersioningParameters().getBranch())) {
-			HibProject project = Tx.get().getProject(context);
-			branchUuid = project.getLatestBranch().getUuid();
-		} else {
-			branchUuid = context.getVersioningParameters().getBranch();
-		}
 		List<String> languageTags = context.getNodeParameters().getLanguageList(CommonTx.get().data().options());
 		return nodeFieldFilterInstances.computeIfAbsent(owner, o -> new EntityReferenceFilter<>("NodeFieldBaseFilter", "Filters node field", "node", new MappedFilter<>("NODE", "content", "Filters over field node content", 
 				NodeFilter.filter(context), fieldNode -> {
-					System.err.println("node " + fieldNode);
 					if (fieldNode == null) { 
 						return null;
-					} else {	
-						ContainerType ctype = ContainerType.PUBLISHED;
-						HibNodeFieldContainer content = Tx.get().contentDao().findVersion(fieldNode, languageTags, branchUuid, ctype.getHumanCode());
-						if (content == null) {
-							ctype = ContainerType.forVersion(context.getVersioningParameters().getVersion());
-							content = Tx.get().contentDao().findVersion(fieldNode, languageTags, branchUuid, ctype.getHumanCode());
-						}						
-						return new NodeContent(fieldNode, content, languageTags, ctype);
-					} }), Optional.of(o)));
+					} else {
+						// TODO FIXME there should be a way to pick node content more precisely
+						return languageTags.stream()
+							.map(lang -> Tx.get().contentDao().getFieldContainer(fieldNode, lang))
+							.filter(content -> content != null)
+							.flatMap(content -> Tx.get().contentDao().getContainerEdges(content))
+							.map(edge -> new NodeContent(fieldNode, edge))
+							.findAny().orElse(null);							
+					}}), Optional.of(o)));
 	}
 
 	public static final EntityReferenceFilter<HibMicronode, HibMicronodeField, ?> micronodeFieldFilter(GraphQLContext context, String owner) {

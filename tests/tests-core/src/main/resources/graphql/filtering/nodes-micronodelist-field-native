@@ -1,0 +1,121 @@
+{
+	anyMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronodeList: {
+	          anyMatch: {
+	          	microschema: {is: vcard} 
+				fields: {
+					 vcard: {
+						 address: { like: "%where"}
+					}
+				}
+	          }
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	allMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronodeList: {
+	          allMatch: {
+	          	microschema: {is: vcard} 
+				fields: {
+					 vcard: {
+						 address: { like: "%where"}
+					}
+				}
+	          }
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.allMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	noneMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronodeList: {
+	          noneMatch: {
+	          	microschema: {is: vcard} 
+				fields: {
+					 vcard: {
+						 address: { like: "%where"}
+					}
+				}
+	          } isNull:false
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.noneMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	anyNotMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronodeList: {
+	          anyNotMatch: {
+	          	microschema: {is: vcard} 
+				fields: {
+					 vcard: {
+						 address: { like: "%where"}
+					}
+				}
+	          }
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyNotMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	count: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	      	micronodeList: {
+		      count: {gte: 0}
+		    }
+	      }
+	    }
+	  }) {
+	    # [$.data.count.elements.length()=9]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

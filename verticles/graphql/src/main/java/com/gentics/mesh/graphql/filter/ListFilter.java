@@ -20,9 +20,12 @@ import com.gentics.graphqlfilter.filter.operation.FilterQuery;
 import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.operation.ListItemOperationOperand;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
@@ -48,7 +51,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	private static ListFilter<Number, ?> numberListFilterInstance;
 	private static ListFilter<Boolean, ?> booleanListFilterInstance;
 	private static ListFilter<Long, ?> dateListFilterInstance;
-	private static ListFilter<NodeContent, ?> nodeListFilterInstance;
+	private static ListFilter<HibNode, ?> nodeListFilterInstance;
 	private static ListFilter<HibMicronode, ?> micronodeListFilterInstance;
 	private static ListFilter<HibBinaryField, ?> binaryListFilterInstance;
 	private static ListFilter<S3HibBinaryField, ?> s3binaryListFilterInstance;
@@ -171,9 +174,22 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 		return dateListFilterInstance;
 	}
 
-	public static final ListFilter<NodeContent, ?> nodeListFilter(GraphQLContext context) {
+	public static final ListFilter<HibNode, ?> nodeListFilter(GraphQLContext context) {
+		List<String> languageTags = context.getNodeParameters().getLanguageList(CommonTx.get().data().options());
 		if (nodeListFilterInstance == null) {
-			nodeListFilterInstance = new ListFilter<>("NodeListFilter", "Filters node lists", NodeFilter.filter(context), Optional.of("NODELIST"), true);
+			nodeListFilterInstance = new ListFilter<>("NodeListFilter", "Filters node lists", new MappedFilter<>("NODE", "content", "Filters over field node content", 
+					NodeFilter.filter(context), fieldNode -> {
+						if (fieldNode == null) { 
+							return null;
+						} else {
+							// TODO FIXME there should be a way to pick node content more precisely
+							return languageTags.stream()
+								.map(lang -> Tx.get().contentDao().getFieldContainer(fieldNode, lang))
+								.filter(content -> content != null)
+								.flatMap(content -> Tx.get().contentDao().getContainerEdges(content))
+								.map(edge -> new NodeContent(fieldNode, edge))
+								.findAny().orElse(null);							
+						}}), Optional.of("NODELIST"), true);
 		}
 		return nodeListFilterInstance;
 	}
