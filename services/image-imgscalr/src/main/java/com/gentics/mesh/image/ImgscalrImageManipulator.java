@@ -402,7 +402,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 						String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
 						String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-						String cacheFilePath = filename;
+						String cacheFilePath = options.getImageCacheDirectory()  + File.pathSeparator + filename;
 						File outCacheFile = new File(cacheFilePath);
 
 						// Write image
@@ -471,7 +471,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 										String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
 										String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-										String cacheFilePath = filename;
+										String cacheFilePath = options.getImageCacheDirectory()  + File.pathSeparator + filename;
 										File outCacheFile = new File(cacheFilePath);
 
 										// Write image

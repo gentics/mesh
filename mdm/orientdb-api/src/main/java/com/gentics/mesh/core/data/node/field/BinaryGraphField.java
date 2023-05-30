@@ -6,6 +6,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -161,7 +162,8 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 *
 	 * @return
 	 */
-	HibBinary getBinary();
+	@Override
+	Binary getBinary();
 
 	/**
 	 * Set the metadata property.

@@ -12,6 +12,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -67,7 +69,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Handler for binary or s3binary transformer requests.
@@ -194,7 +195,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			parameters.setResizeMode(ResizeMode.SMART);
 		}
 		// Lookup the s3 binary and set the focal point parameters
-		S3HibBinary s3binaryField = db.tx(tx -> {
+		S3HibBinaryField s3binaryField = db.tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			HibProject project = tx.getProject(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
@@ -212,13 +213,13 @@ public class BinaryTransformHandler extends AbstractHandler {
 			if (!parameters.hasFocalPoint() && focalPoint != null) {
 				parameters.setFocalPoint(focalPoint);
 			}
-			return field.getBinary();
+			return field;
 		});
 
 		parameters.validate();
 		S3UploadContext s3UploadContext = new S3UploadContext();
-		String s3ObjectKey = s3binaryField.getS3ObjectKey();
-		String fileName = s3binaryField.getFileName();
+		String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
+		String fileName = s3binaryField.getBinary().getFileName();
 		s3UploadContext.setFileName(fileName);
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
 		s3UploadContext.setS3ObjectKey(s3ObjectKey);

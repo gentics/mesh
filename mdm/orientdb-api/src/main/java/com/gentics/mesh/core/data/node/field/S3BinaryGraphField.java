@@ -38,6 +38,9 @@ public interface S3BinaryGraphField extends BasicGraphField<S3BinaryField>, Mesh
 
 	String S3_BINARY_CHECK_SECRET = "check-secret";
 
+	@Override
+	S3Binary getBinary();
+
 	/**
 	 * Return the S3 binary filename.
 	 *

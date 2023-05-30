@@ -171,20 +171,13 @@ public interface S3HibBinaryField extends HibImageDataField, HibBasicField<S3Bin
 				matchingDominantColor = Objects.equals(colorA, colorB);
 			}
 
-			boolean matchingSha512sum = true;
-			if (s3binaryField.getS3ObjectKey() != null) {
-				String hashSumA = getBinary() != null ? getBinary().getS3ObjectKey() : null;
-				String hashSumB = s3binaryField.getS3ObjectKey();
-				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
-			}
-
 			boolean matchingMetadata = true;
 			if (s3binaryField.getMetadata() != null) {
 				S3BinaryMetadata graphMetadata = getMetadata();
 				S3BinaryMetadata restMetadata = s3binaryField.getMetadata();
 				matchingMetadata = Objects.equals(graphMetadata, restMetadata);
 			}
-			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingSha512sum && matchingMetadata && matchingS3ObjectKey;
+			return matchingFilename && matchingMimetype && matchingFocalPoint && matchingDominantColor && matchingMetadata && matchingS3ObjectKey;
 		}
 		return false;
 	}
