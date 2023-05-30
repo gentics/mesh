@@ -1074,7 +1074,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-		InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+		InputStream fileData, long fileSize, String fileName, String contentType, boolean publish, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
@@ -1098,6 +1098,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		multiPartFormData.append("Content-Disposition: form-data; name=\"language\"\r\n");
 		multiPartFormData.append("\r\n");
 		multiPartFormData.append(languageTag).append("\r\n");
+
+		if (publish) {
+			multiPartFormData.append("--").append(boundary).append("\r\n");
+			multiPartFormData.append("Content-Disposition: form-data; name=\"publish\"\r\n");
+			multiPartFormData.append("\r\n");
+			multiPartFormData.append("true").append("\r\n");
+		}
 
 		multiPartFormData.append("--").append(boundary).append("\r\n");
 		multiPartFormData.append("Content-Disposition: form-data; name=\"" + "shohY6d" + "\"; filename=\"").append(fileName).append("\"\r\n");

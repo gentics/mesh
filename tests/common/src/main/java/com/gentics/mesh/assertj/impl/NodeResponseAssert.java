@@ -149,4 +149,17 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 		assertEquals("The schema name did not match.", name, actual.getSchema().getName());
 		return this;
 	}
+
+	/**
+	 * Assert that the given node has the expected language variant
+	 * @param language expected language code
+	 * @param published expected published status
+	 * @return Fluent API
+	 */
+	public NodeResponseAssert hasLanguageVariant(String language, boolean published) {
+		assertThat(actual.getAvailableLanguages()).as(descriptionText() + " available languages").containsKey(language);
+		assertThat(actual.getAvailableLanguages().get(language)).as(descriptionText() + " variant " + language)
+				.hasFieldOrPropertyWithValue("published", published);
+		return this;
+	}
 }

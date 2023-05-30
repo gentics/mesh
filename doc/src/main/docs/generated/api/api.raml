@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.10.7"
+version: "1.10.8"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1503,7 +1503,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f3618b295382451b9955ce14b59d1018"
+                            "uuid" : "8570afb96a3e4161b29bf2546abb0157"
                           } ]
                         }
             responses: 
@@ -3011,7 +3011,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "cb7b69f6cae947e3a849404191c9b505"
+                            "uuid" : "c45cf3676e4444b486c3b04894a601a8"
                           } ]
                         }
             responses: 
@@ -4292,7 +4292,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fc3ef05a5eae4de6b7d03cbb65d90395"
+                            "uuid" : "8f014f418f9c4314ac2fbb54637bb605"
                           } ]
                         }
             responses: 
@@ -6666,7 +6666,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7f6e329dc7584271ad98011df6fe73b9"
+                            "uuid" : "117d8bad570447b0b873614564a155c0"
                           } ]
                         }
             responses: 
@@ -8970,7 +8970,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1265f71c4d754efd8dba75c9da9a837c"
+                            "uuid" : "0c14abd286f34ea4bbc8541e18667368"
                           } ]
                         }
             responses: 
@@ -10635,7 +10635,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8ce9b3f427564b7da5fbd258751ba16c"
+                            "uuid" : "ddb32e715a2d4fcab081e95d0b895a55"
                           } ]
                         }
             responses: 
@@ -17014,7 +17014,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.10.7",
+                                  "meshVersion" : "1.10.8",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -17320,6 +17320,93 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "publish" : {
+                              "type" : "boolean",
+                              "description" : "Whether the publish the node after creation."
+                            },
+                            "grant" : {
+                              "type" : "object",
+                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:ObjectPermissionGrantRequest",
+                              "description" : "Permissions to be granted to roles on the created node.",
+                              "properties" : {
+                                "create" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the create permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference",
+                                    "properties" : {
+                                      "name" : {
+                                        "type" : "string",
+                                        "description" : "Name of the referenced element"
+                                      },
+                                      "uuid" : {
+                                        "type" : "string",
+                                        "required" : true,
+                                        "description" : "Uuid of the referenced element"
+                                      }
+                                    }
+                                  }
+                                },
+                                "read" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the read permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "update" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the update permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "delete" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the delete permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "publish" : {
+                                  "type" : "array",
+                                  "description" : "Roles to which the publish permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "readPublished" : {
+                                  "type" : "array",
+                                  "description" : "Roles to which the read published permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "exclusive" : {
+                                  "type" : "boolean",
+                                  "description" : "Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles)."
+                                },
+                                "ignore" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles which are ignored when the exclusive flag is set.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -17335,7 +17422,8 @@ mediaType: application/json
                           "fields" : {
                             "name" : "DeLorean DMC-12",
                             "description" : "The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."
-                          }
+                          },
+                          "publish" : false
                         }
             responses: 
                 "201": 
@@ -18955,6 +19043,93 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "publish" : {
+                              "type" : "boolean",
+                              "description" : "Whether the publish the node after updating."
+                            },
+                            "grant" : {
+                              "type" : "object",
+                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:ObjectPermissionGrantRequest",
+                              "description" : "Permissions to be granted to roles on the updated node.",
+                              "properties" : {
+                                "create" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the create permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference",
+                                    "properties" : {
+                                      "name" : {
+                                        "type" : "string",
+                                        "description" : "Name of the referenced element"
+                                      },
+                                      "uuid" : {
+                                        "type" : "string",
+                                        "required" : true,
+                                        "description" : "Uuid of the referenced element"
+                                      }
+                                    }
+                                  }
+                                },
+                                "read" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the read permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "update" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the update permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "delete" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the delete permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "publish" : {
+                                  "type" : "array",
+                                  "description" : "Roles to which the publish permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "readPublished" : {
+                                  "type" : "array",
+                                  "description" : "Roles to which the read published permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "exclusive" : {
+                                  "type" : "boolean",
+                                  "description" : "Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles)."
+                                },
+                                "ignore" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles which are ignored when the exclusive flag is set.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -19018,7 +19193,8 @@ mediaType: application/json
                               }
                             } ]
                           },
-                          "version" : "1.0"
+                          "version" : "1.0",
+                          "publish" : false
                         }
             responses: 
                 "404": 
@@ -22573,7 +22749,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "80b8d5089a874f429bdffa10b8aec762"
+                            "uuid" : "f28b245c8dac41dbb9fa41cd03da8091"
                           } ]
                         }
             responses: 
@@ -25947,7 +26123,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "3291ffad67b34609867d8a32f23de1ea"
+                            "uuid" : "eba0e0b59a6c459fa53a24d295ad4d9b"
                           } ]
                         }
             responses: 
@@ -27798,7 +27974,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "157cbe390cf246f89b3f5b2f2f8e8eb3"
+                            "uuid" : "dc7106752d60437c915a895a2e9f8dfe"
                           } ]
                         }
             responses: 
@@ -28889,6 +29065,93 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "publish" : {
+                              "type" : "boolean",
+                              "description" : "Whether the publish the node after updating."
+                            },
+                            "grant" : {
+                              "type" : "object",
+                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:ObjectPermissionGrantRequest",
+                              "description" : "Permissions to be granted to roles on the updated node.",
+                              "properties" : {
+                                "create" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the create permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference",
+                                    "properties" : {
+                                      "name" : {
+                                        "type" : "string",
+                                        "description" : "Name of the referenced element"
+                                      },
+                                      "uuid" : {
+                                        "type" : "string",
+                                        "required" : true,
+                                        "description" : "Uuid of the referenced element"
+                                      }
+                                    }
+                                  }
+                                },
+                                "read" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the read permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "update" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the update permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "delete" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles to which the delete permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "publish" : {
+                                  "type" : "array",
+                                  "description" : "Roles to which the publish permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "readPublished" : {
+                                  "type" : "array",
+                                  "description" : "Roles to which the read published permission is granted.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                },
+                                "exclusive" : {
+                                  "type" : "boolean",
+                                  "description" : "Flag which indicates whether the permissions granted to only the given roles (will be revoked from all other roles)."
+                                },
+                                "ignore" : {
+                                  "type" : "array",
+                                  "required" : true,
+                                  "description" : "Roles which are ignored when the exclusive flag is set.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:role:RoleReference"
+                                  }
+                                }
+                              }
                             }
                           }
                         }
@@ -28952,7 +29215,8 @@ mediaType: application/json
                               }
                             } ]
                           },
-                          "version" : "1.0"
+                          "version" : "1.0",
+                          "publish" : false
                         }
             responses: 
                 "200": 
@@ -31506,7 +31770,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "4e4fbbbe59a54fa18bc63f6b201a87cf"
+                            "uuid" : "87aab5794a304bb9bb0f9888db5bdb10"
                           } ]
                         }
             responses: 

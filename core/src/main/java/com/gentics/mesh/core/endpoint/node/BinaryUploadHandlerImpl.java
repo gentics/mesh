@@ -172,6 +172,9 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		if (fileUploads.size() > 1) {
 			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
 		}
+
+		boolean publish = Boolean.parseBoolean(attributes.get("publish"));
+
 		FileUpload ul = fileUploads.iterator().next();
 		// TODO fail on multiple multipart formdata files
 		validateFileUpload(ul, fieldName);
@@ -204,7 +207,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			}
 
 			return storeUploadInTemp(ctx, ul, hash)
-				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)));
+				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName, publish)));
 		}).onErrorResumeNext(e -> {
 			if (ctx.isInvokeStore()) {
 				String tmpId = ctx.getTemporaryId();
@@ -266,7 +269,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<HibBinaryField>> fieldModifier, UploadContext context,
 		String nodeUuid,
 		String languageTag, String nodeVersion,
-		String fieldName) {
+		String fieldName, boolean publish) {
 		FileUpload upload = context.getUpload();
 		String hash = context.getHash();
 		String binaryUuid = context.getBinaryUuid();
@@ -383,6 +386,12 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			}
 
 			batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
+
+			if (publish) {
+				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+				// Invoke a store of the document since it must now also be added to the published index
+				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+			}
 
 			return nodeDao.transformToRestSync(node, ac, 0);
 		});

@@ -1234,7 +1234,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, boolean publish, ParameterProvider... parameters) {
 		try {
 			return updateNodeBinaryField(projectName, nodeUuid, languageTag, nodeVersion, fieldKey, IOUtils.toByteArray(fileData), fileName,
 				contentType, parameters);

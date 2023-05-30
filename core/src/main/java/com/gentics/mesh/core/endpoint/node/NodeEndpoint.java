@@ -183,6 +183,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
+		fieldUpdate.addUriParameter("publish", "Whether the node shall be published after updating the binary field", "true");
 		fieldUpdate.method(POST);
 		fieldUpdate.produces(APPLICATION_JSON);
 		fieldUpdate.exampleRequest(nodeExamples.getExampleBinaryUploadFormParameters());

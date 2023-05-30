@@ -12,6 +12,11 @@
 | object
 | Dynamic map with fields of the node content.
 
+| grant
+| false
+| object
+| Permissions to be granted to roles on the node.
+
 | language
 | true
 | string
@@ -21,6 +26,11 @@
 | true
 | object
 | Reference to the parent node in which the node will be created. The uuid of this object must be set.
+
+| publish
+| false
+| boolean
+| Whether the publish the node after creation/updating.
 
 | schema
 | true
