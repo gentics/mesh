@@ -12,10 +12,20 @@
 | object
 | Dynamic map with fields of the node content.
 
+| grant
+| false
+| object
+| Permissions to be granted to roles on the updated node.
+
 | language
 | true
 | string
 | ISO 639-1 language tag of the node content.
+
+| publish
+| false
+| boolean
+| Whether the publish the node after updating.
 
 | tags
 | false

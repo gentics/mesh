@@ -35,8 +35,37 @@ public interface NodeBinaryFieldClientMethods {
 	 * @param contentType
 	 * @return
 	 */
+	default MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+													String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+		return updateNodeBinaryField(projectName, nodeUuid, languageTag, nodeVersion, fieldKey, fileData, fileSize, fileName, contentType, false, parameters);
+	}
+
+	/**
+	 * Update the binary field for the node with the given nodeUuid in the given project using the provided input stream.
+	 *
+	 * This reads the entire stream and closes it after the content has been read.
+	 *
+	 * @param projectName
+	 *            Name of the project which contains the node
+	 * @param nodeUuid
+	 *            Uuid of the node
+	 * @param languageTag
+	 *            Language tag of the node
+	 * @param nodeVersion
+	 *            Node version
+	 * @param fieldKey
+	 *            Key of the field which holds the binary data
+	 * @param fileData
+	 *            InputStream that serves the binary data
+	 * @param fileSize
+	 * @param fileName
+	 * @param contentType
+	 * @param publish true to also publish the node
+	 * @param parameters
+	 * @return
+	 */
 	MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-													String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters);
+			String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, boolean publish, ParameterProvider... parameters);
 
 	/**
 	 * Download the binary field of the given node in the given project.

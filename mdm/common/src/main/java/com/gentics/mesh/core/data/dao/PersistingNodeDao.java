@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_REFERENCE_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_TAGGED;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,6 +57,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -63,6 +66,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -80,6 +84,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
+import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
@@ -101,6 +106,7 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -1003,6 +1009,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			updateTags(node, ac, batch, requestModel.getTags());
 		}
 
+		if (requestModel.getGrant() != null) {
+			grantRolePermissions(node, ac, requestModel.getGrant());
+		}
+
+		if (requestModel.isPublish()) {
+			HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+			// Invoke a store of the document since it must now also be added to the published index
+			batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+		}
+
 		return node;
 	}
 
@@ -1414,6 +1430,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			latestDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser());
 			latestDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 			batch.add(contentDao.onCreated(latestDraftVersion, branch.getUuid(), DRAFT));
+
+			if (requestModel.getGrant() != null) {
+				grantRolePermissions(node, ac, requestModel.getGrant());
+			}
+
+			if (requestModel.isPublish()) {
+				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+				// Invoke a store of the document since it must now also be added to the published index
+				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+			}
+
 			return true;
 		} else {
 			String version = requestModel.getVersion();
@@ -1475,6 +1502,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			// Check whether the request still contains data which needs to be updated.
+			boolean updated = false;
 			if (!requestModel.getFields().isEmpty()) {
 
 				// Create new field container as clone of the existing
@@ -1490,10 +1518,22 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 				latestDraftVersion = newDraftVersion;
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
-				return true;
+
+				updated = true;
 			}
+
+			if (requestModel.getGrant() != null) {
+				grantRolePermissions(node, ac, requestModel.getGrant());
+			}
+
+			if (requestModel.isPublish()) {
+				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+				// Invoke a store of the document since it must now also be added to the published index
+				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+			}
+
+			return updated;
 		}
-		return false;
 	}
 
 	@Override
@@ -1664,6 +1704,86 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	default String getParentNodeUuid(HibNode node, String branchUuid) {
 		HibNode parentNode = getParentNode(node, branchUuid);
 		return parentNode != null ? parentNode.getUuid() : null;
+	}
+
+	/**
+	 * Grant role permissions on the give node according to the grant request
+	 * @param node node to grant permissions on
+	 * @param ac action context
+	 * @param grant request
+	 */
+	default void grantRolePermissions(HibNode node, InternalActionContext ac, ObjectPermissionGrantRequest grant) {
+		HibUser requestUser = ac.getUser();
+		Tx tx = Tx.get();
+		RoleDao roleDao = tx.roleDao();
+		UserDao userDao = tx.userDao();
+
+		Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+		Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
+		Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+
+		InternalPermission[] possiblePermissions = node.hasPublishPermissions()
+				? InternalPermission.values()
+				: InternalPermission.basicPermissions();
+
+		for (InternalPermission perm : possiblePermissions) {
+			List<RoleReference> roleRefsToSet = grant.get(perm.getRestPerm());
+			if (roleRefsToSet != null) {
+				Set<HibRole> rolesToSet = new HashSet<>();
+				for (RoleReference roleRef : roleRefsToSet) {
+					// find the role for the role reference
+					HibRole role = null;
+					if (!StringUtils.isEmpty(roleRef.getUuid())) {
+						role = allRolesByUuid.get(roleRef.getUuid());
+
+						if (role == null) {
+							throw error(NOT_FOUND, "object_not_found_for_uuid", roleRef.getUuid());
+						}
+					} else if (!StringUtils.isEmpty(roleRef.getName())) {
+						role = allRolesByName.get(roleRef.getName());
+
+						if (role == null) {
+							throw error(NOT_FOUND, "object_not_found_for_name", roleRef.getName());
+						}
+					} else {
+						throw error(BAD_REQUEST, "role_reference_uuid_or_name_missing");
+					}
+
+					// check update permission
+					if (!userDao.hasPermission(requestUser, role, UPDATE_PERM)) {
+						throw error(FORBIDDEN, "error_missing_perm", role.getUuid(), UPDATE_PERM.getRestPerm().getName());
+					}
+
+					rolesToSet.add(role);
+				}
+
+				roleDao.grantPermissions(rolesToSet, node, false, perm);
+
+				// handle "exclusive" flag by revoking perm from all "other" roles
+				if (grant.isExclusive()) {
+					// start with all roles, the user can see
+					Set<HibRole> rolesToRevoke = new HashSet<>(allRoles);
+					// remove all roles, which get the permission granted
+					rolesToRevoke.removeAll(rolesToSet);
+
+					// remove all roles, which should be ignored
+					if (grant.getIgnore() != null) {
+						rolesToRevoke.removeIf(role -> {
+							return grant.getIgnore().stream().filter(ign -> {
+								return StringUtils.equals(ign.getUuid(), role.getUuid()) || StringUtils.equals(ign.getName(), role.getName());
+							}).findAny().isPresent();
+						});
+					}
+
+					// remove all roles without UPDATE_PERM
+					rolesToRevoke.removeIf(role -> !userDao.hasPermission(requestUser, role, UPDATE_PERM));
+
+					if (!rolesToRevoke.isEmpty()) {
+						roleDao.revokePermissions(rolesToRevoke, node, perm);
+					}
+				}
+			}
+		}
 	}
 
 	@Override

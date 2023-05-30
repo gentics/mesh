@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.binary;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -42,6 +43,8 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -433,5 +436,35 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		} catch (Exception e) {
 			assertTrue(e.getMessage().indexOf("Error:400 in POST") > -1);
 		}
+	}
+
+	/**
+	 * Test uploading binary data without publishing
+	 */
+	@Test
+	public void testUploadAndDoNotPublish() {
+		String uuid = tx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(folder("2015"), "en").getVersion(); });
+		NodeResponse updated = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
+			"application/binary"));
+
+		assertThat(updated).hasVersion("1.1").hasLanguageVariant("en", true);
+	}
+
+	/**
+	 * Test uploading binary data and publishing
+	 */
+	@Test
+	public void testUploadAndPublish() {
+		String uuid = tx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(folder("2015"), "en").getVersion(); });
+		NodeResponse updated = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME,
+			new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "filename.txt",
+			"application/binary", true));
+
+		assertThat(updated).hasVersion("2.0").hasLanguageVariant("en", true);
 	}
 }
