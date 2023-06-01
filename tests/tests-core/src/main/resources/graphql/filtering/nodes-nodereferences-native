@@ -55,7 +55,7 @@
 	    	count: { gt: 1 }
 	    }
 	  }) {
-	    # [$.data.hasContentReferences.elements.length()=3]
+	    # [$.data.hasContentReferences.elements.length()=2]
 	    elements {
 	      uuid
 	      schema {
@@ -69,7 +69,7 @@
 	    	count: { gt: 1 }
 	    }
 	  }) {
-	    # [$.data.hasListsReferences.elements.length()=2]
+	    # [$.data.hasListsReferences.elements.length()=3]
 	    elements {
 	      uuid
 	      schema {

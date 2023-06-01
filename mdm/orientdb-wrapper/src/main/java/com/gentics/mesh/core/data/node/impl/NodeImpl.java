@@ -306,12 +306,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public Stream<HibNodeField> getInboundReferences(boolean lookupInFields, boolean lookupInLists) {
 		EdgeTraversal<?, ?, ?> edges;
-		if (!lookupInFields) {
-			edges = inE(HAS_FIELD);
-		} else if (!lookupInLists) {
-			edges = inE(HAS_ITEM);
-		} else if (lookupInLists && lookupInFields) {
+		if (lookupInLists && lookupInFields) {
 			edges = inE(HAS_FIELD, HAS_ITEM);
+		} else if (lookupInFields) {
+			edges = inE(HAS_FIELD);
+		} else if (lookupInLists) {
+			edges = inE(HAS_ITEM);
 		} else {
 			throw error(BAD_REQUEST, "For inbound references you have to pick at least one source.");
 		}
