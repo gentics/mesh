@@ -32,6 +32,15 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.operation.EntityReferenceOperationOperand;
 
+/**
+ * A filter, processing the entities, referenced by the target element.
+ * 
+ * @author plyhun
+ *
+ * @param <E> referenced entity type
+ * @param <T> target filtered type
+ * @param <Q> query type
+ */
 public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceField<E>, Q> extends MainFilter<T> {
 
 	private static Map<String, EntityReferenceFilter<HibNode, HibNodeField, ?>> nodeFieldFilterInstances = new HashMap<>();

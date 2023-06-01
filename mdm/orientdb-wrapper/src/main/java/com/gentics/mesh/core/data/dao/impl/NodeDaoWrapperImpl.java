@@ -251,8 +251,8 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences(HibNode node) {
-		return toGraph(node).getInboundReferences();
+	public Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists) {
+		return toGraph(node).getInboundReferences(lookupInFields, lookupInLists);
 	}
 
 	@Override

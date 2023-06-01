@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.list.ListGraphField;
@@ -40,8 +41,9 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	}
 
 	@Override
-	public Stream<? extends HibNodeFieldContainer> getReferencingContents() {
+	public Stream<? extends HibNodeFieldContainer> getReferencingContents(boolean lookupInContent, boolean lookupInMicronode) {
 		return getReferencingFieldContainers()
+			.filter(content -> (lookupInContent && content instanceof HibNodeFieldContainer) || (lookupInMicronode && content instanceof HibMicronode))
 			.flatMap(GraphFieldContainer::getContents);
 	}
 

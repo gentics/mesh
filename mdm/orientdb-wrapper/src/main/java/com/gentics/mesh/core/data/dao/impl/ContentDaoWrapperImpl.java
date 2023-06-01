@@ -13,22 +13,21 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.MeshEdge;
-import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.core.data.user.HibUser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.HibDeletableField;
+import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -39,13 +38,13 @@ import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
@@ -113,8 +112,8 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences(HibNode node) {
-		return toGraph(node).getInboundReferences();
+	public Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists) {
+		return toGraph(node).getInboundReferences(lookupInFields, lookupInLists);
 	}
 
 	@Override

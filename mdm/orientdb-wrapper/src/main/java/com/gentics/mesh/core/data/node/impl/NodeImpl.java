@@ -16,11 +16,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
 import java.util.List;
@@ -85,6 +87,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -301,10 +304,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences() {
-		return toStream(inE(HAS_FIELD, HAS_ITEM)
-			.has(NodeGraphFieldImpl.class)
-			.frameExplicit(NodeGraphFieldImpl.class));
+	public Stream<HibNodeField> getInboundReferences(boolean lookupInFields, boolean lookupInLists) {
+		EdgeTraversal<?, ?, ?> edges;
+		if (!lookupInFields) {
+			edges = inE(HAS_FIELD);
+		} else if (!lookupInLists) {
+			edges = inE(HAS_ITEM);
+		} else if (lookupInLists && lookupInFields) {
+			edges = inE(HAS_FIELD, HAS_ITEM);
+		} else {
+			throw error(BAD_REQUEST, "For inbound references you have to pick at least one source.");
+		}
+		return toStream(edges.has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class));
 	}
 
 	@Override

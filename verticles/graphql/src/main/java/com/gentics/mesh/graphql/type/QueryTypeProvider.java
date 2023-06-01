@@ -597,8 +597,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(NodeFilter.filter(context).createType());
 		additionalTypes.add(NodeFilter.filter(context).createSortingType());
-		additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context).createType());
-		additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context).createSortingType());
+
+		for (byte features = 1; features <= NodeReferenceFilter.createLookupChange(true, true, true, true); features++) {
+			additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context, features).createType());
+			additionalTypes.add(NodeReferenceFilter.nodeReferenceFilter(context, features).createSortingType());
+		}
 
 		additionalTypes.add(MicronodeFilter.filter(context).createType());
 		additionalTypes.add(MicronodeFilter.filter(context).createSortingType());

@@ -23,15 +23,26 @@ import graphql.util.Pair;
  */
 public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> implements TypeReferencedFilter<NodeReferenceIn, Map<String, ?>> {
 	private final GraphQLContext context;
+	private final byte lookupFeatures;
 	private static final String NAME = "NodeReferenceFilter";
 
 	public static NodeReferenceFilter nodeReferenceFilter(GraphQLContext context) {
-		return context.getOrStore(NAME, () -> new NodeReferenceFilter(context));
+		return nodeReferenceFilter(context, true, true, true, true);
 	}
 
-	private NodeReferenceFilter(GraphQLContext context) {
-		super(NAME, "Filters by incoming node references.", Optional.empty()); // TODO empty?
+	public static NodeReferenceFilter nodeReferenceFilter(GraphQLContext context, boolean lookupInFields, boolean lookupInLists, boolean lookupInContent, boolean lookupInMicrocontent) {
+		byte lookupFeatures = createLookupChange(lookupInFields, lookupInLists, lookupInContent, lookupInMicrocontent);
+		return nodeReferenceFilter(context, lookupFeatures);
+	}
+
+	public static NodeReferenceFilter nodeReferenceFilter(GraphQLContext context, byte lookupFeatures) {
+		return context.getOrStore(NAME + "_" + String.valueOf(lookupFeatures), () -> new NodeReferenceFilter(context, lookupFeatures));
+	}
+
+	private NodeReferenceFilter(GraphQLContext context, byte lookupFeatures) {
+		super(NAME + "_" + String.valueOf(lookupFeatures), "Filters by incoming node references.", Optional.empty()); // TODO empty?
 		this.context = context;
+		this.lookupFeatures = lookupFeatures;
 	}
 
 	@Override
@@ -67,5 +78,61 @@ public class NodeReferenceFilter extends StartMainFilter<NodeReferenceIn> implem
 	@Override
 	public boolean isSortable() {
 		return false;
+	}
+
+	public boolean isLookupInFields() {
+		return isLookupInFields(lookupFeatures);
+	}
+
+	public boolean isLookupInLists() {
+		return isLookupInLists(lookupFeatures);
+	} 
+
+	public boolean isLookupInContent() {
+		return isLookupInContent(lookupFeatures);
+	} 
+
+	public boolean isLookupInMicrocontent() {
+		return isLookupInMicrocontent(lookupFeatures);
+	}
+
+	public byte getRawLookupFeatures() {
+		return lookupFeatures;
+	}
+
+	public static boolean isLookupInFields(byte currentValue) {
+		return (currentValue & 0b1) > 0;
+	}
+
+	public static boolean isLookupInLists(byte currentValue) {
+		return (currentValue & 0b10) > 0;
+	} 
+
+	public static boolean isLookupInContent(byte currentValue) {
+		return (currentValue & 0b100) > 0;
+	} 
+
+	public static boolean isLookupInMicrocontent(byte currentValue) {
+		return (currentValue & 0b1000) > 0;
+	}
+
+	public static byte createLookupChange(boolean lookupInFields, boolean lookupInLists, boolean lookupInContent, boolean lookupInMicrocontent) {
+		return applyLookupChange((byte) 0, lookupInFields, lookupInLists, lookupInContent, lookupInMicrocontent);
+	}
+
+	public static byte applyLookupChange(byte currentValue, boolean lookupInFields, boolean lookupInLists, boolean lookupInContent, boolean lookupInMicrocontent) {
+		if (lookupInFields) {
+			currentValue |= 0b1;
+		}
+		if (lookupInLists) {
+			currentValue |= 0b10;
+		}
+		if (lookupInContent) {
+			currentValue |= 0b100;
+		}
+		if (lookupInMicrocontent) {
+			currentValue |= 0b1000;
+		}
+		return currentValue;
 	}
 }

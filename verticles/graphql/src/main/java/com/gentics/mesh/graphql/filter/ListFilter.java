@@ -2,7 +2,9 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.BooleanFilter;
@@ -55,7 +57,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	private static ListFilter<HibMicronode, ?> micronodeListFilterInstance;
 	private static ListFilter<HibBinaryField, ?> binaryListFilterInstance;
 	private static ListFilter<S3HibBinaryField, ?> s3binaryListFilterInstance;
-	private static ListFilter<NodeReferenceIn, ?> nodeReferenceListFilterInstance;
+	private static Map<Byte, ListFilter<NodeReferenceIn, ?>> nodeReferenceListFilterInstances = new HashMap<>();
 
 	private final Filter<T, Q> itemFilter;
 	private final boolean referenceItem;
@@ -215,9 +217,21 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	}
 
 	public static final ListFilter<NodeReferenceIn, ?> nodeReferenceListFilter(GraphQLContext context) {
-		if (nodeReferenceListFilterInstance == null) {
-			nodeReferenceListFilterInstance = new ListFilter<>("NodeReferenceListFilter", "Filters node reference lists", NodeReferenceFilter.nodeReferenceFilter(context), Optional.of("REFERENCELIST"), true);
-		}
-		return nodeReferenceListFilterInstance;
+		return nodeReferenceListFilter(context, true, true, true, true, "");
+	}
+
+	public static final ListFilter<NodeReferenceIn, ?> nodeReferenceListFilter(GraphQLContext context, boolean lookupInFields, boolean lookupInLists, boolean lookupInContent, boolean lookupInMicrocontent, String namePrefix) {
+		byte features = NodeReferenceFilter.createLookupChange(lookupInFields, lookupInLists, lookupInContent, lookupInMicrocontent);
+
+		return nodeReferenceListFilterInstances.computeIfAbsent(features, 
+				lookupFeatures -> {
+					NodeReferenceFilter filter = NodeReferenceFilter.nodeReferenceFilter(context, features);
+					String description = "Filters node reference lists over: " 
+							+ (filter.isLookupInFields()? "[Content reference fields]": "") 
+							+ (filter.isLookupInLists()?"[Reference list fields]": "") 
+							+ (filter.isLookupInContent()?"[Node content]": "") 
+							+ (filter.isLookupInMicrocontent()?"[Micronode content]":"");
+					return new ListFilter<>("NodeReferenceListFilter_" + filter.getRawLookupFeatures(), description, filter, Optional.of(features + "REFERENCELIST"), true);
+				});
 	}
 }

@@ -34,7 +34,18 @@ public interface HibNodeField extends HibListableField, HibReferenceField<HibNod
 	 * Loads the content that is referencing another node.
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainer> getReferencingContents();
+	default Stream<? extends HibNodeFieldContainer> getReferencingContents() {
+		return getReferencingContents(true, true);
+	}
+
+	/**
+	 * Loads the content that is referencing another node.
+	 * 
+	 * @param lookupInContent search in node content
+	 * @param lookupInMicronode search in micronodes
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getReferencingContents(boolean lookupInContent, boolean lookupInMicronode);
 
 	/**
 	 * Gets the name of the field where the node reference originated.

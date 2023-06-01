@@ -70,8 +70,20 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
 			content -> content == null ? null : content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
 		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
-		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by referenced entities", ListFilter.nodeReferenceListFilter(context),
+		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by all referenced entities", ListFilter.nodeReferenceListFilter(context),
 				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()) , Pair.pair("references", new JoinPart("REFERENCE", "value"))));
+		filters.add(new MappedFilter<>(OWNER, "referencedByNodes", "Filters by referenced nodes (no micronodes)", 
+				ListFilter.nodeReferenceListFilter(context, true, true, true, false, String.valueOf(NodeReferenceFilter.createLookupChange(true, true, true, false))),
+				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType(), true, true, true, false).collect(Collectors.toList()) , Pair.pair("nodereferences", new JoinPart("NODESREFERENCE", "value"))));
+		filters.add(new MappedFilter<>(OWNER, "referencedByMicronodes", "Filters by referenced micronodes (no nodes)", 
+				ListFilter.nodeReferenceListFilter(context, true, true, false, true, String.valueOf(NodeReferenceFilter.createLookupChange(true, true, false, true))),
+				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType(), true, true, false, true).collect(Collectors.toList()) , Pair.pair("micronodereferences", new JoinPart("MICRONODESREFERENCE", "value"))));
+		filters.add(new MappedFilter<>(OWNER, "referencedByContent", "Filters by referenced direct content (no lists)", 
+				ListFilter.nodeReferenceListFilter(context, true, false, true, true, String.valueOf(NodeReferenceFilter.createLookupChange(true, false, true, true))),
+				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType(), true, false, true, true).collect(Collectors.toList()) , Pair.pair("contentreferences", new JoinPart("CONTENTREFERENCE", "value"))));
+		filters.add(new MappedFilter<>(OWNER, "referencedByLists", "Filters by referenced lists (no direct content)", 
+				ListFilter.nodeReferenceListFilter(context, false, true, true, true, String.valueOf(NodeReferenceFilter.createLookupChange(false, true, true, true))),
+				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType(), false, true, true, true).collect(Collectors.toList()) , Pair.pair("listreferences", new JoinPart("LISTSREFERENCE", "value"))));
 		return filters;
 	}
 

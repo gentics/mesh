@@ -569,10 +569,23 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	void addReferenceUpdates(HibNode node, BulkActionContext bac);
 
 	/**
-	 * Gets all HibNodeFields that reference the node.
+	 * Gets all NodeField edges that reference this node.
+	 *
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences(HibNode node);
+	default Stream<HibNodeField> getInboundReferences(HibNode node) {
+		return getInboundReferences(node, true, true);
+	}
+
+	/**
+	 * Gets all NodeField edges that reference this node.
+	 * 
+	 * @param lookupInFields should we look for refs in direct references?
+	 * @param lookupInLists should we look for refs in reference lists?
+	 *
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Delete the given element

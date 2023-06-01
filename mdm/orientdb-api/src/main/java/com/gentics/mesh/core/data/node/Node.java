@@ -69,7 +69,19 @@ public interface Node extends MeshCoreVertex<NodeResponse>, CreatorTrackingVerte
 	 * Gets all NodeGraphField edges that reference this node.
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences();
+	default Stream<HibNodeField> getInboundReferences() {
+		return getInboundReferences(true, true);
+	}
+
+	/**
+	 * Gets all NodeGraphField edges that reference this node.
+	 * 
+	 * @param lookupInFields should we look for refs in direct references?
+	 * @param lookupInLists should we look for refs in reference lists?
+	 * 
+	 * @return
+	 */
+	Stream<HibNodeField> getInboundReferences(boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Get an existing edge.
