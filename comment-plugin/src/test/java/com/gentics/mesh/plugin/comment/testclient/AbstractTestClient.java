@@ -1258,8 +1258,7 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion, String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, boolean publish, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
