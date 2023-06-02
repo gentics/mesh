@@ -69,7 +69,7 @@
 	    	count: { gt: 1 }
 	    }
 	  }) {
-	    # [$.data.hasListsReferences.elements.length()=3]
+	    # [$.data.hasListsReferences.elements.length()=2]
 	    elements {
 	      uuid
 	      schema {
