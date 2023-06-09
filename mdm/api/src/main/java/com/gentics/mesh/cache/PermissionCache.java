@@ -37,4 +37,20 @@ public interface PermissionCache extends MeshCache<String, EnumSet<InternalPermi
 	 */
 	void store(Object userId, EnumSet<InternalPermission> permissions, Object elementId);
 
+	/**
+	 * Get all permissions of a given element for the given user ID.
+	 * 
+	 * @param userId
+	 * @param elementId
+	 * @return
+	 */
+	EnumSet<InternalPermission> get(Object userId, Object elementId);
+
+	/**
+	 * Invalidate cached permissions of a given element for the given user ID.
+	 * 
+	 * @param userId
+	 * @param elementId
+	 */
+	void invalidate(Object userId, Object elementId);
 }
