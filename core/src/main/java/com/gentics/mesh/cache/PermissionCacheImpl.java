@@ -17,8 +17,8 @@ import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
-
 import com.gentics.mesh.event.EventBusStore;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -73,8 +73,7 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 	@Override
 	public Boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
-		String key = createCacheKey(userId, elementId);
-		EnumSet<InternalPermission> cachedPermissions = cache.get(key);
+		EnumSet<InternalPermission> cachedPermissions = get(userId, elementId);
 		if (cachedPermissions != null) {
 			return cachedPermissions.contains(permission);
 		} else {
@@ -120,6 +119,11 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	}
 
 	@Override
+	public EnumSet<InternalPermission> get(Object userId, Object elementId) {
+		return get(createCacheKey(userId, elementId));
+	}
+
+	@Override
 	public void store(Object userId, EnumSet<InternalPermission> permission, Object elementId) {
 		// deduplicate the permission EnumSet and put it into the cache
 		cache.put(createCacheKey(userId, elementId), deduplicate(permission));
@@ -138,5 +142,10 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 		// either get the already used instance from the map or put the clone in the map, if this is the first occurrance
 		return uniqueMap.computeIfAbsent(clone, key -> clone);
+	}
+
+	@Override
+	public void invalidate(Object userId, Object elementId) {
+		cache.invalidate(createCacheKey(userId, elementId));
 	}
 }
