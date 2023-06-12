@@ -1,0 +1,14 @@
+query ($nodeUuid: String!) {
+	node (uuid: $nodeUuid) {
+		children {
+			elements {
+				... on folder {
+					fields {
+						name
+					}
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]
