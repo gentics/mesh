@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
 /**
@@ -27,6 +28,14 @@ public class NodeUpdateRequest implements FieldContainer {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of tags that should be used to tag the node.")
 	private List<TagReference> tags;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Whether the publish the node after updating.")
+	private boolean publish = false;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Permissions to be granted to roles on the updated node.")
+	private ObjectPermissionGrantRequest grant;
 
 	public NodeUpdateRequest() {
 	}
@@ -109,4 +118,39 @@ public class NodeUpdateRequest implements FieldContainer {
 		return this;
 	}
 
+	/**
+	 * Whether the created node shall be published
+	 * @return true to publish
+	 */
+	public boolean isPublish() {
+		return publish;
+	}
+
+	/**
+	 * Set the publish flag
+	 * @param publish flag
+	 * @return Fluent API
+	 */
+	public NodeUpdateRequest setPublish(boolean publish) {
+		this.publish = publish;
+		return this;
+	}
+
+	/**
+	 * Get the request to grant role permissions
+	 * @return optional request
+	 */
+	public ObjectPermissionGrantRequest getGrant() {
+		return grant;
+	}
+
+	/**
+	 * Set the request to grant role permissions
+	 * @param grant optional request
+	 * @return Fluent API
+	 */
+	public NodeUpdateRequest setGrant(ObjectPermissionGrantRequest grant) {
+		this.grant = grant;
+		return this;
+	}
 }

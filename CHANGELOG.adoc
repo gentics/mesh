@@ -25,17 +25,29 @@ include::content/docs/variables.adoc-include[]
 [[v2.0.0]]
 == 2.0.0 (TBD)
 
-icon:plus[] Core: A support of database level filtering/sorting has been added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering), `ALWAYS` (DB filtering is forced), 
-`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
+icon:plus[] Core: A support of database level filtering/sorting has been added to the low level Java API. 
 
 icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
 is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
 Please note that not all the currently existing filters are supported by the DB.
 
-icon:plus[] OrientDB: Basic experimental support for DB filtering/sorting is added.
-
 icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
-icon:plus[] GraphQL: Added new filters for field types: list, micronode.
+icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for `referencedBy` nodes.
+
+icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
+`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
+
+[[v1.10.9]]
+== 1.10.9 (12.06.2023)
+
+icon:check[] Core: An API for permission cache fine tuning (distinct items management) has been added. 
+
+[[v1.10.8]]
+== 1.10.8 (30.05.2023)
+
+icon:check[] Core: The requests to create, update or upsert a node have been extended to allow immediate publishing of the modified/created node and to set role permissions on the node.
+
+icon:check[] Core: The request to upload binary data into a binary field has been extended to allow immediate publishing of the modified/created node.
 
 [[v1.10.7]]
 == 1.10.7 (22.05.2023)

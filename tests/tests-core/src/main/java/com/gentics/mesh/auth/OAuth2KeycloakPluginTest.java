@@ -4,12 +4,15 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,8 +78,8 @@ public class OAuth2KeycloakPluginTest extends AbstractOAuthTest {
 		UserResponse me2 = call(() -> client().me());
 
 		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
-		assertEquals("group1", me2.getGroups().get(0).getName());
-		assertEquals("group2", me2.getGroups().get(1).getName());
+		List<String> groupNames = me2.getGroups().stream().map(GroupReference::getName).collect(Collectors.toList());
+		assertThat(groupNames).as("Groups").containsOnly("group1", "group2", "group3");
 
 		assertNotNull(tx(tx -> {
 			return tx.groupDao().findByName("group1");

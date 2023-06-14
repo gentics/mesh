@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.10.7"
+version: "1.10.9"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -681,7 +681,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "0726f6d13e914b64bdaddd7f92e349e6"
+                            "uuid" : "ce15b0508fad43f3a4887fe7dba00ec3"
                           } ]
                         }
             responses:
@@ -1304,7 +1304,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6ddad62524dc4844bee9223c55594298"
+                            "uuid" : "6b1c7afd334748e9be71805f08dff2c9"
                           } ]
                         }
             responses:
@@ -1818,7 +1818,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "fb93c512ed244c01830bd3b092bf219b"
+                            "uuid" : "24760b072ea24e3e83ae008dec636751"
                           } ]
                         }
             responses:
@@ -2751,7 +2751,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "965fb204b06c40a9a38f068ef110bff3"
+                            "uuid" : "6d7d8a7c9a64468cb9d516de39d03f2c"
                           } ]
                         }
             responses:
@@ -3698,7 +3698,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "a35a556b32af46a1b4b0eb22f1beaa30"
+                            "uuid" : "83ec530ad7a842b29811346ceddc495f"
                           } ]
                         }
             responses:
@@ -4335,7 +4335,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "859732a6be424e56956b7356096af656"
+                            "uuid" : "9b6fa17537544b6b96bd11dae8a64b2b"
                           } ]
                         }
             responses:
@@ -7396,7 +7396,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "1.10.7",
+                                  "meshVersion" : "1.10.9",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -7484,8 +7484,10 @@ mediaType: application/json
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
                         | fields | true | object | Dynamic map with fields of the node content. |
+                        | grant | false | object | Permissions to be granted to roles on the created node. |
                         | language | true | string | ISO 639-1 language tag of the node content. |
                         | parentNode | true | object | Reference to the parent node in which the node will be created. The uuid of this object must be set. |
+                        | publish | false | boolean | Whether the publish the node after creation. |
                         | schema | true | object | Reference to the schema of the node. |
                         | tags | false | array | List of tags that should be used to tag the node. |
                     example: |
@@ -7500,7 +7502,8 @@ mediaType: application/json
                           "fields" : {
                             "name" : "DeLorean DMC-12",
                             "description" : "The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."
-                          }
+                          },
+                          "publish" : false
                         }
             responses:
                 "201":
@@ -8233,7 +8236,9 @@ mediaType: application/json
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
                         | fields | true | object | Dynamic map with fields of the node content. |
+                        | grant | false | object | Permissions to be granted to roles on the updated node. |
                         | language | true | string | ISO 639-1 language tag of the node content. |
+                        | publish | false | boolean | Whether the publish the node after updating. |
                         | tags | false | array | List of tags that should be used to tag the node. |
                         | version | false | string | Version number which can be provided in order to handle and detect concurrent changes to the node content. |
                     example: |
@@ -8297,7 +8302,8 @@ mediaType: application/json
                               }
                             } ]
                           },
-                          "version" : "1.0"
+                          "version" : "1.0",
+                          "publish" : false
                         }
             responses:
                 "404":
@@ -9866,7 +9872,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f97bb810002f49a993b5187c7a555df5"
+                            "uuid" : "a92d63224e634f70b025c75e05950e72"
                           } ]
                         }
             responses:
@@ -11357,7 +11363,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "25289507064544bca81cabfeb790fbb2"
+                            "uuid" : "cfad49f5db84402f879d23f2d2e29800"
                           } ]
                         }
             responses:
@@ -12135,7 +12141,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "162d8c13276c432fa6bb5f322a056c8c"
+                            "uuid" : "6d755db4c2de4270b84962645fcc6541"
                           } ]
                         }
             responses:
@@ -12686,7 +12692,9 @@ mediaType: application/json
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
                         | fields | true | object | Dynamic map with fields of the node content. |
+                        | grant | false | object | Permissions to be granted to roles on the updated node. |
                         | language | true | string | ISO 639-1 language tag of the node content. |
+                        | publish | false | boolean | Whether the publish the node after updating. |
                         | tags | false | array | List of tags that should be used to tag the node. |
                         | version | false | string | Version number which can be provided in order to handle and detect concurrent changes to the node content. |
                     example: |
@@ -12750,7 +12758,8 @@ mediaType: application/json
                               }
                             } ]
                           },
-                          "version" : "1.0"
+                          "version" : "1.0",
+                          "publish" : false
                         }
             responses:
                 "200":
@@ -13794,7 +13803,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b6bf9a74fe20410dbf1898b7369af7b5"
+                            "uuid" : "25c42be4d9c14328bbabf119c3fab68e"
                           } ]
                         }
             responses:
