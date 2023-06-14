@@ -18,6 +18,7 @@ import com.gentics.mesh.plugin.forms.model.FormElementDeserializer;
 import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
+import com.github.jknack.handlebars.Handlebars;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Vertx;
@@ -55,7 +56,10 @@ public class FormsPluginModule {
 	public RenderService renderService(Vertx vertx, FormsConfig config) {
 		io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine delegateEngine = io.vertx.ext.web.templ.handlebars.HandlebarsTemplateEngine.create(vertx);
 
-		delegateEngine.getHandlebars().registerHelpers(new FormHelper());
+		Handlebars handlebars = delegateEngine.getHandlebars();
+
+		handlebars.registerHelpers(new FormHelper());
+		handlebars.setInfiniteLoops(true);
 
 		return new RenderService(config.getTemplatesPath(), new HandlebarsTemplateEngine(delegateEngine));
 	}
