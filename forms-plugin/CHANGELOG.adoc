@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.12]]
+== 1.8.12 (2023-05-31)
+
+icon:check[] Forms: Fixes rendering of nested conditional containers.
+
 [[v1.8.11]]
 == 1.8.11 (2023-03-22)
 

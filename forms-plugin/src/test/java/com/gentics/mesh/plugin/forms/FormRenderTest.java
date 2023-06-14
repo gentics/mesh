@@ -64,6 +64,11 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
+	public void testRenderNestedConditionalContainers() throws IOException {
+		doTestSimpleRender("nested_conditional_container", false, null);
+	}
+
+	@Test
 	public void testRenderPollResults() throws IOException {
 		doTestRenderPollResults(null);
 	}
