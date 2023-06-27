@@ -155,7 +155,7 @@ What makes Gentics Mesh special over other headless CMSes is:
 
 # Status
 
-Gentics Mesh is actively developed by a dedicated team at APA-IT in Vienna,
+Gentics Mesh is actively developed by a dedicated team at Gentics Software GmbH in Vienna,
 Austria.
 
 <p align="center">
@@ -168,20 +168,60 @@ The Gentics Mesh core team consists of:
  <table align="center" style="width: 100%; max-width: 600px;">
   <tr>
    <td align="center">
-    <a href="https://github.com/pschulzk">
-     <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br />
-     Philip Viktor Schulz-Klingauf<br /><i>UI/UX developer</i>
+    <a href="https://github.com/deckdom">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Dominik Decker<br /><i>UI/UX developer</i>
     </a>
    </td>
   </tr>
   <tr>
    <td align="center">
     <a href="https://github.com/npomaroli">
-     <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" /><br />
-     Norbert Pomaroli<br /><i>software architect</i>
+     <!-- <img src="https://avatars.githubusercontent.com/npomaroli?size=150" width="150" /><br /> -->
+     Norbert Pomaroli<br /><i>Software architect</i>
     </a>
    </td>
   </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/yrucrem">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Patrick Klaffenböck<br /><i>Backend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/plyhun">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Serhii Plyhun<br /><i>Backend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/guggi">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Oliver Guggenberger<br /><i>Backend developer</i>
+    </a>
+   </td>
+  </tr>
+    </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/netwarex">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     Péter Nyári<br /><i>Frontend developer</i>
+    </a>
+   </td>
+  </tr>
+
+
  </table>
 </p>
 
@@ -226,9 +266,9 @@ be reported via [GitHub](https://github.com/gentics/mesh/issues).
 
 # Professional Services
 
-The company behind Gentics Mesh, APA-IT Informations Technologie GmbH, is
+The company behind Gentics Mesh, Gentics Software GmbH is
 offering commercial services for Gentics Mesh. Please contact us at
-mesh@gentics.com for details.
+sales@gentics.com for details.
 
 ## Product Development
 
@@ -328,7 +368,7 @@ Gentics Mesh is currently split into two repositories:
 
 # Copyright & License
 
-Copyright 2014-2020 APA-IT Informations Technologie GmbH. Licensed under the
+Copyright (c) 2014-2023 Gentics Software GmbH. Licensed under the
 Apache License, Version 2.0.
 
-Gentics is a registered trade mark of APA-IT Informations Technologie GmbH.
+Gentics is a registered trade mark of Gentics Software GmbH.
