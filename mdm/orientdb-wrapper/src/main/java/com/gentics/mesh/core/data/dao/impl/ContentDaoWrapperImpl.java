@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import com.gentics.mesh.core.data.user.HibUser;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -232,6 +234,21 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
 		return toGraph(content).getConflictingEdgeOfWebrootField(toGraph(edge), urlFieldValue, branchUuid, type);
+	}
+
+	@Override
+	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content,
+			HibNodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type) {
+		if (CollectionUtils.isEmpty(urlFieldValues)) {
+			return null;
+		}
+		for (String value : urlFieldValues) {
+			HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, value, branchUuid, type);
+			if (conflictingEdge != null) {
+				return conflictingEdge;
+			}
+		}
+		return null;
 	}
 
 	@Override
