@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -75,7 +76,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 	 */
 	default HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm,
 			boolean errorIfNotFound) {
-		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm, null, null)
+		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm, null, Optional.empty())
 				.map(tagFamily -> loadObjectByUuid(tagFamily, ac, uuid, perm, false))
 				.filter(Objects::nonNull)
 				.map(tag -> checkPerms(tag, uuid, ac, perm, errorIfNotFound))
