@@ -111,7 +111,7 @@ for an explanation of the basic concepts of Gentics Mesh.
 Traditional CMSes are "coupled", which means that the CMS also takes care of
 the presentation layer responsible for delivering the content to the
 clients. The content and the presentation are closely interlinked. Typically,
-content managers create and manage their content through tools like WYSIWYG
+content managers create and manage their content through tools like "What you see is what you get" (WYSIWYG)
 editors. The CMS then delivers the content according to the front-end delivery
 layer built into the CMS. Typically, a traditional CMS supports your websites
 but not much else.
@@ -139,7 +139,7 @@ interface that makes content editing and administration enjoyable. At the same
 time, we don’t lock you in: You choose the technology and programming language
 you want to implement your application with. You decide whether you want to
 host it locally or in the cloud. We don’t care if you’re a Windows, Linux or
-Mac guy or girl. Also, with its Apache license, you are free to use it, modify
+Mac guy or girl. Also, with its Apache 2.0 license, you are free to use it, modify
 it and improve it.
 
 What makes Gentics Mesh special over other headless CMSes is:
@@ -358,7 +358,7 @@ query webroot($path: String) {
 # Contributing to Gentics Mesh
 
 Please read our [Contributing Guidelines](https://getmesh.io/docs/contributing/) if you intend to contribute to the project. The guidelines will tell you the
-legal stuff, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
+legal information, give you instructions on how to set up your IDE in order to build Gentics Mesh, and will tell you necessary knowledge to understand the codebase.
 
 Gentics Mesh is currently split into two repositories:
 
