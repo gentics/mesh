@@ -32,9 +32,6 @@ successfully in less time, no matter which technology you prefer.
  <a href="https://github.com/gentics/mesh/releases">
   <img src="https://img.shields.io/github/v/release/gentics/mesh?sort=semver" alt="Latest release" />
  </a>
- <a href="https://sonarcloud.io/dashboard?id=gentics_mesh">
-  <img src="https://sonarcloud.io/api/project_badges/measure?project=gentics_mesh&metric=alert_status" alt="Quality Gate Status" />
- </a>
  <a href="https://cla-assistant.io/gentics/mesh">
   <img src="https://cla-assistant.io/readme/badge/gentics/mesh" alt="CLA assistant" />
  </a>
