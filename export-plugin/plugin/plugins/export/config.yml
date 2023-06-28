@@ -1,0 +1,5 @@
+---
+webrootPaths: []
+cacheTime: 600000
+roleCheck: false
+roleName: "plugin_export"
