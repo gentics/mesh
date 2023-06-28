@@ -729,7 +729,7 @@ public class RestUpdaters {
 			graphBinaryField.setPlainText(text);
 		}
 
-		if (graphBinaryField.getBinary() != null) {
+		if (graphBinaryField != null && graphBinaryField.getBinary() != null) {
 			if (StringUtils.isBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
 				graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
 			} else {
@@ -839,7 +839,7 @@ public class RestUpdaters {
 			graphS3BinaryField.setS3ObjectKey(key);
 		}
 
-		if (graphS3BinaryField.getBinary() != null) {
+		if (graphS3BinaryField != null && graphS3BinaryField.getBinary() != null) {
 			if (StringUtils.isBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
 				graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
 			} else {
