@@ -122,8 +122,8 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 	@Override
 	public GraphQLInputType createType() {
 		CommonTx tx = CommonTx.get();
-		if (tx.count(tx.microschemaDao().getPersistenceClass()) < 1) {
-			return newEnum().name(getName()).description("Empty placeholder for " + getName() + ". Currently no micronodes available").value("EMPTY").build();
+		if (tx.count(tx.schemaDao().getPersistenceClass()) < 1) {
+			return newEnum().name(getName()).description("Empty placeholder for " + getName() + ". Currently no nodes available").value("EMPTY").build();
 		} else {
 			return super.getType();
 		}		
@@ -132,8 +132,8 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 	@Override
 	public GraphQLInputType createSortingType() {
 		CommonTx tx = CommonTx.get();
-		if (tx.count(tx.microschemaDao().getPersistenceClass()) < 1) {
-			return newEnum().name(getSortingName()).description("Empty placeholder for " + getSortingName() + ". Currently no micronodes available").value("EMPTY").build();
+		if (tx.count(tx.schemaDao().getPersistenceClass()) < 1) {
+			return newEnum().name(getSortingName()).description("Empty placeholder for " + getSortingName() + ". Currently no nodes available").value("EMPTY").build();
 		} else {
 			return super.getSortingType();
 		}
