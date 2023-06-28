@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -142,5 +143,10 @@ public interface FieldSchema {
 	default boolean isMappingRequired(ElasticSearchOptions options) {
 		MappingMode mode = options.getMappingMode();
 		return mode == MappingMode.DYNAMIC || mode == MappingMode.STRICT && getElasticsearch() != null;
+	}
+
+	@JsonIgnore
+	default Optional<ListFieldSchema> maybeGetListField() {
+		return Optional.empty();
 	}
 }

@@ -10,10 +10,12 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -95,12 +97,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm) {
+	public Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
 		HibUser user = ac.getUser();
 		UserDao userDao = tx.userDao();
 
-		return findAll(tx.getProject(ac).getUuid())
+		return findAll(user, perm, tx.getProject(ac).getUuid(), paging, maybeContainerType, maybeFilter)
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
@@ -111,11 +113,27 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param projectUuid
 	 * @return
 	 */
-	private Stream<Vertex> findAll(String projectUuid) {
+	private Stream<Vertex> findAll(HibUser user, InternalPermission perm, String projectUuid) {
+		return findAll(user, perm, projectUuid, null, Optional.empty(), Optional.empty());
+	}
+
+	/**
+	 * Find and sort all nodes.
+	 * 
+	 * @param projectUuid
+	 * @param sortBy
+	 * @param sortOrder
+	 * @return
+	 */
+	private Stream<Vertex> findAll(HibUser user, InternalPermission perm, String projectUuid, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter) {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
-			new Object[] { projectUuid }));
+			new Object[]{projectUuid},
+			mapSorting(paging),
+			maybeContainerType,
+			maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
+		));
 	}
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
@@ -126,7 +144,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 		UserDao userDao = Tx.get().userDao();
 
-		return findAll(Tx.get().getProject(ac).getUuid()).filter(item -> {
+		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {
@@ -169,5 +187,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		permissionChanged = super.applyPermissions(authUser, batch, toGraph(role), false, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 		return permissionChanged;
+	}
+
+	@Override
+	public String mapGraphQlFieldNameForSorting(String gqlName) {
+		switch (gqlName) {
+		case "edited": return "fields.last_edited_timestamp";
+		case "editor": return "fields.editor";
+		}
+		return super.mapGraphQlFieldNameForSorting(gqlName);
 	}
 }

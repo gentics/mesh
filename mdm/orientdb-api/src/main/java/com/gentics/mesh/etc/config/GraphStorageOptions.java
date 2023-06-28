@@ -29,6 +29,7 @@ public class GraphStorageOptions implements Option {
 	public static final int DEFAULT_TX_RETRY_LIMIT = 10;
 	public static final long DEFAULT_TX_COMMIT_TIMEOUT = 0;
 	public static final int DEFAULT_CLUSTER_JOIN_TIMEOUT = 500_000;
+	public static final NativeQueryFiltering DEFAULT_NATIVE_QUERY_FILTERING = NativeQueryFiltering.NEVER;
 
 	public static final String MESH_GRAPH_DB_DIRECTORY_ENV = "MESH_GRAPH_DB_DIRECTORY";
 	public static final String MESH_GRAPH_BACKUP_DIRECTORY_ENV = "MESH_GRAPH_BACKUP_DIRECTORY";
@@ -40,6 +41,12 @@ public class GraphStorageOptions implements Option {
 	public static final String MESH_GRAPH_TX_RETRY_LIMIT_ENV = "MESH_GRAPH_TX_RETRY_LIMIT";
 	public static final String MESH_GRAPH_TX_COMMIT_TIMEOUT_ENV = "MESH_GRAPH_TX_COMMIT_TIMEOUT";
 	public static final String MESH_GRAPH_CLUSTER_JOIN_TIMEOUT_ENV = "MESH_GRAPH_CLUSTER_JOIN_TIMEOUT";
+	public static final String MESH_GRAPH_NATIVE_QUERY_FILTERING = "MESH_GRAPH_NATIVE_QUERY_FILTERING";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Enables the experimental native database level filtering for queries. Default: NEVER")
+	@EnvironmentVariable(name = MESH_GRAPH_NATIVE_QUERY_FILTERING, description = "Override the configured native query filtering.")
+	private NativeQueryFiltering nativeQueryFiltering = DEFAULT_NATIVE_QUERY_FILTERING;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path to the graph database data directory.")
@@ -227,6 +234,7 @@ public class GraphStorageOptions implements Option {
 	 * @param clusterJoinTimeout timeout in ms
 	 * @return fluent API
 	 */
+	@Setter
 	public GraphStorageOptions setClusterJoinTimeout(int clusterJoinTimeout) {
 		this.clusterJoinTimeout = clusterJoinTimeout;
 		return this;
@@ -245,8 +253,19 @@ public class GraphStorageOptions implements Option {
 	 * @param diskQuotaOptions options (if null, the options are reset to the default values)
 	 * @return fluent API
 	 */
+	@Setter
 	public GraphStorageOptions setDiskQuotaOptions(DiskQuotaOptions diskQuotaOptions) {
 		this.diskQuotaOptions = diskQuotaOptions != null ? diskQuotaOptions : new DiskQuotaOptions();
+		return this;
+	}
+
+	public NativeQueryFiltering getNativeQueryFiltering() {
+		return nativeQueryFiltering;
+	}
+
+	@Setter
+	public GraphStorageOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering) {
+		this.nativeQueryFiltering = nativeQueryFiltering;
 		return this;
 	}
 
@@ -260,5 +279,4 @@ public class GraphStorageOptions implements Option {
 		}
 		getDiskQuotaOptions().validate(meshOptions);
 	}
-
 }

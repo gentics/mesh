@@ -1,10 +1,15 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Optional;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
 
@@ -51,6 +56,15 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 	@Override
 	public void deletePersisted(R root, L entity) {
 		getRoot(root).findByUuid(entity.getUuid()).remove();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Page<? extends L> findAll(R root, InternalActionContext ac, PagingParameters pagingInfo) {
+		RootVertex<D> rootVertex = getRoot(root);
+		return PersistingRootDao.shouldSort(pagingInfo) 
+				? (Page<? extends L>) rootVertex.findAll(ac, pagingInfo, Optional.empty()) 
+				: (Page<? extends L>) rootVertex.findAll(ac, pagingInfo);
 	}
 
 	/**

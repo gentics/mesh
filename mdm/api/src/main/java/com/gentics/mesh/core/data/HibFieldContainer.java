@@ -47,7 +47,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 public interface HibFieldContainer extends HibBasicFieldContainer {
 
@@ -240,7 +239,18 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * 
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainer> getContents();
+	default Stream<? extends HibNodeFieldContainer> getContents() {
+		return getContents(true, true);
+	}
+
+	/**
+	 * Gets the HibNodeFieldContainers connected to this FieldContainer. 
+	 * For HibNodeFieldContainers this is simply the same object. 
+	 * For Micronodes this will return all contents that use this micronode.
+	 * 
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainer> getContents(boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * 

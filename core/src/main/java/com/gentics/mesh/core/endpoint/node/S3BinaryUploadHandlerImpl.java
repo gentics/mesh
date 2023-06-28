@@ -8,6 +8,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -29,23 +37,17 @@ import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
-import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.UUIDUtil;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Handler for s3binary upload requests. This class is responsible only for the creation of the necessary Mesh fields. The real upload is done between the client and the AWS.
@@ -131,20 +133,35 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 				NodeDao nodeDao = tx.nodeDao();
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
-				// We need to check whether someone else has stored the s3 binary in the meanwhile
-				S3HibBinary s3HibBinary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
-				if (s3HibBinary == null) {
-					s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName).runInExistingTx(tx);
-				}
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
-				if (language == null) {
-					throw error(NOT_FOUND, "error_language_not_found", languageTag);
-				}
-
 				// Load the current latest draft
 				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 				if (latestDraftVersion == null) {
+					throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				}
+
+				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+				}
+
+				if (!(fieldSchema instanceof S3BinaryFieldSchema)) {
+					// TODO Add support for other field types
+					throw error(BAD_REQUEST, "error_found_field_is_not_s3_binary", fieldName);
+				}
+
+				// We need to check whether someone else has stored the s3 binary in the meanwhile
+				S3HibBinary s3HibBinary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
+				if (s3HibBinary == null) {
+					BinaryCheckStatus checkStatus = StringUtils.isNotBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())
+							? BinaryCheckStatus.POSTPONED
+							: BinaryCheckStatus.ACCEPTED;						
+					s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName, checkStatus).runInExistingTx(tx);
+				}
+
+				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
@@ -176,15 +193,6 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 					}
 				}
 
-				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
-				if (fieldSchema == null) {
-					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-				}
-				if (!(fieldSchema instanceof S3BinaryFieldSchema)) {
-					// TODO Add support for other field types
-					throw error(BAD_REQUEST, "error_found_field_is_not_s3_binary", fieldName);
-				}
-
 				// Create a new node version field container to store the upload
 				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion,
@@ -205,7 +213,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 				batch.add(s3HibBinary.onCreated(nodeUuid, s3ObjectKey));
 
-				if (StringUtils.isNotBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+				if (StringUtils.isNotBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
 					field.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
 					field.getBinary().setCheckSecret(UUIDUtil.randomUUID());
 				} else {

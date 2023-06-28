@@ -1,0 +1,122 @@
+{
+	referencedAnyMatch: nodes(filter: {
+	    referencedBy: { 
+	    	anyMatch: { 
+	    		node: { 
+	    		schema: {is: folder}
+				fields: {
+					folder: {
+						name:{contains: "201"}
+					}
+				}
+			 }
+		 } 
+		} 
+	  }) {
+	    # [$.data.referencedAnyMatch.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	referencedByFieldName: nodes(filter: {
+	    referencedBy: {
+	    	anyMatch: { fieldName: { equals: "nodeRef" } }
+	    }
+	  }) {
+	    # [$.data.referencedByFieldName.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	referencedByFieldNameBogus: nodes(filter: {
+	    referencedBy: {
+	    	anyMatch: { fieldName: { equals: "bogus" } }
+	    }
+	  }) {
+	    # [$.data.referencedByFieldNameBogus.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	hasContentReferences: nodes(filter: {
+	    referencedByContent: {
+	    	count: { gt: 1 }
+	    }
+	  }) {
+	    # [$.data.hasContentReferences.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	hasListsReferences: nodes(filter: {
+	    referencedByLists: {
+	    	count: { gt: 1 }
+	    }
+	  }) {
+	    # [$.data.hasListsReferences.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	hasNodeReferences: nodes(filter: {
+	    referencedByNodes: {
+	    	count: { gt: 1 }
+	    }
+	  }) {
+	    # [$.data.hasNodeReferences.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	
+	hasMicronodeReferences: nodes(filter: {
+	    referencedByMicronodes: {
+	    	count: { gt: 1 }
+	    }
+	  }) {
+	    # [$.data.hasMicronodeReferences.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	moreThan2References: nodes(filter: {
+	    referencedBy: {
+	    	count: { gt: 2 }
+	    }
+	  }) {
+	    # [$.data.moreThan2References.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

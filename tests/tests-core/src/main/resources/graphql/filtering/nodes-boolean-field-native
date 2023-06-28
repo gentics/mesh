@@ -1,0 +1,36 @@
+{
+	booleanEqualsTrue: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        boolean: true
+	      }
+	    }
+	  }) {
+	    # [$.data.booleanEqualsTrue.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+
+	booleanEqualsFalse: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        boolean: false
+	      }
+	    }
+	  }) {
+	    # [$.data.booleanEqualsFalse.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

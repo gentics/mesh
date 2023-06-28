@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxAction;
@@ -40,6 +41,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -62,6 +64,7 @@ import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -79,6 +82,7 @@ import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -320,15 +324,35 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
+	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+		Iterator<Vertex> ret;
+		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
+			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(orientBaseGraph, classOfVertex);
+			query.relationDirection(Direction.OUT);
+			query.hasAll(fieldNames, fieldValues);
+			query.filter(maybeFilter);
+			if (PersistingRootDao.shouldPage(paging)) {
+				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+				query.limit(paging.getPerPage().intValue());
+			}
+			String[] sorted;
+			if (PersistingRootDao.shouldSort(paging)) {
+				List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+				sorted = sortParams.toArray(new String[sortParams.size()]);
+			} else {
+				sorted = new String[0];
+			}
+			query.setOrderPropsAndDirs(sorted);
+			ret = query.fetch(maybeContainerType).iterator();
+		} else {
+			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+		}
+		return ret;
 	}
 
 	@Override
-	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues,
-		String rangeKey, long start,
-		long end) {
+	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start, long end) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
 		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;

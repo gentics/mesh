@@ -1,0 +1,121 @@
+{
+	anyMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeList: {
+	          anyMatch: {
+	          	schema: {is: content}
+				fields: {
+					content: {
+						 slug: {like: "%.html"}
+					}
+				}
+	          }
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	allMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeList: {
+	          allMatch: {
+	          	schema: {is: content}
+				fields: {
+					content: {
+						 slug: {like: "%.html"}
+					}
+				}
+	          }
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.allMatch.elements.length()=0]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	noneMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeList: {
+	          noneMatch: {
+	          	schema: {is: content}
+				fields: {
+					content: {
+						 slug: {like: "%.html"}
+					}
+				}
+	          } isNull:false
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.noneMatch.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	anyNotMatch: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        nodeList: {
+	          anyNotMatch: {
+	          	schema: {is: content}
+				fields: {
+					content: {
+						 slug: {like: "%.html"}
+					}
+				}
+	          }
+	        }
+	      }
+	    }
+	  }) {
+	    # [$.data.anyNotMatch.elements.length()=2]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+	count: nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	      	nodeList: {
+		      count: {gte: 0}
+		    }
+	      }
+	    }
+	  }) {
+	    # [$.data.count.elements.length()=9]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]

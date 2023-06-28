@@ -1,10 +1,16 @@
 package com.gentics.mesh.core.data;
 
+import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.tinkerpop.blueprints.Vertex;
@@ -60,4 +66,34 @@ public interface MeshVertex extends MeshElement, VertexFrame, HibBaseElement {
 	 * @return
 	 */
 	Set<String> getRoleUuidsForPerm(InternalPermission permission);
+
+	/**
+	 * Parse a filter operation into the OrientDB's WHERE clause.
+	 * 
+	 * @param filter
+	 * @param ctype container type to filter out
+	 * @return
+	 */
+	String parseFilter(FilterOperation<?> filter, ContainerType ctype);
+
+	/**
+	 * Create a SQL permission restriction filter.
+	 * 
+	 * @param user running user
+	 * @param permission actual permission
+	 * @param maybeOwner optional owner entity
+	 * @return
+	 */
+	public Optional<String> permissionFilter(HibUser user, InternalPermission permission, Optional<String> maybeOwner, Optional<ContainerType> containerType);
+
+	/**
+	 * Parse a filter operation into the OrientDB's WHERE clause.
+	 * 
+	 * @param filter
+	 * @param ctype container type to filter out
+	 * @return
+	 */
+	default String parseFilter(FilterOperation<?> filter, ContainerType ctype, HibUser user, InternalPermission permission, Optional<String> maybeOwner) {
+		return parseFilter(filter, ctype) + permissionFilter(user, permission, maybeOwner, Optional.ofNullable(ctype)).map(permFilter -> " AND " + permFilter).orElse(StringUtils.EMPTY);
+	}
 }

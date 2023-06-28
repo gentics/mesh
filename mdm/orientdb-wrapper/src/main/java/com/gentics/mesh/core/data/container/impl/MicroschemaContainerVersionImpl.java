@@ -67,6 +67,7 @@ public class MicroschemaContainerVersionImpl extends
 		ContentDao contentDao = Tx.get().contentDao();
 		return new TraversalResult<>(getMicronodeStream()
 			.flatMap(micronode -> micronode.getContainers().stream())
+			.map(NodeGraphFieldContainer.class::cast)
 			.filter(uniqueBy(ElementFrame::getId))
 			.filter(container -> contentDao.isDraft(container, branchUuid)));
 	}

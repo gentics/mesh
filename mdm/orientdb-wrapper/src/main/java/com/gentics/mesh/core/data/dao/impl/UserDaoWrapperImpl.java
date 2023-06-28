@@ -96,11 +96,6 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	}
 
 	@Override
-	public Page<? extends User> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return getRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public Page<? extends HibUser> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibUser> extraFilter) {
 		return boot.get().meshRoot().getUserRoot().findAllWrapped(ac, pagingInfo, extraFilter);
 	}

@@ -2,11 +2,8 @@
 |======
 
 | Variable
-| Description
+| Description 
 
-
-| *MESH_BINARY_CHECK_INTERVAL*
-| Override the binary check interval
 
 | *MESH_GRAPH_TX_RETRY_LIMIT*
 | Override the transaction retry limit. Default: 10
@@ -62,11 +59,11 @@
 | *MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET*
 | Control whether a forced password reset should be triggered when creating the initial admin user. Default: true
 
-| *MESH_S3_CORS_ALLOWED_ORIGINS*
-| Override the configured AWS S3 CORS allowed origins.
-
 | *MESH_HTTP_PORT*
 | Override the configured server http port.
+
+| *MESH_S3_CORS_ALLOWED_ORIGINS*
+| Override the configured AWS S3 CORS allowed origins.
 
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size
@@ -77,14 +74,11 @@
 | *MESH_MONITORING_JVM_METRICS_ENABLED*
 | Override the configured JVM metrics enabled flag.
 
-| *MESH_MIGRATION_TRIGGER_INTERVAL*
-| Override the migration trigger interval
+| *MESH_GRAPH_EXPORT_DIRECTORY*
+| Override the graph database export directory.
 
 | *MESH_CACHE_PATH_SIZE*
 | Override the path cache size.
-
-| *MESH_GRAPH_EXPORT_DIRECTORY*
-| Override the graph database export directory.
 
 | *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
 | Override the Vert.x eventBus error threshold in ms.
@@ -107,11 +101,11 @@
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
 
-| *MESH_S3_CORS_ALLOWED_HEADERS*
-| Override the configured AWS S3 CORS allowed headers.
-
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
+
+| *MESH_S3_CORS_ALLOWED_HEADERS*
+| Override the configured AWS S3 CORS allowed headers.
 
 | *MESH_IMAGE_CACHE_DIRECTORY*
 | Override the path for image cache directory.
@@ -146,11 +140,11 @@
 | *MESH_ELASTICSEARCH_USERNAME*
 | Override the configured Elasticsearch connection username.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
-| Override the cluster topology lock timeout in ms.
-
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
+| Override the cluster topology lock timeout in ms.
 
 | *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
 | Override the Vert.x eventBus check interval in ms.
@@ -215,20 +209,23 @@
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
 | *MESH_GRAPH_STARTSERVER*
 | Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.
 
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
 
+| *MESH_CLUSTER_NETWORK_HOST*
+| Override the cluster network host.
+
 | *MESH_PLUGIN_TIMEOUT*
 | Override the configured plugin timeout.
 
-| *MESH_CLUSTER_NETWORK_HOST*
-| Override the cluster network host.
+| *MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT*
+| Override the configured graphQl async wait timeout.
 
 | *MESH_S3_BINARY_EXPIRATION_TIME_UPLOAD*
 | Override the configured AWS S3 upload time.
@@ -245,11 +242,11 @@
 | *MESH_BINARY_DOCUMENT_PARSER_LIMIT*
 | Override the configured parser limit.
 
-| *MESH_ELASTICSEARCH_MAPPING_MODE*
-| Override the search mapping mode.
-
 | *MESH_IMAGE_MAX_HEIGHT*
 | Override the max height for image resize operations.
+
+| *MESH_ELASTICSEARCH_MAPPING_MODE*
+| Override the search mapping mode. 
 
 | *MESH_ELASTICSEARCH_WAIT_FOR_IDLE*
 | Override the search idle wait flag.
@@ -281,20 +278,20 @@
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
 
+| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
+| Override the cluster topology lock delay in ms.
+
 | *MESH_AUTH_KEYSTORE_PASS*
 | Override the configured keystore password.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
-| Override the cluster topology lock delay in ms.
+| *MESH_GRAPHQL_SLOW_THRESHOLD*
+| Override the configured slow graphQl query threshold.
 
 | *MESH_ELASTICSEARCH_PASSWORD*
 | Override the configured Elasticsearch connection password.
 
 | *MESH_ELASTICSEARCH_INDEX_MAPPING_CACHE_TIMEOUT*
 | Override the timeout for the cache if index mappings
-
-| *MESH_GRAPHQL_SLOW_THRESHOLD*
-| Override the configured slow graphQl query threshold.
 
 | *MESH_S3_BINARY_BUCKET*
 | Override the configured AWS S3 bucket.
@@ -341,11 +338,11 @@
 | *MESH_S3_BINARY_CACHE_EXPIRATION_TIME_DOWNLOAD*
 | Override the configured AWS S3 download time.
 
-| *MESH_S3_BINARY_ENDPOINT*
-| Override the configured AWS S3 custom endpoint.
-
 | *MESH_HTTP_CORS_ORIGIN_PATTERN*
 | Override the configured CORS allowed origin pattern.
+
+| *MESH_S3_BINARY_ENDPOINT*
+| Override the configured AWS S3 custom endpoint.
 
 | *MESH_IMAGE_RESAMPLE_FILTER*
 | Override the sample filter for image resize operations.
@@ -353,11 +350,11 @@
 | *MESH_MAX_PURGE_BATCH_SIZE*
 | Override the maximum purge batch size.
 
-| *MESH_CONTENT_BATCH_SIZE*
-| Override the batch page size. Default: 5000
-
 | *MESH_IMAGE_MAX_WIDTH*
 | Override the max width for image resize operations.
+
+| *MESH_CONTENT_BATCH_SIZE*
+| Override the batch page size. Default: 5000
 
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.

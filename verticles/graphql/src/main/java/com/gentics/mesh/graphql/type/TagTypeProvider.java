@@ -70,7 +70,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 		// .nodes
 		tagType.field(newFieldDefinition().name("nodes").description("Nodes which are tagged with the tag.")
 				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME))
-				.argument(createPagingArgs())
+				.argument(createPagingArgs(false))
 				.argument(createLanguageTagArg(true))
 				.argument(createNodeVersionArg())
 				.dataFetcher((env) -> {
@@ -89,7 +89,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						.filter(content -> content.getContainer() != null)
 						.filter(content1 -> gc.hasReadPerm(content1, type));
 
-					return applyNodeFilter(env, contents);
+					return applyNodeFilter(env, contents, false, false);
 
 				}));
 

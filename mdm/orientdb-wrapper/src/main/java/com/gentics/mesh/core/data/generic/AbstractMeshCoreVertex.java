@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -36,5 +32,15 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel> extends MeshVe
 	@Deprecated
 	protected <T> boolean shouldUpdate(T restValue, T graphValue) {
 		return restValue != null && !restValue.equals(graphValue);
+	}
+
+	@Override
+	public String mapGraphQlFieldName(String gqlName) {
+		switch (gqlName) {
+		case "edited": return "last_edited_timestamp";
+		case "created":	return "creation_timestamp";
+		default: 
+			return super.mapGraphQlFieldName(gqlName);
+		}
 	}
 }

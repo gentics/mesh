@@ -183,18 +183,37 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("user-query", true, false, "draft"),
 			Arrays.asList("microschema-projects-query", true, false, "draft"),
 			Arrays.asList("node-version-published-query", true, false, "published"),
+			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
+			Arrays.asList("node/versionslist", true, false, "draft"),
+			Arrays.asList("permissions", true, false, "draft"),
+			Arrays.asList("user-node-reference", true, false, "draft"),
 			Arrays.asList("filtering/children", true, false, "draft"),
 			Arrays.asList("filtering/nodes", true, false, "draft"),
 			Arrays.asList("filtering/nodes-en", true, false, "draft"),
 			Arrays.asList("filtering/nodes-jp", true, false, "draft"),
 			Arrays.asList("filtering/nodes-creator-editor", true, false, "draft"),
-			Arrays.asList("filtering/users", true, false, "draft"),
 			Arrays.asList("filtering/groups", true, false, "draft"),
 			Arrays.asList("filtering/roles", true, false, "draft"),
-			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
-			Arrays.asList("node/versionslist", true, false, "draft"),
-			Arrays.asList("permissions", true, false, "draft"),
-			Arrays.asList("user-node-reference", true, false, "draft")
+			Arrays.asList("filtering/users", true, false, "draft"),
+			Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
+			Arrays.asList("filtering/nodes-string-field-java", true, false, "draft"),
+			Arrays.asList("filtering/nodes-string-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-boolean-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-number-field-java", true, false, "draft"),
+			Arrays.asList("filtering/nodes-number-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-date-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-stringlist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-numberlist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-booleanlist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-datelist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-node-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-micronode-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
+			Arrays.asList("filtering/nodes-nodereferences-native", true, false, "draft")
 		)
 		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
 			// Make sure all testData entries have six parts.
@@ -391,7 +410,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// s3binary
 			S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
-			container.createS3Binary("s3Binary", s3binary);
+			container.createS3Binary("s3Binary", s3binary).setImageDominantColor("00FF00");
 
 			// stringList
 			HibStringFieldList stringList = container.createStringList("stringList");

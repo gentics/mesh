@@ -12,12 +12,9 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.search.GraphDBBucketableElement;
 import com.gentics.mesh.core.data.user.HibUserTracking;
-import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
-import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.event.Assignment;
 
 /**
  * The Project Domain Model interface.

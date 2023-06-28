@@ -6,7 +6,12 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -19,6 +24,7 @@ import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -29,6 +35,7 @@ import com.gentics.mesh.core.data.search.BucketableElementHelper;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
@@ -58,6 +65,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
+		addUserTrackingRelation(TagFamilyImpl.class);
 	}
 
 	@Override
@@ -203,5 +211,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Result<? extends HibTag> findAllTags() {
 		return findAll();
+	}
+
+	@Override
+	public Page<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
+		Stream<? extends Tag> stream = toStream(db().getVertices(
+				getPersistanceClass(),
+				new String[] {},
+				new Object[]{},
+				mapSorting(pagingInfo),
+				Optional.empty(),
+				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
+			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
 	}
 }

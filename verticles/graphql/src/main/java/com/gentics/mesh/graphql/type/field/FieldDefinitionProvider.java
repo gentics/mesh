@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -406,7 +407,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			.name(schema.getName())
 			.description(schema.getLabel())
 			.type(new GraphQLList(type))
-			.argument(createPagingArgs());
+			.argument(createPagingArgs(false));
 		NodeFilter nodeFilter = NodeFilter.filter(context);
 
 		// Add link resolving arg to html and string lists
@@ -581,7 +582,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						// Check permissions for the linked node
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 
-						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 						DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
 						return contentLoader.load(node, context).thenApply((containers) -> {
 							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);

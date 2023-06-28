@@ -5,12 +5,14 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -100,28 +102,15 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac,
-			PagingParameters pagingInfo) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().findAll(ac, pagingInfo);
-	}
-
-	@Override
 	public HibBranch getLatestBranch(HibProject project) {
 		Project graphProject = toGraph(project);
 		return graphProject.getBranchRoot().getLatestBranch();
 	}
 
-// TODO remove if unneeded
-//	@Override
-//	public long globalCount() {
-//		return db.get().count(Branch.class);
-//	}
-
 	@Override
 	public Stream<? extends HibBranch> findAllStream(HibProject root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).getBranchRoot().findAllStream(ac, permission);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getBranchRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.s3binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.node.field.S3BinaryGraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.image.Point;
@@ -77,7 +76,7 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 
 	default String getFileName() {	return property(S3_AWS_FILENAME);}
 
-	default S3HibBinary setFileName(String fileName) {
+	default S3Binary setFileName(String fileName) {
 		property(S3_AWS_FILENAME, fileName);
 		return this;
 	}
@@ -94,7 +93,7 @@ public interface S3Binary extends MeshVertex, S3HibBinary {
 	 * @param heigth
 	 * @return Fluent API
 	 */
-	default S3HibBinary setImageHeight(Integer heigth) {
+	default S3Binary setImageHeight(Integer heigth) {
 		property(S3_BINARY_IMAGE_HEIGHT_PROPERTY_KEY, heigth);
 		return this;
 	}

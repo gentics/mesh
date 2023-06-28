@@ -266,8 +266,13 @@ public final class FieldUtil {
 	}
 
 	public static S3BinaryFieldSchema createS3BinaryFieldSchema(String name) {
+		return createS3BinaryFieldSchema(name, "");
+	}
+
+	public static S3BinaryFieldSchema createS3BinaryFieldSchema(String name, String checkServiceUrl) {
 		S3BinaryFieldSchema field = new S3BinaryFieldSchemaImpl();
 		field.setName(name);
+		field.setCheckServiceUrl(checkServiceUrl);
 		return field;
 	}
 

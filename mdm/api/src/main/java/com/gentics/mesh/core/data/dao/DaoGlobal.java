@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.function.Predicate;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -14,17 +15,12 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * Interface for DAO's which provide methods which allow installation wide queries on elements. The provided methods should not be scoped to a project, branch.
  * 
  * @param <T>
  */
 public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
-
-	static final Logger log = LoggerFactory.getLogger(DaoGlobal.class);
 
 	/**
 	 * Load the element by uuid.
@@ -56,6 +52,16 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @return
 	 */
 	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Predicate<T> extraFilter);
+
+	/**
+	 * Load a page of elements.
+	 * 
+	 * @param ac
+	 * @param pagingInfo
+	 * @param extraFilter
+	 * @return
+	 */
+	Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter);
 
 	/**
 	 * Load the element by name.

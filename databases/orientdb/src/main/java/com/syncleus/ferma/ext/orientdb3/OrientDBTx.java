@@ -5,7 +5,6 @@ import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
 import javax.inject.Inject;
 
-import dagger.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -26,23 +25,23 @@ import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
+import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
+import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.JobDaoWrapper;
+import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
+import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.PersistingBranchDao;
-import com.gentics.mesh.core.data.dao.PersistingContentDao;
-import com.gentics.mesh.core.data.dao.PersistingGroupDao;
-import com.gentics.mesh.core.data.dao.PersistingJobDao;
-import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
-import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
-import com.gentics.mesh.core.data.dao.PersistingNodeDao;
-import com.gentics.mesh.core.data.dao.PersistingProjectDao;
-import com.gentics.mesh.core.data.dao.PersistingRoleDao;
-import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
-import com.gentics.mesh.core.data.dao.PersistingTagDao;
-import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
-import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.dao.S3BinaryDao;
+import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
+import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
+import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
+import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagDaoWrapper;
+import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
+import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.AbstractTx;
@@ -63,6 +62,7 @@ import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
+import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -198,7 +198,7 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	// DAOs
 
 	@Override
-	public PersistingUserDao userDao() {
+	public UserDaoWrapper userDao() {
 		return daos.userDao();
 	}
 
@@ -248,72 +248,72 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	}
 
 	@Override
-	public PersistingGroupDao groupDao() {
+	public GroupDaoWrapper groupDao() {
 		return daos.groupDao();
 	}
 
 	@Override
-	public PersistingRoleDao roleDao() {
+	public RoleDaoWrapper roleDao() {
 		return daos.roleDao();
 	}
 
 	@Override
-	public PersistingProjectDao projectDao() {
+	public ProjectDaoWrapper projectDao() {
 		return daos.projectDao();
 	}
 
 	@Override
-	public PersistingJobDao jobDao() {
+	public JobDaoWrapper jobDao() {
 		return daos.jobDao();
 	}
 
 	@Override
-	public PersistingLanguageDao languageDao() {
+	public LanguageDaoWrapper languageDao() {
 		return daos.languageDao();
 	}
 
 	@Override
-	public PersistingSchemaDao schemaDao() {
+	public SchemaDaoWrapper schemaDao() {
 		return daos.schemaDao();
 	}
 
 	@Override
-	public PersistingTagDao tagDao() {
+	public TagDaoWrapper tagDao() {
 		return daos.tagDao();
 	}
 
 	@Override
-	public PersistingTagFamilyDao tagFamilyDao() {
+	public TagFamilyDaoWrapper tagFamilyDao() {
 		return daos.tagFamilyDao();
 	}
 
 	@Override
-	public PersistingMicroschemaDao microschemaDao() {
+	public MicroschemaDaoWrapper microschemaDao() {
 		return daos.microschemaDao();
 	}
 
 	@Override
-	public BinaryDao binaryDao() {
+	public BinaryDaoWrapper binaryDao() {
 		return daos.binaryDao();
 	}
 
 	@Override
-	public S3BinaryDao s3binaryDao() {
+	public S3BinaryDaoWrapper s3binaryDao() {
 		return daos.s3binaryDao();
 	}
 
 	@Override
-	public PersistingBranchDao branchDao() {
+	public BranchDaoWrapper branchDao() {
 		return daos.branchDao();
 	}
 
 	@Override
-	public PersistingNodeDao nodeDao() {
+	public NodeDaoWrapper nodeDao() {
 		return daos.nodeDao();
 	}
 
 	@Override
-	public PersistingContentDao contentDao() {
+	public ContentDaoWrapper contentDao() {
 		return daos.contentDao();
 	}
 

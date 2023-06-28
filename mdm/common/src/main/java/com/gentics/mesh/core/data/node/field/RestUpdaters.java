@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
-import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,6 +32,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
 import com.gentics.mesh.core.rest.node.field.DateField;
@@ -56,10 +55,12 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
 import io.vertx.core.logging.Logger;
@@ -733,7 +734,6 @@ public class RestUpdaters {
 		} else {
 			graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
 		}
-
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 
@@ -837,7 +837,11 @@ public class RestUpdaters {
 			graphS3BinaryField.setS3ObjectKey(key);
 		}
 
-
+		if (StringUtils.isBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+			graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
+		} else {
+			graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
 }

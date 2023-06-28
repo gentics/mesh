@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -152,12 +151,6 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 	public Result<? extends HibGroup> findAll() {
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.findAll();
-	}
-
-	@Override
-	public Page<? extends HibGroup> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
-		return groupRoot.findAll(ac, pagingInfo);
 	}
 
 	@Override

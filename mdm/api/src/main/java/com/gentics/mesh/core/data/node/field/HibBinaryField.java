@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.core.data.HibDeletableField;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
@@ -11,7 +12,7 @@ import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.handler.ActionContext;
 
-public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryField>, HibDeletableField, HibDisplayField {
+public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryField>, HibDeletableField, HibDisplayField, HibReferenceField<HibBinary> {
 
 	/**
 	 * Copy the values of this field to the specified target field.
@@ -23,6 +24,11 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 
 	@Override
 	HibBinary getBinary();
+
+	@Override
+	default HibBinary getReferencedEntity() {
+		return getBinary();
+	}
 
 	@Override
 	default BinaryField transformToRest(ActionContext ac) {

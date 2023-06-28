@@ -148,4 +148,9 @@ public interface SchemaModel extends FieldSchemaContainer {
 	 * @return
 	 */
 	SchemaModel setAutoPurge(Boolean autoPurge);
+
+	@Override
+	default boolean isMicroschema() {
+		return false;
+	}
 }

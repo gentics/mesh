@@ -19,6 +19,6 @@ public class DynamicTransformableStreamPageImpl<T extends HibTransformableElemen
 	}
 
 	public DynamicTransformableStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo, Predicate<T> filter) {
-		super(stream, pagingInfo, filter);
+		super(stream, pagingInfo, filter, false);
 	}
 }

@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 16
+  eventPoolSize: 24
   eventBus:
     checkInterval: 30000
     warnThreshold: 60000
@@ -43,7 +43,6 @@ nodeName: null
 startInReadOnly: false
 versionPurgeMaxBatchSize: 10
 migrationMaxBatchSize: 50
-migrationTriggerInterval: 60000
 httpServer:
   port: 8080
   sslPort: 8443
@@ -57,7 +56,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 16
+  verticleAmount: 24
   serverTokens: true
   maxFormAttributeSize: -1
 monitoring:
@@ -106,7 +105,6 @@ upload:
   parserLimit: 40000
   parser: true
   metadataWhitelist: null
-  checkInterval: 60000
 security:
   tokenExpirationTime: 3600
   keystorePassword: "<Your Password>"
@@ -133,6 +131,7 @@ debugInfo:
 graphQL:
   slowThreshold: 60000
   asyncWaitTimeout: 120000
+  nativeQueryFiltering: "ON_DEMAND"
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"

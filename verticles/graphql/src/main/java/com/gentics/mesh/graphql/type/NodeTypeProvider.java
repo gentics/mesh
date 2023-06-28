@@ -21,10 +21,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,12 +34,15 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.DataLoader;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -143,7 +148,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env, content);
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
 
 		return contentLoader.load(parentNode, context).thenApply((containers) -> {
@@ -163,7 +168,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		HibNode node = content.getNode();
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
 		return contentLoader.load(node, context).thenApply((containers) -> {
 			HibNodeFieldContainer container = getContainerWithFallback(languageTags, containers);
@@ -180,7 +185,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		ContainerType type = getNodeVersion(env);
 		List<String> languageTags = getLanguageArgument(env, content);
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
 
 		DataLoader<HibNode, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
 		return breadcrumbLoader.load(content.getNode(), context).thenApply(contents -> {
@@ -252,6 +257,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Versioned<List<GraphQLFieldDefinition>> createNodeInterfaceFields(GraphQLContext context) {
+		NodeFilter nodeFilter = NodeFilter.filter(context);
+
 		List<GraphQLFieldDefinition> baseFields = Arrays.asList(
 			// .project
 			newFieldDefinition().name("project").description("Project of the node").type(new GraphQLTypeReference("Project")).dataFetcher((
@@ -360,19 +367,21 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 				List<String> languageTags = getLanguageArgument(env, content);
 				ContainerType type = getNodeVersion(env);
-
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags);
+				Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
+				PagingParameters pagingInfo = getPagingInfo(env);
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags, filters.getValue(), pagingInfo);
 				DataLoader<HibNode, List<NodeContent>> childrenLoader = env.getDataLoader(NodeDataLoader.CHILDREN_LOADER_KEY);
 				CompletableFuture<List<NodeContent>> future = childrenLoader.load(content.getNode(), dataLoaderContext);
 
 				return future.thenApply(contents -> {
-					return applyNodeFilter(env, contents.stream()
-							.filter(item -> item.getContainer() != null)
-					);
+					return applyNodeFilter(env, contents.stream().filter(item -> item.getContainer() != null), 
+							filters.getRight().isPresent() && PersistingRootDao.shouldPage(pagingInfo), filters.getRight().isPresent());
 				});
-			}, NODE_PAGE_TYPE_NAME)
+			}, NODE_PAGE_TYPE_NAME, true)
 				.argument(createLanguageTagArg(false))
-				.argument(NodeFilter.filter(context).createFilterArgument()).build(),
+				.argument(createNativeFilterArg())
+				.argument(nodeFilter.createSortArgument())
+				.argument(nodeFilter.createFilterArgument()).build(),
 
 			// .parent
 
@@ -386,7 +395,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 			// .tags
 			newFieldDefinition().name("tags")
-				.argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.argument(createPagingArgs(false)).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
 					Tx tx = Tx.get();
 					TagDao tagDao = tx.tagDao();
@@ -416,7 +425,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition()
 				.name("referencedBy")
 				.description("Loads nodes that reference this node.")
-				.argument(createPagingArgs())
+				.argument(createPagingArgs(false))
 				.argument(nodeReferenceFilter(context).createFilterArgument())
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
@@ -428,7 +437,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (filterInput != null) {
 						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
 					}
-
 					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
 				}).build(),
 
@@ -459,7 +467,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				String languageTag = container.getLanguageTag();
 
 				DataLoader<HibNodeFieldContainer, String> pathLoader = env.getDataLoader(NodeDataLoader.PATH_LOADER_KEY);
-				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(containerType, Collections.singletonList(languageTag));
+				NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(containerType, Collections.singletonList(languageTag), Optional.empty(), getPagingInfo(env));
 				return pathLoader.load(container, dataLoaderContext);
 			}).build(),
 

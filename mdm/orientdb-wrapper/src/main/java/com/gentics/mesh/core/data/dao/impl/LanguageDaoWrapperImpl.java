@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -54,15 +56,8 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	/**
 	 * @see LanguageRoot
 	 */
-	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission) {
-		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission);
-	}
-
-	/**
-	 * @see LanguageRoot
-	 */
-	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getLanguageRoot().findAll(ac, pagingInfo);
+	public Stream<? extends Language> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return boot.get().meshRoot().getLanguageRoot().findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	/**

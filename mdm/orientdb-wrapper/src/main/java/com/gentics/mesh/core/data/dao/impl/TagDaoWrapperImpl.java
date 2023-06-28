@@ -4,11 +4,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
@@ -32,6 +34,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
+
 import dagger.Lazy;
 
 /**
@@ -169,8 +172,8 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public Stream<? extends HibTag> findAllStream(HibTagFamily root, InternalActionContext ac,
-			InternalPermission permission) {
-		return toGraph(root).findAllStream(ac, permission);
+			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).findAllStream(ac, permission, paging, maybeFilter);
 	}
 
 	@Override
@@ -192,11 +195,6 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	@Override
 	public long globalCount(HibTagFamily root) {
 		return toGraph(root).globalCount();
-	}
-
-	@Override
-	public Page<? extends HibTag> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return boot.get().meshRoot().getTagRoot().findAll(ac, pagingInfo);
 	}
 
 	@Override

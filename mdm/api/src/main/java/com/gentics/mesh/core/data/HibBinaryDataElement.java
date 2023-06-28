@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 
 /**

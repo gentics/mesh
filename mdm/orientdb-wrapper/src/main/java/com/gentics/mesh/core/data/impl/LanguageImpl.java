@@ -35,6 +35,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse> imple
 		index.createIndex(vertexIndex(LanguageImpl.class)
 			.withField(LANGUAGE_TAG_PROPERTY_KEY, STRING)
 			.unique());
+		addUserTrackingRelation(LanguageImpl.class);
 	}
 
 	@Override

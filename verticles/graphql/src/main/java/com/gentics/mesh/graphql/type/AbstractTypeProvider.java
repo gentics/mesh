@@ -2,32 +2,41 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
+import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.graphqlfilter.filter.StartFilter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.gentics.graphqlfilter.Sorting;
+import com.gentics.graphqlfilter.filter.operation.Comparison;
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -36,12 +45,16 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.NativeQueryFiltering;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.EntityFilter;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.model.NativeFilter;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
@@ -56,16 +69,28 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public abstract class AbstractTypeProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(AbstractTypeProvider.class);
 	public static final String LINK_TYPE_NAME = "LinkType";
+	public static final String NATIVE_FILTER_NAME = "NativeFilter";
 	public static final String NODE_CONTAINER_VERSION_NAME = "NodeVersion";
 
-	private final MeshOptions options;
+	protected final MeshOptions options;
 
 	public AbstractTypeProvider(MeshOptions options) {
 		this.options = options;
+	}
+
+	public GraphQLEnumType createNativeFilterEnumType() {
+		GraphQLEnumType nativeFilterEnum = newEnum().name(NATIVE_FILTER_NAME).description("Usage of native database-level filtering, instead of default provided by Mesh")
+				.value(NativeFilter.IF_POSSIBLE.name(), NativeFilter.IF_POSSIBLE, "Try native filter first, fall back to Mesh otherwise. Does not apply native paging, if no filter is specified.")
+				.value(NativeFilter.ONLY.name(), NativeFilter.ONLY, "Force native filters only. If no filtering but paging is specified, apply the native paging.")
+				.value(NativeFilter.NEVER.name(), NativeFilter.NEVER, "Force default Mesh filtering and paging. Ignored, if sorting is specified.").build();
+			return nativeFilterEnum;
 	}
 
 	/**
@@ -82,14 +107,28 @@ public abstract class AbstractTypeProvider {
 	 * 
 	 * @return
 	 */
-	public List<GraphQLArgument> createPagingArgs() {
+	public List<GraphQLArgument> createPagingArgs(boolean deprecateSorting) {
 		List<GraphQLArgument> arguments = new ArrayList<>();
+
+		Function<GraphQLArgument.Builder, GraphQLArgument.Builder> applyDeprecation = b -> {
+			if (deprecateSorting) {
+				b.deprecate("Use 'sort' argument to set multiple sort targets");
+			}
+			return b;
+		};
 
 		// #page
 		arguments.add(newArgument().name("page").defaultValue(1L).description("Page to be selected").type(GraphQLLong).build());
 
 		// #perPage
 		arguments.add(newArgument().name("perPage").description("Max count of elements per page").type(GraphQLLong).build());
+
+		// #sortBy
+		arguments.add(applyDeprecation.apply(newArgument()).name("sortBy").description("Field to sort the elements by").type(GraphQLString).build());
+
+		// #sortOrder
+		arguments.add(applyDeprecation.apply(newArgument()).name("sortOrder").type(new GraphQLTypeReference(Sorting.SORT_ORDER_NAME)).description("Order to sort the elements in").build());
+
 		return arguments;
 	}
 
@@ -251,6 +290,11 @@ public abstract class AbstractTypeProvider {
 			"Specify the resolve type").build();
 	}
 
+	public GraphQLArgument createNativeFilterArg() {
+		return newArgument().name("nativeFilter").type(new GraphQLTypeReference(NATIVE_FILTER_NAME)).defaultValue(NativeFilter.IF_POSSIBLE).description(
+			"Specify whether the native database-level filtering should be used.").build();
+	}
+
 	public GraphQLArgument createNodeVersionArg() {
 		return newArgument()
 			.name("version")
@@ -405,11 +449,11 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected <T extends HibCoreElement<?>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
 		DAOActions<T, ?> actions,
-		String pageTypeName, SearchHandler<?, ?> searchHandler, StartFilter<T, Map<String, ?>> filterProvider) {
+		String pageTypeName, SearchHandler<?, ?> searchHandler, EntityFilter<T> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
 			.name(name)
 			.description(description)
-			.argument(createPagingArgs())
+			.argument(createPagingArgs(filterProvider != null))
 			.argument(createQueryArg()).type(new GraphQLTypeReference(pageTypeName))
 			.dataFetcher((env) -> {
 				GraphQLContext gc = env.getContext();
@@ -426,7 +470,9 @@ public abstract class AbstractTypeProvider {
 					}
 				} else {
 					if (filterProvider != null && filter != null) {
-						return actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filterProvider.createPredicate(filter));
+						Pair<Predicate<T>, Optional<FilterOperation<?>>> filters = parseFilters(env, filterProvider);
+						return filters.getRight().map(filter1 -> actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filter1))
+								.orElse((Page) actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env), filters.getLeft()));
 					} else {
 						return actions.loadAll(context(Tx.get(), gc, env.getSource()), getPagingInfo(env));
 					}
@@ -434,7 +480,10 @@ public abstract class AbstractTypeProvider {
 			});
 
 		if (filterProvider != null) {
-			fieldDefBuilder.argument(filterProvider.createFilterArgument());
+			fieldDefBuilder
+				.argument(createNativeFilterArg())
+				.argument(filterProvider.createFilterArgument())
+				.argument(filterProvider.createSortArgument());
 		}
 		return fieldDefBuilder.build();
 	}
@@ -454,13 +503,13 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher<?> dataFetcher,
 		String referenceTypeName) {
-		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();
+		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName, false).build();
 	}
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
-		DataFetcher<?> dataFetcher, String pageTypeName) {
+		DataFetcher<?> dataFetcher, String pageTypeName, boolean deprecateSorting) {
 		return newFieldDefinition().name(name).description(description)
-			.argument(createPagingArgs())
+			.argument(createPagingArgs(deprecateSorting))
 			.argument(createNodeVersionArg())
 			.type(new GraphQLTypeReference(pageTypeName))
 			.dataFetcher(dataFetcher);
@@ -534,7 +583,7 @@ public abstract class AbstractTypeProvider {
 	 * @return Loaded paging parameters
 	 */
 	protected PagingParameters getPagingInfo(DataFetchingEnvironment env) {
-		PagingParameters parameters = new PagingParametersImpl();
+		PagingParametersImpl parameters = new PagingParametersImpl();
 		Long page = env.getArgument("page");
 		if (page != null) {
 			parameters.setPage(page);
@@ -543,12 +592,36 @@ public abstract class AbstractTypeProvider {
 		if (perPage != null) {
 			parameters.setPerPage(perPage);
 		}
+		String sortBy = env.getArgument("sortBy");
+		SortOrder sortOrder = env.getArgument("sortOrder");
+		if (StringUtils.isNotBlank(sortBy) && sortOrder != null) {
+			parameters.putSort(sortBy, sortOrder);
+		}
+		Map<String, ?> sortArgument = env.getArgument("sort");
+		parameters.putSort(parseGraphQlSort(sortArgument, Optional.empty()));
 		parameters.validate();
 		return parameters;
 	}
 
+	@SuppressWarnings("unchecked")
+	private static final Map<String, SortOrder> parseGraphQlSort(Map<String, ?> sort, Optional<String> prefix) {
+		if (sort == null) {
+			return Collections.emptyMap();
+		}
+		return sort.entrySet().stream().flatMap(entry -> sortOrderFromGraphQlSorting(entry.getValue())
+				.map(order -> Stream.of(Pair.of(prefix.map(p -> p + "." + entry.getKey()).orElse(entry.getKey()), order)))
+				.orElseGet(() -> {
+					if (!Map.class.isInstance(entry.getValue())) {
+						throw new IllegalArgumentException("Unexpected sort value for key '" + entry.getKey() + "':"  + entry.getValue());
+					}
+					return parseGraphQlSort((Map<String, Object>) entry.getValue(), Optional.ofNullable(prefix.map(p -> p + "." + entry.getKey()).orElse(entry.getKey())))
+							.entrySet().stream().map(e -> Pair.of(e.getKey(), e.getValue()));
+				})
+			).collect(Collectors.toMap(e -> e.getLeft(), e -> e.getRight(), (a, b) -> a)) ;
+	}
+
 	/**
-	 * Fetches nodes and applies filters
+	 * Fetches nodes and applies filters, either database-native or java.
 	 *
 	 * @param env
 	 *            the environment of the request
@@ -563,20 +636,125 @@ public abstract class AbstractTypeProvider {
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 
-		Stream<NodeContent> contents = nodeDao.findAllContent(project, gc, languageTags, type);
+		NodeFilter nodeFilter = NodeFilter.filter(gc);
+		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
-		return applyNodeFilter(env, contents);
+		PagingParameters pagingInfo = getPagingInfo(env);
+		return applyNodeFilter(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)
+				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
+				: nodeDao.findAllContent(project, gc, languageTags, type), 
+			pagingInfo, filters.getLeft(), (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo));
 	}
 
-	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream) {
-		Map<String, ?> filterArgument = env.getArgument("filter");
-		PagingParameters pagingInfo = getPagingInfo(env);
+	public <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
 		GraphQLContext gc = env.getContext();
+		Map<String, ?> filterArgument = env.getArgument("filter");
+		NativeQueryFiltering nativeQueryFiltering = options.getNativeQueryFiltering();
+		Predicate<T> javaFilter = null;
+		Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
+
+		NativeFilter envNativeFilter = env.getArgumentOrDefault("nativeFilter", NativeFilter.IF_POSSIBLE);
+		if (filterArgument != null) {
+			switch (nativeQueryFiltering) {
+			case ON_DEMAND:
+				if (NativeFilter.NEVER.equals(envNativeFilter)) {
+					javaFilter = filterProvider.createPredicate(filterArgument);
+					break;
+				}
+				boolean invalid = true;
+				if (NativeFilter.ONLY.equals(envNativeFilter) || NativeFilter.IF_POSSIBLE.equals(envNativeFilter)) {
+					invalid = false;
+				}
+				if (invalid) {
+					throw new InvalidParameterException("Unsupported 'nativeFilter' parameter value: " + envNativeFilter);
+				}
+				// else fall through into the native filtering
+			case ALWAYS:
+				if (NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering) && NativeFilter.NEVER.equals(envNativeFilter)) {
+					throw new InvalidParameterException("Conflicting params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
+				}
+				try {
+					maybeNativeFilter = Optional.of(filterProvider.createFilterOperation(filterArgument));
+					break;
+				} catch (UnformalizableQuery e) {
+					log.warn("The query filter cannot be formalized: {}", filterArgument);
+					log.debug(e);
+					if (NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering) || NativeFilter.ONLY.equals(envNativeFilter)) {
+						throw new InvalidParameterException("Cannot proceed with an unformalizable query on params: requested GraphQL 'nativeFilter' = " + envNativeFilter 
+								+ ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering + ", failed filter = " + e.getFilter());
+					} else {
+						log.info("Trying to apply old Java filtering");
+					}// fall through into the old filtering
+				}			
+			case NEVER:
+				if (NativeFilter.ONLY.equals(envNativeFilter)) {
+					throw new InvalidParameterException("Conflicting params: requested GraphQL 'nativeFilter' = " + envNativeFilter + ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering);
+				}
+				javaFilter = filterProvider.createPredicate(filterArgument);
+				break;
+			}
+		} else {
+			if (nativeQueryFiltering == NativeQueryFiltering.ALWAYS || envNativeFilter == NativeFilter.ONLY || PersistingRootDao.shouldSort(getPagingInfo(env))) {
+				// Force native filtering with `1 = 1` dummy filter
+				maybeNativeFilter = Optional.of(Comparison.dummy(true, ""));
+				if (nativeQueryFiltering == NativeQueryFiltering.NEVER) {
+					log.warn("A sorting is requested with native query filtering turned off. This may result in performance penalries!");
+				}
+			}
+		}
+		return Pair.of(javaFilter, maybeNativeFilter);
+	}
+
+	/**
+	 * Apply Java filtering to a stream.
+	 * 
+	 * @param stream
+	 * @param pagingInfo
+	 * @param javaFilter
+	 * @param ignorePaging
+	 * @return
+	 */
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(Stream<? extends NodeContent> stream, PagingParameters pagingInfo, Predicate<NodeContent> javaFilter, boolean ignorePaging) {
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, javaFilter, ignorePaging);
+	}
+
+	/**
+	 * Apply GraphQL filter to a stream as Java filter.
+	 * 
+	 * @param env
+	 * @param stream
+	 * @param ignorePaging
+	 * @return
+	 */
+	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream, boolean ignorePaging, boolean ignoreFiltering) {
+		Map<String, ?> filterArgument = ignoreFiltering ? null : env.getArgument("filter");
+		GraphQLContext gc = env.getContext();
+		Predicate<NodeContent> predicate = null;
 
 		if (filterArgument != null) {
-			return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
+			predicate = NodeFilter.filter(gc).createPredicate(filterArgument);
+		}
+		return applyNodeFilter(stream, getPagingInfo(env), predicate, ignorePaging);
+	}
+
+	/**
+	 * Map GraphQL {@link Sorting} value onto a Mesh {@link SortOrder}.
+	 * 
+	 * @param sorting
+	 * @return
+	 */
+	private static final Optional<SortOrder> sortOrderFromGraphQlSorting(Object sorting) {
+		if (sorting != null && sorting instanceof Sorting) {
+			Sorting s = Sorting.class.cast(sorting);
+			switch (s) {
+			case ASCENDING:
+				return Optional.of(SortOrder.ASCENDING);
+			case DESCENDING:
+				return Optional.of(SortOrder.DESCENDING);
+			}
+			throw new IllegalStateException("Impossible case of unsupported Sorting value " + sorting);
 		} else {
-			return new DynamicStreamPageImpl<>(stream, pagingInfo);
+			return Optional.empty();
 		}
 	}
 }

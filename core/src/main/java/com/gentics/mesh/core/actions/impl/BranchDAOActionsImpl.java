@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.actions.impl;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
@@ -12,6 +14,7 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -94,6 +97,11 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	public String getETag(Tx tx, InternalActionContext ac, HibBranch branch) {
 		BranchDao branchDao = tx.branchDao();
 		return branchDao.getETag(branch, ac);
+	}
+
+	@Override
+	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		return new DynamicStreamPageImpl<>(ctx.tx().branchDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)), pagingInfo, true);
 	}
 
 }

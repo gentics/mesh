@@ -40,6 +40,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
+		addUserTrackingRelation(TagImpl.class);
 	}
 
 	@Override

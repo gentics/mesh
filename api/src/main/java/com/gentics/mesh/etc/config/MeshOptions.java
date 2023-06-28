@@ -528,6 +528,12 @@ public abstract class MeshOptions implements Option {
 		this.migrationMaxBatchSize = migrationMaxBatchSize;
 	}
 
+	@JsonIgnore
+	public abstract NativeQueryFiltering getNativeQueryFiltering();
+
+	@JsonIgnore
+	public abstract MeshOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering);
+
 	/**
 	 * Get the automatic job migration trigger interval in ms.
 	 * @return interval in ms
