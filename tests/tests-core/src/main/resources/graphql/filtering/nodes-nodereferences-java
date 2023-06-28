@@ -6,7 +6,7 @@
 	    		schema: {is: folder}
 				fields: {
 					folder: {
-						name:{like: "201%"}
+						name:{contains: "201"}
 					}
 				}
 			 }
@@ -56,20 +56,6 @@
 	    }
 	  }) {
 	    # [$.data.hasContentReferences.elements.length()=2]
-	    elements {
-	      uuid
-	      schema {
-	        name
-	      }
-	    }
-	}
-	
-	hasListsReferences: nodes(filter: {
-	    referencedByLists: {
-	    	count: { gt: 1 }
-	    }
-	  }) {
-	    # [$.data.hasListsReferences.elements.length()=2]
 	    elements {
 	      uuid
 	      schema {

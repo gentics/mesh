@@ -21,9 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.test.MeshTestSetting;
-import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.util.UUIDUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +35,6 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
@@ -47,9 +43,12 @@ import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.graphql.javafilter.JavaGraphQLEndpointTest;
+import com.gentics.mesh.core.graphql.nativefilter.NativeGraphQLEndpointTest;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -93,7 +92,10 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -145,82 +147,84 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		this.apiVersion = apiVersion;
 	}
 
+	protected static Stream<List<Object>> queries() {
+		return Stream.<List<Object>>of(
+				Arrays.asList("full-query", true, false, "draft"),
+				Arrays.asList("role-user-group-query", true, false, "draft"),
+				Arrays.asList("group-query", true, false, "draft"),
+				Arrays.asList("schema-query", true, false, "draft"),
+				// Arrays.asList("schema-projects-query", true, false, "draft"),
+				Arrays.asList("microschema-query", true, false, "draft"),
+				Arrays.asList("paging-query", true, false, "draft"),
+				Arrays.asList("tagFamily-query", true, false, "draft"),
+				Arrays.asList("node-query", true, false, "draft"),
+				Arrays.asList("node-tag-query", true, false, "draft"),
+				Arrays.asList("nodes-query", true, false, "draft"),
+				Arrays.asList("nodes-query-by-uuids", true, false, "draft"),
+				Arrays.asList("node-breadcrumb-query", true, false, "draft"),
+				Arrays.asList("node-breadcrumb-query-with-lang", true, false, "draft"),
+				Arrays.asList("node-language-fallback-query", true, false, "draft"),
+				Arrays.asList("node-languages-query", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
+				Arrays.asList("node-not-found-webroot-query", true, false, "draft"),
+				Arrays.asList("node-webroot-query", true, false, "draft"),
+				Arrays.asList("node-webroot-urlfield-query", true, false, "draft"),
+				Arrays.asList("node-relations-query", true, false, "draft"),
+				Arrays.asList("node-fields-query", true, false, "draft"),
+				Arrays.asList("node-fields-no-microschema-query", false, false, "draft"),
+				Arrays.asList("node/link/webroot", true, false, "draft"),
+				Arrays.asList("node/link/webroot-medium", true, false, "draft"),
+				Arrays.asList("node/link/webroot-short", true, false, "draft"),
+				Arrays.asList("node/link/children", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
+				Arrays.asList("node/link/webroot-language", true, false, "draft"),
+				Arrays.asList("node/link/reference", true, false, "draft"),
+				Arrays.asList("node-field-list-path-query", true, false, "draft"),
+				Arrays.asList("project-query", true, false, "draft"),
+				Arrays.asList("tag-query", true, false, "draft"),
+				Arrays.asList("branch-query", true, true, "draft"),
+				Arrays.asList("user-query", true, false, "draft"),
+				Arrays.asList("microschema-projects-query", true, false, "draft"),
+				Arrays.asList("node-version-published-query", true, false, "published"),
+				Arrays.asList("node/breadcrumb-root", true, false, "draft"),
+				Arrays.asList("node/versionslist", true, false, "draft"),
+				Arrays.asList("permissions", true, false, "draft"),
+				Arrays.asList("user-node-reference", true, false, "draft"),
+				Arrays.asList("filtering/children", true, false, "draft"),
+				Arrays.asList("filtering/nodes", true, false, "draft"),
+				Arrays.asList("filtering/nodes-en", true, false, "draft"),
+				Arrays.asList("filtering/nodes-jp", true, false, "draft"),
+				Arrays.asList("filtering/nodes-creator-editor", true, false, "draft"),
+				Arrays.asList("filtering/groups", true, false, "draft"),
+				Arrays.asList("filtering/roles", true, false, "draft"),
+				Arrays.asList("filtering/users", true, false, "draft"),
+				Arrays.asList("filtering/nodes-string-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-boolean-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-number-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-date-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-stringlist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-numberlist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-booleanlist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-datelist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-node-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-micronode-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft")
+			);
+	}
+
 	@Parameters(name = "query={0},version={3},apiVersion={5}")
 	public static Collection<Object[]> paramData() {
-		return Stream.<List<Object>>of(
-			Arrays.asList("full-query", true, false, "draft"),
-			Arrays.asList("role-user-group-query", true, false, "draft"),
-			Arrays.asList("group-query", true, false, "draft"),
-			Arrays.asList("schema-query", true, false, "draft"),
-			// Arrays.asList("schema-projects-query", true, false, "draft"),
-			Arrays.asList("microschema-query", true, false, "draft"),
-			Arrays.asList("paging-query", true, false, "draft"),
-			Arrays.asList("tagFamily-query", true, false, "draft"),
-			Arrays.asList("node-query", true, false, "draft"),
-			Arrays.asList("node-tag-query", true, false, "draft"),
-			Arrays.asList("nodes-query", true, false, "draft"),
-			Arrays.asList("nodes-query-by-uuids", true, false, "draft"),
-			Arrays.asList("node-breadcrumb-query", true, false, "draft"),
-			Arrays.asList("node-breadcrumb-query-with-lang", true, false, "draft"),
-			Arrays.asList("node-language-fallback-query", true, false, "draft"),
-			Arrays.asList("node-languages-query", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
-			Arrays.asList("node-not-found-webroot-query", true, false, "draft"),
-			Arrays.asList("node-webroot-query", true, false, "draft"),
-			Arrays.asList("node-webroot-urlfield-query", true, false, "draft"),
-			Arrays.asList("node-relations-query", true, false, "draft"),
-			Arrays.asList("node-fields-query", true, false, "draft"),
-			Arrays.asList("node-fields-no-microschema-query", false, false, "draft"),
-			Arrays.asList("node/link/webroot", true, false, "draft"),
-			Arrays.asList("node/link/webroot-medium", true, false, "draft"),
-			Arrays.asList("node/link/webroot-short", true, false, "draft"),
-			Arrays.asList("node/link/children", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLinkChildrenResponse),
-			Arrays.asList("node/link/webroot-language", true, false, "draft"),
-			Arrays.asList("node/link/reference", true, false, "draft"),
-			Arrays.asList("node-field-list-path-query", true, false, "draft"),
-			Arrays.asList("project-query", true, false, "draft"),
-			Arrays.asList("tag-query", true, false, "draft"),
-			Arrays.asList("branch-query", true, true, "draft"),
-			Arrays.asList("user-query", true, false, "draft"),
-			Arrays.asList("microschema-projects-query", true, false, "draft"),
-			Arrays.asList("node-version-published-query", true, false, "published"),
-			Arrays.asList("node/breadcrumb-root", true, false, "draft"),
-			Arrays.asList("node/versionslist", true, false, "draft"),
-			Arrays.asList("permissions", true, false, "draft"),
-			Arrays.asList("user-node-reference", true, false, "draft"),
-			Arrays.asList("filtering/children", true, false, "draft"),
-			Arrays.asList("filtering/nodes", true, false, "draft"),
-			Arrays.asList("filtering/nodes-en", true, false, "draft"),
-			Arrays.asList("filtering/nodes-jp", true, false, "draft"),
-			Arrays.asList("filtering/nodes-creator-editor", true, false, "draft"),
-			Arrays.asList("filtering/groups", true, false, "draft"),
-			Arrays.asList("filtering/roles", true, false, "draft"),
-			Arrays.asList("filtering/users", true, false, "draft"),
-			Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
-			Arrays.asList("filtering/nodes-string-field-java", true, false, "draft"),
-			Arrays.asList("filtering/nodes-string-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-boolean-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-number-field-java", true, false, "draft"),
-			Arrays.asList("filtering/nodes-number-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-date-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-stringlist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-numberlist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-booleanlist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-datelist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-htmllist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-node-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-micronode-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
-			Arrays.asList("filtering/nodes-nodereferences-native", true, false, "draft")
-		)
-		.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION).mapToObj(version -> {
-			// Make sure all testData entries have six parts.
-			Object[] array = testCase.toArray(new Object[6]);
-			array[5] = "v" + version;
-			return array;
-		})).collect(Collectors.toList());
+		return Stream.of(GraphQLEndpointTest.queries(), JavaGraphQLEndpointTest.queries(), NativeGraphQLEndpointTest.queries())
+				.flatMap(java.util.function.Function.identity())
+				.flatMap(testCase -> IntStream.rangeClosed(1, CURRENT_API_VERSION)
+				.mapToObj(version -> {
+					// Make sure all testData entries have six parts.
+					Object[] array = testCase.toArray(new Object[6]);
+					array[5] = "v" + version;
+					return array;
+				})).collect(Collectors.toList());
 	}
 
 	@Before
