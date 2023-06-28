@@ -711,28 +711,25 @@ public interface PersistingContentDao extends ContentDao {
 	 */
 	private void updateWebrootUrlFieldsInfo(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
-			// Individually check each url
-			for (String urlFieldValue : urlFieldValues) {
-				HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValue, branchUuid, type);
-				if (conflictingEdge != null) {
-					HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
-					HibNode conflictingNode = conflictingEdge.getNode();
-					if (log.isDebugEnabled()) {
-						log.debug(
-								"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
-					}
-					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
-					// determine
-					// which path caused the conflict.
-					Set<String> fromConflictingContainer = getUrlFieldValues(conflictingContainer).collect(Collectors.toSet());
-					@SuppressWarnings("unchecked")
-					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
-					String paths = String.join(",", conflictingValues);
-
-					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
-							"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
-							conflictingContainer.getLanguageTag());
+			HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValues, branchUuid, type);
+			if (conflictingEdge != null) {
+				HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
+				HibNode conflictingNode = conflictingEdge.getNode();
+				if (log.isDebugEnabled()) {
+					log.debug(
+							"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
 				}
+				// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
+				// determine
+				// which path caused the conflict.
+				Set<String> fromConflictingContainer = getUrlFieldValues(conflictingContainer).collect(Collectors.toSet());
+				@SuppressWarnings("unchecked")
+				Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
+				String paths = String.join(",", conflictingValues);
+
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+						"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
+						conflictingContainer.getLanguageTag());
 			}
 			edge.setUrlFieldInfo(urlFieldValues);
 		} else {
