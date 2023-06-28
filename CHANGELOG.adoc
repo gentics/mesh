@@ -23,7 +23,7 @@ include::content/docs/variables.adoc-include[]
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
 [[v1.10.10]]
-== 1.10.10 (TBD)
+== 1.10.10 (28.06.2023)
 
 icon:check[] Core: The internal check for uniqueness of values in webroot fields has been improved.
 
