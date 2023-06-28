@@ -62,9 +62,7 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 	@Override
 	public Page<? extends L> findAll(R root, InternalActionContext ac, PagingParameters pagingInfo) {
 		RootVertex<D> rootVertex = getRoot(root);
-		return PersistingRootDao.shouldSort(pagingInfo) 
-				? (Page<? extends L>) rootVertex.findAll(ac, pagingInfo, Optional.empty()) 
-				: (Page<? extends L>) rootVertex.findAll(ac, pagingInfo);
+		return (Page<? extends L>) rootVertex.findAll(ac, pagingInfo);
 	}
 
 	/**

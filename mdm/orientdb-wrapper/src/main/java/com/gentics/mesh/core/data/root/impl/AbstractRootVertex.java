@@ -150,15 +150,8 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	@Override
 	public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
-		Stream<? extends T> stream = toStream(db().getVertices(
-				getPersistanceClass(),
-				new String[] {},
-				new Object[]{},
-				mapSorting(pagingInfo),
-				Optional.empty(),
-				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), InternalPermission.READ_PUBLISHED_PERM, Optional.empty()))
-			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
+		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+		return findAll(ac, pagingInfo, type, maybeExtraFilter);
 	}
 
 	@Override
@@ -190,5 +183,18 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public T create() {
 		return getGraph().addFramedVertex(getPersistanceClass());
+	}
+
+	protected Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, ContainerType ctype, Optional<FilterOperation<?>> maybeExtraFilter) {
+		InternalPermission perm = ctype == ContainerType.PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : READ_PERM;
+		Stream<? extends T> stream = toStream(db().getVertices(
+				getPersistanceClass(),
+				new String[] {},
+				new Object[]{},
+				mapSorting(pagingInfo),
+				Optional.empty(),
+				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty()))
+			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
 	}
 }
