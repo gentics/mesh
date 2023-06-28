@@ -59,7 +59,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 			config.overrideWithEnv();
 			config.validate(getStorageDir());
 
-			LicenseService licenseService = new LicenseService(config.getLicenseKey());
+			LicenseService licenseService = new LicenseService(config);
 			licenseService.isLicenseSufficient(LicensedPlugin.MSRH);
 
 			InitializationComponent init = DaggerInitializationComponent.builder()

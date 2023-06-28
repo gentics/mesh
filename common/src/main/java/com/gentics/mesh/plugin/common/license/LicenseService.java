@@ -1,10 +1,12 @@
 package com.gentics.mesh.plugin.common.license;
 
-
 import com.gentics.license.LicenseChecker;
 import com.gentics.mesh.plugin.common.MeshPluginException;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service to perform license checks. I.e. check which services are licensed and allowed to use.
@@ -12,35 +14,29 @@ import java.util.List;
  */
 public class LicenseService {
 
-	private final String licenseKeyPath;
+	private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
+	private final LicenseConfiguration config;
 
-	public LicenseService(String licenseKey) {
-		this.licenseKeyPath = licenseKey;
-	}
-
-	/**
-	 * Checks if the feature has a valid license
-	 * @param licensedPlugin the plugin to check for a valid license
-	 */
-	public void isLicenseSufficient(LicensedPlugin licensedPlugin) throws MeshPluginException {
-		init(licensedPlugin);
-		var isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(licensedPlugin);
-
-		if (!isLicensed) {
-			throw new MeshPluginException(String.format("License insufficient. Plugin '%s' is not licensed", licensedPlugin.getProductName()));
-		}
+	public LicenseService(LicenseConfiguration config) {
+		this.config = config;
 	}
 
 	/**
 	 * Initialize the LicenseChecker. Reads the license.key file and register available features
+	 *
 	 * @param licensedPlugin the plugin to initialize
 	 */
 	private void init(LicensedPlugin licensedPlugin) throws MeshPluginException {
-		var licenseKeyFile = new File(this.licenseKeyPath);
+		var licenseKeyFile = new File(config.getLicenseKeyPath());
 
-		if (!licenseKeyFile.exists()) {
-			throw new MeshPluginException(String.format("License key file does not exists at {%s}", this.licenseKeyPath));
+		try {
+			Optional<String> logMessage = LicenseChecker.createLicenseFileIfMissing(licenseKeyFile,
+					config.getLicenseKey());
+			logMessage.ifPresent(logger::info);
+		} catch (Exception e) {
+			logger.error(String.format("Error while writing license key to file %s",
+					licenseKeyFile.getAbsolutePath()), e);
 		}
 
 		try {
@@ -48,9 +44,26 @@ public class LicenseService {
 					true,
 					true);
 			LicenseChecker.doLicenseCheck(true, null, null);
+		} catch (Exception exception) {
+			throw new MeshPluginException(
+					String.format("License check failed. Reason: %s", exception.getMessage()));
 		}
-		catch (Exception exception) {
-			throw new MeshPluginException(String.format("License check failed. Reason: %s", exception.getMessage()));
+	}
+
+
+	/**
+	 * Checks if the feature has a valid license
+	 *
+	 * @param licensedPlugin the plugin to check for a valid license
+	 */
+	public void isLicenseSufficient(LicensedPlugin licensedPlugin) throws MeshPluginException {
+		init(licensedPlugin);
+		var isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(licensedPlugin);
+
+		if (!isLicensed) {
+			throw new MeshPluginException(
+					String.format("License insufficient. Plugin '%s' is not licensed",
+							licensedPlugin.getProductName()));
 		}
 	}
 

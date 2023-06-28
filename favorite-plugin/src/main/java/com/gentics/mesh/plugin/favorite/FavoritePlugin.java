@@ -67,7 +67,7 @@ public class FavoritePlugin extends AbstractPlugin implements RestPlugin {
 			}
 			configuration.overrideWithEnv();
 
-			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+			LicenseService licenseService = new LicenseService(configuration);
 			licenseService.isLicenseSufficient(LicensedPlugin.MFAV);
 
 			meshPluginService = new MeshPluginService(getRxVertx(), adminClient(), getStorageDir());

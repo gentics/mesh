@@ -139,7 +139,7 @@ public class CommentPlugin extends AbstractPlugin implements RestPlugin {
 			this.configuration = readConfig(Configuration.class);
 			this.configuration.overrideWithEnv();
 
-			LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+			LicenseService licenseService = new LicenseService(configuration);
 			licenseService.isLicenseSufficient(LicensedPlugin.MCMT);
 
 			InitializationComponent component = DaggerInitializationComponent.builder()
