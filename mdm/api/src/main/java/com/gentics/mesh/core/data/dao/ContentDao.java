@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -974,6 +975,16 @@ public interface ContentDao {
 	 * @return
 	 */
 	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
+
+	/**
+	 * Return the field edges for the given node, container type and current node project branch.
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	default Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode fieldNode, ContainerType version) {
+		return getFieldEdges(fieldNode, fieldNode.getProject().getLatestBranch().getUuid(), version);
+	}
 
 	/**
 	 * Create a {@link NodeFieldListItem} that contains the reference to the given node.

@@ -643,7 +643,7 @@ public abstract class AbstractTypeProvider {
 		return applyNodeFilter(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)
 				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
 				: nodeDao.findAllContent(project, gc, languageTags, type), 
-			pagingInfo, filters.getLeft(), (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo));
+			pagingInfo, filters.getLeft(), filters.getRight().isPresent());
 	}
 
 	public <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
