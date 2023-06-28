@@ -106,8 +106,8 @@ public class ExportPlugin extends AbstractPlugin implements RestPlugin, ExportCo
 
 		router.route("/csv")
 			.method(HttpMethod.POST)
-			.handler(wrapHandler(roleCheck))
 			.handler(BodyHandler.create())
+			.handler(wrapHandler(roleCheck))
 			.handler(new DecodeValidateHandler<>(CsvRequest.class))
 			.handler(wrapHandler(handler));
 

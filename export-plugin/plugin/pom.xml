@@ -4,17 +4,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>mesh-export-plugin</artifactId>
-
 	<parent>
 		<groupId>com.gentics.mesh.plugin.commercial</groupId>
 		<artifactId>mesh-export-plugin-base</artifactId>
 		<version>1.10.5-SNAPSHOT</version>
 	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jackson.version>2.9.9</jackson.version>
-
 		<!-- We use these properties to specify the plugin manifest -->
 		<plugin.id>export</plugin.id>
 		<plugin.name>Export Plugin</plugin.name>
@@ -24,7 +21,6 @@
 		<plugin.author>Dominik Decker</plugin.author>
 		<plugin.inception>2019-09-01</plugin.inception>
 	</properties>
-
 	<!-- The dependency management section provides the versions for the needed 
 		artifacts -->
 	<dependencyManagement>
@@ -36,7 +32,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
 			<dependency>
 				<groupId>com.google.dagger</groupId>
 				<artifactId>dagger-compiler</artifactId>
@@ -44,21 +39,18 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-export-plugin-extension-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 		<!-- Dagger -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger-compiler</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
 		<!-- Jackson Date Parsing -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>
@@ -75,7 +67,6 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-
 		<!-- Hibernate JSON Validation -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -92,14 +83,12 @@
 			<artifactId>javax.el</artifactId>
 			<version>3.0.1-b08</version>
 		</dependency>
-
 		<!-- CSV Writer -->
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
 			<version>4.1</version>
 		</dependency>
-
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -116,8 +105,12 @@
 			<artifactId>mesh-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -130,7 +123,6 @@
 					<target>11</target>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 				</configuration>
-
 				<dependencies>
 					<dependency>
 						<groupId>com.google.dagger</groupId>
@@ -140,7 +132,6 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -150,7 +141,6 @@
 					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -182,7 +172,6 @@
 			</plugin>
 		</plugins>
 	</build>
-
 	<!-- The repository section is important. Otherwise you will not be able 
 		to download the artifacts -->
 	<repositories>
