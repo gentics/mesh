@@ -28,6 +28,9 @@ public class JavaGraphQLEndpointTest extends GraphQLEndpointTest {
 
 	public static Stream<List<Object>> queries() {
 		return Stream.<List<Object>>of(
+				Arrays.asList("filtering/nodes", true, false, "draft"),
+				Arrays.asList("filtering/nodes-en", true, false, "draft"),
+				Arrays.asList("filtering/nodes-jp", true, false, "draft"),
 				Arrays.asList("filtering/roles-java", true, false, "draft"),
 				Arrays.asList("filtering/nodes-string-field-java", true, false, "draft"),
 				Arrays.asList("filtering/nodes-number-field-java", true, false, "draft"),
