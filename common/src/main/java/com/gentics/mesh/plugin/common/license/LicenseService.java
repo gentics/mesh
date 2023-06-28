@@ -30,11 +30,6 @@ public class LicenseService {
 	private void init(LicensedPlugin licensedPlugin) throws MeshPluginException {
 		var licenseKeyFile = new File(config.getLicenseKeyPath());
 
-		if (!licenseKeyFile.exists()) {
-			throw new MeshPluginException(
-					String.format("License key file does not exists at {%s}", config.getLicenseKeyPath()));
-		}
-
 		try {
 			Optional<String> logMessage = LicenseChecker.createLicenseFileIfMissing(licenseKeyFile,
 					config.getLicenseKey());
