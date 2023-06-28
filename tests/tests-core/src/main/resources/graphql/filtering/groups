@@ -1,6 +1,6 @@
 {
   endsWithGroup: groups(filter:{
-    name: { like: "group%"}
+    name: { like: "%group"}
   }) {
     # [$.data.endsWithGroup.totalCount=2]
     totalCount
@@ -13,7 +13,7 @@
   endsWithGroupAndAdmin: groups(filter:{
     or: [
     	{name: { equals:"admin"}}
-    	{name: { like: "group%"}}
+    	{name: { like: "%group"}}
     ]
   }) {
     # [$.data.endsWithGroupAndAdmin.totalCount=3]
