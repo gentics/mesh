@@ -47,7 +47,6 @@ public class FavoritePluginClient {
 		return overrideFavorite(type, Arrays.asList(values));
 	}
 
-	//TODO next Mesh Release please change it to post(path, body, EmptyResponse.class)
 	public Completable overrideFavorite(String type, List<String> values) {
 		JsonObject value = new JsonObject().put("favorites", new JsonArray(values));
 		return client.post(String.format("/%s/plugins/favorite/%s", projectName, type), toRestModel(value), EmptyResponse.class).toCompletable();
