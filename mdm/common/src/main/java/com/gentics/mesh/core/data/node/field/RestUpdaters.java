@@ -729,10 +729,12 @@ public class RestUpdaters {
 			graphBinaryField.setPlainText(text);
 		}
 
-		if (StringUtils.isBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
-			graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
-		} else {
-			graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+		if (graphBinaryField.getBinary() != null) {
+			if (StringUtils.isBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+				graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
+			} else {
+				graphBinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+			}
 		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
@@ -837,10 +839,12 @@ public class RestUpdaters {
 			graphS3BinaryField.setS3ObjectKey(key);
 		}
 
-		if (StringUtils.isBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
-			graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
-		} else {
-			graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+		if (graphS3BinaryField.getBinary() != null) {
+			if (StringUtils.isBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())) {
+				graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.ACCEPTED);
+			} else {
+				graphS3BinaryField.getBinary().setCheckStatus(BinaryCheckStatus.POSTPONED);
+			}
 		}
 		// Don't update image width, height, SHA checksum - those are immutable
 	};
