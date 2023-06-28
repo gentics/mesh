@@ -37,10 +37,15 @@ icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)bin
 icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
 `ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
 
+[[v1.10.10]]
+== 1.10.10 (28.06.2023)
+
+icon:check[] Core: The internal check for uniqueness of values in webroot fields has been improved.
+
 [[v1.10.9]]
 == 1.10.9 (12.06.2023)
 
-icon:check[] Core: An API for permission cache fine tuning (distinct items management) has been added. 
+icon:check[] Core: An API for permission cache fine tuning (distinct items management) has been added.
 
 [[v1.10.8]]
 == 1.10.8 (30.05.2023)

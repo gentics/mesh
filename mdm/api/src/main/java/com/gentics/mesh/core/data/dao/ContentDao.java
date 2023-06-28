@@ -960,6 +960,18 @@ public interface ContentDao {
 	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type);
 
 	/**
+	 * 	Retrieve a conflicting edge for one of the given urlFieldValues, branch uuid and type, or null if there's no conflicting
+	 * 	edge
+	 * @param content
+	 * @param edge
+	 * @param urlFieldValues
+	 * @param branchUuid
+	 * @param type
+	 * @return
+	 */
+	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type);
+
+	/**
 	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
 	 *
 	 * @param parentNode
