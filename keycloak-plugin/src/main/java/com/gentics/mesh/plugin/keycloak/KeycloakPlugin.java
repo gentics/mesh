@@ -68,7 +68,7 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	}
 
 	private void performLicenseCheck(KeycloakPluginConfig configuration) throws MeshPluginException {
-		LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+		LicenseService licenseService = new LicenseService(configuration);
 		licenseService.isLicenseSufficient(LicensedPlugin.MKC);
 	}
 

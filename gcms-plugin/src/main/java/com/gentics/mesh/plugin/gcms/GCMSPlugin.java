@@ -58,7 +58,7 @@ public class GCMSPlugin extends AbstractCommercialPlugin<GCMSPluginConfig> imple
 		return loadConfig(GCMSPluginConfig.class).map(config -> {
 			config.overrideWithEnv();
 
-			LicenseService licenseService = new LicenseService(config.getLicenseKey());
+			LicenseService licenseService = new LicenseService(config);
 			licenseService.isLicenseSufficient(LicensedPlugin.MGCMS);
 
 			config.validate();

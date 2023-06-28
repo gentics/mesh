@@ -58,7 +58,7 @@ public class MustReadPlugin extends AbstractPlugin implements RestPlugin {
             MustReadConfig configuration = getConfiguration();
             configuration.overrideWithEnv();
 
-            LicenseService licenseService = new LicenseService(configuration.getLicenseKey());
+            LicenseService licenseService = new LicenseService(configuration);
             licenseService.isLicenseSufficient(LicensedPlugin.MMRD);
             // FolderInitializer after SchemaInitializer because folder is based on schema
             SchemaInitializer schemaInitializer = new SchemaInitializer(adminClient(), configuration, getLogHelper(), getSchemaController());
