@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphql.filter;
 
+import static graphql.schema.GraphQLEnumType.newEnum;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +68,10 @@ public abstract class SchemaElementFilter<
 						.value(schema.getUuid())
 						.build();
 			}).collect(Collectors.toList());
+
+		if (values.isEmpty()) {
+			return newEnum().name(elementName + "Enum").description("Empty placeholder for " + elementName + ".").value("EMPTY").build();
+		}
 
 		return GraphQLEnumType
 				.newEnum()
