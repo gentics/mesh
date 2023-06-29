@@ -106,33 +106,7 @@ for an explanation of the basic concepts of Gentics Mesh.
 
 ## Gentics CMP
 
-Gentics CMP (Content Management Platform) is composed of the following components: Gentics CMS, Gentics Mesh, and Gentics Portal. Gentics CMS and Mesh are available as both open-source software (OSS) and Enterprise Edition (EE). Gentics Portal Java and PHP can only be acquired with the Enterprise Edition. The following features are only available with the EE and can be acquired individually. For more information about the EE, please contact [sales@gentics.com](mailto:sales@gentics.com).
-
-Licensed EE features:
-
-- Mesh SQL with support for Oracle, MSSQL, Postgres, MySQL, or MariaDB
-    - Mesh OSS only supports noSQL for OrientDB.
-- Mesh Cluster
-- Mesh Acta Nova Plugin
-- Mesh Search Plugin
-- Mesh Comment Plugin
-- Mesh Like Plugin
-- Mesh Keycloak Plugin
-- Mesh Favorite Plugin
-- Mesh Must Read Plugin
-- Helm Charts for CMP
-- CMS Multichanneling
-- CMS Form & Analysis tool
-- CMS Clustering
-- CMS Content Staging
-- CMS Advanced Search
-- CMS Siteimprove Integration
-- CMS Asset Management
-- CMS Link Checker
-- CMS Usersnap Integration
-- CMS Keycloak Integration
-
-For more information about Gentics CMP, please visit: https://www.gentics.com/infoportal/
+Gentics CMP (Content Management Platform) is composed of the following components: Gentics CMS, Gentics Mesh, and Gentics Portal. Gentics CMS and Mesh are available as both open-source software (OSS) and Enterprise Edition (EE). Gentics Portal Java and PHP can only be acquired with the Enterprise Edition. You can find the EE features here: TODO. For more information about the EE, please contact [sales@gentics.com](mailto:sales@gentics.com).
 
 Here are the links to our open-source projects:
 
@@ -195,7 +169,7 @@ Austria.
     <img src="https://getmesh.io/blog/gentics-mesh-1-0/gentics-team.jpg" alt="photo of the Gentics Mesh team" style="max-width: 80%" />
 </p>
 
-The Gentics Mesh core team consists of:
+The Gentics Mesh core team consists of the following members:
 
 <p align="center">
  <table align="center" style="width: 100%; max-width: 600px;">
