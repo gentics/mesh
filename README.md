@@ -82,6 +82,7 @@ for an explanation of the basic concepts of Gentics Mesh.
    * [Quick Start](#quick-start)
    * [Table of Contents](#table-of-contents)
    * [Introduction](#introduction)
+      * [Gentics CMP](#gentics-cmp)
       * [What is a Headless CMS?](#what-is-a-headless-cms)
       * [Why pick Gentics Mesh?](#why-pick-gentics-mesh)
    * [Status](#status)
@@ -102,6 +103,41 @@ for an explanation of the basic concepts of Gentics Mesh.
    * [Copyright &amp; License](#copyright--license)
 
 # Introduction
+
+## Gentics CMP
+
+Gentics CMP (Content Management Platform) is composed of the following components: Gentics CMS, Gentics Mesh, and Gentics Portal. Gentics CMS and Mesh are available as both open-source software (OSS) and Enterprise Edition (EE). Gentics Portal Java and PHP can only be acquired with the Enterprise Edition. The following features are only available with the EE and can be acquired individually. For more information about the EE, please contact [sales@gentics.com](mailto:sales@gentics.com).
+
+Licensed EE features:
+
+- Mesh SQL with support for Oracle, MSSQL, Postgres, MySQL, or MariaDB
+    - Mesh OSS only supports noSQL for OrientDB.
+- Mesh Cluster
+- Mesh Acta Nova Plugin
+- Mesh Search Plugin
+- Mesh Comment Plugin
+- Mesh Like Plugin
+- Mesh Keycloak Plugin
+- Mesh Favorite Plugin
+- Mesh Must Read Plugin
+- Helm Charts for CMP
+- CMS Multichanneling
+- CMS Form & Analysis tool
+- CMS Clustering
+- CMS Content Staging
+- CMS Advanced Search
+- CMS Siteimprove Integration
+- CMS Asset Management
+- CMS Link Checker
+- CMS Usersnap Integration
+- CMS Keycloak Integration
+
+For more information about Gentics CMP, please visit: https://www.gentics.com/infoportal/
+
+Here are the links to our open-source projects:
+
+- Gentics CMS OSS: https://github.com/gentics/cms
+- Gentics Mesh OSS: https://github.com/gentics/mesh
 
 ## What is a Headless CMS?
 
