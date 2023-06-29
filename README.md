@@ -227,8 +227,18 @@ The Gentics Mesh core team consists of the following members:
     </a>
    </td>
   </tr>
-
-
+    </tr>
+    </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/enizhou">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     En Qiang Zhou<br /><i>Product Owner</i>
+    </a>
+   </td>
+  </tr>
  </table>
 </p>
 
