@@ -11,5 +11,6 @@
     "label" : "Latitude",
     "required" : true,
     "type" : "number"
-  } ]
+  } ],
+  "microschema" : true
 }

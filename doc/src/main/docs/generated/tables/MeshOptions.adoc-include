@@ -57,6 +57,11 @@
 | integer
 | The maximum amount of entities to be migrated in a single transaction. This setting affects schema, microschema and branch migrations
 
+| migrationTriggerInterval
+| false
+| integer
+| Interval in ms for the automatic migration job trigger. Setting this to a non-positive value will disable automatic job triggering. Default: 60000 ms.
+
 | monitoring
 | false
 | object

@@ -7,6 +7,11 @@
 | Description
 
 
+| storageOptions.nativeQueryFiltering
+| false
+| nativequeryfiltering
+| Enables the experimental native database level filtering for queries. Default: NEVER
+
 | storageOptions.directory
 | true
 | string

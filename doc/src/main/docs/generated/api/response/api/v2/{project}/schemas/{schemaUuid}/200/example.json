@@ -46,6 +46,7 @@
     "type" : "list",
     "allow" : [ "geolocation" ]
   } ],
+  "microschema" : false,
   "permissions" : {
     "create" : true,
     "read" : true,
