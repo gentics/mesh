@@ -15,15 +15,14 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
-[[expected]]
-== Planned Future Changes
+[[clustering_orientdb]]
+== Clustering Support for OrientDB
 
-* With the release of `/api/v2` of the API, v1 has been deprecated. Version 2 introduced changes in the GraphQL API only. See the note in the changelog for link:#v0.35.0[v0.35.0] for details. The `/api/v1` still works like before, we will however cease support for `/api/v1` in the future. The Java REST client still uses v1 per default but can be set to v2. We advise to do so while `/api/v1` is still supported to prevent failures in the future.
-
-* The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
+Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
+link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
 [[v2.0.0]]
-== 2.0.0 (TBD)
+== 2.0.0 (29.06.2023)
 
 icon:plus[] Core: A support of database level filtering/sorting has been added to the low level Java API. 
 
@@ -32,6 +31,7 @@ is added to the selected entity lookup methods, with options `NEVER` (old filter
 Please note that not all the currently existing filters are supported by the DB.
 
 icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
+
 icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for `referencedBy` nodes.
 
 icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
