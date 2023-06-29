@@ -12,11 +12,6 @@
 | integer
 | Threshold for waiting for asynchronous graphql queries. Default: 120000ms
 
-| nativeQueryFiltering
-| false
-| string
-| Enables the native database level filtering for queries. Default: ON_DEMAND
-
 | slowThreshold
 | false
 | integer

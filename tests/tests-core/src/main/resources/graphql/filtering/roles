@@ -1,6 +1,6 @@
 {
   endsWithRole: roles(filter:{
-    name: { like: "role%"}
+    name: { like: "%role"}
   }) {
     # [$.data.endsWithRole.totalCount=3]
     totalCount
@@ -13,7 +13,7 @@
   endsWithRoleAndAdmin: roles(filter:{
     or: [
     	{name: { equals:"admin"}}
-    	{name: { like: "role%"}}
+    	{name: { like: "%role"}}
     ]
   }) {
     # [$.data.endsWithRoleAndAdmin.totalCount=4]

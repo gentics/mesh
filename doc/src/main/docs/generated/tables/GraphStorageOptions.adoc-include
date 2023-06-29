@@ -32,6 +32,11 @@
 | string
 | Path to the graph database export directory.
 
+| nativeQueryFiltering
+| false
+| string
+| Enables the experimental native database level filtering for queries. Default: NEVER
+
 | parameters
 | false
 | object

@@ -8,5 +8,6 @@
     "name" : "name",
     "required" : false,
     "type" : "string"
-  } ]
+  } ],
+  "microschema" : false
 }

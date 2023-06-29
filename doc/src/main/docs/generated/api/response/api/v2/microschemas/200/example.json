@@ -15,6 +15,7 @@
       "required" : true,
       "type" : "number"
     } ],
+    "microschema" : true,
     "permissions" : {
       "create" : true,
       "read" : true,
@@ -39,6 +40,7 @@
       "required" : true,
       "type" : "number"
     } ],
+    "microschema" : true,
     "permissions" : {
       "create" : true,
       "read" : true,

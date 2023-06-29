@@ -1,5 +1,6 @@
 {
   "description" : "New description",
   "name" : "extended-content",
-  "fields" : [ ]
+  "fields" : [ ],
+  "microschema" : false
 }
