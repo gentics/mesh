@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -11,7 +12,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -48,6 +48,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
@@ -207,7 +208,25 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			}
 
 			return storeUploadInTemp(ctx, ul, hash)
-				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName, publish)));
+				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName)))
+				.map(nodeResponse -> {
+					if (publish) {
+						db.tx((tx) -> {
+							PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
+							HibProject project = tx.getProject(ac);
+							HibBranch branch = tx.getBranch(ac);
+							NodeDao nodeDao = tx.nodeDao();
+							HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, PUBLISH_PERM);
+							EventQueueBatch batch = tx.createBatch();
+
+							HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, languageTag, branch, ac.getUser());
+							// Invoke a store of the document since it must now also be added to the published index
+							batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+							batch.dispatch();
+						});
+					}
+					return nodeResponse;
+				});
 		}).onErrorResumeNext(e -> {
 			if (ctx.isInvokeStore()) {
 				String tmpId = ctx.getTemporaryId();
@@ -232,7 +251,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				return Single.just(n);
 			}
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
-
 	}
 
 	private boolean fileNotExists(String binaryUuid) {
@@ -269,7 +287,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<HibBinaryField>> fieldModifier, UploadContext context,
 		String nodeUuid,
 		String languageTag, String nodeVersion,
-		String fieldName, boolean publish) {
+		String fieldName) {
 		FileUpload upload = context.getUpload();
 		String hash = context.getHash();
 		String binaryUuid = context.getBinaryUuid();
@@ -386,12 +404,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 			}
 
 			batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
-
-			if (publish) {
-				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
-				// Invoke a store of the document since it must now also be added to the published index
-				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
-			}
 
 			return nodeDao.transformToRestSync(node, ac, 0);
 		});

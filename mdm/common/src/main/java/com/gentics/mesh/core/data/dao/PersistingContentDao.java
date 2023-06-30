@@ -449,7 +449,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		// create published version
 		HibNodeFieldContainer newVersion = createFieldContainer(node, languageTag, branch, user);
-		Tx.get().contentDao().setVersion(newVersion, newVersion.getVersion().nextPublished());
+		setVersion(newVersion, newVersion.getVersion().nextPublished());
 
 		Tx.get().nodeDao().setPublished(node, ac, newVersion, branchUuid);
 		return newVersion;
