@@ -52,7 +52,7 @@ public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, pollUuid));
 
-		assertThat(dataNodes.getData())
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + pollUuid)))
 			.as("Data node list")
 			.hasSize(1);
 

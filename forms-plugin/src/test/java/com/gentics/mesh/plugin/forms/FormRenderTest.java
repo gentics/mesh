@@ -215,7 +215,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 				.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + uuid))).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
 
 		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
@@ -262,7 +262,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + uuid))).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
 
 		// Check the form data cookie has the correct data node UUID and name of the last submitted page.

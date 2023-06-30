@@ -64,7 +64,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
 		assertThat(dataNode.getFields().getStringField("single").getString()).as("Field value").isEqualTo(key);
 	}
@@ -77,7 +77,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
 		assertThat(dataNode.getFields().getStringField("single_with").getString()).as("Field value").isEqualTo(additionalKey);
 	}
@@ -90,7 +90,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
 		assertThat(dataNode.getFields().getStringFieldList("multi").getItems()).as("Field values").containsOnlyElementsOf(keys);
 	}
@@ -104,7 +104,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
 		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
 		NodeResponse dataNode = dataNodes.getData().get(0);
 		List<String> allKeys = new ArrayList<>();
 		allKeys.addAll(keys);
