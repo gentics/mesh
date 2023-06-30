@@ -23,6 +23,7 @@ public class MustReadTestPlugin extends MustReadPlugin {
 
     public static MustReadConfig generateTestConfiguration() {
         MustReadConfig config = new MustReadConfig();
+        config.setLicenseKey(System.getenv("LICENSEKEY"));
         ArrayList<ProjectConfig> projects = new ArrayList<>();
 
         QueryFilesConfig emptyQueryFiles = new QueryFilesConfig().setData("").setUuid("");
