@@ -145,6 +145,9 @@
 					<forkCount>${surefire.forkcount}</forkCount>
 					<trimStackTrace>false</trimStackTrace>
 					<useSystemClassLoader>false</useSystemClassLoader>
+					<environmentVariables>
+						<LICENSEKEY>FBF4-6D85-75CD-7FA0-3EAE-FB5E-3D31-B936</LICENSEKEY>
+					</environmentVariables>
 					<excludes>
 						<include>**/*AbstractTest.java</include>
 						<include>**/*Abstract*Test.java</include>
