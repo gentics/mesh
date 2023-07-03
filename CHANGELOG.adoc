@@ -22,6 +22,11 @@ include::content/docs/variables.adoc-include[]
 
 * The `html` field type will be removed in the future. Instead the `string` type will be used in combination with an additional configuration property for this field in the schema. Of course, your existing schemas will be migrated for you.
 
+[[v1.10.11]]
+== 1.10.11 (TBD)
+
+icon:check[] Core: When using a "instant binary publishing" feature, the actual publishing was sharing the same database transaction, that the file upload, which could potentially cause the deadlock in the shared Hazelcast cache of clustered installations. This has now been fixed by removing the publish request to its own transaction.
+
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)
 
