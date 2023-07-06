@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 /**
  * Handler for group search related index operations.
@@ -19,8 +20,8 @@ public class GroupSearchHandler extends AbstractSearchHandler<HibGroup, GroupRes
 
 	@Inject
 	public GroupSearchHandler(Database db, SearchProvider searchProvider, GroupIndexHandler indexHandler, MeshOptions options,
-		GroupDAOActions actions) {
-		super(db, searchProvider, options, indexHandler, actions);
+		GroupDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, indexHandler, actions, waitUtil);
 	}
 
 }

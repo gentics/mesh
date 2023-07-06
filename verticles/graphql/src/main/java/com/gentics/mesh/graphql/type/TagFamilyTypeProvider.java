@@ -31,15 +31,15 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 
 	public static final String TAG_FAMILY_PAGE_TYPE_NAME = "TagFamiliesPage";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	private final TagDAOActions tagActions;
 
 	@Inject
-	public TagFamilyTypeProvider(MeshOptions options, TagDAOActions tagActions) {
+	public TagFamilyTypeProvider(MeshOptions options, TagDAOActions tagActions, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
 		this.tagActions = tagActions;
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	public GraphQLObjectType createType() {

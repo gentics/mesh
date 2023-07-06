@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 /**
  * Handler for microschema search index queries.
@@ -19,8 +20,8 @@ public class MicroschemaSearchHandler extends AbstractSearchHandler<HibMicrosche
 
 	@Inject
 	public MicroschemaSearchHandler(Database db, SearchProvider searchProvider, MicroschemaContainerIndexHandlerImpl indexHandler, MeshOptions options,
-		MicroschemaDAOActions actions) {
-		super(db, searchProvider, options, indexHandler, actions);
+		MicroschemaDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, indexHandler, actions, waitUtil);
 	}
 
 }

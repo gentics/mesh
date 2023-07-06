@@ -97,24 +97,26 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	public static final String NODE_FIELDS_TYPE_NAME = "Fields";
 
-	@Inject
-	public NodeSearchHandler nodeSearchHandler;
+	protected final NodeSearchHandler nodeSearchHandler;
+
+	protected final InterfaceTypeProvider interfaceTypeProvider;
+
+	protected final TagTypeProvider tagTypeProvider;
+
+	protected final FieldDefinitionProvider fields;
+
+	protected final SearchWaitUtil waitUtil;
 
 	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public TagTypeProvider tagTypeProvider;
-
-	@Inject
-	public FieldDefinitionProvider fields;
-
-	@Inject
-	public SearchWaitUtil waitUtil;
-
-	@Inject
-	public NodeTypeProvider(MeshOptions options) {
+	public NodeTypeProvider(MeshOptions options, NodeSearchHandler nodeSearchHandler,
+			InterfaceTypeProvider interfaceTypeProvider, TagTypeProvider tagTypeProvider,
+			FieldDefinitionProvider fields, SearchWaitUtil waitUtil) {
 		super(options);
+		this.nodeSearchHandler = nodeSearchHandler;
+		this.interfaceTypeProvider = interfaceTypeProvider;
+		this.tagTypeProvider = tagTypeProvider;
+		this.fields = fields;
+		this.waitUtil = waitUtil;
 	}
 
 	/**

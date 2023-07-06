@@ -27,12 +27,12 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 
 	public static final String ROLE_PAGE_TYPE_NAME = "RolesPage";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public RoleTypeProvider(MeshOptions options) {
+	public RoleTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	/**

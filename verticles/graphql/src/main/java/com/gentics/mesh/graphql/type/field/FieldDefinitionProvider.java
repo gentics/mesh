@@ -93,11 +93,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public static final String LINK_REPLACER_DATA_LOADER_KEY = "linkReplaceLoader";
 
-	@Inject
-	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
+	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
-	@Inject
-	public WebRootLinkReplacerImpl linkReplacer;
+	protected final WebRootLinkReplacerImpl linkReplacer;
 
 	/**
 	 * Partition the keys by context and call the consumer for each part
@@ -116,37 +114,40 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * DataLoader implementation that replaces links in contents
 	 */
-	public BatchLoaderWithContext<DataLoaderKey, String> LINK_REPLACER_LOADER = (keys, environment) -> {
-		Promise<List<String>> promise = Promise.promise();
-		GraphQLContext gc = environment.getContext();
-		String branchUuid = Tx.get().getBranch(gc).getUuid();
-		String projectName = Tx.get().getProject(gc).getName();
-
-		Map<DataLoaderKey, String> resolvedByContent = new HashMap<>();
-
-		partitioningByLinkTypeAndText(keys, (pair, contents) -> {
-			LinkType type = pair.getLeft();
-			String languageTag = pair.getRight();
-
-			Map<String, String> replacedByContent = linkReplacer.replaceMany(gc, branchUuid, null, contents, type, projectName, languageTag);
-			for (Entry<String, String> entry : replacedByContent.entrySet()) {
-				String content = entry.getKey();
-				String replaced = entry.getValue();
-
-				DataLoaderKey key = new DataLoaderKey(content, type, languageTag);
-				resolvedByContent.put(key, replaced);
-			}
-		});
-
-		List<String> resolvedContents = keys.stream().map(key -> resolvedByContent.getOrDefault(key, "")).collect(Collectors.toList());
-		promise.complete(resolvedContents);
-
-		return promise.future().toCompletionStage();
-	};
+	public BatchLoaderWithContext<DataLoaderKey, String> LINK_REPLACER_LOADER;
 
 	@Inject
-	public FieldDefinitionProvider(MeshOptions options) {
+	public FieldDefinitionProvider(MeshOptions options, MicronodeFieldTypeProvider micronodeFieldTypeProvider, WebRootLinkReplacerImpl linkReplacer) {
 		super(options);
+		this.micronodeFieldTypeProvider = micronodeFieldTypeProvider;
+		this.linkReplacer = linkReplacer;
+		LINK_REPLACER_LOADER = (keys, environment) -> {
+			Promise<List<String>> promise = Promise.promise();
+			GraphQLContext gc = environment.getContext();
+			String branchUuid = Tx.get().getBranch(gc).getUuid();
+			String projectName = Tx.get().getProject(gc).getName();
+
+			Map<DataLoaderKey, String> resolvedByContent = new HashMap<>();
+
+			partitioningByLinkTypeAndText(keys, (pair, contents) -> {
+				LinkType type = pair.getLeft();
+				String languageTag = pair.getRight();
+
+				Map<String, String> replacedByContent = linkReplacer.replaceMany(gc, branchUuid, null, contents, type, projectName, languageTag);
+				for (Entry<String, String> entry : replacedByContent.entrySet()) {
+					String content = entry.getKey();
+					String replaced = entry.getValue();
+
+					DataLoaderKey key = new DataLoaderKey(content, type, languageTag);
+					resolvedByContent.put(key, replaced);
+				}
+			});
+
+			List<String> resolvedContents = keys.stream().map(key -> resolvedByContent.getOrDefault(key, "")).collect(Collectors.toList());
+			promise.complete(resolvedContents);
+
+			return promise.future().toCompletionStage();
+		};
 	}
 
 	public GraphQLObjectType createBinaryFieldType() {
