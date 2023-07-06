@@ -27,12 +27,12 @@ public class BranchTypeProvider extends AbstractTypeProvider {
 
 	public static final String BRANCH_TYPE_NAME = "Branch";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public BranchTypeProvider(MeshOptions options) {
+	public BranchTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	public GraphQLObjectType createType() {

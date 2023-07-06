@@ -16,14 +16,14 @@ import com.gentics.mesh.core.data.changelog.HighLevelChange;
 @Singleton
 public class HighLevelChangesList {
 
-	@Inject
-	public ExtractPlainText plainText;
+	protected final ExtractPlainText plainText;
+
+	protected final SetAdminUserFlag setAdminUserFlag;
 
 	@Inject
-	public SetAdminUserFlag setAdminUserFlag;
-
-	@Inject
-	public HighLevelChangesList() {
+	public HighLevelChangesList(ExtractPlainText plainText, SetAdminUserFlag setAdminUserFlag) {
+		this.plainText = plainText;
+		this.setAdminUserFlag = setAdminUserFlag;
 	}
 
 	public List<HighLevelChange> getList() {

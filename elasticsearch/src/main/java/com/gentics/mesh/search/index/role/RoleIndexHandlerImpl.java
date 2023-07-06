@@ -33,16 +33,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  implements RoleIndexHandler {
 
-	@Inject
-	RoleTransformer transformer;
+	protected final RoleTransformer transformer;
 
-	@Inject
-	RoleMappingProvider mappingProvider;
+	protected final RoleMappingProvider mappingProvider;
 
 	@Inject
 	public RoleIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, RoleTransformer transformer, RoleMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override

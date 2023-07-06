@@ -86,16 +86,16 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandlerImpl.class);
 
-	@Inject
-	public NodeContainerTransformer transformer;
+	protected final NodeContainerTransformer transformer;
 
-	@Inject
-	public NodeContainerMappingProviderImpl mappingProvider;
+	protected final NodeContainerMappingProviderImpl mappingProvider;
 
 	@Inject
 	public NodeIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetersFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetersFactory, BucketManager bucketManager, NodeContainerTransformer transformer, NodeContainerMappingProviderImpl mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetersFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override

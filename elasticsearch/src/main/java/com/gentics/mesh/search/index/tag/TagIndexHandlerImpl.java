@@ -42,16 +42,16 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	 */
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
-	@Inject
-	TagTransformer transforer;
+	protected final TagTransformer transforer;
 
-	@Inject
-	TagMappingProvider mappingProvider;
+	protected final TagMappingProvider mappingProvider;
 
 	@Inject
 	public TagIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, TagTransformer transforer, TagMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transforer = transforer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override

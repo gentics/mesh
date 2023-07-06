@@ -106,90 +106,110 @@ import graphql.schema.GraphQLTypeReference;
 @Singleton
 public class QueryTypeProvider extends AbstractTypeProvider {
 
-	@Inject
-	public MeshTypeProvider meshTypeProvider;
+	protected final MeshTypeProvider meshTypeProvider;
+
+	protected final InterfaceTypeProvider interfaceTypeProvider;
+
+	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
+
+	protected final FieldDefinitionProvider fieldDefProvider;
+
+	protected final NodeTypeProvider nodeTypeProvider;
+
+	protected final NodeReferenceTypeProvider nodeReferenceTypeProvider;
+
+	protected final ProjectTypeProvider projectTypeProvider;
+
+	protected final ProjectReferenceTypeProvider projectReferenceTypeProvider;
+
+	protected final UserTypeProvider userTypeProvider;
+
+	protected final TagTypeProvider tagTypeProvider;
+
+	protected final TagFamilyTypeProvider tagFamilyTypeProvider;
+
+	protected final RoleTypeProvider roleTypeProvider;
+
+	protected final GroupTypeProvider groupTypeProvider;
+
+	protected final WebRootService webrootService;
+
+	protected final BootstrapInitializer boot;
+
+	protected final BranchTypeProvider branchTypeProvider;
+
+	protected final SchemaTypeProvider schemaTypeProvider;
+
+	protected final MicroschemaTypeProvider microschemaTypeProvider;
+
+	protected final UserSearchHandler userSearchHandler;
+
+	protected final RoleSearchHandler roleSearchHandler;
+
+	protected final GroupSearchHandler groupSearchHandler;
+
+	protected final ProjectSearchHandler projectSearchHandler;
+
+	protected final TagFamilySearchHandler tagFamilySearchHandler;
+
+	protected final TagSearchHandler tagSearchHandler;
+
+	protected final PluginTypeProvider pluginProvider;
+
+	protected final PluginApiTypeProvider pluginApiProvider;
+
+	protected final DAOActionsCollection actions;
 
 	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
-
-	@Inject
-	public FieldDefinitionProvider fieldDefProvider;
-
-	@Inject
-	public NodeTypeProvider nodeTypeProvider;
-
-	@Inject
-	public NodeReferenceTypeProvider nodeReferenceTypeProvider;
-
-	@Inject
-	public ProjectTypeProvider projectTypeProvider;
-
-	@Inject
-	public ProjectReferenceTypeProvider projectReferenceTypeProvider;
-
-	@Inject
-	public UserTypeProvider userTypeProvider;
-
-	@Inject
-	public TagTypeProvider tagTypeProvider;
-
-	@Inject
-	public TagFamilyTypeProvider tagFamilyTypeProvider;
-
-	@Inject
-	public RoleTypeProvider roleTypeProvider;
-
-	@Inject
-	public GroupTypeProvider groupTypeProvider;
-
-	@Inject
-	public WebRootService webrootService;
-
-	@Inject
-	public BootstrapInitializer boot;
-
-	@Inject
-	public BranchTypeProvider branchTypeProvider;
-
-	@Inject
-	public SchemaTypeProvider schemaTypeProvider;
-
-	@Inject
-	public MicroschemaTypeProvider microschemaTypeProvider;
-
-	@Inject
-	public UserSearchHandler userSearchHandler;
-
-	@Inject
-	public RoleSearchHandler roleSearchHandler;
-
-	@Inject
-	public GroupSearchHandler groupSearchHandler;
-
-	@Inject
-	public ProjectSearchHandler projectSearchHandler;
-
-	@Inject
-	public TagFamilySearchHandler tagFamilySearchHandler;
-
-	@Inject
-	public TagSearchHandler tagSearchHandler;
-
-	@Inject
-	public PluginTypeProvider pluginProvider;
-
-	@Inject
-	public PluginApiTypeProvider pluginApiProvider;
-
-	@Inject
-	public DAOActionsCollection actions;
-
-	@Inject
-	public QueryTypeProvider(MeshOptions options) {
+	public QueryTypeProvider(MeshOptions options, MeshTypeProvider meshTypeProvider,
+			InterfaceTypeProvider interfaceTypeProvider, MicronodeFieldTypeProvider micronodeFieldTypeProvider,
+			FieldDefinitionProvider fieldDefProvider, NodeTypeProvider nodeTypeProvider,
+			NodeReferenceTypeProvider nodeReferenceTypeProvider, ProjectTypeProvider projectTypeProvider,
+			ProjectReferenceTypeProvider projectReferenceTypeProvider, UserTypeProvider userTypeProvider,
+			TagTypeProvider tagTypeProvider, TagFamilyTypeProvider tagFamilyTypeProvider,
+			RoleTypeProvider roleTypeProvider, GroupTypeProvider groupTypeProvider, WebRootService webrootService,
+			BootstrapInitializer boot, BranchTypeProvider branchTypeProvider, SchemaTypeProvider schemaTypeProvider,
+			MicroschemaTypeProvider microschemaTypeProvider, UserSearchHandler userSearchHandler,
+			RoleSearchHandler roleSearchHandler, GroupSearchHandler groupSearchHandler,
+			ProjectSearchHandler projectSearchHandler, TagFamilySearchHandler tagFamilySearchHandler,
+			TagSearchHandler tagSearchHandler, PluginTypeProvider pluginProvider,
+			PluginApiTypeProvider pluginApiProvider, DAOActionsCollection actions) {
 		super(options);
+		this.meshTypeProvider = meshTypeProvider;
+		this.interfaceTypeProvider = interfaceTypeProvider;
+		this.micronodeFieldTypeProvider = micronodeFieldTypeProvider;
+		this.fieldDefProvider = fieldDefProvider;
+		this.nodeTypeProvider = nodeTypeProvider;
+		this.nodeReferenceTypeProvider = nodeReferenceTypeProvider;
+		this.projectTypeProvider = projectTypeProvider;
+		this.projectReferenceTypeProvider = projectReferenceTypeProvider;
+		this.userTypeProvider = userTypeProvider;
+		this.tagTypeProvider = tagTypeProvider;
+		this.tagFamilyTypeProvider = tagFamilyTypeProvider;
+		this.roleTypeProvider = roleTypeProvider;
+		this.groupTypeProvider = groupTypeProvider;
+		this.webrootService = webrootService;
+		this.boot = boot;
+		this.branchTypeProvider = branchTypeProvider;
+		this.schemaTypeProvider = schemaTypeProvider;
+		this.microschemaTypeProvider = microschemaTypeProvider;
+		this.userSearchHandler = userSearchHandler;
+		this.roleSearchHandler = roleSearchHandler;
+		this.groupSearchHandler = groupSearchHandler;
+		this.projectSearchHandler = projectSearchHandler;
+		this.tagFamilySearchHandler = tagFamilySearchHandler;
+		this.tagSearchHandler = tagSearchHandler;
+		this.pluginProvider = pluginProvider;
+		this.pluginApiProvider = pluginApiProvider;
+		this.actions = actions;
+	}
+
+	/**
+	 * Get the field definition provider
+	 * @return field definition provider
+	 */
+	public FieldDefinitionProvider getFieldDefProvider() {
+		return fieldDefProvider;
 	}
 
 	/**

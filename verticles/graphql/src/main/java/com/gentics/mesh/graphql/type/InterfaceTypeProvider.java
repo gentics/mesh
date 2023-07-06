@@ -36,12 +36,12 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 	public static final String PERM_INFO_TYPE_NAME = "PermInfo";
 
-	@Inject
-	public Lazy<UserTypeProvider> userTypeProvider;
+	protected final Lazy<UserTypeProvider> userTypeProvider;
 
 	@Inject
-	public InterfaceTypeProvider(MeshOptions options) {
+	public InterfaceTypeProvider(MeshOptions options, Lazy<UserTypeProvider> userTypeProvider) {
 		super(options);
+		this.userTypeProvider = userTypeProvider;
 	}
 
 	// protected GraphQLInterfaceType createCommonType() {

@@ -55,23 +55,23 @@ public class GraphQLHandler {
 
 	private static final Logger slowQueryLog = LoggerFactory.getLogger(SLOW_QUERY_LOGGER_NAME);
 
-	@Inject
-	public QueryTypeProvider typeProvider;
+	protected final QueryTypeProvider typeProvider;
 
-	@Inject
-	public Database db;
+	protected final Database db;
 
-	@Inject
-	public Vertx vertx;
+	protected final Vertx vertx;
 
 	private Timer graphQlTimer;
 
 	private GraphQLOptions graphQLOptions;
 
 	@Inject
-	public GraphQLHandler(MetricsService metrics, MeshOptions options) {
+	public GraphQLHandler(MetricsService metrics, MeshOptions options, QueryTypeProvider typeProvider, Database db, Vertx vertx) {
 		graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
 		graphQLOptions = options.getGraphQLOptions();
+		this.typeProvider = typeProvider;
+		this.db = db;
+		this.vertx = vertx;
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class GraphQLHandler {
 					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, options));
 					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, options));
 					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, options));
-					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.fieldDefProvider.LINK_REPLACER_LOADER, options));
+					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().LINK_REPLACER_LOADER, options));
 
 					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()

@@ -37,16 +37,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily> implements TagFamilyIndexHandler {
 
-	@Inject
-	TagFamilyTransformer transformer;
+	protected final TagFamilyTransformer transformer;
 
-	@Inject
-	TagFamilyMappingProvider mappingProvider;
+	protected final TagFamilyMappingProvider mappingProvider;
 
 	@Inject
 	public TagFamilyIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, TagFamilyTransformer transformer, TagFamilyMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override

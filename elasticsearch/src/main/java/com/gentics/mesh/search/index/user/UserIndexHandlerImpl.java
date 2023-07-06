@@ -35,16 +35,16 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	private final static Set<String> indices = Collections.singleton(HibUser.composeIndexName());
 
-	@Inject
-	UserTransformer transformer;
+	protected final UserTransformer transformer;
 
-	@Inject
-	UserMappingProvider mappingProvider;
+	protected final UserMappingProvider mappingProvider;
 
 	@Inject
 	public UserIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, UserTransformer transformer, UserMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override

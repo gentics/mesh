@@ -33,19 +33,19 @@ import io.reactivex.Flowable;
 @Singleton
 public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibMicroschema> implements MicroschemaIndexHandler {
 
-	@Inject
-	MicroschemaTransformer transformer;
+	protected final MicroschemaTransformer transformer;
 
-	@Inject
-	MicroschemaMappingProvider mappingProvider;
+	protected final MicroschemaMappingProvider mappingProvider;
 
-	@Inject
-	SyncMetersFactory syncMetersFactory;
+	protected final SyncMetersFactory syncMetersFactory;
 
 	@Inject
 	public MicroschemaContainerIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper,
-		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		MeshOptions options, SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, MicroschemaTransformer transformer, MicroschemaMappingProvider mappingProvider, SyncMetersFactory syncMetersFactory) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
+		this.syncMetersFactory = syncMetersFactory;
 	}
 
 	@Override
