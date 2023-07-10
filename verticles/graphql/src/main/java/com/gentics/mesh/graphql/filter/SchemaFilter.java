@@ -5,7 +5,6 @@ import java.util.List;
 import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
-import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.schema.HibSchema;
@@ -16,8 +15,6 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-
-import graphql.util.Pair;
 
 /**
  * Filter schemas.
@@ -38,7 +35,7 @@ public class SchemaFilter extends SchemaElementFilter<SchemaResponse, SchemaVers
 	@Override
 	protected List<FilterField<HibSchema, ?>> getFilters() {
 		List<FilterField<HibSchema, ?>> filters = super.getFilters();
-		filters.add(new MappedFilter<>(getEntityType().name(), "isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer(), Pair.pair("latestVersion", new JoinPart("LATESTVERSION", "value"))));
+		filters.add(new MappedFilter<>(getEntityType().name(), "isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		return filters;
 	}
 
