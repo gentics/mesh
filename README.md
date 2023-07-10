@@ -82,6 +82,7 @@ for an explanation of the basic concepts of Gentics Mesh.
    * [Quick Start](#quick-start)
    * [Table of Contents](#table-of-contents)
    * [Introduction](#introduction)
+      * [Gentics CMP](#gentics-cmp)
       * [What is a Headless CMS?](#what-is-a-headless-cms)
       * [Why pick Gentics Mesh?](#why-pick-gentics-mesh)
    * [Status](#status)
@@ -102,6 +103,15 @@ for an explanation of the basic concepts of Gentics Mesh.
    * [Copyright &amp; License](#copyright--license)
 
 # Introduction
+
+## Gentics CMP
+
+Gentics CMP (Content Management Platform) is composed of the following components: Gentics CMS, Gentics Mesh, and Gentics Portal. Gentics CMS and Mesh are available as both open-source software (OSS) and Enterprise Edition (EE). Gentics Portal Java and PHP can only be acquired with the Enterprise Edition. You can find the EE features here: TODO. For more information about the EE, please contact [sales@gentics.com](mailto:sales@gentics.com).
+
+Here are the links to our open-source projects:
+
+- Gentics CMS OSS: https://github.com/gentics/cms-oss
+- Gentics Mesh OSS: https://github.com/gentics/mesh
 
 ## What is a Headless CMS?
 
@@ -159,7 +169,7 @@ Austria.
     <img src="https://getmesh.io/blog/gentics-mesh-1-0/gentics-team.jpg" alt="photo of the Gentics Mesh team" style="max-width: 80%" />
 </p>
 
-The Gentics Mesh core team consists of:
+The Gentics Mesh core team consists of the following members:
 
 <p align="center">
  <table align="center" style="width: 100%; max-width: 600px;">
@@ -217,8 +227,18 @@ The Gentics Mesh core team consists of:
     </a>
    </td>
   </tr>
-
-
+    </tr>
+    </tr>
+    </tr>
+    </tr>
+    <tr>
+   <td align="center">
+    <a href="https://github.com/enizhou">
+     <!-- <img src="https://avatars.githubusercontent.com/pschulzk?size=150" width="150" /><br /> -->
+     En Qiang Zhou<br /><i>Product Owner</i>
+    </a>
+   </td>
+  </tr>
  </table>
 </p>
 
