@@ -53,12 +53,12 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeFieldTypeProvider.class);
 
-	@Inject
-	public Lazy<FieldDefinitionProvider> fields;
+	protected final Lazy<FieldDefinitionProvider> fields;
 
 	@Inject
-	public MicronodeFieldTypeProvider(MeshOptions options) {
+	public MicronodeFieldTypeProvider(MeshOptions options, Lazy<FieldDefinitionProvider> fields) {
 		super(options);
+		this.fields = fields;
 	}
 
 	public Versioned<GraphQLType> createType(GraphQLContext context) {

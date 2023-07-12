@@ -110,62 +110,43 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	private static final String ADMIN_USERNAME = "admin";
 
-	@Inject
-	public ServerSchemaStorageImpl schemaStorage;
+	protected final ServerSchemaStorageImpl schemaStorage;
 
-	@Inject
-	public Database db;
+	protected final Database db;
 
-	@Inject
-	public SearchProvider searchProvider;
+	protected final SearchProvider searchProvider;
 
-	@Inject
-	public BCryptPasswordEncoder encoder;
+	protected final BCryptPasswordEncoder encoder;
 
-	@Inject
-	public DistributedEventManager eventManager;
+	protected final DistributedEventManager eventManager;
 
-	@Inject
-	public Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry;
+	protected final Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry;
 
-	@Inject
-	public Lazy<CoreVerticleLoader> loader;
+	protected final Lazy<CoreVerticleLoader> loader;
 
-	@Inject
-	public HighLevelChangelogSystem highlevelChangelogSystem;
+	protected final HighLevelChangelogSystem highlevelChangelogSystem;
 
-	@Inject
-	public CacheRegistry cacheRegistry;
+	protected final CacheRegistry cacheRegistry;
 
-	@Inject
-	public MeshPluginManager pluginManager;
+	protected final MeshPluginManager pluginManager;
 
-	@Inject
-	public MeshOptions options;
+	protected final MeshOptions options;
 
-	@Inject
-	public RouterStorageRegistryImpl routerStorageRegistry;
+	protected final RouterStorageRegistryImpl routerStorageRegistry;
 
-	@Inject
-	public MetricsOptions metricsOptions;
+	protected final MetricsOptions metricsOptions;
 
-	@Inject
-	public LocalConfigApi localConfigApi;
+	protected final LocalConfigApi localConfigApi;
 
-	@Inject
-	public BCryptPasswordEncoder passwordEncoder;
+	protected final BCryptPasswordEncoder passwordEncoder;
 
-	@Inject
-	public MasterElector coordinatorMasterElector;
+	protected final MasterElector coordinatorMasterElector;
 
-	@Inject
-	public LivenessManager liveness;
+	protected final LivenessManager liveness;
 
-	@Inject
-	public EventBusLivenessManager eventbusLiveness;
+	protected final EventBusLivenessManager eventbusLiveness;
 
-	@Inject
-	public EventBusStore eventBusStore;
+	protected final EventBusStore eventBusStore;
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
@@ -183,8 +164,42 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	private ClusterManager clusterManager;
 
-	protected AbstractBootstrapInitializer() {
+	protected AbstractBootstrapInitializer(ServerSchemaStorageImpl schemaStorage, Database db,
+			SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
+			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
+			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
+			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
+			MetricsOptions metricsOptions, LocalConfigApi localConfigApi, BCryptPasswordEncoder passwordEncoder,
+			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
+			EventBusStore eventBusStore) {
+		this.schemaStorage = schemaStorage;
+		this.db = db;
+		this.searchProvider = searchProvider;
+		this.encoder = encoder;
+		this.eventManager = eventManager;
+		this.indexHandlerRegistry = indexHandlerRegistry;
+		this.loader = loader;
+		this.highlevelChangelogSystem = highlevelChangelogSystem;
+		this.cacheRegistry = cacheRegistry;
+		this.pluginManager = pluginManager;
+		this.options = options;
+		this.routerStorageRegistry = routerStorageRegistry;
+		this.metricsOptions = metricsOptions;
+		this.localConfigApi = localConfigApi;
+		this.passwordEncoder = passwordEncoder;
+		this.coordinatorMasterElector = coordinatorMasterElector;
+		this.liveness = liveness;
+		this.eventbusLiveness = eventbusLiveness;
+		this.eventBusStore = eventBusStore;
 		clearReferences();
+	}
+
+	/**
+	 * Get the core verticle loader
+	 * @return loader
+	 */
+	public CoreVerticleLoader getCoreVerticleLoader() {
+		return loader.get();
 	}
 
 	/**

@@ -38,6 +38,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonArray;
@@ -55,8 +56,8 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 	@Inject
 	public NodeSearchHandler(SearchProvider searchProvider, Database db, NodeIndexHandlerImpl nodeIndexHandler,
-		MeshOptions options, NodeDAOActions actions) {
-		super(db, searchProvider, options, nodeIndexHandler, actions);
+		MeshOptions options, NodeDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, nodeIndexHandler, actions, waitUtil);
 	}
 
 	/**

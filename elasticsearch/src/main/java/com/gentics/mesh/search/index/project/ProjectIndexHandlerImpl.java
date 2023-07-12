@@ -33,16 +33,16 @@ import io.reactivex.Flowable;
 @Singleton
 public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> implements ProjectIndexHandler {
 
-	@Inject
-	ProjectTransformer transformer;
+	protected final ProjectTransformer transformer;
 
-	@Inject
-	ProjectMappingProvider mappingProvider;
+	protected final ProjectMappingProvider mappingProvider;
 
 	@Inject
 	public ProjectIndexHandlerImpl(SearchProvider searchProvider, Database db, MeshHelper helper, MeshOptions options,
-		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager) {
+		SyncMetersFactory syncMetricsFactory, BucketManager bucketManager, ProjectTransformer transformer, ProjectMappingProvider mappingProvider) {
 		super(searchProvider, db, helper, options, syncMetricsFactory, bucketManager);
+		this.transformer = transformer;
+		this.mappingProvider = mappingProvider;
 	}
 
 	@Override

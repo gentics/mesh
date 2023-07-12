@@ -793,7 +793,7 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public ElasticsearchProcessVerticle getElasticSearchVerticle() {
-		return ((AbstractBootstrapInitializer) meshDagger.boot()).loader.get().getSearchVerticle();
+		return ((AbstractBootstrapInitializer) meshDagger.boot()).getCoreVerticleLoader().getSearchVerticle();
 	}
 
 	public static ContainerProxy getProxy() {

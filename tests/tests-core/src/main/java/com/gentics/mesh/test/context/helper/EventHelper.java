@@ -538,7 +538,7 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	default ElasticsearchProcessVerticle getSearchVerticle() {
-		return ((AbstractBootstrapInitializer) boot()).loader.get().getSearchVerticle();
+		return ((AbstractBootstrapInitializer) boot()).getCoreVerticleLoader().getSearchVerticle();
 	}
 
 	/**

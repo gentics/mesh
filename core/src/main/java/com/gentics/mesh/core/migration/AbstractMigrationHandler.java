@@ -160,7 +160,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				errorsDetected.add(new MigrationAbortedException("Local node is not online."));
 				return errorsDetected;
 			}
-			if (clusteringEnabled && !delegator.isMaster()) {
+			if (clusteringEnabled && !delegator.canWrite() && !delegator.isMaster()) {
 				errorsDetected.add(new MigrationAbortedException("Instance is not the master."));
 				return errorsDetected;
 			}

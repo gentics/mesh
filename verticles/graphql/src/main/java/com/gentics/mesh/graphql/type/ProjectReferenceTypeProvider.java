@@ -20,12 +20,12 @@ public class ProjectReferenceTypeProvider extends AbstractTypeProvider {
 
 	public static final String PROJECT_REFERENCE_PAGE_TYPE_NAME = "ProjectReferencesPage";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public ProjectReferenceTypeProvider(MeshOptions options) {
+	public ProjectReferenceTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	public GraphQLObjectType createType() {

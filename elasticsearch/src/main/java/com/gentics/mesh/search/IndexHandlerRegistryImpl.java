@@ -25,36 +25,39 @@ import com.gentics.mesh.search.index.user.UserIndexHandlerImpl;
 @Singleton
 public class IndexHandlerRegistryImpl implements IndexHandlerRegistry {
 
-	@Inject
-	NodeIndexHandlerImpl nodeIndexHandler;
+	protected final NodeIndexHandlerImpl nodeIndexHandler;
+
+	protected final UserIndexHandlerImpl userIndexHandler;
+
+	protected final GroupIndexHandlerImpl groupIndexHandler;
+
+	protected final RoleIndexHandlerImpl roleIndexHandler;
+
+	protected final ProjectIndexHandlerImpl projectIndexHandler;
+
+	protected final TagFamilyIndexHandlerImpl tagFamilyIndexHandler;
+
+	protected final TagIndexHandlerImpl tagIndexHandler;
+
+	protected final SchemaContainerIndexHandlerImpl schemaContainerIndexHandler;
+
+	protected final MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler;
 
 	@Inject
-	UserIndexHandlerImpl userIndexHandler;
-
-	@Inject
-	GroupIndexHandlerImpl groupIndexHandler;
-
-	@Inject
-	RoleIndexHandlerImpl roleIndexHandler;
-
-	@Inject
-	ProjectIndexHandlerImpl projectIndexHandler;
-
-	@Inject
-	TagFamilyIndexHandlerImpl tagFamilyIndexHandler;
-
-	@Inject
-	TagIndexHandlerImpl tagIndexHandler;
-
-	@Inject
-	SchemaContainerIndexHandlerImpl schemaContainerIndexHandler;
-
-	@Inject
-	MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler;
-
-	@Inject
-	public IndexHandlerRegistryImpl() {
-
+	public IndexHandlerRegistryImpl(NodeIndexHandlerImpl nodeIndexHandler, UserIndexHandlerImpl userIndexHandler,
+			GroupIndexHandlerImpl groupIndexHandler, RoleIndexHandlerImpl roleIndexHandler,
+			ProjectIndexHandlerImpl projectIndexHandler, TagFamilyIndexHandlerImpl tagFamilyIndexHandler,
+			TagIndexHandlerImpl tagIndexHandler, SchemaContainerIndexHandlerImpl schemaContainerIndexHandler,
+			MicroschemaContainerIndexHandlerImpl microschemaContainerIndexHandler) {
+		this.nodeIndexHandler = nodeIndexHandler;
+		this.userIndexHandler = userIndexHandler;
+		this.groupIndexHandler = groupIndexHandler;
+		this.roleIndexHandler = roleIndexHandler;
+		this.projectIndexHandler = projectIndexHandler;
+		this.tagFamilyIndexHandler = tagFamilyIndexHandler;
+		this.tagIndexHandler = tagIndexHandler;
+		this.schemaContainerIndexHandler = schemaContainerIndexHandler;
+		this.microschemaContainerIndexHandler = microschemaContainerIndexHandler;
 	}
 
 	@Override

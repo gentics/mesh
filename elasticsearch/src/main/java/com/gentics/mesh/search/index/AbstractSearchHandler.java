@@ -73,8 +73,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 	protected final ComplianceMode complianceMode;
 	protected final DAOActions<T, RM> actions;
 
-	@Inject
-	public SearchWaitUtil waitUtil;
+	protected final SearchWaitUtil waitUtil;
 
 	public static final long DEFAULT_SEARCH_PER_PAGE = 10;
 
@@ -87,13 +86,14 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 	 * @param indexHandler
 	 */
 	public AbstractSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, IndexHandler<T> indexHandler,
-		DAOActions<T, RM> actions) {
+		DAOActions<T, RM> actions, SearchWaitUtil waitUtil) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.options = options;
 		this.indexHandler = indexHandler;
 		this.complianceMode = options.getSearchOptions().getComplianceMode();
 		this.actions = actions;
+		this.waitUtil = waitUtil;
 	}
 
 	/**

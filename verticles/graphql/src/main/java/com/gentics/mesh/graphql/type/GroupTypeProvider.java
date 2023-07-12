@@ -28,12 +28,12 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 
 	public static final String GROUP_PAGE_TYPE_NAME = "GroupsPage";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public GroupTypeProvider(MeshOptions options) {
+	public GroupTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	/**
