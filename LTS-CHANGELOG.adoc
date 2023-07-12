@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.10.11]]
-== 1.10.11 (TBD)
+== 1.10.11 (12.07.2023)
 
 icon:check[] Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.
 
