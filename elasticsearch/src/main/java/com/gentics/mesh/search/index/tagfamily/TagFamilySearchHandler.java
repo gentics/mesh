@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.AbstractSearchHandler;
+import com.gentics.mesh.util.SearchWaitUtil;
 
 /**
  * Elasticsearch handler for search operations on the tag family indices.
@@ -18,8 +19,8 @@ import com.gentics.mesh.search.index.AbstractSearchHandler;
 public class TagFamilySearchHandler extends AbstractSearchHandler<HibTagFamily, TagFamilyResponse> {
 
 	@Inject
-	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options, TagFamilyDAOActions actions) {
-		super(db, searchProvider, options, indexHandler, actions);
+	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options, TagFamilyDAOActions actions, SearchWaitUtil waitUtil) {
+		super(db, searchProvider, options, indexHandler, actions, waitUtil);
 	}
 
 }

@@ -21,6 +21,11 @@ include::content/docs/variables.adoc-include[]
 Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
 link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
+[[v2.0.1]]
+== 2.0.1 (TBD)
+
+icon:check[] Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.
+
 [[v2.0.0]]
 == 2.0.0 (29.06.2023)
 

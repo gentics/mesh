@@ -13,9 +13,13 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.changelog.ChangelogRoot;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
@@ -25,25 +29,38 @@ import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
+import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.distributed.DistributedEventManager;
+import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
+import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
+import com.gentics.mesh.monitor.liveness.LivenessManager;
+import com.gentics.mesh.plugin.manager.MeshPluginManager;
+import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.DevNullSearchProvider;
+import com.gentics.mesh.search.IndexHandlerRegistryImpl;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
+import dagger.Lazy;
 import io.reactivex.Completable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.metrics.MetricsOptions;
 
 @Singleton
 public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializer implements OrientDBBootstrapInitializer {
@@ -76,8 +93,17 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 	});
 	
 	@Inject
-	public OrientDBBootstrapInitializerImpl(ChangelogSystem changelogSystem, OrientDBDatabase db) {
-		super();
+	public OrientDBBootstrapInitializerImpl(ChangelogSystem changelogSystem, OrientDBDatabase db, ServerSchemaStorageImpl schemaStorage,
+			SearchProvider searchProvider, BCryptPasswordEncoder encoder, DistributedEventManager eventManager,
+			Lazy<IndexHandlerRegistryImpl> indexHandlerRegistry, Lazy<CoreVerticleLoader> loader,
+			HighLevelChangelogSystem highlevelChangelogSystem, CacheRegistry cacheRegistry,
+			MeshPluginManager pluginManager, MeshOptions options, RouterStorageRegistryImpl routerStorageRegistry,
+			MetricsOptions metricsOptions, LocalConfigApi localConfigApi, BCryptPasswordEncoder passwordEncoder,
+			MasterElector coordinatorMasterElector, LivenessManager liveness, EventBusLivenessManager eventbusLiveness,
+			EventBusStore eventBusStore) {
+		super(schemaStorage, db, searchProvider, passwordEncoder, eventManager, indexHandlerRegistry, loader,
+				highlevelChangelogSystem, cacheRegistry, pluginManager, options, routerStorageRegistry, metricsOptions,
+				localConfigApi, passwordEncoder, coordinatorMasterElector, liveness, eventbusLiveness, eventBusStore);
 		this.changelogSystem = changelogSystem;
 		this.db = db;
 	}
