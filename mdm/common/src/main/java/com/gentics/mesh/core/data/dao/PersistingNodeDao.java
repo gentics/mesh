@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.rest.node.FieldMap;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -1942,13 +1944,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
 		String languageTag = container.getLanguageTag();
 		boolean isAutoPurgeEnabled = contentDao.isAutoPurgeEnabled(container);
+		Set<String> oldUrlFieldValues = Collections.emptySet();
 
 		// Remove an existing published edge
 		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED);
 		if (edge != null) {
 			HibNodeFieldContainer oldPublishedContainer = contentDao.getFieldContainerOfEdge(edge);
+			oldUrlFieldValues = contentDao.getUrlFieldValues(oldPublishedContainer).collect(Collectors.toSet());
 			contentDao.removeEdge(edge);
-			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish");
+			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish", true);
 			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && contentDao.isPurgeable(oldPublishedContainer)) {
 				contentDao.purge(oldPublishedContainer);
 			}
@@ -1962,7 +1966,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		// create new published edge
 		contentDao.createContainerEdge(node, container, branchUuid, languageTag, PUBLISHED);
-		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish");
+
+		// only check for conflicts, when the values are different from the values of the old container
+		Set<String> newUrlFieldValues = contentDao.getUrlFieldValues(container).collect(Collectors.toSet());
+		boolean checkForConflicts = !CollectionUtils.isEqualCollection(oldUrlFieldValues, newUrlFieldValues);
+		contentDao.updateWebrootPathInfo(container, branchUuid, "node_conflicting_segmentfield_publish", checkForConflicts);
 	}
 
 	@Override

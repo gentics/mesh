@@ -1,6 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -9,13 +10,17 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,8 +85,27 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	public JsonObjectAssert has(String path, String value, String msg) {
 		try {
 			Object actualValue = getByPath(path);
-			String actualStringRep = String.valueOf(actualValue);
-			assertEquals("Value for property on path {" + path + "} did not match: " + msg, value, actualStringRep);
+			if (actualValue instanceof Collection<?>) {
+				Collection<Object> actualCollection = (Collection<Object>) actualValue;
+
+				if (StringUtils.startsWith(value, "[") && StringUtils.endsWith(value, "]")) {
+					value = StringUtils.removeStart(value, "[");
+					value = StringUtils.removeEnd(value, "]");
+					String[] valueParts = StringUtils.split(value, ",");
+					for (int i = 0; i < valueParts.length; i++) {
+						valueParts[i] = StringUtils.trim(valueParts[i]);
+					}
+					List<String> values = Arrays.asList(valueParts);
+					assertThat(actualCollection).as("Value for property on path {" + path + "}").containsOnlyElementsOf(values);
+				} else {
+					fail("Expected value for path {" + path + "} should be an array (eclosed by '[' and ']') but was {"
+							+ value + "}");
+				}
+
+			} else {
+				String actualStringRep = String.valueOf(actualValue);
+				assertEquals("Value for property on path {" + path + "} did not match: " + msg, value, actualStringRep);
+			}
 		} catch (PathNotFoundException e) {
 			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n" + msg);
 		}

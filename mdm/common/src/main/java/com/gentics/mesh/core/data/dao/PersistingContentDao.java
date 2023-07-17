@@ -527,19 +527,19 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts) {
 		Set<String> urlFieldValues = getUrlFieldValues(content).collect(Collectors.toSet());
 		Iterator<? extends HibNodeFieldContainerEdge> it = getContainerEdges(content, DRAFT, branchUuid);
 		if (it.hasNext()) {
 			HibNodeFieldContainerEdge draftEdge = it.next();
 			updateWebrootPathInfo(content, ac, draftEdge, branchUuid, conflictI18n, DRAFT);
-			updateWebrootUrlFieldsInfo(content, draftEdge, branchUuid, urlFieldValues, DRAFT);
+			updateWebrootUrlFieldsInfo(content, draftEdge, branchUuid, urlFieldValues, DRAFT, checkForConflicts);
 		}
 		it = getContainerEdges(content, PUBLISHED, branchUuid);
 		if (it.hasNext()) {
 			HibNodeFieldContainerEdge publishEdge = it.next();
 			updateWebrootPathInfo(content, ac, publishEdge, branchUuid, conflictI18n, PUBLISHED);
-			updateWebrootUrlFieldsInfo(content, publishEdge, branchUuid, urlFieldValues, PUBLISHED);
+			updateWebrootUrlFieldsInfo(content, publishEdge, branchUuid, urlFieldValues, PUBLISHED, checkForConflicts);
 		}
 	}
 
@@ -708,28 +708,31 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param branchUuid
 	 * @param urlFieldValues
 	 * @param type
+	 * @param checkForConflicts true when the check for conflicting values must be done, false if not
 	 */
-	private void updateWebrootUrlFieldsInfo(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type) {
+	private void updateWebrootUrlFieldsInfo(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type, boolean checkForConflicts) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
-			HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValues, branchUuid, type);
-			if (conflictingEdge != null) {
-				HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
-				HibNode conflictingNode = conflictingEdge.getNode();
-				if (log.isDebugEnabled()) {
-					log.debug(
-							"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
-				}
-				// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
-				// determine
-				// which path caused the conflict.
-				Set<String> fromConflictingContainer = getUrlFieldValues(conflictingContainer).collect(Collectors.toSet());
-				@SuppressWarnings("unchecked")
-				Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
-				String paths = String.join(",", conflictingValues);
+			if (checkForConflicts) {
+				HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValues, branchUuid, type);
+				if (conflictingEdge != null) {
+					HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
+					HibNode conflictingNode = conflictingEdge.getNode();
+					if (log.isDebugEnabled()) {
+						log.debug(
+								"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
+					}
+					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
+					// determine
+					// which path caused the conflict.
+					Set<String> fromConflictingContainer = getUrlFieldValues(conflictingContainer).collect(Collectors.toSet());
+					@SuppressWarnings("unchecked")
+					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
+					String paths = String.join(",", conflictingValues);
 
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
-						"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
-						conflictingContainer.getLanguageTag());
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
+							"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
+							conflictingContainer.getLanguageTag());
+				}
 			}
 			edge.setUrlFieldInfo(urlFieldValues);
 		} else {
