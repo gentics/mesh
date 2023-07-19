@@ -22,6 +22,7 @@ import javax.mail.internet.MimeMultipart;
 
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -206,6 +207,14 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("");
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("0.1");
 
+		Request getRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).get().build();
+
+		response = client().newCall(getRequest).execute();
+
+		assertThat(response.code())
+			.as("Response code")
+			.isEqualTo(HttpResponseStatus.OK.code());
+
 		assertThat(cookie).as("Cookie").isPresent();
 		assertThat(cookie.get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
 	}
@@ -269,7 +278,28 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testPostFile() throws IOException {
-		doPostFile("filefield.json");
+		Pair<String, String> data = doPostFile("filefield.json");
+		Request request = new Request.Builder()
+			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
+			.get()
+			.build();
+		Response response = client().newCall(request).execute();
+
+		assertThat(response.code())
+			.as("Anonymous response code")
+			.isEqualTo(HttpResponseStatus.FORBIDDEN.code());
+
+
+		request = new Request.Builder()
+			.url(projectUrl("/forms/" + data.getLeft() + "/data/" + data.getRight() + "/binary/file1"))
+			.headers(auth(true))
+			.get()
+			.build();
+		response = client().newCall(request).execute();
+
+		assertThat(response.code())
+			.as("Authenticated response code")
+			.isEqualTo(HttpResponseStatus.OK.code());
 	}
 
 	@Test
@@ -550,10 +580,9 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		for (NodeResponse nodeResponse : dataNodes.getData()) {
 			Request loadRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid())).get().build();
 			Response response = client().newCall(loadRequest).execute();
-			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-
-			NodeResponse loadedNode = JsonUtil.readValue(response.body().string(), NodeResponse.class);
-			assertThat(loadedNode).as("Loaded Form Data Node").isEqualToComparingOnlyGivenFields(nodeResponse, "uuid");
+			assertThat(response.code())
+				.as("Published form data must not be readable")
+				.isEqualTo(HttpResponseStatus.NOT_FOUND.code());
 		}
 	}
 
