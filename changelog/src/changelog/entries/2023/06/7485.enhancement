@@ -1,0 +1,1 @@
+GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for referencedBy nodes.

@@ -1,0 +1,1 @@
+OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference nativeQueryFiltering with options: NEVER (old filtering, default value), ALWAYS (DB filtering is forced), ON_DEMAND (GraphQL parameter nativeFilter is considered).
