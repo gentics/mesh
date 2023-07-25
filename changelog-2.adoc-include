@@ -6,24 +6,6 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
-[[v2.1.0-SNAPSHOT]]
-== 2.1.0-SNAPSHOT (25.07.2023)
-
-NOTE: Please note that something changed.
-
-
-CAUTION: Please be aware that you need to do something.
-
-
-icon:bullhorn[] This is a major new feature.
-
-
-icon:plus[] This is some minor enhancement.
-
-
-icon:check[] This is a small bugfix.
-
-
 [[v2.0.1]]
 == 2.0.1 (13.07.2023)
 
