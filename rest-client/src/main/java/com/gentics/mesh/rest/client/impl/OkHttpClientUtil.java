@@ -138,12 +138,8 @@ public final class OkHttpClientUtil {
 				builder.protocols(Collections.singletonList(Protocol.HTTP_1_1));
 				break;
 			case HTTP_2:
-				if (config.isSsl()) {
-					builder.protocols(Collections.singletonList(Protocol.HTTP_2));
-				} else {
-					// Forces h2c with no HTTP/1.1 fallback for performance reasons.
-					builder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
-				}
+				// Caution: OkHttpClient does not support standalone h2 protocol, so in the case of SSL connection will fall back to Protocol.HTTP_2 + Protocol.HTTP_1_1.
+				builder.protocols(Collections.singletonList(Protocol.H2_PRIOR_KNOWLEDGE));
 				break;
 			}
 		}
