@@ -261,7 +261,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 		options.setHost(host);
 		options.setCompressionSupported(true);
 		options.setHandle100ContinueAutomatically(true);
-		// options.setLogActivity(true);
+		options.setUseAlpn(serverConfig.isUseAlpn());
+		options.setLogActivity(true);
 
 		// TCP options
 		options.setTcpFastOpen(true)
