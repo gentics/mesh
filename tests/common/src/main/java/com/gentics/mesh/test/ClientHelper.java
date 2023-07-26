@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 
 import com.gentics.mesh.core.data.i18n.I18NUtil;
@@ -244,6 +245,20 @@ public final class ClientHelper {
 		} else {
 			e.printStackTrace();
 			fail("Unhandled exception");
+		}
+	}
+
+	public static boolean isFailureMessage(Throwable e, HttpResponseStatus status) {
+		if (e instanceof GenericRestException) {
+			GenericRestException exception = (GenericRestException) e;
+			return Objects.equals(status, exception.getStatus());
+		} else if (e instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException exception = (MeshRestClientMessageException) e;
+			return Objects.equals(status.code(), exception.getStatusCode());
+		} else if (e != null && e.getCause() != null && e.getCause() != e) {
+			return isFailureMessage(e.getCause(), status);
+		} else {
+			return false;
 		}
 	}
 }
