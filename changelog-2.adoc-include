@@ -6,6 +6,15 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.2]]
+== 2.0.2 (26.07.2023)
+
+icon:check[] Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.
+
+
+icon:check[] Core: An internal API for efficient loading of list field values has been added.
+
+
 [[v2.0.1]]
 == 2.0.1 (13.07.2023)
 
