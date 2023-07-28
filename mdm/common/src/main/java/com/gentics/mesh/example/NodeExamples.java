@@ -45,6 +45,7 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -61,6 +63,7 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {
@@ -270,6 +273,24 @@ public class NodeExamples extends AbstractExamples {
 		request.setVersion("1.0");
 		request.setFocalPoint(new FocalPoint(0.3f,0.6f));
 		return request;
+	}
+
+	public NodePublishRequest getNodePublishRequest() {
+		NodePublishRequest nodePublishRequest = new NodePublishRequest();
+		nodePublishRequest.setDeleteOther(true);
+		nodePublishRequest.setVariants(
+				Arrays.asList(
+						new ImageManipulationRequest()
+							.setCropMode(CropMode.FOCALPOINT)
+							.setFocalPoint(0.5f, 0.5f)
+							.setWidth(250)
+							.setHeight("auto"),
+						new ImageManipulationRequest()
+							.setHeight(100)
+							.setWidth(500)
+				)
+		);
+		return nodePublishRequest;
 	}
 
 	public NodeUpdateRequest getNodeUpdateRequest() {

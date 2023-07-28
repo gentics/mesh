@@ -541,17 +541,19 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			crudHandler.handleGetPublishStatus(ac, uuid);
 		}, false);
 
-		InternalEndpointRoute putEndpoint = createRoute();
-		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
-		putEndpoint.path("/:nodeUuid/published");
-		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
-		putEndpoint.method(POST);
-		putEndpoint.produces(APPLICATION_JSON);
-		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
-		putEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
-		putEndpoint.addQueryParameters(PublishParametersImpl.class);
-		putEndpoint.events(NODE_PUBLISHED);
-		putEndpoint.blockingHandler(rc -> {
+		InternalEndpointRoute postEndpoint = createRoute();
+		postEndpoint.description("Publish all language specific contents of the node with the given uuid.");
+		postEndpoint.path("/:nodeUuid/published");
+		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
+		postEndpoint.method(POST);
+		postEndpoint.consumes(APPLICATION_JSON);
+		postEndpoint.produces(APPLICATION_JSON);
+		postEndpoint.exampleRequest(nodeExamples.getNodePublishRequest());
+		postEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
+		postEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		postEndpoint.addQueryParameters(PublishParametersImpl.class);
+		postEndpoint.events(NODE_PUBLISHED);
+		postEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = rc.request().getParam("nodeUuid");
 			crudHandler.handlePublish(ac, uuid);

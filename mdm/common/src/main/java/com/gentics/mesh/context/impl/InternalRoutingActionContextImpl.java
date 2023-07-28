@@ -133,7 +133,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	@Override
 	public String getBodyAsString() {
-		return rc.getBodyAsString();
+		return rc.body().asString();
 	}
 
 	@Override
@@ -160,13 +160,13 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		if (session != null) {
 			session.destroy();
 		}
-		rc.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
+		rc.response().addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, "deleted").setMaxAge(0).setPath("/"));
 		rc.clearUser();
 	}
 
 	@Override
 	public void addCookie(Cookie cookie) {
-		rc.addCookie(cookie);
+		rc.response().addCookie(cookie);
 	}
 
 	@Override
