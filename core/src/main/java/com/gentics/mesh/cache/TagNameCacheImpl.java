@@ -17,8 +17,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
 public class TagNameCacheImpl extends AbstractNameCache<HibTag> implements TagNameCache {
 
 	@Inject
-	public TagNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry, long maxSize,
-			MeshEvent[] events) {
+	public TagNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
 		super("tagname", factory, registry, new MeshEvent[] {
 			MeshEvent.TAG_DELETED, MeshEvent.TAG_UPDATED, MeshEvent.TAG_FAMILY_DELETED, MeshEvent.TAG_FAMILY_UPDATED
 		});

@@ -100,4 +100,11 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 			}
 		}
 	}
+
+	@Override
+	public TagFamily findByName(String name) {
+		return (TagFamily) mesh().tagFamilyNameCache().get(name, familyName -> {
+			return super.findByName(familyName);
+		});
+	}
 }

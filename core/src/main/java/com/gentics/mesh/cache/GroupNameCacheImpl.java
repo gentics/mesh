@@ -1,5 +1,7 @@
 package com.gentics.mesh.cache;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.GROUP_UPDATED;
 
@@ -22,6 +24,8 @@ public class GroupNameCacheImpl extends AbstractNameCache<HibGroup> implements G
 	@Inject
 	public GroupNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
 		super("groupname", factory, registry, new MeshEvent[] {
+				CLUSTER_NODE_JOINED, 
+				CLUSTER_DATABASE_CHANGE_STATUS, 
 				GROUP_DELETED,
 				GROUP_UPDATED
 			});
