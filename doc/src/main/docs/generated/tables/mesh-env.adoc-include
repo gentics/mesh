@@ -83,11 +83,11 @@
 | *MESH_MIGRATION_TRIGGER_INTERVAL*
 | Override the migration trigger interval
 
-| *MESH_CACHE_PATH_SIZE*
-| Override the path cache size.
-
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
+
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.
 
 | *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
 | Override the Vert.x eventBus error threshold in ms.
@@ -149,11 +149,11 @@
 | *MESH_ELASTICSEARCH_USERNAME*
 | Override the configured Elasticsearch connection username.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
-| Override the cluster topology lock timeout in ms.
-
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
+| Override the cluster topology lock timeout in ms.
 
 | *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
 | Override the Vert.x eventBus check interval in ms.
@@ -218,11 +218,11 @@
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
 | *MESH_GRAPH_STARTSERVER*
 | Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.
 
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
