@@ -25,6 +25,15 @@ link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 == 2.1.0 (TBD)
 
 icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
+icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
+[[v2.0.2]]
+== 2.0.2 (26.07.2023)
+
+icon:check[] Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.
+
+icon:check[] Core: An internal API for efficient loading of list field values has been added.
 
 [[v2.0.1]]
 == 2.0.1 (13.07.2023)

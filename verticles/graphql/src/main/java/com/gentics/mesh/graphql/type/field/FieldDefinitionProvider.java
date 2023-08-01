@@ -15,6 +15,7 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,6 +76,7 @@ import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.util.DateUtils;
+import com.google.common.base.Functions;
 
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
@@ -93,6 +97,31 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * Key for the data loader, which efficiently replaces links in contents
 	 */
 	public static final String LINK_REPLACER_DATA_LOADER_KEY = "linkReplaceLoader";
+
+	/**
+	 * Key for the data loader for boolean list field values
+	 */
+	public static final String BOOLEAN_LIST_VALUES_DATA_LOADER_KEY = "booleanListLoader";
+
+	/**
+	 * Key for the data loader for date list field values
+	 */
+	public static final String DATE_LIST_VALUES_DATA_LOADER_KEY = "dateListLoader";
+
+	/**
+	 * Key for the data loader for number list field values
+	 */
+	public static final String NUMBER_LIST_VALUES_DATA_LOADER_KEY = "numberListLoader";
+
+	/**
+	 * Key for the data loader for html list field values
+	 */
+	public static final String HTML_LIST_VALUES_DATA_LOADER_KEY = "htmlListLoader";
+
+	/**
+	 * Key for the data loader for string list field values
+	 */
+	public static final String STRING_LIST_VALUES_DATA_LOADER_KEY = "stringListLoader";
 
 	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
@@ -116,6 +145,70 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * DataLoader implementation that replaces links in contents
 	 */
 	public BatchLoaderWithContext<DataLoaderKey, String> LINK_REPLACER_LOADER;
+
+	/**
+	 * Generic list field data loader
+	 * @param <U> type of the field values
+	 * @param <V> type fo the returned (rendered) field values
+	 * @param keys list of listUuids for which the field values need to be loaded
+	 * @param dataFunction function, that loads the list field values
+	 * @param transformer transformer for transforming the loaded values into the returned values (e.g. for date formatting)
+	 * @return CompletionStage for the lists of loaded list values
+	 */
+	private static <U, V> CompletionStage<List<List<V>>> listValueDataLoader(List<String> keys, Function<List<String>, Map<String,List<U>>> dataFunction, Function<List<List<U>>, List<List<V>>> transformer) {
+		Promise<List<List<V>>> promise = Promise.promise();
+
+		Map<String,List<U>> listValuesMap = dataFunction.apply(keys);
+		List<List<U>> valueLists = keys.stream().map(key -> listValuesMap.getOrDefault(key, Collections.emptyList())).collect(Collectors.toList());
+
+		promise.complete(transformer.apply(valueLists));
+		return promise.future().toCompletionStage();
+	}
+
+	/**
+	 * DataLoader implementation for values of boolean lists
+	 */
+	public BatchLoaderWithContext<String, List<Boolean>> BOOLEAN_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getBooleanListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of date lists
+	 */
+	public BatchLoaderWithContext<String, List<String>> DATE_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+
+		Function<List<List<Long>>, List<List<String>>> dateFormatter = orig -> {
+			return orig.stream().map(origList -> origList.stream().map(date -> DateUtils.toISO8601(date, 0)).collect(Collectors.toList())).collect(Collectors.toList());
+		};
+
+		return listValueDataLoader(keys, contentDao::getDateListFieldValues, dateFormatter);
+	};
+
+	/**
+	 * DataLoader implementation for values of number lists
+	 */
+	public BatchLoaderWithContext<String, List<Number>> NUMBER_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getNumberListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of string lists
+	 */
+	public BatchLoaderWithContext<String, List<String>> HTML_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getHtmlListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of string lists
+	 */
+	public BatchLoaderWithContext<String, List<String>> STRING_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getStringListFieldValues, Functions.identity());
+	};
 
 	@Inject
 	public FieldDefinitionProvider(MeshOptions options, MicronodeFieldTypeProvider micronodeFieldTypeProvider, WebRootLinkReplacerImpl linkReplacer) {
@@ -435,41 +528,98 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (booleanList == null) {
 					return null;
 				}
-				return booleanList.getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
+
+				String booleanListUuid = booleanList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(booleanListUuid)) {
+					DataLoader<String, List<Boolean>> booleanListValueLoader = env.getDataLoader(FieldDefinitionProvider.BOOLEAN_LIST_VALUES_DATA_LOADER_KEY);
+					return booleanListValueLoader.load(booleanListUuid);
+				} else {
+					return booleanList.getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
+				}
 			case "html":
 				HibHtmlFieldList htmlList = container.getHTMLList(schema.getName());
 				if (htmlList == null) {
 					return null;
 				}
-				return htmlList.getList().stream().map(item -> {
-					String content = item.getHTML();
+
+				String htmlListUuid = htmlList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(htmlListUuid)) {
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
-						Arrays.asList(container.getLanguageTag()));
-				}).collect(Collectors.toList());
+					DataLoader<String, List<String>> htmlListValueLoader = env.getDataLoader(FieldDefinitionProvider.HTML_LIST_VALUES_DATA_LOADER_KEY);
+
+					if (linkType != null && linkType != LinkType.OFF) {
+						String projectName = tx.getProject(gc).getName();
+						List<String> languageTags = Arrays.asList(container.getLanguageTag());
+						return htmlListValueLoader.load(htmlListUuid).thenApply(contents -> {
+							return contents.stream().map(content -> linkReplacer.replace(gc, null, null, content,
+									linkType, projectName, languageTags)).collect(Collectors.toList());
+						});
+					} else {
+						return htmlListValueLoader.load(htmlListUuid);
+					}
+				} else {
+					return htmlList.getList().stream().map(item -> {
+						String content = item.getHTML();
+						LinkType linkType = getLinkType(env);
+						return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
+								Arrays.asList(container.getLanguageTag()));
+					}).collect(Collectors.toList());
+				}
 			case "string":
 				HibStringFieldList stringList = container.getStringList(schema.getName());
 				if (stringList == null) {
 					return null;
 				}
-				return stringList.getList().stream().map(item -> {
-					String content = item.getString();
+
+				String stringListUuid = stringList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(stringListUuid)) {
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
-						Arrays.asList(container.getLanguageTag()));
-				}).collect(Collectors.toList());
+					DataLoader<String, List<String>> stringListValueLoader = env.getDataLoader(FieldDefinitionProvider.STRING_LIST_VALUES_DATA_LOADER_KEY);
+
+					if (linkType != null && linkType != LinkType.OFF) {
+						String projectName = tx.getProject(gc).getName();
+						List<String> languageTags = Arrays.asList(container.getLanguageTag());
+						return stringListValueLoader.load(stringListUuid).thenApply(contents -> {
+							return contents.stream().map(content -> linkReplacer.replace(gc, null, null, content,
+									linkType, projectName, languageTags)).collect(Collectors.toList());
+						});
+					} else {
+						return stringListValueLoader.load(stringListUuid);
+					}
+				} else {
+					return stringList.getList().stream().map(item -> {
+						String content = item.getString();
+						LinkType linkType = getLinkType(env);
+						return linkReplacer.replace(gc, null, null, content, linkType, tx.getProject(gc).getName(),
+								Arrays.asList(container.getLanguageTag()));
+					}).collect(Collectors.toList());
+				}
 			case "number":
 				HibNumberFieldList numberList = container.getNumberList(schema.getName());
 				if (numberList == null) {
 					return null;
 				}
-				return numberList.getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
+
+				String numberListUuid = numberList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(numberListUuid)) {
+					DataLoader<String, List<Number>> numberListValueLoader = env.getDataLoader(FieldDefinitionProvider.NUMBER_LIST_VALUES_DATA_LOADER_KEY);
+					return numberListValueLoader.load(numberListUuid);
+				} else {
+					return numberList.getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
+				}
 			case "date":
 				HibDateFieldList dateList = container.getDateList(schema.getName());
 				if (dateList == null) {
 					return null;
 				}
-				return dateList.getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0)).collect(Collectors.toList());
+
+				String dateListUuid = dateList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(dateListUuid)) {
+					DataLoader<String, List<String>> dateListValueLoader = env.getDataLoader(FieldDefinitionProvider.DATE_LIST_VALUES_DATA_LOADER_KEY);
+					return dateListValueLoader.load(dateListUuid);
+				} else {
+					return dateList.getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0)).collect(Collectors.toList());
+				}
 			case "node":
 				HibNodeFieldList nodeList = container.getNodeList(schema.getName());
 				if (nodeList == null) {
