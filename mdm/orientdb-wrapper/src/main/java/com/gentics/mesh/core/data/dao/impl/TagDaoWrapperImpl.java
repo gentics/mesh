@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.util.HibClassConverter;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
@@ -75,7 +76,9 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 
 	@Override
 	public HibTag findByName(HibTagFamily tagFamily, String name) {
-		return HibClassConverter.toGraph(tagFamily).findByName(name);
+		return CommonTx.get().data().mesh().tagNameCache().get(getCacheKey(tagFamily, name), key -> {
+			return HibClassConverter.toGraph(tagFamily).findByName(name);
+		});
 	}
 
 	@Override

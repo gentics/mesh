@@ -83,6 +83,13 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		return new DynamicTransformablePageImpl<Group>(user, traversal, pagingInfo, READ_PERM, GroupImpl.class);
 	}
 
+	@Override
+	public Role findByName(String name) {
+		return (Role) mesh().roleNameCache().get(name, roleName -> {
+			return super.findByName(roleName);
+		});
+	}
+
 	/**
 	 * Create a new role vertex.
 	 */
