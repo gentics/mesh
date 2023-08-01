@@ -29,6 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.graphqlfilter.Sorting;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -643,7 +644,7 @@ public abstract class AbstractTypeProvider {
 		return applyNodeFilter(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)
 				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
 				: nodeDao.findAllContent(project, gc, languageTags, type), 
-			pagingInfo, filters.getLeft(), (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) && PersistingRootDao.shouldPage(pagingInfo));
+			pagingInfo, filters.getLeft(), filters.getRight().isPresent());
 	}
 
 	public <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {
@@ -696,9 +697,9 @@ public abstract class AbstractTypeProvider {
 		} else {
 			if (nativeQueryFiltering == NativeQueryFiltering.ALWAYS || envNativeFilter == NativeFilter.ONLY || PersistingRootDao.shouldSort(getPagingInfo(env))) {
 				// Force native filtering with `1 = 1` dummy filter
-				maybeNativeFilter = Optional.of(Comparison.dummy(true, ""));
+				maybeNativeFilter = Optional.of(Comparison.dummy(true, StringUtils.EMPTY));
 				if (nativeQueryFiltering == NativeQueryFiltering.NEVER) {
-					log.warn("A sorting is requested with native query filtering turned off. This may result in performance penalries!");
+					log.warn("A sorting is requested with native query filtering turned off. This may result in performance penalties!");
 				}
 			}
 		}
