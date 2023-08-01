@@ -24,6 +24,7 @@ link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 [[v2.1.0]]
 == 2.1.0 (TBD)
 
+icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
 icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
 icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
 

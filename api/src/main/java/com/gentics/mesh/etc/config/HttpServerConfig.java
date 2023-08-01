@@ -26,6 +26,8 @@ public class HttpServerConfig implements Option {
 
 	public static final boolean DEFAULT_CORS_ALLOW_CREDENTIALS = false;
 
+	public static final boolean DEFAULT_USE_ALPN = false;
+
 	public static final String HTTP_PORT_KEY = "httpPort";
 
 	public static final String DEFAULT_HTTP_HOST = "0.0.0.0";
@@ -54,6 +56,7 @@ public class HttpServerConfig implements Option {
 	public static final String MESH_HTTP_SSL_CLIENT_AUTH_MODE_ENV = "MESH_HTTP_SSL_CLIENT_AUTH_MODE";
 	public static final String MESH_HTTP_SSL_TRUSTED_CERTS_ENV = "MESH_HTTP_SSL_TRUSTED_CERTS";
 	public static final String MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV = "MESH_HTTP_CORS_ALLOW_CREDENTIALS";
+	public static final String MESH_HTTP_USE_ALPN_ENV = "MESH_HTTP_USE_ALPN";
 	public static final String MESH_HTTP_SERVER_TOKENS_ENV = "MESH_HTTP_SERVER_TOKENS";
 	public static final String MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE_ENV = "MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE";
 
@@ -83,6 +86,11 @@ public class HttpServerConfig implements Option {
 	@JsonPropertyDescription("Flag which indicates whether credentials are allowed to be passed along using CORS requests.")
 	@EnvironmentVariable(name = MESH_HTTP_CORS_ALLOW_CREDENTIALS_ENV, description = "Override the configured CORS allowed credentials flag.")
 	private Boolean corsAllowCredentials = DEFAULT_CORS_ALLOW_CREDENTIALS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether application-level protocol negotiation (aka ALPN) should be used. Normally HTTP/2 connections need this.")
+	@EnvironmentVariable(name = MESH_HTTP_USE_ALPN_ENV, description = "Override the configured ALPN usage flag.")
+	private boolean useAlpn = DEFAULT_USE_ALPN;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
@@ -289,6 +297,16 @@ public class HttpServerConfig implements Option {
 	@Setter
 	public HttpServerConfig setMaxFormAttributeSize(int maxFormAttributeSize) {
 		this.maxFormAttributeSize = maxFormAttributeSize;
+		return this;
+	}
+
+	public boolean isUseAlpn() {
+		return useAlpn;
+	}
+
+	@Setter
+	public HttpServerConfig setUseAlpn(Boolean useAlpn) {
+		this.useAlpn = useAlpn;
 		return this;
 	}
 
