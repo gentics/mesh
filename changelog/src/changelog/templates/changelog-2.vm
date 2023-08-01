@@ -1,0 +1,28 @@
+////
+Note: this file (changelog-2.adoc-include) is generated automatically.
+Do not make manual changes in this file, as they will be lost.
+
+If you want to add changelog entries, create a new file in changelog/src/changelog/entries/... and run creation of the changelog with
+mvn -pl changelog install
+////
+
+#foreach($changelog in $changelogs)
+[[v${changelog.version}]]
+== ${changelog.version} ($changelog.date)
+
+#foreach($entry in $changelog.getChangelogEntries())
+#if($entry.type == "enhancement")
+#set($icon = "icon:plus[]")
+#elseif($entry.type == "bugfix")
+#set($icon = "icon:check[]")
+#elseif($entry.type == "feature")
+#set($icon = "icon:bullhorn[]")
+#elseif($entry.type == "note")
+#set($icon = "NOTE:")
+#elseif($entry.type == "manualchange")
+#set($icon = "CAUTION:")
+#end
+$icon $entry.source
+
+#end
+#end

@@ -21,21 +21,16 @@ include::content/docs/variables.adoc-include[]
 Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
 link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
-[[v2.0.0]]
-== 2.0.0 (29.06.2023)
+////
+Note: Do not add changelog entries for versions 2.x here, but create the entries as files
+in changelog/src/changelog/entries/...
 
-icon:plus[] Core: A support of database level filtering/sorting has been added to the low level Java API. 
+Running
+mvn -pl changelog install
+will then create the new inclusion file changelog-2.adoc-include
+////
 
-icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
-is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
-Please note that not all the currently existing filters are supported by the DB.
-
-icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
-
-icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for `referencedBy` nodes.
-
-icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
-`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
+include::content/docs/changelog-2.adoc-include[]
 
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)

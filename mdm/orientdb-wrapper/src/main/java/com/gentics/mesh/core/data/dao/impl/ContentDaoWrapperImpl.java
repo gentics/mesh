@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -359,5 +360,35 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public void setDisplayFieldValue(HibNodeFieldContainer container, String value) {
 		toGraph(container).property(NodeGraphFieldContainerImpl.DISPLAY_FIELD_PROPERTY_KEY, value);
+	}
+
+	@Override
+	public boolean supportsPrefetchingListFieldValues() {
+		return false;
+	}
+
+	@Override
+	public Map<String, List<Boolean>> getBooleanListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<String, List<Long>> getDateListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<String, List<Number>> getNumberListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<String, List<String>> getHtmlListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<String, List<String>> getStringListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
 	}
 }

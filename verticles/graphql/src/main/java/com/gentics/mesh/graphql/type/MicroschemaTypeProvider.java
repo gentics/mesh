@@ -32,12 +32,12 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 	public static final String MICROSCHEMA_PAGE_TYPE_NAME = "MicroschemasPage";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public MicroschemaTypeProvider(MeshOptions options) {
+	public MicroschemaTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	/**

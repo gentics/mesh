@@ -1,0 +1,1 @@
+Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.

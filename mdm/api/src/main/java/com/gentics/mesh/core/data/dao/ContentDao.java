@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.NotImplementedException;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
@@ -584,7 +586,21 @@ public interface ContentDao {
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n);
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
+		updateWebrootPathInfo(content, ac, branchUuid, conflictI18n, true);
+	}
+
+	/**
+	 * Update the property webroot path info. This will optionally also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * @param ac
+	 * @param branchUuid
+	 *            branch Uuid
+	 * @param conflictI18n
+	 *            key of the message in case of conflicts
+	 * @param checkForConflicts true to check for conflicts, false to omit the check
+	 */
+	void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts);
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -594,7 +610,18 @@ public interface ContentDao {
 	 * @param conflictI18n
 	 */
 	default void updateWebrootPathInfo(HibNodeFieldContainer content, String branchUuid, String conflictI18n) {
-		updateWebrootPathInfo(content, null, branchUuid, conflictI18n);
+		updateWebrootPathInfo(content, null, branchUuid, conflictI18n, true);
+	}
+
+	/**
+	 * Update the property webroot path info. This will optionally also check for uniqueness conflicts of the webroot path and will throw a
+	 * {@link Errors#conflict(String, String, String, String...)} if one found.
+	 * @param branchUuid
+	 * @param conflictI18n
+	 * @param checkForConflicts true to check for conflicts, false to omit the check
+	 */
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, String branchUuid, String conflictI18n, boolean checkForConflicts) {
+		updateWebrootPathInfo(content, null, branchUuid, conflictI18n, checkForConflicts);
 	}
 
 	/**
@@ -1018,4 +1045,50 @@ public interface ContentDao {
 	 * @return
 	 */
 	FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags);
+
+	/**
+	 * Whether prefetching of list field values is supported. If this returns
+	 * <code>false</code>, the methods {@link #getBooleanListFieldValues(List)},
+	 * {@link #getDateListFieldValues(List)}, {@link #getNumberListFieldValues(List)},
+	 * {@link #getHtmlListFieldValues(List)} and {@link #getStringListFieldValues(List)} will
+	 * all throw a {@link NotImplementedException} when called.
+	 * 
+	 * @return true when prefetching list field values is supported, false if not
+	 */
+	boolean supportsPrefetchingListFieldValues();
+
+	/**
+	 * Get the boolean list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of boolean values
+	 */
+	Map<String, List<Boolean>> getBooleanListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the date list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of date field values
+	 */
+	Map<String, List<Long>> getDateListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the number list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of number field values
+	 */
+	Map<String, List<Number>> getNumberListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the html list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of html field values
+	 */
+	Map<String, List<String>> getHtmlListFieldValues(List<String> listUuids);
+
+	/**
+	 * Get the string list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of string field values
+	 */
+	Map<String, List<String>> getStringListFieldValues(List<String> listUuids);
 }

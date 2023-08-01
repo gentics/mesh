@@ -55,12 +55,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	public static final String SCHEMA_FIELD_TYPE = "SchemaFieldType";
 
-	@Inject
-	public InterfaceTypeProvider interfaceTypeProvider;
+	protected final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public SchemaTypeProvider(MeshOptions options) {
+	public SchemaTypeProvider(MeshOptions options, InterfaceTypeProvider interfaceTypeProvider) {
 		super(options);
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	public GraphQLObjectType createType(GraphQLContext context) {

@@ -55,23 +55,23 @@ public class GraphQLHandler {
 
 	private static final Logger slowQueryLog = LoggerFactory.getLogger(SLOW_QUERY_LOGGER_NAME);
 
-	@Inject
-	public QueryTypeProvider typeProvider;
+	protected final QueryTypeProvider typeProvider;
 
-	@Inject
-	public Database db;
+	protected final Database db;
 
-	@Inject
-	public Vertx vertx;
+	protected final Vertx vertx;
 
 	private Timer graphQlTimer;
 
 	private MeshOptions options;
 
 	@Inject
-	public GraphQLHandler(MetricsService metrics, MeshOptions options) {
+	public GraphQLHandler(MetricsService metrics, MeshOptions options, QueryTypeProvider typeProvider, Database db, Vertx vertx) {
 		this.graphQlTimer = metrics.timer(SimpleMetric.GRAPHQL_TIME);
 		this.options = options;
+		this.typeProvider = typeProvider;
+		this.db = db;
+		this.vertx = vertx;
 	}
 
 	/**
@@ -106,7 +106,12 @@ public class GraphQLHandler {
 					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, dlOptions));
 					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, dlOptions));
 					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, dlOptions));
-					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.fieldDefProvider.LINK_REPLACER_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().LINK_REPLACER_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.BOOLEAN_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().BOOLEAN_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.DATE_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().DATE_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.NUMBER_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().NUMBER_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.HTML_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().HTML_LIST_VALUE_LOADER, dlOptions));
+					dataLoaderRegistry.register(FieldDefinitionProvider.STRING_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().STRING_LIST_VALUE_LOADER, dlOptions));
 
 					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()
