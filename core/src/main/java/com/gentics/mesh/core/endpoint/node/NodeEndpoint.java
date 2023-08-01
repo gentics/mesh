@@ -21,9 +21,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.vertx.core.http.HttpMethod.DELETE;
-import static io.vertx.core.http.HttpMethod.GET;
-import static io.vertx.core.http.HttpMethod.POST;
+import static io.vertx.core.http.HttpMethod.*;
 
 import javax.inject.Inject;
 
@@ -38,9 +36,11 @@ import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -114,6 +114,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		addNavigationHandlers();
 		addPublishHandlers();
 		addVersioningHandlers();
+		addBinaryVariantsHandlers();
 		addRolePermissionHandler("nodeUuid", NODE_DELOREAN_UUID, "node", crudHandler, true);
 	}
 
@@ -251,7 +252,72 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			binaryDownloadHandler.handleReadBinaryField(rc, uuid, fieldName);
 		}, false);
+	}
 
+	private void addBinaryVariantsHandlers() {
+		InternalEndpointRoute fieldGet = createRoute();
+		fieldGet.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldGet.addUriParameter("fieldName", "Name of the image field", "image");
+		fieldGet.addQueryParameters(VersioningParametersImpl.class);
+		fieldGet.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldGet.produces(APPLICATION_JSON);
+		fieldGet.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "A list of image variants have been returned.");
+		fieldGet.method(GET);
+		fieldGet.description(
+			"Get the list of image manipulation variants of the binary, possessed by a field with the given name.");
+		fieldGet.blockingHandler(rc -> {
+			// TODO
+		}, false);
+
+		InternalEndpointRoute fieldDelete = createRoute();
+		fieldDelete.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldDelete.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldDelete.addUriParameter("fieldName", "Name of the image field", "image");
+		fieldDelete.addQueryParameters(VersioningParametersImpl.class);
+		fieldDelete.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldDelete.produces(APPLICATION_JSON);
+		fieldDelete.method(DELETE);
+		fieldDelete.exampleResponse(NO_CONTENT, "Image variants have been deleted.");
+		fieldDelete.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
+		fieldDelete.description(
+			"Delete unused image manipulation variants of the binary, referenced by a field with the given name.");
+		fieldDelete.blockingHandler(rc -> {
+			// TODO
+		}, false);
+
+		InternalEndpointRoute fieldPut = createRoute();
+		fieldPut.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldPut.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldPut.addUriParameter("fieldName", "Name of the image field.", "image");
+		fieldPut.addQueryParameters(VersioningParametersImpl.class);
+		fieldPut.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldPut.method(PUT);
+		fieldPut.produces(APPLICATION_JSON);
+		fieldPut.exampleRequest(nodeExamples.createImageManipulationRequest());
+		fieldPut.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
+		fieldPut.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldPut.description("Add new image variants to the binary, referenced by a field with the given name.");
+		fieldPut.blockingHandler(rc -> {
+			// TODO
+		});
+
+		InternalEndpointRoute fieldPost = createRoute();
+		fieldPost.path("/:nodeUuid/binary/:fieldName/variants");
+		fieldPost.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
+		fieldPost.addUriParameter("fieldName", "Name of the image field.", "image");
+		fieldPost.addQueryParameters(VersioningParametersImpl.class);
+		fieldPost.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
+		fieldPost.method(POST);
+		fieldPost.produces(APPLICATION_JSON);
+		fieldPost.exampleRequest(nodeExamples.createImageManipulationRequest());
+		fieldPost.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
+		fieldPost.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
+		fieldPost.description("Remove image variants from the binary, referenced by a field with the given name. Depending on the `deleteOther` flag, "
+				+ "the provided variands are either removed, or the only ones to be left in the binary.");
+		fieldPost.blockingHandler(rc -> {
+			// TODO
+		});
 	}
 
 	private void addS3BinaryHandlers() {

@@ -4,10 +4,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
+import com.gentics.mesh.util.NumberUtils;
 
 /**
  * Interface for image manipulation query parameters. Crop and resize parameters for image manipulation.
@@ -221,11 +223,7 @@ public interface ImageManipulationParameters extends ImageManipulation, Paramete
 		return this;
 	}
 
-	/**
-	 * Generate cache key.
-	 *
-	 * @return
-	 */
+	@Override
 	default String getCacheKey() {
 		StringBuilder builder = new StringBuilder();
 
@@ -255,4 +253,14 @@ public interface ImageManipulationParameters extends ImageManipulation, Paramete
 		}
 		return builder.toString();
 	}
+
+	/**
+	 * Check whether any resize or crop param has been set.
+	 *
+	 * @return
+	 */
+	default boolean hasResizeParams() {
+		return getHeight() != null || getWidth() != null || getCropMode() != null;
+	}
+
 }

@@ -1,69 +1,13 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 
 /**
- * POJO for node publish request.
+ * POJO for node publish request. Currently consists of image manipulation creation parameters.
  * 
  * @author plyhun
  *
  */
-public class NodePublishRequest implements RestModel {
+public class NodePublishRequest extends ImageManipulationRequest {
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("If a binary image is to be published, this field contains a set of image manipulation variants to be created immediately")
-	private List<ImageManipulationRequest> variants;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription(
-			"If a binary image is to be published, and variants provided, this flag states that all the existing variants, except the abovementioned, should be dropped."
-			+ "If no variants are provided along with the flag, all the image manipulation variants are to be dropped.")
-	private boolean deleteOther = false;
-
-	public NodePublishRequest() {}
-
-	/**
-	 * Get the image manipulation variants.
-	 * 
-	 * @return
-	 */
-	public List<ImageManipulationRequest> getVariants() {
-		return variants;
-	}
-
-	/**
-	 * Set the image manipulation variants.
-	 * 
-	 * @param variants
-	 * @return
-	 */
-	public NodePublishRequest setVariants(List<ImageManipulationRequest> variants) {
-		this.variants = variants;
-		return this;
-	}
-
-	/**
-	 * Get the flag to delete other image manipulation variants.
-	 * 
-	 * @return
-	 */
-	public boolean isDeleteOther() {
-		return deleteOther;
-	}
-
-	/**
-	 * Set the flag to delete other image manipulation variants.
-	 * 
-	 * @param deleteOther
-	 * @return
-	 */
-	public NodePublishRequest setDeleteOther(boolean deleteOther) {
-		this.deleteOther = deleteOther;
-		return this;
-	}
 }

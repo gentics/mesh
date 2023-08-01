@@ -268,4 +268,36 @@ public interface ImageManipulation {
 	default boolean hasResizeParams() {
 		return getHeight() != null || getWidth() != null || getCropMode() != null;
 	}
+
+	/**
+	 * Generate cache key.
+	 *
+	 * @return
+	 */
+	default String getCacheKey() {
+		StringBuilder builder = new StringBuilder();
+
+		if (getRect() != null) {
+			builder.append("rect" + getRect().toString());
+		}
+		if (getCropMode() != null) {
+			builder.append("crop" + getCropMode());
+		}
+		if (getResizeMode() != null) {
+			builder.append("resize" + getResizeMode());
+		}
+		if (getWidth() != null) {
+			builder.append("rw" + getWidth());
+		}
+		if (getHeight() != null) {
+			builder.append("rh" + getHeight());
+		}
+		if (getFocalPoint() != null) {
+			builder.append("fp" + getFocalPoint().toString());
+		}
+		if (getFocalPointZoom() != null) {
+			builder.append("fpz" + getFocalPointZoom());
+		}
+		return builder.toString();
+	}
 }

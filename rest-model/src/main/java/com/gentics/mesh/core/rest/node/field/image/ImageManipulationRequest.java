@@ -1,145 +1,68 @@
 package com.gentics.mesh.core.rest.node.field.image;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.parameter.image.CropMode;
-import com.gentics.mesh.parameter.image.ImageManipulation;
-import com.gentics.mesh.parameter.image.ImageRect;
-import com.gentics.mesh.parameter.image.ResizeMode;
 
-public class ImageManipulationRequest implements ImageManipulation, RestModel {
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Desired image width. Set to 'auto' to compute automatically from the image height and ratio.")
-	private String width;
+/**
+ * POJO for image manipulation creation request.
+ * 
+ * @author plyhun
+ *
+ */
+public class ImageManipulationRequest implements RestModel {
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Desired image height. Set to 'auto' to compute automatically from the image width and ratio.")
-	private String height;
+	@JsonPropertyDescription("If a binary image is to be published, this field contains a set of image manipulation variants to be created immediately")
+	private List<ImageManipulationCreationVariant> variants;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Desired image crop parameters.")
-	private ImageRect rect;
+	@JsonPropertyDescription(
+			"If a binary image is to be published, and variants provided, this flag states that all the existing variants, except the abovementioned, should be dropped."
+			+ "If no variants are provided along with the flag, all the image manipulation variants are to be dropped.")
+	private boolean deleteOther = false;
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("The image crop mode.")
-	private CropMode cropMode;
+	public ImageManipulationRequest() {}
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("The image resize mode.")
-	private ResizeMode resizeMode;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.")
-	private FocalPoint focalPoint;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("The image focal point zoom factor.")
-	private Float focalZoom;
-
-	@Override
-	public String getWidth() {
-		return width;
+	/**
+	 * Get the image manipulation variants.
+	 * 
+	 * @return
+	 */
+	public List<ImageManipulationCreationVariant> getVariants() {
+		return variants;
 	}
 
-	@Override
-	public ImageManipulationRequest setWidth(String width) {
-		this.width = width;
+	/**
+	 * Set the image manipulation variants.
+	 * 
+	 * @param variants
+	 * @return
+	 */
+	public ImageManipulationRequest setVariants(List<ImageManipulationCreationVariant> variants) {
+		this.variants = variants;
 		return this;
 	}
 
-	@Override
-	public ImageManipulationRequest setWidth(Integer width) {
-		this.width = width == null ? null : width.toString();
-		return null;
+	/**
+	 * Get the flag to delete other image manipulation variants.
+	 * 
+	 * @return
+	 */
+	public boolean isDeleteOther() {
+		return deleteOther;
 	}
 
-	@Override
-	public String getHeight() {
-		return height;
-	}
-
-	@Override
-	public ImageManipulationRequest setHeight(String height) {
-		this.height = height;
-		return this;
-	}
-
-	@Override
-	public ImageManipulationRequest setHeight(Integer height) {
-		this.height = height == null ? null : height.toString();
-		return this;
-	}
-
-	@Override
-	public ImageRect getRect() {
-		return rect;
-	}
-
-	@Override
-	public ImageRect setRect(ImageRect rect) {
-		this.rect = rect;
-		return rect;
-	}
-
-	@Override
-	public CropMode getCropMode() {
-		return cropMode;
-	}
-
-	@Override
-	public ImageManipulationRequest setCropMode(CropMode mode) {
-		this.cropMode = mode;
-		return this;
-	}
-
-	@Override
-	public ResizeMode getResizeMode() {
-		return resizeMode;
-	}
-
-	@Override
-	public ImageManipulationRequest setResizeMode(ResizeMode mode) {
-		this.resizeMode = mode;
-		return this;
-	}
-
-	@Override
-	public boolean hasFocalPoint() {
-		return focalPoint != null;
-	}
-
-	@Override
-	public FocalPoint getFocalPoint() {
-		return focalPoint;
-	}
-
-	@Override
-	public Float getFocalPointZoom() {
-		return focalZoom;
-	}
-
-	@Override
-	public ImageManipulationRequest setFocalPoint(FocalPoint point) {
-		this.focalPoint = point;
-		return this;
-	}
-
-	@Override
-	public ImageManipulationRequest setFocalPoint(float x, float y) {
-		ImageManipulation.super.setFocalPoint(x, y);
-		return this;
-	}
-
-	@Override
-	public ImageManipulationRequest setFocalPointZoom(Float factor) {
-		this.focalZoom = factor;
-		return this;
-	}
-
-	@Override
-	public ImageManipulationRequest validateFocalPointParameter() {
+	/**
+	 * Set the flag to delete other image manipulation variants.
+	 * 
+	 * @param deleteOther
+	 * @return
+	 */
+	public ImageManipulationRequest setDeleteOther(boolean deleteOther) {
+		this.deleteOther = deleteOther;
 		return this;
 	}
 }
