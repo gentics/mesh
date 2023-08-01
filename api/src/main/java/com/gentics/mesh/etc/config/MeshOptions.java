@@ -31,6 +31,7 @@ public abstract class MeshOptions implements Option {
 	public static final String MESH_UPDATECHECK_ENV = "MESH_UPDATECHECK";
 	public static final String MESH_TEMP_DIR_ENV = "MESH_TEMP_DIR";
 	public static final String MESH_PLUGIN_DIR_ENV = "MESH_PLUGIN_DIR";
+	public static final String MESH_PLUGIN_USE_HTTP2_ENV = "MESH_PLUGIN_USE_HTTP2";
 	public static final String MESH_PLUGIN_TIMEOUT_ENV = "MESH_PLUGIN_TIMEOUT";
 	public static final String MESH_NODE_NAME_ENV = "MESH_NODE_NAME";
 	public static final String MESH_CLUSTER_INIT_ENV = "MESH_CLUSTER_INIT";
@@ -154,6 +155,11 @@ public abstract class MeshOptions implements Option {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("GraphQL options.")
 	private GraphQLOptions graphQLOptions = new GraphQLOptions();
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("If true, plugin HTTP client will be forced to use HTTP/2 protocol version.")
+	@EnvironmentVariable(name = MESH_PLUGIN_USE_HTTP2_ENV, description = "Override the HTTP/2 usage flag for plugins.")
+	private boolean pluginUseHttp2 = false;
 
 	/* EXTRA Command Line Arguments */
 	@JsonIgnore
@@ -526,6 +532,16 @@ public abstract class MeshOptions implements Option {
 	@Setter
 	public void setMigrationMaxBatchSize(int migrationMaxBatchSize) {
 		this.migrationMaxBatchSize = migrationMaxBatchSize;
+	}
+
+	public boolean isPluginUseHttp2() {
+		return pluginUseHttp2;
+	}
+
+	@Setter
+	public MeshOptions setPluginUseHttp2(boolean pluginUseHttp2) {
+		this.pluginUseHttp2 = pluginUseHttp2;
+		return this;
 	}
 
 	@JsonIgnore

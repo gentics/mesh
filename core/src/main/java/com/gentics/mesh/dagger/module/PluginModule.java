@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.ProtocolVersion;
 import com.gentics.mesh.rest.client.impl.OkHttpClientUtil;
 
 import dagger.Module;
@@ -34,6 +35,7 @@ public class PluginModule {
 			.setHost(host)
 			.setPort(port)
 			.setSsl(false)
+			.setProtocolVersion(options.isPluginUseHttp2() ? ProtocolVersion.HTTP_2 : ProtocolVersion.DEFAULT)
 			.build();
 
 		// Create a fresh client for plugins to ensure independence between clients that are used within mesh.

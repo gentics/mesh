@@ -21,6 +21,12 @@ include::content/docs/variables.adoc-include[]
 Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
 link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
+[[v2.1.0]]
+== 2.1.0 (TBD)
+
+icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
 [[v2.0.2]]
 == 2.0.2 (26.07.2023)
 
