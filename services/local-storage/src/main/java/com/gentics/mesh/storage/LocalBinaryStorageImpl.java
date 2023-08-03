@@ -14,6 +14,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.AbstractBinaryStorage;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
@@ -64,6 +65,24 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			return createParentPath(uploadFolder.getAbsolutePath())
 				.andThen(fileSystem.rxMove(source, target).doOnError(e -> {
 					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
+				}));
+		});
+	}
+
+	@Override
+	public Completable moveImageVariant(HibImageVariant variant, String variantPath) {
+		return Completable.defer(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Move binary for variant uuid '{}' into place from '{}'", variant.getUuid(), variantPath);
+			}
+			String target = getFilePath(variant.getUuid());
+			if (log.isDebugEnabled()) {
+				log.debug("Moving '{}' to '{}'", variantPath, target);
+			}
+			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(variant.getUuid()));
+			return createParentPath(uploadFolder.getAbsolutePath())
+				.andThen(fileSystem.rxMove(variantPath, target).doOnError(e -> {
+					log.error("Error while moving binary variant from {} to final dir {}", variantPath, target);
 				}));
 		});
 	}

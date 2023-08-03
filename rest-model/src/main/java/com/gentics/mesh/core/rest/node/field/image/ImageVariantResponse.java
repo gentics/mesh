@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.node.field.image;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -13,7 +16,7 @@ import com.gentics.mesh.parameter.image.ResizeMode;
  * @author plyhun
  *
  */
-public class ImageVariant implements RestModel {
+public class ImageVariantResponse implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Image width.")
@@ -50,10 +53,13 @@ public class ImageVariant implements RestModel {
 	@JsonPropertyDescription("This flag states that this variant is an original image.")
 	private boolean origin = false;
 
+	@JsonPropertyDescription("This flag states that this variant is a proportional (aka 'auto') image.")
+	private boolean auto = false;
+
 	/**
 	 * REST ctor.
 	 */
-	public ImageVariant() {}
+	public ImageVariantResponse() {}
 
 	/**
 	 * Parameter ctor.
@@ -66,7 +72,7 @@ public class ImageVariant implements RestModel {
 	 * @param focalPoint
 	 * @param focalZoom
 	 */
-	public ImageVariant(Integer width, Integer height, ImageRect rect, CropMode cropMode, ResizeMode resizeMode,
+	public ImageVariantResponse(Integer width, Integer height, ImageRect rect, CropMode cropMode, ResizeMode resizeMode,
 			FocalPoint focalPoint, Float focalZoom) {
 		super();
 		this.width = width;
@@ -82,7 +88,7 @@ public class ImageVariant implements RestModel {
 		return width;
 	}
 
-	public ImageVariant setWidth(Integer width) {
+	public ImageVariantResponse setWidth(Integer width) {
 		this.width = width;
 		return this;
 	}
@@ -91,7 +97,7 @@ public class ImageVariant implements RestModel {
 		return height;
 	}
 
-	public ImageVariant setHeight(Integer height) {
+	public ImageVariantResponse setHeight(Integer height) {
 		this.height = height;
 		return this;
 	}
@@ -100,7 +106,7 @@ public class ImageVariant implements RestModel {
 		return rect;
 	}
 
-	public ImageVariant setRect(ImageRect rect) {
+	public ImageVariantResponse setRect(ImageRect rect) {
 		this.rect = rect;
 		return this;
 	}
@@ -109,7 +115,7 @@ public class ImageVariant implements RestModel {
 		return cropMode;
 	}
 
-	public ImageVariant setCropMode(CropMode cropMode) {
+	public ImageVariantResponse setCropMode(CropMode cropMode) {
 		this.cropMode = cropMode;
 		return this;
 	}
@@ -118,7 +124,7 @@ public class ImageVariant implements RestModel {
 		return resizeMode;
 	}
 
-	public ImageVariant setResizeMode(ResizeMode resizeMode) {
+	public ImageVariantResponse setResizeMode(ResizeMode resizeMode) {
 		this.resizeMode = resizeMode;
 		return this;
 	}
@@ -127,7 +133,7 @@ public class ImageVariant implements RestModel {
 		return focalPoint;
 	}
 
-	public ImageVariant setFocalPoint(FocalPoint focalPoint) {
+	public ImageVariantResponse setFocalPoint(FocalPoint focalPoint) {
 		this.focalPoint = focalPoint;
 		return this;
 	}
@@ -136,7 +142,7 @@ public class ImageVariant implements RestModel {
 		return focalZoom;
 	}
 
-	public ImageVariant setFocalZoom(Float focalZoom) {
+	public ImageVariantResponse setFocalZoom(Float focalZoom) {
 		this.focalZoom = focalZoom;
 		return this;
 	}
@@ -145,7 +151,7 @@ public class ImageVariant implements RestModel {
 		return fileSize;
 	}
 
-	public ImageVariant setFileSize(Long fileSize) {
+	public ImageVariantResponse setFileSize(Long fileSize) {
 		this.fileSize = fileSize;
 		return this;
 	}
@@ -154,8 +160,54 @@ public class ImageVariant implements RestModel {
 		return origin;
 	}
 
-	public ImageVariant setOrigin(boolean origin) {
+	public ImageVariantResponse setOrigin(boolean origin) {
 		this.origin = origin;
 		return this;
+	}
+
+	public boolean isAuto() {
+		return auto;
+	}
+
+	public ImageVariantResponse setAuto(boolean auto) {
+		this.auto = auto;
+		return this;
+	}
+
+	@Override
+	@JsonIgnore
+	public int hashCode() {
+		return Objects.hash(auto, cropMode, fileSize, focalPoint, focalZoom, height, origin, rect, resizeMode, width);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ImageVariantResponse other = (ImageVariantResponse) obj;
+		return auto == other.auto && cropMode == other.cropMode && Objects.equals(fileSize, other.fileSize)
+				&& Objects.equals(focalPoint, other.focalPoint) && Objects.equals(focalZoom, other.focalZoom)
+				&& Objects.equals(height, other.height) && origin == other.origin && Objects.equals(rect, other.rect)
+				&& resizeMode == other.resizeMode && Objects.equals(width, other.width);
+	}
+
+	/**
+	 * Create a {@link ImageVariantRequest} out of this response.
+	 * 
+	 * @return
+	 */
+	public ImageVariantRequest toRequest() {
+		return (ImageVariantRequest) new ImageVariantRequest()
+				.setWidth(getWidth())
+				.setHeight(getHeight())
+				.setCropMode(getCropMode())
+				.setFocalPoint(getFocalPoint())
+				.setFocalPointZoom(getFocalZoom())
+				.setResizeMode(getResizeMode())
+				.setRect(getRect().getStartX(), getRect().getStartY(), getRect().getHeight(), getRect().getWidth());
 	}
 }

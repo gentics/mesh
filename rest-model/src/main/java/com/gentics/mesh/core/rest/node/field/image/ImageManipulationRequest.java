@@ -16,7 +16,7 @@ public class ImageManipulationRequest implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("If a binary image is to be published, this field contains a set of image manipulation variants to be created immediately")
-	private List<ImageManipulationCreationVariant> variants;
+	private List<ImageVariantRequest> variants;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription(
@@ -31,7 +31,7 @@ public class ImageManipulationRequest implements RestModel {
 	 * 
 	 * @return
 	 */
-	public List<ImageManipulationCreationVariant> getVariants() {
+	public List<ImageVariantRequest> getVariants() {
 		return variants;
 	}
 
@@ -41,7 +41,7 @@ public class ImageManipulationRequest implements RestModel {
 	 * @param variants
 	 * @return
 	 */
-	public ImageManipulationRequest setVariants(List<ImageManipulationCreationVariant> variants) {
+	public ImageManipulationRequest setVariants(List<ImageVariantRequest> variants) {
 		this.variants = variants;
 		return this;
 	}

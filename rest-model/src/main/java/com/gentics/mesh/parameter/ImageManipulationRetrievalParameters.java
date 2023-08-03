@@ -9,9 +9,10 @@ package com.gentics.mesh.parameter;
 public interface ImageManipulationRetrievalParameters extends ParameterProvider {
 
 	public static final String FILESIZE_QUERY_PARAM_KEY = "filesize";
+	public static final String ORIGINAL_QUERY_PARAM_KEY = "original";
 
 	/**
-	 * Set if filesizes should also be retrieved.
+	 * Set whether filesizes should also be retrieved.
 	 * 
 	 * @param retrieveFilesize
 	 * @return
@@ -29,5 +30,26 @@ public interface ImageManipulationRetrievalParameters extends ParameterProvider 
 	default boolean retrieveFilesize() {
 		String filesize = getParameter(FILESIZE_QUERY_PARAM_KEY);
 		return filesize != null ? Boolean.parseBoolean(filesize) : false;
+	}
+
+	/**
+	 * Set whether original image should also be retrieved.
+	 * 
+	 * @param retrieveOriginal
+	 * @return
+	 */
+	default ImageManipulationRetrievalParameters setRetrieveOriginal(boolean retrieveOriginal) {
+		setParameter(ORIGINAL_QUERY_PARAM_KEY, Boolean.toString(retrieveOriginal));
+		return this;
+	}
+
+	/**
+	 * Check if original image should also be retrieved.
+	 * 
+	 * @return
+	 */
+	default boolean retrieveOriginal() {
+		String original = getParameter(ORIGINAL_QUERY_PARAM_KEY);
+		return original != null ? Boolean.parseBoolean(original) : false;
 	}
 }

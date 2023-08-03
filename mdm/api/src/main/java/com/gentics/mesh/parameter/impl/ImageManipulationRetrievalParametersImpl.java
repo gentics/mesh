@@ -8,6 +8,7 @@ import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
+import com.gentics.mesh.parameter.ParameterProviderContext;
 
 /**
  * @see ImageManipulationRetrievalParameters
@@ -17,17 +18,33 @@ import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
  */
 public class ImageManipulationRetrievalParametersImpl extends AbstractParameters implements ImageManipulationRetrievalParameters {
 
+	public ImageManipulationRetrievalParametersImpl() {
+	}
+
+	public ImageManipulationRetrievalParametersImpl(ParameterProviderContext parameterProviderContext) {
+		super(parameterProviderContext);
+	}
+
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
-		QueryParameter pageParameter = new QueryParameter();
-		pageParameter.setDescription(
+		QueryParameter filesizeParameter = new QueryParameter();
+		filesizeParameter.setDescription(
 				"Specifies a need to retrieve filesizes for the returned image manipulation variants.");
-		pageParameter.setExample("true");
-		pageParameter.setRequired(false);
-		pageParameter.setType(ParamType.BOOLEAN);
-		parameters.put(FILESIZE_QUERY_PARAM_KEY, pageParameter);
+		filesizeParameter.setExample("true");
+		filesizeParameter.setRequired(false);
+		filesizeParameter.setType(ParamType.BOOLEAN);
+
+		QueryParameter originalParameter = new QueryParameter();
+		originalParameter.setDescription(
+				"Specifies a need to retrieve original image along with its manipulation variants.");
+		originalParameter.setExample("true");
+		originalParameter.setRequired(false);
+		originalParameter.setType(ParamType.BOOLEAN);
+
+		parameters.put(FILESIZE_QUERY_PARAM_KEY, filesizeParameter);
+		parameters.put(ORIGINAL_QUERY_PARAM_KEY, originalParameter);
 
 		return parameters;
 	}

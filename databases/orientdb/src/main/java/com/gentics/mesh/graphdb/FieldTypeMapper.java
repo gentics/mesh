@@ -30,6 +30,8 @@ public final class FieldTypeMapper {
 			return OType.EMBEDDEDSET;
 		case STRING_LIST:
 			return OType.EMBEDDEDLIST;
+		case FLOAT:
+			return OType.FLOAT;
 		default:
 			throw new RuntimeException("Unsupported type {" + fieldType + "}");
 		}

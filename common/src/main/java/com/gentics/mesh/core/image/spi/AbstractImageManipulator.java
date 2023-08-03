@@ -2,16 +2,18 @@ package com.gentics.mesh.core.image.spi;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Paths;
+
 import javax.imageio.ImageIO;
 
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -37,7 +39,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters) {
+	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulation parameters) {
 		FileSystem fs = vertx.fileSystem();
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");

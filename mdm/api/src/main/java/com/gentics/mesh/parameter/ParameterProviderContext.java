@@ -5,6 +5,7 @@ import com.gentics.mesh.parameter.impl.BackupParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -64,6 +65,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default GenericParameters getGenericParameters() {
 		return new GenericParametersImpl(this);
+	}
+
+	default ImageManipulationRetrievalParameters getImageManipulationRetrievalParameters() {
+		return new ImageManipulationRetrievalParametersImpl(this);
 	}
 
 	default SearchParameters getSearchParameters() {

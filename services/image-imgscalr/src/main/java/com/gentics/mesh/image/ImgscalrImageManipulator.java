@@ -43,6 +43,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
@@ -110,7 +111,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters
 	 * @return Resized image or original image if no resize operation was requested
 	 */
-	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageManipulationParameters parameters) {
+	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageManipulation parameters) {
 		int originalHeight = originalImage.getHeight();
 		int originalWidth = originalImage.getWidth();
 		double aspectRatio = (double) originalWidth / (double) originalHeight;
@@ -286,7 +287,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters The parameters defining cropping and resizing requests
 	 * @return The modified image
 	 */
-	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
+	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulation parameters) {
 		CropMode cropMode = parameters.getCropMode();
 		boolean omitResize = false;
 		if (cropMode != null) {
@@ -311,9 +312,9 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters) {
+	public Single<String> handleResize(HibBinary binary, ImageManipulation parameters) {
 		// Validate the resize parameters
-		parameters.validate();
+		parameters.validateManipulation();
 		parameters.validateLimits(options);
 
 		Supplier<InputStream> stream = binary.openBlockingStream();
@@ -376,7 +377,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	public Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename,
 			ImageManipulationParameters parameters) {
 		// Validate the resize parameters
-		parameters.validate();
+		parameters.validateManipulation();
 		parameters.validateLimits(options);
 
 		return s3BinaryStorage.read(bucketName, s3ObjectKey)

@@ -8,7 +8,7 @@ import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
-public class ImageManipulationCreationVariant implements ImageManipulation, RestModel {
+public class ImageVariantRequest implements ImageManipulation, RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Desired image width. Set to 'auto' to compute automatically from the image height and ratio.")
@@ -41,7 +41,7 @@ public class ImageManipulationCreationVariant implements ImageManipulation, Rest
 	/**
 	 * REST ctor.
 	 */
-	public ImageManipulationCreationVariant() {
+	public ImageVariantRequest() {
 	}
 
 	@Override
@@ -50,13 +50,13 @@ public class ImageManipulationCreationVariant implements ImageManipulation, Rest
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setWidth(String width) {
+	public ImageVariantRequest setWidth(String width) {
 		this.width = width;
 		return this;
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setWidth(Integer width) {
+	public ImageVariantRequest setWidth(Integer width) {
 		this.width = width == null ? null : width.toString();
 		return this;
 	}
@@ -67,13 +67,13 @@ public class ImageManipulationCreationVariant implements ImageManipulation, Rest
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setHeight(String height) {
+	public ImageVariantRequest setHeight(String height) {
 		this.height = height;
 		return this;
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setHeight(Integer height) {
+	public ImageVariantRequest setHeight(Integer height) {
 		this.height = height == null ? null : height.toString();
 		return this;
 	}
@@ -95,7 +95,7 @@ public class ImageManipulationCreationVariant implements ImageManipulation, Rest
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setCropMode(CropMode mode) {
+	public ImageVariantRequest setCropMode(CropMode mode) {
 		this.cropMode = mode;
 		return this;
 	}
@@ -106,7 +106,7 @@ public class ImageManipulationCreationVariant implements ImageManipulation, Rest
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setResizeMode(ResizeMode mode) {
+	public ImageVariantRequest setResizeMode(ResizeMode mode) {
 		this.resizeMode = mode;
 		return this;
 	}
@@ -127,25 +127,25 @@ public class ImageManipulationCreationVariant implements ImageManipulation, Rest
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setFocalPoint(FocalPoint point) {
+	public ImageVariantRequest setFocalPoint(FocalPoint point) {
 		this.focalPoint = point;
 		return this;
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setFocalPoint(float x, float y) {
+	public ImageVariantRequest setFocalPoint(float x, float y) {
 		ImageManipulation.super.setFocalPoint(x, y);
 		return this;
 	}
 
 	@Override
-	public ImageManipulationCreationVariant setFocalPointZoom(Float factor) {
+	public ImageVariantRequest setFocalPointZoom(Float factor) {
 		this.focalZoom = factor;
 		return this;
 	}
 
 	@Override
-	public ImageManipulationCreationVariant validateFocalPointParameter() {
+	public ImageVariantRequest validateFocalPointParameter() {
 		return this;
 	}
 }

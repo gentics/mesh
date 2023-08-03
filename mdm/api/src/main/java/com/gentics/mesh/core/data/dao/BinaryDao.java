@@ -1,14 +1,20 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.stream.Stream;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Flowable;
@@ -17,7 +23,7 @@ import io.vertx.core.buffer.Buffer;
 /**
  * DAO for {@link HibBinary}.
  */
-public interface BinaryDao extends Dao<HibBinary> {
+public interface BinaryDao extends Dao<HibBinary>, DaoTransformable<HibImageVariant, ImageVariantResponse> {
 
 	/**
 	 * Return the binary data stream.
@@ -93,4 +99,49 @@ public interface BinaryDao extends Dao<HibBinary> {
 	 * @return
 	 */
 	Transactional<Stream<HibBinary>> findAll();
+
+	/**
+	 * Get the manipulation variants of this binary image representation. On any other binary data returns null.
+	 * 
+	 * @return
+	 */
+	Result<? extends HibImageVariant> getVariants(HibBinary binary, InternalActionContext ac);
+
+	/**
+	 * Get the manipulation variants of this binary image representation. On any other binary data returns null.
+	 * 
+	 * @return
+	 */
+	HibImageVariant getVariant(HibBinary binary, ImageManipulation variant, InternalActionContext ac);
+
+	/**
+	 * Create the image manipulation variant,
+	 * 
+	 * @param variant
+	 * @return created variant
+	 */
+	HibImageVariant createVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnExisting);
+
+	/**
+	 * Delete the image manipulation variant,
+	 * 
+	 * @param variant
+	 */
+	void deleteVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnAbsent);
+
+	/**
+	 * Create the image manipulation variants, optionally deleting all other existing unused variants.
+	 * 
+	 * @param variant
+	 * @return image variants of the binary after the operation.
+	 */
+	Result<? extends HibImageVariant> createVariants(HibBinary binary, Collection<ImageVariantRequest> variants, InternalActionContext ac, boolean deleteOther);
+
+	/**
+	 * Delete the image manipulation variants. Depending on the 'deleteOther' flag, either the parameter variants or other ones are to be deleted.
+	 * 
+	 * @param variant
+	 * @return image variants of the binary after the operation.
+	 */
+	Result<? extends HibImageVariant> deleteVariants(HibBinary binary, Collection<ImageVariantRequest> variant, InternalActionContext ac, boolean deleteOther);
 }

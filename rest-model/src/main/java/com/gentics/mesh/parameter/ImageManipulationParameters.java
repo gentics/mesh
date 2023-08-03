@@ -4,12 +4,10 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
-import com.gentics.mesh.util.NumberUtils;
 
 /**
  * Interface for image manipulation query parameters. Crop and resize parameters for image manipulation.

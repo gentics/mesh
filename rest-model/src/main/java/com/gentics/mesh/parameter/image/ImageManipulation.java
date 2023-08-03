@@ -1,6 +1,7 @@
 package com.gentics.mesh.parameter.image;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
@@ -299,5 +300,30 @@ public interface ImageManipulation {
 			builder.append("fpz" + getFocalPointZoom());
 		}
 		return builder.toString();
+	}
+
+	/**
+	 * * Validate the set parameters and throw an exception when an invalid set of parameters has been detected.
+	 */
+	default void validateManipulation() {
+		Integer width = toInteger(getWidth(), null);
+		if (width != null && width < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_positive", "width", String.valueOf(width));
+		}
+		Integer height = toInteger(getHeight(), null);
+		if (height != null && height < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_positive", "height", String.valueOf(height));
+		}
+		ImageRect rect = getRect();
+		if (rect != null) {
+			rect.validate();
+		}
+
+		Float fpz = getFocalPointZoom();
+		if (fpz != null && fpz < 1) {
+			throw error(BAD_REQUEST, "image_error_parameter_focal_point_zoom", String.valueOf(fpz));
+		}
+
+		validateFocalPointParameter();
 	}
 }

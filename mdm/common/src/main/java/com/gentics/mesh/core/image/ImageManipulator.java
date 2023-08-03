@@ -1,14 +1,16 @@
 package com.gentics.mesh.core.image;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.parameter.ImageManipulationParameters;
-import io.reactivex.Completable;
-import io.reactivex.Single;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
+
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.ImageManipulation;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 
 /**
  * SPI provider interface for image manipulators.
@@ -22,7 +24,7 @@ public interface ImageManipulator {
 	 * @param parameters
 	 * @return The path to the resized file.
 	 */
-	Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters);
+	Single<String> handleResize(HibBinary binary, ImageManipulation parameters);
 
 	/**
 	 * Resize the given s3 binary data and return the result.
@@ -38,7 +40,7 @@ public interface ImageManipulator {
 			String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters);
 
 	/**
-	 * Resize the given s3 binary data and return the result.
+	 * Resize the given s3 binary data and return the resulting file.
 	 *
 	 * @param bucketName
 	 * @param s3ObjectKey
@@ -55,7 +57,7 @@ public interface ImageManipulator {
 	 * @param parameters Resize parameters
 	 * @return
 	 */
-	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters);
+	Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulation parameters);
 
 	/**
 	 * Read the image information from image file.
