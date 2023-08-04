@@ -3,8 +3,6 @@ package com.gentics.mesh.core.data.storage;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -58,7 +56,9 @@ public interface BinaryStorage {
 	 * @param temporaryId
 	 * @return
 	 */
-	Completable moveInPlace(String uuid, String temporaryId);
+	default Completable moveInPlace(String uuid, String temporaryId) {
+		return moveInPlace(uuid, temporaryId, true);
+	}
 
 	/**
 	 * Move the temporary uploaded binary into place.
@@ -67,7 +67,7 @@ public interface BinaryStorage {
 	 * @param temporaryId
 	 * @return
 	 */
-	Completable moveImageVariant(HibImageVariant variant, String variantPath);
+	Completable moveInPlace(String uuid, String path, boolean isTempId);
 
 	/**
 	 * Checks whether the binary data for the given field exists

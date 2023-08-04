@@ -195,4 +195,24 @@ public interface HibImageVariant extends HibImageDataElement {
 	default Integer getImageHeight() {
 		return getHeight();
 	}
+
+	HibImageVariant setResizeMode(ResizeMode resize);
+
+	HibImageVariant setCropMode(CropMode crop);
+
+	HibImageVariant setCropStartY(Integer cropY);
+
+	HibImageVariant setCropStartX(Integer cropX);
+
+	HibImageVariant setFocalPointZoom(Float fpz);
+
+	HibImageVariant setFocalPointY(Float fpy);
+
+	HibImageVariant setFocalPointX(Float fpx);
+
+	HibImageVariant setHeight(Integer height);
+
+	HibImageVariant setWidth(Integer width);
+
+	HibImageVariant setAuto(boolean auto);
 }

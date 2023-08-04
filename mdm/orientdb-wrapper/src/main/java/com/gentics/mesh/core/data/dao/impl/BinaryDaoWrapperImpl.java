@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.io.File;
 import java.util.function.Consumer;
 
 import javax.inject.Inject;
@@ -17,7 +18,6 @@ import com.gentics.mesh.core.data.binary.impl.ImageVariantImpl;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -69,21 +69,32 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	@Override
 	public void deletePersistingVariant(HibBinary binary, HibImageVariant variant) {
 		binaryStorage.delete(variant.getUuid()).andThen(Single.defer(() -> {
-			ImageVariant imageVariant = toGraph(variant);
-			toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
-			imageVariant.remove();
-			return Single.just(0);
+			return database.asyncTx(() -> {ImageVariant imageVariant = toGraph(variant);
+				toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
+				imageVariant.remove();
+				return Single.just(0);
+			});
 		})).blockingGet();
 	}
 
 	@Override
 	public ImageVariant createPersistedVariant(HibBinary binary, ImageVariantRequest request, Consumer<HibImageVariant> inflater) {
-		return imageManipulator.handleResize(binary, request).flatMap(cachePath -> {
-			FramedGraph graph = toGraph(binary).getGraph();
-			ImageVariantImpl variant = graph.addFramedVertex(ImageVariantImpl.class);
-			toGraph(binary).linkOut(variant, GraphRelationships.HAS_VARIANTS);
-			return binaryStorage.moveImageVariant(variant, cachePath).andThen(Single.just(variant));
-		}).blockingGet();
+		FramedGraph graph = toGraph(binary).getGraph();
+		ImageVariantImpl variant = graph.addFramedVertex(ImageVariantImpl.class);
+		toGraph(binary).linkOut(variant, GraphRelationships.HAS_VARIANTS);
+		inflater.accept(variant);
+		
+		String variantUuid = variant.getUuid();
+		
+		long filesize = imageManipulator.handleResize(binary, request)
+				.flatMap(cachePath -> {
+					long size = new File(cachePath).length();
+					return binaryStorage.moveInPlace(variantUuid, cachePath, false).toSingleDefault(size);
+				})
+				.blockingGet();
+
+		variant.setSize(filesize);
+		return variant;
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.google.common.base.Objects;
@@ -170,7 +171,53 @@ public interface PersistingBinaryDao extends BinaryDao {
 
 	@Override
 	default HibImageVariant createVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnExisting) {
-		return createPersistedVariant(binary, variant, null);
+		return createPersistedVariant(binary, variant, entity -> {
+			if (variant.getRect() != null) {
+				entity.setCropStartX(variant.getRect().getStartX());
+				entity.setCropStartY(variant.getRect().getStartY());
+				entity.setWidth(variant.getRect().getWidth());
+				entity.setHeight(variant.getRect().getHeight());
+			} else {
+				entity.setCropStartX(null);
+				entity.setCropStartY(null);			
+				if (variant.getWidth() != null) {
+					if ("auto".equals(variant.getWidth())) {
+						entity.setAuto(true);
+						entity.setHeight(Integer.parseInt(variant.getHeight()));
+						Point originalSize = binary.getImageSize();
+						float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
+						entity.setWidth((int) ((float) entity.getHeight() * ratio));
+					} else {
+						entity.setWidth(Integer.parseInt(variant.getWidth()));
+					}
+				} else {
+					entity.setWidth(null);
+				}
+				if (variant.getHeight() != null) {
+					if ("auto".equals(variant.getHeight())) {
+						entity.setAuto(true);
+						entity.setWidth(Integer.parseInt(variant.getWidth()));
+						Point originalSize = binary.getImageSize();
+						float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
+						entity.setHeight((int) ((float) entity.getWidth() * ratio));
+					} else {
+						entity.setHeight(Integer.parseInt(variant.getHeight()));
+					}
+				} else {
+					entity.setHeight(null);
+				}
+			}
+			if (variant.getFocalPoint() != null) {
+				entity.setFocalPointX(variant.getFocalPoint().getX());
+				entity.setFocalPointY(variant.getFocalPoint().getY());
+			} else {
+				entity.setFocalPointX(null);
+				entity.setFocalPointY(null);
+			}
+			entity.setCropMode(variant.getCropMode());
+			entity.setFocalPointZoom(variant.getFocalPointZoom());
+			entity.setResizeMode(variant.getResizeMode());
+		});
 	}
 
 	@Override

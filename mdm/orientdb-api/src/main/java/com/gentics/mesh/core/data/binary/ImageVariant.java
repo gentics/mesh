@@ -37,7 +37,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 
 	@Override
 	default ImageVariant setSize(long sizeInBytes) {
-		property(AUTO_KEY, sizeInBytes);
+		property(VARIANT_FILESIZE_PROPERTY_KEY, sizeInBytes);
 		return this;
 	}
 
@@ -47,6 +47,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return auto != null ? auto : false;
 	}
 
+	@Override
 	default ImageVariant setAuto(boolean auto) {
 		if (auto) {
 			property(AUTO_KEY, auto);
@@ -61,6 +62,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(WIDTH_KEY);
 	}
 
+	@Override
 	default ImageVariant setWidth(Integer width) {
 		if (width == null) {
 			removeProperty(WIDTH_KEY);
@@ -75,6 +77,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(HEIGHT_KEY);
 	}
 
+	@Override
 	default ImageVariant setHeight(Integer height) {
 		if (height == null) {
 			removeProperty(HEIGHT_KEY);
@@ -89,6 +92,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(FOCAL_POINT_X_KEY);
 	}
 
+	@Override
 	default ImageVariant setFocalPointX(Float fpx) {
 		if (fpx == null) {
 			removeProperty(FOCAL_POINT_X_KEY);
@@ -103,6 +107,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(FOCAL_POINT_Y_KEY);
 	}
 
+	@Override
 	default ImageVariant setFocalPointY(Float fpy) {
 		if (fpy == null) {
 			removeProperty(FOCAL_POINT_Y_KEY);
@@ -117,6 +122,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(FOCAL_POINT_ZOOM_KEY);
 	}
 
+	@Override
 	default ImageVariant setFocalPointZoom(Float fpz) {
 		if (fpz == null) {
 			removeProperty(FOCAL_POINT_ZOOM_KEY);
@@ -131,6 +137,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(CROP_X_KEY);
 	}
 
+	@Override
 	default ImageVariant setCropStartX(Integer cropX) {
 		if (cropX == null) {
 			removeProperty(CROP_X_KEY);
@@ -145,6 +152,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(CROP_Y_KEY);
 	}
 
+	@Override
 	default ImageVariant setCropStartY(Integer cropY) {
 		if (cropY == null) {
 			removeProperty(CROP_Y_KEY);
@@ -159,6 +167,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return CropMode.get(property(CROP_MODE_KEY));
 	}
 
+	@Override
 	default ImageVariant setCropMode(CropMode crop) {
 		if (crop == null) {
 			removeProperty(CROP_MODE_KEY);
@@ -173,6 +182,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return ResizeMode.get(property(RESIZE_MODE_KEY));
 	}
 
+	@Override
 	default ImageVariant setResizeMode(ResizeMode resize) {
 		if (resize == null) {
 			removeProperty(RESIZE_MODE_KEY);

@@ -6,7 +6,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,6 +22,7 @@ import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
@@ -59,6 +62,12 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
+			if (retrievalParams.retrieveOriginal()) {
+				variants = Stream.of(
+						Stream.of(CommonTx.get().binaryDao().transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						variants.stream()
+					).flatMap(Function.identity()).collect(Collectors.toList());
+			}
 			ImageVariantsResponse response = new ImageVariantsResponse(variants);
 			ac.send(response, OK);
 		});
@@ -71,6 +80,12 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
+			if (retrievalParams.retrieveOriginal()) {
+				variants = Stream.of(
+						Stream.of(CommonTx.get().binaryDao().transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						variants.stream()
+					).flatMap(Function.identity()).collect(Collectors.toList());
+			}
 			ImageVariantsResponse response = new ImageVariantsResponse(variants);
 			ac.send(response, OK);
 		});
@@ -82,6 +97,12 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
+			if (retrievalParams.retrieveOriginal()) {
+				variants = Stream.of(
+						Stream.of(CommonTx.get().binaryDao().transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						variants.stream()
+					).flatMap(Function.identity()).collect(Collectors.toList());
+			}
 			ImageVariantsResponse response = new ImageVariantsResponse(variants);
 			ac.send(response, OK);
 		});
