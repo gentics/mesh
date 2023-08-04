@@ -53,11 +53,16 @@ public class ImageVariantImpl extends MeshVertexImpl implements ImageVariant {
 
 	@Override
 	public Result<? extends BinaryGraphField> findFields() {
-		return getVariantBinary().findFields();
+		return getBinary().findFields();
 	}
 
 	@Override
 	public Binary getBinary() {
 		return in(HAS_VARIANTS).nextExplicit(BinaryImpl.class);
+	}
+
+	@Override
+	public Object getBinaryDataId() {
+		return getId();
 	}
 }

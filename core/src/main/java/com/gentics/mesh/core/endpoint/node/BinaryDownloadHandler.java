@@ -5,9 +5,15 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.HibBinaryDataElement;
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -21,12 +27,8 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
-import io.vertx.ext.web.RoutingContext;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.Objects;
-import java.util.function.Predicate;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Handler for binary or s3binary download requests.
@@ -77,7 +79,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
 
-			Predicate<HibBinaryDataElement> notAccepted = binary -> binary.getCheckStatus() != BinaryCheckStatus.ACCEPTED
+			Predicate<HibAntivirableBinaryElement> notAccepted = binary -> binary.getCheckStatus() != BinaryCheckStatus.ACCEPTED
 				&& !Objects.equals(binary.getCheckSecret(), rc.queryParams().get("secret"));
 
 			if ((fieldSchema instanceof BinaryFieldSchema)) {

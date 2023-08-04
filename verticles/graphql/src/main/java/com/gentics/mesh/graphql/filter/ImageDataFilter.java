@@ -11,6 +11,7 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 
@@ -35,7 +36,7 @@ public abstract class ImageDataFilter<T extends HibImageDataElement> extends Mai
 		filters.add(new MappedFilter<>(owner, "height", "Filters by height", NumberFilter.filter(),
 				content -> content == null ? null : new BigDecimal(content.getImageHeight())));
 		filters.add(new MappedFilter<>(owner, "checkStatus", "Filters by virus check status", EnumFilter.filter(BinaryCheckStatus.class),
-				content -> content == null ? null : content.getCheckStatus()));
+				content -> (content != null && content instanceof HibAntivirableBinaryElement) ? ((HibAntivirableBinaryElement) content).getCheckStatus() : null));
 		return filters;
 	}
 
