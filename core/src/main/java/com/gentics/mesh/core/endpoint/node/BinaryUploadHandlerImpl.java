@@ -8,6 +8,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
@@ -44,6 +54,7 @@ import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -55,14 +66,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @see BinaryUploadHandler
@@ -138,6 +141,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 	 * @param attributes
 	 *            Additional form data attributes
 	 */
+	@Override
 	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");

@@ -63,7 +63,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private NodeCrudHandler crudHandler;
 
-	private BinaryUploadHandlerImpl binaryUploadHandler;
+	private BinaryUploadHandler binaryUploadHandler;
 
 	private BinaryTransformHandler binaryTransformHandler;
 
@@ -73,14 +73,17 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 
 	private S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler;
 
+	private BinaryVariantsHandler binaryVariantsHandler;
+
 	public NodeEndpoint() {
 		super("nodes", null, null, null, null, null);
 	}
 
 	@Inject
-	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandlerImpl binaryUploadHandler,
+	public NodeEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NodeCrudHandler crudHandler, BinaryUploadHandler binaryUploadHandler,
 		BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, S3BinaryUploadHandlerImpl s3binaryUploadHandler,
-						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+						S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, BinaryVariantsHandler binaryVariantsHandler, 
+						LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		super("nodes", chain, boot, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 		this.binaryUploadHandler = binaryUploadHandler;
@@ -88,6 +91,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		this.binaryDownloadHandler = binaryDownloadHandler;
 		this.s3binaryUploadHandler = s3binaryUploadHandler;
 		this.s3BinaryMetadataExtractionHandler = s3BinaryMetadataExtractionHandler;
+		this.binaryVariantsHandler = binaryVariantsHandler;
 	}
 
 	@Override
@@ -219,7 +223,6 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
-
 			binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
 		});
 
@@ -270,7 +273,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldGet.description(
 			"Get the list of image manipulation variants of the binary, possessed by a field with the given name.");
 		fieldGet.blockingHandler(rc -> {
-			// TODO
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleListBinaryFieldVariants(wrap(rc), uuid, fieldName);
 		}, false);
 
 		InternalEndpointRoute fieldDelete = createRoute();
@@ -286,7 +291,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldDelete.description(
 			"Delete unused image manipulation variants of the binary, referenced by a field with the given name.");
 		fieldDelete.blockingHandler(rc -> {
-			// TODO
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleDeleteBinaryFieldVariants(wrap(rc), uuid, fieldName);
 		}, false);
 
 		InternalEndpointRoute fieldPut = createRoute();
@@ -302,7 +309,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldPut.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
 		fieldPut.description("Add new image variants to the binary, referenced by a field with the given name.");
 		fieldPut.blockingHandler(rc -> {
-			// TODO
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleAddBinaryFieldVariants(wrap(rc), uuid, fieldName);
 		});
 
 		InternalEndpointRoute fieldPost = createRoute();
@@ -319,7 +328,9 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldPost.description("Remove image variants from the binary, referenced by a field with the given name. Depending on the `deleteOther` flag, "
 				+ "the provided variands are either removed, or the only ones to be left in the binary.");
 		fieldPost.blockingHandler(rc -> {
-			// TODO
+			String uuid = rc.request().getParam("nodeUuid");
+			String fieldName = rc.request().getParam("fieldName");
+			binaryVariantsHandler.handleDeleteBinaryFieldVariants(wrap(rc), uuid, fieldName);
 		});
 	}
 
