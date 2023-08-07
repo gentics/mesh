@@ -279,7 +279,7 @@ public class FormService {
 				return Single.just(nodeResponse);
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", uuid);
-				return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
 			}
 		});
 	}
@@ -304,13 +304,13 @@ public class FormService {
 			if (isFormNode(nodeResponse)) {
 				if (published && !FormOnlineStatusService.isOnline(nodeResponse)) {
 					String message = String.format("Form with uuid \"%s\" is not online.", uuid);
-					return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
+					return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
 				} else {
 					return Single.just(nodeResponse);
 				}
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", uuid);
-				return Single.error(new FormsError(HttpResponseStatus.NOT_FOUND.code(), message));
+				return Single.error(new FormsError(message, HttpResponseStatus.NOT_FOUND.code()));
 			}
 		});
 	}
@@ -402,19 +402,19 @@ public class FormService {
 
 						JsonObject clientResponse = new JsonObject();
 						if (graphQlResponse.getData() == null) {
-							return Single.error(new FormsError(500, "Found no data in graphql response"));
+							return Single.error(new FormsError("Found no data in graphql response", 500));
 						}
 
 						if (!graphQlResponse.getData().containsKey("node")) {
-							return Single.error(new FormsError(500, "Found no 'node' in graphql response"));
+							return Single.error(new FormsError("Found no 'node' in graphql response", 500));
 						}
 						JsonObject node = graphQlResponse.getData().getJsonObject("node");
 						if (!node.containsKey("children")) {
-							return Single.error(new FormsError(500, "Found no 'node.children' in graphql response"));
+							return Single.error(new FormsError("Found no 'node.children' in graphql response", 500));
 						}
 						JsonObject children = node.getJsonObject("children");
 						if (!children.containsKey("elements")) {
-							return Single.error(new FormsError(500, "Found no 'node.children.elements' in graphql response"));
+							return Single.error(new FormsError("Found no 'node.children.elements' in graphql response", 500));
 						}
 						JsonArray forms = children.getJsonArray("elements");
 						pagingService.addPagingInfoToResponse(clientResponse, children);
@@ -450,7 +450,7 @@ public class FormService {
 
 		if (error.isPresent()) {
 			return Single.error(
-				new FormsError(HttpResponseStatus.BAD_REQUEST.code(), error.get().getMessage()));
+				new FormsError(error.get().getMessage(), HttpResponseStatus.BAD_REQUEST.code()));
 		}
 
 		ensureFormType(formData);
