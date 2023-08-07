@@ -28,14 +28,6 @@ public class LoadFormDataBinaryHandler extends AbstractFormsHandler {
 	public Completable handle(PluginContext context) {
 		User user = context.user();
 
-		if (user == null) {
-			context.response()
-				.setStatusCode(HttpResponseStatus.FORBIDDEN.code())
-				.end();
-
-			return Completable.complete();
-		}
-
 		String projectName = context.project().getString("name");
 		String formUuid = context.pathParam("formUuid");
 		String formDataUuid = context.pathParam("formDataUuid");
