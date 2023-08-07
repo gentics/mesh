@@ -29,7 +29,6 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import dagger.Lazy;
-import io.reactivex.Single;
 
 /**
  * @See {@link BinaryDaoWrapper}
@@ -68,13 +67,10 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 
 	@Override
 	public void deletePersistingVariant(HibBinary binary, HibImageVariant variant) {
-		binaryStorage.delete(variant.getUuid()).andThen(Single.defer(() -> {
-			return database.asyncTx(() -> {ImageVariant imageVariant = toGraph(variant);
-				toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
-				imageVariant.remove();
-				return Single.just(0);
-			});
-		})).blockingGet();
+		String variantUuid = variant.getUuid();
+		ImageVariant imageVariant = toGraph(variant);
+		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
+		imageVariant.remove();binaryStorage.delete(variantUuid).blockingGet();
 	}
 
 	@Override

@@ -35,6 +35,8 @@ import com.google.common.base.Objects;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Persistence-aware extension to {@link BinaryDao}
@@ -43,6 +45,8 @@ import io.vertx.core.buffer.Buffer;
  *
  */
 public interface PersistingBinaryDao extends BinaryDao {
+
+	static final Logger log = LoggerFactory.getLogger(PersistingBinaryDao.class);
 
 	Base64.Encoder BASE64 = Base64.getEncoder();
 
@@ -142,7 +146,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 			Result<? extends HibImageVariant> oldVariants = getVariants(binary, ac);
 			List<ImageVariantRequest> finalRequests = new ArrayList<>(requests);
 			requests = oldVariants.stream()
-					.filter(oldVariant -> finalRequests.stream().anyMatch(request -> doesVariantMatchRequest(oldVariant, request)))
+					.filter(oldVariant -> finalRequests.stream().noneMatch(request -> doesVariantMatchRequest(oldVariant, request)))
 					.map(oldVariant -> transformToRestSync(oldVariant, ac, 0).toRequest())
 					.collect(Collectors.toList());
 		}
@@ -221,8 +225,20 @@ public interface PersistingBinaryDao extends BinaryDao {
 	}
 
 	@Override
-	default void deleteVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnAbsent) {
-		
+	default void deleteVariant(HibBinary binary, ImageVariantRequest request, InternalActionContext ac, boolean throwOnAbsent) {
+		Optional<? extends HibImageVariant> maybeToDelete = getVariants(binary, ac).stream().filter(variant -> doesVariantMatchRequest(variant, request)).findAny();
+		HibImageVariant toDelete;
+		if (throwOnAbsent) {
+			// TODO own error
+			toDelete = maybeToDelete.orElseThrow(() -> error(BAD_REQUEST, "No image variant found for binary #" + binary.getUuid() + " / " + request.getCacheKey()));
+		} else {
+			toDelete = maybeToDelete.orElse(null);
+		}
+		if (null != toDelete) {
+			deletePersistingVariant(binary, toDelete);
+		} else {
+			log.warn("No image variant found for binary #" + binary.getUuid() + " / " + request.getCacheKey());
+		}
 	}
 
 	/**

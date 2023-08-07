@@ -201,13 +201,16 @@ public class ImageVariantResponse implements RestModel {
 	 * @return
 	 */
 	public ImageVariantRequest toRequest() {
-		return (ImageVariantRequest) new ImageVariantRequest()
+		ImageVariantRequest request = new ImageVariantRequest()
 				.setWidth(getWidth())
 				.setHeight(getHeight())
 				.setCropMode(getCropMode())
 				.setFocalPoint(getFocalPoint())
 				.setFocalPointZoom(getFocalZoom())
-				.setResizeMode(getResizeMode())
-				.setRect(getRect().getStartX(), getRect().getStartY(), getRect().getHeight(), getRect().getWidth());
+				.setResizeMode(getResizeMode());
+		if (getRect() != null) {
+			request.setRect(getRect().getStartX(), getRect().getStartY(), getRect().getHeight(), getRect().getWidth());
+		}
+		return request;
 	}
 }

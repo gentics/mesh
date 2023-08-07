@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -12,6 +13,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -57,7 +60,7 @@ public class BinaryVariantsHandler extends AbstractHandler {
 
 	public void handleDeleteBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binary -> {
-			ImageManipulationRequest request = ac.fromJson(ImageManipulationRequest.class);
+			ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : new ImageManipulationRequest().setVariants(Collections.emptyList()).setDeleteOther(true);
 			Result<? extends HibImageVariant> result = binaryDao.deleteVariants(binary, request.getVariants(), ac, request.isDeleteOther());
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
