@@ -25,8 +25,12 @@ link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 == 2.1.0 (TBD)
 
 icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
+
 icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+
 icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
+icon:plus[] Image manipulation: Adds support for WebP images.
 
 [[v2.0.2]]
 == 2.0.2 (26.07.2023)
@@ -43,18 +47,18 @@ icon:check[] Clustering: Due to an incorrect check, it was possible that migrati
 [[v2.0.0]]
 == 2.0.0 (29.06.2023)
 
-icon:plus[] Core: A support of database level filtering/sorting has been added to the low level Java API. 
+icon:plus[] Core: A support of database level filtering/sorting has been added to the low level Java API.
 
-icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
-is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
+icon:plus[] GraphQL: A support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter`
+is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism).
 Please note that not all the currently existing filters are supported by the DB.
 
 icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
 
 icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for `referencedBy` nodes.
 
-icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
-`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered). 
+icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced),
+`ON_DEMAND` (GraphQL parameter `nativeFilter` is considered).
 
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)
@@ -86,7 +90,7 @@ icon:check[] GraphQL: Performance of queries that return large amounts of nodes 
 [[v1.10.5]]
 == 1.10.5 (19.04.2023)
 
-icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
 
 CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
@@ -628,7 +632,7 @@ icon:check[] Core: Fixed a bug which caused a `NullPointerException` when loadin
 CAUTION: Java 10: This version of Gentics Mesh will only be executable using Java 10 or newer JVM versions.
 		The Java APIs for `mesh-api`, `mesh-rest-model`, `mesh-rest-client` and `mesh-test-common` are still be usable with Java 8.
     Plugins need to be upgraded to Java 10 in order to be compatible with this version.
-		
+
 icon:plus[] Internal: The maven package structure for internal code has been changed.
 
 icon:plus[] Internal: The internal code has been cleaned up.
@@ -807,13 +811,13 @@ More information can be found in the link:{{< relref "references.asciidoc" >}}#_
 
 icon:plus[] Java Rest Client: The client configuration has been enhanced. It is now possible to specify a client certificate and key to be used by the REST client.
 
-The following methods have been added to the config builder for `MeshRestClientConfig`:  
+The following methods have been added to the config builder for `MeshRestClientConfig`:
 
 Methods to set the client key which will be used during SSL handshake:
 
   * `MeshRestClientConfig.Builder#setClientKey(String path)`
-  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)` 
-  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)` 
+  * `MeshRestClientConfig.Builder#setClientKey(InputStream ins)`
+  * `MeshRestClientConfig.Builder#setClientKey(byte[] data)`
 
 Methods to set the client certificate which will be used during SSL handshake:
 
