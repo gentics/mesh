@@ -27,6 +27,8 @@ include::content/docs/variables.adoc-include[]
 
 icon:check[] Core: All named instances have been presented an own cache.
 
+icon check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
+
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)
 
