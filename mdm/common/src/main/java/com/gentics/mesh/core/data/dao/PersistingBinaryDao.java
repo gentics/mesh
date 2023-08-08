@@ -117,8 +117,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 	@Override
 	default Result<? extends HibImageVariant> createVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac, boolean deleteOther) {
 		if (!isImage(binary)) {
-			// TODO own error
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+			throw error(BAD_REQUEST, "image_error_not_an_image");
 		}
 		Result<? extends HibImageVariant> oldVariants = getVariants(binary, ac);
 		Map<ImageVariantRequest, Optional<HibImageVariant>> requestExistence = requests.stream()
@@ -141,8 +140,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 	@Override
 	default Result<? extends HibImageVariant> deleteVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac, boolean deleteOther) {
 		if (!isImage(binary)) {
-			// TODO own error
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+			throw error(BAD_REQUEST, "image_error_not_an_image");
 		}
 		if (deleteOther) {
 			Result<? extends HibImageVariant> oldVariants = getVariants(binary, ac);

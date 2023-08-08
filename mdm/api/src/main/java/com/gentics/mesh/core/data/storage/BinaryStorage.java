@@ -64,7 +64,8 @@ public interface BinaryStorage {
 	 * Move the temporary uploaded binary into place.
 	 * 
 	 * @param uuid
-	 * @param temporaryId
+	 * @param path pathOrTemporaryId
+	 * @param isTempId is path argument containing a temporary ID?
 	 * @return
 	 */
 	Completable moveInPlace(String uuid, String path, boolean isTempId);
