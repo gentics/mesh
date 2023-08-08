@@ -18,6 +18,7 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBinaryDataElement;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.google.common.base.Objects;
 
 import io.reactivex.Flowable;
@@ -100,7 +102,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 	}
 
 	@Override
-	default Flowable<Buffer> getStream(HibBinary binary) {
+	default Flowable<Buffer> getStream(HibBinaryDataElement binary) {
 		BinaryStorage storage = Tx.get().data().binaryStorage();
 		return storage.read(binary.getUuid());
 	}
@@ -176,51 +178,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 	@Override
 	default HibImageVariant createVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnExisting) {
 		return createPersistedVariant(binary, variant, entity -> {
-			if (variant.getRect() != null) {
-				entity.setCropStartX(variant.getRect().getStartX());
-				entity.setCropStartY(variant.getRect().getStartY());
-				entity.setWidth(variant.getRect().getWidth());
-				entity.setHeight(variant.getRect().getHeight());
-			} else {
-				entity.setCropStartX(null);
-				entity.setCropStartY(null);			
-				if (variant.getWidth() != null) {
-					if ("auto".equals(variant.getWidth())) {
-						entity.setAuto(true);
-						entity.setHeight(Integer.parseInt(variant.getHeight()));
-						Point originalSize = binary.getImageSize();
-						float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
-						entity.setWidth((int) ((float) entity.getHeight() * ratio));
-					} else {
-						entity.setWidth(Integer.parseInt(variant.getWidth()));
-					}
-				} else {
-					entity.setWidth(null);
-				}
-				if (variant.getHeight() != null) {
-					if ("auto".equals(variant.getHeight())) {
-						entity.setAuto(true);
-						entity.setWidth(Integer.parseInt(variant.getWidth()));
-						Point originalSize = binary.getImageSize();
-						float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
-						entity.setHeight((int) ((float) entity.getWidth() * ratio));
-					} else {
-						entity.setHeight(Integer.parseInt(variant.getHeight()));
-					}
-				} else {
-					entity.setHeight(null);
-				}
-			}
-			if (variant.getFocalPoint() != null) {
-				entity.setFocalPointX(variant.getFocalPoint().getX());
-				entity.setFocalPointY(variant.getFocalPoint().getY());
-			} else {
-				entity.setFocalPointX(null);
-				entity.setFocalPointY(null);
-			}
-			entity.setCropMode(variant.getCropMode());
-			entity.setFocalPointZoom(variant.getFocalPointZoom());
-			entity.setResizeMode(variant.getResizeMode());
+			entity.fillFromManipulation(binary, variant);
 		});
 	}
 
@@ -248,7 +206,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 	 * @param request
 	 * @return
 	 */
-	default boolean doesVariantMatchRequest(HibImageVariant variant, ImageVariantRequest request) {
+	default boolean doesVariantMatchRequest(HibImageVariant variant, ImageManipulation request) {
 		if (!Objects.equal(variant.getFocalPointZoom(), request.getFocalPointZoom())) {
 			return false;
 		}
@@ -258,7 +216,9 @@ public interface PersistingBinaryDao extends BinaryDao {
 		if (!Objects.equal(variant.getResizeMode(), request.getResizeMode())) {
 			return false;
 		}
-		if (!Objects.equal(variant.getFocalPoint(), request.getFocalPoint())) {
+		if (!Objects.equal(variant.hasFocalPoint(), request.hasFocalPoint())) {
+			return false;
+		} else if (variant.hasFocalPoint() && request.hasFocalPoint() && !Objects.equal(variant.getFocalPoint(), request.getFocalPoint())) {
 			return false;
 		}
 		if (request.getRect() != null && !Objects.equal(variant.getCropRect(), request.getRect())) {

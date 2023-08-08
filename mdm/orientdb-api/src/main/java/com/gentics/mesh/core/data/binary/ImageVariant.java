@@ -3,8 +3,10 @@ package com.gentics.mesh.core.data.binary;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
 /**
@@ -30,6 +32,56 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 	String AUTO_KEY = "auto";
 
 	@Override
+	default ImageVariant fillFromManipulation(HibBinary binary, ImageManipulation variant) {
+		if (variant.getRect() != null) {
+			setCropStartX(variant.getRect().getStartX());
+			setCropStartY(variant.getRect().getStartY());
+			setWidth(variant.getRect().getWidth());
+			setHeight(variant.getRect().getHeight());
+		} else {
+			setCropStartX(null);
+			setCropStartY(null);			
+			if (variant.getWidth() != null) {
+				if ("auto".equals(variant.getWidth())) {
+					setAuto(true);
+					setHeight(Integer.parseInt(variant.getHeight()));
+					Point originalSize = binary.getImageSize();
+					float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
+					setWidth((int) ((float) getHeight() * ratio));
+				} else {
+					setWidth(Integer.parseInt(variant.getWidth()));
+				}
+			} else {
+				setWidth(null);
+			}
+			if (variant.getHeight() != null) {
+				if ("auto".equals(variant.getHeight())) {
+					setAuto(true);
+					setWidth(Integer.parseInt(variant.getWidth()));
+					Point originalSize = binary.getImageSize();
+					float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
+					setHeight((int) ((float) getWidth() * ratio));
+				} else {
+					setHeight(Integer.parseInt(variant.getHeight()));
+				}
+			} else {
+				setHeight(null);
+			}
+		}
+		if (variant.getFocalPoint() != null) {
+			setFocalPointX(variant.getFocalPoint().getX());
+			setFocalPointY(variant.getFocalPoint().getY());
+		} else {
+			setFocalPointX(null);
+			setFocalPointY(null);
+		}
+		setCropMode(variant.getCropMode());
+		setFocalPointZoom(variant.getFocalPointZoom());
+		setResizeMode(variant.getResizeMode());
+		return this;
+	}
+
+	@Override
 	default long getSize() {
 		Long size = property(VARIANT_FILESIZE_PROPERTY_KEY);
 		return size == null ? 0 : size;
@@ -47,8 +99,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return auto != null ? auto : false;
 	}
 
-	@Override
-	default ImageVariant setAuto(boolean auto) {
+	private ImageVariant setAuto(boolean auto) {
 		if (auto) {
 			property(AUTO_KEY, auto);
 		} else {
@@ -62,8 +113,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(WIDTH_KEY);
 	}
 
-	@Override
-	default ImageVariant setWidth(Integer width) {
+	private ImageVariant setWidth(Integer width) {
 		if (width == null) {
 			removeProperty(WIDTH_KEY);
 		} else {
@@ -77,8 +127,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(HEIGHT_KEY);
 	}
 
-	@Override
-	default ImageVariant setHeight(Integer height) {
+	private ImageVariant setHeight(Integer height) {
 		if (height == null) {
 			removeProperty(HEIGHT_KEY);
 		} else {
@@ -92,8 +141,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(FOCAL_POINT_X_KEY);
 	}
 
-	@Override
-	default ImageVariant setFocalPointX(Float fpx) {
+	private ImageVariant setFocalPointX(Float fpx) {
 		if (fpx == null) {
 			removeProperty(FOCAL_POINT_X_KEY);
 		} else {
@@ -107,8 +155,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(FOCAL_POINT_Y_KEY);
 	}
 
-	@Override
-	default ImageVariant setFocalPointY(Float fpy) {
+	private ImageVariant setFocalPointY(Float fpy) {
 		if (fpy == null) {
 			removeProperty(FOCAL_POINT_Y_KEY);
 		} else {
@@ -122,8 +169,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(FOCAL_POINT_ZOOM_KEY);
 	}
 
-	@Override
-	default ImageVariant setFocalPointZoom(Float fpz) {
+	private ImageVariant setFocalPointZoom(Float fpz) {
 		if (fpz == null) {
 			removeProperty(FOCAL_POINT_ZOOM_KEY);
 		} else {
@@ -137,8 +183,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(CROP_X_KEY);
 	}
 
-	@Override
-	default ImageVariant setCropStartX(Integer cropX) {
+	private ImageVariant setCropStartX(Integer cropX) {
 		if (cropX == null) {
 			removeProperty(CROP_X_KEY);
 		} else {
@@ -152,8 +197,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return property(CROP_Y_KEY);
 	}
 
-	@Override
-	default ImageVariant setCropStartY(Integer cropY) {
+	private ImageVariant setCropStartY(Integer cropY) {
 		if (cropY == null) {
 			removeProperty(CROP_Y_KEY);
 		} else {
@@ -167,8 +211,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return CropMode.get(property(CROP_MODE_KEY));
 	}
 
-	@Override
-	default ImageVariant setCropMode(CropMode crop) {
+	private ImageVariant setCropMode(CropMode crop) {
 		if (crop == null) {
 			removeProperty(CROP_MODE_KEY);
 		} else {
@@ -182,8 +225,7 @@ public interface ImageVariant extends MeshVertex, HibImageVariant {
 		return ResizeMode.get(property(RESIZE_MODE_KEY));
 	}
 
-	@Override
-	default ImageVariant setResizeMode(ResizeMode resize) {
+	private ImageVariant setResizeMode(ResizeMode resize) {
 		if (resize == null) {
 			removeProperty(RESIZE_MODE_KEY);
 		} else {

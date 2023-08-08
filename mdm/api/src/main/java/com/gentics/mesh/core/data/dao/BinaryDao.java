@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibBinaryDataElement;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
@@ -30,7 +31,7 @@ public interface BinaryDao extends Dao<HibBinary>, DaoTransformable<HibImageVari
 	 *
 	 * @return
 	 */
-	Flowable<Buffer> getStream(HibBinary binary);
+	Flowable<Buffer> getStream(HibBinaryDataElement binary);
 
 	/**
 	 * Return the data as base 64 encoded string in the same thread blockingly.

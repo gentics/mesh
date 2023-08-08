@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.image.ImageManipulator;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 
@@ -40,6 +41,18 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 	@Override
 	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulation parameters) {
+		ImageManipulationMode mode = options.getMode();
+
+		switch (mode) {
+		case OFF:
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		case MANUAL:
+			return Single.just(new CacheFileInfo(sha512sum, false));
+		case MANUAL_HYBRID:
+		case ON_DEMAND:
+			break;
+		}
+
 		FileSystem fs = vertx.fileSystem();
 
 		String[] parts = sha512sum.split("(?<=\\G.{8})");

@@ -28,7 +28,7 @@ public class ImageVariantRequest implements ImageManipulation, RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The image resize mode.")
-	private ResizeMode resizeMode;
+	private ResizeMode resizeMode = ResizeMode.SMART;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.")

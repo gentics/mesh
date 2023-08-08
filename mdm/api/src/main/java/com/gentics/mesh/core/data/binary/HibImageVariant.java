@@ -10,6 +10,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
@@ -106,41 +107,12 @@ public interface HibImageVariant extends HibImageDataElement {
 	boolean isAuto();
 
 	/**
-	 * Generate unique variant key.
-	 *
+	 * Check if a variant has the focal point.
+	 * 
 	 * @return
 	 */
-	default String getKey() {
-		StringBuilder builder = new StringBuilder();
-
-		if (getCropStartX() != null) {
-			builder.append("cx" + getCropStartX());
-		}
-		if (getCropStartY() != null) {
-			builder.append("cy" + getCropStartY());
-		}
-		if (getCropMode() != null) {
-			builder.append("crop" + getCropMode());
-		}
-		if (getResizeMode() != null) {
-			builder.append("resize" + getResizeMode());
-		}
-		if (getWidth() != null) {
-			builder.append("rw" + getWidth());
-		}
-		if (getHeight() != null) {
-			builder.append("rh" + getHeight());
-		}
-		if (getFocalPointX() != null) {
-			builder.append("fpx" + getFocalPointX().toString());
-		}
-		if (getFocalPointY() != null) {
-			builder.append("fpy" + getFocalPointY().toString());
-		}
-		if (getFocalPointZoom() != null) {
-			builder.append("fpz" + getFocalPointZoom());
-		}
-		return builder.toString();
+	default boolean hasFocalPoint() {
+		return getFocalPoint() != null;
 	}
 
 	/**
@@ -196,23 +168,12 @@ public interface HibImageVariant extends HibImageDataElement {
 		return getHeight();
 	}
 
-	HibImageVariant setResizeMode(ResizeMode resize);
-
-	HibImageVariant setCropMode(CropMode crop);
-
-	HibImageVariant setCropStartY(Integer cropY);
-
-	HibImageVariant setCropStartX(Integer cropX);
-
-	HibImageVariant setFocalPointZoom(Float fpz);
-
-	HibImageVariant setFocalPointY(Float fpy);
-
-	HibImageVariant setFocalPointX(Float fpx);
-
-	HibImageVariant setHeight(Integer height);
-
-	HibImageVariant setWidth(Integer width);
-
-	HibImageVariant setAuto(boolean auto);
+	/**
+	 * Fill variant params from the requested image manipulation.
+	 * 
+	 * @param binary
+	 * @param variant
+	 * @return
+	 */
+	HibImageVariant fillFromManipulation(HibBinary binary, ImageManipulation variant);
 }

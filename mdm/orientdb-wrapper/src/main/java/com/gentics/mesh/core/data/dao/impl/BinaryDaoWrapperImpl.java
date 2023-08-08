@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
@@ -70,7 +72,8 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 		String variantUuid = variant.getUuid();
 		ImageVariant imageVariant = toGraph(variant);
 		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
-		imageVariant.remove();binaryStorage.delete(variantUuid).blockingGet();
+		imageVariant.remove();
+		binaryStorage.delete(variantUuid).blockingGet();
 	}
 
 	@Override
@@ -94,48 +97,52 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public ImageVariant getVariant(HibBinary binary, ImageManipulation variant, InternalActionContext ac) {
+	public ImageVariant getVariant(HibBinary binary, ImageManipulation request, InternalActionContext ac) {
+		//return getVariants(binary, ac).stream().filter(variant -> doesVariantMatchRequest(variant, request)).findAny().orElse(null);
+
 		VertexTraversal<?, ?, ?> edge = toGraph(binary).out(GraphRelationships.HAS_VARIANTS);
-		if (variant.getRect() != null) {
-			edge = edge.has(ImageVariant.CROP_X_KEY, variant.getRect().getStartX()).has(ImageVariant.CROP_Y_KEY, variant.getRect().getStartY()).has(ImageVariant.WIDTH_KEY, variant.getRect().getWidth()).has(ImageVariant.HEIGHT_KEY, variant.getRect().getHeight());
+		if (request.getRect() != null) {
+			edge = edge.has(ImageVariant.CROP_X_KEY, request.getRect().getStartX()).has(ImageVariant.CROP_Y_KEY, request.getRect().getStartY()).has(ImageVariant.WIDTH_KEY, request.getRect().getWidth()).has(ImageVariant.HEIGHT_KEY, request.getRect().getHeight());
 		} else {
 			edge = edge.hasNot(ImageVariant.CROP_X_KEY).hasNot(ImageVariant.CROP_Y_KEY);
-			if (variant.getWidth() != null) {
-				if ("auto".equals(variant.getWidth())) {
-					edge = edge.has(ImageVariant.AUTO_KEY, true);
-				} else {
-					edge = edge.has(ImageVariant.WIDTH_KEY, Integer.parseInt(variant.getWidth()));
-				}
-			} else {
+			if (StringUtils.isBlank(request.getWidth())) {
+				//edge = edge.hasNot(ImageVariant.AUTO_KEY);
 				edge = edge.hasNot(ImageVariant.WIDTH_KEY);
-			}
-			if (variant.getHeight() != null) {
-				if ("auto".equals(variant.getHeight())) {
+			} else {
+				if ("auto".equals(request.getWidth())) {
 					edge = edge.has(ImageVariant.AUTO_KEY, true);
 				} else {
-					edge = edge.has(ImageVariant.HEIGHT_KEY, Integer.parseInt(variant.getHeight()));
+					edge = edge.has(ImageVariant.WIDTH_KEY, Integer.parseInt(request.getWidth()));
 				}
-			} else {
+			}
+			if (StringUtils.isBlank(request.getHeight())) {
+				//edge = edge.hasNot(ImageVariant.AUTO_KEY);
 				edge = edge.hasNot(ImageVariant.HEIGHT_KEY);
+			} else {
+				if ("auto".equals(request.getHeight())) {
+					edge = edge.has(ImageVariant.AUTO_KEY, true);
+				} else {
+					edge = edge.has(ImageVariant.HEIGHT_KEY, Integer.parseInt(request.getHeight()));
+				}
 			}
 		}
-		if (variant.getCropMode() != null) {
-			edge = edge.has(ImageVariant.CROP_MODE_KEY, variant.getCropMode().getKey());
+		if (request.getCropMode() != null) {
+			edge = edge.has(ImageVariant.CROP_MODE_KEY, request.getCropMode().getKey());
 		} else {
 			edge = edge.hasNot(ImageVariant.CROP_MODE_KEY);
 		}
-		if (variant.getFocalPoint() != null) {
-			edge = edge.has(ImageVariant.FOCAL_POINT_X_KEY, variant.getFocalPoint().getX()).has(ImageVariant.FOCAL_POINT_Y_KEY, variant.getFocalPoint().getY());
+		if (request.hasFocalPoint()) {
+			edge = edge.has(ImageVariant.FOCAL_POINT_X_KEY, request.getFocalPoint().getX()).has(ImageVariant.FOCAL_POINT_Y_KEY, request.getFocalPoint().getY());
 		} else {
 			edge = edge.hasNot(ImageVariant.FOCAL_POINT_X_KEY).hasNot(ImageVariant.FOCAL_POINT_Y_KEY);
 		}
-		if (variant.getFocalPointZoom() != null) {
-			edge = edge.has(ImageVariant.FOCAL_POINT_ZOOM_KEY, variant.getFocalPointZoom());
+		if (request.getFocalPointZoom() != null) {
+			edge = edge.has(ImageVariant.FOCAL_POINT_ZOOM_KEY, request.getFocalPointZoom());
 		} else {
 			edge = edge.hasNot(ImageVariant.FOCAL_POINT_ZOOM_KEY);
 		}
-		if (variant.getResizeMode() != null) {
-			edge = edge.has(ImageVariant.RESIZE_MODE_KEY, variant.getResizeMode().getKey());
+		if (request.getResizeMode() != null) {
+			edge = edge.has(ImageVariant.RESIZE_MODE_KEY, request.getResizeMode().getKey());
 		} else {
 			edge = edge.hasNot(ImageVariant.RESIZE_MODE_KEY);
 		}

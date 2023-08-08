@@ -35,9 +35,11 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
@@ -67,10 +69,13 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private WorkerExecutor workerPool;
 
+	private BinaryStorage binaryStorage;
+
 	private S3BinaryStorage s3BinaryStorage;
 
-	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
+	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BinaryStorage binaryStorage, S3BinaryStorage s3BinaryStorage) {
 		this(vertx, options.getImageOptions(), s3BinaryStorage);
+		this.binaryStorage = binaryStorage;
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, S3BinaryStorage s3BinaryStorage) {
@@ -313,11 +318,16 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	@Override
 	public Single<String> handleResize(HibBinary binary, ImageManipulation parameters) {
+		ImageManipulationMode mode = options.getMode();
+
+		if (ImageManipulationMode.OFF == mode) {
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		}
 		// Validate the resize parameters
 		parameters.validateManipulation();
 		parameters.validateLimits(options);
 
-		Supplier<InputStream> stream = binary.openBlockingStream();
+		String binaryUuid = binary.getUuid();
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters).flatMap(cacheFileInfo -> {
 			if (cacheFileInfo.exists) {
@@ -329,6 +339,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				// regular worker
 				// pool
 				return workerPool.<String>rxExecuteBlocking(bh -> {
+					Supplier<InputStream> stream = () -> binaryStorage.openBlockingStream(binaryUuid);
+
 					try (InputStream is = stream.get(); ImageInputStream ins = ImageIO.createImageInputStream(is)) {
 						BufferedImage image;
 						ImageReader reader = getImageReader(ins);
