@@ -4,6 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.plugin.PluginContext;
+import com.gentics.mesh.plugin.common.util.HandlerUtil;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
 import io.reactivex.Completable;
@@ -23,10 +24,9 @@ public class LoadFormDataHandler extends AbstractFormsHandler {
 		String formUuid = context.pathParam("formUuid");
 		String formDataUuid = context.pathParam("formDataUuid");
 
-		return formDataService.load(projectName, formUuid, formDataUuid).doOnEvent((response, t) -> {
-			if (response != null) {
-				context.response().end(response.toJson());
-			}
-		}).ignoreElement();
+
+		return formDataService.load(projectName, formUuid, formDataUuid)
+			.doOnEvent(HandlerUtil.jsonHandler(context, false))
+			.ignoreElement();
 	}
 }
