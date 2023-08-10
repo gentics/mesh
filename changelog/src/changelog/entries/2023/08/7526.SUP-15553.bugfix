@@ -1,0 +1,1 @@
+Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
