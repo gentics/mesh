@@ -39,6 +39,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -89,7 +90,9 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	@Override
 	public Tag findByName(String name) {
-		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
+		return (Tag) mesh().tagNameCache().get(name, tagName -> {
+			return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, tagName).back().nextOrDefaultExplicit(TagImpl.class, null);
+		});
 	}
 
 	@Override

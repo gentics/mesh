@@ -26,6 +26,7 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -66,9 +67,11 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 
 	@Override
 	public HibTagFamily findByName(HibProject project, String name) {
-		TagFamilyRoot root = toGraph(project).getTagFamilyRoot();
-		TagFamily tagFamily = root.findByName(name);
-		return tagFamily;
+		return CommonTx.get().data().mesh().tagFamilyNameCache().get(getCacheKey(project, name), key -> {
+			TagFamilyRoot root = toGraph(project).getTagFamilyRoot();
+			TagFamily tagFamily = root.findByName(name);
+			return tagFamily;
+		});
 	}
 
 	@Override

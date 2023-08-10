@@ -173,10 +173,14 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 		if (options.getMonitoringOptions().isEnabled()) {
 			AtomicBoolean wasCached = new AtomicBoolean(true);
-			V value = cache.get(key, k -> {
+			V value = cache.getIfPresent(key);
+			if (value == null) {
 				wasCached.set(false);
-				return mappingFunction.apply(k);
-			});
+				value = mappingFunction.apply(key);
+				if (value != null) {
+					cache.put(key, value);
+				}
+			}
 			if (wasCached.get()) {
 				hitCounter.increment();
 			} else {

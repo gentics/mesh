@@ -16,30 +16,15 @@ import com.gentics.mesh.core.rest.MeshEvent;
  * @see ProjectNameCache
  */
 @Singleton
-public class ProjectNameCacheImpl extends AbstractMeshCache<String, HibProject> implements ProjectNameCache {
-
-	public static final long CACHE_SIZE = 100;
-
-	private static final MeshEvent EVENTS[] = {
-		CLUSTER_NODE_JOINED,
-		CLUSTER_DATABASE_CHANGE_STATUS,
-		PROJECT_DELETED, 
-		PROJECT_UPDATED };
+public class ProjectNameCacheImpl extends AbstractNameCache<HibProject> implements ProjectNameCache {
 
 	@Inject
 	public ProjectNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
-		super(createCache(factory), registry, CACHE_SIZE);
+		super("projectname", factory, registry, new MeshEvent[] {
+			CLUSTER_NODE_JOINED,
+			CLUSTER_DATABASE_CHANGE_STATUS,
+			PROJECT_DELETED, 
+			PROJECT_UPDATED 
+		});
 	}
-
-	private static EventAwareCache<String, HibProject> createCache(EventAwareCacheFactory factory) {
-		return factory.<String, HibProject>builder()
-			.events(EVENTS)
-			.action((event, cache) -> {
-				cache.invalidate();
-			})
-			.name("projectname")
-			.maxSize(CACHE_SIZE)
-			.build();
-	}
-
 }
