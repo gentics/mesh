@@ -211,20 +211,37 @@ public class FormDataService {
 	}
 
 	/**
+	 * Load the form data by uuid. Only unpublished form data nodes will be returned, otherwise a 404 response is returned.
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param formUuid
+	 *            form uuid
+	 * @param formDataUuid
+	 *            form data uuid
+	 * @return single noderesponse
+	 */
+	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
+		return load(projectName, formUuid, formDataUuid, false);
+	}
+	/**
 	 * Load the form data by uuid
 	 *
 	 * @param projectName project name
 	 * @param formUuid form uuid
 	 * @param formDataUuid form data uuid
+	 * @param allowPublished
+	 *            Allow returning published form data. If not set to true, only unpublished form data nodes can be loaded, and for published nodes a 404 response is returned.
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid) {
-		return adminClient.findNodeByUuid(projectName, formDataUuid).toSingle().flatMap(formDataNode -> {
-			if (FormUtil.isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid())) {
+	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid, boolean allowPublished) {
+		return adminClient.findNodeByUuid(projectName, formDataUuid).toSingle()
+			.flatMap(formDataNode -> {
+				if (FormUtil.isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
 				return Single.just(formDataNode);
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
-				return Single.error(new FormsError(404, message));
+					return Single.error(new FormsError(message, 404));
 			}
 		});
 	}
@@ -797,7 +814,7 @@ public class FormDataService {
 							return Single.just(clientResponse.put("elements", new JsonObject(form.elementMap())));
 						}
 
-						return Single.error(new FormsError(500, "Unexpected NULL search response."));
+						return Single.error(new FormsError("Unexpected NULL search response.", 500));
 					});
 			});
 	}
@@ -834,7 +851,8 @@ public class FormDataService {
 	 * @param binaryFieldName the name of the binary field in the form data node
 	 */
 	public Single<MeshResponse<MeshBinaryResponse>> loadBinary(String projectName, String formUuid, String formDataUuid, String binaryFieldName) {
-		return load(projectName, formUuid, formDataUuid).flatMap(formDataNode -> {
+		// Binaries can be loaded for already published form data as well, so call the variant of load() which allows loading published form data.
+		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
 			return userClient.downloadBinaryField(projectName, formDataUuid, formDataNode.getLanguage(), binaryFieldName).getResponse();
 		});
 	}
