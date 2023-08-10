@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -35,6 +36,11 @@ import io.reactivex.Single;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class TxTest extends AbstractMeshTest {
+	@Before
+	public void setup() {
+		// disable the username cache. Otherwise some tests would fail, because they would load the users from the cache
+		mesh().userNameCache().disable();
+	}
 
 	@Test
 	public void testTransaction() throws InterruptedException {
