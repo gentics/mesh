@@ -6,6 +6,17 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.3]]
+== 2.0.3 (10.08.2023)
+
+icon:check[] Java filter for Node reference content field has been fixed. Native filtering pagination has been improved. Some other minor stability fixed applied.
+
+icon:check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
+
+
+icon:check[] Core: All named instances have been presented an own cache.
+
+
 [[v2.0.2]]
 == 2.0.2 (26.07.2023)
 
