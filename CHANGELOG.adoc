@@ -30,6 +30,8 @@ mvn -pl changelog install
 will then create the new inclusion file changelog-2.adoc-include
 ////
 
+include::content/docs/changelog-2.adoc-include[]
+
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)
 
