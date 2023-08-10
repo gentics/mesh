@@ -73,7 +73,7 @@ public class FormOnlineStatusService {
 					// if the form node was returned without fields, that means that the language does not exist
 					if (node.getFields() == null) {
 						String message = String.format("Form with uuid \"%s\" does not have language \"%s\".", uuid, language);
-						return Single.error(new FormsError(404, message));
+						return Single.error(new FormsError(message, 404));
 					} else {
 						return Single.just(new FormOnlineResponse().setOnline(isOnline(node)));
 					}

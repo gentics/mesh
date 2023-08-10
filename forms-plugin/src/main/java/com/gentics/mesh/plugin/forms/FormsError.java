@@ -1,29 +1,22 @@
 package com.gentics.mesh.plugin.forms;
 
+import com.gentics.mesh.plugin.common.MeshPluginException;
+
 /**
  * An error encapsulating a HTTP response code and an error message.
  */
-public class FormsError extends Exception {
+public class FormsError extends MeshPluginException {
 
-	private static final long serialVersionUID = -3500581809500168742L;
-
-	/**
-	 * The desired HTTP status code for the response.
-	 */
-	private final int statusCode;
+	private static final long serialVersionUID = -2794130275517608113L;
 
 	/**
 	 * Default constructor.
 	 *
-	 * @param statusCode
-	 *            The HTTP status code for the response
-	 * @param message
-	 *            The error message
+	 * @param message The error message
+	 * @param statusCode The HTTP status code for the response
 	 */
-	public FormsError(int statusCode, String message) {
-		super(message);
-
-		this.statusCode = statusCode;
+	public FormsError(String message, int statusCode) {
+		super(message, statusCode);
 	}
 
 	/**
@@ -36,16 +29,5 @@ public class FormsError extends Exception {
 	 */
 	public FormsError(Throwable cause) {
 		super(cause);
-
-		this.statusCode = 500;
-	}
-
-	/**
-	 * Get the HTTP status code for the response.
-	 *
-	 * @return The HTTP status code for the response
-	 */
-	public int getStatusCode() {
-		return statusCode;
 	}
 }

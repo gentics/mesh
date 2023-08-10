@@ -23,6 +23,7 @@
 	</properties>
 
 	<modules>
+		<module>changelog</module>
 		<module>common</module>
 		<module>test-common</module>
 		<module>mustread-plugin</module>
