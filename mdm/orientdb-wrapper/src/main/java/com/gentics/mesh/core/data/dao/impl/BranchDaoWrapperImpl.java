@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -75,8 +76,10 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 
 	@Override
 	public HibBranch findByName(HibProject project, String name) {
-		Project graphProject = toGraph(project);
-		return graphProject.getBranchRoot().findByName(name);
+		return CommonTx.get().data().mesh().branchCache().get(getCacheKey(project, name), key -> {
+			Project graphProject = toGraph(project);
+			return graphProject.getBranchRoot().findByName(name);
+		});
 	}
 
 	@Override

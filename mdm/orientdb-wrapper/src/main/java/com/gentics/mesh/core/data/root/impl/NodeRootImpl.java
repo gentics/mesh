@@ -78,7 +78,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type), pagingInfo);
+		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type, pagingInfo), pagingInfo);
 	}
 
 	@Override
@@ -136,7 +136,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		));
 	}
 
-	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type) {
+	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type, PagingParameters pagingInfo) {
 		HibUser user = ac.getUser();
 		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 
@@ -144,7 +144,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 		UserDao userDao = Tx.get().userDao();
 
-		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid()).filter(item -> {
+		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid(), pagingInfo, Optional.ofNullable(type), Optional.empty()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
 			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
 		}).filter(item -> {

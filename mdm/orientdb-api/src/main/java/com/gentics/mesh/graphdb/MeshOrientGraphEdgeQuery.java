@@ -116,12 +116,12 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 				}
 			}
 		}
-		if (skip > 0 && skip < Integer.MAX_VALUE) {
+		if (maybeCustomFilter.isPresent() && skip > 0 && skip < Integer.MAX_VALUE) {
 			text.append(SKIP);
 			text.append(skip);
 		}
 
-		if (limit > 0 && limit < Integer.MAX_VALUE) {
+		if (maybeCustomFilter.isPresent() && limit > 0 && limit < Integer.MAX_VALUE) {
 			text.append(LIMIT);
 			text.append(limit);
 		}

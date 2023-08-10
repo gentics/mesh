@@ -21,8 +21,12 @@ include::content/docs/variables.adoc-include[]
 Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
 link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
-[[v2.1.0]]
-== 2.1.0 (TBD)
+Running
+mvn -pl changelog install
+will then create the new inclusion file changelog-2.adoc-include
+////
+
+include::content/docs/changelog-2.adoc-include[]
 
 icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
 

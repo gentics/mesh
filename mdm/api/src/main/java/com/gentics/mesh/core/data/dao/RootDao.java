@@ -278,4 +278,15 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	default boolean contains(R root, L element) {
 		return findByUuid(root, element.getUuid()) != null;
 	}
+
+	/**
+	 * Construct the cache key for a root entity. 
+	 * 
+	 * @param root
+	 * @param nameOrUuid
+	 * @return
+	 */
+	default String getCacheKey(R root, String nameOrUuid) {
+		return root.getId() + "-" + nameOrUuid;
+	}
 }

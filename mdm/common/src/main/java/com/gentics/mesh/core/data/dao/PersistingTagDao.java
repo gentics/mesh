@@ -76,7 +76,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 	 */
 	default HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm,
 			boolean errorIfNotFound) {
-		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm, null, Optional.empty())
+		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm, ac.getPagingParameters(), Optional.empty())
 				.map(tagFamily -> loadObjectByUuid(tagFamily, ac, uuid, perm, false))
 				.filter(Objects::nonNull)
 				.map(tag -> checkPerms(tag, uuid, ac, perm, errorIfNotFound))

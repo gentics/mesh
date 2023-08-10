@@ -16,11 +16,16 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+
+import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class AnonymousAccessEndpointTest extends AbstractMeshTest {
@@ -61,7 +66,10 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 				r.setEditor(null);
 				r.setCreator(null);
 			});
+			MeshElementEventModel event = anonymousUser.onDeleted();
 			((CommonTx) tx).userDao().deletePersisted(anonymousUser);
+			// we need to publish the USER_DELETED event, so that the cache gets cleared
+			mesh().vertx().eventBus().publish(MeshEvent.USER_DELETED.getAddress(), new JsonObject(JsonUtil.toJson(event)));
 			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");

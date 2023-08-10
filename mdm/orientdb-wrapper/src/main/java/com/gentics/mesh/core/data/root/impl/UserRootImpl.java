@@ -61,7 +61,9 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public User findByUsername(String username) {
-		return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(UserImpl.class, null);
+		return (User) mesh().userNameCache().get(username, name -> {
+			return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, name).nextOrDefaultExplicit(UserImpl.class, null);
+		});
 	}
 
 	@Override
