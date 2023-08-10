@@ -6,14 +6,11 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.forms.FormsError;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
 import io.reactivex.Single;
 
@@ -27,7 +24,7 @@ public class SchemaService {
 
 	/**
 	 * Get the schema name for the form uuid
-	 * 
+	 *
 	 * @param formUuid
 	 *            form uuid
 	 * @return schema name
@@ -43,7 +40,7 @@ public class SchemaService {
 
 	/**
 	 * Load a schema by name. If the schema does not exist, the behaviour depends on failIfNotFound
-	 * 
+	 *
 	 * @param name
 	 *            schema name
 	 * @param failIfNotFound
@@ -62,7 +59,7 @@ public class SchemaService {
 			return single.flatMap(schema -> {
 				if (!schema.isPresent()) {
 					String message = String.format("Schema with name \"%s\" could not be found.", name);
-					return Single.error(new FormsError(404, message));
+					return Single.error(new FormsError(message, 404));
 				} else {
 					return Single.just(schema);
 				}
