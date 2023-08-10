@@ -6,11 +6,21 @@ import java.util.List;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.CacheRegistry;
+import com.gentics.mesh.cache.GroupNameCache;
+import com.gentics.mesh.cache.GroupNameCacheImpl;
 import com.gentics.mesh.cache.OrientdbCacheRegistry;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectBranchNameCacheImpl;
 import com.gentics.mesh.cache.ProjectNameCache;
 import com.gentics.mesh.cache.ProjectNameCacheImpl;
+import com.gentics.mesh.cache.RoleNameCache;
+import com.gentics.mesh.cache.RoleNameCacheImpl;
+import com.gentics.mesh.cache.TagFamilyNameCache;
+import com.gentics.mesh.cache.TagFamilyNameCacheImpl;
+import com.gentics.mesh.cache.TagNameCache;
+import com.gentics.mesh.cache.TagNameCacheImpl;
+import com.gentics.mesh.cache.UserNameCache;
+import com.gentics.mesh.cache.UserNameCacheImpl;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
@@ -276,6 +286,21 @@ public abstract class OrientDBModule {
 	abstract AdminHandler adminHandler(OrientDBAdminHandler e);
 
 	// Caches
+
+	@Binds
+	abstract UserNameCache bindUserNameCache(UserNameCacheImpl e);
+
+	@Binds
+	abstract TagFamilyNameCache bindTagFamilyNameCache(TagFamilyNameCacheImpl e);
+
+	@Binds
+	abstract TagNameCache bindTagNameCache(TagNameCacheImpl e);
+
+	@Binds
+	abstract RoleNameCache bindRoleNameCache(RoleNameCacheImpl e);
+
+	@Binds
+	abstract GroupNameCache bindGroupNameCache(GroupNameCacheImpl e);
 
 	@Binds
 	abstract ProjectBranchNameCache bindBranchNameCache(ProjectBranchNameCacheImpl e);

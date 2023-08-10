@@ -422,7 +422,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @return
 	 */
 	default Optional<HibBranch> findBranchOpt(HibProject project, String branchNameOrUuid) {
-		return Optional.ofNullable(CommonTx.get().data().mesh().branchCache().get(project.getId() + "-" + branchNameOrUuid, key -> {
+		return Optional.ofNullable(CommonTx.get().data().mesh().branchCache().get(getCacheKey(project, branchNameOrUuid), key -> {
 			HibBranch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {

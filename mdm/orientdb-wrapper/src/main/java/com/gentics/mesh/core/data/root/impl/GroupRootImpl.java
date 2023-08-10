@@ -92,4 +92,11 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	public Group create() {
 		return getGraph().addFramedVertex(GroupImpl.class);
 	}
+
+	@Override
+	public Group findByName(String name) {
+		return (Group) mesh().groupNameCache().get(name, groupName -> {
+			return super.findByName(groupName);
+		});
+	}
 }

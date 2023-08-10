@@ -5,9 +5,14 @@ import javax.inject.Provider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.annotation.Getter;
+import com.gentics.mesh.cache.GroupNameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.ProjectBranchNameCache;
 import com.gentics.mesh.cache.ProjectNameCache;
+import com.gentics.mesh.cache.RoleNameCache;
+import com.gentics.mesh.cache.TagFamilyNameCache;
+import com.gentics.mesh.cache.TagNameCache;
+import com.gentics.mesh.cache.UserNameCache;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.generic.UserProperties;
@@ -90,6 +95,21 @@ public interface BaseMeshComponent {
 
 	@Getter
 	ProjectNameCache projectNameCache();
+
+	@Getter
+	UserNameCache userNameCache();
+
+	@Getter
+	TagFamilyNameCache tagFamilyNameCache();
+
+	@Getter
+	TagNameCache tagNameCache();
+
+	@Getter
+	RoleNameCache roleNameCache();
+
+	@Getter
+	GroupNameCache groupNameCache();
 
 	@Getter
 	PageTransformer pageTransformer();

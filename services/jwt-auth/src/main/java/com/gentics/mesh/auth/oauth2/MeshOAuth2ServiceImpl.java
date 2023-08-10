@@ -472,13 +472,15 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								}
 
 								// Add the role if it is missing
-								if (role != null && !groupDao.hasRole(group, role)) {
-									requiresWrite();
-									log.debug("Adding role {} to group {} via mapping request.", role.getName(), group.getName());
-									groupDao.addRole(group, role);
-									group.setLastEditedTimestamp();
-									group.setEditor(admin);
-									batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
+								if (role != null) {
+									if (!groupDao.hasRole(group, role)) {
+										requiresWrite();
+										log.debug("Adding role {} to group {} via mapping request.", role.getName(), group.getName());
+										groupDao.addRole(group, role);
+										group.setLastEditedTimestamp();
+										group.setEditor(admin);
+										batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
+									}
 								} else {
 									log.warn("Unable to map role to group. The role with name {} / uuid {} could not be found", roleName, roleUuid);
 								}
@@ -522,10 +524,12 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 								}
 
 								// Add the role if it is missing
-								if (group != null && !groupDao.hasRole(group, role)) {
-									requiresWrite();
-									groupDao.addRole(group, role);
-									batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
+								if (group != null) {
+									if (!groupDao.hasRole(group, role)) {
+										requiresWrite();
+										groupDao.addRole(group, role);
+										batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
+									}
 								} else {
 									log.error("Could not find group in role->group mapping of role {}", role.getName());
 								}
