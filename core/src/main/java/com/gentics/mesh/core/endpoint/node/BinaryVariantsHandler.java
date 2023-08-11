@@ -61,7 +61,9 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	public void handleDeleteBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binary -> {
 			ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : new ImageManipulationRequest().setVariants(Collections.emptyList()).setDeleteOther(true);
-			Result<? extends HibImageVariant> result = binaryDao.deleteVariants(binary, request.getVariants(), ac, request.isDeleteOther());
+			Result<? extends HibImageVariant> result = request.isDeleteOther()
+					? binaryDao.retainVariants(binary, request.getVariants(), ac)
+					: binaryDao.deleteVariants(binary, request.getVariants(), ac);
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());

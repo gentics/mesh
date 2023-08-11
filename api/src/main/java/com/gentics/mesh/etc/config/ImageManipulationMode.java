@@ -19,11 +19,6 @@ public enum ImageManipulationMode {
 	MANUAL(2),
 
 	/**
-	 * The image is transformed on an explicit transformation demand, storing the result in the binary storage. The image cache is used to pick the already transformed variant from.
-	 */
-	MANUAL_HYBRID(3),
-
-	/**
 	 * No image manipulation allowed.
 	 */
 	OFF(0);

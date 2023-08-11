@@ -177,7 +177,6 @@ public class BinaryFieldResponseHandler {
 				.subscribe(ignore -> {}, rc::fail);
 			break;
 		case MANUAL:
-		case MANUAL_HYBRID:
 			HibBinary binary = binaryField.getBinary();
 			HibImageVariant variant = binaryDao.getVariant(binary, imageParams, new InternalRoutingActionContextImpl(rc));
 			if (variant == null) {

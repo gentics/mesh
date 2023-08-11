@@ -302,7 +302,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldPut.addUriParameter("fieldName", "Name of the image field.", "image");
 		fieldPut.addQueryParameters(VersioningParametersImpl.class);
 		fieldPut.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
-		fieldPut.method(PUT);
+		fieldPut.method(POST);
 		fieldPut.produces(APPLICATION_JSON);
 		fieldPut.exampleRequest(nodeExamples.createImageManipulationRequest());
 		fieldPut.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
@@ -312,25 +312,6 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryVariantsHandler.handleAddBinaryFieldVariants(wrap(rc), uuid, fieldName);
-		});
-
-		InternalEndpointRoute fieldPost = createRoute();
-		fieldPost.path("/:nodeUuid/binary/:fieldName/variants");
-		fieldPost.addUriParameter("nodeUuid", "Uuid of the node.", NODE_DELOREAN_UUID);
-		fieldPost.addUriParameter("fieldName", "Name of the image field.", "image");
-		fieldPost.addQueryParameters(VersioningParametersImpl.class);
-		fieldPost.addQueryParameters(ImageManipulationRetrievalParametersImpl.class);
-		fieldPost.method(POST);
-		fieldPost.produces(APPLICATION_JSON);
-		fieldPost.exampleRequest(nodeExamples.createImageManipulationRequest());
-		fieldPost.exampleResponse(OK, nodeExamples.createImageVariantsResponse(), "An updated list of variants is returned");
-		fieldPost.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node or the field could not be found.");
-		fieldPost.description("Remove image variants from the binary, referenced by a field with the given name. Depending on the `deleteOther` flag, "
-				+ "the provided variands are either removed, or the only ones to be left in the binary.");
-		fieldPost.blockingHandler(rc -> {
-			String uuid = rc.request().getParam("nodeUuid");
-			String fieldName = rc.request().getParam("fieldName");
-			binaryVariantsHandler.handleDeleteBinaryFieldVariants(wrap(rc), uuid, fieldName);
 		});
 	}
 

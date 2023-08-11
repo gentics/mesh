@@ -47,8 +47,6 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		case OFF:
 			throw error(BAD_REQUEST, "image_error_reading_failed");
 		case MANUAL:
-			return Single.just(new CacheFileInfo(sha512sum, false));
-		case MANUAL_HYBRID:
 		case ON_DEMAND:
 			break;
 		}

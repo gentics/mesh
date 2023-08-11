@@ -29,7 +29,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
-import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.image.ImageManipulation;
@@ -115,7 +114,7 @@ public interface PersistingBinaryDao extends BinaryDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	default Result<? extends HibImageVariant> createVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac, boolean deleteOther) {
+	default Result<? extends HibImageVariant> createVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac, boolean deleteOtherVariants) {
 		if (!isImage(binary)) {
 			throw error(BAD_REQUEST, "image_error_not_an_image");
 		}
@@ -129,27 +128,34 @@ public interface PersistingBinaryDao extends BinaryDao {
 				//.map(newVariant -> transformToRestSync(newVariant, ac, level))
 				.collect(Collectors.toList());
 		
-		if (deleteOther) {
+		if (deleteOtherVariants) {
 			List<ImageVariantRequest> toDelete = ((List<HibImageVariant>) ListUtils.subtract(oldVariants.list(), newVariants)).stream().map(deletable -> transformToRestSync(deletable, ac, 0).toRequest()).collect(Collectors.toList());
-			return deleteVariants(binary, toDelete, ac, false);
+			return deleteVariants(binary, toDelete, ac);
 		} else {
 			return new TraversalResult<>(ListUtils.sum(newVariants, oldVariants.list()));
 		}
 	}
 
 	@Override
-	default Result<? extends HibImageVariant> deleteVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac, boolean deleteOther) {
+	default Result<? extends HibImageVariant> deleteVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac) {
 		if (!isImage(binary)) {
 			throw error(BAD_REQUEST, "image_error_not_an_image");
 		}
-		if (deleteOther) {
-			Result<? extends HibImageVariant> oldVariants = getVariants(binary, ac);
-			List<ImageVariantRequest> finalRequests = new ArrayList<>(requests);
-			requests = oldVariants.stream()
-					.filter(oldVariant -> finalRequests.stream().noneMatch(request -> doesVariantMatchRequest(oldVariant, request)))
-					.map(oldVariant -> transformToRestSync(oldVariant, ac, 0).toRequest())
-					.collect(Collectors.toList());
+		requests.stream().forEach(request -> deleteVariant(binary, request, ac, false));
+		return getVariants(binary, ac);
+	}
+
+	@Override
+	default Result<? extends HibImageVariant> retainVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac) {
+		if (!isImage(binary)) {
+			throw error(BAD_REQUEST, "image_error_not_an_image");
 		}
+		Result<? extends HibImageVariant> oldVariants = getVariants(binary, ac);
+		List<ImageVariantRequest> finalRequests = new ArrayList<>(requests);
+		requests = oldVariants.stream()
+				.filter(oldVariant -> finalRequests.stream().noneMatch(request -> doesVariantMatchRequest(oldVariant, request)))
+				.map(oldVariant -> transformToRestSync(oldVariant, ac, 0).toRequest())
+				.collect(Collectors.toList());
 		requests.stream().forEach(request -> deleteVariant(binary, request, ac, false));
 		return getVariants(binary, ac);
 	}
