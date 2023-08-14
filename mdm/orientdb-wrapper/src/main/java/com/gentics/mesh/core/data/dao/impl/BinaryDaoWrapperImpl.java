@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.File;
 import java.util.function.Consumer;
@@ -19,6 +21,7 @@ import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.binary.impl.ImageVariantImpl;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
@@ -68,7 +71,15 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	}
 
 	@Override
-	public void deletePersistingVariant(HibBinary binary, HibImageVariant variant) {
+	public Result<? extends HibImageVariant> getVariants(HibBinaryField binaryField, InternalActionContext ac) {
+		return toGraph(binaryField).getImageVariants();
+	}
+
+	@Override
+	public void deletePersistedVariant(HibBinary binary, HibImageVariant variant) {
+		if (variant.findFields().hasNext()) {
+			throw error(BAD_REQUEST, "image_variant_in_use");
+		}
 		String variantUuid = variant.getUuid();
 		ImageVariant imageVariant = toGraph(variant);
 		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
@@ -94,6 +105,20 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 
 		variant.setSize(filesize);
 		return variant;
+	}
+
+	@Override
+	public void attachVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnExisting) {
+		BinaryGraphField graphField = toGraph(binaryField);
+		ImageVariant variant = toGraph(getVariant(binaryField.getBinary(), request, ac));
+		graphField.attachImageVariant(variant, throwOnExisting);
+	}
+
+	@Override
+	public void detachVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnAbsent) {
+		BinaryGraphField graphField = toGraph(binaryField);
+		ImageVariant variant = toGraph(getVariant(binaryField.getBinary(), request, ac));
+		graphField.detachImageVariant(variant, throwOnAbsent);
 	}
 
 	@Override
@@ -147,5 +172,25 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 			edge = edge.hasNot(ImageVariant.RESIZE_MODE_KEY);
 		}
 		return edge.nextOrDefaultExplicit(ImageVariantImpl.class, null);
+	}
+
+	@Override
+	public HibImageVariant getVariant(HibBinaryField binaryField, ImageManipulation variant, InternalActionContext ac) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HibImageVariant createVariant(HibBinaryField binaryField, ImageVariantRequest variant,
+			InternalActionContext ac, boolean throwOnExisting) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deleteVariant(HibBinaryField binaryField, ImageVariantRequest variant, InternalActionContext ac,
+			boolean throwOnAbsent) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -15,7 +15,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
-import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -47,10 +47,10 @@ public class BinaryFieldResponseHandler {
 	private final Vertx rxVertx;
 	private final RangeRequestHandler rangeRequestHandler;
 	private final ImageManipulatorOptions options;
-	private final BinaryDao binaryDao;
+	private final PersistingBinaryDao binaryDao;
 
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions options, BinaryDao binaryDao) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions options, PersistingBinaryDao binaryDao) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
 		this.rxVertx = rxVertx;

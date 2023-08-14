@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node.field.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_VARIANTS;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.HashMap;
@@ -15,12 +16,18 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
+import com.gentics.mesh.core.data.binary.impl.ImageVariantImpl;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -141,4 +148,18 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		setProperty(PLAIN_TEXT_KEY, text);
 	}
 
+	@Override
+	public Result<? extends ImageVariant> getImageVariants()  {
+		return new TraversalResult<>(
+			getContainer()
+				.outE(HAS_FIELD_VARIANTS)
+				.has(GraphField.FIELD_KEY_PROPERTY_KEY, getFieldKey())
+				.inV()
+				.frameExplicit(ImageVariantImpl.class));
+	}
+
+	@Override
+	public NodeGraphFieldContainerImpl getContainer() {
+		return outV().nextExplicit(NodeGraphFieldContainerImpl.class);
+	}
 }

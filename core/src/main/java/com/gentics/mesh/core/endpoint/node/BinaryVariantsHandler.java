@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +31,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
@@ -59,11 +63,12 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	}
 
 	public void handleDeleteBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
-		wrapVariantsCall(ac, uuid, fieldName, binary -> {
+		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
+			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : new ImageManipulationRequest().setVariants(Collections.emptyList()).setDeleteOther(true);
 			Result<? extends HibImageVariant> result = request.isDeleteOther()
-					? binaryDao.retainVariants(binary, request.getVariants(), ac)
-					: binaryDao.deleteVariants(binary, request.getVariants(), ac);
+					? binaryDao.retainVariants(binaryField, request.getVariants(), ac)
+					: binaryDao.deleteVariants(binaryField, request.getVariants(), ac);
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
@@ -78,10 +83,11 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		});
 	}
 
-	public void handleAddBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
-		wrapVariantsCall(ac, uuid, fieldName, binary -> {
+	public void handleAddBinaryFieldVariants(InternalActionContext ac, String nodeUuid, String fieldName) {
+		wrapVariantsCall(ac, nodeUuid, fieldName, binaryField -> {
+			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = ac.fromJson(ImageManipulationRequest.class);
-			Result<? extends HibImageVariant> result = binaryDao.createVariants(binary, request.getVariants(), ac, request.isDeleteOther());
+			Result<? extends HibImageVariant> result = binaryDao.createVariants(binaryField, request.getVariants(), ac, request.isDeleteOther());
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
@@ -97,8 +103,10 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	}
 
 	public void handleListBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
-		wrapVariantsCall(ac, uuid, fieldName, binary -> {
-			Result<? extends HibImageVariant> result = binaryDao.getVariants(binary, ac);
+		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
+			
+			HibBinary binary = binaryField.getBinary();
+			Result<? extends HibImageVariant> result = binaryField.getImageVariants(); //binaryDao.getVariants(binary, ac);
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
@@ -113,10 +121,11 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		});
 	}
 
-	protected void wrapVariantsCall(InternalActionContext ac, String uuid, String fieldName, Consumer<HibBinary> consumer) {
+	protected void wrapVariantsCall(InternalActionContext ac, String nodeUuid, String fieldName, Consumer<HibBinaryField> consumer) {
 		db.tx(tx -> {
+			ContainerType version = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			HibProject project = tx.getProject(ac);
-			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, uuid, READ_PUBLISHED_PERM);
+			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, version == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			// if (language == null) {
 			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -138,7 +147,7 @@ public class BinaryVariantsHandler extends AbstractHandler {
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
-				consumer.accept(field.getBinary());
+				consumer.accept(field);
 			} else {
 				// TODO own error field_unsupported
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);

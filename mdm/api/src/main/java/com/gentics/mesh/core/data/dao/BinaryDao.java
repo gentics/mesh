@@ -106,29 +106,29 @@ public interface BinaryDao extends Dao<HibBinary>, DaoTransformable<HibImageVari
 	 * 
 	 * @return
 	 */
-	Result<? extends HibImageVariant> getVariants(HibBinary binary, InternalActionContext ac);
+	Result<? extends HibImageVariant> getVariants(HibBinaryField binaryField, InternalActionContext ac);
 
 	/**
 	 * Get the manipulation variants of this binary image representation. On any other binary data returns null.
 	 * 
 	 * @return
 	 */
-	HibImageVariant getVariant(HibBinary binary, ImageManipulation variant, InternalActionContext ac);
+	HibImageVariant getVariant(HibBinaryField binaryField, ImageManipulation variant, InternalActionContext ac);
 
 	/**
-	 * Create the image manipulation variant,
+	 * Create the image manipulation variant.
 	 * 
 	 * @param variant
-	 * @return created variant
+	 * @return created variants
 	 */
-	HibImageVariant createVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnExisting);
+	HibImageVariant createVariant(HibBinaryField binaryField, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnExisting);
 
 	/**
-	 * Delete the image manipulation variant,
+	 * Delete the image manipulation variant.
 	 * 
 	 * @param variant
 	 */
-	void deleteVariant(HibBinary binary, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnAbsent);
+	void deleteVariant(HibBinaryField binaryField, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnAbsent);
 
 	/**
 	 * Create the image manipulation variants, optionally deleting all other existing unused variants.
@@ -137,7 +137,7 @@ public interface BinaryDao extends Dao<HibBinary>, DaoTransformable<HibImageVari
 	 * @param deleteOtherVariants
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> createVariants(HibBinary binary, Collection<ImageVariantRequest> variants, InternalActionContext ac, boolean deleteOtherVariants);
+	Result<? extends HibImageVariant> createVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variants, InternalActionContext ac, boolean deleteOtherVariants);
 
 	/**
 	 * Delete the requested image manipulation variants.
@@ -145,7 +145,7 @@ public interface BinaryDao extends Dao<HibBinary>, DaoTransformable<HibImageVari
 	 * @param variant
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> deleteVariants(HibBinary binary, Collection<ImageVariantRequest> variant, InternalActionContext ac);
+	Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac);
 
 	/**
 	 * Retain the requested image manipulation variants, delete all other.
@@ -153,5 +153,5 @@ public interface BinaryDao extends Dao<HibBinary>, DaoTransformable<HibImageVari
 	 * @param variant
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> retainVariants(HibBinary binary, Collection<ImageVariantRequest> variant, InternalActionContext ac);
+	Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac);
 }
