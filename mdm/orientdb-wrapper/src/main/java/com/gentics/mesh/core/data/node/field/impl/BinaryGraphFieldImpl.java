@@ -151,7 +151,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	@Override
 	public Result<? extends ImageVariant> getImageVariants()  {
 		return new TraversalResult<>(
-			getContainer()
+			getParentContainer()
 				.outE(HAS_FIELD_VARIANTS)
 				.has(GraphField.FIELD_KEY_PROPERTY_KEY, getFieldKey())
 				.inV()
@@ -159,7 +159,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public NodeGraphFieldContainerImpl getContainer() {
+	public NodeGraphFieldContainerImpl getParentContainer() {
 		return outV().nextExplicit(NodeGraphFieldContainerImpl.class);
 	}
 }

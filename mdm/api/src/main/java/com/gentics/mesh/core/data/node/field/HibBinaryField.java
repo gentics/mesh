@@ -30,7 +30,7 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 	 * 
 	 * @return
 	 */
-	HibNodeFieldContainer getContainer();
+	HibNodeFieldContainer getParentContainer();
 
 	/**
 	 * Get the image variants, attached to this binary field.

@@ -192,7 +192,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	Binary getBinary();
 
 	@Override
-	NodeGraphFieldContainer getContainer();
+	NodeGraphFieldContainer getParentContainer();
 
 	@Override
 	Result<? extends ImageVariant> getImageVariants();
@@ -288,9 +288,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param variant
 	 */
 	default void attachImageVariant(ImageVariant variant, boolean throwOnExisting) {
-		NodeGraphFieldContainer container = getContainer();
+		NodeGraphFieldContainer container = getParentContainer();
 		if (container.findImageVariant(getFieldKey(), variant) == null) {
-			getContainer().attachImageVariant(getFieldKey(), variant);
+			getParentContainer().attachImageVariant(getFieldKey(), variant);
 		} else {
 			if (throwOnExisting) {
 				throw error(BAD_REQUEST, "Requested variant already exists"/*, getFieldKey()*/);
@@ -304,9 +304,9 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param variant
 	 */
 	default void detachImageVariant(ImageVariant variant, boolean throwOnAbsent) {
-		NodeGraphFieldContainer container = getContainer();
+		NodeGraphFieldContainer container = getParentContainer();
 		if (container.findImageVariant(getFieldKey(), variant) != null) {
-			getContainer().detachImageVariant(getFieldKey(), variant);
+			getParentContainer().detachImageVariant(getFieldKey(), variant);
 		} else {
 			if (throwOnAbsent) {
 				throw error(BAD_REQUEST, "No requested variant found"/*, getFieldKey()*/);

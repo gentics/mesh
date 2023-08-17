@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data;
 import com.gentics.mesh.core.data.binary.BinaryGraphFieldVariant;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.list.HibListField;
-import com.gentics.mesh.core.result.Result;
 
 /**
  * A graph field container (eg. a container for fields of a node) is used to hold i18n specific graph fields.
@@ -27,9 +26,28 @@ public interface GraphFieldContainer extends HibFieldContainer, BasicFieldContai
 	 */
 	void attachImageVariant(String key, HibImageVariant variant);
 
+	/**
+	 * Detach the variant from the container with the binary field of a given key.
+	 * 
+	 * @param key
+	 * @param variant
+	 */
 	void detachImageVariant(String key, HibImageVariant variant);
 
+	/**
+	 * Find a variant edge for the given image variant for the binary field of a given key.
+	 * 
+	 * @param key
+	 * @param variant
+	 * @return
+	 */
 	BinaryGraphFieldVariant findImageVariant(String key, HibImageVariant variant);
 
+	/**
+	 * Find all variant edges for the binary field of a given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	Iterable<? extends BinaryGraphFieldVariant> findImageVariants(String key);
 }

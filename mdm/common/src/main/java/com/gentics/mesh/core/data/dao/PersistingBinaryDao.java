@@ -85,6 +85,16 @@ public interface PersistingBinaryDao extends BinaryDao {
 	 */
 	Result<? extends HibImageVariant> getVariants(HibBinary binary, InternalActionContext ac);
 
+	/**
+	 * Find the existing binary variant.
+	 * 
+	 * @param binary
+	 * @param request
+	 * @param ac
+	 * @return
+	 */
+	HibImageVariant getVariant(HibBinary binary, ImageManipulation request, InternalActionContext ac);
+
 	@Override
 	default Result<? extends HibImageVariant> createVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToAdd, InternalActionContext ac, boolean deleteOtherVariants) {
 		HibBinary binary = binaryField.getBinary();
@@ -349,6 +359,4 @@ public interface PersistingBinaryDao extends BinaryDao {
 	static boolean isImage(HibBinary binary) {
 		return binary.getImageSize() != null;
 	}
-
-	HibImageVariant getVariant(HibBinary binary, ImageManipulation request, InternalActionContext ac);
 }
