@@ -192,6 +192,128 @@ When filled, the plugin will send an email to the entered address after the form
 | `mailtemplate` | string | Mail template for overriding `userMailTemplate` from the configuration                    | |
 | `mailsource` | string | Mail template for overriding `mailtemplate` property and `userMailTemplate` configuration | |
 
+If property `mailsource` is set to type `REPOSITORY_BROWSER`, it is possible for CMS editors to configure a special CMS page as template for the email body.
+Check [e-mail-template-pages](https://www.gentics.com/Content.Node/guides/feature_forms.html#e-mail-template-pages) on how to create these special pages in the CMS.
+
+Example configuration of the usermail element inside the Gentics CMS [form-editor.json](https://gentics.com/Content.Node/guides/feature_forms.html#configuration):
+
+```json
+        {
+            "type": "usermail",
+            "type_label_i18n_ui": {
+                "en": "User EMail Field",
+                "de": "Benutzer E-Mail Feld"
+            },
+            "description_i18n_ui": {
+                "en": "Field for user eMail. When filled, the user will get an eMail after filling out the form.",
+                "de": "Feld für Benutzer eMail. Wenn ausgefüllt, bekommt der Benutzer ein eMail nach dem Absenden des Formulares."
+            },
+            "label_property_ui": "label",
+            "is_container": false,
+            "properties": [
+                {
+                    "name": "label",
+                    "type": "STRING",
+                    "label_i18n_ui": {
+                        "en": "Label",
+                        "de": "Label"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Label for this input field.",
+                        "de": "Label für dieses Eingabefeld."
+                    }
+                },
+                {
+                    "name": "mandatory",
+                    "type": "BOOLEAN",
+                    "label_i18n_ui": {
+                        "en": "Mandatory",
+                        "de": "Verpflichtend"
+                    },
+                    "description_i18n_ui": {
+                        "en": "This input field is mandatory.",
+                        "de": "Dieses Eingabefeld ist verpflichtend."
+                    }
+                },
+                {
+                    "name": "placeholder",
+                    "type": "STRING",
+                    "label_i18n_ui": {
+                        "en": "Placeholder",
+                        "de": "Platzhalter"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Placeholder for this input field.",
+                        "de": "Platzhalter für dieses Eingabefeld."
+                    }
+                },
+                {
+                    "name": "maxCharCount",
+                    "type": "NUMBER",
+                    "label_i18n_ui": {
+                        "en": "Input Length",
+                        "de": "Eingabelänge"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Maximum number of allowed characters.",
+                        "de": "Anzahl der Zeichen, die eingegeben werden dürfen."
+                    }
+                },
+                {
+                    "name": "mailsubject",
+                    "type": "STRING",
+                    "label_i18n_ui": {
+                        "en": "Email Subject",
+                        "de": "E-Mail Betreff"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Subject of the Email, sent to the user.",
+                        "de": "Betreff des E-Mails, das an den Benutzer geschickt wird."
+                    }
+                },
+                {
+                    "name": "mailtemplate",
+                    "type": "SELECT",
+                    "label_i18n_ui": {
+                        "en": "Email Template",
+                        "de": "E-Mail Vorlage"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Template, which is used to display the Email body.",
+                        "de": "Vorlage, die zur Darstellung des E-Mail Inhalts verwendet wird."
+                    },
+                    "options": [
+                        {
+                            "key": "useremail",
+                            "value_i18n_ui": {
+                                "en": "Default",
+                                "de": "Standard"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "mailsource",
+                    "type": "REPOSITORY_BROWSER",
+                    "label_i18n_ui": {
+                        "en": "Email Template from Page",
+                        "de": "E-Mail Vorlage als Seite"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Template from Page, which is used to display the Email body.",
+                        "de": "Vorlage als Seite, die zur Darstellung des E-Mail Inhalts verwendet wird."
+                    },
+                    "options": {
+                        "allowedSelection": "page",
+                        "includeMlId": [21],
+                        "selectMultiple": false,
+                        "title": "modal.repository_browser_title_forms_email_template_single"
+                    }
+                }
+            ]
+        }
+```
+
 ## `adminmail`
 
 Element to specify to which admin mail addresses submission notifications should be sent. If such an element is present in the form, the forms `email` property will be ignored, and instead be taken from the selected values.
