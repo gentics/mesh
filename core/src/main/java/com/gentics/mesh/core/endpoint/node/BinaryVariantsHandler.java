@@ -62,6 +62,13 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		this.binaryDao = binaryDao;
 	}
 
+	/**
+	 * Handle deletion of the image variants for the node with given UUID.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param fieldName
+	 */
 	public void handleDeleteBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
 			HibBinary binary = binaryField.getBinary();
@@ -83,6 +90,13 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		});
 	}
 
+	/**
+	 * Handle creation of the image variants for the node with given UUID.
+	 * 
+	 * @param ac
+	 * @param nodeUuid
+	 * @param fieldName
+	 */
 	public void handleAddBinaryFieldVariants(InternalActionContext ac, String nodeUuid, String fieldName) {
 		wrapVariantsCall(ac, nodeUuid, fieldName, binaryField -> {
 			HibBinary binary = binaryField.getBinary();
@@ -102,9 +116,15 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		});
 	}
 
+	/**
+	 * Handle list of the image variants for the node with given UUID.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 * @param fieldName
+	 */
 	public void handleListBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
-			
 			HibBinary binary = binaryField.getBinary();
 			Result<? extends HibImageVariant> result = binaryField.getImageVariants(); //binaryDao.getVariants(binary, ac);
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
@@ -121,6 +141,14 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		});
 	}
 
+	/**
+	 * Pick all the variant manipulation parameters from the action context.
+	 * 
+	 * @param ac
+	 * @param nodeUuid
+	 * @param fieldName
+	 * @param consumer
+	 */
 	protected void wrapVariantsCall(InternalActionContext ac, String nodeUuid, String fieldName, Consumer<HibBinaryField> consumer) {
 		db.tx(tx -> {
 			ContainerType version = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -149,7 +177,6 @@ public class BinaryVariantsHandler extends AbstractHandler {
 				}
 				consumer.accept(field);
 			} else {
-				// TODO own error field_unsupported
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 		});

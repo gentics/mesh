@@ -57,6 +57,7 @@ import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -85,9 +86,12 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.role.RoleReference;
+import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -890,6 +894,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		unpublishedContainers.stream().forEach(c -> {
 			HibNodeFieldContainer newVersion = tx.contentDao().publish(node, ac, c.getLanguageTag(), branch, ac.getUser());
 			bac.add(contentDao.onPublish(newVersion, branchUuid));
+			createImageVariantsIfApplicable(c, ac);
 		});
 		assertPublishConsistency(node, ac, branch);
 
@@ -904,6 +909,29 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 		}
 		bac.process();
+	}
+
+	default void createImageVariantsIfApplicable(HibNodeFieldContainer fieldContainer, InternalActionContext ac) {
+		ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : null;
+		if (request != null) {
+			CommonTx tx = CommonTx.get();
+			PersistingBinaryDao binaryDao = tx.binaryDao();
+			fieldContainer.getSchemaContainerVersion().getSchema().getSegmentField();
+			String fieldName = fieldContainer.getSchemaContainerVersion().getSchema().getSegmentField();
+			FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
+				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
+			}
+			if ((fieldSchema instanceof BinaryFieldSchema)) {
+				HibBinaryField field = fieldContainer.getBinary(fieldName);
+				if (field == null) {
+					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+				}
+				binaryDao.createVariants(field, request.getVariants(), ac, request.isDeleteOther());
+			} else {
+				throw error(BAD_REQUEST, "error_segment_field_is_not_binary", fieldName);
+			}
+		}
 	}
 
 	@Override
