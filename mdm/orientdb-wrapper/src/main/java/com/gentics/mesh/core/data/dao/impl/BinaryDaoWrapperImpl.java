@@ -179,17 +179,4 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 		ImageVariant variant = getVariant(binaryField.getBinary(), request, ac);
 		return toGraph(binaryField).getParentContainer().findImageVariant(binaryField.getFieldKey(), variant).getVariant();
 	}
-
-	@Override
-	public HibImageVariant createVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnExisting) {
-		HibImageVariant variant = createVariant(binaryField.getBinary(), request, ac, throwOnExisting);
-		attachVariant(binaryField, request, ac, throwOnExisting);
-		return variant;
-	}
-
-	@Override
-	public void deleteVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnAbsent) {
-		detachVariant(binaryField, request, ac, throwOnAbsent);
-		deleteVariant(binaryField.getBinary(), request, ac, throwOnAbsent);
-	}
 }

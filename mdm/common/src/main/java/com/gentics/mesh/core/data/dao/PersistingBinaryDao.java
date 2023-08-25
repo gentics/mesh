@@ -111,16 +111,18 @@ public interface PersistingBinaryDao extends BinaryDao {
 	default Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToDelete, InternalActionContext ac) {
 		HibBinary binary = binaryField.getBinary();
 		Collection<ImageVariantRequest> variantsToDetach = matchVariants(binary, variantsToDelete, ac, false);
-		detachVariants(binaryField, variantsToDetach, ac, false);
-		return deleteVariants(binary, variantsToDetach, ac);
+		Result<? extends HibImageVariant> ret = detachVariants(binaryField, variantsToDetach, ac, false);
+		deleteVariants(binary, variantsToDetach, ac);
+		return ret;
 	}
 
 	@Override
 	default Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToRetain, InternalActionContext ac) {
 		HibBinary binary = binaryField.getBinary();
 		Collection<ImageVariantRequest> variantsToDetach = matchVariants(binary, variantsToRetain, ac, true);
-		detachVariants(binaryField, variantsToDetach, ac, false);
-		return retainVariants(binary, variantsToDetach, ac);
+		Result<? extends HibImageVariant> ret = detachVariants(binaryField, variantsToDetach, ac, false);
+		deleteVariants(binary, variantsToDetach, ac);
+		return ret;
 	}
 
 	default Collection<ImageVariantRequest> matchVariants(HibBinary binary, Collection<ImageVariantRequest> requests, InternalActionContext ac, boolean exclude) {
@@ -264,6 +266,19 @@ public interface PersistingBinaryDao extends BinaryDao {
 		}
 	}
 
+	@Override
+	default HibImageVariant createVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnExisting) {
+		HibImageVariant variant = createVariant(binaryField.getBinary(), request, ac, throwOnExisting);
+		attachVariant(binaryField, request, ac, throwOnExisting);
+		return variant;
+	}
+
+	@Override
+	default void deleteVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnAbsent) {
+		detachVariant(binaryField, request, ac, throwOnAbsent);
+		deleteVariant(binaryField.getBinary(), request, ac, throwOnAbsent);
+	}
+
 	default Result<? extends HibImageVariant> attachVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variants, InternalActionContext ac, boolean throwOnExisting) {
 		variants.stream().forEach(variant -> attachVariant(binaryField, variant, ac, throwOnExisting));
 		return binaryField.getImageVariants();
@@ -311,6 +326,8 @@ public interface PersistingBinaryDao extends BinaryDao {
 			} else if (!variant.isAuto()) {
 				return false;
 			}
+		} else if (!Objects.equal(variant.getWidth(), request.getWidth())) {
+			return false;
 		}
 		if (request.getHeight() != null && variant.getHeight() != null) {
 			if (!"auto".equals(request.getHeight())) {
@@ -320,6 +337,8 @@ public interface PersistingBinaryDao extends BinaryDao {
 			} else if (!variant.isAuto()) {
 				return false;
 			}
+		} else if (!Objects.equal(variant.getHeight(), request.getHeight())) {
+			return false;
 		}
 		return true;
 	}
