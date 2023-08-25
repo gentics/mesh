@@ -293,7 +293,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 			getParentContainer().attachImageVariant(getFieldKey(), variant);
 		} else {
 			if (throwOnExisting) {
-				throw error(BAD_REQUEST, "Requested variant already exists"/*, getFieldKey()*/);
+				throw error(BAD_REQUEST, "Requested variant of field `{}` already exists", getFieldKey());
 			}
 		}
 	}
@@ -309,7 +309,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 			getParentContainer().detachImageVariant(getFieldKey(), variant);
 		} else {
 			if (throwOnAbsent) {
-				throw error(BAD_REQUEST, "No requested variant found"/*, getFieldKey()*/);
+				throw error(BAD_REQUEST, "Requested variant of field `{}` not found", getFieldKey());
 			}
 		}
 	}
