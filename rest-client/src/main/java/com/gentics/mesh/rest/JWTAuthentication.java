@@ -22,6 +22,11 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 
 	private String token;
 
+	/**
+	 * Flag is set, if the token is a login token (was set via {@link #login(AbstractMeshRestHttpClient)})
+	 */
+	private boolean loginToken = false;
+
 	public JWTAuthentication() {
 	}
 
@@ -55,13 +60,16 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 			loginRequest.setNewPassword(getNewPassword());
 
 			return meshRestClient.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest).toSingle();
-		}).doOnSuccess(response -> token = response.getToken())
-			.map(ignore -> new GenericMessageResponse("OK"));
+		}).doOnSuccess(response -> {
+			token = response.getToken();
+			loginToken = true;
+		}).map(ignore -> new GenericMessageResponse("OK"));
 	}
 
 	@Override
 	public Single<GenericMessageResponse> logout(AbstractMeshRestHttpClient meshRestClient) {
 		token = null;
+		loginToken = false;
 		// No need call any endpoint in JWT
 		return Single.just(new GenericMessageResponse("OK"));
 	}
@@ -83,7 +91,27 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	 */
 	public JWTAuthentication setToken(String token) {
 		this.token = token;
+		this.loginToken = false;
 		return this;
 	}
 
+	/**
+	 * Set the JWT token as login token
+	 * 
+	 * @param token
+	 * @return
+	 */
+	public JWTAuthentication setLoginToken(String token) {
+		this.token = token;
+		this.loginToken = true;
+		return this;
+	}
+
+	/**
+	 * Check whether the token is a login token
+	 * @return true for a login token
+	 */
+	public boolean isLoginToken() {
+		return loginToken;
+	}
 }

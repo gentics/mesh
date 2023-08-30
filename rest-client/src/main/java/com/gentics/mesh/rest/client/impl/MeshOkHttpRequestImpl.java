@@ -21,6 +21,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
@@ -32,7 +33,9 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Cookie;
 import okhttp3.Headers;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -50,6 +53,7 @@ import okio.Okio;
  */
 public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 
+	private final MeshRestClient meshClient;
 	private final OkHttpClient client;
 	private final MeshRestClientConfig config;
 	private final Class<? extends T> resultClass;
@@ -59,8 +63,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private final Map<String, String> headers;
 	private final RequestBody requestBody;
 
-	private MeshOkHttpRequestImpl(OkHttpClient client, MeshRestClientConfig config, Class<? extends T> resultClass, String method, String url, Map<String, String> headers,
+	private MeshOkHttpRequestImpl(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, Class<? extends T> resultClass, String method, String url, Map<String, String> headers,
 		RequestBody requestBody) {
+		this.meshClient = meshClient;
 		this.client = client;
 		this.config = config;
 		this.resultClass = resultClass;
@@ -75,6 +80,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * 
 	 * @param <T>
 	 *            Response type
+	 * @param meshClient
+	 *            Mesh Client
 	 * @param client
 	 *            Client to be used
 	 * @param config
@@ -95,9 +102,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 *            Posted content type
 	 * @return
 	 */
-	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
-		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, new RequestBody() {
+		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, new RequestBody() {
 			@Override
 			public MediaType contentType() {
 				return MediaType.get(contentType);
@@ -118,6 +125,8 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a JSON payload.
 	 * 
 	 * @param <T>
+	 * @param meshClient
+	 *            Mesh Client
 	 * @param client
 	 * @param config
 	 * @param method
@@ -127,15 +136,17 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * @param json
 	 * @return
 	 */
-	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> JsonRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String json) {
-		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
+		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("application/json"), json));
 	}
 
 	/**
 	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a plain text payload.
 	 * 
 	 * @param <T>
+	 * @param meshClient
+	 *            Mesh Client
 	 * @param client
 	 * @param config
 	 * @param method
@@ -145,15 +156,17 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * @param text
 	 * @return
 	 */
-	public static <T> MeshOkHttpRequestImpl<T> TextRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> TextRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT, String text) {
-		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
+		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(MediaType.get("text/plain"), text));
 	}
 
 	/**
 	 * Create a {@link MeshOkHttpRequestImpl} request which does not send a body payload.
 	 * 
 	 * @param <T>
+	 * @param meshClient
+	 *            Mesh Client
 	 * @param client
 	 * @param config
 	 * @param method
@@ -162,9 +175,9 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	 * @param classOfT
 	 * @return
 	 */
-	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
+	public static <T> MeshOkHttpRequestImpl<T> EmptyRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
 		Class<? extends T> classOfT) {
-		return new MeshOkHttpRequestImpl<>(client, config, classOfT, method, url, headers, RequestBody.create(null, ""));
+		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, RequestBody.create(null, ""));
 	}
 
 	@Override
@@ -250,6 +263,21 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 
 	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
 		throwOnError(response);
+
+		Optional.ofNullable(meshClient).map(MeshRestClient::getAuthentication).ifPresent(auth -> {
+			if (auth.isLoginToken()) {
+				List<Cookie> cookies = Cookie.parseAll(HttpUrl.get(url), response.headers());
+				for (Cookie cookie : cookies) {
+					if (StringUtils.equals("mesh.token", cookie.name())) {
+						String loginToken = cookie.value();
+						if (!StringUtils.isBlank(loginToken)) {
+							auth.setLoginToken(loginToken);
+						}
+						break;
+					}
+				}
+			}
+		});
 
 		String contentType = response.header("Content-Type");
 		if (!response.isSuccessful()) {
