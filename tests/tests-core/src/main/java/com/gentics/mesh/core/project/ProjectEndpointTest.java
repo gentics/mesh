@@ -389,6 +389,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals(143, listResponse.getMetainfo().getTotalCount());
 		assertEquals(6, listResponse.getMetainfo().getPageCount());
 		assertEquals(0, listResponse.getData().size());
+
+		verifySorting(param -> call(() -> client().findProjects(param)), ProjectResponse::getName, "name", "List of project names");
 	}
 
 	@Test

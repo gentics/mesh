@@ -331,6 +331,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals(nRoles + initialRolesCount, response.getMetainfo().getTotalCount());
 		assertEquals(25, response.getMetainfo().getPerPage().longValue());
 
+		verifySorting(param -> call(() -> client().findRoles(param)), RoleResponse::getName, "name", "List of role names");
 	}
 
 	@Test
