@@ -34,6 +34,11 @@ public class StringContentSegment implements ContentSegment {
 	}
 
 	@Override
+	public Optional<String[]> getLanguageTags() {
+		return Optional.empty();
+	}
+
+	@Override
 	public Optional<String> getBranch() {
 		return Optional.empty();
 	}

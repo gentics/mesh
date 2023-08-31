@@ -48,6 +48,11 @@ public class LinkContentSegment implements ContentSegment {
 	}
 
 	@Override
+	public Optional<String[]> getLanguageTags() {
+		return Optional.ofNullable(languageTags);
+	}
+
+	@Override
 	public Optional<String> getBranch() {
 		return Optional.ofNullable(branch);
 	}
