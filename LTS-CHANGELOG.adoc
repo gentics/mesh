@@ -26,6 +26,8 @@ a "Bad Request" error is returned containing a proper error message.
 icon:check[] Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
 even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
 
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well..
+
 [[v1.10.13]]
 == 1.10.13 (10.08.2023)
 

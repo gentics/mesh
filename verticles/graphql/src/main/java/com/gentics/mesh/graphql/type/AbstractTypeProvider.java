@@ -2,10 +2,8 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.action.DAOActionContext.context;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
-import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
+import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -20,13 +18,14 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -38,6 +37,8 @@ import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -56,6 +57,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
+import io.vertx.core.json.JsonObject;
 
 public abstract class AbstractTypeProvider {
 
@@ -578,5 +580,79 @@ public abstract class AbstractTypeProvider {
 		} else {
 			return new DynamicStreamPageImpl<>(stream, pagingInfo);
 		}
+	}
+
+	/**
+	 * Create a dummy field for the schema type definition.
+	 * 
+	 * @param description
+	 * @return
+	 */
+	protected static final FieldSchema emptySchemaFieldDummy(String description) {
+		return new FieldSchema() {
+
+			@Override
+			public void validate() {
+			}
+
+			@Override
+			public FieldSchema setRequired(boolean isRequired) {
+				return this;
+			}
+
+			@Override
+			public FieldSchema setName(String name) {
+				return this;
+			}
+
+			@Override
+			public FieldSchema setLabel(String label) {
+				return this;
+			}
+
+			@Override
+			public FieldSchema setElasticsearch(JsonObject elasticsearch) {
+				return this;
+			}
+
+			@Override
+			public boolean isRequired() {
+				return false;
+			}
+
+			@Override
+			public String getType() {
+				return StringUtils.EMPTY;
+			}
+
+			@Override
+			public String getName() {
+				return "EMPTY";
+			}
+
+			@Override
+			public String getLabel() {
+				return description;
+			}
+
+			@Override
+			public JsonObject getElasticsearch() {
+				return null;
+			}
+
+			@Override
+			public Map<String, Object> getAllChangeProperties() {
+				return null;
+			}
+
+			@Override
+			public SchemaChangeModel compareTo(FieldSchema fieldSchema) {
+				return null;
+			}
+
+			@Override
+			public void apply(Map<String, Object> fieldProperties) {
+			}
+		};
 	}
 }
