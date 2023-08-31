@@ -98,7 +98,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public String getBodyAsString() {
-		return payloadObject.toJson();
+		return payloadObject != null ? payloadObject.toJson() : null;
 	}
 
 	@Override
