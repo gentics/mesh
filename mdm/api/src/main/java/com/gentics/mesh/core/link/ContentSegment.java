@@ -29,6 +29,12 @@ public interface ContentSegment {
 	Optional<String> getTargetUuid();
 
 	/**
+	 * Get the optional language tags (if the segment is a link)
+	 * @return optional language tags
+	 */
+	Optional<String[]> getLanguageTags();
+
+	/**
 	 * Get the optional branch (if the segment is a link specifying a branch)
 	 * @return optional branch
 	 */
