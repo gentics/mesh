@@ -286,6 +286,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
 		}
+
+		verifySorting(param -> call(() -> client().findSchemas(param)), SchemaResponse::getName, "name", "List of schema names");
 	}
 
 	@Test

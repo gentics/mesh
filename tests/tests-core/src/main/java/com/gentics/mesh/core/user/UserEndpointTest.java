@@ -569,6 +569,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		listResponse = call(() -> client().findUsers(new PagingParametersImpl(4242)));
 		assertNull(listResponse.getMetainfo().getPerPage());
 
+		verifySorting(param -> call(() -> client().findUsers(param)), UserResponse::getUsername, "username", "List of usernames");
 	}
 
 	@Test

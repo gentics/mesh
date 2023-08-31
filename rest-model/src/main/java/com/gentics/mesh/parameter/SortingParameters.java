@@ -43,7 +43,7 @@ public interface SortingParameters extends ParameterProvider {
 	 */
 	default SortingParameters putSort(String sortBy, SortOrder order) {
 		setParameter(SortingParameters.SORT_BY_PARAMETER_KEY, sortBy);
-		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, order.toString());
+		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, order.getValue());
 		return this;
 	}
 

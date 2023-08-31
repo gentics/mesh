@@ -208,6 +208,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			assertEquals(totalPages, tagList.getMetainfo().getPageCount());
 		}
 
+		verifySorting(param -> call(() -> client().findTagFamilies(PROJECT_NAME, param)), TagFamilyResponse::getName, "name", "List of tag family names");
 	}
 
 	@Test

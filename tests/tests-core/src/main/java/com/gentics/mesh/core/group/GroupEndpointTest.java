@@ -297,6 +297,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertEquals(nGroups + initialGroupCount, response.getMetainfo().getPageCount());
 		assertEquals(nGroups + initialGroupCount, response.getMetainfo().getTotalCount());
 		assertEquals(1, response.getMetainfo().getPerPage().longValue());
+
+		verifySorting(param -> call(() -> client().findGroups(param)), GroupResponse::getName, "name", "List of group names");
 	}
 
 	@Test
