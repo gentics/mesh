@@ -28,6 +28,8 @@ even if the client was used to do requests. This has been changed now, so that t
 
 icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
 
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
 [[v1.10.13]]
 == 1.10.13 (10.08.2023)
 

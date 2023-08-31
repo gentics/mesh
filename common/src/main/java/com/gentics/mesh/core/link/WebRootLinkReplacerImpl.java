@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -162,19 +163,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 
-		String defaultLanguage = options.getDefaultLanguage();
-		if (languageTags == null || languageTags.length == 0) {
-			languageTags = new String[] { defaultLanguage };
-
-			if (log.isDebugEnabled()) {
-				log.debug("Fallback to default language " + defaultLanguage);
-			}
-		} else {
-			// In other cases add the default language to the list
-			List<String> languageTagList = new ArrayList<String>(Arrays.asList(languageTags));
-			languageTagList.add(defaultLanguage);
-			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
-		}
+		languageTags = appendDefaultLanguageIfNotContained(languageTags);
 
 		HibProject theirProject = node.getProject();
 
@@ -217,28 +206,35 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		if (edgeType == null) {
 			edgeType = ContainerType.DRAFT;
 		}
+		final String[] finLanguageTags = appendDefaultLanguageIfNotContained(languageTags);
+
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 		BranchDao branchDao = tx.branchDao();
 
 		// 1. tokenize all contents
 		Map<String, List<ContentSegment>> segmentListsByContent = contents.stream()
-				.collect(Collectors.toMap(Function.identity(), c -> tokenize(c, branch, languageTags)));
+				.collect(Collectors.toMap(Function.identity(), c -> tokenize(c, branch, finLanguageTags)));
 
-		// 2. collect the list of target nodeUuids (per branch)
+		// 2. collect the list of target nodeUuids and map to the target branches
 		Map<String, Set<String>> branchesPerNodeUuid = new HashMap<>();
+		// also collect the language tags per nodeUuid
+		Map<String, Set<String[]>> languageTagsPerNodeUuid = new HashMap<>();
 		segmentListsByContent.values().stream().flatMap(list -> list.stream()).forEach(segment -> {
 			segment.getTargetUuid().ifPresent(targetUuid -> {
 				String targetBranch = segment.getBranch().orElse(branch);
 				branchesPerNodeUuid.computeIfAbsent(targetUuid, key -> new HashSet<>()).add(targetBranch);
+
+				String[] nodeLanguageTags = segment.getLanguageTags().orElse(finLanguageTags);
+				languageTagsPerNodeUuid.computeIfAbsent(targetUuid, key -> new HashSet<>()).add(nodeLanguageTags);
 			});
 		});
 
 		// 3. load the nodes by their UUIDs
 		Map<String, ? extends HibNode> nodeMap = nodeDao.findByUuidGlobal(branchesPerNodeUuid.keySet()).stream().collect(Collectors.toMap(HibNode::getUuid, Function.identity()));
 
-		// 4. load paths of the nodes
-		Map<HibBranch, Map<HibNode, String>> pathsPerBranchAndNode = new HashMap<>();
+		// 4. load paths of the nodes per requested languages
+		Map<HibBranch, Map<String[], Map<HibNode, String>>> pathsPerBranchAndNode = new HashMap<>();
 		for (Entry<String, Set<String>> entry : branchesPerNodeUuid.entrySet()) {
 			String nodeUuid = entry.getKey();
 			HibNode node = nodeMap.get(nodeUuid);
@@ -247,14 +243,21 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 				for (String branchUuidOrName : entry.getValue()) {
 					HibBranch theirBranch = branchDao.findBranchOrLatest(theirProject, branchUuidOrName);
-					pathsPerBranchAndNode.computeIfAbsent(theirBranch, k -> new HashMap<>()).put(node, null);
+
+					for (String[] nodeLanguageTags : languageTagsPerNodeUuid.get(nodeUuid)) {
+						pathsPerBranchAndNode.computeIfAbsent(theirBranch, k -> new HashMap<>())
+								.computeIfAbsent(nodeLanguageTags, k -> new HashMap<>()).put(node, null);
+					}
 				}
 			}
 		}
-		for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+		for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
 			HibBranch currentBranch = entry.getKey();
-			Set<HibNode> nodes = entry.getValue().keySet();
-			entry.setValue(nodeDao.getPaths(nodes, currentBranch.getUuid(), ac, edgeType, languageTags));
+			for (Entry<String[], Map<HibNode, String>> entry2 : entry.getValue().entrySet()) {
+				String[] nodeLanguageTags = entry2.getKey();
+				Set<HibNode> nodes = entry2.getValue().keySet();
+				entry2.setValue(nodeDao.getPaths(nodes, currentBranch.getUuid(), ac, edgeType, nodeLanguageTags));
+			}
 		}
 
 		// 5. adapt paths to link type
@@ -262,38 +265,44 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		case SHORT:
 			HibProject txProject = tx.getProject(ac);
 			HibBranch txBranch = tx.getBranch(ac);
-			for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+			for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
 				HibBranch currentBranch = entry.getKey();
-				Map<HibNode, String> pathMap = entry.getValue();
-				for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
-					HibNode node = entry2.getKey();
-					if (txProject == null || !txBranch.equals(currentBranch)) {
-						String path = entry2.getValue();
-						entry2.setValue(generateSchemeAuthorityForNode(node, currentBranch) + path);
+				Map<String[], Map<HibNode, String>> languageTagsMap = entry.getValue();
+				for (Map<HibNode, String> pathMap : languageTagsMap.values()) {
+					for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
+						HibNode node = entry2.getKey();
+						if (txProject == null || !txBranch.equals(currentBranch)) {
+							String path = entry2.getValue();
+							entry2.setValue(generateSchemeAuthorityForNode(node, currentBranch) + path);
+						}
 					}
 				}
 			}
 			break;
 		case MEDIUM:
-			for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
-				Map<HibNode, String> pathMap = entry.getValue();
-				for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
-					HibNode node = entry2.getKey();
-					String path = entry2.getValue();
-					entry2.setValue("/" + node.getProject().getName() + path);
+			for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
+				Map<String[], Map<HibNode, String>> languageTagsMap = entry.getValue();
+				for (Map<HibNode, String> pathMap : languageTagsMap.values()) {
+					for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
+						HibNode node = entry2.getKey();
+						String path = entry2.getValue();
+						entry2.setValue("/" + node.getProject().getName() + path);
+					}
 				}
 			}
 			break;
 		case FULL:
 			String baseRoute = VersionUtils.baseRoute(ac.getApiVersion()) + "/";
-			for (Entry<HibBranch, Map<HibNode, String>> entry : pathsPerBranchAndNode.entrySet()) {
+			for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
 				HibBranch currentBranch = entry.getKey();
-				Map<HibNode, String> pathMap = entry.getValue();
-				for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
-					HibNode node = entry2.getKey();
-					String path = entry2.getValue();
-					entry2.setValue(
-							baseRoute + node.getProject().getName() + "/webroot" + path + branchQueryParameter(currentBranch));
+				Map<String[], Map<HibNode, String>> languageTagsMap = entry.getValue();
+				for (Map<HibNode, String> pathMap : languageTagsMap.values()) {
+					for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
+						HibNode node = entry2.getKey();
+						String path = entry2.getValue();
+						entry2.setValue(
+								baseRoute + node.getProject().getName() + "/webroot" + path + branchQueryParameter(currentBranch));
+					}
 				}
 			}
 			break;
@@ -309,25 +318,29 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			segments.stream().forEachOrdered(seg -> {
 				seg.getTargetUuid().ifPresentOrElse(nodeUuid -> {
 					String currentBranch = seg.getBranch().orElse(branch);
+					String[] nodeLanguageTags = seg.getLanguageTags().orElse(finLanguageTags);
 					HibNode node = nodeMap.get(nodeUuid);
+					String renderedSegment = null;
 					if (node != null) {
 						HibBranch theirBranch = branchDao.findBranchOrLatest(node.getProject(), currentBranch);
-						renderedContent.append(pathsPerBranchAndNode.getOrDefault(theirBranch, Collections.emptyMap()).getOrDefault(node, ""));
-					} else {
+						renderedSegment = pathsPerBranchAndNode.getOrDefault(theirBranch, Collections.emptyMap()).getOrDefault(nodeLanguageTags, Collections.emptyMap()).getOrDefault(node, null);
+					}
+					if (StringUtils.isBlank(renderedSegment)) {
 						switch (linkType) {
 						case SHORT:
-							renderedContent.append("/error/404");
+							renderedSegment = "/error/404";
 							break;
 						case MEDIUM:
-							renderedContent.append("/" + projectName + "/error/404");
+							renderedSegment = "/" + projectName + "/error/404";
 							break;
 						case FULL:
-							renderedContent.append(VersionUtils.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404");
+							renderedSegment = VersionUtils.baseRoute(ac.getApiVersion()) + "/" + projectName + "/webroot/error/404";
 							break;
 						default:
 							throw error(BAD_REQUEST, "Cannot render link with type " + linkType);
 						}
 					}
+					renderedContent.append(renderedSegment);
 				}, () -> {
 					renderedContent.append(seg.toString());
 				});
@@ -386,7 +399,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				branch = linkArguments[2].trim();
 			}
 			if (linkArguments.length >= 2) {
-				segments.add(new LinkContentSegment(linkArguments[0], branch, linkArguments[1].trim()));
+				segments.add(new LinkContentSegment(linkArguments[0], branch, appendDefaultLanguageIfNotContained(linkArguments[1].trim())));
 			} else if (languageTags.length > 0) {
 				segments.add(new LinkContentSegment(linkArguments[0], branch, languageTags));
 			} else {
@@ -436,5 +449,21 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			return "";
 		}
 		return String.format("?%s=%s", VersioningParameters.BRANCH_QUERY_PARAM_KEY, branch.getName());
+	}
+
+	/**
+	 * Append the default language to the given language tags (if not already contained)
+	 * @param languageTags language tags, may be empty or null
+	 * @return array of language tags, never empty, never null
+	 */
+	private String[] appendDefaultLanguageIfNotContained(String... languageTags) {
+		String defaultLanguage = options.getDefaultLanguage();
+		if (languageTags == null) {
+			return ArrayUtils.toArray(defaultLanguage);
+		} else if (ArrayUtils.contains(languageTags, defaultLanguage)) {
+			return languageTags;
+		} else {
+			return ArrayUtils.add(languageTags, defaultLanguage);
+		}
 	}
 }
