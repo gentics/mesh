@@ -1,0 +1,2 @@
+Clustering: Calling cluster specific REST Endpoints on non-clustered instances could cause internal server errors. The behaviour has been changed so that
+a "Bad Request" error is returned containing a proper error message.
