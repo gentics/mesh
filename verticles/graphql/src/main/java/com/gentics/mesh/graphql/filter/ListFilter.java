@@ -211,9 +211,9 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 		}
 		return binaryListFilterInstance;
 	}
-	public static final ListFilter<HibImageVariant, ?> imageVariantListFilter(GraphQLContext context) {
+	public static final ListFilter<HibImageVariant, ?> imageVariantListFilter(GraphQLContext context, String owner) {
 		if (imageVariantsListFilterInstance == null) {
-			imageVariantsListFilterInstance = new ListFilter<>("ImageVariantListFilter", "Filters image variant lists", ImageVariantFilter.filter("LIST"), Optional.of("IMAGEVARIANTLIST"), true);
+			imageVariantsListFilterInstance = new ListFilter<>("ImageVariantListFilter", "Filters image variant lists", ImageVariantFilter.filter(owner), Optional.of("IMAGEVARIANTLIST"), true);
 		}
 		return imageVariantsListFilterInstance;
 	}

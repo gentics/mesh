@@ -7,12 +7,17 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
+import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.node.field.HibImageDataField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+
+import graphql.util.Pair;
 
 public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinaryField> {
 
@@ -41,7 +46,10 @@ public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinary
 		List<FilterField<HibBinaryField, ?>> filters = super.getFilters();
 		filters.add(makeWrappedFieldFilter("filename", "Filters by filename", StringFilter.filter(), HibImageDataField::getFileName));
 		filters.add(makeWrappedFieldFilter("mime", "Filters by MIME type", StringFilter.filter(), HibImageDataField::getMimeType));
-		filters.add(makeWrappedFieldFilter("variants", "Filters by image variants", ListFilter.imageVariantListFilter(context), field -> (Collection<HibImageVariant>) field.getImageVariants().list()));
+//		filters.add(makeWrappedFieldFilter("variants", "Filters by image variants", ListFilter.imageVariantListFilter(context, "BINARYFIELD"), field -> (Collection<HibImageVariant>) field.getImageVariants().list()));
+		filters.add(new MappedFilter<>(owner, "variants", "Filters by image variants", 
+				ListFilter.imageVariantListFilter(context, "BINARYFIELD"),
+				content -> content == null ? null : (Collection<HibImageVariant>) CommonTx.get().binaryDao().getVariants(content, context).list(), Pair.pair("variants", new JoinPart("IMAGEVARIANT", "uuid"))));
 		return filters;
 	}
 

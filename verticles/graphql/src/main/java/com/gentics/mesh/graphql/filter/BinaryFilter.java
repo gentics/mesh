@@ -53,7 +53,7 @@ public class BinaryFilter extends ImageDataFilter<HibBinary> {
 		filters.add(new MappedFilter<>(owner, "checksum", "Filters by SHA512 checksum", StringFilter.filter(),
 				content -> content == null ? null : content.getSHA512Sum()));
 		filters.add(new MappedFilter<>(owner, "variants", "Filters by image variants", 
-				ListFilter.imageVariantListFilter(context),
+				ListFilter.imageVariantListFilter(context, "BINARY"),
 				content -> content == null ? null : (Collection<HibImageVariant>) CommonTx.get().binaryDao().getVariants(content, context).list(), Pair.pair("variants", new JoinPart("IMAGEVARIANT", "value"))));
 		return filters;
 	}
