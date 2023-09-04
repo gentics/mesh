@@ -31,6 +31,7 @@ import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
+import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -49,6 +50,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.NativeQueryFiltering;
@@ -70,6 +73,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -757,5 +761,79 @@ public abstract class AbstractTypeProvider {
 		} else {
 			return Optional.empty();
 		}
+	}
+
+	/**
+	 * Create a dummy field for the schema type definition.
+	 * 
+	 * @param description
+	 * @return
+	 */
+	protected static final FieldSchema emptySchemaFieldDummy(String description) {
+		return new FieldSchema() {
+
+			@Override
+			public void validate() {
+}
+
+			@Override
+			public FieldSchema setRequired(boolean isRequired) {
+				return this;
+			}
+
+			@Override
+			public FieldSchema setName(String name) {
+				return this;
+			}
+
+			@Override
+			public FieldSchema setLabel(String label) {
+				return this;
+			}
+
+			@Override
+			public FieldSchema setElasticsearch(JsonObject elasticsearch) {
+				return this;
+			}
+
+			@Override
+			public boolean isRequired() {
+				return false;
+			}
+
+			@Override
+			public String getType() {
+				return StringUtils.EMPTY;
+			}
+
+			@Override
+			public String getName() {
+				return "EMPTY";
+			}
+
+			@Override
+			public String getLabel() {
+				return description;
+			}
+
+			@Override
+			public JsonObject getElasticsearch() {
+				return null;
+			}
+
+			@Override
+			public Map<String, Object> getAllChangeProperties() {
+				return null;
+			}
+
+			@Override
+			public SchemaChangeModel compareTo(FieldSchema fieldSchema) {
+				return null;
+			}
+
+			@Override
+			public void apply(Map<String, Object> fieldProperties) {
+			}
+		};
 	}
 }
