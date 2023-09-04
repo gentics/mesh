@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -81,6 +82,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -911,24 +913,25 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	default void createImageVariantsIfApplicable(HibNodeFieldContainer fieldContainer, InternalActionContext ac) {
-		ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : null;
+		NodePublishRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(NodePublishRequest.class) : null;
 		if (request != null) {
 			CommonTx tx = CommonTx.get();
 			PersistingImageVariantDao imageVariantDao = tx.imageVariantDao();
-			fieldContainer.getSchemaContainerVersion().getSchema().getSegmentField();
-			String fieldName = fieldContainer.getSchemaContainerVersion().getSchema().getSegmentField();
-			FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
-			if (fieldSchema == null) {
-				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
-			}
-			if ((fieldSchema instanceof BinaryFieldSchema)) {
-				HibBinaryField field = fieldContainer.getBinary(fieldName);
-				if (field == null) {
-					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+			for (Entry<String, ImageManipulationRequest> fieldManipulation : request.getImageVariants().entrySet()) {
+				String fieldName = fieldManipulation.getKey();
+				FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
+				if (fieldSchema == null) {
+					throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 				}
-				imageVariantDao.createVariants(field, request.getVariants(), ac, request.isDeleteOther());
-			} else {
-				throw error(BAD_REQUEST, "error_segment_field_is_not_binary", fieldName);
+				if ((fieldSchema instanceof BinaryFieldSchema)) {
+					HibBinaryField field = fieldContainer.getBinary(fieldName);
+					if (field == null) {
+						throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
+					}
+					imageVariantDao.createVariants(field, fieldManipulation.getValue().getVariants(), ac, fieldManipulation.getValue().isDeleteOther());
+				} else {
+					throw error(BAD_REQUEST, "error_segment_field_is_not_binary", fieldName);
+				}
 			}
 		}
 	}

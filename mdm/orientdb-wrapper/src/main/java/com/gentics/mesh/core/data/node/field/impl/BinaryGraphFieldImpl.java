@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_VARIANTS;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,18 +15,22 @@ import java.util.stream.Collectors;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.BinaryGraphFieldVariant;
 import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.binary.impl.ImageVariantImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 
@@ -79,6 +84,10 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	 */
 	@Override
 	public void removeField(BulkActionContext bac, HibFieldContainer container) {
+		GraphFieldContainer graphContainer = toGraph(container);
+		for (BinaryGraphFieldVariant variant : graphContainer.findImageVariants(getFieldKey())) {
+			graphContainer.detachImageVariant(getFieldKey(), variant.getVariant());
+		}
 		Binary graphBinary = toGraph(getBinary());
 		remove();
 		// Only get rid of the binary as well if no other fields are using the binary.

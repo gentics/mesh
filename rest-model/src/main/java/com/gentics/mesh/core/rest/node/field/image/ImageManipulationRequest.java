@@ -15,12 +15,12 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class ImageManipulationRequest implements RestModel {
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("If a binary image is to be published, this field contains a set of image manipulation variants to be created immediately")
+	@JsonPropertyDescription("This field contains a set of image manipulation variants to be manipulated upon.")
 	private List<ImageVariantRequest> variants;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription(
-			"If a binary image is to be published, and variants provided, this flag states that all the existing variants, except the abovementioned, should be dropped."
+			"This flag states that all the existing variants, except the mentioned in `variants` field, should be dropped."
 			+ "If no variants are provided along with the flag, all the image manipulation variants are to be dropped.")
 	private boolean deleteOther = false;
 

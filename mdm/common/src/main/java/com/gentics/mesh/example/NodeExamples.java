@@ -53,6 +53,7 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
@@ -280,8 +281,9 @@ public class NodeExamples extends AbstractExamples {
 
 	public NodePublishRequest getNodePublishRequest() {
 		NodePublishRequest nodePublishRequest = new NodePublishRequest();
-		nodePublishRequest.setDeleteOther(true);
-		nodePublishRequest.setVariants(
+		ImageManipulationRequest imageManipulationRequest = new ImageManipulationRequest();
+		imageManipulationRequest.setDeleteOther(true);
+		imageManipulationRequest.setVariants(
 				Arrays.asList(
 						new ImageVariantRequest()
 							.setCropMode(CropMode.FOCALPOINT)
@@ -293,6 +295,7 @@ public class NodeExamples extends AbstractExamples {
 							.setWidth(500)
 				)
 		);
+		nodePublishRequest.addImageVariant("binaryField", imageManipulationRequest);
 		return nodePublishRequest;
 	}
 
@@ -394,8 +397,8 @@ public class NodeExamples extends AbstractExamples {
 		return imageVariantsResponse;
 	}
 
-	public NodePublishRequest createImageManipulationRequest() {
-		NodePublishRequest imageManipulationRequest = new NodePublishRequest();
+	public ImageManipulationRequest createImageManipulationRequest() {
+		ImageManipulationRequest imageManipulationRequest = new ImageManipulationRequest();
 		List<ImageVariantRequest> variants = new ArrayList<>(2);
 		variants.add(new ImageVariantRequest().setHeight(100).setWidth("auto"));
 		variants.add(new ImageVariantRequest().setFocalPoint(0.3f, 0.3f).setFocalPointZoom(0.6f));

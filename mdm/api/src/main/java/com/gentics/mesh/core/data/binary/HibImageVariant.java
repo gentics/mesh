@@ -176,4 +176,36 @@ public interface HibImageVariant extends HibImageDataElement {
 	 * @return
 	 */
 	HibImageVariant fillFromManipulation(HibBinary binary, ImageManipulation variant);
+
+	/**
+	 * Generate the variant manipulation key, that uniquely identifies it.
+	 *
+	 * @return
+	 */
+	default String getKey() {
+		StringBuilder builder = new StringBuilder();
+
+		if (getCropRect() != null) {
+			builder.append("rect" + getCropRect().toString());
+		}
+		if (getCropMode() != null) {
+			builder.append("crop" + getCropMode());
+		}
+		if (getResizeMode() != null) {
+			builder.append("resize" + getResizeMode());
+		}
+		if (getWidth() != null) {
+			builder.append("rw" + getWidth());
+		}
+		if (getHeight() != null) {
+			builder.append("rh" + getHeight());
+		}
+		if (getFocalPoint() != null) {
+			builder.append("fp" + getFocalPoint().toString());
+		}
+		if (getFocalPointZoom() != null) {
+			builder.append("fpz" + getFocalPointZoom());
+		}
+		return builder.toString();
+	}
 }
