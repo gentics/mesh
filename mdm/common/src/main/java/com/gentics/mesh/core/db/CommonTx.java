@@ -4,6 +4,7 @@ import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
@@ -36,6 +37,9 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 	default int txId() {
 		return hashCode();
 	}
+
+	@Override
+	PersistingImageVariantDao imageVariantDao();
 
 	@Override
 	PersistingBinaryDao binaryDao();

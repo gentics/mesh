@@ -49,7 +49,7 @@ public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinary
 //		filters.add(makeWrappedFieldFilter("variants", "Filters by image variants", ListFilter.imageVariantListFilter(context, "BINARYFIELD"), field -> (Collection<HibImageVariant>) field.getImageVariants().list()));
 		filters.add(new MappedFilter<>(owner, "variants", "Filters by image variants", 
 				ListFilter.imageVariantListFilter(context, "BINARYFIELD"),
-				content -> content == null ? null : (Collection<HibImageVariant>) CommonTx.get().binaryDao().getVariants(content, context).list(), Pair.pair("variants", new JoinPart("IMAGEVARIANT", "uuid"))));
+				content -> content == null ? null : (Collection<HibImageVariant>) CommonTx.get().imageVariantDao().getVariants(content, context).list(), Pair.pair("variants", new JoinPart("IMAGEVARIANT", "uuid"))));
 		return filters;
 	}
 

@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
@@ -48,14 +49,16 @@ public class BinaryFieldResponseHandler {
 	private final RangeRequestHandler rangeRequestHandler;
 	private final ImageManipulatorOptions options;
 	private final PersistingBinaryDao binaryDao;
+	private final PersistingImageVariantDao imageVariantDao;
 
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions options, PersistingBinaryDao binaryDao) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions options, PersistingBinaryDao binaryDao, PersistingImageVariantDao imageVariantDao) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
 		this.rxVertx = rxVertx;
 		this.rangeRequestHandler = rangeRequestHandler;
 		this.binaryDao = binaryDao;
+		this.imageVariantDao = imageVariantDao;
 		this.options = options.getImageOptions();
 	}
 
@@ -178,7 +181,7 @@ public class BinaryFieldResponseHandler {
 			break;
 		case MANUAL:
 			HibBinary binary = binaryField.getBinary();
-			HibImageVariant variant = binaryDao.getVariant(binary, imageParams, new InternalRoutingActionContextImpl(rc));
+			HibImageVariant variant = imageVariantDao.getVariant(binary, imageParams, new InternalRoutingActionContextImpl(rc));
 			if (variant == null) {
 				throw error(NOT_FOUND, "node_error_binary_data_not_found");
 			}

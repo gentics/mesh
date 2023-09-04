@@ -24,11 +24,10 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -50,16 +49,16 @@ import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
 @Singleton
 public class BinaryVariantsHandler extends AbstractHandler {
 
-	private final BinaryDao binaryDao;
+	private final PersistingImageVariantDao imageVariantDao;
 	private final Database db;
 	private final MeshOptions options;
 
 	@Inject
-	public BinaryVariantsHandler(MeshOptions options, Database db, BinaryDao binaryDao) {
+	public BinaryVariantsHandler(MeshOptions options, Database db, PersistingImageVariantDao imageVariantDao) {
 		super();
 		this.options = options;
 		this.db = db;
-		this.binaryDao = binaryDao;
+		this.imageVariantDao = imageVariantDao;
 	}
 
 	/**
@@ -74,14 +73,14 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : new ImageManipulationRequest().setVariants(Collections.emptyList()).setDeleteOther(true);
 			Result<? extends HibImageVariant> result = request.isDeleteOther()
-					? binaryDao.retainVariants(binaryField, request.getVariants(), ac)
-					: binaryDao.deleteVariants(binaryField, request.getVariants(), ac);
+					? imageVariantDao.retainVariants(binaryField, request.getVariants(), ac)
+					: imageVariantDao.deleteVariants(binaryField, request.getVariants(), ac);
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
-			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
+			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
 			if (retrievalParams.retrieveOriginal()) {
 				variants = Stream.of(
-						Stream.of(CommonTx.get().binaryDao().transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						Stream.of(imageVariantDao.transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
 						variants.stream()
 					).flatMap(Function.identity()).collect(Collectors.toList());
 			}
@@ -101,13 +100,13 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		wrapVariantsCall(ac, nodeUuid, fieldName, binaryField -> {
 			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = ac.fromJson(ImageManipulationRequest.class);
-			Result<? extends HibImageVariant> result = binaryDao.createVariants(binaryField, request.getVariants(), ac, request.isDeleteOther());
+			Result<? extends HibImageVariant> result = imageVariantDao.createVariants(binaryField, request.getVariants(), ac, request.isDeleteOther());
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
-			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
+			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
 			if (retrievalParams.retrieveOriginal()) {
 				variants = Stream.of(
-						Stream.of(CommonTx.get().binaryDao().transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						Stream.of(imageVariantDao.transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
 						variants.stream()
 					).flatMap(Function.identity()).collect(Collectors.toList());
 			}
@@ -129,10 +128,10 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			Result<? extends HibImageVariant> result = binaryField.getImageVariants(); //binaryDao.getVariants(binary, ac);
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
-			List<ImageVariantResponse> variants = result.stream().map(variant -> binaryDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
+			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
 			if (retrievalParams.retrieveOriginal()) {
 				variants = Stream.of(
-						Stream.of(CommonTx.get().binaryDao().transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						Stream.of(imageVariantDao.transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
 						variants.stream()
 					).flatMap(Function.identity()).collect(Collectors.toList());
 			}

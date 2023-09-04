@@ -45,6 +45,7 @@ import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.ImageVariantDao;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -53,6 +54,7 @@ import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
@@ -319,6 +321,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);
+
+	@Binds
+	abstract ImageVariantDao bindImageVariantDao(PersistingImageVariantDao e);
 
 	@Binds
 	abstract UserDao bindUserDao(PersistingUserDao e);

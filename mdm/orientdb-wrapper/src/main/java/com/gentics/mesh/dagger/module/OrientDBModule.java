@@ -39,6 +39,7 @@ import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.ImageVariantDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -49,6 +50,7 @@ import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
@@ -71,6 +73,7 @@ import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.ImageVariantDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
@@ -236,6 +239,12 @@ public abstract class OrientDBModule {
 
 	@Binds
 	abstract LanguageDaoWrapper bindLanguageDaoWrapper(LanguageDaoWrapperImpl e);
+
+	@Binds
+	abstract ImageVariantDaoWrapper bindImageVariantDaoWrapper(ImageVariantDaoWrapperImpl e);
+
+	@Binds
+	abstract PersistingImageVariantDao bindImageVariantDao(ImageVariantDaoWrapper e);
 
 	@Binds
 	abstract PersistingUserDao bindUserDao(UserDaoWrapper e);

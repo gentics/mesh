@@ -42,7 +42,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -915,7 +914,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : null;
 		if (request != null) {
 			CommonTx tx = CommonTx.get();
-			PersistingBinaryDao binaryDao = tx.binaryDao();
+			PersistingImageVariantDao imageVariantDao = tx.imageVariantDao();
 			fieldContainer.getSchemaContainerVersion().getSchema().getSegmentField();
 			String fieldName = fieldContainer.getSchemaContainerVersion().getSchema().getSegmentField();
 			FieldSchema fieldSchema = fieldContainer.getSchemaContainerVersion().getSchema().getField(fieldName);
@@ -927,7 +926,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
-				binaryDao.createVariants(field, request.getVariants(), ac, request.isDeleteOther());
+				imageVariantDao.createVariants(field, request.getVariants(), ac, request.isDeleteOther());
 			} else {
 				throw error(BAD_REQUEST, "error_segment_field_is_not_binary", fieldName);
 			}
