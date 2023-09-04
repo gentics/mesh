@@ -812,53 +812,55 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			root.name(schema.getName());
 			root.description(schema.getDescription());
 
-			GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
-			GraphQLObjectType.Builder fieldsType = newObject();
-			fieldsType.name(nodeTypeName(schema.getName()));
-			fieldsField.dataFetcher(env -> {
-				NodeContent content = env.getSource();
-				return content.getContainer();
-			});
+			if (!schema.getFields().isEmpty()) {
+				GraphQLFieldDefinition.Builder fieldsField = GraphQLFieldDefinition.newFieldDefinition();
+				GraphQLObjectType.Builder fieldsType = newObject();
+				fieldsType.name(nodeTypeName(schema.getName()));
+				fieldsField.dataFetcher(env -> {
+					NodeContent content = env.getSource();
+					return content.getContainer();
+				});
 
-			// TODO add link resolving argument / code
-			for (FieldSchema fieldSchema : schema.getFields()) {
-				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-				switch (type) {
-				case STRING:
-					fieldsType.field(fields.createStringDef(fieldSchema));
-					break;
-				case HTML:
-					fieldsType.field(fields.createHtmlDef(fieldSchema));
-					break;
-				case NUMBER:
-					fieldsType.field(fields.createNumberDef(fieldSchema));
-					break;
-				case DATE:
-					fieldsType.field(fields.createDateDef(fieldSchema));
-					break;
-				case BOOLEAN:
-					fieldsType.field(fields.createBooleanDef(fieldSchema));
-					break;
-				case NODE:
-					fieldsType.field(fields.createNodeDef(fieldSchema));
-					break;
-				case BINARY:
-					fieldsType.field(fields.createBinaryDef(fieldSchema));
-					break;
-				case S3BINARY:
-					root.field(fields.createS3BinaryDef(fieldSchema));
-					break;
-				case LIST:
-					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					fieldsType.field(fields.createListDef(context, listFieldSchema));
-					break;
-				case MICRONODE:
-					fieldsType.field(fields.createMicronodeDef(fieldSchema, project));
-					break;
+				// TODO add link resolving argument / code
+				for (FieldSchema fieldSchema : schema.getFields()) {
+					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+					switch (type) {
+					case STRING:
+						fieldsType.field(fields.createStringDef(fieldSchema));
+						break;
+					case HTML:
+						fieldsType.field(fields.createHtmlDef(fieldSchema));
+						break;
+					case NUMBER:
+						fieldsType.field(fields.createNumberDef(fieldSchema));
+						break;
+					case DATE:
+						fieldsType.field(fields.createDateDef(fieldSchema));
+						break;
+					case BOOLEAN:
+						fieldsType.field(fields.createBooleanDef(fieldSchema));
+						break;
+					case NODE:
+						fieldsType.field(fields.createNodeDef(fieldSchema));
+						break;
+					case BINARY:
+						fieldsType.field(fields.createBinaryDef(fieldSchema));
+						break;
+					case S3BINARY:
+						root.field(fields.createS3BinaryDef(fieldSchema));
+						break;
+					case LIST:
+						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
+						fieldsType.field(fields.createListDef(context, listFieldSchema));
+						break;
+					case MICRONODE:
+						fieldsType.field(fields.createMicronodeDef(fieldSchema, project));
+						break;
+					}
 				}
+				fieldsField.name("fields").type(fieldsType);
+				root.field(fieldsField);
 			}
-			fieldsField.name("fields").type(fieldsType);
-			root.field(fieldsField);
 			root.fields(createNodeInterfaceFields(context).forVersion(context));
 			interfaceTypeProvider.addCommonFields(root, true);
 			return root.build();
