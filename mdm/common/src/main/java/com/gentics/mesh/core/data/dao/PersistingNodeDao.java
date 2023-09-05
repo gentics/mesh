@@ -895,7 +895,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		unpublishedContainers.stream().forEach(c -> {
 			HibNodeFieldContainer newVersion = tx.contentDao().publish(node, ac, c.getLanguageTag(), branch, ac.getUser());
 			bac.add(contentDao.onPublish(newVersion, branchUuid));
-			createImageVariantsIfApplicable(c, ac);
+			createImageVariantsIfApplicable(newVersion, ac);
 		});
 		assertPublishConsistency(node, ac, branch);
 
