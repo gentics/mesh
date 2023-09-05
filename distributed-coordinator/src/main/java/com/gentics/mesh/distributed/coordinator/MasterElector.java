@@ -382,6 +382,9 @@ public class MasterElector {
 	 * @return
 	 */
 	public boolean isElectable() {
+		if (!clusterOptions.isEnabled()) {
+			return false;
+		}
 		return isElectable(localMember());
 	}
 

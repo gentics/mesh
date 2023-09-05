@@ -632,35 +632,34 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public ClusterConfigResponse loadClusterConfig() {
-		if (clusterManager() != null) {
-			OHazelcastPlugin plugin = clusterManager().getHazelcastPlugin();
-			ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
+		OHazelcastPlugin plugin = Optional.ofNullable(clusterManager())
+				.map(OrientDBClusterManagerImpl::getHazelcastPlugin)
+				.orElseThrow(() -> error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode"));
 
-			ClusterConfigResponse response = new ClusterConfigResponse();
-			for (String server : storageCfg.getAllConfiguredServers()) {
-				ClusterServerConfig serverConfig = new ClusterServerConfig();
-				serverConfig.setName(server);
+		ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
 
-				ROLES role = storageCfg.getServerRole(server);
-				ServerRole restRole = ServerRole.valueOf(role.name());
-				serverConfig.setRole(restRole);
+		ClusterConfigResponse response = new ClusterConfigResponse();
+		for (String server : storageCfg.getAllConfiguredServers()) {
+			ClusterServerConfig serverConfig = new ClusterServerConfig();
+			serverConfig.setName(server);
 
-				response.getServers().add(serverConfig);
-			}
+			ROLES role = storageCfg.getServerRole(server);
+			ServerRole restRole = ServerRole.valueOf(role.name());
+			serverConfig.setRole(restRole);
 
-			Object writeQuorum = storageCfg.getDocument().getProperty("writeQuorum");
-			if (writeQuorum instanceof String) {
-				response.setWriteQuorum((String) writeQuorum);
-			} else if (writeQuorum instanceof Integer) {
-				response.setWriteQuorum(String.valueOf((Integer) writeQuorum));
-			}
-
-			Integer readQuorum = storageCfg.getDocument().getProperty("readQuorum");
-			response.setReadQuorum(readQuorum);
-			return response;
-		} else {
-			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
+			response.getServers().add(serverConfig);
 		}
+
+		Object writeQuorum = storageCfg.getDocument().getProperty("writeQuorum");
+		if (writeQuorum instanceof String) {
+			response.setWriteQuorum((String) writeQuorum);
+		} else if (writeQuorum instanceof Integer) {
+			response.setWriteQuorum(String.valueOf((Integer) writeQuorum));
+		}
+
+		Integer readQuorum = storageCfg.getDocument().getProperty("readQuorum");
+		response.setReadQuorum(readQuorum);
+		return response;
 	}
 
 	@Override
@@ -678,49 +677,48 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void updateClusterConfig(ClusterConfigRequest request) {
-		if (clusterManager() != null) {
-			OHazelcastPlugin plugin = clusterManager().getHazelcastPlugin();
-			ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
-			final OModifiableDistributedConfiguration newCfg = storageCfg.modify();
+		OHazelcastPlugin plugin = Optional.ofNullable(clusterManager())
+				.map(OrientDBClusterManagerImpl::getHazelcastPlugin)
+				.orElseThrow(() -> error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode"));
 
-			for (ClusterServerConfig server : request.getServers()) {
-				// Check whether role changed
-				ServerRole newRole = server.getRole();
-				ROLES newORole = ROLES.valueOf(newRole.name());
-				ROLES oldRole = newCfg.getServerRole(server.getName());
-				if (oldRole != newORole) {
-					log.debug("Updating server role {" + server.getName() + "} from {" + oldRole + "} to {" + newRole + "}");
-					newCfg.setServerRole(server.getName(), newORole);
-				}
-			}
-			String newWriteQuorum = request.getWriteQuorum();
-			if (newWriteQuorum != null) {
-				if (newWriteQuorum.equalsIgnoreCase("all") || newWriteQuorum.equalsIgnoreCase("majority")) {
-					newCfg.getDocument().setProperty("writeQuorum", newWriteQuorum);
-				} else {
-					try {
-						int newWriteQuorumInt = Integer.parseInt(newWriteQuorum);
-						newCfg.getDocument().setProperty("writeQuorum", newWriteQuorumInt);
-					} catch (Exception e) {
-						throw new RuntimeException("Unsupported write quorum value {" + newWriteQuorum + "}");
-					}
-				}
-			}
+		ODistributedConfiguration storageCfg = plugin.getDatabaseConfiguration(GraphStorage.DB_NAME);
+		final OModifiableDistributedConfiguration newCfg = storageCfg.modify();
 
-			Integer newReadQuorum = request.getReadQuorum();
-			if (newReadQuorum != null) {
-				newCfg.getDocument().setProperty("readQuorum", newReadQuorum);
+		for (ClusterServerConfig server : request.getServers()) {
+			// Check whether role changed
+			ServerRole newRole = server.getRole();
+			ROLES newORole = ROLES.valueOf(newRole.name());
+			ROLES oldRole = newCfg.getServerRole(server.getName());
+			if (oldRole != newORole) {
+				log.debug("Updating server role {" + server.getName() + "} from {" + oldRole + "} to {" + newRole + "}");
+				newCfg.setServerRole(server.getName(), newORole);
 			}
-
-			// force hazelcast plugin to increase version of the distributed configuration.
-			// This is needed because if there are changes only in document properties (e.g. writeQuorum or readQuorum)
-			// the plugin won't detect them
-			// see https://github.com/orientechnologies/orientdb/blob/3.1.x/distributed/src/main/java/com/orientechnologies/orient/server/distributed/impl/ODistributedAbstractPlugin.java#L441
-			newCfg.override(newCfg.getDocument());
-			plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
-		} else {
-			throw error(BAD_REQUEST, "error_cluster_status_only_available_in_cluster_mode");
 		}
+		String newWriteQuorum = request.getWriteQuorum();
+		if (newWriteQuorum != null) {
+			if (newWriteQuorum.equalsIgnoreCase("all") || newWriteQuorum.equalsIgnoreCase("majority")) {
+				newCfg.getDocument().setProperty("writeQuorum", newWriteQuorum);
+			} else {
+				try {
+					int newWriteQuorumInt = Integer.parseInt(newWriteQuorum);
+					newCfg.getDocument().setProperty("writeQuorum", newWriteQuorumInt);
+				} catch (Exception e) {
+					throw new RuntimeException("Unsupported write quorum value {" + newWriteQuorum + "}");
+				}
+			}
+		}
+
+		Integer newReadQuorum = request.getReadQuorum();
+		if (newReadQuorum != null) {
+			newCfg.getDocument().setProperty("readQuorum", newReadQuorum);
+		}
+
+		// force hazelcast plugin to increase version of the distributed configuration.
+		// This is needed because if there are changes only in document properties (e.g. writeQuorum or readQuorum)
+		// the plugin won't detect them
+		// see https://github.com/orientechnologies/orientdb/blob/3.1.x/distributed/src/main/java/com/orientechnologies/orient/server/distributed/impl/ODistributedAbstractPlugin.java#L441
+		newCfg.override(newCfg.getDocument());
+		plugin.updateCachedDatabaseConfiguration(GraphStorage.DB_NAME, newCfg, true);
 	}
 
 	private void startTxCleanupTask() {

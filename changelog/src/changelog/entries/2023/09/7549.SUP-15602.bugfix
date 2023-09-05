@@ -1,0 +1,1 @@
+GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.

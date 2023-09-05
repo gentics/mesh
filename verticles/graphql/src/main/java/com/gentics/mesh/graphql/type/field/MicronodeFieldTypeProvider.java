@@ -189,45 +189,47 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				microschemaType.name(microschemaName);
 				microschemaType.description(microschemaModel.getDescription());
 
-				GraphQLFieldDefinition.Builder fieldsField = newFieldDefinition();
-				Builder fieldsType = newObject();
-				fieldsType.name(nodeTypeName(microschemaName));
-				fieldsField.dataFetcher(micronodeFetcher(Function.identity()));
+				if (!microschemaModel.getFields().isEmpty()) {
+					GraphQLFieldDefinition.Builder fieldsField = newFieldDefinition();
+					Builder fieldsType = newObject();
+					fieldsType.name(nodeTypeName(microschemaName));
+					fieldsField.dataFetcher(micronodeFetcher(Function.identity()));
 
-				for (FieldSchema fieldSchema : microschemaModel.getFields()) {
-					FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-					switch (type) {
-					case STRING:
-						fieldsType.field(fields.get().createStringDef(fieldSchema));
-						break;
-					case HTML:
-						fieldsType.field(fields.get().createHtmlDef(fieldSchema));
-						break;
-					case NUMBER:
-						fieldsType.field(fields.get().createNumberDef(fieldSchema));
-						break;
-					case DATE:
-						fieldsType.field(fields.get().createDateDef(fieldSchema));
-						break;
-					case BOOLEAN:
-						fieldsType.field(fields.get().createBooleanDef(fieldSchema));
-						break;
-					case NODE:
-						fieldsType.field(fields.get().createNodeDef(fieldSchema));
-						break;
-					case LIST:
-						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-						fieldsType.field(fields.get().createListDef(context, listFieldSchema));
-						break;
-					default:
-						log.error("Micronode field type {" + type + "} is not supported.");
-						// TODO throw exception for unsupported type
-						break;
+					for (FieldSchema fieldSchema : microschemaModel.getFields()) {
+						FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+						switch (type) {
+						case STRING:
+							fieldsType.field(fields.get().createStringDef(fieldSchema));
+							break;
+						case HTML:
+							fieldsType.field(fields.get().createHtmlDef(fieldSchema));
+							break;
+						case NUMBER:
+							fieldsType.field(fields.get().createNumberDef(fieldSchema));
+							break;
+						case DATE:
+							fieldsType.field(fields.get().createDateDef(fieldSchema));
+							break;
+						case BOOLEAN:
+							fieldsType.field(fields.get().createBooleanDef(fieldSchema));
+							break;
+						case NODE:
+							fieldsType.field(fields.get().createNodeDef(fieldSchema));
+							break;
+						case LIST:
+							ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
+							fieldsType.field(fields.get().createListDef(context, listFieldSchema));
+							break;
+						default:
+							log.error("Micronode field type {" + type + "} is not supported.");
+							// TODO throw exception for unsupported type
+							break;
+						}
+
 					}
-
+					fieldsField.name("fields").type(fieldsType);
+					microschemaType.field(fieldsField);
 				}
-				fieldsField.name("fields").type(fieldsType);
-				microschemaType.field(fieldsField);
 				microschemaType.fields(createMicronodeFields());
 				return microschemaType.build();
 			}).collect(Collectors.toList());

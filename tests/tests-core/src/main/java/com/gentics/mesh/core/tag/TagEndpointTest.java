@@ -141,6 +141,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals(currentPerPage, tagList.getMetainfo().getPerPage().longValue());
 			assertEquals(nBasicTags, tagList.getMetainfo().getTotalCount());
 			assertEquals(totalPages, tagList.getMetainfo().getPageCount());
+
+			verifySorting(param -> call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), param)), TagResponse::getName, "name", "List of tag names");
 		}
 	}
 

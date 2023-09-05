@@ -230,7 +230,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			schema.setName("No_Perm_Schema");
 			HibSchema noPermSchema = schemaDao.create(schema, user());
 			SchemaVersionModel dummySchema = new SchemaModelImpl();
-			dummySchema.setName("dummy");
+			dummySchema.setName("No_Perm_Schema");
 			dummySchema.setVersion("1.0");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
 
@@ -239,7 +239,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 				schema = FieldUtil.createMinimalValidSchema();
 				schema.setName("extra_schema_" + i);
 				HibSchema extraSchema = schemaDao.create(schema, user());
-				extraSchema.getLatestVersion().setSchema(dummySchema);
+				extraSchema.getLatestVersion().setSchema(new SchemaModelImpl().setVersion("1.0").setName("extra_schema_" + i));
 				roleDao.grantPermissions(role(), extraSchema, READ_PERM);
 			}
 			totalSchemas = nSchemas + data().getSchemaContainers().size();
@@ -286,6 +286,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
 		}
+
+		verifySorting(param -> call(() -> client().findSchemas(param)), SchemaResponse::getName, "name", "List of schema names");
 	}
 
 	@Test

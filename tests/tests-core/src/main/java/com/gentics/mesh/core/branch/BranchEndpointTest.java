@@ -600,6 +600,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initial,
 				first, second, third);
 		}
+
+		verifySorting(param -> call(() -> client().findBranches(PROJECT_NAME, param)), BranchResponse::getName, "name", "List of branch names");
 	}
 
 	@Test

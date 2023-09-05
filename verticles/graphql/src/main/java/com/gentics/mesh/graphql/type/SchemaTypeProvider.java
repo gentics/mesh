@@ -6,6 +6,7 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -18,8 +19,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.core.data.HibNamedElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
@@ -28,6 +27,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -82,6 +82,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		// .filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM)).collect(Collectors.toList());
 		// }, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 
+		// .isEmpty
+		schemaType.field(newFieldDefinition().name("isEmpty").type(GraphQLBoolean).dataFetcher((env) -> {
+			SchemaVersionModel model = loadModelWithFallback(env);
+			return model == null || model.getFields() == null || model.getFields().isEmpty();
+		}));
+
 		// .isContainer
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean).dataFetcher((env) -> {
 			SchemaVersionModel model = loadModelWithFallback(env);
@@ -111,7 +117,6 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		schemaType
 			.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 				Tx tx = Tx.get();
-				ContentDao contentDao = tx.contentDao();
 				NodeDao nodeDao = tx.nodeDao();
 				GraphQLContext gc = env.getContext();
 				List<String> languageTags = getLanguageArgument(env);
@@ -146,7 +151,13 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
 
 		// .fields
-		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
+		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> {
+			List<FieldSchema> fields = loadModelWithFallback(env).getFields();
+			if (fields.isEmpty()) {
+				fields = Collections.singletonList(emptySchemaFieldDummy("This schema has no fields. Do not use this filter."));
+			}
+			return fields;
+		}));
 
 		return schemaType.build();
 	}
