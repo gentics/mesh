@@ -42,7 +42,6 @@ import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -310,7 +309,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		fieldPut.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
-			binaryVariantsHandler.handleAddBinaryFieldVariants(wrap(rc), uuid, fieldName);
+			binaryVariantsHandler.handleUpsertBinaryFieldVariants(wrap(rc), uuid, fieldName);
 		});
 	}
 

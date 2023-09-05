@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Collections;
@@ -70,22 +71,13 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 */
 	public void handleDeleteBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
-			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : new ImageManipulationRequest().setVariants(Collections.emptyList()).setDeleteOther(true);
-			Result<? extends HibImageVariant> result = request.isDeleteOther()
-					? imageVariantDao.retainVariants(binaryField, request.getVariants(), ac)
-					: imageVariantDao.deleteVariants(binaryField, request.getVariants(), ac);
-			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
-			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
-			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
-			if (retrievalParams.retrieveOriginal()) {
-				variants = Stream.of(
-						Stream.of(imageVariantDao.transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
-						variants.stream()
-					).flatMap(Function.identity()).collect(Collectors.toList());
+			if (request.isDeleteOther()) {
+				imageVariantDao.retainVariants(binaryField, request.getVariants(), ac);
+			} else {
+				imageVariantDao.deleteVariants(binaryField, request.getVariants(), ac);
 			}
-			ImageVariantsResponse response = new ImageVariantsResponse(variants);
-			ac.send(response, OK);
+			ac.send(NO_CONTENT);
 		});
 	}
 
@@ -96,7 +88,7 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 * @param nodeUuid
 	 * @param fieldName
 	 */
-	public void handleAddBinaryFieldVariants(InternalActionContext ac, String nodeUuid, String fieldName) {
+	public void handleUpsertBinaryFieldVariants(InternalActionContext ac, String nodeUuid, String fieldName) {
 		wrapVariantsCall(ac, nodeUuid, fieldName, binaryField -> {
 			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = ac.fromJson(ImageManipulationRequest.class);

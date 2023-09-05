@@ -5,6 +5,7 @@ import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
@@ -243,7 +244,21 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, ParameterProvider... parameters);
+	default MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		return publishNode(projectName, nodeUuid, null, parameters);
+	}
+
+	/**
+	 * Publish a node and all its languages, considering nullable request body.
+	 *
+	 * @param projectName
+	 *            Name of the project
+	 * @param nodeUuid
+	 *            Uuid of the node to be published
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, NodePublishRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Publish a node language.
@@ -256,7 +271,22 @@ public interface NodeClientMethods {
 	 * @param parameters
 	 * @return Mesh request which can be invoked
 	 */
-	MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters);
+	default MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag, ParameterProvider... parameters) {
+		return publishNodeLanguage(projectName, nodeUuid, languageTag, null, parameters);
+	}
+
+	/**
+	 * Publish a node language, considering nullable request body.
+	 *
+	 * @param projectName
+	 *            Name of the project
+	 * @param nodeUuid
+	 *            Uuid of the node
+	 * @param languageTag
+	 * @param parameters
+	 * @return Mesh request which can be invoked
+	 */
+	MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag, NodePublishRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Take a node and all node languages offline.
