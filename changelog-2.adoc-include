@@ -6,6 +6,26 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.4]]
+== 2.0.4 (05.09.2023)
+
+icon:check[] Mesh Rest Client: An error has been fixed, which prevented sorting parameters from being passed to the endpoint.
+
+
+icon:check[] Clustering: Calling cluster specific REST Endpoints on non-clustered instances could cause internal server errors. The behaviour has been changed so that
+a "Bad Request" error is returned containing a proper error message.
+
+
+icon:check[] Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
+even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
+
+
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
+
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
+
+
 [[v2.0.3]]
 == 2.0.3 (10.08.2023)
 
