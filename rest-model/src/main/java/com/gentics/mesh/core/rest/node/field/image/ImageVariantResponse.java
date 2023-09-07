@@ -177,7 +177,7 @@ public class ImageVariantResponse implements RestModel {
 	@Override
 	@JsonIgnore
 	public int hashCode() {
-		return Objects.hash(auto, cropMode, fileSize, focalPoint, focalZoom, height, origin, rect, resizeMode, width);
+		return Objects.hash(auto, cropMode, /*fileSize, */focalPoint, focalZoom, height, origin, rect, resizeMode, width);
 	}
 
 	@Override
@@ -189,7 +189,7 @@ public class ImageVariantResponse implements RestModel {
 		if (getClass() != obj.getClass())
 			return false;
 		ImageVariantResponse other = (ImageVariantResponse) obj;
-		return auto == other.auto && cropMode == other.cropMode && Objects.equals(fileSize, other.fileSize)
+		return auto == other.auto && cropMode == other.cropMode /*&& Objects.equals(fileSize, other.fileSize)*/
 				&& Objects.equals(focalPoint, other.focalPoint) && Objects.equals(focalZoom, other.focalZoom)
 				&& Objects.equals(height, other.height) && origin == other.origin && Objects.equals(rect, other.rect)
 				&& resizeMode == other.resizeMode && Objects.equals(width, other.width);
@@ -202,8 +202,8 @@ public class ImageVariantResponse implements RestModel {
 	 */
 	public ImageVariantRequest toRequest() {
 		ImageVariantRequest request = new ImageVariantRequest()
-				.setWidth(getWidth())
-				.setHeight(getHeight())
+				.setWidth((isAuto() && getWidth() == null) ? "auto" : Integer.toString(getWidth()))
+				.setHeight((isAuto() && getHeight() == null) ? "auto" : Integer.toString(getHeight()))
 				.setCropMode(getCropMode())
 				.setFocalPoint(getFocalPoint())
 				.setFocalPointZoom(getFocalZoom())
@@ -211,6 +211,14 @@ public class ImageVariantResponse implements RestModel {
 		if (getRect() != null) {
 			request.setRect(getRect().getStartX(), getRect().getStartY(), getRect().getHeight(), getRect().getWidth());
 		}
+		if (isAuto() && getWidth() != null && getHeight() != null) {
+			request.setHeight("auto");
+		}
 		return request;
+	}
+
+	@Override
+	public String toString() {
+		return toJson();
 	}
 }
