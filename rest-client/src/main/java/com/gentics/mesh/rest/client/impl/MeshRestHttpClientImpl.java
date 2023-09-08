@@ -13,6 +13,8 @@ import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -1090,51 +1092,15 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			throw new IllegalArgumentException("The contentType of the binary field cannot be empty.");
 		}
 
-		// TODO handle escaping of filename
-		String boundary = "--------Geg2Oob";
-		StringBuilder multiPartFormData = new StringBuilder();
-
-		multiPartFormData.append("--").append(boundary).append("\r\n");
-		multiPartFormData.append("Content-Disposition: form-data; name=\"version\"\r\n");
-		multiPartFormData.append("\r\n");
-		multiPartFormData.append(version).append("\r\n");
-
-		multiPartFormData.append("--").append(boundary).append("\r\n");
-		multiPartFormData.append("Content-Disposition: form-data; name=\"language\"\r\n");
-		multiPartFormData.append("\r\n");
-		multiPartFormData.append(languageTag).append("\r\n");
-
+		Map<String, String> fields = new HashMap<>();
+		fields.put("version", version);
+		fields.put("language", languageTag);
 		if (publish) {
-			multiPartFormData.append("--").append(boundary).append("\r\n");
-			multiPartFormData.append("Content-Disposition: form-data; name=\"publish\"\r\n");
-			multiPartFormData.append("\r\n");
-			multiPartFormData.append("true").append("\r\n");
+			fields.put("publish", "true");
 		}
-
-		multiPartFormData.append("--").append(boundary).append("\r\n");
-		multiPartFormData.append("Content-Disposition: form-data; name=\"" + "shohY6d" + "\"; filename=\"").append(fileName).append("\"\r\n");
-		multiPartFormData.append("Content-Type: ").append(contentType).append("\r\n");
-		multiPartFormData.append("Content-Transfer-Encoding: binary\r\n" + "\r\n");
-
-		InputStream prefix;
-		InputStream suffix;
-		try {
-			prefix = new ByteArrayInputStream(multiPartFormData.toString().getBytes("utf-8"));
-			suffix = new ByteArrayInputStream(("\r\n--" + boundary + "--\r\n").getBytes("utf-8"));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-
-		String bodyContentType = "multipart/form-data; boundary=" + boundary;
-
-		Vector<InputStream> streams = new Vector<>(Arrays.asList(
-			prefix,
-			fileData,
-			suffix));
-		SequenceInputStream completeStream = new SequenceInputStream(streams.elements());
-
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
-			NodeResponse.class, completeStream, fileSize, bodyContentType);
+		return prepareFileuploadRequest(POST,
+				"/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
+				NodeResponse.class, fileName, contentType, fileData, fileSize, fields);
 	}
 
 	@Override
