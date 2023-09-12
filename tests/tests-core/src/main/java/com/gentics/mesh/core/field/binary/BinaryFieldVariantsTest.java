@@ -12,11 +12,13 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.client.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -76,6 +78,37 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest {
 		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
 		
 		assertThat(response.getVariants()).containsExactlyInAnyOrder(defaultAutoVariant1, defaultAutoVariant2);
+
+		defaultAutoVariant1.setResizeMode(null).setHeight(null);
+		defaultAutoVariant2.setResizeMode(null).setWidth(null);
+	}
+
+	@Test
+	public void testUpdateVariantsViaWebroot() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		String path = tx(tx -> {
+			return tx.nodeDao().getPath(tx.nodeDao().findByUuid(tx.projectDao().findByName(PROJECT_NAME), nodeUuid), mockActionContext(), project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
+		});
+
+		ImageManipulationRequest request = new ImageManipulationRequest();
+		ImageVariantResponse variant1 = new ImageVariantResponse();
+		variant1.setHeight(8).setWidth(8).setAuto(false);
+		ImageVariantResponse variant2 = new ImageVariantResponse();
+		variant2.setHeight(24).setWidth(24).setAuto(false);
+		request.setVariants(Arrays.asList(variant1.toRequest(), variant2.toRequest()));
+
+		call(() -> client().webrootUpdate(PROJECT_NAME, path, new NodeUpdateRequest().setManipulation(request)));
+
+		ImageVariantsResponse response = call(() -> client().getNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary", new ImageManipulationRetrievalParametersImpl().setRetrieveFilesize(true).setRetrieveOriginal(true)));
+		assertEquals("There should be 2 new variants + 2 existing ones + 1 original = 5 items in total", 5, response.getVariants().size());
+
+		variant1.setResizeMode(ResizeMode.SMART);
+		variant2.setResizeMode(ResizeMode.SMART);
+		defaultAutoVariant1.setResizeMode(ResizeMode.SMART).setHeight(6);
+		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
+
+		assertThat(response.getVariants()).containsExactlyInAnyOrder(defaultAutoVariant1, defaultAutoVariant2, defaultOriginalResponse, variant1, variant2);
 
 		defaultAutoVariant1.setResizeMode(null).setHeight(null);
 		defaultAutoVariant2.setResizeMode(null).setWidth(null);
