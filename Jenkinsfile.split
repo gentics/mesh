@@ -164,7 +164,7 @@ stage("Setup Build Environment") {
 						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							def extraFlags = ""
 							if (Boolean.valueOf(params.runDeployTesting)) {
-								extraFlags = "-am -pl server"
+								extraFlags = "-am -pl bom,server,plugin-bom,plugin-parent"
 							}
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
