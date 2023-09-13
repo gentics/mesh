@@ -115,6 +115,36 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testUpdateVariantsViaWebrootField() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		String path = tx(tx -> {
+			return tx.nodeDao().getPath(tx.nodeDao().findByUuid(tx.projectDao().findByName(PROJECT_NAME), nodeUuid), mockActionContext(), project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
+		});
+
+		ImageManipulationRequest request = new ImageManipulationRequest();
+		ImageVariantResponse variant1 = new ImageVariantResponse();
+		variant1.setHeight(8).setWidth(8).setAuto(false);
+		ImageVariantResponse variant2 = new ImageVariantResponse();
+		variant2.setHeight(24).setWidth(24).setAuto(false);
+		request.setVariants(Arrays.asList(variant1.toRequest(), variant2.toRequest()));
+
+		ImageVariantsResponse response = call(() -> client().upsertWebrootFieldImageVariants(PROJECT_NAME, "binary", path, request, new ImageManipulationRetrievalParametersImpl().setRetrieveFilesize(true).setRetrieveOriginal(true)));
+
+		assertEquals("There should be 2 new variants + 2 existing ones + 1 original = 5 items in total", 5, response.getVariants().size());
+
+		variant1.setResizeMode(ResizeMode.SMART);
+		variant2.setResizeMode(ResizeMode.SMART);
+		defaultAutoVariant1.setResizeMode(ResizeMode.SMART).setHeight(6);
+		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
+
+		assertThat(response.getVariants()).containsExactlyInAnyOrder(defaultAutoVariant1, defaultAutoVariant2, defaultOriginalResponse, variant1, variant2);
+
+		defaultAutoVariant1.setResizeMode(null).setHeight(null);
+		defaultAutoVariant2.setResizeMode(null).setWidth(null);
+	}
+
+	@Test
 	public void testCreatingVariantsAtop() throws IOException {
 		testCreatingAutoVariantsNoOriginal();
 

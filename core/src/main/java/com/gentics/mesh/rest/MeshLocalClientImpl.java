@@ -621,6 +621,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			ParameterProvider... parameters) {
 		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
 		ac.setProject(projectName);
+		//webrootFieldHandler.handleGetPathField(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -629,6 +630,24 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			String[] pathSegments, ParameterProvider... parameters) {
 		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
 		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		//webrootFieldHandler.handlePostPathField(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		//webrootFieldHandler.handlePostPathField(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

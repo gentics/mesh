@@ -1665,6 +1665,33 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(fieldName, "fieldName must not be null");
+		Objects.requireNonNull(path, "path must not be null");
+		if (!path.startsWith("/")) {
+			throw new RuntimeException("The path {" + path + "} must start with a slash");
+		}
+		return upsertWebrootFieldImageVariants(projectName, fieldName, path.split("/"), request, parameters);
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(fieldName, "fieldName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
+
+		String path = Arrays.stream(pathSegments)
+			.filter(segment -> segment != null && !segment.isEmpty())
+			.map(URIUtils::encodeSegment)
+			.collect(Collectors.joining("/", "/", ""));
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/webrootfield/" + fieldName + path + getQuery(parameters), ImageVariantsResponse.class, request);
+	}
+
+	@Override
 	public MeshRequest<MeshWebrootFieldResponse> webrootField(String projectName, String fieldName, String path,
 			ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
