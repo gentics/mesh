@@ -5,9 +5,12 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+
+import javax.imageio.ImageIO;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,17 +21,26 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.client.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.client.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.image.ResizeMode;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
+import com.gentics.mesh.rest.client.MeshWebrootResponse;
+import com.gentics.mesh.test.MeshOptionChanger;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.buffer.Buffer;
 
-@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true)
-public class BinaryFieldVariantsTest extends AbstractMeshTest {
+@MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true, customOptionChanger = BinaryFieldVariantsTest.class)
+public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOptionChanger {
 
 	protected String nodeUuid;
 	protected ImageVariantResponse defaultAutoVariant1;
@@ -64,6 +76,49 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest {
 		} else {
 			call(() -> client().clearNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));
 		}
+	}
+
+	@Test
+	public void testResizedImageFetchViaUuid() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		MeshBinaryResponse binary1response = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setWidth(8)));
+		BufferedImage image1 = ImageIO.read(binary1response.getStream());
+		assertThat(image1.getWidth()).isEqualTo(8);
+
+		MeshBinaryResponse binary2response = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setHeight(24)));
+		BufferedImage image2 = ImageIO.read(binary2response.getStream());
+		assertThat(image2.getHeight()).isEqualTo(24);
+	}
+
+	@Test
+	public void testResizedImageFetchViaWebrootfield() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		NodeResponse nodePath = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new GenericParametersImpl().setFields("path"), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+
+		MeshWebrootFieldResponse binary1response = call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setWidth(8)));
+		BufferedImage image1 = ImageIO.read(binary1response.getBinaryResponse().getStream());
+		assertThat(image1.getWidth()).isEqualTo(8);
+
+		MeshWebrootFieldResponse binary2response = call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24)));
+		BufferedImage image2 = ImageIO.read(binary2response.getBinaryResponse().getStream());
+		assertThat(image2.getHeight()).isEqualTo(24);
+	}
+
+	@Test
+	public void testResizedImageFetchViaWebroot() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		NodeResponse nodePath = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new GenericParametersImpl().setFields("path"), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+
+		MeshWebrootResponse binary1response = call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setWidth(8)));
+		BufferedImage image1 = ImageIO.read(binary1response.getBinaryResponse().getStream());
+		assertThat(image1.getWidth()).isEqualTo(8);
+
+		MeshWebrootResponse binary2response = call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24)));
+		BufferedImage image2 = ImageIO.read(binary2response.getBinaryResponse().getStream());
+		assertThat(image2.getHeight()).isEqualTo(24);
 	}
 
 	@Test
@@ -222,5 +277,10 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest {
 
 		defaultAutoVariant1.setResizeMode(null).setHeight(null);
 		defaultAutoVariant2.setResizeMode(null).setWidth(null);
+	}
+
+	@Override
+	public void change(MeshOptions options) {
+		options.getImageOptions().setMode(ImageManipulationMode.MANUAL);
 	}
 }

@@ -117,7 +117,7 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 			edge = edge.hasNot(ImageVariant.CROP_X_KEY).hasNot(ImageVariant.CROP_Y_KEY);
 			if (StringUtils.isBlank(request.getWidth())) {
 				//edge = edge.hasNot(ImageVariant.AUTO_KEY);
-				edge = edge.hasNot(ImageVariant.WIDTH_KEY);
+				//edge = edge.hasNot(ImageVariant.WIDTH_KEY);
 			} else {
 				if ("auto".equals(request.getWidth())) {
 					edge = edge.has(ImageVariant.AUTO_KEY, true);
@@ -127,7 +127,7 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 			}
 			if (StringUtils.isBlank(request.getHeight())) {
 				//edge = edge.hasNot(ImageVariant.AUTO_KEY);
-				edge = edge.hasNot(ImageVariant.HEIGHT_KEY);
+				//edge = edge.hasNot(ImageVariant.HEIGHT_KEY);
 			} else {
 				if ("auto".equals(request.getHeight())) {
 					edge = edge.has(ImageVariant.AUTO_KEY, true);
