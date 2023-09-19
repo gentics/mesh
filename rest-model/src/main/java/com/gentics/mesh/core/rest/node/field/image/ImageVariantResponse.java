@@ -201,6 +201,15 @@ public class ImageVariantResponse implements RestModel {
 	 * @return
 	 */
 	public ImageVariantRequest toRequest() {
+		return toRequest(true);
+	}
+
+	/**
+	 * Create a {@link ImageVariantRequest} out of this response.
+	 * @param autoKeepWidth if `auto` is set, and this param is true, the width value is kept, replacing height with `auto`, otherwise the height value is kept.
+	 * @return
+	 */
+	public ImageVariantRequest toRequest(boolean autoKeepWidth) {
 		ImageVariantRequest request = new ImageVariantRequest()
 				.setWidth((isAuto() && getWidth() == null) ? "auto" : Integer.toString(getWidth()))
 				.setHeight((isAuto() && getHeight() == null) ? "auto" : Integer.toString(getHeight()))
@@ -212,7 +221,11 @@ public class ImageVariantResponse implements RestModel {
 			request.setRect(getRect().getStartX(), getRect().getStartY(), getRect().getHeight(), getRect().getWidth());
 		}
 		if (isAuto() && getWidth() != null && getHeight() != null) {
-			request.setHeight("auto");
+			if (autoKeepWidth) {
+				request.setHeight("auto");
+			} else {
+				request.setWidth("auto");
+			}
 		}
 		return request;
 	}
