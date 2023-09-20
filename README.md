@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://getmesh.io">
-    <img src="https://getmesh.io/blog/JPGs/Gentics_CMS_Logo.jpg" width="420" alt="Gentics Mesh" />
+    <img src="https://getmesh.io/assets/gentics-mesh-logo.png" width="420" alt="Gentics Mesh" />
   </a>
 </h1>
 
