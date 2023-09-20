@@ -109,6 +109,7 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 	@Override
 	public ImageVariant getVariant(HibBinary binary, ImageManipulation request, InternalActionContext ac) {
 		//return getVariants(binary, ac).stream().filter(variant -> doesVariantMatchRequest(variant, request)).findAny().orElse(null);
+System.err.println(request.hasFocalPoint() + " " + request.getCacheKey());
 
 		VertexTraversal<?, ?, ?> edge = toGraph(binary).out(GraphRelationships.HAS_VARIANTS);
 		if (request.getRect() != null) {

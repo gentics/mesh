@@ -141,12 +141,6 @@ public class BinaryFieldResponseHandler {
 	private void resizeAndRespond(RoutingContext rc, HibBinaryField binaryField, ImageManipulationParameters imageParams) {
 		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
-		if (!imageParams.hasFocalPoint()) {
-			FocalPoint fp = binaryField.getImageFocalPoint();
-			if (fp != null) {
-				imageParams.setFocalPoint(fp);
-			}
-		}
 		String fileName = binaryField.getFileName();
 		ImageManipulationMode mode = options.getMode();
 
@@ -154,6 +148,12 @@ public class BinaryFieldResponseHandler {
 		case OFF:
 			throw error(BAD_REQUEST, "image_error_reading_failed");
 		case ON_DEMAND:
+			if (!imageParams.hasFocalPoint()) {
+				FocalPoint fp = binaryField.getImageFocalPoint();
+				if (fp != null) {
+					imageParams.setFocalPoint(fp);
+				}
+			}
 			Integer originalHeight = binaryField.getBinary().getImageHeight();
 			Integer originalWidth = binaryField.getBinary().getImageWidth();
 
