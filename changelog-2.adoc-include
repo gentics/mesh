@@ -6,6 +6,13 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.5]]
+== 2.0.5 (20.09.2023)
+
+icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge, 
+throwing an NPE. This has now been fixed.
+
+
 [[v2.0.4]]
 == 2.0.4 (05.09.2023)
 
