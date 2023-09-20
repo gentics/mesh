@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://getmesh.io">
-    <img src="https://getmesh.io/assets/gentics-mesh-logo.png" width="420" alt="Gentics Mesh" />
+    <img src="https://getmesh.io/blog/JPGs/Gentics_CMS_Logo.jpg" width="420" alt="Gentics Mesh" />
   </a>
 </h1>
 
@@ -166,7 +166,7 @@ Gentics Mesh is actively developed by a dedicated team at Gentics Software GmbH 
 Austria.
 
 <p align="center">
-    <img src="CMP_DEV.jpg" alt="CMP DEV" style="max-width: 80%" />
+    <img src="https://getmesh.io/blog/JPGs/CMP-DEV.jpg" alt="CMP DEV" style="max-width: 80%" />
 </p>
 
 The Gentics Mesh core team consists of the following members:
