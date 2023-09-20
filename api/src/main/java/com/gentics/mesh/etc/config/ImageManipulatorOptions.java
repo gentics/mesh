@@ -20,7 +20,7 @@ public class ImageManipulatorOptions implements Option {
 	public static final String MESH_IMAGE_JPEG_QUALITY_ENV = "MESH_IMAGE_JPEG_QUALITY";
 	public static final String MESH_IMAGE_RESAMPLE_FILTER_ENV = "MESH_IMAGE_RESAMPLE_FILTER";
 	public static final String MESH_IMAGE_CACHE_DIRECTORY_ENV = "MESH_IMAGE_CACHE_DIRECTORY";
-	public static final String MESH_IMAGE_MANIPULATION_MODE_ENV = "MESH_MESH_IMAGE_MANIPULATION_MODE";
+	public static final String MESH_IMAGE_MANIPULATION_MODE_ENV = "MESH_IMAGE_MANIPULATION_MODE";
 
 	public static final int DEFAULT_MAX_WIDTH = 2048;
 	public static final int DEFAULT_MAX_HEIGHT = 2048;

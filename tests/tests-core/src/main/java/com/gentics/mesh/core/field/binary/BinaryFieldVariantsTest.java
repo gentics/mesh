@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -30,6 +31,7 @@ import com.gentics.mesh.parameter.client.ImageManipulationRetrievalParametersImp
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshOptionChanger;
@@ -76,6 +78,79 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		} else {
 			call(() -> client().clearNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));
 		}
+	}
+
+	@Test
+	public void testInexistingResizedImageFetchViaUuid() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		try {
+			call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setWidth(24)));
+		} catch (Throwable e) {
+			MeshRestClientMessageException ex = null;
+			while (e != null && ex == null) {
+				if (e instanceof MeshRestClientMessageException) {
+					ex = (MeshRestClientMessageException) e;
+				} else {
+					e = e.getCause();
+				}
+			}
+			if (ex != null) {
+				assertThat(ex.getStatusCode()).isEqualTo(404);
+				return;
+			}
+		}
+		fail("Expect a HTTP404");
+	}
+
+	@Test
+	public void testInexistingResizedImageFetchViaWebrootfield() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		NodeResponse nodePath = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new GenericParametersImpl().setFields("path"), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+
+		try {
+			call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setWidth(24)));
+		} catch (Throwable e) {
+			MeshRestClientMessageException ex = null;
+			while (e != null && ex == null) {
+				if (e instanceof MeshRestClientMessageException) {
+					ex = (MeshRestClientMessageException) e;
+				} else {
+					e = e.getCause();
+				}
+			}
+			if (ex != null) {
+				assertThat(ex.getStatusCode()).isEqualTo(404);
+				return;
+			}
+		}
+		fail("Expect a HTTP404");
+	}
+
+	@Test
+	public void testInexistingResizedImageFetchViaWebroot() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		NodeResponse nodePath = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new GenericParametersImpl().setFields("path"), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
+
+		try {
+			call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setWidth(24)));
+		} catch (Throwable e) {
+			MeshRestClientMessageException ex = null;
+			while (e != null && ex == null) {
+				if (e instanceof MeshRestClientMessageException) {
+					ex = (MeshRestClientMessageException) e;
+				} else {
+					e = e.getCause();
+				}
+			}
+			if (ex != null) {
+				assertThat(ex.getStatusCode()).isEqualTo(404);
+				return;
+			}
+		}
+		fail("Expect a HTTP404");
 	}
 
 	@Test
