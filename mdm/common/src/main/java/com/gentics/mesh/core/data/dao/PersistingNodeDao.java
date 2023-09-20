@@ -1964,11 +1964,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED);
 		if (edge != null) {
 			HibNodeFieldContainer oldPublishedContainer = contentDao.getFieldContainerOfEdge(edge);
-			oldUrlFieldValues = contentDao.getUrlFieldValues(oldPublishedContainer).collect(Collectors.toSet());
-			contentDao.removeEdge(edge);
-			contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish", true);
-			if (ac.isPurgeAllowed() && isAutoPurgeEnabled && contentDao.isPurgeable(oldPublishedContainer)) {
-				contentDao.purge(oldPublishedContainer);
+			if (oldPublishedContainer != null) {
+				oldUrlFieldValues = contentDao.getUrlFieldValues(oldPublishedContainer).collect(Collectors.toSet());
+				contentDao.removeEdge(edge);
+				contentDao.updateWebrootPathInfo(oldPublishedContainer, branchUuid, "node_conflicting_segmentfield_publish", true);
+				if (ac.isPurgeAllowed() && isAutoPurgeEnabled && contentDao.isPurgeable(oldPublishedContainer)) {
+					contentDao.purge(oldPublishedContainer);
+				}
+			} else {
+				contentDao.removeEdge(edge);
 			}
 		}
 		if (ac.isPurgeAllowed()) {
