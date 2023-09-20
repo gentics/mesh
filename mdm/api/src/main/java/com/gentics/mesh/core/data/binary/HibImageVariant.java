@@ -86,6 +86,20 @@ public interface HibImageVariant extends HibImageDataElement {
 	Integer getCropStartY();
 
 	/**
+	 * Get crop rect width coordinate.
+	 * 
+	 * @return
+	 */
+	Integer getCropWidth();
+
+	/**
+	 * Get crop rect height coordinate.
+	 * 
+	 * @return
+	 */
+	Integer getCropHeight();
+
+	/**
 	 * Get the variant crop mode.
 	 * 
 	 * @return
@@ -138,8 +152,8 @@ public interface HibImageVariant extends HibImageDataElement {
 	default ImageRect getCropRect() {
 		Integer cropX = getCropStartX();
 		Integer cropY = getCropStartY();
-		Integer cropWidth = getWidth();
-		Integer cropHeight = getHeight();
+		Integer cropWidth = getCropWidth();
+		Integer cropHeight = getCropHeight();
 		if (cropX == null || cropY == null || cropWidth == null || cropHeight == null) {
 			return null;
 		} else {

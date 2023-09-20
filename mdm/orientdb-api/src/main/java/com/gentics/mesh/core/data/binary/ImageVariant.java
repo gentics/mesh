@@ -25,6 +25,8 @@ public interface ImageVariant extends MeshVertex, HibImageVariantSetter {
 	String FOCAL_POINT_ZOOM_KEY = "fpz";
 	String CROP_X_KEY = "cropX";
 	String CROP_Y_KEY = "cropY";
+	String CROP_WIDTH_KEY = "cropWidth";
+	String CROP_HEIGHT_KEY = "cropHeight";
 	String CROP_MODE_KEY = "cropMode";
 	String RESIZE_MODE_KEY = "resizeMode";
 	String AUTO_KEY = "auto";
@@ -128,6 +130,36 @@ public interface ImageVariant extends MeshVertex, HibImageVariantSetter {
 			removeProperty(FOCAL_POINT_ZOOM_KEY);
 		} else {
 			property(FOCAL_POINT_ZOOM_KEY, fpz);
+		}
+		return this;
+	}
+
+	@Override
+	default Integer getCropWidth() {
+		return property(CROP_WIDTH_KEY);
+	}
+
+	@Override
+	default HibImageVariant setCropWidth(Integer cropWidth) {
+		if (cropWidth == null) {
+			removeProperty(CROP_WIDTH_KEY);
+		} else {
+			property(CROP_WIDTH_KEY, cropWidth);
+		}
+		return this;
+	}
+
+	@Override
+	default Integer getCropHeight() {
+		return property(CROP_HEIGHT_KEY);
+	}
+
+	@Override
+	default HibImageVariant setCropHeight(Integer cropHeight) {
+		if (cropHeight == null) {
+			removeProperty(CROP_HEIGHT_KEY);
+		} else {
+			property(CROP_HEIGHT_KEY, cropHeight);
 		}
 		return this;
 	}

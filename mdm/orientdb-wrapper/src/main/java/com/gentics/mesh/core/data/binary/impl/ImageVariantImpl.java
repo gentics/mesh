@@ -41,6 +41,8 @@ public class ImageVariantImpl extends MeshVertexImpl implements ImageVariant {
 			.withField(ImageVariant.CROP_MODE_KEY, FieldType.STRING)
 			.withField(ImageVariant.CROP_X_KEY, FieldType.INTEGER)
 			.withField(ImageVariant.CROP_Y_KEY, FieldType.INTEGER)
+			.withField(ImageVariant.CROP_WIDTH_KEY, FieldType.INTEGER)
+			.withField(ImageVariant.CROP_HEIGHT_KEY, FieldType.INTEGER)
 			.withField(ImageVariant.FOCAL_POINT_X_KEY, FieldType.FLOAT)
 			.withField(ImageVariant.FOCAL_POINT_Y_KEY, FieldType.FLOAT)
 			.withField(ImageVariant.FOCAL_POINT_ZOOM_KEY, FieldType.FLOAT)

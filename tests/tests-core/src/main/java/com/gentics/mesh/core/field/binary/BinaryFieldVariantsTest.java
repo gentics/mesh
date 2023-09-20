@@ -164,6 +164,10 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		MeshBinaryResponse binary2response = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setHeight(24)));
 		BufferedImage image2 = ImageIO.read(binary2response.getStream());
 		assertThat(image2.getHeight()).isEqualTo(24);
+
+		MeshBinaryResponse binary3response = call(() -> client().downloadBinaryField(PROJECT_NAME, nodeUuid, "en", "binary", new ImageManipulationParametersImpl().setWidth(8).setHeight("auto").setResizeMode(ResizeMode.SMART)));
+		BufferedImage image3 = ImageIO.read(binary3response.getStream());
+		assertThat(image3.getWidth()).isEqualTo(8);
 	}
 
 	@Test
@@ -179,6 +183,10 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		MeshWebrootFieldResponse binary2response = call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24)));
 		BufferedImage image2 = ImageIO.read(binary2response.getBinaryResponse().getStream());
 		assertThat(image2.getHeight()).isEqualTo(24);
+
+		MeshWebrootFieldResponse binary3response = call(() -> client().webrootField(PROJECT_NAME, "binary", nodePath.getPath(), new ImageManipulationParametersImpl().setWidth(8).setHeight("auto").setResizeMode(ResizeMode.SMART)));
+		BufferedImage image3 = ImageIO.read(binary3response.getBinaryResponse().getStream());
+		assertThat(image3.getWidth()).isEqualTo(8);
 	}
 
 	@Test
@@ -194,6 +202,10 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		MeshWebrootResponse binary2response = call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setHeight(24)));
 		BufferedImage image2 = ImageIO.read(binary2response.getBinaryResponse().getStream());
 		assertThat(image2.getHeight()).isEqualTo(24);
+
+		MeshWebrootResponse binary3response = call(() -> client().webroot(PROJECT_NAME, nodePath.getPath(), new ImageManipulationParametersImpl().setWidth(8).setHeight("auto").setResizeMode(ResizeMode.SMART)));
+		BufferedImage image3 = ImageIO.read(binary3response.getBinaryResponse().getStream());
+		assertThat(image3.getWidth()).isEqualTo(8);
 	}
 
 	@Test

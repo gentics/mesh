@@ -150,19 +150,19 @@ public class BinaryFieldResponseHandler {
 		String fileName = binaryField.getFileName();
 		ImageManipulationMode mode = options.getMode();
 
-		Integer originalHeight = binaryField.getBinary().getImageHeight();
-		Integer originalWidth = binaryField.getBinary().getImageWidth();
-
-		if ("auto".equals(imageParams.getHeight())) {
-			imageParams.setHeight(originalHeight);
-		}
-		if ("auto".equals(imageParams.getWidth())) {
-			imageParams.setWidth(originalWidth);
-		}
 		switch (mode) {
 		case OFF:
 			throw error(BAD_REQUEST, "image_error_reading_failed");
 		case ON_DEMAND:
+			Integer originalHeight = binaryField.getBinary().getImageHeight();
+			Integer originalWidth = binaryField.getBinary().getImageWidth();
+
+			if ("auto".equals(imageParams.getHeight())) {
+				imageParams.setHeight(originalHeight);
+			}
+			if ("auto".equals(imageParams.getWidth())) {
+				imageParams.setWidth(originalWidth);
+			}
 			imageManipulator.handleResize(binaryField.getBinary(), imageParams)
 				.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
 					.doOnSuccess(props -> {

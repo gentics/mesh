@@ -290,7 +290,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	default void attachImageVariant(ImageVariant variant, boolean throwOnExisting) {
 		NodeGraphFieldContainer container = getParentContainer();
 		if (container.findImageVariant(getFieldKey(), variant) == null) {
-			getParentContainer().attachImageVariant(getFieldKey(), variant);
+			container.attachImageVariant(getFieldKey(), variant);
 		} else {
 			if (throwOnExisting) {
 				throw error(BAD_REQUEST, "Requested variant of field `{}` already exists", getFieldKey());
@@ -306,7 +306,7 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	default void detachImageVariant(ImageVariant variant, boolean throwOnAbsent) {
 		NodeGraphFieldContainer container = getParentContainer();
 		if (container.findImageVariant(getFieldKey(), variant) != null) {
-			getParentContainer().detachImageVariant(getFieldKey(), variant);
+			container.detachImageVariant(getFieldKey(), variant);
 		} else {
 			if (throwOnAbsent) {
 				throw error(BAD_REQUEST, "Requested variant of field `{}` not found", getFieldKey());

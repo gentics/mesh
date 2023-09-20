@@ -112,28 +112,34 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 
 		VertexTraversal<?, ?, ?> edge = toGraph(binary).out(GraphRelationships.HAS_VARIANTS);
 		if (request.getRect() != null) {
-			edge = edge.has(ImageVariant.CROP_X_KEY, request.getRect().getStartX()).has(ImageVariant.CROP_Y_KEY, request.getRect().getStartY()).has(ImageVariant.WIDTH_KEY, request.getRect().getWidth()).has(ImageVariant.HEIGHT_KEY, request.getRect().getHeight());
-		} else {
-			edge = edge.hasNot(ImageVariant.CROP_X_KEY).hasNot(ImageVariant.CROP_Y_KEY);
-			if (StringUtils.isBlank(request.getWidth())) {
-				//edge = edge.hasNot(ImageVariant.AUTO_KEY);
-				//edge = edge.hasNot(ImageVariant.WIDTH_KEY);
-			} else {
-				if ("auto".equals(request.getWidth())) {
-					edge = edge.has(ImageVariant.AUTO_KEY, true);
-				} else {
-					edge = edge.has(ImageVariant.WIDTH_KEY, Integer.parseInt(request.getWidth()));
-				}
+			edge = edge.has(ImageVariant.CROP_X_KEY, request.getRect().getStartX()).has(ImageVariant.CROP_Y_KEY, request.getRect().getStartY());
+			if (request.getRect().getWidth() > 0) {
+				edge = edge.has(ImageVariant.CROP_WIDTH_KEY, request.getRect().getWidth());
 			}
-			if (StringUtils.isBlank(request.getHeight())) {
-				//edge = edge.hasNot(ImageVariant.AUTO_KEY);
-				//edge = edge.hasNot(ImageVariant.HEIGHT_KEY);
+			if (request.getRect().getHeight() > 0) {
+				edge = edge.has(ImageVariant.CROP_HEIGHT_KEY, request.getRect().getHeight());
+			}
+		} else {
+			edge = edge.hasNot(ImageVariant.CROP_X_KEY).hasNot(ImageVariant.CROP_Y_KEY).hasNot(ImageVariant.CROP_WIDTH_KEY).hasNot(ImageVariant.CROP_HEIGHT_KEY);
+		}
+		if (StringUtils.isBlank(request.getWidth())) {
+			//edge = edge.hasNot(ImageVariant.AUTO_KEY);
+			//edge = edge.hasNot(ImageVariant.WIDTH_KEY);
+		} else {
+			if ("auto".equals(request.getWidth())) {
+				edge = edge.has(ImageVariant.AUTO_KEY, true);
 			} else {
-				if ("auto".equals(request.getHeight())) {
-					edge = edge.has(ImageVariant.AUTO_KEY, true);
-				} else {
-					edge = edge.has(ImageVariant.HEIGHT_KEY, Integer.parseInt(request.getHeight()));
-				}
+				edge = edge.has(ImageVariant.WIDTH_KEY, Integer.parseInt(request.getWidth()));
+			}
+		}
+		if (StringUtils.isBlank(request.getHeight())) {
+			//edge = edge.hasNot(ImageVariant.AUTO_KEY);
+			//edge = edge.hasNot(ImageVariant.HEIGHT_KEY);
+		} else {
+			if ("auto".equals(request.getHeight())) {
+				edge = edge.has(ImageVariant.AUTO_KEY, true);
+			} else {
+				edge = edge.has(ImageVariant.HEIGHT_KEY, Integer.parseInt(request.getHeight()));
 			}
 		}
 		if (request.getCropMode() != null) {

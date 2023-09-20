@@ -23,6 +23,10 @@ public interface HibImageVariantSetter extends HibImageVariant {
 
 	HibImageVariant setCropStartX(Integer cropX);
 
+	HibImageVariant setCropWidth(Integer cropWidth);
+
+	HibImageVariant setCropHeight(Integer cropHeight);
+
 	HibImageVariant setFocalPointZoom(Float fpz);
 
 	HibImageVariant setFocalPointY(Float fpy);
@@ -38,37 +42,39 @@ public interface HibImageVariantSetter extends HibImageVariant {
 		if (variant.getRect() != null) {
 			setCropStartX(variant.getRect().getStartX());
 			setCropStartY(variant.getRect().getStartY());
-			setWidth(variant.getRect().getWidth());
-			setHeight(variant.getRect().getHeight());
+			setCropWidth(variant.getRect().getWidth());
+			setCropHeight(variant.getRect().getHeight());
 		} else {
 			setCropStartX(null);
 			setCropStartY(null);			
-			if (variant.getWidth() != null) {
-				if ("auto".equals(variant.getWidth())) {
-					setAuto(true);
-					setHeight(Integer.parseInt(variant.getHeight()));
-					Point originalSize = binary.getImageSize();
-					float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
-					setWidth((int) ((float) getHeight() * ratio));
-				} else {
-					setWidth(Integer.parseInt(variant.getWidth()));
-				}
+			setCropWidth(null);
+			setCropHeight(null);
+		}
+		if (variant.getWidth() != null) {
+			if ("auto".equals(variant.getWidth())) {
+				setAuto(true);
+				setHeight(Integer.parseInt(variant.getHeight()));
+				Point originalSize = binary.getImageSize();
+				float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
+				setWidth((int) ((float) getHeight() * ratio));
 			} else {
-				setWidth(null);
+				setWidth(Integer.parseInt(variant.getWidth()));
 			}
-			if (variant.getHeight() != null) {
-				if ("auto".equals(variant.getHeight())) {
-					setAuto(true);
-					setWidth(Integer.parseInt(variant.getWidth()));
-					Point originalSize = binary.getImageSize();
-					float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
-					setHeight((int) ((float) getWidth() * ratio));
-				} else {
-					setHeight(Integer.parseInt(variant.getHeight()));
-				}
+		} else {
+			setWidth(null);
+		}
+		if (variant.getHeight() != null) {
+			if ("auto".equals(variant.getHeight())) {
+				setAuto(true);
+				setWidth(Integer.parseInt(variant.getWidth()));
+				Point originalSize = binary.getImageSize();
+				float ratio = ((float) originalSize.getX()) / ((float) originalSize.getY());
+				setHeight((int) ((float) getWidth() * ratio));
 			} else {
-				setHeight(null);
+				setHeight(Integer.parseInt(variant.getHeight()));
 			}
+		} else {
+			setHeight(null);
 		}
 		if (variant.getFocalPoint() != null) {
 			setFocalPointX(variant.getFocalPoint().getX());
