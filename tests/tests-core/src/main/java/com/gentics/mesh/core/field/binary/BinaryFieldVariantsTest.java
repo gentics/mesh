@@ -17,8 +17,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
@@ -218,7 +220,28 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 
 		defaultAutoVariant1.setResizeMode(ResizeMode.SMART).setHeight(6);
 		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
-		
+
+		assertThat(response.getVariants()).containsExactlyInAnyOrder(defaultAutoVariant1, defaultAutoVariant2);
+
+		defaultAutoVariant1.setResizeMode(null).setHeight(null);
+		defaultAutoVariant2.setResizeMode(null).setWidth(null);
+	}
+
+	@Test
+	public void testCreatingVariantsOnPublish() {
+		ImageManipulationRequest request = new ImageManipulationRequest();
+		request.setVariants(Arrays.asList(defaultAutoVariant1.toRequest(), defaultAutoVariant2.toRequest()));
+		NodePublishRequest publishRequest = new NodePublishRequest();
+		publishRequest.addImageVariant("binary", request);
+
+		call(() -> client().publishNode(PROJECT_NAME, nodeUuid, publishRequest));
+		ImageVariantsResponse response = call(() -> client().getNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));	
+
+		assertEquals("There should be 2 variants in total", 2, response.getVariants().size());
+
+		defaultAutoVariant1.setResizeMode(ResizeMode.SMART).setHeight(6);
+		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
+
 		assertThat(response.getVariants()).containsExactlyInAnyOrder(defaultAutoVariant1, defaultAutoVariant2);
 
 		defaultAutoVariant1.setResizeMode(null).setHeight(null);

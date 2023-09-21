@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 
@@ -82,4 +84,44 @@ public interface ImageManipulator {
 	 * @return
 	 */
 	Single<Map<String, String>> getMetadata(InputStream ins);
+
+	/**
+	 * Apply the default manipulation to the image variant being created.
+	 * 
+	 * @param <T>
+	 * @param imageParams
+	 * @param binaryField field requesting the variant
+	 * @return
+	 */
+	static <T extends ImageManipulation> T applyDefaultManipulation(T imageParams, HibBinaryField binaryField) {
+		// We can maybe enhance the parameters using stored parameters.
+		if (!imageParams.hasFocalPoint()) {
+			FocalPoint fp = binaryField.getImageFocalPoint();
+			if (fp != null) {
+				imageParams.setFocalPoint(fp);
+			}
+		}
+		return applyDefaultManipulation(imageParams, binaryField.getBinary());
+	}
+
+	/**
+	 * Apply the default manipulation to the image variant being created.
+	 * 
+	 * @param <T>
+	 * @param imageParams
+	 * @param binary origin
+	 * @return
+	 */
+	static <T extends ImageManipulation> T applyDefaultManipulation(T imageParams, HibBinary binary) {
+		Integer originalHeight = binary.getImageHeight();
+		Integer originalWidth = binary.getImageWidth();
+
+		if ("auto".equals(imageParams.getHeight())) {
+			imageParams.setHeight(originalHeight);
+		}
+		if ("auto".equals(imageParams.getWidth())) {
+			imageParams.setWidth(originalWidth);
+		}
+		return imageParams;
+	}
 }

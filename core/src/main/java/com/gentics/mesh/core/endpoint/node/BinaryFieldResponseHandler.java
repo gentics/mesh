@@ -148,22 +148,7 @@ public class BinaryFieldResponseHandler {
 		case OFF:
 			throw error(BAD_REQUEST, "image_error_reading_failed");
 		case ON_DEMAND:
-			if (!imageParams.hasFocalPoint()) {
-				FocalPoint fp = binaryField.getImageFocalPoint();
-				if (fp != null) {
-					imageParams.setFocalPoint(fp);
-				}
-			}
-			Integer originalHeight = binaryField.getBinary().getImageHeight();
-			Integer originalWidth = binaryField.getBinary().getImageWidth();
-
-			if ("auto".equals(imageParams.getHeight())) {
-				imageParams.setHeight(originalHeight);
-			}
-			if ("auto".equals(imageParams.getWidth())) {
-				imageParams.setWidth(originalWidth);
-			}
-			imageManipulator.handleResize(binaryField.getBinary(), imageParams)
+			imageManipulator.handleResize(binaryField.getBinary(), ImageManipulator.applyDefaultManipulation(imageParams, binaryField))
 				.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
 					.doOnSuccess(props -> {
 						response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
