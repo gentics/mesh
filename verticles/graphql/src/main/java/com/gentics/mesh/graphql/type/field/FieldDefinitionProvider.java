@@ -40,6 +40,7 @@ import org.dataloader.DataLoader;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -75,6 +76,7 @@ import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.util.DateUtils;
 import com.google.common.base.Functions;
 
@@ -311,6 +313,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .plainText
 		type.field(newFieldDefinition().name("plainText").description("Extracted plain text of the uploaded document.").type(GraphQLString));
 
+		// .variants
+		type.field(newFieldDefinition().name("variants").description("Image binary manipulation variants, if applicable").type(new GraphQLList(createImageVariantType("variant"))).dataFetcher(fetcher -> {
+			HibBinaryField field = fetcher.getSource();
+			return field.getImageVariants().list();
+		}));
+
 		return type.build();
 	}
 
@@ -370,6 +378,82 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		// .s3ObjectKey
 		type.field(newFieldDefinition().name("s3ObjectKey").description("S3 object key. Serves as reference to AWS.").type(GraphQLString));
+
+		return type.build();
+	}
+
+	public GraphQLObjectType createImageVariantType(String name) {
+		Builder type = newObject().name(name).description("Image variant");
+
+		// .width
+		type.field(newFieldDefinition().name("width").description("Variant width").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getWidth();
+			}));
+
+		// .height
+		type.field(newFieldDefinition().name("height").description("Variant height").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getHeight();
+			}));
+
+		// .cropX
+		type.field(newFieldDefinition().name("cropX").description("Variant crop X starting point").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropStartX();
+			}));
+
+		// .cropY
+		type.field(newFieldDefinition().name("cropY").description("Variant crop Y starting point").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropStartY();
+			}));
+
+		// .cropWidth
+		type.field(newFieldDefinition().name("cropWidth").description("Variant crop width").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropWidth();
+			}));
+
+		// .cropHeigth
+		type.field(newFieldDefinition().name("cropHeight").description("Variant crop heigth").type(GraphQLInt)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getCropHeight();
+			}));
+
+		// .cropMode
+		type.field(newFieldDefinition().name("cropMode").description("Variant crop mode").type(GraphQLString)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return String.valueOf(variant.getCropMode());
+			}));
+
+		// .resizeMode
+		type.field(newFieldDefinition().name("resizeMode").description("Variant resize mode").type(GraphQLString)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return String.valueOf(variant.getResizeMode());
+			}));
+
+		// .focalPoint
+		type.field(
+			newFieldDefinition().name("focalPoint").description("Focal point of the variant.").type(createFocalPointType("ImageVariantFocalPoint")).dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getFocalPoint();
+			}));
+
+		// .focalZoom
+		type.field(newFieldDefinition().name("zoom").description("Focal zoom factor").type(GraphQLFloat)
+			.dataFetcher(fetcher -> {
+				HibImageVariant variant = fetcher.getSource();
+				return variant.getFocalPointZoom();
+			}));
 
 		return type.build();
 	}
