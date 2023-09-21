@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
@@ -310,10 +309,11 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 	}
 
 	@Test
-	public void testCreatingVariantsAtop() throws IOException {
+	public void testCreatingVariantsKeepingOldOnles() throws IOException {
 		testCreatingAutoVariantsNoOriginal();
 
 		ImageManipulationRequest request = new ImageManipulationRequest();
+		request.setDeleteOther(false);
 		ImageVariantResponse variant1 = new ImageVariantResponse();
 		variant1.setHeight(8).setWidth(8).setAuto(false);
 		ImageVariantResponse variant2 = new ImageVariantResponse();
