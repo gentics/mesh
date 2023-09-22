@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -41,6 +42,8 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(testSize = TestSize.PROJECT_AND_NODE, startServer = true, customOptionChanger = BinaryFieldVariantsTest.class)
 public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOptionChanger {
@@ -370,7 +373,7 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 	}
 
 	@Test
-	public void testGetVariants() throws IOException {
+	public void testGetVariantsRestApi() throws IOException {
 		testCreatingAutoVariantsNoOriginal();
 	
 		ImageVariantsResponse response = call(() -> client().getNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));	
@@ -387,6 +390,42 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 
 		defaultAutoVariant1.setResizeMode(null).setHeight(null);
 		defaultAutoVariant2.setResizeMode(null).setWidth(null);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testGetVariantsGraphQl() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		String gqlQry = "query "
+				+ "{ "
+				+ "	nodes(filter: {schema: {is: binary_content} }) {"
+				+ "  elements { "
+				+ "	  languages { "
+				+ "			 ... on binary_content { "
+				+ "				fields { "
+				+ "					  binary { variants {width height} } "
+				+ "				} "
+				+ "			} "
+				+ "		} "
+				+ "	  }"
+				+ " } "
+				+ "}" ;
+
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, gqlQry));
+		assertThat(response.getErrors()).isNullOrEmpty();
+
+		JsonArray variants = response.getData()
+				.getJsonObject("nodes")
+				.getJsonArray("elements").getJsonObject(0)
+				.getJsonArray("languages").getJsonObject(0)
+				.getJsonObject("fields")
+				.getJsonObject("binary")
+				.getJsonArray("variants");
+
+		assertThat(variants.getList()).isNotNull().isNotEmpty();
+		assertThat(variants.size()).isEqualTo(2);
+		assertThat(variants).containsExactlyInAnyOrder(new JsonObject().put("width", 8).put("height", 6), new JsonObject().put("width", 18).put("height", 24));
 	}
 
 	@Override
