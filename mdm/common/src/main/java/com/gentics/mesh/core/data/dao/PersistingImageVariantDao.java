@@ -242,8 +242,7 @@ public interface PersistingImageVariantDao extends ImageVariantDao {
 		Optional<? extends HibImageVariant> maybeToDelete = getVariants(binary, ac).stream().filter(variant -> doesVariantMatchRequest(variant, request)).findAny();
 		HibImageVariant toDelete;
 		if (throwOnAbsent) {
-			// TODO own error
-			toDelete = maybeToDelete.orElseThrow(() -> error(BAD_REQUEST, "No image variant found for binary #" + binary.getUuid() + " / " + request.getCacheKey()));
+			toDelete = maybeToDelete.orElseThrow(() -> error(BAD_REQUEST, "image_error_no_variant", request.getCacheKey(), binary.getUuid()));
 		} else {
 			toDelete = maybeToDelete.orElse(null);
 		}

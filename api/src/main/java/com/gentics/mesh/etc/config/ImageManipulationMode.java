@@ -9,6 +9,11 @@ package com.gentics.mesh.etc.config;
 public enum ImageManipulationMode {
 
 	/**
+	 * No image manipulation allowed.
+	 */
+	OFF(0),
+
+	/**
 	 * The image is transformed on read demand. The result is cached, if the image cache is set up.
 	 */
 	ON_DEMAND(1),
@@ -16,12 +21,7 @@ public enum ImageManipulationMode {
 	/**
 	 * The image is transformed on an explicit transformation demand, storing the result in the binary storage. The image cache is not used.
 	 */
-	MANUAL(2),
-
-	/**
-	 * No image manipulation allowed.
-	 */
-	OFF(0);
+	MANUAL(2);
 
 	private final int mode;
 

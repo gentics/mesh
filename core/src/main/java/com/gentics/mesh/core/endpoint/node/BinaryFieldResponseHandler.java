@@ -146,7 +146,7 @@ public class BinaryFieldResponseHandler {
 
 		switch (mode) {
 		case OFF:
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+			throw error(BAD_REQUEST, "image_error_turned_off");
 		case ON_DEMAND:
 			imageManipulator.handleResize(binaryField.getBinary(), ImageManipulator.applyDefaultManipulation(imageParams, binaryField))
 				.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)

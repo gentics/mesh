@@ -116,14 +116,13 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 */
 	public void handleListBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
-			HibBinary binary = binaryField.getBinary();
-			Result<? extends HibImageVariant> result = binaryField.getImageVariants(); //binaryDao.getVariants(binary, ac);
+			Result<? extends HibImageVariant> result = binaryField.getImageVariants();
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
 			if (retrievalParams.retrieveOriginal()) {
 				variants = Stream.of(
-						Stream.of(imageVariantDao.transformBinaryToRestVariantSync(binary, ac, retrievalParams.retrieveFilesize())),
+						Stream.of(imageVariantDao.transformBinaryToRestVariantSync(binaryField.getBinary(), ac, retrievalParams.retrieveFilesize())),
 						variants.stream()
 					).flatMap(Function.identity()).collect(Collectors.toList());
 			}
@@ -145,11 +144,6 @@ public class BinaryVariantsHandler extends AbstractHandler {
 			ContainerType version = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			HibProject project = tx.getProject(ac);
 			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, version == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
-			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-			// if (language == null) {
-			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			// }
-
 			HibBranch branch = tx.getBranch(ac, node.getProject());
 			HibNodeFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
 				branch.getUuid(),

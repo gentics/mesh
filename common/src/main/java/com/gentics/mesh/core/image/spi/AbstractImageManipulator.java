@@ -45,7 +45,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 
 		switch (mode) {
 		case OFF:
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+			throw error(BAD_REQUEST, "image_error_turned_off");
 		case MANUAL:
 		case ON_DEMAND:
 			break;

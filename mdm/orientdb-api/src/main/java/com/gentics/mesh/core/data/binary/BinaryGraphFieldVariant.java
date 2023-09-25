@@ -2,10 +2,11 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.HibFieldKeyElement;
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 
 /**
- * An edge connection between 
+ * An edge connection between {@link BinaryGraphField} and {@link ImageVariant}.
  * 
  * @author plyhun
  *
