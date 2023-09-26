@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 
@@ -89,7 +90,7 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		// Only get rid of the binary as well if no other fields are using the binary.
 		if (!graphBinary.findFields().hasNext()) {
 			for (ImageVariant variant : graphBinary.getVariants()) {
-				variant.delete();
+				CommonTx.get().imageVariantDao().deletePersistedVariant(graphBinary, variant, true);
 			}
 			graphBinary.delete(bac);
 		}
