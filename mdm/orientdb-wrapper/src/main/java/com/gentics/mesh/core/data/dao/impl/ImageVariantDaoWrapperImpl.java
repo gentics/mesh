@@ -64,7 +64,7 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 	public boolean deletePersistedVariant(HibBinary binary, HibImageVariant variant, boolean throwOnInUse) {
 		if (variant.findFields().hasNext()) {
 			if (throwOnInUse) {
-				throw error(BAD_REQUEST, "image_variant_in_use");
+				throw error(BAD_REQUEST, "image_error_variant_in_use", variant.getKey());
 			} else {
 				log.info("The variant {} is in use and cannot be deleted", variant.getKey());
 				return false;
