@@ -230,7 +230,7 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 	}
 
 	@Test
-	public void testCreatingVariantsOnPublish() {
+	public void testCreatingVariantsOnPublishAnew() {
 		ImageManipulationRequest request = new ImageManipulationRequest();
 		request.setVariants(Arrays.asList(defaultAutoVariant1.toRequest(), defaultAutoVariant2.toRequest()));
 		NodePublishRequest publishRequest = new NodePublishRequest();
@@ -245,6 +245,61 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
 
 		assertThat(response.getVariants()).containsExactlyInAnyOrder(defaultAutoVariant1, defaultAutoVariant2);
+
+		defaultAutoVariant1.setResizeMode(null).setHeight(null);
+		defaultAutoVariant2.setResizeMode(null).setWidth(null);
+	}
+
+	@Test
+	public void testCreatingVariantsOnPublishDeletingOldOnes() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		ImageVariantResponse variant1 = new ImageVariantResponse();
+		variant1.setHeight(null).setWidth(3).setAuto(true);
+		ImageVariantResponse variant2 = new ImageVariantResponse();
+		variant2.setHeight(80).setWidth(null).setAuto(true);
+
+		ImageManipulationRequest request = new ImageManipulationRequest().setDeleteOther(true);
+		request.setVariants(Arrays.asList(variant1.toRequest(), variant2.toRequest()));
+		NodePublishRequest publishRequest = new NodePublishRequest();
+		publishRequest.addImageVariant("binary", request);
+
+		call(() -> client().publishNode(PROJECT_NAME, nodeUuid, publishRequest));
+		ImageVariantsResponse response = call(() -> client().getNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));	
+
+		assertEquals("There should be 2 variants in total", 2, response.getVariants().size());
+
+		variant1.setResizeMode(ResizeMode.SMART).setHeight(2);
+		variant2.setResizeMode(ResizeMode.SMART).setWidth(60);
+
+		assertThat(response.getVariants()).containsExactlyInAnyOrder(variant1, variant2);
+	}
+
+	@Test
+	public void testCreatingVariantsOnPublishKeepingOldOnes() throws IOException {
+		testCreatingAutoVariantsNoOriginal();
+
+		ImageVariantResponse variant1 = new ImageVariantResponse();
+		variant1.setHeight(null).setWidth(3).setAuto(true);
+		ImageVariantResponse variant2 = new ImageVariantResponse();
+		variant2.setHeight(80).setWidth(null).setAuto(true);
+
+		ImageManipulationRequest request = new ImageManipulationRequest().setDeleteOther(false);
+		request.setVariants(Arrays.asList(variant1.toRequest(), variant2.toRequest()));
+		NodePublishRequest publishRequest = new NodePublishRequest();
+		publishRequest.addImageVariant("binary", request);
+
+		call(() -> client().publishNode(PROJECT_NAME, nodeUuid, publishRequest));
+		ImageVariantsResponse response = call(() -> client().getNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary"));
+
+		assertEquals("There should be 4 variants in total", 4, response.getVariants().size());
+
+		variant1.setResizeMode(ResizeMode.SMART).setHeight(2);
+		variant2.setResizeMode(ResizeMode.SMART).setWidth(60);
+		defaultAutoVariant1.setResizeMode(ResizeMode.SMART).setHeight(6);
+		defaultAutoVariant2.setResizeMode(ResizeMode.SMART).setWidth(18);
+
+		assertThat(response.getVariants()).containsExactlyInAnyOrder(variant1, variant2, defaultAutoVariant1, defaultAutoVariant2);
 
 		defaultAutoVariant1.setResizeMode(null).setHeight(null);
 		defaultAutoVariant2.setResizeMode(null).setWidth(null);

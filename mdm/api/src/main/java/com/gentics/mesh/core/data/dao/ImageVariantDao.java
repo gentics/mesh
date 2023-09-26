@@ -36,16 +36,18 @@ public interface ImageVariantDao extends Dao<HibImageVariant>, DaoTransformable<
 	 * Create the image manipulation variant.
 	 * 
 	 * @param variant
+	 * @param throwOnExisting throw an exception, if no requested variant exists
 	 * @return created variants
 	 */
 	HibImageVariant createVariant(HibBinaryField binaryField, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnExisting);
 
 	/**
 	 * Delete the image manipulation variant.
-	 * 
+	 * @param throwOnAbsent throws an exception if no requested variant found
+	 * @param throwOnInUse throws an exception if the requested variant cannot be deleted due to being in use by some other field
 	 * @param variant
 	 */
-	void deleteVariant(HibBinaryField binaryField, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnAbsent);
+	void deleteVariant(HibBinaryField binaryField, ImageVariantRequest variant, InternalActionContext ac, boolean throwOnAbsent, boolean throwOnInUse);
 
 	/**
 	 * Create the image manipulation variants, optionally deleting all other existing unused variants.
@@ -60,15 +62,17 @@ public interface ImageVariantDao extends Dao<HibImageVariant>, DaoTransformable<
 	 * Delete the requested image manipulation variants.
 	 * 
 	 * @param variant
+	 * @param throwOnInUse throws an exception if the requested variant cannot be deleted due to being in use by some other field
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac);
+	Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac, boolean throwOnInUse);
 
 	/**
 	 * Retain the requested image manipulation variants, delete all other.
 	 * 
 	 * @param variant
+	 * @param throwOnInUse throws an exception if the requested variant to delete cannot be deleted due to being in use by some other field
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac);
+	Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac, boolean throwOnInUse);
 }

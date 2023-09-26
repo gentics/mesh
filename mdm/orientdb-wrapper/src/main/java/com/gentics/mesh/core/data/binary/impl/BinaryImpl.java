@@ -46,7 +46,7 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		CommonTx.get().imageVariantDao().retainVariants(this, Collections.emptyList(), null);
+		CommonTx.get().imageVariantDao().retainVariants(this, Collections.emptyList(), null, true);
 		BinaryStorage storage = mesh().binaryStorage();
 		bac.add(storage.delete(getUuid()));
 		getElement().remove();

@@ -108,6 +108,9 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			Object value = property(key);
 			field.property(key, value);
 		}
+		for (ImageVariant variant : getImageVariants()) {
+			field.attachImageVariant(variant, false);
+		}
 		return field;
 	}
 

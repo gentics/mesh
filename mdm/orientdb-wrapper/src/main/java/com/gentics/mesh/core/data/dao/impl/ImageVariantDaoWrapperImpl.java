@@ -61,15 +61,21 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 	}
 
 	@Override
-	public void deletePersistedVariant(HibBinary binary, HibImageVariant variant) {
+	public boolean deletePersistedVariant(HibBinary binary, HibImageVariant variant, boolean throwOnInUse) {
 		if (variant.findFields().hasNext()) {
-			throw error(BAD_REQUEST, "image_variant_in_use");
+			if (throwOnInUse) {
+				throw error(BAD_REQUEST, "image_variant_in_use");
+			} else {
+				log.info("The variant {} is in use and cannot be deleted", variant.getKey());
+				return false;
+			}
 		}
 		String variantUuid = variant.getUuid();
 		ImageVariant imageVariant = toGraph(variant);
 		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
 		imageVariant.remove();
 		binaryStorage.delete(variantUuid).blockingGet();
+		return true;
 	}
 
 	@Override
