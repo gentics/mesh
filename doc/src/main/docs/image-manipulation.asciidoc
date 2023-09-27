@@ -4,6 +4,17 @@ title: Image Manipulation
 
 include::content/docs/variables.adoc-include[]
 
+Mesh contains an in-built capability of manipulating the image data, stored in the binary content fields. 
+
+== Feature control
+
+This capability is controlled by the Mesh options item `image.mode` with the following options:
+* `ON_DEMAND`: Each time a manipulation is requested via <<imagemanipulationparams,image manipulation query parameters>>, the new variant is created automatically in the image cache and served to the user.
+* `MANUAL`: Each image manipulation variant has to be manually created in advance, using link:/docs/api/#project__nodes__nodeUuid__binary__fieldName__variants_post[variants manipulation REST API]. Only the manually created variants are allowed to serve over the requests with <<imagemanipulationparams,image manipulation query parameters>>. Other variant control capabilities are available throught the REST API, including link:/docs/api/#project__nodes__nodeUuid__languages__language__published_post[creation-on-publish] and access over link:/docs/api/#project__webroot__path__post[webroot] and link:/docs/api/#project__webrootfield__fieldName___path__post[webrootfield].
+* `OFF`: No image manipulation possible.
+
+== Manipulation features
+
 Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
 The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
 
