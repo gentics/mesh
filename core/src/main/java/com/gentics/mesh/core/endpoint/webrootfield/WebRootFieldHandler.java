@@ -154,7 +154,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 	}
 
 	/**
-	 * Handle a webrootpath post request.
+	 * Handle a webrootpath post request. At the moment is only used for upserting the binary field variants.
 	 * 
 	 * @param rc
 	 */

@@ -230,6 +230,21 @@ public class BinaryFieldVariantsTest extends AbstractMeshTest implements MeshOpt
 	}
 
 	@Test
+	public void testCreatingAutoVariantManyCopiesNoOriginal() throws IOException {
+		ImageManipulationRequest request = new ImageManipulationRequest();
+		request.setVariants(Arrays.asList(defaultAutoVariant1.toRequest(), defaultAutoVariant1.toRequest(), defaultAutoVariant1.toRequest()));
+
+		ImageVariantsResponse response = call(() -> client().upsertNodeBinaryFieldImageVariants(PROJECT_NAME, nodeUuid, "binary", request));
+		assertEquals("There should be 1 variant in total", 1, response.getVariants().size());
+
+		defaultAutoVariant1.setResizeMode(ResizeMode.SMART).setHeight(6);
+
+		assertThat(response.getVariants()).containsExactly(defaultAutoVariant1);
+
+		defaultAutoVariant1.setResizeMode(null).setHeight(null);
+	}
+
+	@Test
 	public void testCreatingVariantsOnPublishAnew() {
 		ImageManipulationRequest request = new ImageManipulationRequest();
 		request.setVariants(Arrays.asList(defaultAutoVariant1.toRequest(), defaultAutoVariant2.toRequest()));
