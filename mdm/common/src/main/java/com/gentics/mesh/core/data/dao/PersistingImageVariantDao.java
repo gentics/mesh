@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.ListUtils;
@@ -77,9 +78,20 @@ public interface PersistingImageVariantDao extends ImageVariantDao {
 	 */
 	HibImageVariant getVariant(HibBinary binary, ImageManipulation request, InternalActionContext ac);
 
+	/**
+	 * Remove duplicates from the variants collection.
+	 * 
+	 * @param variants
+	 * @return
+	 */
+	default Collection<ImageVariantRequest> removeDuplicates(Collection<ImageVariantRequest> variants) {
+		return variants.stream().collect(Collectors.toMap(ImageManipulation::getCacheKey, Function.identity(), (a, b) -> a)).values();
+	}
+
 	@Override
 	default Result<? extends HibImageVariant> createVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToAdd, InternalActionContext ac, boolean deleteOtherVariants) {
 		HibBinary binary = binaryField.getBinary();
+		variantsToAdd = removeDuplicates(variantsToAdd);
 		Collection<ImageVariantRequest> variantsToDelete;
 		if (deleteOtherVariants) {
 			variantsToDelete = matchVariants(binary, variantsToAdd, ac, true);
@@ -98,6 +110,7 @@ public interface PersistingImageVariantDao extends ImageVariantDao {
 	@Override
 	default Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToDelete, InternalActionContext ac, boolean throwOnInUse) {
 		HibBinary binary = binaryField.getBinary();
+		variantsToDelete = removeDuplicates(variantsToDelete);
 		Collection<ImageVariantRequest> variantsToDetach = matchVariants(binary, variantsToDelete, ac, false);
 		Result<? extends HibImageVariant> ret = detachVariants(binaryField, variantsToDetach, ac, false);
 		deleteVariants(binary, variantsToDetach, ac, throwOnInUse);
@@ -107,6 +120,7 @@ public interface PersistingImageVariantDao extends ImageVariantDao {
 	@Override
 	default Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToRetain, InternalActionContext ac, boolean throwOnInUse) {
 		HibBinary binary = binaryField.getBinary();
+		variantsToRetain = removeDuplicates(variantsToRetain);
 		Collection<ImageVariantRequest> variantsToDetach = matchVariants(binary, variantsToRetain, ac, true);
 		Result<? extends HibImageVariant> ret = detachVariants(binaryField, variantsToDetach, ac, false);
 		deleteVariants(binary, variantsToDetach, ac, throwOnInUse);

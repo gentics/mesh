@@ -211,8 +211,8 @@ public class ImageVariantResponse implements RestModel {
 	 */
 	public ImageVariantRequest toRequest(boolean autoKeepWidth) {
 		ImageVariantRequest request = new ImageVariantRequest()
-				.setWidth((isAuto() && getWidth() == null) ? "auto" : Integer.toString(getWidth()))
-				.setHeight((isAuto() && getHeight() == null) ? "auto" : Integer.toString(getHeight()))
+				.setWidth((isAuto() && getWidth() == null) ? "auto" : (getWidth() == null ? null : Integer.toString(getWidth())))
+				.setHeight((isAuto() && getHeight() == null) ? "auto" : (getHeight() == null ? null : Integer.toString(getHeight())))
 				.setCropMode(getCropMode())
 				.setFocalPoint(getFocalPoint())
 				.setFocalPointZoom(getFocalZoom())
