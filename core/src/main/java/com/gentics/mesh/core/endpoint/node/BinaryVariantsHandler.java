@@ -73,9 +73,9 @@ public class BinaryVariantsHandler extends AbstractHandler {
 		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
 			ImageManipulationRequest request = StringUtils.isNotBlank(ac.getBodyAsString()) ? ac.fromJson(ImageManipulationRequest.class) : new ImageManipulationRequest().setVariants(Collections.emptyList()).setDeleteOther(true);
 			if (request.isDeleteOther()) {
-				imageVariantDao.retainVariants(binaryField, request.getVariants(), ac, false);
+				imageVariantDao.retainVariants(binaryField, request.getVariants(), ac);
 			} else {
-				imageVariantDao.deleteVariants(binaryField, request.getVariants(), ac, true);
+				imageVariantDao.deleteVariants(binaryField, request.getVariants(), ac);
 			}
 			ac.send(NO_CONTENT);
 		});

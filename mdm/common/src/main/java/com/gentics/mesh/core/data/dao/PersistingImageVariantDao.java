@@ -102,28 +102,28 @@ public interface PersistingImageVariantDao extends ImageVariantDao {
 		createVariants(binary, variantsToAdd, ac, deleteOtherVariants);
 		attachVariants(binaryField, variantsToAdd, ac, false);
 		if (!variantsToDelete.isEmpty()) {
-			deleteVariants(binaryField, variantsToDelete, ac, false);
+			deleteVariants(binaryField, variantsToDelete, ac);
 		}
 		return binaryField.getImageVariants();
 	}
 
 	@Override
-	default Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToDelete, InternalActionContext ac, boolean throwOnInUse) {
+	default Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToDelete, InternalActionContext ac) {
 		HibBinary binary = binaryField.getBinary();
 		variantsToDelete = removeDuplicates(variantsToDelete);
 		Collection<ImageVariantRequest> variantsToDetach = matchVariants(binary, variantsToDelete, ac, false);
 		Result<? extends HibImageVariant> ret = detachVariants(binaryField, variantsToDetach, ac, false);
-		deleteVariants(binary, variantsToDetach, ac, throwOnInUse);
+		deleteVariants(binary, variantsToDetach, ac, false);
 		return ret;
 	}
 
 	@Override
-	default Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToRetain, InternalActionContext ac, boolean throwOnInUse) {
+	default Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variantsToRetain, InternalActionContext ac) {
 		HibBinary binary = binaryField.getBinary();
 		variantsToRetain = removeDuplicates(variantsToRetain);
 		Collection<ImageVariantRequest> variantsToDetach = matchVariants(binary, variantsToRetain, ac, true);
 		Result<? extends HibImageVariant> ret = detachVariants(binaryField, variantsToDetach, ac, false);
-		deleteVariants(binary, variantsToDetach, ac, throwOnInUse);
+		deleteVariants(binary, variantsToDetach, ac, false);
 		return ret;
 	}
 

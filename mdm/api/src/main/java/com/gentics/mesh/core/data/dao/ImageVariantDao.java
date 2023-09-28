@@ -62,17 +62,15 @@ public interface ImageVariantDao extends Dao<HibImageVariant>, DaoTransformable<
 	 * Delete the requested image manipulation variants.
 	 * 
 	 * @param variant
-	 * @param throwOnInUse throws an exception if the requested variant cannot be deleted due to being in use by some other field
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac, boolean throwOnInUse);
+	Result<? extends HibImageVariant> deleteVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac);
 
 	/**
 	 * Retain the requested image manipulation variants, delete all other.
 	 * 
 	 * @param variant
-	 * @param throwOnInUse throws an exception if the requested variant to delete cannot be deleted due to being in use by some other field
 	 * @return image variants of the binary after the operation.
 	 */
-	Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac, boolean throwOnInUse);
+	Result<? extends HibImageVariant> retainVariants(HibBinaryField binaryField, Collection<ImageVariantRequest> variant, InternalActionContext ac);
 }
