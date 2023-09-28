@@ -605,7 +605,6 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 		postEndpoint.path("/:nodeUuid/published");
 		postEndpoint.addUriParameter("nodeUuid", "Uuid of the node", NODE_DELOREAN_UUID);
 		postEndpoint.method(POST);
-		postEndpoint.consumes(APPLICATION_JSON);
 		postEndpoint.produces(APPLICATION_JSON);
 		postEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
 		postEndpoint.exampleResponse(NOT_FOUND, miscExamples.createMessageResponse(), "The node could not be found.");
