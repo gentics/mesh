@@ -45,7 +45,6 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
@@ -277,26 +276,6 @@ public class NodeExamples extends AbstractExamples {
 		request.setVersion("1.0");
 		request.setFocalPoint(new FocalPoint(0.3f,0.6f));
 		return request;
-	}
-
-	public NodePublishRequest getNodePublishRequest() {
-		NodePublishRequest nodePublishRequest = new NodePublishRequest();
-		ImageManipulationRequest imageManipulationRequest = new ImageManipulationRequest();
-		imageManipulationRequest.setDeleteOther(true);
-		imageManipulationRequest.setVariants(
-				Arrays.asList(
-						new ImageVariantRequest()
-							.setCropMode(CropMode.FOCALPOINT)
-							.setFocalPoint(0.5f, 0.5f)
-							.setWidth(250)
-							.setHeight("auto"),
-						new ImageVariantRequest()
-							.setHeight(100)
-							.setWidth(500)
-				)
-		);
-		nodePublishRequest.addImageVariant("binaryField", imageManipulationRequest);
-		return nodePublishRequest;
 	}
 
 	public NodeUpdateRequest getNodeUpdateRequest() {

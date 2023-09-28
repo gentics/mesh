@@ -70,7 +70,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodePublishRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
@@ -1416,6 +1415,23 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<PublishStatusResponse> ac = createContext(PublishStatusResponse.class, parameters);
+		ac.setProject(projectName);
+		nodeCrudHandler.handlePublish(ac, nodeUuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,
+		ParameterProvider... parameters) {
+		LocalActionContextImpl<PublishStatusModel> ac = createContext(PublishStatusModel.class, parameters);
+		ac.setProject(projectName);
+		nodeCrudHandler.handlePublish(ac, nodeUuid, languageTag);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<EmptyResponse> takeNodeOffline(String projectName, String nodeUuid, ParameterProvider... parameters) {
 		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
 		ac.setProject(projectName);
@@ -2167,24 +2183,6 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		userCrudHandler.handleRevokePermissions(ac, uuid);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<PublishStatusResponse> publishNode(String projectName, String nodeUuid, NodePublishRequest request, ParameterProvider... parameters) {
-		LocalActionContextImpl<PublishStatusResponse> ac = createContext(PublishStatusResponse.class, parameters);
-		ac.setProject(projectName);
-		ac.setPayloadObject(request);
-		nodeCrudHandler.handlePublish(ac, nodeUuid);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<PublishStatusModel> publishNodeLanguage(String projectName, String nodeUuid, String languageTag,	NodePublishRequest request, ParameterProvider... parameters) {
-		LocalActionContextImpl<PublishStatusModel> ac = createContext(PublishStatusModel.class, parameters);
-		ac.setProject(projectName);
-		ac.setPayloadObject(request);
-		nodeCrudHandler.handlePublish(ac, nodeUuid, languageTag);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
