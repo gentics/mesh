@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.graphqlfilter.filter.BooleanFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
+import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FieldOperand;
 import com.gentics.mesh.ElementType;
@@ -90,6 +92,7 @@ public abstract class SchemaElementFilter<
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner));
+		filters.add(new MappedFilter<>(owner, "noIndex", "Filters by schema 'excluded from index' flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getNoIndex()));
 		return filters;
 	}
 

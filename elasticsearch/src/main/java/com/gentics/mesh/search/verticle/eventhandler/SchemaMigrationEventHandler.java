@@ -9,6 +9,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -90,7 +91,7 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	 * @return
 	 */
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
-		Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
+		Map<String, Optional<IndexInfo>> map = helper.getDb().transactional(tx -> {
 			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
 			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
 			HibSchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);

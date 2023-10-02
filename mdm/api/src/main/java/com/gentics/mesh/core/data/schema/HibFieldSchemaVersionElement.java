@@ -65,6 +65,20 @@ public interface HibFieldSchemaVersionElement<
 	void setJson(String json);
 
 	/**
+	 * Return the 'exclude from indexing' flag, or null.
+	 * 
+	 * @return
+	 */
+	Boolean getNoIndex();
+
+	/**
+	 * Set the 'exclude from indexing' flag.
+	 * 
+	 * @param noIndex
+	 */
+	void setNoIndex(Boolean noIndex);
+
+	/**
 	 * Return the schema version.
 	 * 
 	 * @return
@@ -131,8 +145,18 @@ public interface HibFieldSchemaVersionElement<
 	 */
 	void setNextChange(HibSchemaChange<?> change);
 
+	/**
+	 * Get the version prior to this one, or null.
+	 * 
+	 * @return
+	 */
 	SCV getPreviousVersion();
 
+	/**
+	 * Get the version following this one, or null.
+	 * 
+	 * @return
+	 */
 	SCV getNextVersion();
 
 	/**

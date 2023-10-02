@@ -196,7 +196,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 
 		tx(() -> {
 			HibBranch branch = latestBranch();
-			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null);
+			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null).get();
 			if (mode == ComplianceMode.ES_6) {
 				schemaMapping = schemaMapping.getJsonObject(DEFAULT_TYPE);
 			}

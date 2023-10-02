@@ -59,6 +59,20 @@ public interface HibFieldSchemaContainerUpdateChange<T extends FieldSchemaContai
 	 */
 	void setName(String name);
 
+	/**
+	 * Return the 'exclude from indexing' flag.
+	 * 
+	 * @return
+	 */
+	Boolean getNoIndex();
+
+	/**
+	 * Set the 'exclude from indexing' flag.
+	 * 
+	 * @param name
+	 */
+	void setNoIndexing(Boolean noIndex);
+
 	@Override
 	default <R extends FieldSchemaContainer> R apply(R container) {
 

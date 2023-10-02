@@ -834,6 +834,16 @@ public abstract class AbstractTypeProvider {
 			@Override
 			public void apply(Map<String, Object> fieldProperties) {
 			}
+
+			@Override
+			public boolean isNoIndex() {
+				return false;
+			}
+
+			@Override
+			public FieldSchema setNoIndex(boolean isNoIndex) {
+				return null;
+			}
 		};
 	}
 }

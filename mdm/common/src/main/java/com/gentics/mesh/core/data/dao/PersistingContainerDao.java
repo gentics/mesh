@@ -120,6 +120,7 @@ public interface PersistingContainerDao<
 			}
 			v.setSchemaContainer(version.getSchemaContainer());
 			v.setName(resultingSchema.getName());
+			v.setNoIndex(resultingSchema.getNoIndex());
 		});
 		
 		version.getSchemaContainer().setName(resultingSchema.getName());

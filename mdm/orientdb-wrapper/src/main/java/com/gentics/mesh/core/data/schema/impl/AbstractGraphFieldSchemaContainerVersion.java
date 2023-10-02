@@ -101,6 +101,20 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<
 	}
 
 	@Override
+	public Boolean getNoIndex() {
+		return property("noindex");
+	}
+
+	@Override
+	public void setNoIndex(Boolean noIndex) {
+		if (noIndex != null && noIndex) {
+			property("noindex", noIndex);
+		} else {
+			removeProperty("noindex");
+		}
+	}
+
+	@Override
 	public String getJson() {
 		return property("json");
 	}

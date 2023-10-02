@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -35,6 +36,10 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
 	private JsonObject elasticsearch;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of microschema fields")
@@ -68,6 +73,17 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@Override
 	public MicroschemaResponse setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public FieldSchemaContainer setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

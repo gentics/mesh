@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
 import io.vertx.core.json.JsonObject;
 
@@ -36,6 +37,10 @@ public class MicroschemaModelImpl implements MicroschemaVersionModel {
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
 	@Override
 	public String getVersion() {
 		return version;
@@ -55,6 +60,17 @@ public class MicroschemaModelImpl implements MicroschemaVersionModel {
 	@Override
 	public MicroschemaVersionModel setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public FieldSchemaContainer setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

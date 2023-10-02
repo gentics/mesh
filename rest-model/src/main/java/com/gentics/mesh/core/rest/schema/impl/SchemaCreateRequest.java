@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 import io.vertx.core.json.JsonObject;
@@ -51,6 +52,10 @@ public class SchemaCreateRequest implements SchemaModel {
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
 	private Boolean autoPurge;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
 	@Override
 	public String getDescription() {
 		return description;
@@ -59,6 +64,17 @@ public class SchemaCreateRequest implements SchemaModel {
 	@Override
 	public SchemaCreateRequest setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public FieldSchemaContainer setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

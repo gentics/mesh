@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
@@ -281,11 +283,11 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	@Override
 	public Completable init() {
 		// Create the indices
-		return Observable.defer(() -> Observable.fromIterable(getIndices().values()))
-			.flatMap(info -> searchProvider.createIndex(info).toObservable()
+		return Observable.defer(() -> Observable.fromIterable(getIndices().entrySet()))
+			.flatMap(entry -> entry.getValue().map(info -> searchProvider.createIndex(info)).orElseGet(() -> searchProvider.deleteIndex(false, entry.getKey())).toObservable()
 				.doOnSubscribe(ignore -> {
 					if (log.isDebugEnabled()) {
-						log.debug("Creating index {" + info + "}");
+						log.debug(entry.getValue().map(yes -> "Creating").orElseGet(() -> "Dropping") + " index {" + entry.getKey() + "} " + entry.getValue().map(Object::toString).orElse(StringUtils.EMPTY));
 					}
 				}), 1)
 			.ignoreElements();
@@ -315,11 +317,12 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 	@Override
 	public Completable check() {
 		// check the indices
-		return Observable.defer(() -> Observable.fromIterable(getIndices().values()))
-				.flatMap(info -> searchProvider.check(info).toObservable()
+		return Observable.defer(() -> Observable.fromIterable(getIndices().entrySet()))
+				.flatMap(entry -> entry.getValue().map(info ->  searchProvider.check(info)).orElseGet(Completable::complete)
+					.toObservable()
 					.doOnSubscribe(ignore -> {
 						if (log.isDebugEnabled()) {
-							log.debug("Checking index {" + info + "}");
+							log.debug(entry.getValue().map(yes -> "Checking").orElseGet(() -> "Skipping") + " index {" + entry.getKey() + "} " + entry.getValue().map(Object::toString).orElse(StringUtils.EMPTY));
 						}
 					}), 1)
 				.ignoreElements();

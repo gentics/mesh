@@ -9,6 +9,7 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.toRequests;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -50,7 +51,7 @@ public class BranchEventHandler implements EventHandler {
 				//TODO Implement the drop of the node indices. We need to drop all indices of the branch.
 				return Flowable.empty();
 			} else {
-				Map<String, IndexInfo> map = helper.getDb().transactional(tx -> {
+				Map<String, Optional<IndexInfo>> map = helper.getDb().transactional(tx -> {
 					HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
 					HibBranch branch = tx.branchDao().findByUuid(project, model.getUuid());
 					return nodeIndexHandler.getIndices(project, branch).runInExistingTx(tx);

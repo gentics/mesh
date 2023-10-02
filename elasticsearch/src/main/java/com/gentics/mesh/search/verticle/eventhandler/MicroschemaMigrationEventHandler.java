@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,11 +97,11 @@ public class MicroschemaMigrationEventHandler implements EventHandler {
 	 */
 	private Flowable<? extends SearchRequest> migrationStart(BranchMicroschemaAssignModel model) {
 		// get all schemas "using" the microschema (in the project/branch) and create schema create requests
-		Pair<Map<String, IndexInfo>, List<Triple<String, String, JsonObject>>> info = helper.getDb().transactional(tx -> {
+		Pair<Map<String, Optional<IndexInfo>>, List<Triple<String, String, JsonObject>>> info = helper.getDb().transactional(tx -> {
 			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
 			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
 			HibMicroschema microschema = tx.microschemaDao().findByUuid(model.getSchema().getUuid());
-			Map<String, IndexInfo> indexMap = branch.findAllSchemaVersions().stream().filter(version -> version.usesMicroschema(microschema))
+			Map<String, Optional<IndexInfo>> indexMap = branch.findAllSchemaVersions().stream().filter(version -> version.usesMicroschema(microschema))
 					.map(version -> nodeIndexHandler.getIndices(project, branch, version).runInExistingTx(tx))
 					.collect(HashMap::new, HashMap::putAll, HashMap::putAll);
 
