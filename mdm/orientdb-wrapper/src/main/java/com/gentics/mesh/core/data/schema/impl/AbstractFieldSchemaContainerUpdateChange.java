@@ -35,7 +35,7 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 	}
 
 	@Override
-	public void setNoIndexing(Boolean noIndex) {
+	public void setNoIndex(Boolean noIndex) {
 		setRestProperty(SchemaChangeModel.NO_INDEX_KEY, noIndex);
 	}
 

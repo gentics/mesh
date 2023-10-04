@@ -119,7 +119,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(REQUIRED_KEY))));
 		}
 		if (fieldProperties.get(SchemaChangeModel.NO_INDEX_KEY) != null) {
-			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(NO_INDEX_KEY))));
+			setNoIndex(Boolean.valueOf(String.valueOf(fieldProperties.get(NO_INDEX_KEY))));
 		}
 		if (fieldProperties.get(SchemaChangeModel.ELASTICSEARCH_KEY) != null) {
 			Object value = fieldProperties.get(ELASTICSEARCH_KEY);

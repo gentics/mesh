@@ -71,7 +71,7 @@ public interface HibFieldSchemaContainerUpdateChange<T extends FieldSchemaContai
 	 * 
 	 * @param name
 	 */
-	void setNoIndexing(Boolean noIndex);
+	void setNoIndex(Boolean noIndex);
 
 	@Override
 	default <R extends FieldSchemaContainer> R apply(R container) {
@@ -92,6 +92,12 @@ public interface HibFieldSchemaContainerUpdateChange<T extends FieldSchemaContai
 		JsonObject options = getIndexOptions();
 		if (options != null) {
 			container.setElasticsearch(options);
+		}
+
+		// .noIndex
+		Boolean noIndex = getNoIndex();
+		if (noIndex != null) {
+			container.setNoIndex(noIndex);
 		}
 
 		// Update the fields if the order changes

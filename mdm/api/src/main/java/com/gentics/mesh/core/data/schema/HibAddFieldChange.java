@@ -237,6 +237,10 @@ public interface HibAddFieldChange extends HibSchemaFieldChange {
 		if (required != null) {
 			field.setRequired(required);
 		}
+		Boolean noIndex = getNoIndex();
+		if (noIndex != null) {
+			field.setNoIndex(noIndex);
+		}
 		JsonObject elasticSearch = getIndexOptions();
 		if (elasticSearch != null) {
 			field.setElasticsearch(elasticSearch);
