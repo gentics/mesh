@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.6]]
+== 2.0.6 (04.10.2023)
+
+icon:check[] Core: More NPE occurrences during the massive concurrent publishing process have been fixes.
+
 [[v2.0.5]]
 == 2.0.5 (20.09.2023)
 

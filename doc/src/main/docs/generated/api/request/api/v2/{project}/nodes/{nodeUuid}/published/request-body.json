@@ -1,0 +1,28 @@
+{
+  "imageVariants" : {
+    "binaryField" : {
+      "variants" : [ {
+        "width" : "250",
+        "height" : "auto",
+        "cropMode" : "FOCALPOINT",
+        "resizeMode" : "SMART",
+        "focalPoint" : {
+          "x" : 0.5,
+          "y" : 0.5
+        },
+        "cacheKey" : "cropFOCALPOINTresizeSMARTrw250rhautofp0.5-0.5"
+      }, {
+        "width" : "500",
+        "height" : "100",
+        "resizeMode" : "SMART",
+        "size" : {
+          "x" : 500,
+          "y" : 100,
+          "ratio" : 5.0
+        },
+        "cacheKey" : "resizeSMARTrw500rh100"
+      } ],
+      "deleteOther" : true
+    }
+  }
+}

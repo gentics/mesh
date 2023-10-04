@@ -590,7 +590,7 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 				.map(listField -> listField.getList().stream())
 				.orElseGet(Stream::empty)
 				.map(HibNodeField::getNode)
-				.filter(n -> n != null);
+				.filter(Objects::nonNull);
 		} else if (type.equals(FieldTypes.MICRONODE.toString())) {
 			return Optional.ofNullable(getMicronodeList(list.getName()))
 				.map(listField -> listField.getList().stream())
