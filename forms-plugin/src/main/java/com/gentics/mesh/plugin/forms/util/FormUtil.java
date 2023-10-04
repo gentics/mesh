@@ -1,8 +1,10 @@
 package com.gentics.mesh.plugin.forms.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -12,14 +14,14 @@ import io.vertx.core.json.JsonObject;
 public class FormUtil {
 
 	/**
-	 * Check whether the node is a form data node (parent node uses the form schema)
+	 * Check whether the node is a form data node (schema name starts with "form_")
 	 *
 	 * @param node
 	 *            node to check
 	 * @return true for form data nodes
 	 */
 	public static boolean isFormDataNode(NodeResponse node) {
-		return node != null && SchemaService.SCHEMA_NAME.equals(node.getParentNode().getSchema().getName());
+		return node != null && StringUtils.startsWith(node.getSchema().getName(), String.format("%s_", SchemaService.SCHEMA_NAME));
 	}
 
 	/**

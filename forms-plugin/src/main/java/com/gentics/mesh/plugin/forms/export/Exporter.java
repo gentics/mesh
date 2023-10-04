@@ -14,6 +14,8 @@ import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
+import com.jayway.jsonpath.JsonPath;
+
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -30,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -162,7 +165,7 @@ public abstract class Exporter {
 
 		return new JsonObject()
 			.put("formName", node.getString("displayName", uuid))
-			.put("data", node.getJsonObject("children", emptyObject).getJsonArray("elements", emptyArray))
+			.put("data", Optional.ofNullable(node.getJsonObject("data")).orElse(emptyObject).getJsonObject("children", emptyObject).getJsonArray("elements", emptyArray))
 			.put("schema", schema);
 	}
 

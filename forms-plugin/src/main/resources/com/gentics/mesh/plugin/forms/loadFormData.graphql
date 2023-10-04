@@ -9,7 +9,8 @@ query ($uuid: String, $perPage: Long = 2147483647, $page: Long = 1) {
   node(uuid: $uuid) {
     uuid
     displayName
-    children (perPage: $perPage, page: $page, filter: {schema: {name: {equals: "{{{ schemaName }}}"}}}) {
+    data:child (path: "Data") {
+      children (perPage: $perPage, page: $page, filter: {schema: {name: {equals: "{{{ schemaName }}}"}}}) {
       elements {
         uuid
         created
@@ -23,4 +24,5 @@ query ($uuid: String, $perPage: Long = 2147483647, $page: Long = 1) {
       }
     }
   }
+}
 }

@@ -235,9 +235,13 @@ public class FormDataService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid, boolean allowPublished) {
-		return adminClient.findNodeByUuid(projectName, formDataUuid).toSingle()
-			.flatMap(formDataNode -> {
-				if (FormUtil.isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
+		Single<NodeResponse> singleFormDataNode = adminClient.findNodeByUuid(projectName, formDataUuid).toSingle();
+		Single<String> singleFormDataFolderUuid = getFormDataFolderUuid(projectName, formUuid);
+
+		return Single.zip(singleFormDataNode, singleFormDataFolderUuid, Pair::of).flatMap(pair -> {
+			NodeResponse formDataNode = pair.getLeft();
+			String formDataFolderUuid = pair.getRight();
+			if (FormUtil.isFormDataNode(formDataNode) && formDataFolderUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
 				return Single.just(formDataNode);
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
@@ -956,7 +960,13 @@ public class FormDataService {
 
 		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
 
-		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), form, postedData, errors)
+		Map<String, ValidationError> errors = ctx.getForm().validate(ctx.getPostedData(), ctx.getFileUploads(), ctx.getFormDataNode());
+		String projectName = ctx.getProjectName();
+		NodeResponse formNode = ctx.getFormNode();
+		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
+				ParameterUtil.getLanguages(ctx.getContext()));
+
+		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), ctx.getForm(), ctx.getPostedData(), errors))
 			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
@@ -988,25 +998,37 @@ public class FormDataService {
 	}
 
 	/**
+	 * Get the uuid of the form data folder as single
+	 * @param projectName project name
+	 * @param formUuid form UUID
+	 * @param languages languages
+	 * @return
+	 */
+	private Single<String> getFormDataFolderUuid(String projectName, String formUuid, String... languages) {
+		return formService.getFormFolderUuid(projectName, formUuid, languages, FormService.DATA_FOLDER_NAME);
+	}
+
+	/**
 	 * Save the form data to mesh
 	 *
 	 * @param projectName project name
 	 * @param formNode form node
+	 * @param dataFolderUuid uuid of the data folder
 	 * @param formDataNode optional form data node (for updating)
 	 * @param form form object
 	 * @param postedData posted data
 	 * @param errors map containing validation errors
 	 * @return single of the node response
 	 */
-	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, NodeResponse formDataNode, Form form, MultiMap postedData,
-		Map<String, ValidationError> errors) {
+	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
+		MultiMap postedData, Map<String, ValidationError> errors) {
 		FieldContainer container = null;
 		NodeCreateRequest createRequest = null;
 		NodeUpdateRequest updateRequest = null;
 
 		if (formDataNode == null) {
 			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
-				.setParentNodeUuid(formNode.getUuid())
+				.setParentNodeUuid(dataFolderUuid)
 				.setLanguage("en");
 			container = createRequest;
 		} else {

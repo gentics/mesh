@@ -168,6 +168,8 @@ public class FormService {
 	public static final String FIELD_FORM_TYPE = "type";
 	public static final String DOWNLOADS_FOLDER_NAME = "Downloads";
 
+	public static final String DATA_FOLDER_NAME = "Data";
+
 	private static final int CHILDREN_BATCH_SIZE = 100;
 
 	private static final String PARAM_TEMPLATE_CONTEXT = "templateContext";
@@ -505,7 +507,7 @@ public class FormService {
 						return userClient.publishNode(projectName, updatedForm.getUuid(), languageParameter).toSingle()
 								.flatMap(r -> load(projectName, updatedForm.getUuid(), language));
 					}).flatMap(updatedForm -> {
-						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME)
+						return ensureFormFolders(projectName, updatedForm.getUuid(), language, DOWNLOADS_FOLDER_NAME, DATA_FOLDER_NAME)
 							.andThen(Single.just(updatedForm));
 					});
 		});
@@ -556,7 +558,8 @@ public class FormService {
 				NodeCreateRequest createRequest = new NodeCreateRequest()
 					.setParentNodeUuid(formUuid)
 					.setLanguage("en")
-					.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME);
+					.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME)
+					.setPublish(publishFormFolder(folderName));
 
 				createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
 
@@ -590,6 +593,7 @@ public class FormService {
 				NodeCreateRequest createRequest = new NodeCreateRequest()
 					.setParentNodeUuid(formUuid)
 					.setLanguage("en")
+					.setPublish(publishFormFolder(folderName))
 					.setSchemaName(SchemaInitializer.FOLDER_SCHEMA_NAME);
 
 				createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
@@ -1122,5 +1126,22 @@ public class FormService {
 			.first(String.format("%s/%s.hbs", basePath, templateName))
 			.doOnSuccess(template -> log.debug("Using template <{}>", template))
 			.flatMap(template -> renderService.rxRender(rc.data(), StringUtils.removeEnd(template, ".hbs")));
+	}
+
+	/**
+	 * Determine whether the form folder with given name should be published
+	 * @param name form folder name
+	 * @return true for publish, false to not publish
+	 */
+	private boolean publishFormFolder(String name) {
+		if (StringUtils.isEmpty(name)) {
+			return false;
+		}
+		switch (name) {
+		case DATA_FOLDER_NAME:
+			return true;
+		default:
+			return false;
+		}
 	}
 }
