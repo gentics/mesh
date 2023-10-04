@@ -266,7 +266,10 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 						if (graphNodeList != null) {
 							List<String> nodeItems = new ArrayList<>();
 							for (HibNodeField listItem : graphNodeList.getList()) {
-								nodeItems.add(listItem.getNode().getUuid());
+								HibNode node = listItem.getNode();
+								if (node != null) {
+									nodeItems.add(node.getUuid());
+								}
 							}
 							fieldsMap.put(fieldSchema.getName(), nodeItems);
 						}
