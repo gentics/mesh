@@ -1,0 +1,15 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| imageVariants
+| true
+| object
+| If a binary image is to be published, this field contains a set of image manipulation variants to be created immediately
+
+|======

@@ -630,7 +630,12 @@ public class RestUpdaters {
 			if (log.isDebugEnabled()) {
 				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
 			}
-			graphNodeFieldList.addItem(graphNodeFieldList.createNode(pos, node));
+			HibNodeField nodeItem = graphNodeFieldList.createNode(pos, node);
+			if (nodeItem != null) {
+				graphNodeFieldList.addItem(nodeItem);
+			} else {
+				log.warn("The referenced node {" + item.getUuid() + "} does not exist for the field {" + fieldKey + "} of schema {" + schema.getName() + "}");
+			}
 		}
 
 	};
