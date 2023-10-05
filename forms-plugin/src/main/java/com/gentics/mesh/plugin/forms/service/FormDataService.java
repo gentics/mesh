@@ -866,7 +866,7 @@ public class FormDataService {
 	 * @return single void
 	 */
 	public Single<EmptyResponse> delete(String projectName, String formUuid, String formDataUuid) {
-		return load(projectName, formUuid, formDataUuid).flatMap(formDataNode -> {
+		return load(projectName, formUuid, formDataUuid, true).flatMap(formDataNode -> {
 			// loadFormDataByUuid() already checks if formDataUuid is a subnode of formUuid and if formUuid is actually a form.
 			DeleteParametersImpl deleteParams = new DeleteParametersImpl();
 			deleteParams.setRecursive(true);
