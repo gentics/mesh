@@ -17,6 +17,7 @@ import com.gentics.mesh.plugin.forms.SchemaInitializer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
+import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.jayway.jsonpath.Configuration;
@@ -103,7 +104,7 @@ public class StatusService {
 	 */
 	public Completable initialize(String storageDirPath) {
 		return rxVertx.fileSystem().rxMkdirs(storageDirPath)
-			.andThen(projectsWithPluginRootNode()
+			.andThen(projectsWithPluginActive()
 				.doOnNext(project -> {
 					if (purgeInterval <= 0) {
 						log.warn("Download purge interval is less than 1, download purge disabled");
@@ -138,8 +139,7 @@ public class StatusService {
 	 */
 	private Single<StatusResponse> check(MeshRestClient client, String projectName) {
 		return client.graphqlQuery(projectName, pluginRootNodeQuery).toSingle().map(response -> {
-			DocumentContext ctx = JsonPath.parse(response.toJson(), Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS));
-			List<Boolean> published = ctx.read("$.data.schema.nodes.elements[*].languages[*].isPublished");
+			List<Boolean> published = FormUtil.getFromResponse(response, "$.data.schema.nodes.elements[*].languages[*].isPublished");
 
 			return new StatusResponse().setActive(published.stream().filter(b -> b == Boolean.TRUE).findFirst().isPresent());
 		});
@@ -275,10 +275,10 @@ public class StatusService {
 	}
 
 	/**
-	 * Return an observable emitting all project responses for projects that have the plugin root node
+	 * Return an observable emitting all project responses for projects that have the plugin activated
 	 * @return observable
 	 */
-	private Observable<ProjectResponse> projectsWithPluginRootNode() {
+	public Observable<ProjectResponse> projectsWithPluginActive() {
 		return adminClient.findProjects().toSingle()
 			.flatMapObservable(response -> Observable.fromIterable(response.getData())).flatMap(project -> {
 				return check(adminClient, project.getName()).flatMapObservable(status -> {

@@ -1,5 +1,30 @@
 package com.gentics.mesh.plugin.forms.service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -43,6 +68,7 @@ import com.gentics.mesh.plugin.forms.util.FormUtil;
 import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Emitter;
@@ -58,29 +84,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Singleton
 public class FormService {
@@ -193,6 +196,8 @@ public class FormService {
 
 	private final StatusService statusService;
 
+	private final String formsGraphQlQuery;
+
 	@Inject
 	public FormService(
 			Vertx rxVertx,
@@ -213,6 +218,12 @@ public class FormService {
 		this.renderService = renderService;
 		this.configuration = configuration;
 		this.statusService = statusService;
+
+		try {
+			this.formsGraphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("forms.graphql"), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -382,69 +393,84 @@ public class FormService {
 	 * @return single json object
 	 */
 	public Single<JsonObject> list(String projectName, JsonObject pagingParams, String[] requestedLanguages) {
-		try {
-			String graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("forms.graphql"), StandardCharsets.UTF_8);
+		Single<String[]> languages = requestedLanguages == null || requestedLanguages.length == 0
+			? statusService.languageFallback(projectName)
+			: Single.just(requestedLanguages);
 
-			Single<String[]> languages = requestedLanguages == null || requestedLanguages.length == 0
-				? statusService.languageFallback(projectName)
-				: Single.just(requestedLanguages);
+		return languages
+			.flatMap(lang -> statusService.getRootNode(projectName, userClient)
+				.flatMap(rootNode -> {
+					JsonObject variables = new JsonObject()
+						.mergeIn(pagingParams, true)
+						.put("rootNodeUuid", rootNode.getUuid())
+						.put("lang", Arrays.asList(lang));
 
-			return languages
-				.flatMap(lang -> statusService.getRootNode(projectName, userClient)
-					.flatMap(rootNode -> {
-						JsonObject variables = new JsonObject()
-							.mergeIn(pagingParams, true)
-							.put("rootNodeUuid", rootNode.getUuid())
-							.put("lang", Arrays.asList(lang));
-
-						return userClient
-							.graphql(projectName, new GraphQLRequest().setQuery(graphQlQuery).setVariables(variables))
-							.toSingle();
-					})
-					.flatMap(graphQlResponse -> {
-						// log all errors
-						if (graphQlResponse.getErrors() != null) {
-							for (GraphQLError error : graphQlResponse.getErrors()) {
-								log.warn("Error in graphql response {}", error.toJson());
-							}
+					return userClient
+						.graphql(projectName, new GraphQLRequest().setQuery(formsGraphQlQuery).setVariables(variables))
+						.toSingle();
+				})
+				.flatMap(graphQlResponse -> {
+					// log all errors
+					if (graphQlResponse.getErrors() != null) {
+						for (GraphQLError error : graphQlResponse.getErrors()) {
+							log.warn("Error in graphql response {}", error.toJson());
 						}
+					}
 
-						JsonObject clientResponse = new JsonObject();
-						if (graphQlResponse.getData() == null) {
-							return Single.error(new FormsError("Found no data in graphql response", 500));
-						}
+					JsonObject clientResponse = new JsonObject();
+					if (graphQlResponse.getData() == null) {
+						return Single.error(new FormsError("Found no data in graphql response", 500));
+					}
 
-						if (!graphQlResponse.getData().containsKey("node")) {
-							return Single.error(new FormsError("Found no 'node' in graphql response", 500));
-						}
-						JsonObject node = graphQlResponse.getData().getJsonObject("node");
-						if (!node.containsKey("children")) {
-							return Single.error(new FormsError("Found no 'node.children' in graphql response", 500));
-						}
-						JsonObject children = node.getJsonObject("children");
-						if (!children.containsKey("elements")) {
-							return Single.error(new FormsError("Found no 'node.children.elements' in graphql response", 500));
-						}
-						JsonArray forms = children.getJsonArray("elements");
-						pagingService.addPagingInfoToResponse(clientResponse, children);
+					if (!graphQlResponse.getData().containsKey("node")) {
+						return Single.error(new FormsError("Found no 'node' in graphql response", 500));
+					}
+					JsonObject node = graphQlResponse.getData().getJsonObject("node");
+					if (!node.containsKey("children")) {
+						return Single.error(new FormsError("Found no 'node.children' in graphql response", 500));
+					}
+					JsonObject children = node.getJsonObject("children");
+					if (!children.containsKey("elements")) {
+						return Single.error(new FormsError("Found no 'node.children.elements' in graphql response", 500));
+					}
+					JsonArray forms = children.getJsonArray("elements");
+					pagingService.addPagingInfoToResponse(clientResponse, children);
 
-						// make response flat
-						List<JsonObject> clientForms = new ArrayList<>(forms.size());
-						for (int i = 0; i < forms.size(); i++) {
-							JsonObject form = forms.getJsonObject(i);
-							JsonObject clientForm = new JsonObject();
-							clientForm.put("uuid", form.getString("uuid"));
-							clientForm.put("name", form.getJsonObject("fields").getString("name"));
-							clientForm.put("cms_id", form.getJsonObject("fields").getValue("cms_id"));
-							clientForms.add(clientForm);
-						}
-						clientResponse.put("forms", new JsonArray(clientForms));
+					// make response flat
+					List<JsonObject> clientForms = new ArrayList<>(forms.size());
+					for (int i = 0; i < forms.size(); i++) {
+						JsonObject form = forms.getJsonObject(i);
+						JsonObject clientForm = new JsonObject();
+						clientForm.put("uuid", form.getString("uuid"));
+						clientForm.put("name", form.getJsonObject("fields").getString("name"));
+						clientForm.put("cms_id", form.getJsonObject("fields").getValue("cms_id"));
+						clientForms.add(clientForm);
+					}
+					clientResponse.put("forms", new JsonArray(clientForms));
 
-						return Single.just(clientResponse);
-					}));
-		} catch (IOException e) {
-			return Single.error(e);
-		}
+					return Single.just(clientResponse);
+				}));
+	}
+
+	/**
+	 * List all form UUIDs for the given project
+	 * @param projectName project name
+	 * @return observable emitting the form UUIDs
+	 */
+	public Observable<String> listUuids(String projectName) {
+		return statusService.languageFallback(projectName)
+			.flatMap(lang -> statusService.getRootNode(projectName, adminClient).flatMap(rootNode -> {
+				JsonObject variables = new JsonObject().put("rootNodeUuid", rootNode.getUuid()).put("lang",
+						Arrays.asList(lang));
+
+				return adminClient.graphql(projectName,
+						new GraphQLRequest().setQuery(formsGraphQlQuery).setVariables(variables)).toSingle();
+			})).flatMapObservable(graphQlResponse -> {
+				List<String> uuids = FormUtil.getFromResponse(graphQlResponse, "$.data.node.children.elements[*].uuid");
+				return Observable.fromIterable(uuids);
+			}).doOnSubscribe(disp -> {
+				log.debug(String.format("List Form uuids for project %s", projectName));
+			});
 	}
 
 	/**
@@ -540,7 +566,7 @@ public class FormService {
 			.setQuery(query)
 			.setVariables(new JsonObject().put("formUuid", formUuid).put("lang", Arrays.asList(lang)));
 
-		return userClient.graphql(projectName, request).toSingle()
+		return adminClient.graphql(projectName, request).toSingle()
 			.map(rs -> Optional.ofNullable(rs.getData())
 				.map(data -> data.getJsonObject("node"))
 				.map(node -> node.getJsonObject("children"))
@@ -563,7 +589,7 @@ public class FormService {
 
 				createRequest.getFields().put("name", new StringFieldImpl().setString(folderName));
 
-				return userClient.createNode(projectName, createRequest).toSingle()
+				return adminClient.createNode(projectName, createRequest).toSingle()
 					.map(NodeResponse::getUuid);
 			});
 	}
@@ -914,7 +940,7 @@ public class FormService {
 	 *            form uuid
 	 * @return schema name
 	 */
-	private String getSchemaName(String formUuid) {
+	public String getSchemaName(String formUuid) {
 		return String.format("%s_%s", SchemaService.SCHEMA_NAME, formUuid);
 	}
 

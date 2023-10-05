@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
@@ -77,6 +78,7 @@ import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -93,9 +95,6 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 @Singleton
 public class FormDataService {
@@ -149,6 +148,8 @@ public class FormDataService {
 
 	private final File storageDir;
 
+	private final String loadFormDataToMigrateGraphQl;
+
 	@Inject
 	public FormDataService(
 			@AdminClient MeshRestClient adminClient,
@@ -174,6 +175,63 @@ public class FormDataService {
 		this.renderService = renderService;
 		this.statusService = statusService;
 		this.storageDir = storageDir;
+
+		try {
+			this.loadFormDataToMigrateGraphQl = IOUtils.toString(FormsPlugin.class.getResource("loadFormDataToMigrate.graphql"), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	/**
+	 * Initialize the service. This will migrate all form data nodes, which are created directly under the plugin root node
+	 * @return completable
+	 */
+	public Completable initialize() {
+		return statusService.projectsWithPluginActive().flatMapCompletable(this::migrateFormDataNodes);
+	}
+
+	/**
+	 * Migrate form data nodes for all forms of the project
+	 * @param project project
+	 * @return completable
+	 */
+	private Completable migrateFormDataNodes(ProjectResponse project) {
+		String projectName = project.getName();
+
+		return statusService.languageFallback(projectName).flatMapCompletable(lang -> {
+			return formService.listUuids(project.getName())
+					.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
+		});
+	}
+
+	/**
+	 * Migrate form data nodes for the given form
+	 * @param project project
+	 * @param formUuid form uuid
+	 * @param lang languages
+	 * @return completable
+	 */
+	private Completable migrateFormDataNodes(ProjectResponse project, String formUuid, String...lang) {
+		String schemaName = formService.getSchemaName(formUuid);
+		String projectName = project.getName();
+
+		GraphQLRequest request = new GraphQLRequest()
+				.setQuery(loadFormDataToMigrateGraphQl)
+				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName));
+		VersioningParameters params = new VersioningParametersImpl().draft();
+
+		return getFormDataFolderUuid(projectName, formUuid, lang).flatMapCompletable(formDataFolderUuid -> {
+			return adminClient.graphql(projectName, request, params).toSingle().flatMapObservable(response -> {
+				List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
+				return Observable.fromIterable(uuids);
+			}).flatMapCompletable(
+					dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toCompletable()
+							.doOnSubscribe(disp -> log
+									.debug(String.format("Move misplaced form data node %s for form %s in project %s",
+											dataUuid, formUuid, projectName))));
+		}).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
 	}
 
 	/**
@@ -664,7 +722,11 @@ public class FormDataService {
 		if (node == null) {
 			return Single.error(new Exception("GraphQl response contained no data"));
 		}
-		JsonObject children = node.getJsonObject("children");
+		JsonObject dataNode = node.getJsonObject("data");
+		if (dataNode == null) {
+			return Single.error(new Exception("GraphQl response contained no data"));
+		}
+		JsonObject children = dataNode.getJsonObject("children");
 		if (children == null) {
 			return Single.error(new Exception("GraphQl response contained no data"));
 		}
