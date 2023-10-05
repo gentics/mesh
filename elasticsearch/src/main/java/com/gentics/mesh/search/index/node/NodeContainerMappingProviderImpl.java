@@ -483,7 +483,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 
 				// Check if the microschema is contained in the whitelist
 				// and ignore it if it isn't
-				if (!whitelist.contains(microschemaName)) {
+				if (!whitelist.contains(microschemaName) || (microschema.getNoIndex() != null && microschema.getNoIndex())) {
 					continue;
 				}
 
