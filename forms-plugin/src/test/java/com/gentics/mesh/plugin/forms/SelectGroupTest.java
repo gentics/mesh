@@ -1,6 +1,5 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -13,7 +12,6 @@ import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 
@@ -63,9 +61,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		ResponseWithCookies response = submit(formUuid, "single", key);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 		assertThat(dataNode.getFields().getStringField("single").getString()).as("Field value").isEqualTo(key);
 	}
 
@@ -76,9 +72,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		ResponseWithCookies response = submit(formUuid, "single_with", "single_withadditional_field", "single_with_additional", additionalKey);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 		assertThat(dataNode.getFields().getStringField("single_with").getString()).as("Field value").isEqualTo(additionalKey);
 	}
 
@@ -89,9 +83,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		ResponseWithCookies response = submit(formUuid, "multi", keys.get(0), "multi", keys.get(1));
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 		assertThat(dataNode.getFields().getStringFieldList("multi").getItems()).as("Field values").containsOnlyElementsOf(keys);
 	}
 
@@ -103,9 +95,7 @@ public class SelectGroupTest extends AbstractFormsPluginIntegrationTest {
 		ResponseWithCookies response = submit(formUuid, "multi_with", keys.get(0), "multi_with", keys.get(1), "multi_with", additionalKey);
 		assertThat(response.response.isSuccessful()).as("Response is success").isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + formUuid))).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 		List<String> allKeys = new ArrayList<>();
 		allKeys.addAll(keys);
 		allKeys.add(additionalKey);

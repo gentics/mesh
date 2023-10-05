@@ -214,9 +214,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(postDataResponse.isRedirect())
 				.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + uuid))).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
 		Response response = client().newCall(renderRequest).execute();
@@ -261,9 +259,7 @@ public class FormRenderTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(postDataResponse.isRedirect())
 			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData().stream().filter(n -> !n.getSchema().getName().equals("form_" + uuid))).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		// Check the form data cookie has the correct data node UUID and name of the last submitted page.
 		assertThat(getFormdataCookie(postDataResponse))
