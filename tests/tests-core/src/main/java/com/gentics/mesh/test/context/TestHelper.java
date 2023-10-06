@@ -700,14 +700,18 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public NodeResponse uploadImage(HibNode node, String languageTag, String fieldName) throws IOException {
-		String contentType = "image/jpeg";
-		String fileName = "blume.jpg";
+		return uploadImageType(node, languageTag, fieldName, "jpg", "jpeg");
+	}
+
+	default public NodeResponse uploadImageType(HibNode node, String languageTag, String fieldName, String extension, String mimeSubtype) throws IOException {
+		String contentType = "image/" + mimeSubtype;
+		String fileName = "blume." + StringUtils.removeStart(extension, ".");
 		try (Tx tx = tx()) {
 			prepareSchema(tx.nodeDao().findByUuidGlobal(node.getUuid()), "image/.*", fieldName);
 			tx.success();
 		}
 		String uuid = tx(() -> node.getUuid());
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+		InputStream ins = getClass().getResourceAsStream("/pictures/" + fileName);
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 
@@ -721,10 +725,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	}
 
 	default public NodeResponse uploadImage(NodeResponse node, String languageTag, String fieldName) throws IOException {
-		String contentType = "image/jpeg";
-		String fileName = "blume.jpg";
+		return uploadImage(node, languageTag, fieldName, "jpg", "jpeg");
+	}
 
-		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
+	default NodeResponse uploadImage(NodeResponse node, String languageTag, String fieldName, String extension, String mimeSubtype) throws IOException {
+		String contentType = "image/" + mimeSubtype;
+		String fileName = "blume." + StringUtils.removeStart(extension, ".");
+
+		InputStream ins = getClass().getResourceAsStream("/pictures/" + fileName);
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 
