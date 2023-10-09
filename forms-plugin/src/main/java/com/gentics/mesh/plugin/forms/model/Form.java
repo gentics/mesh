@@ -44,6 +44,8 @@ public class Form implements RestModel {
 
 	private String name;
 
+	private String language;
+
 	private FormType type;
 
 	private String email;
@@ -82,6 +84,7 @@ public class Form implements RestModel {
 	private Form(Form other) {
 		this.uuid = other.uuid;
 		this.name = other.name;
+		this.language = other.language;
 		this.type = other.type;
 		this.email = other.email;
 		this.mailsubject = other.mailsubject;
@@ -116,6 +119,22 @@ public class Form implements RestModel {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * Form language
+	 * @return language
+	 */
+	public String getLanguage() {
+		return language;
+	}
+
+	/**
+	 * Set the form language
+	 * @param language language
+	 */
+	public void setLanguage(String language) {
+		this.language = language;
 	}
 
 	/**

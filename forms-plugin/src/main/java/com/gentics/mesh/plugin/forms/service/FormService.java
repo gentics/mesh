@@ -24,6 +24,7 @@ import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
+import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
 import com.gentics.mesh.plugin.common.dagger.UserClient;
 import com.gentics.mesh.plugin.common.service.RenderService;
@@ -38,6 +39,7 @@ import com.gentics.mesh.plugin.forms.model.FormType;
 import com.gentics.mesh.plugin.forms.model.ValidationError;
 import com.gentics.mesh.plugin.forms.model.response.RenderResponse;
 import com.gentics.mesh.plugin.forms.util.FormUtil;
+import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -224,7 +226,7 @@ public class FormService {
 		}
 
 		try {
-			return toForm(formData.encode(), formData.getString("uuid")).validateForm();
+			return toForm(formData.encode(), formData.getString("uuid"), null).validateForm();
 		} catch (IOException e) {
 			log.error("Could not deserialize form: {}", e, e.getMessage());
 
@@ -320,10 +322,11 @@ public class FormService {
 	 * @param projectName project name
 	 * @param uuid form uuid
 	 * @param published true to load published node, false for draft
+	 * @param requestedLangs requested languages
 	 * @return single noderesponse
 	 */
-	public Single<NodeResponse> loadAsAdminWithLanguageFallback(String projectName, String uuid, boolean published) {
-		return statusService.languageFallback(projectName).flatMap(langs -> loadAsAdmin(projectName, uuid, published, langs));
+	public Single<NodeResponse> loadAsAdminWithLanguageFallback(String projectName, String uuid, boolean published, String...requestedLangs) {
+		return statusService.languageFallback(projectName, requestedLangs).flatMap(langs -> loadAsAdmin(projectName, uuid, published, langs));
 	}
 
 	/**
@@ -617,14 +620,14 @@ public class FormService {
 	 *
 	 * @param uuid form uuid
 	 * @param formData form to render encoded as JSON
-	 * @param rc routing context
+	 * @param rc plugin context
 	 * @return single buffer
 	 */
-	public Single<Buffer> renderForm(String uuid, String formData, String pathPrefix, RoutingContext rc) {
+	public Single<Buffer> renderForm(String uuid, String formData, String pathPrefix, PluginContext rc) {
 		Form form;
 
 		try {
-			form = toForm(formData, uuid);
+			form = toForm(formData, uuid, ParameterUtil.getFirstLanguage(rc, "en"));
 		} catch (IOException e) {
 			log.error("Could not create form instance from form data: {}", e.getMessage());
 
@@ -781,7 +784,7 @@ public class FormService {
 	public Single<Form> toForm(NodeResponse formNode) {
 		try {
 
-			return Single.just(toForm(formNode.getFields().getStringField("json").toString(), formNode.getUuid()));
+			return Single.just(toForm(formNode.getFields().getStringField("json").toString(), formNode.getUuid(), formNode.getLanguage()));
 		} catch (IOException e) {
 			return Single.error(e);
 		}
@@ -791,13 +794,17 @@ public class FormService {
 	 * Transfrom the string with the JSON representation of a form to a {@link Form} object.
 	 * @param formData The JSON representation of a <code>Form</code>
 	 * @param formUuid The UUID of the given form
+	 * @param language form language
 	 * @return The deserialized <code>Form</code> object
 	 * @throws IOException When the object mapper cannot parse the string
 	 */
-	public Form toForm(String formData, String formUuid) throws IOException {
+	public Form toForm(String formData, String formUuid, String language) throws IOException {
 		Form form = objectMapper.readValue(formData, Form.class);
 
 		form.setUuid(formUuid);
+		if (language != null) {
+			form.setLanguage(language);
+		}
 
 		return form;
 	}

@@ -15,6 +15,9 @@
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
+icon:check[] Forms: Add form language to the context when rendering a form. The language should be used as additional query parameter `lang` to the URL in the form `action`. This will allow the form plugin to detect
+for which language the form data is posted in order to support redirection to language specific successurls.
+
 [[v1.10.6]]
 == 1.10.6 (2023-08-10)
 
