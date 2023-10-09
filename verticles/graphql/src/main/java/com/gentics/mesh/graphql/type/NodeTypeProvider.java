@@ -127,7 +127,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public CompletableFuture<DataFetcherResult<NodeContent>> parentNodeFetcher(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
-		NodeDao nodeDao = tx.nodeDao();
 
 		NodeContent content = env.getSource();
 		if (content == null) {
@@ -135,7 +134,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 		GraphQLContext gc = env.getContext();
 		String uuid = tx.getBranch(gc).getUuid();
-		HibNode parentNode = nodeDao.getParentNode(content.getNode(), uuid);
+		HibNode parentNode = content.getNodeParent(gc);
 		// The project root node can have no parent. Lets check this and exit early.
 		if (parentNode == null) {
 			return null;

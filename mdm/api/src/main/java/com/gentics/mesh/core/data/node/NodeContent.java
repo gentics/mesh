@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.data.node;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.db.Tx;
@@ -13,9 +15,10 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 public class NodeContent {
 
 	private HibNode node;
-	private HibNodeFieldContainer container;
-	private List<String> languageFallback;
-	private ContainerType type;
+	private final HibNodeFieldContainer container;
+	private final List<String> languageFallback;
+	private final ContainerType type;
+	private Optional<HibNode> nodeParent;
 
 	/**
 	 * Create a new node content.
@@ -26,10 +29,23 @@ public class NodeContent {
 	 *            Language fallback list which was used to load the content
 	 */
 	public NodeContent(HibNode node, HibNodeFieldContainer container, List<String> languageFallback, ContainerType type) {
+		this(node, container, languageFallback, type, null);
+	}
+
+	/**
+	 * Create a new node content.
+	 * 
+	 * @param node
+	 * @param container
+	 * @param languageFallback
+	 *            Language fallback list which was used to load the content
+	 */
+	public NodeContent(HibNode node, HibNodeFieldContainer container, List<String> languageFallback, ContainerType type, HibNode nodeParent) {
 		this.node = node;
 		this.container = container;
 		this.languageFallback = languageFallback;
 		this.type = type;
+		this.setNodeParent(Optional.ofNullable(nodeParent));
 	}
 
 	/**
@@ -57,4 +73,11 @@ public class NodeContent {
 		return type;
 	}
 
+	public HibNode getNodeParent(InternalActionContext ac) {
+		return nodeParent.orElseGet(() -> getNode().getParentNode(ac.getVersioningParameters().getBranch()));
+	}
+
+	public void setNodeParent(Optional<HibNode> nodeParent) {
+		this.nodeParent = nodeParent;
+	}
 }
