@@ -10,8 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.8.14]]
+== 1.8.14 (TBD)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
 [[v1.8.13]]
-== 1.8.13 (TBD)
+== 1.8.13 (2023-08-10)
 
 icon:check[] Forms: Fixes a security issue for donwloading binaries.
 
