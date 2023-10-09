@@ -204,9 +204,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			c -> c.expiresAt() < System.currentTimeMillis(),
 			"is expired");
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo(value);
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
 	}
@@ -231,9 +229,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("");
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("0.1");
 
@@ -267,9 +263,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
 		assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
@@ -294,9 +288,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
 		assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
@@ -649,9 +641,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		MeshBinaryResponse download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1"));
 		assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
@@ -692,9 +682,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
 	}
@@ -716,8 +704,8 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			client().newCall(postRequest).execute();
 		}
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		for (NodeResponse nodeResponse : dataNodes.getData()) {
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		for (NodeResponse nodeResponse : dataNodes) {
 			Request loadRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid())).get().build();
 			Response response = client().newCall(loadRequest).execute();
 			assertThat(response.code())
@@ -743,9 +731,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
 		assertThat(dataNode.getFields().getStringField("custom1")).as("Data Node Field").isNotNull();
 		assertThat(dataNode.getFields().getStringField("custom1").getString()).as("Data Node Field").isEqualTo("custom someValue");
@@ -775,9 +761,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
 		assertThat(dataNode.getFields().getStringField("customconfig1")).as("Data Node Field").isNotNull();
 		assertThat(dataNode.getFields().getStringField("customconfig1").getString()).as("Data Node Field").isEqualTo("custom someValue");
@@ -808,9 +792,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			.build();
 		client().newCall(postRequest).execute();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("0.1");
 
@@ -821,9 +803,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 			.post(requestBody)
 			.build();
 		client().newCall(postRequest).execute();
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
+		dataNode = getSingleFormDataNode(uuid);
 		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
 		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
 	}
@@ -1252,9 +1232,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 * @return data node
 	 */
 	protected NodeResponse assertSingleDataNode(String formUuid, Consumer<NodeResponse> asserter) {
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 
 		if (asserter != null) {
 			asserter.accept(dataNode);

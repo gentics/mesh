@@ -54,7 +54,18 @@ public final class PluginTestUtil {
 			eb.events().subscribe(ignore -> {
 				latch.countDown();
 			}, err -> err.printStackTrace());
-			assertThat(latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS)).as(String.format("Plugin %s was registered within %d ms", pluginId, timeoutInMilliseconds)).isTrue();
+			boolean eventReceived = latch.await(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+			// when we did not get the event in time, we do another check, maybe we just missed it
+			if (!eventReceived) {
+				plugins = call(() -> client.findPlugins());
+				foundPlugin = plugins.getData().stream().filter(plugin -> plugin.getId().equals(pluginId)).findFirst();
+				if (foundPlugin.isPresent()) {
+					if (REGISTERED == foundPlugin.get().getStatus()) {
+						return;
+					}
+				}
+			}
+			assertThat(eventReceived).as(String.format("Plugin %s was registered within %d ms", pluginId, timeoutInMilliseconds)).isTrue();
 		} finally {
 			eb.close();
 		}

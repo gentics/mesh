@@ -1,27 +1,19 @@
 package com.gentics.mesh.plugin.forms;
 
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.NodeParameters;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
-import com.gentics.mesh.parameter.client.NodeParametersImpl;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import com.github.jknack.handlebars.internal.lang3.StringUtils;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import okhttp3.Cookie;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.regex.Pattern;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 
-import static com.gentics.mesh.test.ClientHelper.call;
-import static org.assertj.core.api.Assertions.assertThat;
+import okhttp3.Cookie;
 
 public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 
@@ -54,14 +46,7 @@ public class FormPostVoteTest extends AbstractFormsPluginIntegrationTest {
 			.matches(c -> "".equals(c.value()), "Value is empty")
 			.matches(c -> c.expiresAt() < System.currentTimeMillis(), "is expired");
 
-		NodeListResponse formNodeChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, pollUuid));
-		List<NodeResponse> dataNodes = formNodeChildren.getData().stream().filter(n -> StringUtils.equals(n.getSchema().getName(), "form_" + pollUuid)).collect(Collectors.toList());
-
-		assertThat(dataNodes)
-			.as("Data node list")
-			.hasSize(1);
-
-		NodeResponse dataNode = dataNodes.get(0);
+		NodeResponse dataNode = getSingleFormDataNode(pollUuid);
 
 		assertThat(dataNode.getFields().getStringField(POLL_FIELD).getString())
 			.as("Data Node Field")
