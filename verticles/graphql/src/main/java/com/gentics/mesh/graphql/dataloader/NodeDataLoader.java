@@ -37,6 +37,7 @@ public class NodeDataLoader {
 	public static final String CONTENT_LOADER_KEY = "contentLoader";
 	public static final String CHILDREN_LOADER_KEY = "childrenLoader";
 	public static final String PATH_LOADER_KEY = "pathLoader";
+	public static final String PARENT_LOADER_KEY = "parentLoader";
 	public static final String BREADCRUMB_LOADER_KEY = "breadcrumbLoader";
 
 	/**
@@ -126,6 +127,35 @@ public class NodeDataLoader {
 		return promise.future().toCompletionStage();
 	};
 
+	/**
+	 * Batch load path of a nodefieldcontainer for a transaction branch, the provided container type and language tags,
+	 * without doing permission checks.
+	 */
+	public static BatchLoaderWithContext<HibNode, HibNode> PARENT_LOADER = (keys, environment) -> {
+		Tx tx = Tx.get();
+		GraphQLContext context = environment.getContext();
+		Map<HibNode, HibNode> contentPaths = new HashMap<>();
+
+		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<HibNode>> keysByContext) -> {
+			Map<HibNode, HibNode> nodePaths = tx.nodeDao().getParentNodes(keysByContext.getValue(), tx.getBranch(context).getUuid());
+			Map<HibNode, HibNode> pathsByPartition = keysByContext.getValue()
+					.stream()
+					.map(entry -> Pair.of(entry, nodePaths.get(entry)))
+					.filter(p -> p.getValue() != null)
+					.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+			contentPaths.putAll(pathsByPartition);
+		});
+
+		List<HibNode> results = new ArrayList<>();
+		for (HibNode key : keys) {
+			results.add(contentPaths.getOrDefault(key, null));
+		}
+		Promise<List<HibNode>> promise = Promise.promise();
+		promise.complete(results);
+
+		return promise.future().toCompletionStage();
+	};
+
 	public static BatchLoaderWithContext<HibNode, List<NodeContent>> BREADCRUMB_LOADER = (keys, environment) -> {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
@@ -169,6 +199,7 @@ public class NodeDataLoader {
 		return promise.future().toCompletionStage();
 	};
 
+	@SuppressWarnings("unchecked")
 	private static <T> void partitioningByContext(Map<Object, Object> keyContexts, Consumer<Pair<Context, List<T>>> consumer) {
 		Map<Context, List<T>> partitionedContext = keyContexts.entrySet().stream()
 				.map(kv -> Pair.of((T) kv.getKey(), (Context) kv.getValue()))
@@ -177,6 +208,7 @@ public class NodeDataLoader {
 		partitionedContext.forEach((key, value) -> consumer.accept(Pair.of(key, value)));
 	}
 
+	@SuppressWarnings("unchecked")
 	private static <T> void partitioningByContainerType(Map<Object, Object> keyContexts, Consumer<Pair<ContainerType, List<T>>> consumer) {
 		Map<ContainerType, List<T>> partitionedContext = keyContexts.entrySet().stream()
 				.map(kv -> Pair.of((T) kv.getKey(), ((Context) kv.getValue()).type))
