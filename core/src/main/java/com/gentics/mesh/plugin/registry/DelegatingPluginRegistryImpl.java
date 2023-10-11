@@ -202,7 +202,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 		PluginEventModel model = new PluginEventModel();
 		model.setId(plugin.id());
 		model.setOrigin(options.getNodeName());
-		return new JsonObject(model.toJson());
+		return new JsonObject(model.toJson(true));
 	}
 
 }

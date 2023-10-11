@@ -113,7 +113,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	 * @param fieldName
 	 */
 	public void handle(RoutingContext rc, String uuid, String fieldName) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc, boot.get().mesh().getOptions().getHttpServerOptions());
 		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
 		if (isEmpty(transformation.getLanguage())) {
 			throw error(BAD_REQUEST, "image_error_language_not_set");

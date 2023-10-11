@@ -51,7 +51,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		// TODO Change this when mutations are implemented
 		queryEndpoint.setMutating(false);
 		queryEndpoint.blockingHandler(rc -> {
-			GraphQLContext gc = new GraphQLContextImpl(rc);
+			GraphQLContext gc = new GraphQLContextImpl(rc, boot.mesh().getOptions().getHttpServerOptions());
 			String body = gc.getBodyAsString();
 			queryHandler.handleQuery(gc, body);
 		}, false);

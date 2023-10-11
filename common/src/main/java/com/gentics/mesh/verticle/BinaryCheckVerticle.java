@@ -180,7 +180,7 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 		OkHttpClient client = new OkHttpClient.Builder().build();
 		Request request = new Request.Builder()
 			.url(ctx.checkServiceUrl)
-			.post(RequestBody.create(MediaType.parse("application/json"), checkRequest.toJson()))
+			.post(RequestBody.create(MediaType.parse("application/json"), checkRequest.toJson(true)))
 			.build();
 
 		if (log.isTraceEnabled()) {

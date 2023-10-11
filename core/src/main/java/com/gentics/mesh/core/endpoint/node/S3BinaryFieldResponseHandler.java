@@ -14,15 +14,14 @@ import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.S3Options;
-import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 import io.reactivex.Single;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.reactivex.core.Vertx;
 
 /**
  * Handler which will accept {@link S3HibBinaryField} elements and return the s3 binary data using the given context.
@@ -33,16 +32,14 @@ public class S3BinaryFieldResponseHandler {
 	private final ImageManipulator imageManipulator;
 	private final S3BinaryStorage s3Binarystorage;
 	private final S3Options s3Options;
-	private final Vertx rxVertx;
-	private final RangeRequestHandler rangeRequestHandler;
+	private final HttpServerConfig httpServerConfig;
 
 	@Inject
-	public S3BinaryFieldResponseHandler(ImageManipulator imageManipulator,S3BinaryStorage s3Binarystorage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions meshOptions) {
+	public S3BinaryFieldResponseHandler(ImageManipulator imageManipulator,S3BinaryStorage s3Binarystorage, MeshOptions meshOptions) {
 		this.imageManipulator = imageManipulator;
 		this.s3Binarystorage = s3Binarystorage;
-		this.rxVertx = rxVertx;
-		this.rangeRequestHandler = rangeRequestHandler;
 		this.s3Options = meshOptions.getS3Options();
+		this.httpServerConfig = meshOptions.getHttpServerOptions();
 	}
 
 	/**
@@ -53,7 +50,7 @@ public class S3BinaryFieldResponseHandler {
 	 * @param s3binaryField
 	 */
 	public void handle(RoutingContext rc, HibNode node, S3HibBinaryField s3binaryField) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc, httpServerConfig);
 		ImageManipulationParameters imageParams = ac.getImageParameters();
 
 		rc.response().putHeader(MeshHeaders.WEBROOT_NODE_UUID, node.getUuid());

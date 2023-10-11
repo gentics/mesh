@@ -142,6 +142,13 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT);
 
 	/**
+	 * Should the JSON body be minified?
+	 * 
+	 * @return
+	 */
+	abstract protected boolean isMinifyJson();
+
+	/**
 	 * Return the query aggregated parameter string for the given providers.
 	 * 
 	 * @param parameters

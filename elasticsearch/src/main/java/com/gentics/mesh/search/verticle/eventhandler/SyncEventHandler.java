@@ -64,7 +64,7 @@ public class SyncEventHandler implements EventHandler {
 	public static void invokeSync(Vertx vertx, String indexPattern) {
 		SearchIndexSyncEventModel eventModel = new SearchIndexSyncEventModel().setIndexPattern(indexPattern);
 		log.info("Sending sync event for index pattern {}", eventModel.getIndexPattern());
-		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(eventModel)));
+		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(eventModel, true)));
 	}
 
 	/**

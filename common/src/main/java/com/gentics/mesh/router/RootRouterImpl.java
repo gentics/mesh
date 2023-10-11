@@ -41,7 +41,7 @@ public class RootRouterImpl implements RootRouter {
 		// routes (eg. custom
 		// routes)
 		router.route().last().handler(DefaultNotFoundHandler.create());
-		router.route().failureHandler(FailureHandler.create(livenessBean));
+		router.route().failureHandler(FailureHandler.create(livenessBean, options.getHttpServerOptions().isMinifyJson()));
 		if (options.getHttpServerOptions().isServerTokens()) {
 			router.route().handler(PoweredByHandler.create());
 		}

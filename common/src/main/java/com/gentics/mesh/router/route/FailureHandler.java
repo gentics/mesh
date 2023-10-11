@@ -33,7 +33,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	private static final Logger log = LoggerFactory.getLogger(FailureHandler.class);
 
-	private LivenessManager livenessBean;
+	private final LivenessManager livenessBean;
+
+	private final boolean minifyJson;
 
 	/**
 	 * Create a new failure handler.
@@ -41,16 +43,17 @@ public class FailureHandler implements Handler<RoutingContext> {
 	 * @param livenessBean liveness bean
 	 * @return created failure handler
 	 */
-	public static Handler<RoutingContext> create(LivenessManager livenessBean) {
-		return new FailureHandler(livenessBean);
+	public static Handler<RoutingContext> create(LivenessManager livenessBean, boolean minifyJson) {
+		return new FailureHandler(livenessBean, minifyJson);
 	}
 
 	/**
 	 * Create an instance with the given liveness bean
 	 * @param livenessBean liveness bean
 	 */
-	public FailureHandler(LivenessManager livenessBean) {
+	public FailureHandler(LivenessManager livenessBean, boolean minifyJson) {
 		this.livenessBean = livenessBean;
+		this.minifyJson = minifyJson;
 	}
 
 	/**
@@ -71,6 +74,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 	@Override
 	public void handle(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		Boolean localMinify = ac.getDisplayParameters().getMinify();
+		boolean minify = localMinify != null ? localMinify : minifyJson;
 		if (isSilentError(rc)) {
 			log.trace("Silenced error: ", rc.failure());
 			return;
@@ -105,7 +110,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			String msg = I18NUtil.get(ac, "error_not_authorized");
 			ac.getSecurityLogger().info("Access to resource denied.");
-			rc.response().setStatusCode(401).end(new GenericMessageResponse(msg).toJson());
+			rc.response().setStatusCode(401).end(new GenericMessageResponse(msg).toJson(minify));
 			return;
 		} else {
 			Throwable failure = rc.failure();
@@ -172,7 +177,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				AbstractRestException error = (AbstractRestException) failure;
 				rc.response().setStatusCode(code);
 				translateMessage(error, rc);
-				rc.response().end(JsonUtil.toJson(error));
+				rc.response().end(JsonUtil.toJson(error, minify));
 			} else {
 				if (failure instanceof OutOfMemoryError) {
 					// set liveness to false
@@ -184,7 +189,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				// That's why we don't reuse the error message here.
 				String msg = I18NUtil.get(ac, "error_internal");
 				rc.response().setStatusCode(500);
-				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
+				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg), minify));
 			}
 		}
 

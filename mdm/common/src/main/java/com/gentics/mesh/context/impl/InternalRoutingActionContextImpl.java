@@ -4,13 +4,18 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.shared.SharedKeys;
 import com.gentics.mesh.util.ETag;
@@ -39,6 +44,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 
 	private Map<String, Object> data;
 
+	private HttpServerConfig httpServerConfig;
+
 	public static final String LOCALE_MAP_DATA_KEY = "locale";
 
 	/**
@@ -47,12 +54,26 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	 * @param rc
 	 */
 	public InternalRoutingActionContextImpl(RoutingContext rc) {
+		this(rc, Tx.maybeGet().map(tx -> tx.data().options().getHttpServerOptions()).orElse(null));
+	}
+
+	/**
+	 * Create a new routing context based vertx action context.
+	 * 
+	 * @param rc
+	 */
+	public InternalRoutingActionContextImpl(RoutingContext rc, HttpServerConfig httpServerConfig) {
 		this.rc = rc;
 		if (rc.data() != null) {
 			this.data = Collections.synchronizedMap(rc.data());
 		} else {
 			this.data = new ConcurrentHashMap<>();
 		}
+	}
+
+	@Override
+	protected HttpServerConfig getHttpServerConfig() {
+		return httpServerConfig;
 	}
 
 	@Override
@@ -208,4 +229,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		return true;
 	}
 
+	@Override
+	public void setHttpServerConfig(HttpServerConfig config) {
+		this.httpServerConfig = config;
+	}
 }

@@ -129,7 +129,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	 * @return
 	 */
 	public MicroschemaUpdateRequest toRequest() {
-		return JsonUtil.readValue(toJson(), MicroschemaUpdateRequest.class);
+		return JsonUtil.readValue(toJson(true), MicroschemaUpdateRequest.class);
 	}
 
 }

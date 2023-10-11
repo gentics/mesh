@@ -1622,7 +1622,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<JsonObject> put(String path, JsonObject body) {
 		Objects.requireNonNull(path, "path must not be null");
 		Objects.requireNonNull(body, "body must not be null");
-		return handleRequest(PUT, path, JsonObject.class, body.encodePrettily());
+		return handleRequest(PUT, path, JsonObject.class, isMinifyJson() ? body.encode() : body.encodePrettily());
 	}
 
 	@Override
@@ -1647,7 +1647,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<JsonObject> post(String path, JsonObject body) {
 		Objects.requireNonNull(path, "path must not be null");
 		Objects.requireNonNull(body, "body must not be null");
-		return handleRequest(POST, path, JsonObject.class, body.encodePrettily());
+		return handleRequest(POST, path, JsonObject.class, isMinifyJson() ? body.encode() : body.encodePrettily());
 	}
 
 	@Override
