@@ -20,6 +20,7 @@
 		<!-- when updating version, don't forget to update administration-guide.asciidoc -->
 		<graphql.version>20.0</graphql.version>
 		<graphql-dataloader.version>3.1.2</graphql-dataloader.version>
+		<graphql-filter.version>3.0.2</graphql-filter.version>
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>5.5.7</spring.security.version>
@@ -687,7 +688,7 @@
 			<dependency>
 				<groupId>com.gentics.graphqlfilter</groupId>
 				<artifactId>graphql-java-filter</artifactId>
-				<version>3.0.2-SNAPSHOT</version>
+				<version>${graphql-filter.version}</version>
 			</dependency>
 
 		</dependencies>
