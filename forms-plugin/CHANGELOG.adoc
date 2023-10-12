@@ -18,6 +18,9 @@ icon:check[] Forms: Fixed a regression which prohibited deleting a single form d
 icon:check[] Forms: The new configuration property `fileUpload.defaultAllowed` (array of strings) allows setting the keys of file type definitions,
 which should be allowed by default (unlesss overwritten with `allowed_filetypes` in a FileElement).
 
+icon:check[] Forms: Add form language to the context when rendering a form. The language should be used as additional query parameter `lang` to the URL in the form `action`. This will allow the form plugin to detect
+for which language the form data is posted in order to support redirection to language specific successurls.
+
 [[v1.10.6]]
 == 1.10.6 (2023-08-10)
 

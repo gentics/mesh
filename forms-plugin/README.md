@@ -124,7 +124,7 @@ The following properties are used by the plugin itself (although some _may_ be e
 | `email` | string | Comma separated list of admin email addresses                                         | `null` |
 | `mailsubject` | string | Mail subject for overriding `adminMailSubject` from the configuration                 | `null` |
 | `mailtemp` | string | Path to a mail template for overriding `adminMailTemplate` from the configuration     | `null` |
- | `mailsource` | string | Mail template for overriding `mailtemp` property or `adminMailTemplate` configuration | `null` |
+| `mailsource` | string | Mail template for overriding `mailtemp` property or `adminMailTemplate` configuration | `null` |
 | `successurl` | string | URL for redirection after user successfully filled the form                           | `null` |
 | `elements` | array of objects | Array of embedded elements                                                            | `[]` |
 
@@ -761,6 +761,7 @@ The form plugin will put relevant information in form of a JSON object in the re
 ```json
 {
   "id": "<FORM_UUID>",
+  "language": "en",
   "multipage": false,
   "options": { /* Plugin configuration */ },
   "pathPrefix": "/prefix",
@@ -770,10 +771,14 @@ The form plugin will put relevant information in form of a JSON object in the re
 
 Where
 * `id` is the UUID of the form node
+* `language` is the language of the form
 * `multipage` is `true` when there is at least one `formpage` element in the form, and `false` otherwise
 * `options` is a JSON representation of the plugin configuration
 * `pathPrefix` is the path prefix of the projects default branch
 * `elements` contains the active form elements
+
+Handlebars example for rendering a form:
+* [form.hbs](src/main/resources/templates/form.hbs)
 
 # Extending
 

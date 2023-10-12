@@ -137,7 +137,7 @@ public class FormDataService {
 	 * @return single of the post data response
 	 */
 	public Single<PostDataResponse> create(FormDataSaveContext ctx) {
-		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true)
+		return formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages())
 			.doOnSuccess(ctx::setFormNode)
 			.flatMap(formService::toForm)
 			.doOnSuccess(ctx::setForm)
@@ -153,7 +153,7 @@ public class FormDataService {
 	 */
 	public Single<PostDataResponse> update(FormDataSaveContext ctx) {
 		return Single.zip(
-			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true),
+			formService.loadAsAdminWithLanguageFallback(ctx.getProjectName(), ctx.getFormUuid(), true, ctx.getLanguages()),
 			load(ctx.getProjectName(), ctx.getFormUuid(), ctx.getFormDataUuid()),
 			(formNode, formDataNode) -> formService.toForm(formNode)
 			.flatMap(form -> {
@@ -404,7 +404,7 @@ public class FormDataService {
 					.flatMap(langFallback -> formService.loadAsAdmin(projectName, formUuid, true, langFallback)),
 				load(projectName, formUuid, formDataUuid).onErrorReturn(t -> null),
 				(formNode, formDataNode) -> {
-					Form form = formService.toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid())
+					Form form = formService.toForm(formNode.getFields().getStringField("json").getString(), formNode.getUuid(), formNode.getLanguage())
 						.removeInactiveElements();
 					JsonObject formJson = form.prepareRenderContext(pathPrefix, configuration);
 

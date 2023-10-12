@@ -1267,6 +1267,94 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	/**
+	 * Test redirect to language specific success url
+	 * @throws IOException
+	 */
+	@Test
+	public void testSuccessUrl() throws IOException {
+		String uuid = createMultilanguageForm("successurl_en.json", "successurl_it.json");
+
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "bla")
+				.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?lang=" + language)).header("Referer", "ref")
+			.post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		String expectedLocation;
+		switch (language) {
+		case "en":
+			expectedLocation = "/thanks";
+			break;
+		case "it":
+			expectedLocation = "/grazie";
+			break;
+		default:
+			expectedLocation = "unknown";
+			break;
+		}
+
+		assertThat(response.header("Location")).as("Location Header").isEqualTo(expectedLocation);
+	}
+
+	/**
+	 * Test redirect to language specific success url when posting to an existing form data node
+	 * @throws IOException
+	 */
+	@Test
+	public void testSuccessUrlOnUpdate() throws IOException {
+		String uuid = createMultilanguageForm("successurl_en.json", "successurl_it.json");
+
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "")
+				.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?lang=" + language)).header("Referer", "ref").post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
+
+		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
+				.findFirst();
+		assertThat(cookie).as("Cookie").isPresent();
+		String formDataUuid = cookie.get().value();
+
+		requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "bla")
+				.build();
+		okio.Buffer buffer = new okio.Buffer();
+		requestBody.writeTo(buffer);
+
+		postRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid + "/data/" + formDataUuid + "?lang=" + language))
+				.header("Referer", "ref").post(requestBody).build();
+		response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+
+		String expectedLocation;
+		switch (language) {
+		case "en":
+			expectedLocation = "/thanks";
+			break;
+		case "it":
+			expectedLocation = "/grazie";
+			break;
+		default:
+			expectedLocation = "unknown";
+			break;
+		}
+
+		assertThat(response.header("Location")).as("Location Header").isEqualTo(expectedLocation);
+	}
+
+	/**
 	 * Post the given body to the form
 	 * @param uuid form uuid
 	 * @param body post body
