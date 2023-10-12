@@ -19,23 +19,26 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 
 # Configuration
 ## Fields
-| Key                   | Type           | Description                                                                                                                        | Default value             |
-|-----------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
-| `templatesPath`       | string         | base path to the templates                                                                                                         | `plugins/forms/templates` |
-| `elements`            | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class                        |                           |
-| `mail`                | object         | Mail settings                                                                                                                      |                           |
-| `fromAddress`         | string         | Address to use as `from` when sending mails                                                                                        |                           |
-| `adminMailTemplate`   | string         | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`. |                           |
-| `adminMailSubject`    | string         | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                       |                           |
-| `userMailTemplate`    | string         | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.  |                           |
-| `userMailSubject`     | string         | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                        |                           |
-| `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported                                                                          | CSV                       |
-| `reCaptcha`           | object         | Recaptcha settings                                                                                                                 |                           |
-| `friendlyCaptcha`     | object         | FriendlyRecaptcha settings                                                                                                         |                           |
-| `eyepin`              | object         | Eyepin settings                                                                                                                    |                           |
-| `proxyOptions`        | object         | Proxy settings, if http proxy is required for accessing the recaptcha/friendlycaptcha verification URL                             |                           |
-| `fileUpload`          | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                         |                           |
-| `custom`              | Map of objects | Custom configurations you can use in your extensions and handlebars template                                                       |                           |
+| Key                           | Type                 | Description                                                                                                                            | Default value             |
+|-------------------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
+| `templatesPath`               | string               | base path to the templates                                                                                                             | `plugins/forms/templates` |
+| `elements`                    | map of strings       | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class                            |                           |
+| `mail`                        | object               | Mail settings                                                                                                                          |                           |
+| `fromAddress`                 | string               | Address to use as `from` when sending mails                                                                                            |                           |
+| `adminMailTemplate`           | string               | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.     |                           |
+| `adminMailSubject`            | string               | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                           |                           |
+| `userMailTemplate`            | string               | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.      |                           |
+| `userMailSubject`             | string               | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                            |                           |
+| `defaultExportFormat`         | string               | Default export format. Currently, only `CSV` is supported                                                                              | CSV                       |
+| `reCaptcha`                   | object               | Recaptcha settings                                                                                                                     |                           |
+| `friendlyCaptcha`             | object               | FriendlyRecaptcha settings                                                                                                             |                           |
+| `eyepin`                      | object               | Eyepin settings                                                                                                                        |                           |
+| `proxyOptions`                | object               | Proxy settings, if http proxy is required for accessing the recaptcha/friendlycaptcha verification URL                                 |                           |
+| `fileUpload`                  | object               | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                             |                           |
+| `fileUpload.allowedFileTypes` | map of string arrays | Keys are `types` of allowed files, maps are lists of regular expressions for matching the filetypes against                            |                           |
+| `fileUpload.allowedFileNames` | map of string arrays | Keys are `types` of allowed files, maps are lists of regular expressions for matching the filenames against                            |                           |
+| `fileUpload.defaultAllowed`   | string array         | List of `types` (from the configuration above), which are allowed by default (unless overwritten by `allowed_filetypes` of an element) |                           |
+| `custom`                      | map of objects       | Custom configurations you can use in your extensions and handlebars template                                                           |                           |
 
 ## Example File
 ```yml
@@ -77,32 +80,34 @@ proxyOptions:
   password: proxypassword
   active: false
 fileUpload:
-    allowedFileTypes:
-      all:
-        - ".*"
-      image:
-        - "image/.*"
-      audio:
-        - "audio/.*"
-      video:
-        - "video/.*"
-    allowedFileNames:
-      archive:
-        - ".*\\.zip"
-        - ".*\\.rar"
-        - ".*\\.7z"
-        - ".*\\.bz"
-        - ".*\\.bz2"
-        - ".*\\.gz"
-      documents:
-        - ".*\\.doc"
-        - ".*\\.docx"
-        - ".*\\.xls"
-        - ".*\\.xlsx"
-        - ".*\\.pdf"
-        - ".*\\.txt"
-        - ".*\\.ods"
-        - ".*\\.odt"
+  allowedFileTypes:
+    all:
+      - ".*"
+    image:
+      - "image/.*"
+    audio:
+      - "audio/.*"
+    video:
+      - "video/.*"
+  allowedFileNames:
+    archive:
+      - ".*\\.zip"
+      - ".*\\.rar"
+      - ".*\\.7z"
+      - ".*\\.bz"
+      - ".*\\.bz2"
+      - ".*\\.gz"
+    documents:
+      - ".*\\.doc"
+      - ".*\\.docx"
+      - ".*\\.xls"
+      - ".*\\.xlsx"
+      - ".*\\.pdf"
+      - ".*\\.txt"
+      - ".*\\.ods"
+      - ".*\\.odt"
+  defaultAllowed:
+    - "all"
 custom:
   test: "test"
   testobject:
@@ -363,7 +368,7 @@ Element for file uploads.
 | Key | Type | Description | Default value |
 |-----|------|-------------|---------------|
 | `max_filesize` | integer | Maximum allowed file size in MB (0 means unlimited) | 0 |
-| `allowed_filetypes` | array of strings | Allowed filetypes (see configuration). `null` allows every file. | `null` |
+| `allowed_filetypes` | array of strings | Allowed filetypes (see configuration). `null` for using default configuration. | `null` |
 
 ## `conditionalcontainer`
 

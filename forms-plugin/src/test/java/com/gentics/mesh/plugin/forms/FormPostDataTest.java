@@ -6,27 +6,25 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.mail.Address;
 import javax.mail.BodyPart;
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import com.gentics.mesh.plugin.forms.model.PostDataResponse;
-import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.json.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
@@ -50,6 +48,11 @@ import com.gentics.mesh.plugin.forms.service.MailService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -57,6 +60,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.logging.LogDelegate;
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -64,34 +68,6 @@ import okhttp3.Response;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
-import org.mockito.ArgumentCaptor;
-
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Test cases for posting data to a form
@@ -322,6 +298,82 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		assertThat(response.code())
 			.as("Authenticated response code")
 			.isEqualTo(HttpResponseStatus.OK.code());
+	}
+
+	/**
+	 * Test posting a file, which is not allowed
+	 * @throws IOException
+	 */
+	@Test
+	public void testPostFileNotAllowed() throws IOException {
+		String uuid = createForm("filefield_allow_image.json");
+
+		// try uploading a json file (not allowed)
+		RequestBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("file1", "filefield_allow_image.json", requestBodyFromFile("filefield_allow_image.json"))
+			.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
+
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
+
+		String errors = dataNode.getFields().getStringField("errors").getString();
+		assertThat(errors).as("Errors").isNotEmpty();
+
+		// try again with html file (allowed)
+		requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("file1", "admin_mail_element_mail.html", RequestBody.create(MediaType.parse("text/html"), fromFile("admin_mail_element_mail.html")))
+				.build();
+		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
+		response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
+
+		dataNode = getSingleFormDataNode(uuid);
+
+		errors = dataNode.getFields().getStringField("errors").getString();
+		assertThat(errors).as("Errors").isEmpty();
+	}
+
+	/**
+	 * Test posting a file, which is not allowed by default
+	 * @throws IOException
+	 */
+	@Test
+	public void testPostFileNotAllowedByDefault() throws IOException {
+		String uuid = createForm("filefield_allow_by_default.json");
+
+		// try uploading a json file (not allowed)
+		RequestBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("file1", "admin_mail_element_mail.html", RequestBody.create(MediaType.parse("text/html"), fromFile("admin_mail_element_mail.html")))
+			.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
+
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
+
+		String errors = dataNode.getFields().getStringField("errors").getString();
+		assertThat(errors).as("Errors").isNotEmpty();
+
+		// try again with html file (allowed)
+		requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("file1", "filefield_allow_by_default.json", RequestBody.create(MediaType.parse("application/json"), fromFile("filefield_allow_by_default.json")))
+				.build();
+		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
+		response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
+
+		dataNode = getSingleFormDataNode(uuid);
+
+		errors = dataNode.getFields().getStringField("errors").getString();
+		assertThat(errors).as("Errors").isEmpty();
 	}
 
 	/**

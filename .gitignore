@@ -2,6 +2,7 @@
 *.iml
 target
 mesh.lock
+mesh.live
 .project
 .settings
 .classpath
