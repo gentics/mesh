@@ -11,6 +11,8 @@ public class FileUploadOptions {
 
 	private Map<String, Set<String>> allowedFileNames;
 
+	private Set<String> defaultAllowed;
+
 	/**
 	 * Get the allowed file types
 	 * @return allowed file types
@@ -41,5 +43,21 @@ public class FileUploadOptions {
 	 */
 	public void setAllowedFileNames(Map<String, Set<String>> allowedFileNames) {
 		this.allowedFileNames = allowedFileNames;
+	}
+
+	/**
+	 * Categories of filenames or filetypes, which are allowed by default (null to allow everything by default)
+	 * @return set of categories
+	 */
+	public Set<String> getDefaultAllowed() {
+		return defaultAllowed;
+	}
+
+	/**
+	 * Set categories which are allowed by default
+	 * @param defaultAllowed categories
+	 */
+	public void setDefaultAllowed(Set<String> defaultAllowed) {
+		this.defaultAllowed = defaultAllowed;
 	}
 }
