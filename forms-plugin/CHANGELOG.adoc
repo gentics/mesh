@@ -15,6 +15,9 @@
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
+icon:check[] Forms: The new configuration property `fileUpload.defaultAllowed` (array of strings) allows setting the keys of file type definitions,
+which should be allowed by default (unlesss overwritten with `allowed_filetypes` in a FileElement).
+
 [[v1.10.6]]
 == 1.10.6 (2023-08-10)
 
