@@ -11,7 +11,7 @@
 = Mesh Forms Plugin
 
 [[v1.10.7]]
-== 1.10.7 (TBD)
+== 1.10.7 (2023-10-12)
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
