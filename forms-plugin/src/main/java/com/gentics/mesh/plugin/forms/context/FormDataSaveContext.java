@@ -7,6 +7,7 @@ import java.util.Set;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.model.Form;
+import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
@@ -94,5 +95,9 @@ public class FormDataSaveContext {
 
 	public String getFormDataUuid() {
 		return context.pathParam("formDataUuid");
+	}
+
+	public String[] getLanguages() {
+		return ParameterUtil.getLanguages(context);
 	}
 }
