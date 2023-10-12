@@ -318,9 +318,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		String errors = dataNode.getFields().getStringField("errors").getString();
 		assertThat(errors).as("Errors").isNotEmpty();
@@ -334,9 +332,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
 
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
+		dataNode = getSingleFormDataNode(uuid);
 
 		errors = dataNode.getFields().getStringField("errors").getString();
 		assertThat(errors).as("Errors").isEmpty();
@@ -360,9 +356,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		String errors = dataNode.getFields().getStringField("errors").getString();
 		assertThat(errors).as("Errors").isNotEmpty();
@@ -376,9 +370,7 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
 
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
+		dataNode = getSingleFormDataNode(uuid);
 
 		errors = dataNode.getFields().getStringField("errors").getString();
 		assertThat(errors).as("Errors").isEmpty();
