@@ -21,32 +21,38 @@ reCaptcha:
   siteKey: your-site-key
   secretKey: your-secret-key
 fileUpload:
-    allowedFileTypes:
-      all:
-        - ".*"
-      image:
-        - "image/.*"
-      audio:
-        - "audio/.*"
-      video:
-        - "video/.*"
-    allowedFileNames:
-      archive:
-        - ".*\\.zip"
-        - ".*\\.rar"
-        - ".*\\.7z"
-        - ".*\\.bz"
-        - ".*\\.bz2"
-        - ".*\\.gz"
-      documents:
-        - ".*\\.doc"
-        - ".*\\.docx"
-        - ".*\\.xls"
-        - ".*\\.xlsx"
-        - ".*\\.pdf"
-        - ".*\\.txt"
-        - ".*\\.ods"
-        - ".*\\.odt"
+  allowedFileTypes:
+    all:
+      - ".*"
+    image:
+      - "image/.*"
+    audio:
+      - "audio/.*"
+    video:
+      - "video/.*"
+    html:
+      - "text/html"
+    json:
+      - "application/json"
+  allowedFileNames:
+    archive:
+      - ".*\\.zip"
+      - ".*\\.rar"
+      - ".*\\.7z"
+      - ".*\\.bz"
+      - ".*\\.bz2"
+      - ".*\\.gz"
+    documents:
+      - ".*\\.doc"
+      - ".*\\.docx"
+      - ".*\\.xls"
+      - ".*\\.xlsx"
+      - ".*\\.pdf"
+      - ".*\\.txt"
+      - ".*\\.ods"
+      - ".*\\.odt"
+  defaultAllowed:
+    - "json"
 custom:
   test: "test"
   testobject:
