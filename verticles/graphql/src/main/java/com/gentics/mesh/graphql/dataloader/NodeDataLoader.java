@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -128,29 +129,58 @@ public class NodeDataLoader {
 	};
 
 	/**
-	 * Batch load path of a nodefieldcontainer for a transaction branch, the provided container type and language tags,
-	 * without doing permission checks.
+	 * Batch loading node parents
 	 */
-	public static BatchLoaderWithContext<HibNode, HibNode> PARENT_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<ParentNodeLoaderKey, NodeContent> PARENT_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
 		GraphQLContext context = environment.getContext();
-		Map<HibNode, HibNode> contentPaths = new HashMap<>();
+		String branchUuid = tx.getBranch(context).getUuid();
 
-		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<HibNode>> keysByContext) -> {
-			Map<HibNode, HibNode> nodePaths = tx.nodeDao().getParentNodes(keysByContext.getValue(), tx.getBranch(context).getUuid());
-			Map<HibNode, HibNode> pathsByPartition = keysByContext.getValue()
-					.stream()
-					.map(entry -> Pair.of(entry, nodePaths.get(entry)))
-					.filter(p -> p.getValue() != null)
-					.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-			contentPaths.putAll(pathsByPartition);
+		// we will collect the results by keys here
+		Map<ParentNodeLoaderKey, NodeContent> resultByKey = new HashMap<>();
+
+		// first load the parent nodes
+		Map<HibNode, HibNode> parentByNode = tx.nodeDao().getParentNodes(
+				keys.stream().map(ParentNodeLoaderKey::getNode).collect(Collectors.toSet()), branchUuid);
+
+		// now partition the keys by type and language tags for loading the containers
+		ParentNodeLoaderKey.partitioningByTypeAndLanguageTags(keys, (partContext, partNodes) -> {
+			ContainerType type = partContext.getType();
+			List<String> languageTags = partContext.getLanguageTags();
+
+			Set<HibNode> partParents = partNodes.stream().map(node -> parentByNode.get(node)).filter(parent -> parent != null)
+					.collect(Collectors.toSet());
+
+			// load all containers (languages) for the partition
+			Map<HibNode, List<HibNodeFieldContainer>> containersForNodePartitions = tx.contentDao()
+					.getFieldsContainers(partParents, branchUuid, type);
+
+			// make language fallback for each parent from the partition
+			Map<HibNode, NodeContent> contentsByParentNode = containersForNodePartitions.entrySet().stream().map(entry -> {
+				HibNode parentNode = entry.getKey();
+				List<HibNodeFieldContainer> containers = entry.getValue();
+				HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+				return Map.entry(parentNode, new NodeContent(parentNode, container, languageTags, type));
+			}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			// for all nodes in the partition, get the content of the parent node and put into the resultsByKey map
+			for (HibNode node : partNodes) {
+				HibNode parentNode = parentByNode.get(node);
+				if (parentNode != null) {
+					NodeContent content = contentsByParentNode.get(parentNode);
+					if (content != null) {
+						resultByKey.put(new ParentNodeLoaderKey(node, partContext), content);
+					}
+				}
+			}
 		});
 
-		List<HibNode> results = new ArrayList<>();
-		for (HibNode key : keys) {
-			results.add(contentPaths.getOrDefault(key, null));
+		// collect the results as list in the correct order (corresponding to the order of the keys)
+		List<NodeContent> results = new ArrayList<>();
+		for (ParentNodeLoaderKey key : keys) {
+			results.add(resultByKey.getOrDefault(key, null));
 		}
-		Promise<List<HibNode>> promise = Promise.promise();
+		Promise<List<NodeContent>> promise = Promise.promise();
 		promise.complete(results);
 
 		return promise.future().toCompletionStage();
@@ -257,6 +287,87 @@ public class NodeDataLoader {
 		@Override
 		public int hashCode() {
 			return Objects.hash(type, languageTags);
+		}
+	}
+
+	/**
+	 * Keys for batchloading of parents. An instance of a key contains of the node and the {@link Context} (which contains of the {@link ContainerType} and the language tags).
+	 */
+	public static class ParentNodeLoaderKey {
+		/**
+		 * Node for which the parent node shall be loaded
+		 */
+		private HibNode node;
+
+		/**
+		 * Context for loading the parent node
+		 */
+		private Context context;
+
+		/**
+		 * Partition the given list of {@link ParentNodeLoaderKey} instances by {@link Context} and call the consumer for each partition
+		 * @param keyList list of keys which shall be partitioned
+		 * @param consumer consumer for handling of each partition
+		 */
+		public static void partitioningByTypeAndLanguageTags(List<ParentNodeLoaderKey> keyList, BiConsumer<Context, Set<HibNode>> consumer) {
+			Map<Context, Set<HibNode>> partitions = keyList.stream()
+					.collect(Collectors.groupingBy(ParentNodeLoaderKey::getContext,
+							Collectors.mapping(ParentNodeLoaderKey::getNode, Collectors.toSet())));
+
+			partitions.forEach((key, value) -> consumer.accept(key, value));
+		}
+
+		/**
+		 * Create an instance
+		 * @param node node for which the parent node shall be loaded
+		 * @param context context for loading the parent node
+		 */
+		public ParentNodeLoaderKey(HibNode node, Context context) {
+			this.node = node;
+			this.context = context;
+		}
+
+		/**
+		 * Create an instance
+		 * @param node node for which the parent node shall be loaded
+		 * @param type type of content to be loaded
+		 * @param languageTags language tags for loading the content
+		 */
+		public ParentNodeLoaderKey(HibNode node, ContainerType type, List<String> languageTags) {
+			this(node, new Context(type, languageTags));
+		}
+
+		/**
+		 * Get the node for which the parent node shall be loaded
+		 * @return child node
+		 */
+		public HibNode getNode() {
+			return node;
+		}
+
+		/**
+		 * Get the context for loading the content of the parent node
+		 * @return context
+		 */
+		public Context getContext() {
+			return context;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof ParentNodeLoaderKey)) {
+				return false;
+			}
+			ParentNodeLoaderKey other = (ParentNodeLoaderKey) o;
+			return Objects.equals(context, other.context) && Objects.equals(node, other.node);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(context, node);
 		}
 	}
 }

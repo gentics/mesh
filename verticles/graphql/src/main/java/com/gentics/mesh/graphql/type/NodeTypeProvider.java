@@ -59,6 +59,7 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
+import com.gentics.mesh.graphql.dataloader.NodeDataLoader.ParentNodeLoaderKey;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
@@ -363,10 +364,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					List<String> languageTags = getLanguageArgument(env, content);
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<HibNode, HibNode> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
-					NodeDataLoader.Context dataLoaderContext = new NodeDataLoader.Context(type, languageTags);
-					return parentLoader.load(node, dataLoaderContext);
-				}).build(),
+					DataLoader<ParentNodeLoaderKey, NodeContent> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
+					return parentLoader.load(new ParentNodeLoaderKey(node, type, languageTags));
+				})
+				.build(),
 
 			// .tags
 			newFieldDefinition().name("tags")
