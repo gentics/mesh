@@ -179,15 +179,14 @@ public class NodeDataLoader {
 					.getFieldsContainers(partParents, branchUuid, type);
 
 			// make language fallback for each parent from the partition
-			Map<HibNode, NodeContentWithOptionalRuntimeException> contentsByParentNode = containersForNodePartitions.entrySet().stream().map(entry -> {
-				HibNode parentNode = entry.getKey();
+			Map<HibNode, NodeContentWithOptionalRuntimeException> contentsByParentNode = partParents.stream().map(parentNode -> {
 				NodeContentWithOptionalRuntimeException result = null;
 
 				// first we check, whether the user has ANY read permission on the parentNode
 				if (user.isAdmin() || userDao.hasPermission(user, parentNode, READ_PUBLISHED_PERM) || userDao.hasPermission(user, parentNode, READ_PERM)) {
 					// now check whether the user has the correct permission
 					if (user.isAdmin() || userDao.hasPermission(user, parentNode, perm)) {
-						List<HibNodeFieldContainer> containers = entry.getValue();
+						List<HibNodeFieldContainer> containers = containersForNodePartitions.getOrDefault(parentNode, Collections.emptyList());
 						HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
 						result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, container, languageTags, type));
 					} else {
