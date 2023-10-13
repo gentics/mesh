@@ -39,6 +39,7 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.plugin.forms.model.LanguagesModel;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.model.response.StatusResponse;
+import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
@@ -577,7 +578,12 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	 */
 	protected List<NodeResponse> getFormDataNodes(String formUuid) {
 		NodeListResponse formNodeChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		return formNodeChildren.getData().stream()
+		Optional<NodeResponse> optDataFolder = formNodeChildren.getData().stream()
+				.filter(n -> StringUtils.equals(n.getDisplayName(), FormService.DATA_FOLDER_NAME)).findFirst();
+		assertThat(optDataFolder).as("Form Data Folder").isNotEmpty();
+
+		NodeListResponse formDataFolderChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, optDataFolder.get().getUuid()));
+		return formDataFolderChildren.getData().stream()
 				.filter(n -> StringUtils.equals(n.getSchema().getName(), "form_" + formUuid))
 				.collect(Collectors.toList());
 	}
