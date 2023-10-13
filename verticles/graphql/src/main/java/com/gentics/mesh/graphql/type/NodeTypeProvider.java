@@ -58,7 +58,9 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.NodeContentWithOptionalRuntimeException;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
+import com.gentics.mesh.graphql.dataloader.NodeDataLoader.ParentNodeLoaderKey;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
@@ -117,41 +119,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		this.tagTypeProvider = tagTypeProvider;
 		this.fields = fields;
 		this.waitUtil = waitUtil;
-	}
-
-	/**
-	 * Fetcher for the parent node reference of a node.
-	 *
-	 * @param env
-	 * @return
-	 */
-	public CompletableFuture<DataFetcherResult<NodeContent>> parentNodeFetcher(DataFetchingEnvironment env) {
-		Tx tx = Tx.get();
-		NodeDao nodeDao = tx.nodeDao();
-
-		NodeContent content = env.getSource();
-		if (content == null) {
-			return null;
-		}
-		GraphQLContext gc = env.getContext();
-		String uuid = tx.getBranch(gc).getUuid();
-		HibNode parentNode = nodeDao.getParentNode(content.getNode(), uuid);
-		// The project root node can have no parent. Lets check this and exit early.
-		if (parentNode == null) {
-			return null;
-		}
-		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
-
-		List<String> languageTags = getLanguageArgument(env, content);
-		ContainerType type = getNodeVersion(env);
-
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-		DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-
-		return contentLoader.load(parentNode, context).thenApply((containers) -> {
-			HibNodeFieldContainer container = getContainerWithFallback(languageTags, containers);
-			return createNodeContentWithSoftPermissions(env, gc, parentNode, languageTags, type, container);
-		});
 	}
 
 	public CompletableFuture<DataFetcherResult<NodeContent>> nodeLanguageFetcher(DataFetchingEnvironment env) {
@@ -384,7 +351,24 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.argument(createLanguageTagArg(false))
 				.argument(createNodeVersionArg())
-				.dataFetcher(this::parentNodeFetcher).build(),
+				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					HibNode node = content.getNode();
+					if (node == null) {
+						return null;
+					}
+
+					List<String> languageTags = getLanguageArgument(env, content);
+					ContainerType type = getNodeVersion(env);
+
+					DataLoader<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
+					return parentLoader.load(new ParentNodeLoaderKey(node, type, languageTags)).thenApply(c -> c.getResult(env));
+				})
+				.build(),
 
 			// .tags
 			newFieldDefinition().name("tags")

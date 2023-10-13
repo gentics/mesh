@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -120,9 +121,9 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 
 	@Override
 	public Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid) {
-		return nodes.stream()
-				.map(node -> Pair.of(node, getParentNode(node, branchUuid)))
-				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		Map<HibNode, HibNode> ret = new HashMap<>();
+		nodes.forEach(node -> ret.put(node, getParentNode(node, branchUuid)));
+		return ret;
 	}
 
 	@Override
