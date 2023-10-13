@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.NodeContentWithOptionalRuntimeException;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader.ParentNodeLoaderKey;
 import com.gentics.mesh.graphql.filter.NodeFilter;
@@ -364,8 +365,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					List<String> languageTags = getLanguageArgument(env, content);
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<ParentNodeLoaderKey, NodeContent> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
-					return parentLoader.load(new ParentNodeLoaderKey(node, type, languageTags));
+					DataLoader<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
+					return parentLoader.load(new ParentNodeLoaderKey(node, type, languageTags)).thenApply(c -> c.getResult(env));
 				})
 				.build(),
 

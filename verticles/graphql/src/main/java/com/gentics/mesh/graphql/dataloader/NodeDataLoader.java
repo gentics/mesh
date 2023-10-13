@@ -1,5 +1,9 @@
 package com.gentics.mesh.graphql.dataloader;
 
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
+import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,19 +20,26 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.dataloader.BatchLoaderWithContext;
+
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
+
 import io.vertx.core.Promise;
-import org.apache.commons.lang3.tuple.Pair;
-import org.dataloader.BatchLoaderWithContext;
 
 /**
  * Implements batching and caching for nodes using the data loader pattern
@@ -131,24 +142,36 @@ public class NodeDataLoader {
 	/**
 	 * Batch loading node parents
 	 */
-	public static BatchLoaderWithContext<ParentNodeLoaderKey, NodeContent> PARENT_LOADER = (keys, environment) -> {
+	public static BatchLoaderWithContext<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> PARENT_LOADER = (keys, environment) -> {
 		Tx tx = Tx.get();
 		GraphQLContext context = environment.getContext();
+		HibUser user = context.getUser();
 		String branchUuid = tx.getBranch(context).getUuid();
+		PersistingUserDao userDao = CommonTx.get().userDao();
 
 		// we will collect the results by keys here
-		Map<ParentNodeLoaderKey, NodeContent> resultByKey = new HashMap<>();
+		Map<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> resultByKey = new HashMap<>();
 
 		// first load the parent nodes
 		Map<HibNode, HibNode> parentByNode = tx.nodeDao().getParentNodes(
 				keys.stream().map(ParentNodeLoaderKey::getNode).collect(Collectors.toSet()), branchUuid);
 
+		if (!user.isAdmin()) {
+			// prepare the permissions for all parent nodes
+			Set<Object> parentNodeIds = parentByNode.values().stream().filter(parent -> parent != null)
+					.map(HibNode::getId).collect(Collectors.toSet());
+			userDao.preparePermissionsForElementIds(user, parentNodeIds);
+		}
+
 		// now partition the keys by type and language tags for loading the containers
 		ParentNodeLoaderKey.partitioningByTypeAndLanguageTags(keys, (partContext, partNodes) -> {
 			ContainerType type = partContext.getType();
+			InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 			List<String> languageTags = partContext.getLanguageTags();
 
-			Set<HibNode> partParents = partNodes.stream().map(node -> parentByNode.get(node)).filter(parent -> parent != null)
+			Set<HibNode> partParents = partNodes.stream()
+					.map(node -> parentByNode.get(node))
+					.filter(parent -> parent != null)
 					.collect(Collectors.toSet());
 
 			// load all containers (languages) for the partition
@@ -156,18 +179,35 @@ public class NodeDataLoader {
 					.getFieldsContainers(partParents, branchUuid, type);
 
 			// make language fallback for each parent from the partition
-			Map<HibNode, NodeContent> contentsByParentNode = containersForNodePartitions.entrySet().stream().map(entry -> {
+			Map<HibNode, NodeContentWithOptionalRuntimeException> contentsByParentNode = containersForNodePartitions.entrySet().stream().map(entry -> {
 				HibNode parentNode = entry.getKey();
-				List<HibNodeFieldContainer> containers = entry.getValue();
-				HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
-				return Map.entry(parentNode, new NodeContent(parentNode, container, languageTags, type));
+				NodeContentWithOptionalRuntimeException result = null;
+
+				// first we check, whether the user has ANY read permission on the parentNode
+				if (user.isAdmin() || userDao.hasPermission(user, parentNode, READ_PUBLISHED_PERM) || userDao.hasPermission(user, parentNode, READ_PERM)) {
+					// now check whether the user has the correct permission
+					if (user.isAdmin() || userDao.hasPermission(user, parentNode, perm)) {
+						List<HibNodeFieldContainer> containers = entry.getValue();
+						HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+						result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, container, languageTags, type));
+					} else {
+						PermissionException error = new PermissionException("node", parentNode.getUuid());
+						result = new NodeContentWithOptionalRuntimeException(new NodeContent(parentNode, null, languageTags, type), error);
+					}
+				} else {
+					// no permission at all, so we will just return the error
+					PermissionException error = new PermissionException("node", parentNode.getUuid());
+					result = new NodeContentWithOptionalRuntimeException(error);
+				}
+
+				return Map.entry(parentNode, result);
 			}).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 			// for all nodes in the partition, get the content of the parent node and put into the resultsByKey map
 			for (HibNode node : partNodes) {
 				HibNode parentNode = parentByNode.get(node);
 				if (parentNode != null) {
-					NodeContent content = contentsByParentNode.get(parentNode);
+					NodeContentWithOptionalRuntimeException content = contentsByParentNode.get(parentNode);
 					if (content != null) {
 						resultByKey.put(new ParentNodeLoaderKey(node, partContext), content);
 					}
@@ -176,11 +216,11 @@ public class NodeDataLoader {
 		});
 
 		// collect the results as list in the correct order (corresponding to the order of the keys)
-		List<NodeContent> results = new ArrayList<>();
+		List<NodeContentWithOptionalRuntimeException> results = new ArrayList<>();
 		for (ParentNodeLoaderKey key : keys) {
-			results.add(resultByKey.getOrDefault(key, null));
+			results.add(resultByKey.getOrDefault(key, NodeContentWithOptionalRuntimeException.EMPTY));
 		}
-		Promise<List<NodeContent>> promise = Promise.promise();
+		Promise<List<NodeContentWithOptionalRuntimeException>> promise = Promise.promise();
 		promise.complete(results);
 
 		return promise.future().toCompletionStage();
