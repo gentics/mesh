@@ -13,6 +13,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -104,7 +105,10 @@ public class FileElement extends FormElement {
 			}
 		}
 
-		List<String> allowedTypes = getAllowedFiletypes();
+		Collection<String> allowedTypes = getAllowedFiletypes();
+		if (allowedTypes == null) {
+			allowedTypes = getDefaultAllowedConfiguration();
+		}
 		if (allowedTypes != null && !allowedTypes.isEmpty()) {
 			if (!fileHasAllowedContentType(fileUpload, allowedTypes) && !fileHasAllowedName(fileUpload, allowedTypes)) {
 				fileUploads.remove(fileUpload);
@@ -156,7 +160,7 @@ public class FileElement extends FormElement {
 	 *            allowed type definitions for the field
 	 * @return true if the file has allowed content-type
 	 */
-	protected boolean fileHasAllowedContentType(FileUpload fileUpload, List<String> allowedTypes) {
+	protected boolean fileHasAllowedContentType(FileUpload fileUpload, Collection<String> allowedTypes) {
 		Map<String, Set<String>> typesMap = getAllowedTypesConfiguration();
 		Set<String> allowedContentTypes = new HashSet<>();
 		for (String type : allowedTypes) {
@@ -176,7 +180,7 @@ public class FileElement extends FormElement {
 	 *            allowed type definitions for the field
 	 * @return true if the file has allowed name
 	 */
-	protected boolean fileHasAllowedName(FileUpload fileUpload, List<String> allowedTypes) {
+	protected boolean fileHasAllowedName(FileUpload fileUpload, Collection<String> allowedTypes) {
 		Map<String, Set<String>> namesMap = getAllowedNamesConfiguration();
 		Set<String> allowedNames = new HashSet<>();
 		for (String type : allowedTypes) {
@@ -225,5 +229,25 @@ public class FileElement extends FormElement {
 			return Collections.emptyMap();
 		}
 		return fileUploadOptions.getAllowedFileNames();
+	}
+
+	/**
+	 * Get configured default allowed categories or empty set
+	 * @return set of default allowed
+	 */
+	protected Set<String> getDefaultAllowedConfiguration() {
+		FormsConfig formsOptions = getConfiguration();
+		if (formsOptions == null) {
+			return Collections.emptySet();
+		}
+		FileUploadOptions fileUploadOptions = formsOptions.getFileUpload();
+		if (fileUploadOptions == null) {
+			return Collections.emptySet();
+		}
+		Set<String> defaultAllowed = fileUploadOptions.getDefaultAllowed();
+		if (defaultAllowed == null) {
+			defaultAllowed = Collections.emptySet();
+		}
+		return defaultAllowed;
 	}
 }

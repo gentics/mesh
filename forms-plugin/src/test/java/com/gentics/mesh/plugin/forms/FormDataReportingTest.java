@@ -1,25 +1,6 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.google.common.net.HttpHeaders;
-import io.vertx.core.json.JsonObject;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,6 +17,25 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.google.common.net.HttpHeaders;
+
+import io.vertx.core.json.JsonObject;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Test cases for getting reporting data
@@ -490,8 +490,8 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			setFormOffline(uuid, "en", true, true);
 		}
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		for (NodeResponse nodeResponse : dataNodes.getData()) {
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		for (NodeResponse nodeResponse : dataNodes) {
 			Request downloadRequest = new Request.Builder()
 					.url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid() + "/binary/file1"))
 					.headers(auth(permission))
@@ -531,8 +531,8 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			setFormOffline(uuid, "de", true, true);
 		}
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		for (NodeResponse nodeResponse : dataNodes.getData()) {
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		for (NodeResponse nodeResponse : dataNodes) {
 			Request downloadRequest = new Request.Builder()
 					.url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid() + "/binary/file1"))
 					.headers(auth(permission))
@@ -558,7 +558,7 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	@Test
 	public void testDeleteFormData() throws IOException {
-		String uuid = createForm("filefield.json");
+		String uuid = createForm("inputfield.json");
 
 		for (String value : Arrays.asList("one", "two", "three")) {
 			RequestBody requestBody = new MultipartBody.Builder()
@@ -573,11 +573,11 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			setFormOffline(uuid, "en", true, true);
 		}
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("List of data nodes").isNotEmpty();
-		for (NodeResponse nodeResponse : dataNodes.getData()) {
-			NodeListResponse nodes2 = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-			assertThat(nodes2.getData()).as("List before deleting").usingElementComparatorOnFields("uuid").contains(nodeResponse);
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+		assertThat(dataNodes).as("List of data nodes").isNotEmpty();
+		for (NodeResponse nodeResponse : dataNodes) {
+			List<NodeResponse> nodes2 = getFormDataNodes(uuid);
+			assertThat(nodes2).as("List before deleting").usingElementComparatorOnFields("uuid").contains(nodeResponse);
 
 			Request deleteRequest = new Request.Builder()
 					.url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid()))
@@ -589,8 +589,8 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			if (permission) {
 				assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-				nodes2 = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-				assertThat(nodes2.getData()).as("List after deleting").usingElementComparatorOnFields("uuid").doesNotContain(nodeResponse);
+				nodes2 = getFormDataNodes(uuid);
+				assertThat(nodes2).as("List after deleting").usingElementComparatorOnFields("uuid").doesNotContain(nodeResponse);
 			} else {
 				assertForbidden(response);
 			}

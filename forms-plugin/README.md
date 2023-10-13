@@ -19,23 +19,26 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 
 # Configuration
 ## Fields
-| Key                   | Type           | Description                                                                                                                        | Default value             |
-|-----------------------|----------------|------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
-| `templatesPath`       | string         | base path to the templates                                                                                                         | `plugins/forms/templates` |
-| `elements`            | map of strings | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class                        |                           |
-| `mail`                | object         | Mail settings                                                                                                                      |                           |
-| `fromAddress`         | string         | Address to use as `from` when sending mails                                                                                        |                           |
-| `adminMailTemplate`   | string         | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`. |                           |
-| `adminMailSubject`    | string         | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                       |                           |
-| `userMailTemplate`    | string         | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.  |                           |
-| `userMailSubject`     | string         | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                        |                           |
-| `defaultExportFormat` | string         | Default export format. Currently, only `CSV` is supported                                                                          | CSV                       |
-| `reCaptcha`           | object         | Recaptcha settings                                                                                                                 |                           |
-| `friendlyCaptcha`     | object         | FriendlyRecaptcha settings                                                                                                         |                           |
-| `eyepin`              | object         | Eyepin settings                                                                                                                    |                           |
-| `proxyOptions`        | object         | Proxy settings, if http proxy is required for accessing the recaptcha/friendlycaptcha verification URL                             |                           |
-| `fileUpload`          | object         | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                         |                           |
-| `custom`              | Map of objects | Custom configurations you can use in your extensions and handlebars template                                                       |                           |
+| Key                           | Type                 | Description                                                                                                                            | Default value             |
+|-------------------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------|---------------------------|
+| `templatesPath`               | string               | base path to the templates                                                                                                             | `plugins/forms/templates` |
+| `elements`                    | map of strings       | Definition of custom elements. Each entry maps the `type` of the custom element to the implementation class                            |                           |
+| `mail`                        | object               | Mail settings                                                                                                                          |                           |
+| `fromAddress`                 | string               | Address to use as `from` when sending mails                                                                                            |                           |
+| `adminMailTemplate`           | string               | Path to the default template for admin mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.     |                           |
+| `adminMailSubject`            | string               | Subject for admin mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                           |                           |
+| `userMailTemplate`            | string               | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.      |                           |
+| `userMailSubject`             | string               | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                            |                           |
+| `defaultExportFormat`         | string               | Default export format. Currently, only `CSV` is supported                                                                              | CSV                       |
+| `reCaptcha`                   | object               | Recaptcha settings                                                                                                                     |                           |
+| `friendlyCaptcha`             | object               | FriendlyRecaptcha settings                                                                                                             |                           |
+| `eyepin`                      | object               | Eyepin settings                                                                                                                        |                           |
+| `proxyOptions`                | object               | Proxy settings, if http proxy is required for accessing the recaptcha/friendlycaptcha verification URL                                 |                           |
+| `fileUpload`                  | object               | Definition of allowed filetypes/filenames per selected `allowed_filetypes` attribute of the `file` element                             |                           |
+| `fileUpload.allowedFileTypes` | map of string arrays | Keys are `types` of allowed files, maps are lists of regular expressions for matching the filetypes against                            |                           |
+| `fileUpload.allowedFileNames` | map of string arrays | Keys are `types` of allowed files, maps are lists of regular expressions for matching the filenames against                            |                           |
+| `fileUpload.defaultAllowed`   | string array         | List of `types` (from the configuration above), which are allowed by default (unless overwritten by `allowed_filetypes` of an element) |                           |
+| `custom`                      | map of objects       | Custom configurations you can use in your extensions and handlebars template                                                           |                           |
 
 ## Example File
 ```yml
@@ -77,32 +80,34 @@ proxyOptions:
   password: proxypassword
   active: false
 fileUpload:
-    allowedFileTypes:
-      all:
-        - ".*"
-      image:
-        - "image/.*"
-      audio:
-        - "audio/.*"
-      video:
-        - "video/.*"
-    allowedFileNames:
-      archive:
-        - ".*\\.zip"
-        - ".*\\.rar"
-        - ".*\\.7z"
-        - ".*\\.bz"
-        - ".*\\.bz2"
-        - ".*\\.gz"
-      documents:
-        - ".*\\.doc"
-        - ".*\\.docx"
-        - ".*\\.xls"
-        - ".*\\.xlsx"
-        - ".*\\.pdf"
-        - ".*\\.txt"
-        - ".*\\.ods"
-        - ".*\\.odt"
+  allowedFileTypes:
+    all:
+      - ".*"
+    image:
+      - "image/.*"
+    audio:
+      - "audio/.*"
+    video:
+      - "video/.*"
+  allowedFileNames:
+    archive:
+      - ".*\\.zip"
+      - ".*\\.rar"
+      - ".*\\.7z"
+      - ".*\\.bz"
+      - ".*\\.bz2"
+      - ".*\\.gz"
+    documents:
+      - ".*\\.doc"
+      - ".*\\.docx"
+      - ".*\\.xls"
+      - ".*\\.xlsx"
+      - ".*\\.pdf"
+      - ".*\\.txt"
+      - ".*\\.ods"
+      - ".*\\.odt"
+  defaultAllowed:
+    - "all"
 custom:
   test: "test"
   testobject:
@@ -119,7 +124,7 @@ The following properties are used by the plugin itself (although some _may_ be e
 | `email` | string | Comma separated list of admin email addresses                                         | `null` |
 | `mailsubject` | string | Mail subject for overriding `adminMailSubject` from the configuration                 | `null` |
 | `mailtemp` | string | Path to a mail template for overriding `adminMailTemplate` from the configuration     | `null` |
- | `mailsource` | string | Mail template for overriding `mailtemp` property or `adminMailTemplate` configuration | `null` |
+| `mailsource` | string | Mail template for overriding `mailtemp` property or `adminMailTemplate` configuration | `null` |
 | `successurl` | string | URL for redirection after user successfully filled the form                           | `null` |
 | `elements` | array of objects | Array of embedded elements                                                            | `[]` |
 
@@ -192,6 +197,128 @@ When filled, the plugin will send an email to the entered address after the form
 | `mailtemplate` | string | Mail template for overriding `userMailTemplate` from the configuration                    | |
 | `mailsource` | string | Mail template for overriding `mailtemplate` property and `userMailTemplate` configuration | |
 
+If property `mailsource` is set to type `REPOSITORY_BROWSER`, it is possible for CMS editors to configure a special CMS page as template for the email body.
+Check [e-mail-template-pages](https://www.gentics.com/Content.Node/guides/feature_forms.html#e-mail-template-pages) on how to create these special pages in the CMS.
+
+Example configuration of the usermail element inside the Gentics CMS [form-editor.json](https://gentics.com/Content.Node/guides/feature_forms.html#configuration):
+
+```json
+        {
+            "type": "usermail",
+            "type_label_i18n_ui": {
+                "en": "User EMail Field",
+                "de": "Benutzer E-Mail Feld"
+            },
+            "description_i18n_ui": {
+                "en": "Field for user eMail. When filled, the user will get an eMail after filling out the form.",
+                "de": "Feld für Benutzer eMail. Wenn ausgefüllt, bekommt der Benutzer ein eMail nach dem Absenden des Formulares."
+            },
+            "label_property_ui": "label",
+            "is_container": false,
+            "properties": [
+                {
+                    "name": "label",
+                    "type": "STRING",
+                    "label_i18n_ui": {
+                        "en": "Label",
+                        "de": "Label"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Label for this input field.",
+                        "de": "Label für dieses Eingabefeld."
+                    }
+                },
+                {
+                    "name": "mandatory",
+                    "type": "BOOLEAN",
+                    "label_i18n_ui": {
+                        "en": "Mandatory",
+                        "de": "Verpflichtend"
+                    },
+                    "description_i18n_ui": {
+                        "en": "This input field is mandatory.",
+                        "de": "Dieses Eingabefeld ist verpflichtend."
+                    }
+                },
+                {
+                    "name": "placeholder",
+                    "type": "STRING",
+                    "label_i18n_ui": {
+                        "en": "Placeholder",
+                        "de": "Platzhalter"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Placeholder for this input field.",
+                        "de": "Platzhalter für dieses Eingabefeld."
+                    }
+                },
+                {
+                    "name": "maxCharCount",
+                    "type": "NUMBER",
+                    "label_i18n_ui": {
+                        "en": "Input Length",
+                        "de": "Eingabelänge"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Maximum number of allowed characters.",
+                        "de": "Anzahl der Zeichen, die eingegeben werden dürfen."
+                    }
+                },
+                {
+                    "name": "mailsubject",
+                    "type": "STRING",
+                    "label_i18n_ui": {
+                        "en": "Email Subject",
+                        "de": "E-Mail Betreff"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Subject of the Email, sent to the user.",
+                        "de": "Betreff des E-Mails, das an den Benutzer geschickt wird."
+                    }
+                },
+                {
+                    "name": "mailtemplate",
+                    "type": "SELECT",
+                    "label_i18n_ui": {
+                        "en": "Email Template",
+                        "de": "E-Mail Vorlage"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Template, which is used to display the Email body.",
+                        "de": "Vorlage, die zur Darstellung des E-Mail Inhalts verwendet wird."
+                    },
+                    "options": [
+                        {
+                            "key": "useremail",
+                            "value_i18n_ui": {
+                                "en": "Default",
+                                "de": "Standard"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "mailsource",
+                    "type": "REPOSITORY_BROWSER",
+                    "label_i18n_ui": {
+                        "en": "Email Template from Page",
+                        "de": "E-Mail Vorlage als Seite"
+                    },
+                    "description_i18n_ui": {
+                        "en": "Template from Page, which is used to display the Email body.",
+                        "de": "Vorlage als Seite, die zur Darstellung des E-Mail Inhalts verwendet wird."
+                    },
+                    "options": {
+                        "allowedSelection": "page",
+                        "includeMlId": [21],
+                        "selectMultiple": false,
+                        "title": "modal.repository_browser_title_forms_email_template_single"
+                    }
+                }
+            ]
+        }
+```
+
 ## `adminmail`
 
 Element to specify to which admin mail addresses submission notifications should be sent. If such an element is present in the form, the forms `email` property will be ignored, and instead be taken from the selected values.
@@ -241,7 +368,7 @@ Element for file uploads.
 | Key | Type | Description | Default value |
 |-----|------|-------------|---------------|
 | `max_filesize` | integer | Maximum allowed file size in MB (0 means unlimited) | 0 |
-| `allowed_filetypes` | array of strings | Allowed filetypes (see configuration). `null` allows every file. | `null` |
+| `allowed_filetypes` | array of strings | Allowed filetypes (see configuration). `null` for using default configuration. | `null` |
 
 ## `conditionalcontainer`
 
@@ -634,6 +761,7 @@ The form plugin will put relevant information in form of a JSON object in the re
 ```json
 {
   "id": "<FORM_UUID>",
+  "language": "en",
   "multipage": false,
   "options": { /* Plugin configuration */ },
   "pathPrefix": "/prefix",
@@ -643,10 +771,14 @@ The form plugin will put relevant information in form of a JSON object in the re
 
 Where
 * `id` is the UUID of the form node
+* `language` is the language of the form
 * `multipage` is `true` when there is at least one `formpage` element in the form, and `false` otherwise
 * `options` is a JSON representation of the plugin configuration
 * `pathPrefix` is the path prefix of the projects default branch
 * `elements` contains the active form elements
+
+Handlebars example for rendering a form:
+* [form.hbs](src/main/resources/templates/form.hbs)
 
 # Extending
 

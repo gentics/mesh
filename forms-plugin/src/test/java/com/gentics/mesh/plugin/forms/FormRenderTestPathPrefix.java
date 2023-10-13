@@ -81,9 +81,7 @@ public class FormRenderTestPathPrefix extends AbstractFormsPluginIntegrationTest
 		assertThat(postDataResponse.isRedirect())
 			.as(String.format("Response redirect %d (%s)", postDataResponse.code(), postDataResponse.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(uuid);
 
 		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Accept", "text/html").get().build();
 		Response response = client().newCall(renderRequest).execute();

@@ -10,6 +10,17 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.7]]
+== 1.10.7 (2023-10-12)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
+icon:check[] Forms: The new configuration property `fileUpload.defaultAllowed` (array of strings) allows setting the keys of file type definitions,
+which should be allowed by default (unlesss overwritten with `allowed_filetypes` in a FileElement).
+
+icon:check[] Forms: Add form language to the context when rendering a form. The language should be used as additional query parameter `lang` to the URL in the form `action`. This will allow the form plugin to detect
+for which language the form data is posted in order to support redirection to language specific successurls.
+
 [[v1.10.6]]
 == 1.10.6 (2023-08-10)
 
@@ -93,6 +104,11 @@ CAUTION: The plugin requires Mesh >= 1.9.3 to run.
 icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possible connection leaks have been fixed.
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
+
+[[v1.8.14]]
+== 1.8.14 (TBD)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
 [[v1.8.13]]
 == 1.8.13 (2023-08-10)
