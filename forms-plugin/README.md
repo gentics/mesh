@@ -960,10 +960,12 @@ The internal data structure in Mesh consists of the following nodes for every pr
         └── ...
 ```
 
+The forms plugin uses the following schemas:
+
 | Schema          | Description  |
 | --------------- | ------------ |
 | `forms_plugin`  | Root node of the data structure. Contains the languages, the forms plugin uses for the project. |
 | `form`          | Schema for form definitions. Contains the JSON definition of the form and is container for form specific data. |
 | `form_folder`   | Schema for containers (children of `form` nodes) holding data of specific types. Currently used for "Downloads" and "Data". |
-| `form_[uuid]`   | Schema for POSTed form data for a specific form. The form uuid is used as part of the schema name. Nodes will be created under the "Data" form folder. |
-| `form_download` | Schema for downloads, which either contain the uploaded binaries, or exports of POSTed data. Nodes will be created under the "Downloads" form folder. |
+| `form_[uuid]`   | Schema for POSTed form data for a specific form. The form uuid is used as part of the schema name. Nodes will be created under the "Data" `form_folder`. |
+| `form_download` | Schema for downloads, which either contain the uploaded binaries, or exports of POSTed data. Nodes will be created under the "Downloads" `form_folder`. |
