@@ -1032,21 +1032,22 @@ public class FormService {
 	private Single<JsonArray> getPollResults(String projectName, Form form, String formUuid) {
 		JsonObject results = new JsonObject();
 
-		return loadFormData(projectName, formUuid)
+		Single<String> singleFormDataFolderUuid = getFormFolderUuid(projectName, formUuid, new String[] {}, DATA_FOLDER_NAME);
+		return singleFormDataFolderUuid.flatMap(formDataFolderUuid -> loadFormData(projectName, formDataFolderUuid)
 			.doOnNext(formData -> form.gatherPollResults(results, formData))
 			.ignoreElements()
 			.andThen(Single.just(results))
 			.map(rs -> rs.stream()
 				.filter(entry -> entry.getValue() instanceof JsonObject)
 				.map(entry -> ((JsonObject) entry.getValue()).put("name", entry.getKey()))
-				.collect(Collector.of(JsonArray::new, (a, o) -> a.add(o), (u, v) -> u.addAll(v))));
+				.collect(Collector.of(JsonArray::new, (a, o) -> a.add(o), (u, v) -> u.addAll(v)))));
 	}
 
 	/**
 	 * Load the next batch of children for the given form UUID.
 	 *
 	 * @param project The project name
-	 * @param parentUuid The UUID of the parent node (a form)
+	 * @param parentUuid The UUID of the parent node (the form data folder)
 	 * @return A {@code Flowable} containing data nodes for the given parent
 	 */
 	private Flowable<NodeResponse> loadFormData(String project, String parentUuid) {
