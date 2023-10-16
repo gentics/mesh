@@ -378,8 +378,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 						indexLanguages.contains(languageTag)
 							? languageTag
 							: null, version.getMicroschemaVersionHash(branch));
-				},
-					Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
+				}, Collectors.toMap(c -> contentDao.getNode(c).getUuid() + "-" + c.getLanguageTag(), Function.identity())));
 		});
 	}
 
