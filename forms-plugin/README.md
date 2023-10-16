@@ -1,3 +1,19 @@
+# Table of Contents
+
+   * [Table of Contents](#table-of-contents)
+   * [Setup](#setup)
+   * [API](#api)
+   * [Configuration](#configuration)
+   * [Form properties](#form-properties)
+   * [Default Elements](#default-elements)
+   * [Server-side Validation](#server-side-validation)
+   * [Friendly Captcha](#friendly-captcha)
+   * [Eyepin](#eyepin)
+   * [Form rendering](#form-rendering)
+   * [Extending](#extending)
+   * [Handlebars helpers](#handlebars-helpers)
+   * [Data structure](#data-structure)
+
 # Setup
 * Build this plugin with `mvn clean package -DskipTests`. A fat jar will be located in the target folder
 * Create a folder called `plugins` in your mesh directory if it does not exist yet
@@ -923,3 +939,31 @@ The following helpers are available for rendering mail bodies or HTML markup:
     <!-- false action here -->
 {{/startsWith}}
 ```
+
+# Data structure
+
+The internal data structure in Mesh consists of the following nodes for every project, where the forms-plugin is activated.
+
+```
+.
+└── "Forms Plugin" (forms_plugin)
+    ├── "Form #1" (form)
+    │   ├── "Data" (form_folder)
+    │   │   ├── Form Post Data (form_[uuid])
+    │   │   └── ...
+    │   └── "Downloads" (form_folder)
+    │       ├── "form-export_Form #1_2023-10-16_081237" (form_download)
+    │       └── ...
+    ├── "Form #2" (form)
+    │   └── ...
+    └── "Form #3" (form)
+        └── ...
+```
+
+| Schema          | Description  |
+| --------------- | ------------ |
+| `forms_plugin`  | Root node of the data structure. Contains the languages, the forms plugin uses for the project. |
+| `form`          | Schema for form definitions. Contains the JSON definition of the form and is container for form specific data. |
+| `form_folder`   | Schema for containers (children of `form` nodes) holding data of specific types. Currently used for "Downloads" and "Data". |
+| `form_[uuid]`   | Schema for POSTed form data for a specific form. The form uuid is used as part of the schema name. Nodes will be created under the "Data" form folder. |
+| `form_download` | Schema for downloads, which either contain the uploaded binaries, or exports of POSTed data. Nodes will be created under the "Downloads" form folder. |
