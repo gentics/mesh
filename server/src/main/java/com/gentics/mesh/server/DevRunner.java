@@ -45,8 +45,6 @@ public class DevRunner {
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 
-		options.getSearchOptions().disable();
-
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
