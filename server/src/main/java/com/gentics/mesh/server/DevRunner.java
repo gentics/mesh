@@ -45,7 +45,6 @@ public class DevRunner {
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
 		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, defaultOption, args);
 
-		options.getSearchOptions().disable();
 		options.getStorageOptions().setStartServer(true);
 
 		Mesh mesh = Mesh.create(options);

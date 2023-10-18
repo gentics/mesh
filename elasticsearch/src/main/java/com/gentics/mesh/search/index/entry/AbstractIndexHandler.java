@@ -217,7 +217,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
-			System.out.println(query.encodePrettily());
+			log.debug(query.encodePrettily());
 			log.trace("Using query {\n" + query.encodePrettily() + "\n");
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();

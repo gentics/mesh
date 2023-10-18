@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	private static ListFilter<HibMicronode, ?> micronodeListFilterInstance;
 	private static ListFilter<HibBinaryField, ?> binaryListFilterInstance;
 	private static ListFilter<S3HibBinaryField, ?> s3binaryListFilterInstance;
-	private static Map<Byte, ListFilter<NodeReferenceIn, ?>> nodeReferenceListFilterInstances = new HashMap<>();
+	private static Map<Byte, ListFilter<NodeReferenceIn, ?>> nodeReferenceListFilterInstances = Collections.synchronizedMap(new HashMap<>());
 
 	private final Filter<T, Q> itemFilter;
 	private final boolean referenceItem;
