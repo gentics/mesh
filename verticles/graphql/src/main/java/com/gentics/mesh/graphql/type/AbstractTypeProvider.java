@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -21,6 +22,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.graphqlfilter.filter.StartFilter;
+import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -510,8 +512,30 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?, ?> actions,
-		String elementType, boolean hidePermissionsErrors) {
-		return newFieldDefinition()
+			String elementType, boolean hidePermissionsErrors) {
+		return newElementField(name, description, actions, elementType, hidePermissionsErrors, new GraphQLArgument[] {});
+	}
+
+	/**
+	 * Create a new elements field which automatically allows to resolve the element using it's name or uuid, with the optional extra arguments (filters etc).
+	 * 
+	 * @param name
+	 *            Name of the field
+	 * @param description
+	 *            Description of the field
+	 * @param actions
+	 *            DAO Actions for the type of elements
+	 * @param elementType
+	 *            Type name of the element which can be loaded
+	 * @param hidePermissionsErrors
+	 *            Does not show errors if the permission is missing. Useful for sensitive data (ex. fetching users by name)
+	 * @param extraArgs
+	 *            Extra filters
+	 * @return
+	 */
+	protected GraphQLFieldDefinition newElementField(String name, String description, DAOActions<?, ?> actions,
+		String elementType, boolean hidePermissionsErrors, GraphQLArgument... extraArgs) {
+		Builder fieldBuilder =  newFieldDefinition()
 			.name(name)
 			.description(description)
 			.argument(createUuidArg("Uuid of the " + name + "."))
@@ -526,7 +550,11 @@ public abstract class AbstractTypeProvider {
 				} else {
 					return handleUuidNameArgs(env, null, actions);
 				}
-			}).build();
+			});
+		if (extraArgs != null) {
+			Arrays.stream(extraArgs).filter(Objects::nonNull).forEach(fieldBuilder::argument);
+		}
+		return fieldBuilder.build();
 	}
 
 	/**
@@ -571,12 +599,16 @@ public abstract class AbstractTypeProvider {
 	}
 
 	protected DynamicStreamPageImpl<NodeContent> applyNodeFilter(DataFetchingEnvironment env, Stream<? extends NodeContent> stream) {
+		return applyFilter(env, stream, NodeFilter.filter(env.getContext()));
+	}
+
+	protected <T, F extends StartMainFilter<? super T>> DynamicStreamPageImpl<T> applyFilter(DataFetchingEnvironment env, Stream<? extends T> stream, F filter) {
 		Map<String, ?> filterArgument = env.getArgument("filter");
 		PagingParameters pagingInfo = getPagingInfo(env);
 		GraphQLContext gc = env.getContext();
 
 		if (filterArgument != null) {
-			return new DynamicStreamPageImpl<>(stream, pagingInfo, NodeFilter.filter(gc).createPredicate(filterArgument));
+			return new DynamicStreamPageImpl<>(stream, pagingInfo, filter.createPredicate(filterArgument));
 		} else {
 			return new DynamicStreamPageImpl<>(stream, pagingInfo);
 		}
