@@ -6,6 +6,17 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.7]]
+== 2.0.7 (18.10.2023)
+
+icon:check[] GraphQL: When the very first GraphQL Queries (after starting the Mesh instance) were executed in parallel, it could happen that
+GraphQL execution failed with some internal errors. This has been fixed.
+
+
+icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
+
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+
 [[v2.0.6]]
 == 2.0.6 (04.10.2023)
 
