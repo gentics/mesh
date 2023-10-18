@@ -62,7 +62,6 @@ public class ScrollingIterator implements Iterator<JsonObject> {
 			RequestBuilder<JsonObject> scrollRequest = client.searchScroll(json, null);
 			currentResponse = scrollRequest.sync();
 		} catch (HttpErrorException e) {
-			System.out.println(e.toString());
 			log.error("Error while handling scroll request.", e);
 			throw new RuntimeException("Error while handling scroll request", e);
 		}
