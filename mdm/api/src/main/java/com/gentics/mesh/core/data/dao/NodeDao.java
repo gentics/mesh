@@ -145,10 +145,10 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	HibNode getParentNode(HibNode node, String branchUuid);
 
 	/**
-	 * Returns a map with nodes and their immediate parents
-	 * @param nodes
-	 * @param branchUuid
-	 * @return
+	 * Returns a map with nodes and their immediate parents. Nodes, which do not have a parent will be mapped to null.
+	 * @param nodes collection of nodes (must not be null or contain null values)
+	 * @param branchUuid branch UUID
+	 * @return map of parents per node
 	 */
 	Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid);
 

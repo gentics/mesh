@@ -251,11 +251,12 @@ public interface ContentDao {
 
 	/**
 	 * Return a map with node as a key and all its field containers as values, filtering for the provided parameters.
-	 * This method does not check permission
-	 * @param nodes
-	 * @param branchUuid
-	 * @param type
-	 * @return
+	 * This method does not check permission.
+	 * @implNote This method may or may not return nodes, that do not have any field containers.
+	 * @param nodes set of nodes
+	 * @param branchUuid branch UUID
+	 * @param type container type for filtering containers
+	 * @return map of nodes to lists of field containers
 	 */
 	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type);
 

@@ -17,6 +17,12 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.17]]
+== 1.10.17 (TBD)
+
+icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+
 [[v1.10.16]]
 == 1.10.16 (04.10.2023)
 
