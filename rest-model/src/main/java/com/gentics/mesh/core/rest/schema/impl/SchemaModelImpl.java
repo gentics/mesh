@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 
@@ -102,7 +101,7 @@ public class SchemaModelImpl implements SchemaVersionModel {
 	}
 
 	@Override
-	public FieldSchemaContainer setNoIndex(Boolean noIndex) {
+	public SchemaModelImpl setNoIndex(Boolean noIndex) {
 		this.noIndex = noIndex;
 		return this;
 	}

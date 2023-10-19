@@ -57,7 +57,7 @@ public class MicroschemaUpdateRequest implements MicroschemaVersionModel {
 	}
 
 	@Override
-	public FieldSchemaContainer setNoIndex(Boolean noIndex) {
+	public MicroschemaUpdateRequest setNoIndex(Boolean noIndex) {
 		this.noIndex = noIndex;
 		return this;
 	}

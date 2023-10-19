@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -82,7 +81,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public FieldSchemaContainer setNoIndex(Boolean noIndex) {
+	public MicroschemaResponse setNoIndex(Boolean noIndex) {
 		this.noIndex = noIndex;
 		return this;
 	}
