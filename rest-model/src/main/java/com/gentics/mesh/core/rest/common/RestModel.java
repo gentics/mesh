@@ -17,7 +17,7 @@ public interface RestModel extends Shareable {
 	 * @return
 	 */
 	default String toJson() {
-		return toJson(false);
+		return toJson(true);
 	}
 
 	/**

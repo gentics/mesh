@@ -202,7 +202,12 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		return builder.build();
 	}
 
-	private Single<Response> getOkResponse() {
+	/**
+	 * Get a single of a raw OkHttp Response.
+	 * 
+	 * @return
+	 */
+	public Single<Response> getOkResponse() {
 		Single<Response> response =  Single.create(sub -> {
 			Call call = client.newCall(createRequest());
 			call.enqueue(new Callback() {
