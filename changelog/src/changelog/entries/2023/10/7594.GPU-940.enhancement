@@ -1,0 +1,1 @@
+REST: A new HttpServer option, `minifyJson`, has been added to control over the REST API payloads being pretty printed for readability, or minified for resource save. An analogous setting has been added to the Java `MeshRestClient`.
