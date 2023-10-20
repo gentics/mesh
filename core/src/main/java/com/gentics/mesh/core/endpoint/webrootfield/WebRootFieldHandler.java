@@ -144,7 +144,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 				// Check if field is JSON, to set corresponding HTTP header value
 				String contentType = rc.response().headers().get(HttpHeaders.CONTENT_TYPE);
 				ac.send(
-					HttpConstants.APPLICATION_JSON_UTF8.equals(contentType) ? field.toJson() : field.toString(),
+					HttpConstants.APPLICATION_JSON_UTF8.equals(contentType) ? field.toJson(ac.isMinify(options.getHttpServerOptions())) : field.toString(),
 					HttpResponseStatus.valueOf(rc.response().getStatusCode()),
 					contentType);
 			}

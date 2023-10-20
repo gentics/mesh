@@ -266,6 +266,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			.ignoreElement();
 	}
 
+	@SuppressWarnings("unchecked")
 	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
 		throwOnError(response);
 

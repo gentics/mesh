@@ -75,6 +75,6 @@ public class EntitiesProvider implements DebugInfoProvider {
 	private <T extends HibCoreElement<? extends RestModel>> String rootToString(InternalActionContext ac, Stream<? extends T> stream, DaoTransformable<T, ? extends RestModel> dao) {
 		return JsonUtil.toJson(
 			stream.map(element -> dao.transformToRestSync(element, ac, 0))
-				.collect(Collectors.toList()));
+				.collect(Collectors.toList()), false);
 	}
 }

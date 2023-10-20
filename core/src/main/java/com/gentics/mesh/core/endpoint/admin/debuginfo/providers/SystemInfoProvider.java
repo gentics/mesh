@@ -57,7 +57,7 @@ public class SystemInfoProvider implements DebugInfoProvider {
 				diskSpace.usableSpace = humanReadableByteCount(fs.usableSpace());
 				info.diskSpace = diskSpace;
 
-				return DebugInfoBufferEntry.fromString("systemInfo.json", JsonUtil.toJson(info));
+				return DebugInfoBufferEntry.fromString("systemInfo.json", JsonUtil.toJson(info, false));
 			})
 			.toFlowable();
 	}

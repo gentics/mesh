@@ -166,7 +166,7 @@ public final class JsonUtil {
 	 * @throws GenericRestException
 	 */
 	public static <T> String toJson(T obj) throws GenericRestException {
-		return toJson(obj, false);
+		return toJson(obj, true);
 	}
 
 	/**

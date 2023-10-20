@@ -318,7 +318,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 
 		MimeType mimeType = new MimeType();
 		if (model instanceof RestModel) {
-			String json = ((RestModel) model).toJson();
+			String json = ((RestModel) model).toJson(false);
 			mimeType.setExample(json);
 			mimeType.setSchema(getSchema(model.getClass()));
 			map.put("application/json", mimeType);
@@ -365,7 +365,7 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	public InternalEndpointRoute exampleRequest(RestModel model) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
-		String json = model.toJson();
+		String json = model.toJson(false);
 		mimeType.setExample(json);
 		mimeType.setSchema(getSchema(model.getClass()));
 		bodyMap.put("application/json", mimeType);

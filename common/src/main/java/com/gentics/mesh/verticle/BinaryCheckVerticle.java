@@ -184,7 +184,7 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 			.build();
 
 		if (log.isTraceEnabled()) {
-			log.trace("Performing binary check: POST {}\n{}", ctx.checkServiceUrl, new JsonObject(checkRequest.toJson()).encodePrettily());
+			log.trace("Performing binary check: POST {}\n{}", ctx.checkServiceUrl, new JsonObject(checkRequest.toJson(false)).encodePrettily());
 		}
 
 		try (Response response = client.newCall(request).execute()) {

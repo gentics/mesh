@@ -152,3 +152,19 @@ client.status().toSingle().subscribe(status -> {
 	System.out.println(status.getStatus());
 }, System.err::println);
 ----
+
+== Minification and pretty printing the REST payloads
+
+The possibility to either save the amount of payload transferred by the REST requests/responses, or pretty print them for better human readability, is present. By setting the request's `setMinifyJson(boolean)` flag one may control the *request* body minification. Default value is `true`, so the payloads to send are not human-readable.
+
+[source,java]
+----
+NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).setMinifyJson(false).blockingGet();
+----
+
+For the control of a *response* body minification one needs a `DisplayParameters#setMinify(boolean)` set to the desired request. This parameter override the server-side JSON minification setup per each request.
+
+[source,java]
+----
+NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en"), new DisplayParametersImpl().setMinify(false)).blockingGet();
+----

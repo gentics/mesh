@@ -36,7 +36,7 @@ public class ConsistencyCheckProvider implements DebugInfoProvider {
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
 		return db.singleTx(tx -> consistencyCheckHandler.checkConsistency(false)
 			.runInExistingTx(tx))
-			.map(response -> DebugInfoBufferEntry.fromString("consistencyCheck.json", response.toJson()))
+			.map(response -> DebugInfoBufferEntry.fromString("consistencyCheck.json", response.toJson(false)))
 			.toFlowable();
 	}
 }

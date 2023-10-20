@@ -147,7 +147,7 @@ public class MeshRestClientConfig {
 		// maximum number of retries with the chosen delay fit inside the
 		// max call timeout.
 		private int retryDelayMs = -1;
-		private boolean minifyJson = false;
+		private boolean minifyJson = true;
 
 		public Builder() {
 			trustedCAs = new HashSet<>();

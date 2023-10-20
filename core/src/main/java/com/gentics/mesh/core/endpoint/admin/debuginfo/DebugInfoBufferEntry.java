@@ -52,7 +52,7 @@ public class DebugInfoBufferEntry implements DebugInfoEntry {
 	 * @return
 	 */
 	public static DebugInfoEntry asJson(String fileName, Object data) {
-		return fromString(fileName, JsonUtil.toJson(data));
+		return fromString(fileName, JsonUtil.toJson(data, false));
 	}
 
 	@Override
