@@ -162,7 +162,7 @@ The possibility to either save the amount of payload transferred by the REST req
 NodeListResponse nodes = client.findNodes("demo", new NodeParametersImpl().setLanguages("en")).setMinifyJson(false).blockingGet();
 ----
 
-For the control of a *response* body minification one needs a `DisplayParameters#setMinify(boolean)` set to the desired request. This parameter override the server-side JSON minification setup per each request.
+For the control of a *response* body minification one needs a `DisplayParameters#setMinify(boolean)` set to the desired request. This parameter override the server-side JSON minification setup per each request. See link:{{< relref "administration-guide.asciidoc" >}}#_server_options[HTTP Server Options] for the server-side configuration.
 
 [source,java]
 ----
