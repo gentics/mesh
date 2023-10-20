@@ -1,18 +1,91 @@
 {
-	microschema(name:"vcard") {
+	vcard: microschema(name:"vcard") {
 		projects {
-			# [$.data.microschema.projects.elements.size()=1]
+			# [$.data.vcard.projects.elements.size()=1]
 			elements {
-				# [$.data.microschema.projects.elements[0].name=dummy]
+				# [$.data.vcard.projects.elements[0].name=dummy]
 				name
-				# [$.data.microschema.projects.elements[0].uuid=<is-uuid>]
+				# [$.data.vcard.projects.elements[0].uuid=<is-uuid>]
 				uuid
-				# [$.data.microschema.projects.elements[0].etag=<is-not-null>]
+				# [$.data.vcard.projects.elements[0].etag=<is-not-null>]
 				etag
-				# [$.data.microschema.projects.elements[0].created=<is-not-null>]
+				# [$.data.vcard.projects.elements[0].created=<is-not-null>]
 				created
-				# [$.data.microschema.projects.elements[0].edited=<is-not-null>]
+				# [$.data.vcard.projects.elements[0].edited=<is-not-null>]
 				edited
+			}
+		}
+	}
+	all: microschemas {
+		elements {
+			projects {
+				# [$.data.all.elements[0].projects.elements.size()=1]
+				elements {
+					# [$.data.all.elements[0].projects.elements[0].name=dummy]
+					name
+					# [$.data.all.elements[0].projects.elements[0].uuid=<is-uuid>]
+					uuid
+					# [$.data.all.elements[0].projects.elements[0].etag=<is-not-null>]
+					etag
+					# [$.data.all.elements[0].projects.elements[0].created=<is-not-null>]
+					created
+					# [$.data.all.elements[0].projects.elements[0].edited=<is-not-null>]
+					edited
+				}
+			}
+		}
+	}
+	vcard_bogus: microschema(name:"vcard") {
+		projects(filter: {name: {equals: "bogus"}}) {
+			# [$.data.vcard_bogus.projects.elements.size()=0]
+			elements {
+				uuid
+			}
+		}
+	}
+	all_bogus: microschemas {
+		elements {
+			projects(filter: {name: {equals: "bogus"}}) {
+				# [$.data.all_bogus.elements[0].projects.elements.size()=0]
+				elements {
+					uuid
+				}
+			}
+		}
+	}
+	vcard_dummy: microschema(name:"vcard") {
+		projects(filter: {name: {equals: "dummy"}}) {
+			# [$.data.vcard_dummy.projects.elements.size()=1]
+			elements {
+				# [$.data.vcard_dummy.projects.elements[0].name=dummy]
+				name
+				# [$.data.vcard_dummy.projects.elements[0].uuid=<is-uuid>]
+				uuid
+				# [$.data.vcard_dummy.projects.elements[0].etag=<is-not-null>]
+				etag
+				# [$.data.vcard_dummy.projects.elements[0].created=<is-not-null>]
+				created
+				# [$.data.vcard_dummy.projects.elements[0].edited=<is-not-null>]
+				edited
+			}
+		}
+	}
+	all_dummy: microschemas {
+		elements {
+			projects(filter: {name: {equals: "dummy"}}) {
+				# [$.data.all_dummy.elements[0].projects.elements.size()=1]
+				elements {
+					# [$.data.all_dummy.elements[0].projects.elements[0].name=dummy]
+					name
+					# [$.data.all_dummy.elements[0].projects.elements[0].uuid=<is-uuid>]
+					uuid
+					# [$.data.all_dummy.elements[0].projects.elements[0].etag=<is-not-null>]
+					etag
+					# [$.data.all_dummy.elements[0].projects.elements[0].created=<is-not-null>]
+					created
+					# [$.data.all_dummy.elements[0].projects.elements[0].edited=<is-not-null>]
+					edited
+				}
 			}
 		}
 	}
