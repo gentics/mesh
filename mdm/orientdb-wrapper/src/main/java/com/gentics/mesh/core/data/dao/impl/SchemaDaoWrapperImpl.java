@@ -146,7 +146,7 @@ public class SchemaDaoWrapperImpl
 
 	@Override
 	public Result<HibProject> findLinkedProjects(HibSchema schema) {
-		return new TraversalResult<>(getRoots(schema).stream().map(root -> root.getProject()));
+		return new TraversalResult<>(getRoots(schema).stream().map(root -> root.getProject()).filter(Objects::nonNull));
 	}
 
 	@Override

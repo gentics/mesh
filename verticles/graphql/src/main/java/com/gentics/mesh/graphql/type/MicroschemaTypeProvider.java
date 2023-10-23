@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,8 +19,10 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -27,8 +30,10 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.filter.ProjectFilter;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -80,16 +85,19 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 		// .description
 		schemaType.field(newFieldDefinition().name("description").description("Description of the microschema.").type(GraphQLString));
 
-		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
+		// .projects
+		schemaType.field(newPagingFieldWithFetcherBuilder("projects", "Load projects that this schema is attached to", env -> {
 			GraphQLContext gc = env.getContext();
 			HibMicroschema microschema = env.getSource();
 			UserDao userDao = Tx.get().userDao();
-			return microschema.findReferencedBranches().keySet().stream()
-				.map(HibBranch::getProject)
-				.distinct()
-				.filter(it -> userDao.hasPermission(gc.getUser(), it, InternalPermission.READ_PERM))
-				.collect(Collectors.toList());
-		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
+			Stream<HibProject> projects = microschema.findReferencedBranches().keySet().stream()
+					.map(HibBranch::getProject)
+					.distinct()
+					.filter(it -> userDao.hasPermission(gc.getUser(), it, InternalPermission.READ_PERM));
+
+			return applyFilter(env, projects, ProjectFilter.filter());
+		}, PROJECT_REFERENCE_PAGE_TYPE_NAME)
+			.argument(ProjectFilter.filter().createFilterArgument()));
 
 		// .isEmpty
 		schemaType.field(newFieldDefinition().name("isEmpty").type(GraphQLBoolean).dataFetcher((env) -> {

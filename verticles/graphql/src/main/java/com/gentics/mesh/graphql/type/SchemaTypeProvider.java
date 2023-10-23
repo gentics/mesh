@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -16,7 +17,10 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
@@ -24,9 +28,11 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.filter.NodeFilter;
+import com.gentics.mesh.graphql.filter.ProjectFilter;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -113,13 +119,24 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 				GraphQLContext gc = env.getContext();
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
-				SchemaDao schemaDao = tx.schemaDao();
 				Stream<? extends NodeContent> nodes = nodeDao.findAllContent(getSchemaContainerVersion(env), gc, languageTags, type);
 
 				return applyNodeFilter(env, nodes);
 			}, NODE_PAGE_TYPE_NAME)
 				.argument(NodeFilter.filter(context).createFilterArgument())
 				.argument(createLanguageTagArg(true)));
+
+		// .projects
+		schemaType.field(newPagingFieldWithFetcherBuilder("projects", "Load projects that this schema is attached to", env -> {
+			Tx tx = Tx.get();
+			GraphQLContext gc = env.getContext();
+			SchemaDao schemaDao = tx.schemaDao();
+			UserDao userDao = tx.userDao();
+			Result<HibProject> projects = schemaDao.findLinkedProjects(getSchemaContainer(env));
+
+			return applyFilter(env, projects.stream().filter(it -> userDao.hasPermission(gc.getUser(), it, InternalPermission.READ_PERM)), ProjectFilter.filter());
+		}, PROJECT_REFERENCE_PAGE_TYPE_NAME)
+			.argument(ProjectFilter.filter().createFilterArgument()));
 
 		Builder fieldListBuilder = newObject().name(SCHEMA_FIELD_TYPE).description("List of schema fields");
 
@@ -156,6 +173,17 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return (HibSchemaVersion) source;
 		} else if (source instanceof HibSchema) {
 			return ((HibSchema) source).getLatestVersion();
+		} else {
+			throw new RuntimeException("Invalid type {" + source + "}.");
+		}
+	}
+
+	private HibSchema getSchemaContainer(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof HibSchemaVersion) {
+			return ((HibSchemaVersion) source).getSchemaContainer();
+		} else if (source instanceof HibSchema) {
+			return ((HibSchema) source);
 		} else {
 			throw new RuntimeException("Invalid type {" + source + "}.");
 		}

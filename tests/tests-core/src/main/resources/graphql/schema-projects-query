@@ -1,18 +1,91 @@
 {
-	schema(name:"content") {
+	content: schema(name:"content") {
 		projects {
-			# [$.data.schema.projects.elements.size()=1]
+			# [$.data.content.projects.elements.size()=1]
 			elements {
-				# [$.data.schema.projects.elements[0].name=dummy]
+				# [$.data.content.projects.elements[0].name=dummy]
 				name
-				# [$.data.schema.projects.elements[0].uuid=<is-uuid>]
+				# [$.data.content.projects.elements[0].uuid=<is-uuid>]
 				uuid
-				# [$.data.schema.projects.elements[0].uuid=<is-not-null>]
+				# [$.data.content.projects.elements[0].uuid=<is-not-null>]
 				etag
-				# [$.data.schema.projects.elements[0].uuid=<is-not-null>]
+				# [$.data.content.projects.elements[0].uuid=<is-not-null>]
 				created
-				# [$.data.schema.projects.elements[0].uuid=<is-not-null>]
+				# [$.data.content.projects.elements[0].uuid=<is-not-null>]
 				edited
+			}
+		}
+	}
+	all: schemas {
+		elements {
+			projects {
+				# [$.data.all.elements[0].projects.elements.size()=1]
+				elements {
+					# [$.data.all.elements[0].projects.elements[0].name=dummy]
+					name
+					# [$.data.all.elements[0].projects.elements[0].uuid=<is-uuid>]
+					uuid
+					# [$.data.all.elements[0].projects.elements[0].uuid=<is-not-null>]
+					etag
+					# [$.data.all.elements[0].projects.elements[0].uuid=<is-not-null>]
+					created
+					# [$.data.all.elements[0].projects.elements[0].uuid=<is-not-null>]
+					edited
+				}
+			}
+		}
+	}
+	content_bogus: schema(name:"content") {
+		projects (filter: {name: {equals: "bogus"}}) {
+			# [$.data.content_bogus.projects.elements.size()=0]
+			elements {
+				name
+			}
+		}
+	}
+	all_bogus: schemas {
+		elements {
+			projects (filter: {name: {equals: "bogus"}}) {
+				# [$.data.all_bogus.elements[0].projects.elements.size()=0]
+				elements {
+					name
+				}
+			}
+		}
+	}
+	content_dummy: schema(name:"content") {
+		projects (filter: {name: {equals: "dummy"}}) {
+			# [$.data.content_dummy.projects.elements.size()=1]
+			elements {
+				# [$.data.content_dummy.projects.elements[0].name=dummy]
+				name
+				# [$.data.content_dummy.projects.elements[0].uuid=<is-uuid>]
+				uuid
+				# [$.data.content_dummy.projects.elements[0].uuid=<is-not-null>]
+				etag
+				# [$.data.content_dummy.projects.elements[0].uuid=<is-not-null>]
+				created
+				# [$.data.content_dummy.projects.elements[0].uuid=<is-not-null>]
+				edited
+			}
+		}
+	}
+	all_dummy: schemas {
+		elements {
+			projects (filter: {name: {equals: "dummy"}}) {
+				# [$.data.all_dummy.elements[0].projects.elements.size()=1]
+				elements {
+					# [$.data.all_dummy.elements[0].projects.elements[0].name=dummy]
+					name
+					# [$.data.all_dummy.elements[0].projects.elements[0].uuid=<is-uuid>]
+					uuid
+					# [$.data.all_dummy.elements[0].projects.elements[0].uuid=<is-not-null>]
+					etag
+					# [$.data.all_dummy.elements[0].projects.elements[0].uuid=<is-not-null>]
+					created
+					# [$.data.all_dummy.elements[0].projects.elements[0].uuid=<is-not-null>]
+					edited
+				}
 			}
 		}
 	}
