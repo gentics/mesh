@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.search.index.group.GroupSearchHandler;
@@ -54,8 +55,8 @@ public class RawSearchEndpointImpl extends AbstractInternalEndpoint implements S
 			TagFamilySearchHandler tagFamilySearchHandler,
 			ProjectSearchHandler projectSearchHandler,
 			SchemaSearchHandler schemaContainerSearchHandler,
-			MicroschemaSearchHandler microschemaContainerSearchHandler, LocalConfigApi localConfigApi, Database db) {
-		super("rawSearch", chain, localConfigApi, db);
+			MicroschemaSearchHandler microschemaContainerSearchHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("rawSearch", chain, localConfigApi, db, options);
 		this.adminHandler = adminHandler;
 		this.userSearchHandler = userSearchHandler;
 		this.groupSearchHandler = groupSearchHandler;
@@ -69,7 +70,7 @@ public class RawSearchEndpointImpl extends AbstractInternalEndpoint implements S
 	}
 
 	public RawSearchEndpointImpl() {
-		super("rawSearch", null, null, null);
+		super("rawSearch", null, null, null, null);
 		this.adminHandler = null;
 		this.userSearchHandler = null;
 		this.groupSearchHandler = null;

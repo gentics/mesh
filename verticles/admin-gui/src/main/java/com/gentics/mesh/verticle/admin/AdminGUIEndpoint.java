@@ -43,7 +43,7 @@ public class AdminGUIEndpoint extends AbstractInternalEndpoint {
 	private final MeshOptions options;
 
 	public AdminGUIEndpoint(MeshOptions options) {
-		super("mesh-ui-v1", null, null, null);
+		super("mesh-ui-v1", null, null, null, options);
 		this.options = options;
 	}
 

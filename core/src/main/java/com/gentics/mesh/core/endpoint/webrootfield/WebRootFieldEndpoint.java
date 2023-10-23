@@ -9,6 +9,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -26,12 +27,12 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 	private WebRootFieldHandler handler;
 
 	public WebRootFieldEndpoint() {
-		super("webrootfield", null, null, null, null);
+		super("webrootfield", null, null, null, null, null);
 	}
 
 	@Inject
-	public WebRootFieldEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, WebRootFieldHandler handler, LocalConfigApi localConfigApi, Database db) {
-		super("webrootfield", chain, boot, localConfigApi, db);
+	public WebRootFieldEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, WebRootFieldHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("webrootfield", chain, boot, localConfigApi, db, options);
 		this.handler = handler;
 	}
 

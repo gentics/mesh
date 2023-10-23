@@ -6,6 +6,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -30,13 +31,13 @@ public class EventbusEndpoint extends AbstractInternalEndpoint {
 	private final Vertx vertx;
 
 	public EventbusEndpoint() {
-		super("eventbus", null, null, null);
+		super("eventbus", null, null, null, null);
 		this.vertx = null;
 	}
 
 	@Inject
-	public EventbusEndpoint(Vertx vertx, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db) {
-		super("eventbus", chain, localConfigApi, db);
+	public EventbusEndpoint(Vertx vertx, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("eventbus", chain, localConfigApi, db, options);
 		this.vertx = vertx;
 	}
 
