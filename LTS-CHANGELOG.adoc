@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.10.18]]
-== 1.10.18 (TBD)
+== 1.10.18 (24.10.2023)
 
 icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
 
