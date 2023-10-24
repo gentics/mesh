@@ -17,6 +17,11 @@
 | integer
 | Configure event pool size. Default is 2 * CPU Cores
 
+| orderedBlockingHandlers
+| false
+| boolean
+| Configure, whether blocking handlers for mutating requests should be ordered. Default is true
+
 | workerPoolSize
 | false
 | integer
