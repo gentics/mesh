@@ -3,10 +3,13 @@ package com.gentics.mesh.cache.impl;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.gentics.mesh.cache.EventAwareCache;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -35,7 +38,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private static final Logger log = LoggerFactory.getLogger(EventAwareCacheImpl.class);
 
-	private final Cache<K, V> cache;
+	private final Cache<K, Optional<V>> cache;
 
 	private final MeshOptions options;
 
@@ -145,7 +148,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		if (disabled) {
 			return;
 		}
-		cache.put(key, value);
+		cache.put(key, Optional.ofNullable(value));
 	}
 
 	@Override
@@ -154,15 +157,16 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			return null;
 		}
 		if (options.getMonitoringOptions().isEnabled()) {
-			V value = cache.getIfPresent(key);
+			@Nullable Optional<V> value = cache.getIfPresent(key);
 			if (value == null) {
 				missCounter.increment();
+				return null;
 			} else {
 				hitCounter.increment();
 			}
-			return value;
+			return value.orElse(null);
 		} else {
-			return cache.getIfPresent(key);
+			return cache.getIfPresent(key).orElse(null);
 		}
 	}
 
@@ -173,10 +177,10 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		}
 		if (options.getMonitoringOptions().isEnabled()) {
 			AtomicBoolean wasCached = new AtomicBoolean(true);
-			V value = cache.getIfPresent(key);
+			@Nullable Optional<V> value = cache.getIfPresent(key);
 			if (value == null) {
 				wasCached.set(false);
-				value = mappingFunction.apply(key);
+				value = Optional.ofNullable(mappingFunction.apply(key));
 				if (value != null) {
 					cache.put(key, value);
 				}
@@ -186,9 +190,9 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			} else {
 				missCounter.increment();
 			}
-			return value;
+			return value.orElse(null);
 		} else {
-			return cache.get(key, mappingFunction);
+			return cache.get(key, (k) -> Optional.ofNullable(mappingFunction.apply(k))).orElse(null);
 		}
 	}
 
