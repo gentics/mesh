@@ -7,14 +7,17 @@ import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshErr
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -119,50 +122,51 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(tx -> {
-				ContentDao contentDao = tx.contentDao();
-				long totalCount = extractTotalCount(hitsInfo);
+				long[] totalCount = new long[] {extractTotalCount(hitsInfo)};
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
-				for (int i = 0; i < hits.size(); i++) {
-					JsonObject hit = hits.getJsonObject(i);
-
-					String id = hit.getString("_id");
+				Map<String, Set<String>> langUuids = hits.stream().map(hit -> {
+					String id = ((JsonObject) hit).getString("_id");
 					int pos = id.indexOf("-");
 
-					String languageTag = pos > 0 ? id.substring(pos + 1) : null;
-					String uuid = pos > 0 ? id.substring(0, pos) : id;
-
-					HibNode element = getIndexHandler().elementLoader().apply(uuid);
-					if (element == null) {
-						log.warn("Object could not be found for uuid {" + uuid + "}");
-						totalCount--;
-						continue;
-					}
-
-					HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+					//UUID / Language pair
+					return Pair.of(pos > 0 ? id.substring(0, pos) : id, pos > 0 ? id.substring(pos + 1) : null);
+				}).collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toSet())));
+				langUuids.entrySet().stream().forEach(entry -> {
+					HibLanguage language = tx.languageDao().findByLanguageTag(entry.getKey());
 					if (language == null) {
-						log.warn("Could not find language {" + languageTag + "}");
-						totalCount--;
-						continue;
+						log.warn("Could not find language {" + entry.getKey() + "}");
+						totalCount[0] -= entry.getValue().size();
+						return;
 					}
-
-					// Locate the matching container and add it to the list of found containers
-					HibNodeFieldContainer container = contentDao.getFieldContainer(element, languageTag, tx.getBranch(ac), type);
-					if (container != null) {
-						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag), type));
-					} else {
-						totalCount--;
-						continue;
-					}
-
-				}
+					Set<HibNode> nodes = tx.nodeDao().findByUuids(tx.getProject(ac), entry.getValue())
+							.peek(pair -> {
+								if (pair.getValue() == null) {
+									totalCount[0]--;
+								}
+							})
+							.filter(pair -> pair.getValue() != null)
+							.map(Pair::getValue)
+							.collect(Collectors.toSet());
+					Map<HibNode, HibNodeFieldContainer> containers = tx.contentDao().getFieldsContainers(nodes, entry.getKey(), tx.getBranch(ac), type);
+					containers.entrySet().stream()
+						.peek(pair -> {
+							if (pair.getValue() == null) {
+								totalCount[0]--;
+							}
+						})
+						.filter(pair -> pair.getValue() != null)
+						.forEach(pair -> {
+							elementList.add(new NodeContent(pair.getKey(), pair.getValue(), Arrays.asList(entry.getKey()), type));
+						});
+				});
 				// Update the total count
 				switch (complianceMode) {
 				case ES_6:
-					hitsInfo.put("total", totalCount);
+					hitsInfo.put("total", totalCount[0]);
 					break;
 				case ES_7:
-					hitsInfo.put("total", new JsonObject().put("value", totalCount));
+					hitsInfo.put("total", new JsonObject().put("value", totalCount[0]));
 					break;
 				default:
 					throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");

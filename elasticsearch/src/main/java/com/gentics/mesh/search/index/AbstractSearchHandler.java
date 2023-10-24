@@ -10,16 +10,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
-
-import javax.inject.Inject;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -398,19 +399,13 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 					List<T> elementList = new ArrayList<>();
 					JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 					JsonArray hits = hitsInfo.getJsonArray("hits");
-					for (int i = 0; i < hits.size(); i++) {
-						JsonObject hit = hits.getJsonObject(i);
-						String id = hit.getString("_id");
+					Set<String> uuids = hits.stream().map(hit -> {
+						String id = ((JsonObject) hit).getString("_id");
 						int pos = id.indexOf("-");
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						// Locate the node
-						T element = indexHandler.elementLoader().apply(uuid);
-						if (element != null) {
-							elementList.add(element);
-						}
-					}
-
+						return pos > 0 ? id.substring(0, pos) : id;
+					}).collect(Collectors.toSet());
+					indexHandler.elementsLoader().apply(uuids).map(Pair::getValue).filter(Objects::nonNull).forEach(elementList::add);
 					PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
 					return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
 				});

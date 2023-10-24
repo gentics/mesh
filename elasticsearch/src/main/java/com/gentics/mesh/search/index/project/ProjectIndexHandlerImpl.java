@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.project;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -11,6 +12,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -93,6 +96,11 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> im
 	@Override
 	public Function<String, HibProject> elementLoader() {
 		return (uuid) -> Tx.get().projectDao().findByUuid(uuid);
+	}
+
+	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibProject>>> elementsLoader() {
+		return (uuids) -> Tx.get().projectDao().findByUuids(uuids);
 	}
 
 	@Override

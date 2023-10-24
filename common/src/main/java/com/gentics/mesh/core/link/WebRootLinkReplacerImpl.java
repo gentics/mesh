@@ -28,13 +28,15 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
@@ -208,9 +210,9 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		}
 		final String[] finLanguageTags = appendDefaultLanguageIfNotContained(languageTags);
 
-		Tx tx = Tx.get();
-		NodeDao nodeDao = tx.nodeDao();
-		BranchDao branchDao = tx.branchDao();
+		CommonTx tx = CommonTx.get();
+		PersistingNodeDao nodeDao = tx.nodeDao();
+		PersistingBranchDao branchDao = tx.branchDao();
 
 		// 1. tokenize all contents
 		Map<String, List<ContentSegment>> segmentListsByContent = contents.stream()
@@ -235,6 +237,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 		// 4. load paths of the nodes per requested languages
 		Map<HibBranch, Map<String[], Map<HibNode, String>>> pathsPerBranchAndNode = new HashMap<>();
+		Map<String, HibBranch> branchPerUUids = new HashMap<>();
 		for (Entry<String, Set<String>> entry : branchesPerNodeUuid.entrySet()) {
 			String nodeUuid = entry.getKey();
 			HibNode node = nodeMap.get(nodeUuid);
@@ -242,7 +245,8 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				HibProject theirProject = node.getProject();
 
 				for (String branchUuidOrName : entry.getValue()) {
-					HibBranch theirBranch = branchDao.findBranchOrLatest(theirProject, branchUuidOrName);
+					String key = theirProject.getUuid() + "-" + branchUuidOrName;
+					HibBranch theirBranch = branchPerUUids.computeIfAbsent(key, unused -> branchDao.findBranchOrLatest(theirProject, branchUuidOrName));
 
 					for (String[] nodeLanguageTags : languageTagsPerNodeUuid.get(nodeUuid)) {
 						pathsPerBranchAndNode.computeIfAbsent(theirBranch, k -> new HashMap<>())
@@ -256,7 +260,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			for (Entry<String[], Map<HibNode, String>> entry2 : entry.getValue().entrySet()) {
 				String[] nodeLanguageTags = entry2.getKey();
 				Set<HibNode> nodes = entry2.getValue().keySet();
-				entry2.setValue(nodeDao.getPaths(nodes, currentBranch.getUuid(), ac, edgeType, nodeLanguageTags));
+				entry2.setValue(nodeDao.getPaths(nodes, currentBranch, ac, edgeType, nodeLanguageTags));
 			}
 		}
 
@@ -322,7 +326,8 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 					HibNode node = nodeMap.get(nodeUuid);
 					String renderedSegment = null;
 					if (node != null) {
-						HibBranch theirBranch = branchDao.findBranchOrLatest(node.getProject(), currentBranch);
+						String key = node.getProject().getUuid() + "-" + currentBranch;
+						HibBranch theirBranch = branchPerUUids.computeIfAbsent(key, unused -> branchDao.findBranchOrLatest(node.getProject(), currentBranch));
 						renderedSegment = pathsPerBranchAndNode.getOrDefault(theirBranch, Collections.emptyMap()).getOrDefault(nodeLanguageTags, Collections.emptyMap()).getOrDefault(node, null);
 					}
 					if (StringUtils.isBlank(renderedSegment)) {
