@@ -188,7 +188,14 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			}
 			return value;
 		} else {
-			return cache.get(key, mappingFunction);
+			V value = cache.getIfPresent(key);
+			if (value == null) {
+				value = mappingFunction.apply(key);
+				if (value != null) {
+					cache.put(key, value);
+				}
+			}
+			return value;
 		}
 	}
 

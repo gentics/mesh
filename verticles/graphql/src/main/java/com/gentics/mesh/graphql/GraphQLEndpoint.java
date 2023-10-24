@@ -10,6 +10,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
@@ -27,12 +28,12 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	private GraphQLHandler queryHandler;
 
 	public GraphQLEndpoint() {
-		super("graphql", null, null, null, null);
+		super("graphql", null, null, null, null, null);
 	}
 
 	@Inject
-	public GraphQLEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, GraphQLHandler queryHandler, LocalConfigApi localConfigApi, Database db) {
-		super("graphql", chain, boot, localConfigApi, db);
+	public GraphQLEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, GraphQLHandler queryHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("graphql", chain, boot, localConfigApi, db, options);
 		this.queryHandler = queryHandler;
 	}
 

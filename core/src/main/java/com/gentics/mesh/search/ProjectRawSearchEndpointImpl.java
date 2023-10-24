@@ -6,6 +6,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
@@ -23,7 +24,7 @@ public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implem
 	protected final TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectRawSearchEndpointImpl() {
-		super("rawSearch", null, null, null, null);
+		super("rawSearch", null, null, null, null, null);
 		this.nodeSearchHandler = null;
 		this.tagSearchHandler = null;
 		this.tagFamilySearchHandler = null;
@@ -32,8 +33,8 @@ public class ProjectRawSearchEndpointImpl extends AbstractProjectEndpoint implem
 	@Inject
 	public ProjectRawSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot,
 			NodeSearchHandler nodeSearchHandler, TagSearchHandler tagSearchHandler,
-			TagFamilySearchHandler tagFamilySearchHandler, LocalConfigApi localConfigApi, Database db) {
-		super("rawSearch", chain, boot, localConfigApi, db);
+			TagFamilySearchHandler tagFamilySearchHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("rawSearch", chain, boot, localConfigApi, db, options);
 		this.nodeSearchHandler = nodeSearchHandler;
 		this.tagSearchHandler = tagSearchHandler;
 		this.tagFamilySearchHandler = tagFamilySearchHandler;

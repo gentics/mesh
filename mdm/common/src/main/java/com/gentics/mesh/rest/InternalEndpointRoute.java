@@ -189,6 +189,7 @@ public interface InternalEndpointRoute extends Comparable<InternalEndpointRoute>
 	 * 
 	 * @param requestHandler request handler
 	 * @return Fluent API
+	 * @deprecated since requests will only be "ordered" when running in the same http verticle
 	 */
 	InternalEndpointRoute blockingHandler(Handler<RoutingContext> requestHandler);
 

@@ -497,6 +497,9 @@ public class MeshTestContext implements TestRule {
 
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
+		// disable usage of "ordered" blocking handlers (which seems to be useless anyways)
+		meshOptions.getVertxOptions().setOrderedBlockingHandlers(false);
+
 		// disable periodic index check
 		meshOptions.getSearchOptions().setIndexCheckInterval(0);
 
