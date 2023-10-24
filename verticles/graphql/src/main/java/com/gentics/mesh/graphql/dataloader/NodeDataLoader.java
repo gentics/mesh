@@ -38,7 +38,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Promise;
 
@@ -47,42 +46,11 @@ import io.vertx.core.Promise;
  */
 public class NodeDataLoader {
 
-	public static final String NODE_LOADER_KEY = "nodeLoader";
 	public static final String CONTENT_LOADER_KEY = "contentLoader";
 	public static final String CHILDREN_LOADER_KEY = "childrenLoader";
 	public static final String PATH_LOADER_KEY = "pathLoader";
 	public static final String PARENT_LOADER_KEY = "parentLoader";
 	public static final String BREADCRUMB_LOADER_KEY = "breadcrumbLoader";
-
-	/**
-	 * Batch load all field containers of a node for transaction branch and the provided types, without doing permission
-	 * checks.
-	 */
-	public static BatchLoaderWithContext<String, HibNode> NODE_LOADER = (keys, environment) -> {
-		CommonTx tx = CommonTx.get();
-		GraphQLContext context = environment.getContext();
-		HibUser user = context.getUser();
-		PersistingUserDao userDao = tx.userDao();
-		
-		if (!user.isAdmin()) {
-			// prepare the permissions for all parent nodes
-			Set<Object> parentNodeIds = keys.stream().filter(parent -> parent != null)
-					.map(UUIDUtil::toJavaUuid).collect(Collectors.toSet());
-			userDao.preparePermissionsForElementIds(user, parentNodeIds);
-		}
-		Map<String, HibNode> fieldsContainers = tx.nodeDao().findByUuidGlobal(keys).stream()
-				.filter(node -> user.isAdmin() || userDao.hasPermission(user, node, READ_PUBLISHED_PERM) || userDao.hasPermission(user, node, READ_PERM))
-				.collect(Collectors.toMap(HibNode::getUuid, Function.identity()));
-
-		List<HibNode> results = new ArrayList<>();
-		for (String key : keys) {
-			results.add(fieldsContainers.getOrDefault(key, null));
-		}
-		Promise<List<HibNode>> promise = Promise.promise();
-		promise.complete(results);
-
-		return promise.future().toCompletionStage();
-	};
 
 	/**
 	 * Batch load all field containers of a node for transaction branch and the provided types, without doing permission
