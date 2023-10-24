@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.filter;
 import static graphql.Scalars.GraphQLBoolean;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,8 @@ import com.gentics.mesh.graphql.filter.operation.EntityReferenceOperationOperand
  */
 public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceField<E>, Q> extends MainFilter<T> {
 
-	private static Map<String, EntityReferenceFilter<HibNode, HibNodeField, ?>> nodeFieldFilterInstances = new HashMap<>();
-	private static Map<String, EntityReferenceFilter<HibMicronode, HibMicronodeField, ?>> micronodeFieldFilterInstances = new HashMap<>();
+	private static Map<String, EntityReferenceFilter<HibNode, HibNodeField, ?>> nodeFieldFilterInstances = Collections.synchronizedMap(new HashMap<>());
+	private static Map<String, EntityReferenceFilter<HibMicronode, HibMicronodeField, ?>> micronodeFieldFilterInstances = Collections.synchronizedMap(new HashMap<>());
 
 	private final Filter<E, Q> referenceFilter;
 	private final String referenceType;
