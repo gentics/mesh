@@ -17,6 +17,7 @@ import com.gentics.mesh.metric.CachingMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Policy.Eviction;
 import com.github.benmanes.caffeine.cache.Weigher;
 
 import io.micrometer.core.instrument.Counter;
@@ -51,6 +52,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter invalidateAllCounter;
 	private final Counter missCounter;
 	private final Counter hitCounter;
+	private final long maxSize;
 
 	private Disposable eventSubscription;
 
@@ -66,6 +68,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 							   Predicate<Message<JsonObject>> filter,
 							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, Optional<Weigher<K, V>> maybeWeigher, MeshEvent... events) {
 		this.options = options;
+		this.maxSize = maxSize;
 		Caffeine<Object, Object> cacheBuilder = maybeWeigher.map(weigher -> (Caffeine<Object, Object>) Caffeine.newBuilder().maximumWeight(maxSize).weigher(weigher)).orElseGet(() -> Caffeine.newBuilder().maximumSize(maxSize));
 		if (expireAfter != null) {
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
@@ -126,6 +129,16 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	public long size() {
 		cache.cleanUp();
 		return cache.estimatedSize();
+	}
+
+	@Override
+	public long used() {
+		return cache.policy().eviction().flatMap(ev -> ev.weightedSize().stream().mapToObj(Long::valueOf).findAny()).orElseGet(() -> size());
+	}
+
+	@Override
+	public long capacity() {
+		return cache.policy().eviction().map(ev -> ev.getMaximum()).orElse(maxSize);
 	}
 
 	@Override

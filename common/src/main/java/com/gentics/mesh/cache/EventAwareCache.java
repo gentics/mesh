@@ -60,10 +60,23 @@ public interface EventAwareCache<K, V> {
 	void enable();
 
 	/**
-	 * Return the current size of the cache.
+	 * Return the current size of the cache. This call may instantiate a cache cleanup for the precise results!
 	 * 
 	 * @return
 	 */
 	long size();
 
+	/**
+	 * Return the current imprecise size of the cache, giving no influence on its content or runtime.
+	 * 
+	 * @return
+	 */
+	long used();
+
+	/**
+	 * Return the total cache capacity.
+	 * 
+	 * @return
+	 */
+	long capacity();
 }
