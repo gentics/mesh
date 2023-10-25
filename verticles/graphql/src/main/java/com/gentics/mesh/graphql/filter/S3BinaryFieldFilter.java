@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.filter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +9,7 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 
 public class S3BinaryFieldFilter extends ImageDataFieldFilter<S3HibBinary, S3HibBinaryField> {
 
-	private static Map<String, S3BinaryFieldFilter> instances = new HashMap<>();
+	private static Map<String, S3BinaryFieldFilter> instances = Collections.synchronizedMap(new HashMap<>());
 
 	/**
 	 * Create a binary filter.

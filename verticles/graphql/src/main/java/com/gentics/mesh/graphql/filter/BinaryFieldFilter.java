@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.filter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import com.gentics.mesh.core.data.node.field.HibImageDataField;
 
 public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinaryField> {
 
-	private static final Map<String, BinaryFieldFilter> instances = new HashMap<>();
+	private static final Map<String, BinaryFieldFilter> instances = Collections.synchronizedMap(new HashMap<>());
 
 	/**
 	 * Create a binary filter.

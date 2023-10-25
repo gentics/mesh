@@ -28,6 +28,7 @@ import com.gentics.mesh.core.endpoint.PathParameters;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.tag.TagCrudHandler;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -52,13 +53,13 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 	private TagCrudHandler tagCrudHandler;
 
 	public TagFamilyEndpoint() {
-		super("tagFamilies", null, null, null, null);
+		super("tagFamilies", null, null, null, null, null);
 	}
 
 	@Inject
 	public TagFamilyEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, TagCrudHandler tagCrudHandler,
-		TagFamilyCrudHandler tagFamilyCrudHandler, LocalConfigApi localConfigApi, Database db) {
-		super("tagFamilies", chain, boot, localConfigApi, db);
+		TagFamilyCrudHandler tagFamilyCrudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("tagFamilies", chain, boot, localConfigApi, db, options);
 		this.tagCrudHandler = tagCrudHandler;
 		this.tagFamilyCrudHandler = tagFamilyCrudHandler;
 	}
@@ -107,7 +108,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleUpdate(ac, tagFamilyUuid, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 	}
 
@@ -123,7 +124,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagCrudHandler.handleCreate(ac, tagFamilyUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addTagReadHandler() {
@@ -176,7 +177,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleDelete(ac, tagFamilyUuid, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addTagRolePermissionHandler() {
@@ -211,7 +212,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleGrantPermissions(ac, tagFamilyUuid, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute revokePermissionsEndpoint = createRoute();
 		revokePermissionsEndpoint.path("/:tagFamilyUuid/tags/:tagUuid/rolePermissions");
@@ -229,7 +230,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			String uuid = PathParameters.getTagUuid(rc);
 			tagCrudHandler.handleRevokePermissions(ac, tagFamilyUuid, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addTaggedNodesHandler() {
@@ -263,7 +264,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagFamilyCrudHandler.handleDelete(ac, tagFamilyUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addTagFamilyReadHandler() {
@@ -306,7 +307,7 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			tagFamilyCrudHandler.handleCreate(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addTagFamilyUpdateHandler() {
@@ -324,6 +325,6 @@ public class TagFamilyEndpoint extends RolePermissionHandlingProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String tagFamilyUuid = PathParameters.getTagFamilyUuid(rc);
 			tagFamilyCrudHandler.handleUpdate(ac, tagFamilyUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

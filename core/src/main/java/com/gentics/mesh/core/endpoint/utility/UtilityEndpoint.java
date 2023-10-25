@@ -11,6 +11,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -23,13 +24,13 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 	private UtilityHandler utilityHandler;
 
 	@Inject
-	public UtilityEndpoint(MeshAuthChainImpl chain, UtilityHandler utilityHandler, LocalConfigApi localConfigApi, Database db) {
-		super("utilities", chain, localConfigApi, db);
+	public UtilityEndpoint(MeshAuthChainImpl chain, UtilityHandler utilityHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("utilities", chain, localConfigApi, db, options);
 		this.utilityHandler = utilityHandler;
 	}
 
 	public UtilityEndpoint() {
-		super("utilities", null, null, null);
+		super("utilities", null, null, null, null);
 	}
 
 	@Override
@@ -57,7 +58,7 @@ public class UtilityEndpoint extends AbstractInternalEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			utilityHandler.validateSchema(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addMicroschemaValidationHandler() {
