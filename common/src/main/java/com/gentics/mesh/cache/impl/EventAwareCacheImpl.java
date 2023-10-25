@@ -3,6 +3,7 @@ package com.gentics.mesh.cache.impl;
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
@@ -16,6 +17,7 @@ import com.gentics.mesh.metric.CachingMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Weigher;
 
 import io.micrometer.core.instrument.Counter;
 import io.reactivex.Observable;
@@ -52,11 +54,19 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	private Disposable eventSubscription;
 
+
 	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, EventBusStore eventBusStore, MeshOptions options, MetricsService metricsService,
 							   Predicate<Message<JsonObject>> filter,
 							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, MeshEvent... events) {
+		this(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, Optional.empty(), events);
+	}
+
+	@SuppressWarnings("unchecked")
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, EventBusStore eventBusStore, MeshOptions options, MetricsService metricsService,
+							   Predicate<Message<JsonObject>> filter,
+							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, Optional<Weigher<K, V>> maybeWeigher, MeshEvent... events) {
 		this.options = options;
-		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
+		Caffeine<Object, Object> cacheBuilder = maybeWeigher.map(weigher -> (Caffeine<Object, Object>) Caffeine.newBuilder().maximumWeight(maxSize).weigher(weigher)).orElseGet(() -> Caffeine.newBuilder().maximumSize(maxSize));
 		if (expireAfter != null) {
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
 		}
