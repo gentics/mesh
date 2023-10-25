@@ -228,7 +228,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private String name;
 		private MeshOptions options;
 		private MetricsService metricsService;
-
+		private Optional<Weigher<K, V>> maybeWeigher = Optional.empty();
 
 		/**
 		 * Build the cache instance.
@@ -238,7 +238,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(name, "No name has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, maybeWeigher, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -363,6 +363,17 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 */
 		public Builder<K, V> name(String name) {
 			this.name = name;
+			return this;
+		}
+
+		/**
+		 * Set the item weigher function
+		 * 
+		 * @param maybeWeigher
+		 * @return Fluent API
+		 */
+		public Builder<K, V> setWeigher(Weigher<K, V> weigher) {
+			this.maybeWeigher = Optional.ofNullable(weigher);
 			return this;
 		}
 	}
