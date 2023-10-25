@@ -35,6 +35,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -67,8 +68,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	@Inject
 	public AdminEndpoint(MeshAuthChainImpl chain, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler,
 		PluginHandler pluginHandler, DebugInfoHandler debugInfoHandler, LocalConfigHandler localConfigHandler, ShutdownHandler shutdownHandler,
-		HandlerUtilities handlerUtilities, LocalConfigApi localConfigApi, Database db) {
-		super("admin", chain, localConfigApi, db);
+		HandlerUtilities handlerUtilities, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("admin", chain, localConfigApi, db, options);
 		this.adminHandler = adminHandler;
 		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
@@ -80,7 +81,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 	}
 
 	public AdminEndpoint() {
-		super("admin", null, null, null);
+		super("admin", null, null, null, null);
 	}
 
 	@Override
@@ -134,7 +135,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			pluginHandler.handleDeploy(ac);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute undeployEndpoint = createRoute();
 		undeployEndpoint.path("/plugins/:id");
@@ -148,7 +149,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("id");
 			pluginHandler.handleUndeploy(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute readEndpoint = createRoute();
 		readEndpoint.path("/plugins/:uuid");
@@ -210,7 +211,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		updateEndpoint.exampleResponse(OK, adminExamples.createClusterConfigResponse(), "Updated cluster configuration.");
 		updateEndpoint.blockingHandler(rc -> {
 			adminHandler.handleUpdateClusterConfig(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addConsistencyCheckHandler() {
@@ -235,7 +236,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
 		repairEndpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addExportHandler() {
@@ -263,7 +264,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.events(GRAPH_IMPORT_START, GRAPH_IMPORT_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleImport(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addRestoreHandler() {
@@ -277,7 +278,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.events(GRAPH_RESTORE_START, GRAPH_RESTORE_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleRestore(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addBackupHandler() {
@@ -293,7 +294,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.events(GRAPH_BACKUP_START, GRAPH_BACKUP_FINISHED);
 		endpoint.blockingHandler(rc -> {
 			adminHandler.handleBackup(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	/**
@@ -328,7 +329,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		invokeJobWorker.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			jobHandler.handleInvokeJobWorker(ac);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute readJobList = createRoute();
 		readJobList.path("/jobs");
@@ -364,7 +365,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute processJob = createRoute();
 		processJob.path("/jobs/:jobUuid/process");
@@ -375,7 +376,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleProcess(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute resetJob = createRoute();
 		resetJob.path("/jobs/:jobUuid/error");
@@ -386,7 +387,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleResetJob(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addDebugInfoHandler() {
@@ -425,7 +426,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		postRoute.description("Initiates shutdown of this instance.");
 		postRoute.exampleResponse(OK, miscExamples.createMessageResponse(), "Shutdown initiated.");
 		postRoute
-			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc))
+			.blockingHandler(rc -> handlerUtilities.requiresAdminRole(rc), isOrderedBlockingHandlers())
 			.handler(rc -> shutdownHandler.shutdown(wrap(rc)));
 	}
 

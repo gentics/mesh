@@ -23,6 +23,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -36,12 +37,12 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 	private MicroschemaCrudHandler crudHandler;
 
 	public MicroschemaEndpoint() {
-		super("microschemas", null, null, null);
+		super("microschemas", null, null, null, null);
 	}
 
 	@Inject
-	public MicroschemaEndpoint(MeshAuthChainImpl chain, MicroschemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db) {
-		super("microschemas", chain, localConfigApi, db);
+	public MicroschemaEndpoint(MeshAuthChainImpl chain, MicroschemaCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("microschemas", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 
@@ -111,7 +112,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addReadHandlers() {
@@ -157,7 +158,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addUpdateHandler() {
@@ -176,7 +177,7 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("microschemaUuid");
 			crudHandler.handleUpdate(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addCreateHandler() {
@@ -190,6 +191,6 @@ public class MicroschemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.events(MICROSCHEMA_CREATED);
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

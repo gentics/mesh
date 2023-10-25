@@ -10,6 +10,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
@@ -22,12 +23,12 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 	private NavRootHandler handler;
 
 	public NavRootEndpoint() {
-		super("navroot", null, null, null, null);
+		super("navroot", null, null, null, null, null);
 	}
 
 	@Inject
-	public NavRootEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NavRootHandler handler, LocalConfigApi localConfigApi, Database db) {
-		super("navroot", chain, boot, localConfigApi, db);
+	public NavRootEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, NavRootHandler handler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("navroot", chain, boot, localConfigApi, db, options);
 		this.handler = handler;
 	}
 

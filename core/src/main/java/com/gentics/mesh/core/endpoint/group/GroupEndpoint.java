@@ -26,6 +26,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -40,12 +41,12 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 	private GroupCrudHandler crudHandler;
 
 	public GroupEndpoint() {
-		super("groups", null, null, null);
+		super("groups", null, null, null, null);
 	}
 
 	@Inject
-	public GroupEndpoint(MeshAuthChainImpl chain, GroupCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db) {
-		super("groups", chain, localConfigApi, db);
+	public GroupEndpoint(MeshAuthChainImpl chain, GroupCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("groups", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 
@@ -98,7 +99,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
 			crudHandler.handleAddRoleToGroup(ac, groupUuid, roleUuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute removeRole = createRoute();
 		removeRole.path("/:groupUuid/roles/:roleUuid");
@@ -114,7 +115,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 			String groupUuid = ac.getParameter("groupUuid");
 			String roleUuid = ac.getParameter("roleUuid");
 			crudHandler.handleRemoveRoleFromGroup(ac, groupUuid, roleUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addGroupUserHandlers() {
@@ -146,7 +147,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
 			crudHandler.handleAddUserToGroup(ac, groupUuid, userUuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute removeUser = createRoute();
 		removeUser.path("/:groupUuid/users/:userUuid").method(DELETE).produces(APPLICATION_JSON);
@@ -160,7 +161,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 			String groupUuid = ac.getParameter("groupUuid");
 			String userUuid = ac.getParameter("userUuid");
 			crudHandler.handleRemoveUserFromGroup(ac, groupUuid, userUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addDeleteHandler() {
@@ -176,7 +177,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	// TODO Determine what we should do about conflicting group names. Should we let neo4j handle those cases?
@@ -196,7 +197,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("groupUuid");
 			crudHandler.handleUpdate(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 
 	}
 
@@ -244,7 +245,7 @@ public class GroupEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.events(GROUP_CREATED);
 		endpoint.blockingHandler(rc -> {
 			crudHandler.handleCreate(wrap(rc));
-		});
+		}, isOrderedBlockingHandlers());
 
 	}
 }
