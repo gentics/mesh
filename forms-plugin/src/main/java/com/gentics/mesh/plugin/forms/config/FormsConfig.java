@@ -56,6 +56,9 @@ public class FormsConfig extends LicenseConfiguration {
 	@JsonProperty("export")
 	private ExportOptions exportOptions = new ExportOptions();
 
+	@JsonProperty("security")
+	private SecurityOptions securityOptions = new SecurityOptions();
+
 	private boolean testing;
 
 	public String getFromAddress() {
@@ -249,6 +252,21 @@ public class FormsConfig extends LicenseConfiguration {
 
 	public FormsConfig setTesting(boolean testing) {
 		this.testing = testing;
+
+		return this;
+	}
+
+	@Nonnull
+	public SecurityOptions getSecurityOptions() {
+		if (securityOptions == null) {
+			securityOptions = new SecurityOptions();
+		}
+
+		return securityOptions;
+	}
+
+	public FormsConfig setSecurityOptions(SecurityOptions securityOptions) {
+		this.securityOptions = securityOptions;
 
 		return this;
 	}

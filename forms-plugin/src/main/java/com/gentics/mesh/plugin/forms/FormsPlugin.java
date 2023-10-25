@@ -117,6 +117,8 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			}
 			configuration.overrideWithEnv();
 
+			configuration.getSecurityOptions().validateSanitationRules();
+
 			LicenseService licenseService = new LicenseService(configuration);
 			licenseService.isLicenseSufficient(LicensedPlugin.FORMS);
 
