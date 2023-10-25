@@ -61,7 +61,7 @@ icon:check[] Forms: Fixes an issue with sending emails when no subject is config
 icon:plus[] Mails: The new `mailsource` property for `Form` and `UserMailElement` objects can be used to specify a Handlebars template directly instead of the path to a template file.
 
 [[v1.9.10]]
-== 1.9.10 (TBD)
+== 1.9.10 (2023-11-02)
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
@@ -120,7 +120,7 @@ icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possib
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
 
 [[v1.8.14]]
-== 1.8.14 (TBD)
+== 1.8.14 (2023-11-02)
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
