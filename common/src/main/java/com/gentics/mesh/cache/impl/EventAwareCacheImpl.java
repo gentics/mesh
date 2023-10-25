@@ -133,7 +133,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 
 	@Override
 	public long used() {
-		return cache.policy().eviction().flatMap(ev -> ev.weightedSize().stream().mapToObj(Long::valueOf).findAny()).orElseGet(() -> size());
+		return cache.policy().eviction().flatMap(ev -> ev.weightedSize().stream().mapToObj(Long::valueOf).findAny()).orElseGet(() -> cache.estimatedSize());
 	}
 
 	@Override
