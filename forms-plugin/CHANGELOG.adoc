@@ -10,6 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.8]]
+== 1.10.8 (TBD)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
+icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
+
 [[v1.10.7]]
 == 1.10.7 (2023-10-12)
 
@@ -52,6 +59,13 @@ icon:check[] Forms: Fixes an issue with sending emails when no subject is config
 == 1.10.0 (2023-01-13)
 
 icon:plus[] Mails: The new `mailsource` property for `Form` and `UserMailElement` objects can be used to specify a Handlebars template directly instead of the path to a template file.
+
+[[v1.9.10]]
+== 1.9.10 (TBD)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
+icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
 
 [[v1.9.9]]
 == 1.9.9 (2023-06-14)
@@ -109,6 +123,8 @@ icon:check[] Selectgroup element: Determine if a selectgroup element is multival
 == 1.8.14 (TBD)
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
+icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
 
 [[v1.8.13]]
 == 1.8.13 (2023-08-10)

@@ -450,16 +450,21 @@ public class FormDataService {
 	 * @return single redirect URL
 	 */
 	private Single<PostDataResponse> savePostedData(FormDataSaveContext ctx) {
-		Map<String, ValidationError> errors = ctx.getForm().validate(ctx.getPostedData(), ctx.getFileUploads(), ctx.getFormDataNode());
-		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), ctx.getForm(), ctx.getPostedData(), errors)
+		Form form = ctx.getForm();
+		MultiMap postedData = ctx.getPostedData();
+		Map<String, ValidationError> errors = form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode());
+
+		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
+
+		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), form, postedData, errors)
 			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), savedFormDataNode, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
-				if (ctx.isPublish() && errors.isEmpty() && ctx.getForm().isCompleted(savedFileUploads)) {
+				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
 					return publishFormData(ctx, savedFileUploads, errors);
 				} else {
 					// set the data cookie
 					if (ctx.handleCookies()) {
-						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, ctx.getForm().getDataCookie(savedFileUploads.getUuid()));
+						Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, form.getDataCookie(savedFileUploads.getUuid()));
 						cookie.setPath(getPath(ctx.getReferer()));
 						cookie.setHttpOnly(true);
 						ctx.getContext().addCookie(cookie);
