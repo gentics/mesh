@@ -109,6 +109,8 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 				configuration = new FormsConfig();
 			}
 
+			configuration.getSecurityOptions().validateSanitationRules();
+
 			return component(null).statusService().initialize();
 		} catch (Exception e) {
 			return Completable.error(e);

@@ -15,6 +15,8 @@
 
 icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
 
+icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
+
 [[v1.8.13]]
 == 1.8.13 (2023-08-10)
 
