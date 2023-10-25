@@ -10,8 +10,15 @@
 
 = Mesh Forms Plugin
 
+[[v1.9.10]]
+== 1.9.10 (TBD)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
+icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
+
 [[v1.9.9]]
-== 1.8.12 (2023-05-31)
+== 1.9.9 (2023-05-31)
 
 icon:check[] Forms: Fixes rendering of nested conditional containers.
 
@@ -62,8 +69,15 @@ icon:check[] The dependency to Mesh has been updated to 1.9.3 and various possib
 
 icon:check[] Selectgroup element: Determine if a selectgroup element is multivalue by checking if its select_type starts with the string "multiselect" instead of only checking if it equals "multiselect". This allows for multiple select_type values to be considered multivalue by prefixing them with "multiselect".
 
+[[v1.8.14]]
+== 1.8.14 (TBD)
+
+icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+
+icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
+
 [[v1.8.13]]
-== 1.8.13 (TBD)
+== 1.8.13 (2023-08-10)
 
 icon:check[] Forms: Fixes a security issue for donwloading binaries.
 

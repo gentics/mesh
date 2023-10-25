@@ -2,28 +2,37 @@ package com.gentics.mesh.plugin.forms;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
+import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.MailService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
+import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.spi.logging.LogDelegate;
+import okhttp3.Cookie;
+import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
@@ -35,39 +44,23 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.ArgumentCaptor;
 
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
-import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-import com.gentics.mesh.plugin.forms.service.MailService;
-import com.gentics.mesh.plugin.forms.util.RxUtil;
-import com.gentics.mesh.rest.client.MeshBinaryResponse;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.spi.logging.LogDelegate;
-import okhttp3.Cookie;
-import okhttp3.HttpUrl;
-import okhttp3.MultipartBody;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
+import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Test cases for posting data to a form
+ * Test cases for posting data to a form for multiple languages.
  */
 @RunWith(value = Parameterized.class)
-public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
+public class FormPostDataTest extends AbstractFormPostDataTest {
 
 	// Set to a higher value for debugging (value is in ms).
 	private static final int MAIL_TIMEOUT = 5_000;
@@ -94,39 +87,18 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 	 */
 	protected String inactiveForm;
 
-	/**
-	 * web server mock which will act as verification server
-	 */
-	protected MockWebServer webServer;
 
 	@Before
 	public void setup() {
 		super.setup();
 
-		// start the mock recaptcha verification server
-		webServer = new MockWebServer();
-		try {
-			webServer.start();
-		} catch (IOException e) {
-			fail("Failed to start mock web-server");
-		}
-
-		// modify the plugin configuration: set the recaptcha verification URL
-		ReCaptchaOptions reCaptchaOptions = FormsTestPlugin.instance.configuration.getReCaptcha();
-		reCaptchaOptions.setVerificationUrl(String.format("http://%s:%s/", webServer.getHostName(), webServer.getPort()));
-
-		// activate plugin
-		assertThat(activate(PROJECT_NAME)).as("Activation status").isTrue();
-		setLanguages(PROJECT_NAME, Arrays.asList("en", "it"));
 		inputFieldForm = "inputfield_languages_" + language + ".json";
 		inactiveForm = "inactive_" + language + ".json";
 	}
 
 	@After
 	public void tearDown() throws IOException {
-		if (webServer != null) {
-			webServer.shutdown();
-		}
+		super.tearDown();
 	}
 
 	/**
@@ -1064,62 +1036,5 @@ public class FormPostDataTest extends AbstractFormsPluginIntegrationTest {
 				Pair.of("checked_input", "process_conditional_container"),
 				Pair.of("conditional_input", "this should be saved"),
 				Pair.of("errors", ""));
-	}
-
-	/**
-	 * Post the given body to the form
-	 * @param uuid form uuid
-	 * @param body post body
-	 * @return response
-	 * @throws IOException
-	 */
-	protected Pair<Response, Optional<Cookie>> postToForm(String uuid, RequestBody body) throws IOException {
-		Request postRequest = new Request.Builder()
-				.url(HttpUrl.get(projectUrl("/forms/" + uuid + "/data"))
-					.newBuilder().build())
-				.header("Referer", "ref")
-				.post(body)
-				.build();
-		Response response = client().newCall(postRequest).execute();
-		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
-				.findFirst();
-
-		return Pair.of(response, cookie);
-	}
-
-	/**
-	 * Assert that the response is a redirect to "ref"
-	 * @param response response
-	 */
-	protected void assertRedirect(Response response) {
-		assertThat(response.isRedirect()).as(String.format("Response redirect %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.header("Location")).as("Location Header").isEqualTo("ref");
-	}
-
-	/**
-	 * Assert that the response is 205 (Reset Content)
-	 * @param response response
-	 */
-	protected void assertOk(Response response) {
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
-		assertThat(response.code()).as("Response code").isEqualTo(205);
-	}
-
-	/**
-	 * Assert that there is a single data node for the form
-	 * @param formUuid form uuid
-	 * @param asserter optional asserter for the data node
-	 * @return data node
-	 */
-	protected NodeResponse assertSingleDataNode(String formUuid, Consumer<NodeResponse> asserter) {
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-
-		if (asserter != null) {
-			asserter.accept(dataNode);
-		}
-
-		return dataNode;
 	}
 }
