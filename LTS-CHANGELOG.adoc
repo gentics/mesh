@@ -17,10 +17,19 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
-[[v1.10.18]]
-== 1.10.18 (TBD)
+[[v1.10.19]]
+== 1.10.19 (TBD)
 
 icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests. 
+
+== 1.10.18 (24.10.2023)
+
+icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
+
+icon:check[] Core: The new configuration option `vertxOptions.orderedBlockingHandlers` allows to change the behaviour of concurrent handling of "long running" requests
+(requests that modify data or GraphQL requests). If the option is set to `true` (default value) such requests will be run in order (per http verticle) and never concurrently.
+As a consequence, it may happen that e.g. GraphQL requests are queued for some time if some other requests are currently handled.
+If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
 
 [[v1.10.17]]
 == 1.10.17 (18.10.2023)

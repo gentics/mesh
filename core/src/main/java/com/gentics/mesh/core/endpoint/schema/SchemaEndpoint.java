@@ -23,6 +23,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -40,12 +41,12 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 	private SchemaLock schemaLock;
 
 	public SchemaEndpoint() {
-		super("schemas", null, null, null);
+		super("schemas", null, null, null, null);
 	}
 
 	@Inject
-	public SchemaEndpoint(MeshAuthChainImpl chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock, LocalConfigApi localConfigApi, Database db) {
-		super("schemas", chain, localConfigApi, db);
+	public SchemaEndpoint(MeshAuthChainImpl chain, SchemaCrudHandler crudHandler, SchemaLock schemaLock, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("schemas", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 		this.schemaLock = schemaLock;
 	}
@@ -93,7 +94,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");
 			crudHandler.handleApplySchemaChanges(ac, schemaUuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addCreateHandler() {
@@ -109,7 +110,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addDiffHandler() {
@@ -150,7 +151,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 				String uuid = ac.getParameter("schemaUuid");
 				crudHandler.handleUpdate(ac, uuid);
 			}
-		}, true);
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addDeleteHandler() {
@@ -166,7 +167,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("schemaUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addReadHandlers() {

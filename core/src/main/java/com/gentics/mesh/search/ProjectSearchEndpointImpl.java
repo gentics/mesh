@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
@@ -42,7 +43,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	public final TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectSearchEndpointImpl() {
-		super("search", null, null, null, null);
+		super("search", null, null, null, null, null);
 		this.db = null;
 		this.nodeSearchHandler = null;
 		this.tagSearchHandler = null;
@@ -51,8 +52,8 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 
 	@Inject
 	public ProjectSearchEndpointImpl(MeshAuthChainImpl chain, BootstrapInitializer boot, Database db, TagFamilySearchHandler tagFamilySearchHandler,
-		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler, LocalConfigApi localConfigApi) {
-		super("search", chain, boot, localConfigApi, db);
+		TagSearchHandler tagSearchHandler, NodeSearchHandler nodeSearchHandler, LocalConfigApi localConfigApi, MeshOptions options) {
+		super("search", chain, boot, localConfigApi, db, options);
 		this.db = db;
 		this.nodeSearchHandler = nodeSearchHandler;
 		this.tagSearchHandler = tagSearchHandler;

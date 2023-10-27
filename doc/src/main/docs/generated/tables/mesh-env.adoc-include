@@ -137,6 +137,9 @@
 | *MESH_DEBUGINFO_LOG_FILE_SIZE*
 | Override the log file size
 
+| *MESH_VERTX_ORDERED_BLOCKING_HANDLERS*
+| Override the configured Vert.x blocking handlers ordering setting.
+
 | *MESH_ELASTICSEARCH_BULK_LIMIT*
 | Override the batch bulk limit. Default: 100
 

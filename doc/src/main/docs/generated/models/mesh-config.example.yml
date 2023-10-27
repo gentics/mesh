@@ -6,6 +6,7 @@ updateCheck: true
 vertxOptions:
   workerPoolSize: 20
   eventPoolSize: 64
+  orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
     warnThreshold: 60000
