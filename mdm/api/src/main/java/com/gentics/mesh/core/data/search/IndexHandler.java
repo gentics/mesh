@@ -54,7 +54,7 @@ public interface IndexHandler<T extends HibBaseElement> {
 
 
 	/**
-	 * Returns loader function which can be used to find and load multiple elements by uuids.
+	 * Returns loader function which can be used to find and load multiple elements by uuids. The order of input/output is not guaranteed to be preserved? as well as the processing of duplicates.
 	 * 
 	 * @return
 	 */
