@@ -22,6 +22,11 @@ public abstract class AbstractMeshCache<K, V> implements MeshCache<K, V> {
 	}
 
 	@Override
+	public void clear(K key) {
+		cache.invalidate(key);		
+	}
+
+	@Override
 	public V get(K key, Function<K, V> mappingFunction) {
 		if (isDisabled()) {
 			return mappingFunction.apply(key);

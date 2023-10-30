@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -224,6 +225,7 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		role.setCreated(creator);
 		role.generateBucketId();
 		addRole(role);
+		CommonTx.get().data().mesh().roleNameCache().clear(name);
 		return role;
 	}
 
