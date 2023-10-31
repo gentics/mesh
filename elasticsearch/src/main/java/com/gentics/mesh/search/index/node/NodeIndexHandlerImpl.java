@@ -7,6 +7,7 @@ import static com.gentics.mesh.search.index.node.NodeIndexUtil.getLanguageOverri
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -618,6 +620,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		//return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(HibNode.class, uuid);
 		return uuid -> CommonTx.get().nodeDao().findByUuidGlobal(uuid);
 	}
+
+	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibNode>>> elementsLoader() {
+		return (uuids) -> CommonTx.get().nodeDao().findByUuidGlobal(uuids).stream().map(node -> Pair.of(node.getUuid(), node));
+	}	
 
 	@Override
 	public Stream<? extends HibNode> loadAllElements() {

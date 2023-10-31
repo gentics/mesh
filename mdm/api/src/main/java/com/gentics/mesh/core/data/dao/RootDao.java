@@ -4,8 +4,11 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -132,6 +135,17 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return Found element or null if the element could not be located
 	 */
 	L findByUuid(R root, String uuid);
+
+	/**
+	 * Stream the elements with the given uuids.
+	 * 
+	 * @param uuids
+	 *            Uuids of the elements to be located
+	 * @return a pair of uuid and the corresponding element or null value if the element could not be located
+	 */
+	default Stream<Pair<String, L>> findByUuids(R root, Collection<String> uuids) {
+		return uuids.stream().map(uuid -> Pair.of(uuid, findByUuid(root, uuid)));
+	}
 
 	/**
 	 * Load the object by uuid and check the given permission.

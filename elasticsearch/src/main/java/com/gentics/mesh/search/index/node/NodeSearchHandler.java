@@ -7,14 +7,19 @@ import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshErr
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -23,7 +28,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
@@ -74,6 +78,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
+	@SuppressWarnings("unchecked")
 	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo, ContainerType type,
 		InternalPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		ElasticsearchClient<JsonObject> client = searchProvider.getClient();
@@ -119,50 +124,55 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 			// The scrolling iterator will wrap the current response and query ES for more data if needed.
 			Page<? extends NodeContent> page = db.tx(tx -> {
-				ContentDao contentDao = tx.contentDao();
-				long totalCount = extractTotalCount(hitsInfo);
+				AtomicLong totalCount = new AtomicLong(extractTotalCount(hitsInfo));
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
-				for (int i = 0; i < hits.size(); i++) {
-					JsonObject hit = hits.getJsonObject(i);
-
-					String id = hit.getString("_id");
+				List<Pair<String, String>> uuidLangList = hits.stream().map(hit -> {
+					JsonObject val;
+					if (hit instanceof Map) {
+				      val = new JsonObject((Map<String,Object>) hit);
+				    } else {
+				    	val = (JsonObject) hit;
+				    }
+					String id = ((JsonObject) val).getString("_id");
 					int pos = id.indexOf("-");
 
-					String languageTag = pos > 0 ? id.substring(pos + 1) : null;
-					String uuid = pos > 0 ? id.substring(0, pos) : id;
-
-					HibNode element = getIndexHandler().elementLoader().apply(uuid);
-					if (element == null) {
-						log.warn("Object could not be found for uuid {" + uuid + "}");
-						totalCount--;
-						continue;
-					}
-
-					HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+					//UUID / Language pair
+					return Pair.of(pos > 0 ? id.substring(0, pos) : id, pos > 0 ? id.substring(pos + 1) : null);
+				}).collect(Collectors.toList());
+				Map<String, Set<String>> langUuids = uuidLangList.stream().collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toSet())));
+				langUuids.entrySet().stream().forEach(entry -> {
+					HibLanguage language = tx.languageDao().findByLanguageTag(entry.getKey());
 					if (language == null) {
-						log.warn("Could not find language {" + languageTag + "}");
-						totalCount--;
-						continue;
+						log.warn("Could not find language {" + entry.getKey() + "}");
+						totalCount.addAndGet(-entry.getValue().size());
+						return;
 					}
-
-					// Locate the matching container and add it to the list of found containers
-					HibNodeFieldContainer container = contentDao.getFieldContainer(element, languageTag, tx.getBranch(ac), type);
-					if (container != null) {
-						elementList.add(new NodeContent(element, container, Arrays.asList(languageTag), type));
-					} else {
-						totalCount--;
-						continue;
-					}
-
-				}
+					Map<String, HibNode> nodes = tx.nodeDao().findByUuids(tx.getProject(ac), entry.getValue())
+							.peek(pair -> {
+								if (pair.getValue() == null) {
+									totalCount.decrementAndGet();
+								}
+							})
+							.filter(pair -> pair.getValue() != null)
+							.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+					Map<HibNode, HibNodeFieldContainer> containers = tx.contentDao().getFieldsContainers(nodes.values(), entry.getKey(), tx.getBranch(ac), type);
+					uuidLangList.stream().forEach(uuidLang -> {
+						String uuid = uuidLang.getKey();
+						Optional.ofNullable(nodes.get(uuid)).flatMap(node -> Optional.ofNullable(containers.get(node))).ifPresentOrElse(container -> {
+							elementList.add(new NodeContent(nodes.get(uuid), container, Arrays.asList(entry.getKey()), type));
+						}, () -> {
+							totalCount.decrementAndGet();
+						});
+					});
+				});
 				// Update the total count
 				switch (complianceMode) {
 				case ES_6:
-					hitsInfo.put("total", totalCount);
+					hitsInfo.put("total", totalCount.longValue());
 					break;
 				case ES_7:
-					hitsInfo.put("total", new JsonObject().put("value", totalCount));
+					hitsInfo.put("total", new JsonObject().put("value", totalCount.longValue()));
 					break;
 				default:
 					throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
