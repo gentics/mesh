@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.data.search;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -48,6 +51,14 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return
 	 */
 	Function<String, T> elementLoader();
+
+
+	/**
+	 * Returns loader function which can be used to find and load multiple elements by uuids. The order of input/output is not guaranteed to be preserved? as well as the processing of duplicates.
+	 * 
+	 * @return
+	 */
+	Function<Collection<String>, Stream<Pair<String, T>>> elementsLoader();
 
 	/**
 	 * Load all elements from the graph that are needed for the index handler.

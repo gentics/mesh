@@ -6,15 +6,18 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -269,6 +272,18 @@ public interface ContentDao {
 	 * @return
 	 */
 	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber);
+
+	/**
+	 * Return the field containers for the given nodes of language, type and branch.
+	 *
+	 * @param languageTag
+	 * @param branch
+	 * @param type
+	 * @return
+	 */
+	default Map<HibNode, HibNodeFieldContainer> getFieldsContainers(Collection<? extends HibNode> nodes, String languageTag, HibBranch branch, ContainerType type) {
+		return nodes.stream().map(node -> Pair.of(node, getFieldContainer(node, languageTag, branch, type))).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
 
 	/**
 	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be

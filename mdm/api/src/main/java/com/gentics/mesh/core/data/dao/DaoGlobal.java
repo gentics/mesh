@@ -3,7 +3,11 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Collection;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
@@ -110,6 +114,17 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	 * @return
 	 */
 	T findByUuid(String uuid);
+
+	/**
+	 * Stream the elements with the given uuids.
+	 * 
+	 * @param uuids
+	 *            Uuids of the elements to be located
+	 * @return a pair of uuid and the corresponding element or null value if the element could not be located
+	 */
+	default Stream<Pair<String, T>> findByUuids(Collection<String> uuids) {
+		return uuids.stream().map(uuid -> Pair.of(uuid, findByUuid(uuid)));
+	}
 
 	/**
 	 * Return total amount of elements which are stored.

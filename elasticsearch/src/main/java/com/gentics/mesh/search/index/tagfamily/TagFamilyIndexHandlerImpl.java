@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.tagfamily;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -132,6 +135,11 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 	@Override
 	public Function<String, HibTagFamily> elementLoader() {
 		return uuid -> Tx.get().tagFamilyDao().findByUuid(uuid);
+	}
+
+	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibTagFamily>>> elementsLoader() {
+		return (uuids) -> Tx.get().tagFamilyDao().findByUuids(uuids);
 	}
 
 	@Override
