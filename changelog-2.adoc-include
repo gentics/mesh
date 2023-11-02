@@ -6,6 +6,24 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.8]]
+== 2.0.8 (02.11.2023)
+
+icon:check[] GraphQL: Some more multithreading issues with initialization of GraphQL have been fixed.
+
+
+icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
+
+
+icon:check[] Core: The new configuration option `vertxOptions.orderedBlockingHandlers` allows to change the behaviour of concurrent handling of "long running" requests
+(requests that modify data or GraphQL requests). If the option is set to `true` (default value) such requests will be run in order (per http verticle) and never concurrently.
+As a consequence, it may happen that e.g. GraphQL requests are queued for some time if some other requests are currently handled.
+If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
+
+
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+
+
 [[v2.0.7]]
 == 2.0.7 (18.10.2023)
 
