@@ -6,6 +6,7 @@ import static com.gentics.mesh.search.impl.ElasticsearchErrorHelper.mapToMeshErr
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -127,45 +128,56 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 				AtomicLong totalCount = new AtomicLong(extractTotalCount(hitsInfo));
 				List<NodeContent> elementList = new ArrayList<>();
 				JsonArray hits = hitsInfo.getJsonArray("hits");
+
+				// uuidLangList is the list of uuid and language (as pairs) of all hits in correct order
 				List<Pair<String, String>> uuidLangList = hits.stream().map(hit -> {
 					JsonObject val;
 					if (hit instanceof Map) {
-				      val = new JsonObject((Map<String,Object>) hit);
-				    } else {
-				    	val = (JsonObject) hit;
-				    }
+						val = new JsonObject((Map<String,Object>) hit);
+					} else {
+						val = (JsonObject) hit;
+					}
 					String id = ((JsonObject) val).getString("_id");
 					int pos = id.indexOf("-");
 
 					//UUID / Language pair
 					return Pair.of(pos > 0 ? id.substring(0, pos) : id, pos > 0 ? id.substring(pos + 1) : null);
 				}).collect(Collectors.toList());
+
+				// the map contentMap will collect all contents for the hits (identified by uuid and language as pair)
+				Map<Pair<String, String>, NodeContent> contentMap = new HashMap<>();
+
+				// langUuids is a map of language -> uuids and contains for each language the set of uuids for the hits
 				Map<String, Set<String>> langUuids = uuidLangList.stream().collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toSet())));
+
+				// batch-load the nodes and contents for each language and collect results in contentMap
 				langUuids.entrySet().stream().forEach(entry -> {
 					HibLanguage language = tx.languageDao().findByLanguageTag(entry.getKey());
 					if (language == null) {
 						log.warn("Could not find language {" + entry.getKey() + "}");
-						totalCount.addAndGet(-entry.getValue().size());
 						return;
 					}
 					Map<String, HibNode> nodes = tx.nodeDao().findByUuids(tx.getProject(ac), entry.getValue())
-							.peek(pair -> {
-								if (pair.getValue() == null) {
-									totalCount.decrementAndGet();
-								}
-							})
 							.filter(pair -> pair.getValue() != null)
 							.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 					Map<HibNode, HibNodeFieldContainer> containers = tx.contentDao().getFieldsContainers(nodes.values(), entry.getKey(), tx.getBranch(ac), type);
 					uuidLangList.stream().forEach(uuidLang -> {
 						String uuid = uuidLang.getKey();
-						Optional.ofNullable(nodes.get(uuid)).flatMap(node -> Optional.ofNullable(containers.get(node))).ifPresentOrElse(container -> {
-							elementList.add(new NodeContent(nodes.get(uuid), container, Arrays.asList(entry.getKey()), type));
-						}, () -> {
-							totalCount.decrementAndGet();
+						Optional.ofNullable(nodes.get(uuid)).flatMap(node -> Optional.ofNullable(containers.get(node))).ifPresent(container -> {
+							contentMap.put(uuidLang, new NodeContent(nodes.get(uuid), container, Arrays.asList(entry.getKey()), type));
 						});
 					});
 				});
+
+				// for every hit, get the found content and put into the elementList. This will preserve the order of the hits
+				uuidLangList.stream().forEach(uuidLang -> {
+					Optional.ofNullable(contentMap.get(uuidLang)).ifPresentOrElse(content -> {
+						elementList.add(content);
+					}, () -> {
+						totalCount.decrementAndGet();
+					});
+				});
+
 				// Update the total count
 				switch (complianceMode) {
 				case ES_6:
