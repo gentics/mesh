@@ -612,11 +612,6 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.gentics.mesh</groupId>
-				<artifactId>tests-mesh-admin-gui</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>com.github.stefanbirkner</groupId>
 				<artifactId>system-rules</artifactId>
 				<version>1.18.0</version>

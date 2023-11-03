@@ -17,7 +17,6 @@
 	</properties>
 
 	<modules>
-		<module>admin-gui</module>
 		<module>graphql</module>
 		<module>rest</module>
 	</modules>
