@@ -10,10 +10,8 @@
 
 = Mesh Forms Plugin
 
-[[v1.10.8]]
-== 1.10.8 (2023-11-02)
-
-icon:check[] Forms: Fixed a regression which prohibited deleting a single form data entry.
+[[v1.10.9]]
+== 1.10.9 (2023-11-02)
 
 icon:check[] Forms: Adds new configuration options `security.injectionPreventionMode` and `security.sanitationRules` to either mark unsafe posted values as validation errors or sanitize the values before storing them.
 
