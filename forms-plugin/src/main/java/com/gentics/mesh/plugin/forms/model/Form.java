@@ -7,23 +7,32 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
+import com.gentics.mesh.plugin.forms.config.SecurityOptions;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jsoup.Jsoup;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -401,6 +410,110 @@ public class Form implements RestModel {
 			}
 		});
 		return errors;
+	}
+
+	/**
+	 * Either sanitize unsafe input or create validation errors for every
+	 * posted element with unsafe data.
+	 *
+	 * @param postedData The posted form data.
+	 * @param options The security configuration.
+	 * @return A map from element names to {@code ValidationErrors} for elements
+	 * 		with unsafe values. Note that only elements which where not already
+	 * 		sanitized are contained in this map.
+	 */
+	public Map<String, ValidationError> preventInjection(MultiMap postedData, SecurityOptions options) {
+		InjectionPreventionMode mode = options.getInjectionPreventionMode();
+		Map<Pattern, String> rules = options.getCompiledSanitationRules();
+
+		if (mode == InjectionPreventionMode.NONE) {
+			return Collections.emptyMap();
+		}
+
+		if (mode == InjectionPreventionMode.SANITIZE || mode == InjectionPreventionMode.SANITIZE_MARKUP) {
+			sanitizeValues(postedData, mode, rules);
+
+			return Collections.emptyMap();
+		}
+
+		Predicate<String> blacklistFilter = getBlacklistFilter(mode == InjectionPreventionMode.REJECT_MARKUP, rules.keySet());
+
+		return postedData.names().stream()
+			.filter(name -> postedData.getAll(name).stream().map(s -> s == null ? "" : s).anyMatch(blacklistFilter))
+			.map(invalidName -> Pair.of(
+				invalidName,
+				new ValidationError()
+					.setName(invalidName)
+					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.unsafe_value.title"))
+					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.unsafe_value", invalidName))))
+			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
+	/**
+	 * Create combined predicate that will return {@code true} for values which
+	 * are considered unsafe.
+	 *
+	 * @param checkMarkup Whether markup should be considered unsafe.
+	 * @param blacklist A list of regex patterns that are considered unsafe.
+	 * @return A combined predicate returning {@code true} for all values
+	 * 		that are considered unsafe.
+	 */
+	private Predicate<String> getBlacklistFilter(boolean checkMarkup, Collection<Pattern> blacklist) {
+		Predicate<String> markupValidator = checkMarkup
+			? str -> str != null && !str.trim().equals(Jsoup.parse(str).text().trim())
+			: str -> false;
+
+		return blacklist.stream()
+			.map(pattern -> (Predicate<String>) s -> s != null && pattern.matcher(s).find())
+			.reduce(markupValidator, Predicate::or);
+	}
+
+	/**
+	 * Sanitize values in {@code postedData} according to the given rules.
+	 *
+	 * <p>
+	 *     When {@code mode} is {@link InjectionPreventionMode#SANITIZE_MARKUP}
+	 *     this method will also remove all markup.
+	 * </p>
+	 *
+	 * <p>
+	 *     The {@code rules} is a mapping from regex patterns to replacements.
+	 *     For each processed value a {@link java.util.regex.Matcher} is created
+	 *     from the given pattern and
+	 *     {@link java.util.regex.Matcher#replaceAll(String)} called with the
+	 *     replacement.
+	 * </p>
+	 *
+	 * <p>
+	 *     Note that if the regex contains captured groups, the replacement can
+	 *     use the captured values with {@code "$n"} where n is the group
+	 *     number. E.g.: "\\.(\\S)" -> ". $1" will replace "evil.site" with
+	 *     "evil. site".
+	 * </p>
+	 *
+	 * @param postedData The posted form data.
+	 * @param mode The sanitation mode.
+	 * @param rules The sanitation rules. A mapping from regex pattern to
+	 * 		replacement values.
+	 */
+	private void sanitizeValues(MultiMap postedData, InjectionPreventionMode mode, Map<Pattern, String> rules) {
+		Function<String, String> markupRemover = mode == InjectionPreventionMode.SANITIZE_MARKUP
+			? str -> Jsoup.parse(str).text()
+			: Function.identity();
+		Function<String, String> sanitizer = rules.entrySet().stream()
+			// Create function that replaces pattern with replacement value.
+			.map(e -> (Function<String, String>) (String v) -> v == null ? "" : e.getKey().matcher(v).replaceAll(e.getValue()))
+			// Combine all replacement functions.
+			.reduce(markupRemover, Function::andThen);
+
+		for (String name : postedData.names()) {
+			List<String> sanitizedValues = postedData.getAll(name).stream()
+				.map(s -> s == null ? "" : s)
+				.map(sanitizer)
+				.collect(Collectors.toList());
+
+			postedData.set(name, sanitizedValues);
+		}
 	}
 
 	/**
