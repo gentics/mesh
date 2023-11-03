@@ -152,3 +152,7 @@ client.status().toSingle().subscribe(status -> {
 	System.out.println(status.getStatus());
 }, System.err::println);
 ----
+
+== Use HTTP/2
+
+Since Mesh supports serving over HTTP/2 out of the box, Mesh REST client allows limiting connection protocol to HTTP/2, so instead of time-consuming protocol support check and upgrade the client may use HTTP/2 right away. This is achievable with using Java API `MeshRestClientConfig.setProtocolVersion()`. 

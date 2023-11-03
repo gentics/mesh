@@ -2357,3 +2357,7 @@ Please note that it is only possible to remove jobs which have failed. Jobs whic
 == Clustering
 
 Clustering is described in detail in our dedicated link:{{< relref "clustering.asciidoc" >}}[clustering documentation].
+
+== HTTP/2 serving
+
+Mesh supports serving over HTTP/2 out of the box.
