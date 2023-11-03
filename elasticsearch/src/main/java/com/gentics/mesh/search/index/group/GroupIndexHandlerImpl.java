@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.group;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -10,6 +11,8 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -86,6 +89,11 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	@Override
 	public Function<String, HibGroup> elementLoader() {
 		return (uuid) -> Tx.get().groupDao().findByUuid(uuid);
+	}
+
+	@Override
+	public Function<Collection<String>, Stream<Pair<String, HibGroup>>> elementsLoader() {
+		return (uuids) -> Tx.get().groupDao().findByUuids(uuids);
 	}
 
 	@Override
