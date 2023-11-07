@@ -1022,13 +1022,12 @@ public class FormDataService {
 
 		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
 
-		Map<String, ValidationError> errors = ctx.getForm().validate(ctx.getPostedData(), ctx.getFileUploads(), ctx.getFormDataNode());
 		String projectName = ctx.getProjectName();
 		NodeResponse formNode = ctx.getFormNode();
 		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
 				ParameterUtil.getLanguages(ctx.getContext()));
 
-		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), ctx.getForm(), ctx.getPostedData(), errors))
+		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors))
 			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
