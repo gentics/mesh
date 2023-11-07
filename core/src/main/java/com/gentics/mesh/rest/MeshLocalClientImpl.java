@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,6 +23,7 @@ import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
 import com.gentics.mesh.core.endpoint.group.GroupCrudHandler;
 import com.gentics.mesh.core.endpoint.microschema.MicroschemaCrudHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
+import com.gentics.mesh.core.endpoint.node.BinaryVariantsHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.endpoint.node.S3BinaryMetadataExtractionHandlerImpl;
 import com.gentics.mesh.core.endpoint.node.S3BinaryUploadHandlerImpl;
@@ -75,6 +75,9 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
@@ -151,6 +154,8 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 
 	public MeshAuthUser user;
 
+	protected final BinaryVariantsHandler binaryVariantsHandler;
+
 	protected final UserCrudHandler userCrudHandler;
 
 	protected final RoleCrudHandlerImpl roleCrudHandler;
@@ -205,7 +210,8 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			S3BinaryMetadataExtractionHandlerImpl s3BinaryMetadataExtractionHandler, WebRootHandler webrootHandler,
 			WebRootFieldHandler webrootFieldHandler, AdminHandler adminHandler, AdminIndexHandler adminIndexHandler,
 			AuthenticationRestHandler authRestHandler, UtilityHandler utilityHandler,
-			BranchCrudHandler branchCrudHandler, PluginHandler pluginHandler, Vertx vertx, BootstrapInitializer boot) {
+			BranchCrudHandler branchCrudHandler, BinaryVariantsHandler binaryVariantsHandler, PluginHandler pluginHandler, Vertx vertx, BootstrapInitializer boot) {
+		this.binaryVariantsHandler = binaryVariantsHandler;
 		this.userCrudHandler = userCrudHandler;
 		this.roleCrudHandler = roleCrudHandler;
 		this.groupCrudHandler = groupCrudHandler;
@@ -614,6 +620,7 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			ParameterProvider... parameters) {
 		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
 		ac.setProject(projectName);
+		//webrootFieldHandler.handleGetPathField(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -622,6 +629,24 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 			String[] pathSegments, ParameterProvider... parameters) {
 		LocalActionContextImpl<MeshWebrootFieldResponse> ac = createContext(MeshWebrootFieldResponse.class, parameters);
 		ac.setProject(projectName);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		//webrootFieldHandler.handlePostPathField(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		//webrootFieldHandler.handlePostPathField(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -2158,6 +2183,34 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 		LocalActionContextImpl<ObjectPermissionResponse> ac = createContext(ObjectPermissionResponse.class);
 		ac.setPayloadObject(request);
 		userCrudHandler.handleRevokePermissions(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		ac.setPayloadObject(request);
+		binaryVariantsHandler.handleUpsertBinaryFieldVariants(ac, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ParameterProvider... parameters) {
+		LocalActionContextImpl<EmptyResponse> ac = createContext(EmptyResponse.class, parameters);
+		ac.setProject(projectName);
+		binaryVariantsHandler.handleDeleteBinaryFieldVariants(ac, nodeUuid, fieldKey);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ParameterProvider... parameters) {
+		LocalActionContextImpl<ImageVariantsResponse> ac = createContext(ImageVariantsResponse.class, parameters);
+		ac.setProject(projectName);
+		binaryVariantsHandler.handleListBinaryFieldVariants(ac, nodeUuid, fieldKey);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 }

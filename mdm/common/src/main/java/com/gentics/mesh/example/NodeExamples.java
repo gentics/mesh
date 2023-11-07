@@ -52,6 +52,10 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
@@ -61,6 +65,8 @@ import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.util.Tuple;
 
 public class NodeExamples extends AbstractExamples {
@@ -360,4 +366,22 @@ public class NodeExamples extends AbstractExamples {
 		return response;
 	}
 
+	public ImageVariantsResponse createImageVariantsResponse() {
+		ImageVariantsResponse imageVariantsResponse = new ImageVariantsResponse();
+		List<ImageVariantResponse> variants = new ArrayList<>(3);
+		variants.add(new ImageVariantResponse().setHeight(100).setWidth(500).setOrigin(true));
+		variants.add(new ImageVariantResponse().setCropMode(CropMode.RECT).setRect(new ImageRect(10, 10, 20, 20)));
+		variants.add(new ImageVariantResponse().setHeight(10).setHeight(50));
+		imageVariantsResponse.setVariants(variants);
+		return imageVariantsResponse;
+	}
+
+	public ImageManipulationRequest createImageManipulationRequest() {
+		ImageManipulationRequest imageManipulationRequest = new ImageManipulationRequest();
+		List<ImageVariantRequest> variants = new ArrayList<>(2);
+		variants.add(new ImageVariantRequest().setHeight(100).setWidth("auto"));
+		variants.add(new ImageVariantRequest().setFocalPoint(0.3f, 0.3f).setFocalPointZoom(0.6f));
+		imageManipulationRequest.setVariants(variants);
+		return imageManipulationRequest;
+	}
 }

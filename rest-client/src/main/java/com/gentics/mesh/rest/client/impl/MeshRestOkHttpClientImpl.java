@@ -43,7 +43,7 @@ public class MeshRestOkHttpClientImpl extends MeshRestHttpClientImpl {
 
 	@Override
 	public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
-		return handleRequest(method, path, classOfT, restModel.toJson(config.isMinifyJson()));
+		return handleRequest(method, path, classOfT, restModel == null ? null :restModel.toJson(config.isMinifyJson()));
 	}
 
 	@Override

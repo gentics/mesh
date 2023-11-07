@@ -35,14 +35,17 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.image.focalpoint.FocalPointModifier;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
@@ -66,10 +69,13 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	private WorkerExecutor workerPool;
 
+	private BinaryStorage binaryStorage;
+
 	private S3BinaryStorage s3BinaryStorage;
 
-	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
+	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BinaryStorage binaryStorage, S3BinaryStorage s3BinaryStorage) {
 		this(vertx, options.getImageOptions(), s3BinaryStorage);
+		this.binaryStorage = binaryStorage;
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, S3BinaryStorage s3BinaryStorage) {
@@ -110,7 +116,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters
 	 * @return Resized image or original image if no resize operation was requested
 	 */
-	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageManipulationParameters parameters) {
+	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageManipulation parameters) {
 		int originalHeight = originalImage.getHeight();
 		int originalWidth = originalImage.getWidth();
 		double aspectRatio = (double) originalWidth / (double) originalHeight;
@@ -286,7 +292,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @param parameters The parameters defining cropping and resizing requests
 	 * @return The modified image
 	 */
-	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulationParameters parameters) {
+	protected BufferedImage cropAndResize(BufferedImage image, ImageManipulation parameters) {
 		CropMode cropMode = parameters.getCropMode();
 		boolean omitResize = false;
 		if (cropMode != null) {
@@ -311,12 +317,17 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<String> handleResize(HibBinary binary, ImageManipulationParameters parameters) {
+	public Single<String> handleResize(HibBinary binary, ImageManipulation parameters) {
+		ImageManipulationMode mode = options.getMode();
+
+		if (ImageManipulationMode.OFF == mode) {
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		}
 		// Validate the resize parameters
-		parameters.validate();
+		parameters.validateManipulation();
 		parameters.validateLimits(options);
 
-		Supplier<InputStream> stream = binary.openBlockingStream();
+		String binaryUuid = binary.getUuid();
 
 		return getCacheFilePath(binary.getSHA512Sum(), parameters).flatMap(cacheFileInfo -> {
 			if (cacheFileInfo.exists) {
@@ -328,6 +339,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				// regular worker
 				// pool
 				return workerPool.<String>rxExecuteBlocking(bh -> {
+					Supplier<InputStream> stream = () -> binaryStorage.openBlockingStream(binaryUuid);
+
 					try (InputStream is = stream.get(); ImageInputStream ins = ImageIO.createImageInputStream(is)) {
 						BufferedImage image;
 						ImageReader reader = getImageReader(ins);
@@ -376,7 +389,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	public Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename,
 			ImageManipulationParameters parameters) {
 		// Validate the resize parameters
-		parameters.validate();
+		parameters.validateManipulation();
 		parameters.validateLimits(options);
 
 		return s3BinaryStorage.read(bucketName, s3ObjectKey)

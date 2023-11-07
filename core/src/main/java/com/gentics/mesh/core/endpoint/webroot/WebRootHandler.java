@@ -215,7 +215,5 @@ public class WebRootHandler extends AbstractWebrootHandler {
 		} else {
 			nodeCrudHandler.handleCreate(ac);
 		}
-
 	}
-
 }

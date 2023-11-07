@@ -8,6 +8,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
@@ -18,16 +29,19 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
@@ -44,6 +58,7 @@ import com.gentics.mesh.util.NodeUtil;
 import com.gentics.mesh.util.RxUtil;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
+
 import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -55,14 +70,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @see BinaryUploadHandler
@@ -138,6 +145,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 	 * @param attributes
 	 *            Additional form data attributes
 	 */
+	@Override
 	public void handleUpdateField(InternalActionContext ac, String nodeUuid, String fieldName, MultiMap attributes) {
 		validateParameter(nodeUuid, "uuid");
 		validateParameter(fieldName, "fieldName");
@@ -186,6 +194,9 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 					.mapInTx(b -> b != null ? b.getUuid() : null)
 					.runInNewTx();
 
+			// Possibly we try to upload the same binary onto the same node+field.
+			Optional<NodeResponse> maybeExisting = Optional.empty();
+
 			// Create a new binary uuid if the data was not already stored
 			if (binaryUuid == null) {
 				ctx.setBinaryUuid(UUIDUtil.randomUUID());
@@ -193,10 +204,29 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			} else if (fileNotExists(binaryUuid)) {
 				ctx.setBinaryUuid(binaryUuid);
 				ctx.setInvokeStore();
+			} else {
+				maybeExisting = db.tx((tx) -> {
+					NodeDao nodeDao = tx.nodeDao();
+					ContentDao contentDao = tx.contentDao();
+					HibProject project = tx.getProject(ac);
+					HibBranch branch = tx.getBranch(ac, project);
+					HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.READ_PERM);
+					HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+					FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+					if (fieldSchema != null) {
+						HibBinaryField binaryField = latestDraftVersion.getBinary(fieldName);
+						if (binaryField != null) {
+							HibBinary binary = binaryField.getBinary();
+							if (binary != null && binaryUuid.equals(binary.getUuid()) && hash.equals(binary.getSHA512Sum())) {
+								return Optional.ofNullable(nodeDao.transformToRestSync(nodeDao.findByUuid(project, nodeUuid), ac, 0, languageTag));
+							}
+						}
+					}
+					return Optional.empty();
+				});
 			}
-
-			return storeUploadInTemp(ctx, ul, hash)
-				.andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName, publish)));
+			return maybeExisting.map(existing -> Single.just(existing))
+					.orElseGet(() -> storeUploadInTemp(ctx, ul, hash).andThen(Single.defer(() -> storeUploadInGraph(ac, modifierList, ctx, nodeUuid, languageTag, nodeVersion, fieldName, publish))));
 		}).onErrorResumeNext(e -> {
 			if (ctx.isInvokeStore()) {
 				String tmpId = ctx.getTemporaryId();
@@ -221,7 +251,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				return Single.just(n);
 			}
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
-
 	}
 
 
@@ -338,7 +367,6 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 					}
 				}
 
-
 				// Create a new node version field container to store the upload
 				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion,
@@ -384,13 +412,12 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				}
 
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
-
-			if (publish) {
-				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
-				// Invoke a store of the document since it must now also be added to the published index
-				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
-			}
-
+	
+				if (publish) {
+					HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+					// Invoke a store of the document since it must now also be added to the published index
+					batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+				}
 				return nodeDao.transformToRestSync(node, ac, 0);
 			});
 	}
@@ -412,7 +439,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			.doOnSuccess(s -> {
 				log.info(
 					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
-						+ "} completed.");
+						+ "} succeeded.");
 			})
 			.doOnComplete(() -> {
 				log.warn(

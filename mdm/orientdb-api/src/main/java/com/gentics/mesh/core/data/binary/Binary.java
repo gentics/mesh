@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.binary;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.result.Result;
 
@@ -28,7 +27,7 @@ public interface Binary extends MeshVertex, HibBinary {
 	 *
 	 * @return
 	 */
-	Result<? extends HibBinaryField> findFields();
+	Result<? extends BinaryGraphField> findFields();
 
 	/**
 	 * Return the sha512 checksum.
@@ -152,4 +151,11 @@ public interface Binary extends MeshVertex, HibBinary {
 		property(BINARY_CHECK_SECRET_KEY, checkSecret);
 		return this;
 	}
+
+	/**
+	 * Get the manipulation variants of this binary image representation.
+	 * 
+	 * @return
+	 */
+	Result<? extends ImageVariant> getVariants();
 }

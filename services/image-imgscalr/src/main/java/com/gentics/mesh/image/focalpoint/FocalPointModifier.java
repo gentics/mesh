@@ -1,17 +1,21 @@
 package com.gentics.mesh.image.focalpoint;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+
+import org.imgscalr.Scalr;
+
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.twelvemonkeys.image.ResampleOp;
-import org.imgscalr.Scalr;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
-
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 /**
  * Implementation of the focal point modifier. This modifier will:
@@ -34,13 +38,13 @@ public class FocalPointModifier {
 	 * @param img
 	 * @return resized and cropped image
 	 */
-	public BufferedImage apply(BufferedImage img, ImageManipulationParameters parameters) {
+	public BufferedImage apply(BufferedImage img, ImageManipulation parameters) {
 		FocalPoint focalPoint = parameters.getFocalPoint();
 		if (focalPoint == null) {
 			return img;
 		}
 
-		if (parameters.getFocalPointDebug()) {
+		if (parameters instanceof ImageManipulationParameters && ((ImageManipulationParameters) parameters).getFocalPointDebug()) {
 			drawFocusPointAxis(img, focalPoint);
 		}
 

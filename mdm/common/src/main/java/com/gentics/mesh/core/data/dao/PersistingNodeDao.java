@@ -42,7 +42,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -1405,8 +1404,20 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (!project.getUuid().equals(node.getProject().getUuid())) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", node.getUuid());
 		}
+		CommonTx tx = CommonTx.get();
 
 		NodeUpdateRequest requestModel = ac.fromJson(NodeUpdateRequest.class);
+		String languageTag = requestModel.getLanguage();
+
+		// Image variants update case
+		if (requestModel.getManipulation() != null) {
+			ContentDao contentDao = tx.contentDao();
+			HibBranch branch = tx.getBranch(ac, node.getProject());
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
+			HibSchemaVersion schema = latestDraftVersion.getSchemaContainerVersion();
+			String fieldKey = schema.getSchema().getSegmentField();
+			return tx.imageVariantDao().createVariants(latestDraftVersion.getBinary(fieldKey), requestModel.getManipulation().getVariants(), ac, requestModel.getManipulation().isDeleteOther()).stream().findAny().isPresent();
+		}
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");
 		}
@@ -1418,11 +1429,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// Set the language tag parameter here in order to return the updated language in the response
-		String languageTag = requestModel.getLanguage();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		Tx tx = Tx.get();
 		HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
 		if (language == null) {
 			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());

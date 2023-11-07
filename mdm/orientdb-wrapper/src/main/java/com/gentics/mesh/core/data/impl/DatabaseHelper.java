@@ -5,6 +5,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
+import com.gentics.mesh.core.data.binary.impl.BinaryGraphFieldVariantImpl;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.branch.impl.BranchSchemaEdgeImpl;
@@ -160,6 +161,8 @@ public final class DatabaseHelper {
 		// Changelog
 		ChangeMarkerVertexImpl.init(type, index);
 
+		// Binary variant
+		BinaryGraphFieldVariantImpl.init(type, index);
 	}
 
 	private static void initPermissions(TypeHandler type, IndexHandler index) {

@@ -41,6 +41,38 @@ import com.gentics.mesh.core.binary.BinaryProcessorRegistry;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
 import com.gentics.mesh.core.context.ContextDataRegistry;
 import com.gentics.mesh.core.context.impl.ContextDataRegistryImpl;
+import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.dao.BranchDao;
+import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.GroupDao;
+import com.gentics.mesh.core.data.dao.ImageVariantDao;
+import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
+import com.gentics.mesh.core.data.dao.MicroschemaDao;
+import com.gentics.mesh.core.data.dao.NodeDao;
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
+import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
+import com.gentics.mesh.core.data.dao.PersistingProjectDao;
+import com.gentics.mesh.core.data.dao.PersistingRoleDao;
+import com.gentics.mesh.core.data.dao.PersistingS3BinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingTagDao;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.RoleDao;
+import com.gentics.mesh.core.data.dao.S3BinaryDao;
+import com.gentics.mesh.core.data.dao.SchemaDao;
+import com.gentics.mesh.core.data.dao.TagDao;
+import com.gentics.mesh.core.data.dao.TagFamilyDao;
+import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparatorImpl;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
@@ -61,10 +93,6 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
-import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
@@ -293,4 +321,52 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract SearchMappingsCache searchMappingsCache(SearchMappingsCacheImpl e);
+
+	@Binds
+	abstract ImageVariantDao bindImageVariantDao(PersistingImageVariantDao e);
+
+	@Binds
+	abstract UserDao bindUserDao(PersistingUserDao e);
+
+	@Binds
+	abstract RoleDao bindRoleDao(PersistingRoleDao e);
+
+	@Binds
+	abstract GroupDao bindGroupDao(PersistingGroupDao e);
+
+	@Binds
+	abstract ProjectDao bindProjectDao(PersistingProjectDao e);
+
+	@Binds
+	abstract NodeDao bindNodeDao(PersistingNodeDao e);
+
+	@Binds
+	abstract ContentDao bindContentDao(PersistingContentDao e);
+
+	@Binds
+	abstract JobDao bindJobDao(PersistingJobDao e);
+
+	@Binds
+	abstract TagDao bindTagDao(PersistingTagDao e);
+
+	@Binds
+	abstract TagFamilyDao bindTagFamilyDao(PersistingTagFamilyDao e);
+
+	@Binds
+	abstract BinaryDao bindBinaryDao(PersistingBinaryDao e);
+
+	@Binds
+	abstract S3BinaryDao s3BinaryDao(PersistingS3BinaryDao e);
+
+	@Binds
+	abstract BranchDao bindBranchDao(PersistingBranchDao e);
+
+	@Binds
+	abstract SchemaDao bindSchemaDao(PersistingSchemaDao e);
+
+	@Binds
+	abstract MicroschemaDao bindMicroschemaDao(PersistingMicroschemaDao e);
+
+	@Binds
+	abstract LanguageDao bindLanguageDao(PersistingLanguageDao e);
 }

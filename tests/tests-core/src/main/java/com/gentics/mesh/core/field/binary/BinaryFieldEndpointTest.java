@@ -43,8 +43,6 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.GenericParameters;
-import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;

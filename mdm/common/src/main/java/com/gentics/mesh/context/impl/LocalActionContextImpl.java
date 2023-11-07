@@ -104,7 +104,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public String getBodyAsString() {
-		return payloadObject.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson());
+		return payloadObject != null ? payloadObject.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson()); : null;
 	}
 
 	@Override
