@@ -11,11 +11,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -40,7 +42,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * @author plyhun
  *
  */
-public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGroup> {
+public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGroup>, PersistingNamedEntityDao<HibGroup> {
 
 	@Override
 	default HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
@@ -69,7 +71,6 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		// Finally create the group and set the permissions
 		HibGroup group = create(requestModel.getName(), requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, groupPermissionRoot, group);
-		batch.add(group.onCreated());
 		return group;
 	}
 
@@ -79,6 +80,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		group.setName(name);
 		group.setCreated(user);
 		group.generateBucketId();
+		recache(group, group.onCreated());
 		return group;
 	}
 
@@ -150,6 +152,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 
+		uncache(group);
 		deletePersisted(group);
 
 		for (HibUser affectedUser : affectedUsers) {
@@ -236,4 +239,9 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	 * @param role role
 	 */
 	void removeRolePersisting(HibGroup group, HibRole role);
+
+	@Override
+	default Optional<NameCache<HibGroup>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().groupNameCache());
+	}
 }

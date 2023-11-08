@@ -14,12 +14,14 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -33,6 +35,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -59,7 +62,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser> {
+public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>, PersistingNamedEntityDao<HibUser> {
 
 	Logger log = LoggerFactory.getLogger(PersistingUserDao.class);
 
@@ -186,7 +189,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default HibUser create(String username, HibUser creator, String uuid) {
 		HibUser user = createPersisted(uuid);
 		init(user, username, creator);
-		return mergeIntoPersisted(user);
+		recache(mergeIntoPersisted(user), user.onCreated());
+		return user;
 	}
 
 	/**
@@ -523,7 +527,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 		inheritRolePermissions(requestUser, userRoot, user);
 		ExpandableNode reference = requestModel.getNodeReference();
-		batch.add(user.onCreated());
 
 		if (!isEmpty(groupUuid)) {
 			HibGroup parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
@@ -552,7 +555,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-		return mergeIntoPersisted(user);
+		uncache(mergeIntoPersisted(user));
+		return user;
 	}
 
 	@Override
@@ -571,6 +575,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
 		deletePersisted(user);
+		uncache(user);
 		bac.process();
 		Tx.get().permissionCache().clear();
 	}
@@ -581,7 +586,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default HibUser setPassword(HibUser user, String password) {
 		String hashedPassword = Tx.get().passwordEncoder().encode(password);
 		updatePasswordHash(user, hashedPassword);
-		return mergeIntoPersisted(user);
+		uncache(mergeIntoPersisted(user));
+		return user;
 	}
 
 	@Override
@@ -704,9 +710,14 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		if (modified && !dry) {
 			user.setEditor(ac.getUser());
 			user.setLastEditedTimestamp();
-			user = mergeIntoPersisted(user);
+			uncache(mergeIntoPersisted(user));
 			batch.add(user.onUpdated());
 		}
 		return modified;
+	}
+
+	@Override
+	default Optional<NameCache<HibUser>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().userNameCache());
 	}
 }

@@ -37,7 +37,7 @@ public interface PersistingContainerDao<
 			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
 			M extends FieldSchemaContainer
-		> extends PersistingDaoGlobal<SC>, ContainerDao<R, RM, RE, SC, SCV, M> {
+		> extends PersistingDaoGlobal<SC>, ContainerDao<R, RM, RE, SC, SCV, M>, PersistingNamedEntityDao<SC> {
 
 	/**
 	 * Get the final type of the version persistence entity of the dao.
@@ -132,7 +132,7 @@ public interface PersistingContainerDao<
 		// Update the search index
 		batch.add(version.getSchemaContainer().onUpdated());
 
-		mergeIntoPersisted(version.getSchemaContainer());
+		uncache(mergeIntoPersisted(version.getSchemaContainer()));
 		return nextVersion;
 	}
 

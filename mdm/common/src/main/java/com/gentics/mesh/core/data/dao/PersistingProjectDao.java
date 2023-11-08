@@ -12,10 +12,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.Optional;
+
 import javax.naming.InvalidNameException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -50,7 +53,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject> {
+public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject>, PersistingNamedEntityDao<HibProject> {
 	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
 
 	/**
@@ -155,6 +158,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		//root.addItem(project);
 
+		recache(project, project.onCreated());
 		return project;
 	}
 
@@ -235,10 +239,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", project.getName());
 		}
 
-		// Store the project and the branch in the index
-		batch.add(project.onCreated());
-		batch.add(initialBranch.onCreated());
-
 		// Add events for created basenode
 		batch.add(project.getBaseNode().onCreated());
 		Tx.get().contentDao().getDraftFieldContainers(project.getBaseNode()).forEach(c -> {
@@ -266,7 +266,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			project.setEditor(ac.getUser());
 			project.setLastEditedTimestamp();
 
-			mergeIntoPersisted(project);
+			uncache(mergeIntoPersisted(project));
 
 			// Update the project and its nodes in the index
 			batch.add(project.onUpdated());
@@ -325,6 +325,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// Remove the jobs referencing the job
 		jobDao.deleteByProject(project);
 
+		// Clear the cache, if applicable
+		uncache(project);
+
 		// Finally remove the project node
 		deletePersisted(project);
 
@@ -361,5 +364,10 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		model.setProject(project.transformToReference());
 		model.setMicroschema(microschema.transformToReference());
 		return model;
+	}
+
+	@Override
+	default Optional<NameCache<HibProject>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().projectNameCache());
 	}
 }

@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
@@ -186,7 +187,8 @@ public interface BaseHelper {
 		Runnable modifyAction = () -> {
 			HibUser user = CommonTx.get().userDao().findByUuid(user().getUuid());
 			modifier.accept(user);
-			CommonTx.get().userDao().mergeIntoPersisted(user);
+			PersistingUserDao userDao = CommonTx.get().userDao();
+			userDao.uncache(userDao.mergeIntoPersisted(user));
 		};
 
 		CommonTx tx = CommonTx.get();

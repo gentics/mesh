@@ -70,7 +70,7 @@ public abstract class AdminHandler extends AbstractHandler {
 
 	protected final ConsistencyCheckHandler consistencyCheckHandler;
 
-	private final CacheRegistry cacheRegistry;
+	protected final CacheRegistry cacheRegistry;
 
 	protected AdminHandler(Vertx vertx, Database db, RouterStorageImpl routerStorage, BootstrapInitializer boot, SearchProvider searchProvider,
 		HandlerUtilities utils,

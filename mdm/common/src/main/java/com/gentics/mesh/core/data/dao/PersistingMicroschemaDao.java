@@ -48,7 +48,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
-			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
+			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, PersistingNamedEntityDao<HibMicroschema> {
 
 	/**
 	 * Find all micronodes belonging to this microschema version
@@ -158,7 +158,8 @@ public interface PersistingMicroschemaDao
 	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibMicroschema microschema = create(ac, batch, uuid);
 		assign(microschema, root, ac.getUser(), batch);
-		CommonTx.get().projectDao().mergeIntoPersisted(root);
+		PersistingProjectDao projectDao = CommonTx.get().projectDao();
+		projectDao.uncache(projectDao.mergeIntoPersisted(root));
 		return microschema;
 	}
 
@@ -183,8 +184,7 @@ public interface PersistingMicroschemaDao
 		}
 		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
-		mergeIntoPersisted(container);
-		batch.add(container.onCreated());
+		recache(mergeIntoPersisted(container), container.onCreated());
 		return container;
 	}
 
@@ -229,7 +229,8 @@ public interface PersistingMicroschemaDao
 		container.setName(microschema.getName());
 		container.generateBucketId();
 
-		return mergeIntoPersisted(container);
+		recache(mergeIntoPersisted(container), container.onCreated());
+		return container;
 	}
 
 	/**
@@ -307,6 +308,7 @@ public interface PersistingMicroschemaDao
 			deleteVersion(version, bac);
 		}
 		bac.add(microschema.onDeleted());
+		uncache(microschema);
 		deletePersisted(microschema);
 	}
 

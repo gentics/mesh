@@ -6,6 +6,18 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.google.common.base.Throwables.getRootCause;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+
 import com.gentics.mesh.auth.AuthHandlerContainer;
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.auth.MeshOAuthService;
@@ -38,6 +50,7 @@ import com.gentics.mesh.plugin.auth.MappingResult;
 import com.gentics.mesh.plugin.auth.RoleFilter;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
@@ -49,17 +62,6 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @see MeshOAuthService
@@ -255,7 +257,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 
 						MeshAuthUser user = userDao.findMeshAuthUserByUsername(username);
 						String uuid = user.getDelegate().getUuid();
-						batch.add(user.getDelegate().onCreated());
 						// Not setting uuid since the user has not yet been committed.
 						runPlugins(tx, rc, batch, admin, user, null, token);
 						TOKEN_ID_LOG.put(uuid, cachingId);
@@ -408,7 +409,6 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 									log.debug("Creating new role {} via mapping request.", roleName);
 									role = roleDao.create(roleName, admin);
 									userDao.inheritRolePermissions(admin, roleRoot, role);
-									batch.add(role.onCreated());
 								} else {
 									log.error("Unable to create role. No role name was specified.");
 								}

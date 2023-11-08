@@ -13,13 +13,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections.CollectionUtils;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,6 +29,7 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -47,7 +49,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * @author plyhun
  *
  */
-public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole> {
+public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>, PersistingNamedEntityDao<HibRole> {
 	/**
 	 * Grant role permission. Consumers implementing this method do not need to invalidate the cache
 	 * @param role the role
@@ -116,7 +118,6 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 
 		HibRole role = create(requestModel.getName(), requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, roleRoot, role);
-		batch.add(role.onCreated());
 		return role;
 	}
 
@@ -172,6 +173,7 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	default void delete(HibRole role, BulkActionContext bac) {
 		bac.add(role.onDeleted());
 		deletePersisted(role);
+		uncache(role);
 		bac.process();
 		PermissionCache permissionCache = Tx.get().permissionCache();
 
@@ -225,7 +227,7 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		role.setCreated(creator);
 		role.generateBucketId();
 		addRole(role);
-		CommonTx.get().data().mesh().roleNameCache().clear(name);
+		recache(role, role.onCreated());
 		return role;
 	}
 
@@ -311,10 +313,14 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		return restRole;
 	}
 
+	@Override
+	default Optional<NameCache<HibRole>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().roleNameCache());
+	}
+
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
 		for (HibGroup group : role.getGroups()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
-
 }
