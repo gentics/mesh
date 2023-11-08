@@ -3,6 +3,10 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+
+import java.util.Optional;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -30,6 +34,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 
 	private static final Logger log = LoggerFactory.getLogger(TagImpl.class);
 
+	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
+
 	public static final String TAG_VALUE_KEY = "tagValue";
 
 	/**
@@ -40,6 +46,10 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(TagImpl.class, MeshVertexImpl.class);
+		index.createIndex(vertexIndex(TagImpl.class)
+				.withName(Tag.UNIQUENAME_INDEX_NAME)
+				.withField(UNIQUENAME_PROPERTY_KEY, STRING)
+				.unique());
 	}
 
 	@Override
@@ -50,6 +60,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse> implements Tag 
 	@Override
 	public void setName(String name) {
 		property(TAG_VALUE_KEY, name);
+		property(UNIQUENAME_PROPERTY_KEY, String.format("%s-%s", Optional.ofNullable(getTagFamily()).map(HibTagFamily::getUuid).orElse(""), name));
 	}
 
 	@Override
