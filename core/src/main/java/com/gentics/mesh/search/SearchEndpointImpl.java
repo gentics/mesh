@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
@@ -74,8 +75,8 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 			RoleSearchHandler roleSearchHandler, NodeSearchHandler nodeSearchHandler, TagSearchHandler tagSearchHandler,
 			TagFamilySearchHandler tagFamilySearchHandler, ProjectSearchHandler projectSearchHandler,
 			SchemaSearchHandler schemaContainerSearchHandler,
-			MicroschemaSearchHandler microschemaContainerSearchHandler, LocalConfigApi localConfigApi, Database db) {
-		super("search", chain, localConfigApi, db);
+			MicroschemaSearchHandler microschemaContainerSearchHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("search", chain, localConfigApi, db, options);
 		this.adminHandler = adminHandler;
 		this.userSearchHandler = userSearchHandler;
 		this.groupSearchHandler = groupSearchHandler;
@@ -89,7 +90,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	}
 
 	public SearchEndpointImpl() {
-		super("search", null, null, null);
+		super("search", null, null, null, null);
 		this.adminHandler = null;
 		this.userSearchHandler = null;
 		this.groupSearchHandler = null;

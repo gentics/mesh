@@ -2,10 +2,13 @@ package com.gentics.mesh.router.route;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.etc.config.VertxOptions;
 import com.gentics.mesh.rest.InternalEndpoint;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.rest.impl.InternalEndpointRouteImpl;
@@ -34,11 +37,14 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 
 	protected final Database db;
 
-	protected AbstractInternalEndpoint(String basePath, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db) {
+	protected final MeshOptions options;
+
+	protected AbstractInternalEndpoint(String basePath, MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
 		this.basePath = basePath;
 		this.chain = chain;
 		this.localConfigApi = localConfigApi;
 		this.db = db;
+		this.options = options;
 	}
 
 	@Override
@@ -131,4 +137,8 @@ public abstract class AbstractInternalEndpoint implements InternalEndpoint {
 		return basePath;
 	}
 
+	protected boolean isOrderedBlockingHandlers() {
+		return Optional.ofNullable(options).map(MeshOptions::getVertxOptions)
+				.map(VertxOptions::isOrderedBlockingHandlers).orElse(true);
+	}
 }

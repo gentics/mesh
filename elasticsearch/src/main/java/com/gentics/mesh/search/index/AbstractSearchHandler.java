@@ -10,16 +10,19 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-
-import javax.inject.Inject;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -356,6 +359,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, InternalPermission... permissions)
 		throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
@@ -398,21 +402,27 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 					List<T> elementList = new ArrayList<>();
 					JsonObject hitsInfo = firstResponse.getJsonObject("hits");
 					JsonArray hits = hitsInfo.getJsonArray("hits");
-					for (int i = 0; i < hits.size(); i++) {
-						JsonObject hit = hits.getJsonObject(i);
-						String id = hit.getString("_id");
-						int pos = id.indexOf("-");
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
-
-						// Locate the node
-						T element = indexHandler.elementLoader().apply(uuid);
-						if (element != null) {
-							elementList.add(element);
-						}
-					}
-
 					PagingMetaInfo info = extractMetaInfo(hitsInfo, pagingInfo);
-					return new PageImpl<>(elementList, info.getTotalCount(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
+					AtomicLong totalCount = new AtomicLong(info.getTotalCount());
+					List<String> uuids = hits.stream().map(hit -> {
+						JsonObject val;
+						if (hit instanceof Map) {
+					      val = new JsonObject((Map<String,Object>) hit);
+					    } else {
+					    	val = (JsonObject) hit;
+					    }
+						String id = val.getString("_id");
+						int pos = id.indexOf("-");
+
+						return pos > 0 ? id.substring(0, pos) : id;
+					}).collect(Collectors.toList());
+					Map<String, T> uuidEntityMap = indexHandler.elementsLoader().apply(uuids).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+					uuids.stream().map(uuidEntityMap::get).peek(o -> {
+						if (o == null) {
+							totalCount.decrementAndGet();
+						}
+					}).filter(Objects::nonNull).forEach(elementList::add);
+					return new PageImpl<>(elementList, totalCount.get(), pagingInfo.getPage(), info.getPageCount(), pagingInfo.getPerPage());
 				});
 			});
 

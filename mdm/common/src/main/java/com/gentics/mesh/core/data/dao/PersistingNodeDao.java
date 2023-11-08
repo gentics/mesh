@@ -41,10 +41,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.rest.node.FieldMap;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -76,18 +75,16 @@ import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
 import com.gentics.mesh.core.rest.role.RoleReference;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -119,7 +116,6 @@ import com.gentics.mesh.util.URIUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
@@ -1170,6 +1166,21 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	@Override
 	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags) {
+		BranchDao branchDao = Tx.get().branchDao();
+		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
+		return getPaths(sourceNodes, branch, ac, type, languageTags);
+	}
+
+	/**
+	 * Return a string path for each of the provided node for the given branch, container type with language fallbacks
+	 * @param sourceNodes collection of source nodes
+	 * @param branch
+	 * @param ac action context
+	 * @param type container type
+	 * @param languageTags optional language tags
+	 * @return map of path per node
+	 */
+	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, HibBranch branch, InternalActionContext ac, ContainerType type, String... languageTags) {
 		ContentDao contentDao = Tx.get().contentDao();
 		Map<HibNode, List<HibNode>> breadcrumbPerNode = getBreadcrumbNodesMap(sourceNodes, ac);
 
@@ -1178,10 +1189,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		Set<HibNode> allNodes = new HashSet<>(sourceNodes);
 		allNodes.addAll(allAncestors);
 
-		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branchUuid, type);
+		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branch.getUuid(), type);
 		List<String> languages = Arrays.asList(languageTags);
-		BranchDao branchDao = Tx.get().branchDao();
-		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
 		return breadcrumbPerNode.entrySet()
 				.stream()
 				.map(kv -> {
@@ -1227,8 +1236,6 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	private HibNodeFieldContainer getContainerWithLanguageFallback(List<HibNodeFieldContainer> containers, List<String> languageTags, boolean anyLanguage) {
-
-		ContentDao contentDao = Tx.get().contentDao();
 		Map<String, List<HibNodeFieldContainer>> containerByLanguage = containers.stream().collect(Collectors.groupingBy(HibNodeFieldContainer::getLanguageTag));
 
 		HibNodeFieldContainer container = null;
@@ -1239,13 +1246,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				break;
 			}
 		}
-
 		if (container == null && anyLanguage) {
 			if (!containers.isEmpty()) {
 				container = containers.get(0);
 			}
 		}
-
 		return container;
 	}
 

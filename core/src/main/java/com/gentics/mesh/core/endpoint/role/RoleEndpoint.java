@@ -21,6 +21,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -34,12 +35,12 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 	private RoleCrudHandlerImpl crudHandler;
 
 	public RoleEndpoint() {
-		super("roles", null, null, null);
+		super("roles", null, null, null, null);
 	}
 
 	@Inject
-	public RoleEndpoint(MeshAuthChainImpl chain, RoleCrudHandlerImpl crudHandler, LocalConfigApi localConfigApi, Database db) {
-		super("roles", chain, localConfigApi, db);
+	public RoleEndpoint(MeshAuthChainImpl chain, RoleCrudHandlerImpl crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("roles", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 
@@ -80,7 +81,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 			String roleUuid = ac.getParameter("param0");
 			String pathToElement = ac.getParameter("param1");
 			crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
-		});
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute permissionGetEndpoint = createRoute();
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
@@ -112,7 +113,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addUpdateHandler() {
@@ -129,7 +130,7 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("roleUuid");
 			crudHandler.handleUpdate(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addReadHandler() {
@@ -177,6 +178,6 @@ public class RoleEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 }

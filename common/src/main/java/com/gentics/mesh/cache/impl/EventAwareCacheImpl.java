@@ -192,7 +192,14 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			}
 			return value.orElse(null);
 		} else {
-			return cache.get(key, (k) -> Optional.ofNullable(mappingFunction.apply(k))).orElse(null);
+			@Nullable Optional<V> value = cache.getIfPresent(key);
+			if (value == null) {
+				value = Optional.ofNullable(mappingFunction.apply(key));
+				if (value != null) {
+					cache.put(key, value);
+				}
+			}
+			return value.orElse(null);
 		}
 	}
 

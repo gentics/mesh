@@ -22,6 +22,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.core.endpoint.RolePermissionHandlingEndpoint;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
@@ -36,13 +37,13 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 	private ProjectCrudHandler crudHandler;
 
 	@Inject
-	public ProjectEndpoint(MeshAuthChainImpl chain, ProjectCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db) {
-		super("projects", chain, localConfigApi, db);
+	public ProjectEndpoint(MeshAuthChainImpl chain, ProjectCrudHandler crudHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("projects", chain, localConfigApi, db, options);
 		this.crudHandler = crudHandler;
 	}
 
 	public ProjectEndpoint() {
-		super("projects", null, null, null);
+		super("projects", null, null, null, null);
 	}
 
 	@Override
@@ -81,7 +82,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleUpdate(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
@@ -99,7 +100,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			crudHandler.handleCreate(ac);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addReadHandler() {
@@ -148,7 +149,7 @@ public class ProjectEndpoint extends RolePermissionHandlingEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("projectUuid");
 			crudHandler.handleDelete(ac, uuid);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addVersionPurgeHandler() {

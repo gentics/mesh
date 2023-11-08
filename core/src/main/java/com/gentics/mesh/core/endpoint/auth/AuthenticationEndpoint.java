@@ -11,6 +11,7 @@ import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -24,14 +25,14 @@ public class AuthenticationEndpoint extends AbstractInternalEndpoint {
 	private MeshBasicAuthLoginHandler basicAuthLoginHandler;
 
 	@Inject
-	public AuthenticationEndpoint(MeshAuthChainImpl chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler, LocalConfigApi localConfigApi, Database db) {
-		super("auth", chain, localConfigApi, db);
+	public AuthenticationEndpoint(MeshAuthChainImpl chain, AuthenticationRestHandler authRestHandler, MeshBasicAuthLoginHandler basicAuthHandler, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+		super("auth", chain, localConfigApi, db, options);
 		this.authRestHandler = authRestHandler;
 		this.basicAuthLoginHandler = basicAuthHandler;
 	}
 
 	public AuthenticationEndpoint() {
-		super("auth", null, null, null);
+		super("auth", null, null, null, null);
 	}
 
 	@Override
