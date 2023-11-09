@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
 
+icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
+
 [[v1.10.19]]
 == 1.10.19 (02.11.2023)
 
