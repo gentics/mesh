@@ -88,7 +88,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public void setName(String name) {
 		property("name", name);
-		property(UNIQUENAME_PROPERTY_KEY, String.format("%s-%s", Optional.ofNullable(getProject()).map(Project::getUuid).orElse(""), name));
+		property(UNIQUENAME_PROPERTY_KEY, String.format("%s-%s", Optional.ofNullable(getTagFamilyRoot()).map(TagFamilyRoot::getUuid).orElse(""), name));
 	}
 
 	@Override
