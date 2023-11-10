@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -407,16 +408,29 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
-					ContainerType type = getNodeVersion(env);
-					Stream<NodeReferenceIn> stream = NodeReferenceIn.fromContent(context, content, type);
-					Map<String, ?> filterInput = env.getArgument("filter");
-					if (filterInput != null) {
-						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+					if (content == null) {
+						return null;
 					}
+					HibNode node = content.getNode();
+					if (node == null) {
+						return null;
+					}
+					List<String> languageTags = getLanguageArgument(env, content);
+					ContainerType type = getNodeVersion(env);
 
-					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
-				}).build(),
+					DataLoader<NodeContent, Collection<NodeReferenceIn>> parentLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
+					return parentLoader.load(content).thenApply(c -> {
+						Stream<NodeReferenceIn> stream = c.stream();
+						Map<String, ?> filterInput = env.getArgument("filter");
+						if (filterInput != null) {
+							stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+						}
+						return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
+					});
+				})
+				.build(),
 
 			// Content specific fields
 

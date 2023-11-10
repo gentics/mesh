@@ -37,6 +37,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
 
 import io.vertx.core.Promise;
@@ -49,6 +50,7 @@ public class NodeDataLoader {
 	public static final String CONTENT_LOADER_KEY = "contentLoader";
 	public static final String CHILDREN_LOADER_KEY = "childrenLoader";
 	public static final String PATH_LOADER_KEY = "pathLoader";
+	public static final String REFERENCED_BY_LOADER_KEY = "referencedByLoader";
 	public static final String PARENT_LOADER_KEY = "parentLoader";
 	public static final String BREADCRUMB_LOADER_KEY = "breadcrumbLoader";
 
@@ -102,6 +104,26 @@ public class NodeDataLoader {
 			results.add(childrenByNode.getOrDefault(key, Collections.emptyList()));
 		}
 		Promise<List<List<NodeContent>>> promise = Promise.promise();
+		promise.complete(results);
+
+		return promise.future().toCompletionStage();
+	};
+
+	/**
+	 * Batch loading node parents
+	 */
+	public static BatchLoaderWithContext<NodeContent, Collection<NodeReferenceIn>> REFERENCED_BY_LOADER = (keys, environment) -> {
+		GraphQLContext context = environment.getContext();
+
+		// we will collect the results by keys here
+		Map<NodeContent, List<NodeReferenceIn>> resultByKey = NodeReferenceIn.fromContent(context, keys).collect(Collectors.groupingBy(Pair::getValue, Collectors.mapping(Pair::getKey, Collectors.toList())));
+
+		// collect the results as list in the correct order (corresponding to the order of the keys)
+		List<Collection<NodeReferenceIn>> results = new ArrayList<>();
+		for (NodeContent key : keys) {
+			results.add(resultByKey.getOrDefault(key, Collections.emptyList()));
+		}
+		Promise<List<Collection<NodeReferenceIn>>> promise = Promise.promise();
 		promise.complete(results);
 
 		return promise.future().toCompletionStage();

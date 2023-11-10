@@ -512,6 +512,15 @@ public interface ContentDao {
 	Stream<HibNodeField> getInboundReferences(HibNode node);
 
 	/**
+	 * Gets all NodeField edges that reference the nodes.
+	 * 
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, HibNode>> getInboundReferences(Collection<HibNode> nodes) {
+		return nodes.stream().flatMap(node -> getInboundReferences(node).map(ref -> Pair.of(ref, node)));
+	}
+
+	/**
 	 * Return the index name for the given parameters.
 	 *
 	 * @param projectUuid
