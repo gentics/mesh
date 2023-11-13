@@ -155,8 +155,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		DataLoader<HibNode, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
 		return breadcrumbLoader.load(content.getNode(), context).thenApply(contents -> {
 			return contents.stream()
-					.filter(item -> item != null && item.getContainer() != null)
-					.filter(content1 -> gc.hasReadPerm(content1, type))
+					.filter(item -> item != null && item.getContainer() != null && gc.hasReadPerm(item, type))
 					.collect(Collectors.toList());
 		});
 	}
