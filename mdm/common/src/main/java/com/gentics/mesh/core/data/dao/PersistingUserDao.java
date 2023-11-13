@@ -485,10 +485,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	@Override
 	default HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibBaseElement userRoot = Tx.get().data().permissionRoots().user();
-		GroupDao groupDao = Tx.get().groupDao();
-		ProjectDao projectDao = Tx.get().projectDao();
-		NodeDao nodeDao = Tx.get().nodeDao();
+		Tx tx = Tx.get();
+		HibBaseElement userRoot = tx.data().permissionRoots().user();
+		GroupDao groupDao = tx.groupDao();
+		ProjectDao projectDao = tx.projectDao();
+		NodeDao nodeDao = tx.nodeDao();
 		HibUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -510,7 +511,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
-		updatePasswordHash(user, Tx.get().passwordEncoder().encode(requestModel.getPassword()));
+		updatePasswordHash(user, tx.passwordEncoder().encode(requestModel.getPassword()));
 		Boolean forcedPasswordChange = requestModel.getForcedPasswordChange();
 		if (forcedPasswordChange != null) {
 			user.setForcedPasswordChange(forcedPasswordChange);
@@ -574,8 +575,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		// }
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
-		deletePersisted(user);
 		uncache(user);
+		deletePersisted(user);
 		bac.process();
 		Tx.get().permissionCache().clear();
 	}

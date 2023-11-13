@@ -301,8 +301,8 @@ public interface PersistingSchemaDao
 			for (HibSchemaVersion v : findAllVersions(schema)) {
 				deleteVersion(v, bac);
 			}
-			deletePersisted(schema);
 			uncache(schema);
+			deletePersisted(schema);
 		} else {
 			throw error(BAD_REQUEST, "schema_delete_still_in_use", schema.getUuid());
 		}
