@@ -163,7 +163,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 		maybeGetCache().ifPresent(cache -> {
 			cache.clear(name);
 			cache.clear(getCacheKey(tagFamily, name));
-			CommonTx.get().data().mesh().batchProvider().get().add(tag.onCreated());
+			CommonTx.get().data().getOrCreateEventQueueBatch().add(tag.onCreated());
 		});
 		return tag;
 	}

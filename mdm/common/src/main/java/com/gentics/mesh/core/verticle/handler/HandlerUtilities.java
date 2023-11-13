@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.TxEventAction;
 import com.gentics.mesh.core.db.Tx;
@@ -341,12 +342,12 @@ public class HandlerUtilities {
 	 */
 	public <RM> void syncTx(InternalActionContext ac, TxEventAction<RM> handler, Consumer<RM> action) {
 		try {
-			Tuple<EventQueueBatch, RM> tuple = database.tx((tx) -> {
+			RM rm = database.tx((tx) -> {
 				EventQueueBatch eventQueueBatch = queueProvider.get();
-				return Tuple.tuple(eventQueueBatch, handler.handle(eventQueueBatch, tx));
+				tx.<CommonTx>unwrap().data().setEventQueueBatch(eventQueueBatch);
+				return handler.handle(eventQueueBatch, tx);
 			});
-			tuple.v1().dispatch();
-			action.accept(tuple.v2());
+			action.accept(rm);
 		} catch (Throwable t) {
 			ac.fail(t);
 		}
@@ -360,12 +361,11 @@ public class HandlerUtilities {
 	 */
 	public void syncTx(InternalActionContext ac, TxEventAction0 handler, Runnable action) {
 		try {
-			EventQueueBatch batch = database.tx((tx) -> {
+			database.tx((tx) -> {
 				EventQueueBatch eventQueueBatch = queueProvider.get();
+				tx.<CommonTx>unwrap().data().setEventQueueBatch(eventQueueBatch);
 				handler.handle(eventQueueBatch, tx);
-				return eventQueueBatch;
 			});
-			batch.dispatch();
 			action.run();
 		} catch (Throwable t) {
 			ac.fail(t);
@@ -422,13 +422,13 @@ public class HandlerUtilities {
 	 * @return
 	 */
 	public <T> T eventAction(BiFunction<Tx, EventQueueBatch, T> function) {
-		Tuple<T, EventQueueBatch> tuple = database.tx(tx -> {
+		T t = database.tx(tx -> {
 			EventQueueBatch batch = queueProvider.get();
+			tx.<CommonTx>unwrap().data().setEventQueueBatch(batch);
 			T result = function.apply(tx, batch);
-			return Tuple.tuple(result, batch);
+			return result;
 		});
-		tuple.v2().dispatch();
-		return tuple.v1();
+		return t;
 	}
 
 	/**

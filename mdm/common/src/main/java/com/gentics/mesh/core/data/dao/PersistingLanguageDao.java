@@ -24,7 +24,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 		maybeGetCache().ifPresent(cache -> {
 			cache.clear(languageName);
 			cache.clear(languageTag);
-			CommonTx.get().data().mesh().batchProvider().get().add(language.onCreated());
+			CommonTx.get().data().getOrCreateEventQueueBatch().add(language.onCreated());
 		});
 		return language;
 	}

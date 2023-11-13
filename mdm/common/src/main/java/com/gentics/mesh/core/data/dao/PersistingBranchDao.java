@@ -138,7 +138,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		maybeGetCache().ifPresent(cache -> {
 			cache.clear(name);
 			cache.clear(getCacheKey(project, name));
-			CommonTx.get().data().mesh().batchProvider().get().add(branch.onCreated());
+			CommonTx.get().data().getOrCreateEventQueueBatch().add(branch.onCreated());
 		});
 		return branch;
 	}

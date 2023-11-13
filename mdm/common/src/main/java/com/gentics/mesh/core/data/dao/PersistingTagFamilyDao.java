@@ -98,7 +98,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 		maybeGetCache().ifPresent(cache -> {
 			cache.clear(name);
 			cache.clear(getCacheKey(project, name));
-			CommonTx.get().data().mesh().batchProvider().get().add(tagFamily.onCreated());
+			CommonTx.get().data().getOrCreateEventQueueBatch().add(tagFamily.onCreated());
 		});
 		return tagFamily;
 	}

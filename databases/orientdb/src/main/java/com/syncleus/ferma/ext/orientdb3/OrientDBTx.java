@@ -339,6 +339,6 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 
 	@Override
 	public EventQueueBatch createBatch() {
-		return txData.mesh().batchProvider().get();
+		return txData.getOrCreateEventQueueBatch();
 	}
 }

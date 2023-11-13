@@ -41,6 +41,6 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	 */
 	default void recache(T entity, MeshEventModel event) {
 		uncache(entity);
-		Tx.maybeGet().map(CommonTx.class::cast).map(ctx -> ctx.data().mesh().batchProvider()).ifPresent(bp -> bp.get().add(event));
+		Tx.maybeGet().map(CommonTx.class::cast).map(ctx -> ctx.data().getOrCreateEventQueueBatch()).ifPresent(bp -> bp.add(event));
 	}
 }

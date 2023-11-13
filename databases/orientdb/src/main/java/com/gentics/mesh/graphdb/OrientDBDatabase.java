@@ -47,6 +47,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.check.DiskQuotaChecker;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
@@ -473,6 +474,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		boolean handlerFinished = false;
 		int maxRetry = options.getStorageOptions().getTxRetryLimit();
 		Throwable cause = null;
+		Optional<EventQueueBatch> maybeBatch = Optional.empty();
 		for (int retry = 0; retry < maxRetry; retry++) {
 			Timer.Sample sample = Timer.start();
 			// Check the status to prevent transactions during shutdown
@@ -481,6 +483,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();
+				maybeBatch = tx.data().maybeGetEventQueueBatch();
 			} catch (OSchemaException e) {
 				cause = e;
 				log.error("OrientDB schema exception detected.");
@@ -529,6 +532,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			if (handlerFinished) {
+				maybeBatch.ifPresent(EventQueueBatch::dispatch);
 				return handlerResult;
 			}
 		}
