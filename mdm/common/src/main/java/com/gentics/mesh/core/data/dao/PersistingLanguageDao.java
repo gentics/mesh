@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.dao;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -19,13 +18,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 		HibLanguage language = createPersisted(uuid);
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
-		mergeIntoPersisted(language);
-
-		maybeGetCache().ifPresent(cache -> {
-			cache.clear(languageName);
-			cache.clear(languageTag);
-			CommonTx.get().data().getOrCreateEventQueueBatch().add(language.onCreated());
-		});
+		//recache(mergeIntoPersisted(language), language.onCreated());
 		return language;
 	}
 

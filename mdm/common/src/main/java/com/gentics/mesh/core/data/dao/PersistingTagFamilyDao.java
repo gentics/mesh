@@ -93,13 +93,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 
 		tagFamily.setProject(project);
 		tagFamily.generateBucketId();
-		mergeIntoPersisted(project, tagFamily);
-
-		maybeGetCache().ifPresent(cache -> {
-			cache.clear(name);
-			cache.clear(getCacheKey(project, name));
-			CommonTx.get().data().getOrCreateEventQueueBatch().add(tagFamily.onCreated());
-		});
+		recache(mergeIntoPersisted(project, tagFamily), tagFamily.onCreated());
 		return tagFamily;
 	}
 

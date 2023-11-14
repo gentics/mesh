@@ -24,12 +24,22 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	}
 
 	/**
+	 * Clear the cached name.
+	 * 
+	 * @param entity
+	 */
+	default void uncache(T entity) {
+		Tx.maybeGet().flatMap(tx -> maybeGetCache()).ifPresent(cache -> cache.clear(entity.getName()));
+	}
+
+	/**
 	 * Clear the cached name, along with sending the specified event.
 	 * 
 	 * @param entity
 	 * @param event
 	 */
 	default void recache(T entity, MeshEventModel event) {
+		uncache(entity);
 		Tx.maybeGet().map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
 	}
 }

@@ -158,13 +158,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
-		mergeIntoPersisted(tag);
-
-		maybeGetCache().ifPresent(cache -> {
-			cache.clear(name);
-			cache.clear(getCacheKey(tagFamily, name));
-			CommonTx.get().data().getOrCreateEventQueueBatch().add(tag.onCreated());
-		});
+		recache(mergeIntoPersisted(tag), tag.onCreated());
 		return tag;
 	}
 
@@ -236,7 +230,6 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 	default void delete(HibTag tag, BulkActionContext bac) {
 		String uuid = tag.getUuid();
 		String name = tag.getName();
-		String familyName = tag.getTagFamily().getName();
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tag {" + uuid + ":" + name + "}");
 		}
@@ -250,11 +243,6 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 			}
 		}
 		deletePersisted(tag);
-
-		maybeGetCache().ifPresent(cache -> {
-			cache.clear(name);
-			cache.clear(familyName + "_" + name);
-		});
 		bac.process();
 	}
 
