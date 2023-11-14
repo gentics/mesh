@@ -141,7 +141,7 @@ TIP: Plugins which use event handling should be aware that every plugin instance
 
 == HTTP/2
 
-Plugins may use HTTP/2 protocol for the connectivity. This may be set up with setting the boolean environment variable `MESH_PLUGIN_USE_HTTP2`, or Java API `MeshOptions.setPluginUseHttp2()`.
+Plugins can use HTTP/2 protocol for the connectivity by setting the boolean environment variable `MESH_PLUGIN_USE_HTTP2`, or Java API `MeshOptions.setPluginUseHttp2()`.
 
 == Plugin Development
 
