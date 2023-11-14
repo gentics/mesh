@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.endpoint.admin.debuginfo;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
 
 import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
@@ -17,6 +21,19 @@ public class DebugInfoUtil {
 
 	private final Vertx vertx;
 	private static final Logger log = LoggerFactory.getLogger(DebugInfoUtil.class);
+
+	/**
+	 * Runtime architecture pointer size
+	 */
+	public static final int POINTER_SIZE;
+
+	static {
+		POINTER_SIZE = Optional.ofNullable(System.getProperty("sun.arch.data.model"))
+				.filter(StringUtils::isNotBlank)
+				.filter(StringUtils::isNumeric)
+				.map(Integer::parseInt)
+				.orElse(64) / 8;
+	}
 
 	@Inject
 	public DebugInfoUtil(Vertx vertx) {
@@ -34,7 +51,8 @@ public class DebugInfoUtil {
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.toFlowable()
 			.onErrorResumeNext(err -> {
-				log.warn(String.format("Could not read file {%s}", path), err);
+				log.debug(String.format("Could not read file {%s}", path), err);
+				log.info(String.format("Could not read file {%s}", path));
 				return Flowable.empty();
 			});
 	}
