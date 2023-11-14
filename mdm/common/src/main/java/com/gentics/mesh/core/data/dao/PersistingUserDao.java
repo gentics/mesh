@@ -556,7 +556,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-		uncache(mergeIntoPersisted(user));
+		mergeIntoPersisted(user);
 		return user;
 	}
 
@@ -575,7 +575,6 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		// }
 		// outE(HAS_USER).removeAll();
 		bac.add(user.onDeleted());
-		uncache(user);
 		deletePersisted(user);
 		bac.process();
 		Tx.get().permissionCache().clear();
@@ -587,7 +586,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default HibUser setPassword(HibUser user, String password) {
 		String hashedPassword = Tx.get().passwordEncoder().encode(password);
 		updatePasswordHash(user, hashedPassword);
-		uncache(mergeIntoPersisted(user));
+		mergeIntoPersisted(user);
 		return user;
 	}
 
@@ -711,7 +710,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		if (modified && !dry) {
 			user.setEditor(ac.getUser());
 			user.setLastEditedTimestamp();
-			uncache(mergeIntoPersisted(user));
+			mergeIntoPersisted(user);
 			batch.add(user.onUpdated());
 		}
 		return modified;

@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.core.data.HibNamedElement;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
@@ -25,23 +24,12 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	}
 
 	/**
-	 * Clear the cached name.
-	 * 
-	 * @param entity
-	 */
-	default void uncache(T entity) {
-//		maybeGetCache().ifPresent(cache -> cache.clear(entity.getName()));
-	}
-
-	/**
-	 * Chear the cached name, along with sending the specified event.
+	 * Clear the cached name, along with sending the specified event.
 	 * 
 	 * @param entity
 	 * @param event
 	 */
 	default void recache(T entity, MeshEventModel event) {
-//		uncache(entity);
 		Tx.maybeGet().map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
-//		Tx.maybeGet().map(CommonTx.class::cast).map(ctx -> ctx.data().getOrCreateEventQueueBatch()).ifPresent(bp -> bp.add(event));
 	}
 }

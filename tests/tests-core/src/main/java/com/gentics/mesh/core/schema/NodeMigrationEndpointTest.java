@@ -1320,7 +1320,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		container.generateBucketId();
 		container.setName(UUID.randomUUID().toString());
 		container.setCreated(user());
-		schemaDao.recache(schemaDao.mergeIntoPersisted(container), container.onCreated());
+		schemaDao.mergeIntoPersisted(container);
 		
 		// create version 2 of the schema (with the field renamed)
 		HibSchemaVersion versionB = createSchemaVersion(Tx.get(), container, v -> {

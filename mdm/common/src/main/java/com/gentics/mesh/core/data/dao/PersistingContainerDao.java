@@ -132,7 +132,7 @@ public interface PersistingContainerDao<
 		// Update the search index
 		batch.add(version.getSchemaContainer().onUpdated());
 
-		uncache(mergeIntoPersisted(version.getSchemaContainer()));
+		mergeIntoPersisted(version.getSchemaContainer());
 		return nextVersion;
 	}
 

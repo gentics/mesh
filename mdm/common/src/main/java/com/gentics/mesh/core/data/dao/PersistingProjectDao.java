@@ -266,7 +266,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			project.setEditor(ac.getUser());
 			project.setLastEditedTimestamp();
 
-			uncache(mergeIntoPersisted(project));
+			mergeIntoPersisted(project);
 
 			// Update the project and its nodes in the index
 			batch.add(project.onUpdated());
@@ -324,9 +324,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		// Remove the jobs referencing the job
 		jobDao.deleteByProject(project);
-
-		// Clear the cache, if applicable
-		uncache(project);
 
 		// Finally remove the project node
 		deletePersisted(project);

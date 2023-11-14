@@ -76,7 +76,7 @@ public interface PersistingSchemaDao
 		}
 		HibSchema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
 		userDao.inheritRolePermissions(requestUser, schemaRoot, container);
-		uncache(mergeIntoPersisted(container));
+		mergeIntoPersisted(container);
 		return container;
 	}
 
@@ -301,7 +301,6 @@ public interface PersistingSchemaDao
 			for (HibSchemaVersion v : findAllVersions(schema)) {
 				deleteVersion(v, bac);
 			}
-			uncache(schema);
 			deletePersisted(schema);
 		} else {
 			throw error(BAD_REQUEST, "schema_delete_still_in_use", schema.getUuid());
@@ -340,7 +339,7 @@ public interface PersistingSchemaDao
 		HibSchema schema = create(ac, batch, uuid);
 		assign(schema, root, ac.getUser(), batch);
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
-		projectDao.uncache(projectDao.mergeIntoPersisted(root));
+		projectDao.mergeIntoPersisted(root);
 		assignEvents(schema, UNASSIGNED).forEach(batch::add);
 		return schema;
 	}

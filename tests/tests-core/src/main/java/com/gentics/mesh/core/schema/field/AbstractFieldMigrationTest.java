@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.gentics.mesh.util.CoreTestUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
@@ -57,6 +56,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.CoreTestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -143,7 +143,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 						removedFieldName));
 			container.setLatestVersion(v);
 		});
-		schemaDao.uncache(schemaDao.mergeIntoPersisted(container));
+		schemaDao.mergeIntoPersisted(container);
 
 		// create version 2 of the schema (with one field removed)
 		HibSchemaVersion versionB = CoreTestUtils.createSchemaVersion(container, schemaName, "2.0", creator.create(persistentFieldName));
@@ -172,6 +172,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionB, batch);
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -220,7 +221,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
-		microschemaDao.uncache(container);
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(persistentFieldName),
 			creator.create(removedFieldName));
 
@@ -246,6 +246,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		branchDao.assignMicroschemaVersion(project().getLatestBranch(), user(), versionB, createBatch());
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
@@ -326,7 +327,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(container.getUuid());
 		container.setCreated(user());
-		schemaDao.uncache(schemaDao.mergeIntoPersisted(container));
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", creator.create(oldFieldName));
 			container.setLatestVersion(v);
@@ -364,6 +365,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		branchDao.assignSchemaVersion(project().getLatestBranch(), user, versionB, batch);
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
@@ -412,7 +414,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
-		microschemaDao.uncache(container);
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(oldFieldName));
 
 		// create version 2 of the microschema (with the field renamed)
@@ -441,6 +442,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the micronode
 		HibJob job = branchDao.assignMicroschemaVersion(project().getLatestBranch(), user(), versionB, createBatch());
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 		if (job != null) {
 			triggerAndWaitForJob(job.getUuid());
 		} else {
@@ -536,7 +538,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 				container.setLatestVersion(v);
 			});
 			versionAUuid.set(versionA.getUuid());
-			schemaDao.uncache(schemaDao.mergeIntoPersisted(container));
+			schemaDao.mergeIntoPersisted(container);
 			schemaUuid.set(container.getUuid());
 
 			// create version 2 of the schema (with the field modified)
@@ -670,7 +672,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 			container.setName(microschemaName);
 			container.setCreated(user());
 			microschemaUuid.set(container.getUuid());
-			microschemaDao.uncache(container);
 			HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldFieldSchema.get());
 			versionAUuid.set(versionA.getUuid());
 
@@ -817,7 +818,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
-		schemaDao.uncache(schemaDao.mergeIntoPersisted(container));
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldField);
 			container.setLatestVersion(v);
@@ -849,6 +850,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionB, batch);
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
 		context.setBranch(project().getLatestBranch());
@@ -897,7 +899,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.generateBucketId();
 		container.setName(microschemaName);
 		container.setCreated(user());
-		microschemaDao.uncache(container);
+
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
 
 		// create version 2 of the schema (with the field renamed)
@@ -922,6 +924,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the micronode
 		branchDao.assignMicroschemaVersion(project().getLatestBranch(), user(), versionB, createBatch());
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
+		
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);
@@ -1001,7 +1005,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(UUIDUtil.randomUUID());
 		container.setCreated(user());
 
-		schemaDao.uncache(schemaDao.mergeIntoPersisted(container));
+		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldField);
 			container.setLatestVersion(v);
@@ -1033,6 +1037,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		branchDao.assignSchemaVersion(project().getLatestBranch(), user, versionB, batch);
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
 		context.setProject(project());
 		context.setBranch(project().getLatestBranch());
@@ -1068,7 +1073,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		HibMicroschema container = microschemaDao.createPersisted(null);
 		container.setName(microschemaName);
 		container.setCreated(user());
-		microschemaDao.uncache(container);
+
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
 
 		// create version 2 of the microschema
@@ -1089,6 +1094,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		branchDao.assignMicroschemaVersion(project().getLatestBranch(), user(), versionB, createBatch());
 		CommonTx.get().commit();
+		CommonTx.get().data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 		MicronodeMigrationContextImpl context = new MicronodeMigrationContextImpl();
 		context.setBranch(project().getLatestBranch());
 		context.setFromVersion(versionA);

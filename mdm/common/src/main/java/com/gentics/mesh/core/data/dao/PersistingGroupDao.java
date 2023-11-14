@@ -152,7 +152,6 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 
 		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 
-		uncache(group);
 		deletePersisted(group);
 
 		for (HibUser affectedUser : affectedUsers) {

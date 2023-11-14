@@ -159,7 +159,7 @@ public interface PersistingMicroschemaDao
 		HibMicroschema microschema = create(ac, batch, uuid);
 		assign(microschema, root, ac.getUser(), batch);
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
-		projectDao.uncache(projectDao.mergeIntoPersisted(root));
+		projectDao.mergeIntoPersisted(root);
 		return microschema;
 	}
 
@@ -184,7 +184,7 @@ public interface PersistingMicroschemaDao
 		}
 		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
-		recache(mergeIntoPersisted(container), container.onCreated());
+		mergeIntoPersisted(container);
 		return container;
 	}
 
@@ -308,7 +308,6 @@ public interface PersistingMicroschemaDao
 			deleteVersion(version, bac);
 		}
 		bac.add(microschema.onDeleted());
-		uncache(microschema);
 		deletePersisted(microschema);
 	}
 

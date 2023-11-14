@@ -45,8 +45,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 			// TODO add permission check
 			PersistingUserDao userDao = CommonTx.get().userDao();
 			HibUser requestUser = userDao.mergeIntoPersisted(ac.getUser());
-			userDao.uncache(requestUser);
-			return tx.userDao().transformToRestSync(requestUser, ac, 0);
+			return userDao.transformToRestSync(requestUser, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
 
