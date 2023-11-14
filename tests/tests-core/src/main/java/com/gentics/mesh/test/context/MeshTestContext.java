@@ -160,8 +160,6 @@ public class MeshTestContext implements TestRule {
 	public void setup(MeshTestSetting settings) throws Exception {
 		meshTestContextProvider.getInstanceProvider().initMeshData(settings, meshDagger);
 		initFolders(mesh.getOptions());
-		boolean setAdminPassword = settings.optionChanger() != MeshCoreOptionChanger.INITIAL_ADMIN_PASSWORD;
-		setupData(mesh.getOptions(), setAdminPassword);
 		listenToSearchIdleEvent();
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES6:
@@ -171,6 +169,8 @@ public class MeshTestContext implements TestRule {
 		default:
 			break;
 		}
+		boolean setAdminPassword = settings.optionChanger() != MeshCoreOptionChanger.INITIAL_ADMIN_PASSWORD;
+		setupData(mesh.getOptions(), setAdminPassword);
 		if (settings.startServer()) {
 			setupRestEndpoints(settings);
 		}
