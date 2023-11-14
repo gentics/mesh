@@ -30,7 +30,7 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	 * @param entity
 	 */
 	default void uncache(T entity) {
-		maybeGetCache().ifPresent(cache -> cache.clear(entity.getName()));
+//		maybeGetCache().ifPresent(cache -> cache.clear(entity.getName()));
 	}
 
 	/**
@@ -40,7 +40,8 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	 * @param event
 	 */
 	default void recache(T entity, MeshEventModel event) {
-		uncache(entity);
-		Tx.maybeGet().map(CommonTx.class::cast).map(ctx -> ctx.data().getOrCreateEventQueueBatch()).ifPresent(bp -> bp.add(event));
+//		uncache(entity);
+		Tx.maybeGet().map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
+//		Tx.maybeGet().map(CommonTx.class::cast).map(ctx -> ctx.data().getOrCreateEventQueueBatch()).ifPresent(bp -> bp.add(event));
 	}
 }

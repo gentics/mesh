@@ -391,6 +391,7 @@ public class TestDataProvider {
 		userInfo = createUserInfo("joe1", "Joe", "Doe");
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		Tx.get().commit();
+		Tx.get().createBatch().dispatch();
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
 		HibUser jobUser = userInfo.getUser();

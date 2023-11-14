@@ -135,11 +135,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 
 		mergeIntoPersisted(project, branch);
 
-		maybeGetCache().ifPresent(cache -> {
-			cache.clear(name);
-			cache.clear(getCacheKey(project, name));
-			CommonTx.get().data().getOrCreateEventQueueBatch().add(branch.onCreated());
-		});
+		batch.add(branch.onCreated());
+//		maybeGetCache().ifPresent(cache -> {
+//			cache.clear(name);
+//			cache.clear(getCacheKey(project, name));
+//			CommonTx.get().data().getOrCreateEventQueueBatch().add(branch.onCreated());
+//		});
 		return branch;
 	}
 

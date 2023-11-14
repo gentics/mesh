@@ -34,7 +34,7 @@ public class NameCacheTest extends AbstractMeshTest {
 	@Test
 	public void testCreateProject() {
 		testCreation("project", 
-				(name, tx) -> tx.projectDao().create(name, "localhost", false, "", user(), schemaContainer("folder").getLatestVersion(), data().createBatch()), 
+				(name, tx) -> tx.projectDao().create(name, "localhost", false, "", user(), schemaContainer("folder").getLatestVersion(), tx.createBatch()), 
 				(name, tx) -> tx.projectDao().findByName(name));
 	}
 
@@ -45,7 +45,7 @@ public class NameCacheTest extends AbstractMeshTest {
 
 	@Test
 	public void testCreateBranch() {
-		testCreation("branch", (name, tx) -> tx.branchDao().create(project(), name, user(), data().createBatch()), (name, tx) -> tx.branchDao().findByName(project(), name));
+		testCreation("branch", (name, tx) -> tx.branchDao().create(project(), name, user(), tx.createBatch()), (name, tx) -> tx.branchDao().findByName(project(), name));
 	}
 
 	@Test
@@ -87,7 +87,7 @@ public class NameCacheTest extends AbstractMeshTest {
 	@Test
 	public void testCreateMicroschema() {
 		testCreation("microschema", 
-				(name, tx) -> tx.microschemaDao().create(new MicroschemaModelImpl().setName(name), user(), data().createBatch()),
+				(name, tx) -> tx.microschemaDao().create(new MicroschemaModelImpl().setName(name), user(), tx.createBatch()),
 				(name, tx) -> tx.microschemaDao().findByName(name));
 	}
 
@@ -98,13 +98,17 @@ public class NameCacheTest extends AbstractMeshTest {
 			E entity = lookup.apply(name, tx);
 
 			assertNull(entity);
+		});
 
-			entity = creator.apply(name, tx);
+		tx(tx -> {
+			E entity = creator.apply(name, tx);
 
 			assertNotNull(entity);
 			assertEquals(entity.getName(), name);
+		});
 
-			entity = lookup.apply(name, tx);
+		tx(tx -> {
+			E entity = lookup.apply(name, tx);
 
 			assertNotNull(entity);
 			assertEquals(entity.getName(), name);
