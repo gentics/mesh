@@ -155,4 +155,4 @@ client.status().toSingle().subscribe(status -> {
 
 == Use HTTP/2
 
-Since Mesh supports serving over HTTP/2 out of the box, Mesh REST client allows limiting connection protocol to HTTP/2, so instead of time-consuming protocol support check and upgrade the client may use HTTP/2 right away. This is achievable with using Java API `MeshRestClientConfig.setProtocolVersion()`. 
+Since Mesh supports serving over HTTP/2 out of the box, Mesh REST client allows limiting the connection protocol to HTTP/2. Therefore there is no need to do a time-consuming protocol support check and upgrade, since the client may use HTTP/2 right away. This is achievable with using Java API `MeshRestClientConfig.setProtocolVersion()`. 
