@@ -416,11 +416,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					if (node == null) {
 						return null;
 					}
-					List<String> languageTags = getLanguageArgument(env, content);
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<NodeContent, Collection<NodeReferenceIn>> parentLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
-					return parentLoader.load(content).thenApply(c -> {
+					DataLoader<NodeContent, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
+					return byRefLoader.load(new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type)).thenApply(c -> {
 						Stream<NodeReferenceIn> stream = c.stream();
 						Map<String, ?> filterInput = env.getArgument("filter");
 						if (filterInput != null) {
