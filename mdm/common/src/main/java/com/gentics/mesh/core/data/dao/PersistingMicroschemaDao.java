@@ -229,7 +229,8 @@ public interface PersistingMicroschemaDao
 		container.setName(microschema.getName());
 		container.generateBucketId();
 
-		recache(mergeIntoPersisted(container), container.onCreated());
+		uncacheAsync(mergeIntoPersisted(container), container.onCreated());
+		uncacheSync(container);
 		return container;
 	}
 

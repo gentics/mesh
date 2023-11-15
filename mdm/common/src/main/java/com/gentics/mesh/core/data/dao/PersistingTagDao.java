@@ -158,7 +158,8 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
-		recache(mergeIntoPersisted(tag), tag.onCreated());
+		uncacheAsync(mergeIntoPersisted(tag), tag.onCreated());
+		uncacheSync(tag);
 		return tag;
 	}
 

@@ -80,7 +80,8 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		group.setName(name);
 		group.setCreated(user);
 		group.generateBucketId();
-		recache(group, group.onCreated());
+		uncacheAsync(group, group.onCreated());
+		uncacheSync(group);
 		return group;
 	}
 

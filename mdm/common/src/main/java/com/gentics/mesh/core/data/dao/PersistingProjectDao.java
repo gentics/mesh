@@ -158,7 +158,8 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 
 		//root.addItem(project);
 
-		recache(project, project.onCreated());
+		uncacheAsync(project, project.onCreated());
+		uncacheSync(project);
 		return project;
 	}
 
