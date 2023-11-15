@@ -18,7 +18,6 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 		HibLanguage language = createPersisted(uuid);
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
-		//recache(mergeIntoPersisted(language), language.onCreated());
 		uncacheSync(mergeIntoPersisted(language));
 		return language;
 	}

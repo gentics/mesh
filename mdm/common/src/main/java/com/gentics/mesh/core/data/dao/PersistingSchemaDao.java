@@ -217,9 +217,9 @@ public interface PersistingSchemaDao
 		container.setName(schema.getName());
 		container.generateBucketId();
 
-		uncacheAsync(mergeIntoPersisted(container), container.onCreated());
+		addBatchEvent(container.onCreated());
 		uncacheSync(container);
-		return container;
+		return mergeIntoPersisted(container);
 	}
 
 	/**

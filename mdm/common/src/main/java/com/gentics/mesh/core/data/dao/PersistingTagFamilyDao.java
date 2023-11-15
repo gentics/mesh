@@ -93,9 +93,9 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 
 		tagFamily.setProject(project);
 		tagFamily.generateBucketId();
-		uncacheAsync(mergeIntoPersisted(project, tagFamily), tagFamily.onCreated());
+		addBatchEvent(tagFamily.onCreated());
 		uncacheSync(tagFamily);
-		return tagFamily;
+		return mergeIntoPersisted(project, tagFamily);
 	}
 
 	@Override

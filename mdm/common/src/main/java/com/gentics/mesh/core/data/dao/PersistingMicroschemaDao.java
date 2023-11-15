@@ -229,9 +229,9 @@ public interface PersistingMicroschemaDao
 		container.setName(microschema.getName());
 		container.generateBucketId();
 
-		uncacheAsync(mergeIntoPersisted(container), container.onCreated());
+		addBatchEvent(container.onCreated());
 		uncacheSync(container);
-		return container;
+		return mergeIntoPersisted(container);
 	}
 
 	/**

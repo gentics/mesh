@@ -35,10 +35,9 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	/**
 	 * Clear the cached name, along with sending the specified event.
 	 * 
-	 * @param entity
 	 * @param event
 	 */
-	default void uncacheAsync(T entity, MeshEventModel event) {
+	default void addBatchEvent(MeshEventModel event) {
 		Tx.maybeGet().map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
 	}
 }

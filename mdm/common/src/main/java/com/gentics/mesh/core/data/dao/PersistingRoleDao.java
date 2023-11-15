@@ -226,9 +226,9 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		role.setCreated(creator);
 		role.generateBucketId();
 		addRole(role);
-		uncacheAsync(role, role.onCreated());
+		addBatchEvent(role.onCreated());
 		uncacheSync(role);
-		return role;
+		return mergeIntoPersisted(role);
 	}
 
 	@Override
