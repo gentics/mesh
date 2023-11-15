@@ -19,6 +19,8 @@ import com.gentics.mesh.metric.CachingMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Policy.Eviction;
+import com.github.benmanes.caffeine.cache.Weigher;
 
 import io.micrometer.core.instrument.Counter;
 import io.reactivex.Observable;
@@ -52,14 +54,24 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	private final Counter invalidateAllCounter;
 	private final Counter missCounter;
 	private final Counter hitCounter;
+	private final long maxSize;
 
 	private Disposable eventSubscription;
+
 
 	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, EventBusStore eventBusStore, MeshOptions options, MetricsService metricsService,
 							   Predicate<Message<JsonObject>> filter,
 							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, MeshEvent... events) {
+		this(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, Optional.empty(), events);
+	}
+
+	@SuppressWarnings("unchecked")
+	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, EventBusStore eventBusStore, MeshOptions options, MetricsService metricsService,
+							   Predicate<Message<JsonObject>> filter,
+							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, Optional<Weigher<K, V>> maybeWeigher, MeshEvent... events) {
 		this.options = options;
-		Caffeine<Object, Object> cacheBuilder = Caffeine.newBuilder().maximumSize(maxSize);
+		this.maxSize = maxSize;
+		Caffeine<Object, Object> cacheBuilder = maybeWeigher.map(weigher -> (Caffeine<Object, Object>) Caffeine.newBuilder().maximumWeight(maxSize).weigher(weigher)).orElseGet(() -> Caffeine.newBuilder().maximumSize(maxSize));
 		if (expireAfter != null) {
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
 		}
@@ -122,6 +134,16 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 	public long size() {
 		cache.cleanUp();
 		return cache.estimatedSize();
+	}
+
+	@Override
+	public long used() {
+		return cache.policy().eviction().flatMap(ev -> ev.weightedSize().stream().mapToObj(Long::valueOf).findAny()).orElseGet(() -> cache.estimatedSize());
+	}
+
+	@Override
+	public long capacity() {
+		return cache.policy().eviction().map(ev -> ev.getMaximum()).orElse(maxSize);
 	}
 
 	@Override
@@ -225,7 +247,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private String name;
 		private MeshOptions options;
 		private MetricsService metricsService;
-
+		private Optional<Weigher<K, V>> maybeWeigher = Optional.empty();
 
 		/**
 		 * Build the cache instance.
@@ -235,7 +257,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		public EventAwareCache<K, V> build() {
 			Objects.requireNonNull(events, "No events for the cache have been set");
 			Objects.requireNonNull(name, "No name has been set");
-			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, events);
+			EventAwareCacheImpl<K, V> c = new EventAwareCacheImpl<>(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, maybeWeigher, events);
 			if (disabled) {
 				c.disable();
 			}
@@ -360,6 +382,17 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 */
 		public Builder<K, V> name(String name) {
 			this.name = name;
+			return this;
+		}
+
+		/**
+		 * Set the item weigher function
+		 * 
+		 * @param maybeWeigher
+		 * @return Fluent API
+		 */
+		public Builder<K, V> setWeigher(Weigher<K, V> weigher) {
+			this.maybeWeigher = Optional.ofNullable(weigher);
 			return this;
 		}
 	}
