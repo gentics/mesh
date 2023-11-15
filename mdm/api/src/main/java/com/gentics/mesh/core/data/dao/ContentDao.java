@@ -542,6 +542,16 @@ public interface ContentDao {
 	}
 
 	/**
+	 * Batch load the containers, referencing each of the field.
+	 *
+	 * @param fields
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
+	        return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
+	}
+
+	/**
 	 * Delete the field container. This will also delete linked elements like lists. If the container has a "next" container, that container will be deleted as
 	 * well.
 	 *

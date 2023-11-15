@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,6 +13,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.util.Lazy;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -78,29 +78,40 @@ public class NodeReferenceIn {
 		String branchUuid = tx.getBranch(gc).getUuid();
 
 		// content per node
-		Map<HibNode, List<NodeContent>> nodeContent = contents.stream().collect(Collectors.groupingBy(NodeContent::getNode, Collectors.mapping(Function.identity(), Collectors.toList())));
+		Map<HibNode, List<NodeContent>> nodeOriginalContent = contents.stream().collect(Collectors.groupingBy(NodeContent::getNode, Collectors.mapping(Function.identity(), Collectors.toList())));
 
-		// 1. Collecting referencing fields for the nodes
-		return contentDao.getInboundReferences(
-					contents.stream().map(NodeContent::getNode).collect(Collectors.toSet())
-				// 2. Collect the contents of the referencing fields
-				).flatMap(refNode -> refNode.getKey().getReferencingContents()
-						// Filter by type & access
-						.filter(container -> 
-							Optional.ofNullable(nodeContent.get(refNode.getValue())).flatMap(nodeContents -> nodeContents.stream().map(NodeContent::getType).filter(type -> {
-								if (type == DRAFT && !contentDao.isDraft(container, branchUuid)) {
-									return false;
+		// field referencing node
+		Map<HibNodeField, HibNode> refNodes = contentDao.getInboundReferences(nodeOriginalContent.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
+		// field belonging to the referencing content
+		Map<HibNodeField, Collection<HibNodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
+		return fieldReferencingContents.entrySet().stream()
+				// get all referencing content
+				.flatMap(fieldReferencingContent -> fieldReferencingContent.getValue().stream()
+					// map each referencing content to the referenced content
+					.flatMap(referencingContent -> nodeOriginalContent.get(refNodes.get(fieldReferencingContent.getKey())).stream()
+							// check type
+							.filter(originalContent -> {
+								ContainerType type = originalContent.getType();
+								if (type == DRAFT && contentDao.isDraft(referencingContent, branchUuid)) {
+									return true;
 								}
-								if (type == PUBLISHED && !contentDao.isPublished(container, branchUuid)) {
-									return false;
+								if (type == PUBLISHED && contentDao.isPublished(referencingContent, branchUuid)) {
+									return true;
 								}
-								return gc.hasReadPerm(container, type);
-							}).findAny()).isPresent())
-						.findAny().stream()
-						.flatMap(referencingContent -> nodeContent.get(refNode.getValue()).stream()
-								.map(content -> Pair.of(new NodeReferenceIn(
-									new NodeContent(null, referencingContent, content.getLanguageFallback(), content.getType()), refNode.getKey()), 
-									content))));
+								return false;
+							})
+							// check perms
+							.filter(originalContent -> gc.hasReadPerm(referencingContent, originalContent.getType()))
+							// tie together
+							.map(originalContent -> Pair.of(referencingContent, originalContent))
+					).map(referencingOriginal -> Pair.of(
+							// convert to the reference-origin pair
+							new NodeReferenceIn(
+									new NodeContent(null, referencingOriginal.getKey(), referencingOriginal.getValue().getLanguageFallback(), referencingOriginal.getValue().getType()), 
+									fieldReferencingContent.getKey()), 
+							referencingOriginal.getValue())));
 	}
 
 	/**
