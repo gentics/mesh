@@ -557,8 +557,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			// TODO handle user create using full node rest model.
 			throw error(BAD_REQUEST, "user_creation_full_node_reference_not_implemented");
 		}
-		mergeIntoPersisted(user);
-		return user;
+		return mergeIntoPersisted(user);
 	}
 
 	@Override
@@ -587,8 +586,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	default HibUser setPassword(HibUser user, String password) {
 		String hashedPassword = Tx.get().passwordEncoder().encode(password);
 		updatePasswordHash(user, hashedPassword);
-		mergeIntoPersisted(user);
-		return user;
+		return mergeIntoPersisted(user);
 	}
 
 	@Override
