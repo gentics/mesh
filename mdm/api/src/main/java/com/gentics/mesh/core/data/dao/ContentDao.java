@@ -548,7 +548,7 @@ public interface ContentDao {
 	 * @return
 	 */
 	default Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
-	        return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
+		return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
 	}
 
 	/**
