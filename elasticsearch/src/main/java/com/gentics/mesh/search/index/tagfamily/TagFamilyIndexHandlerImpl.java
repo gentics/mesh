@@ -147,4 +147,9 @@ public class TagFamilyIndexHandlerImpl extends AbstractIndexHandler<HibTagFamily
 		return Tx.get().tagFamilyDao().findAll().stream();
 	}
 
+	@Override
+	public boolean isDefinitionDataDependent() {
+		// We depend on the project.
+		return true;
+	}
 }
