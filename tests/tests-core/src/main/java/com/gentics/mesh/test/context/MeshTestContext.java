@@ -789,6 +789,14 @@ public class MeshTestContext implements TestRule {
 		});
 	}
 
+	public void waitAndClearSearchIdleEvents() {
+		if (null == mesh.getOptions().getSearchOptions().getUrl()) {
+			return;
+		}
+		waitForSearchIdleEvent();
+		trackingSearchProvider.clear().blockingAwait();
+	}
+
 	/**
 	 * Waits until all requests have been sent successfully.
 	 */

@@ -17,7 +17,7 @@ public class NodeLotOfChildrenTest extends AbstractMassiveNodeLoadTest {
 	@Test
 	public void testReadAll() {
 		String uuid = tx(() -> project().getBaseNode().getUuid());
-		NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
-		assertEquals("The subnode did not contain the created node", numOfNodesPerLevel + 3, nodeList.getData().size());
+		NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentFolderUuid, new VersioningParametersImpl().draft()));
+		assertEquals("The subnode did not contain the created node", numOfNodesPerLevel, nodeList.getData().size());
 	}
 }
