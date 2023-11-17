@@ -12,13 +12,14 @@ import com.gentics.mesh.event.EventQueueBatch;
  * @author plyhun
  *
  */
-public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<HibLanguage> {
+public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<HibLanguage>, PersistingNamedEntityDao<HibLanguage> {
 
 	default HibLanguage create(String languageName, String languageTag, String uuid) {
 		HibLanguage language = createPersisted(uuid);
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
-		return mergeIntoPersisted(language);
+		uncacheSync(mergeIntoPersisted(language));
+		return language;
 	}
 
 	@Override

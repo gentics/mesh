@@ -2,6 +2,7 @@ package com.gentics.mesh.cache;
 
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_UPDATED;
 
@@ -24,7 +25,8 @@ public class ProjectNameCacheImpl extends AbstractNameCache<HibProject> implemen
 			CLUSTER_NODE_JOINED,
 			CLUSTER_DATABASE_CHANGE_STATUS,
 			PROJECT_DELETED, 
-			PROJECT_UPDATED 
+			PROJECT_UPDATED,
+			PROJECT_CREATED
 		});
 	}
 }

@@ -10,8 +10,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -21,6 +23,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -39,7 +42,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
+public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, PersistingNamedEntityDao<HibTag> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagDao.class);
 
@@ -132,7 +135,6 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 
 		tagFamily.addTag(newTag);
 
-		batch.add(newTag.onCreated());
 		return newTag;
 	}
 
@@ -156,8 +158,9 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
-		mergeIntoPersisted(tag);
-		return tag;
+		addBatchEvent(tag.onCreated());
+		uncacheSync(tag);
+		return mergeIntoPersisted(tag);
 	}
 
 	@Override
@@ -247,5 +250,10 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag> {
 	@Override
 	default void addTag(HibNode node, HibTag tag, HibBranch branch) {
 		node.addTag(tag, branch);
+	}
+
+	@Override
+	default Optional<NameCache<HibTag>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().tagNameCache());
 	}
 }
