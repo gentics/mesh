@@ -3,11 +3,19 @@ package com.gentics.mesh.graphql.model;
 import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.util.Lazy;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.db.Tx;
@@ -56,6 +64,54 @@ public class NodeReferenceIn {
 					.map(referencingContent -> new NodeReferenceIn(
 						new NodeContent(null, referencingContent, content.getLanguageFallback(), type),
 						ref)));
+	}
+
+	/**
+	 * Creates a stream of incoming node references for the given content.
+	 * @param gc
+	 * @param contentTypes a content/type pair
+	 * @return
+	 */
+	public static Stream<Pair<NodeReferenceIn, NodeContent>> fromContent(GraphQLContext gc, Collection<NodeContent> contents) {
+		Tx tx = Tx.get();
+		ContentDao contentDao = tx.contentDao();
+		String branchUuid = tx.getBranch(gc).getUuid();
+
+		// content per node
+		Map<HibNode, List<NodeContent>> nodeOriginalContent = contents.stream().collect(Collectors.groupingBy(NodeContent::getNode, Collectors.mapping(Function.identity(), Collectors.toList())));
+
+		// field referencing node
+		Map<HibNodeField, HibNode> refNodes = contentDao.getInboundReferences(nodeOriginalContent.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
+		// field belonging to the referencing content
+		Map<HibNodeField, Collection<HibNodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
+		return fieldReferencingContents.entrySet().stream()
+				// get all referencing content
+				.flatMap(fieldReferencingContent -> fieldReferencingContent.getValue().stream()
+					// map each referencing content to the referenced content
+					.flatMap(referencingContent -> nodeOriginalContent.get(refNodes.get(fieldReferencingContent.getKey())).stream()
+							// check type
+							.filter(originalContent -> {
+								ContainerType type = originalContent.getType();
+								if (type == DRAFT && contentDao.isDraft(referencingContent, branchUuid)) {
+									return true;
+								}
+								if (type == PUBLISHED && contentDao.isPublished(referencingContent, branchUuid)) {
+									return true;
+								}
+								return false;
+							})
+							// check perms
+							.filter(originalContent -> gc.hasReadPerm(referencingContent, originalContent.getType()))
+							// tie together
+							.map(originalContent -> Pair.of(referencingContent, originalContent))
+					).map(referencingOriginal -> Pair.of(
+							// convert to the reference-origin pair
+							new NodeReferenceIn(
+									new NodeContent(null, referencingOriginal.getKey(), referencingOriginal.getValue().getLanguageFallback(), referencingOriginal.getValue().getType()), 
+									fieldReferencingContent.getKey()), 
+							referencingOriginal.getValue())));
 	}
 
 	/**

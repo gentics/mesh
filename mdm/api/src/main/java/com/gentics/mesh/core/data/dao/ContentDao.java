@@ -512,6 +512,15 @@ public interface ContentDao {
 	Stream<HibNodeField> getInboundReferences(HibNode node);
 
 	/**
+	 * Gets all NodeField edges that reference the nodes.
+	 * 
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, HibNode>> getInboundReferences(Collection<HibNode> nodes) {
+		return nodes.stream().flatMap(node -> getInboundReferences(node).map(ref -> Pair.of(ref, node)));
+	}
+
+	/**
 	 * Return the index name for the given parameters.
 	 *
 	 * @param projectUuid
@@ -530,6 +539,16 @@ public interface ContentDao {
 	 */
 	default String getDocumentId(HibNodeFieldContainer content) {
 		return ContentDao.composeDocumentId(getNode(content).getUuid(), getLanguageTag(content));
+	}
+
+	/**
+	 * Batch load the containers, referencing each of the field.
+	 *
+	 * @param fields
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
+		return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
 	}
 
 	/**

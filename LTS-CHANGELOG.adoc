@@ -24,6 +24,8 @@ icon:check[] Core: The cache internal Java API has been presented a new construc
 
 icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
 
+icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
+
 [[v1.10.19]]
 == 1.10.19 (02.11.2023)
 

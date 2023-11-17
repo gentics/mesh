@@ -18,6 +18,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -154,8 +155,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		DataLoader<HibNode, List<NodeContent>> breadcrumbLoader = env.getDataLoader(NodeDataLoader.BREADCRUMB_LOADER_KEY);
 		return breadcrumbLoader.load(content.getNode(), context).thenApply(contents -> {
 			return contents.stream()
-					.filter(item -> item != null && item.getContainer() != null)
-					.filter(content1 -> gc.hasReadPerm(content1, type))
+					.filter(item -> item != null && item.getContainer() != null && gc.hasReadPerm(item, type))
 					.collect(Collectors.toList());
 		});
 	}
@@ -407,16 +407,28 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(createNodeVersionArg())
 				.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
-					ContainerType type = getNodeVersion(env);
-					Stream<NodeReferenceIn> stream = NodeReferenceIn.fromContent(context, content, type);
-					Map<String, ?> filterInput = env.getArgument("filter");
-					if (filterInput != null) {
-						stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+					if (content == null) {
+						return null;
 					}
+					HibNode node = content.getNode();
+					if (node == null) {
+						return null;
+					}
+					ContainerType type = getNodeVersion(env);
 
-					return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
-				}).build(),
+					DataLoader<NodeContent, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
+					return byRefLoader.load(new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type)).thenApply(c -> {
+						Stream<NodeReferenceIn> stream = c.stream();
+						Map<String, ?> filterInput = env.getArgument("filter");
+						if (filterInput != null) {
+							stream = stream.filter(nodeReferenceFilter(context).createPredicate(filterInput));
+						}
+						return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
+					});
+				})
+				.build(),
 
 			// Content specific fields
 
