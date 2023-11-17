@@ -790,7 +790,7 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void waitAndClearSearchIdleEvents() {
-		if (null == mesh.getOptions().getSearchOptions().getUrl()) {
+		if (null == mesh || null == mesh.getOptions().getSearchOptions().getUrl()) {
 			return;
 		}
 		waitForSearchIdleEvent();
