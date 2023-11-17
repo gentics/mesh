@@ -14,19 +14,27 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.util.Lazy;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.dao.ContentDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Represents an incoming node reference. Use the fromContent methods to create a stream of references.
  * {@link #getFieldName()} and {@link #getMicronodeFieldName()} are lazy to avoid possibly unnecessary database calls.
  */
 public class NodeReferenceIn {
+	private static final Logger log = LoggerFactory.getLogger(NodeReferenceIn.class);
+
 	private final NodeContent node;
 	private final Lazy<String> fieldName;
 	private final Lazy<String> micronodeFieldName;
@@ -73,8 +81,8 @@ public class NodeReferenceIn {
 	 * @return
 	 */
 	public static Stream<Pair<NodeReferenceIn, NodeContent>> fromContent(GraphQLContext gc, Collection<NodeContent> contents) {
-		Tx tx = Tx.get();
-		ContentDao contentDao = tx.contentDao();
+		CommonTx tx = CommonTx.get();
+		PersistingContentDao contentDao = tx.contentDao();
 		String branchUuid = tx.getBranch(gc).getUuid();
 
 		// content per node
@@ -86,26 +94,33 @@ public class NodeReferenceIn {
 		// field belonging to the referencing content
 		Map<HibNodeField, Collection<HibNodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
+		if (tx.data().options().hasDatabaseLevelCache()) {
+			// Here we preload the content nodes to the cache for performance reasons.
+			contentDao.getNodes(fieldReferencingContents.values().stream().flatMap(Collection::stream).collect(Collectors.toSet())).forEach(pair -> {
+				if (log.isTraceEnabled()) {
+					log.trace("{} belongs to {}", pair.getLeft().getId(), pair.getRight().getId());
+				}
+			});
+		}
+
+		Map<HibNodeFieldContainer, Collection<? extends HibNodeFieldContainerEdge>> referencingContentEdges = contentDao.getContainerEdges(fieldReferencingContents.values().stream().flatMap(Collection::stream).collect(Collectors.toSet())).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+
 		return fieldReferencingContents.entrySet().stream()
 				// get all referencing content
 				.flatMap(fieldReferencingContent -> fieldReferencingContent.getValue().stream()
 					// map each referencing content to the referenced content
-					.flatMap(referencingContent -> nodeOriginalContent.get(refNodes.get(fieldReferencingContent.getKey())).stream()
-							// check type
-							.filter(originalContent -> {
-								ContainerType type = originalContent.getType();
-								if (type == DRAFT && contentDao.isDraft(referencingContent, branchUuid)) {
-									return true;
-								}
-								if (type == PUBLISHED && contentDao.isPublished(referencingContent, branchUuid)) {
-									return true;
-								}
-								return false;
-							})
-							// check perms
-							.filter(originalContent -> gc.hasReadPerm(referencingContent, originalContent.getType()))
-							// tie together
-							.map(originalContent -> Pair.of(referencingContent, originalContent))
+					.flatMap(referencingContent -> {
+							return nodeOriginalContent.get(refNodes.get(fieldReferencingContent.getKey())).stream()
+									// check type & perms
+									.filter(originalContent -> 
+											referencingContentEdges.get(referencingContent).stream().anyMatch(edge -> 
+												// type
+												contentDao.isType(edge, originalContent.getType(), branchUuid) && 
+												// perms
+												tx.userDao().hasReadPermission(gc.getUser(), edge, branchUuid, originalContent.getType().getHumanCode())))
+									// tie together
+									.map(originalContent -> Pair.of(referencingContent, originalContent));
+						}
 					).map(referencingOriginal -> Pair.of(
 							// convert to the reference-origin pair
 							new NodeReferenceIn(

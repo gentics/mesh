@@ -591,6 +591,15 @@ public interface ContentDao {
 	HibNode getNode(HibNodeFieldContainer content);
 
 	/**
+	 * Get the parent nodes to which the containers belong.
+	 *
+	 * @return
+	 */
+	default Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer>  contents) {
+		return contents.stream().map(content -> Pair.of(content, getNode(content)));
+	}
+
+	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found.
 	 *
@@ -974,6 +983,15 @@ public interface ContentDao {
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
+
+	/**
+	 * Return a stream of all the edges of all containers.
+	 * @param container
+	 * @return
+	 */
+	default Stream<Pair<HibNodeFieldContainer, Collection<? extends HibNodeFieldContainerEdge>>> getContainerEdges(Collection<HibNodeFieldContainer> containers) {
+		return containers.stream().map(container -> Pair.of(container, getContainerEdges(container).collect(Collectors.toSet())));
+	}
 
 	/**
 	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting

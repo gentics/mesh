@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.annotation.Setter;
@@ -50,4 +51,9 @@ public class OrientDBMeshOptions extends MeshOptions {
 		validate();
 	}
 
+	@Override
+	@JsonIgnore
+	public boolean hasDatabaseLevelCache() {
+		return false;
+	}
 }

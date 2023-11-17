@@ -26,6 +26,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeMigrationUser;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.node.HibNode;
@@ -33,6 +34,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -280,16 +282,31 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		return user;
 	}
 
+	/**
+	 * Check if a node container has requested read permissions.
+	 */
 	default boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
-		ContentDao contentDao = Tx.get().contentDao();
-		HibNode node = contentDao.getNode(container);
+		return Tx.get().contentDao().getContainerEdges(container).anyMatch(edge -> hasReadPermission(user, edge, branchUuid, requestedVersion));
+	}
+
+	/**
+	 * Check if a node container edge has requested read permissions.
+	 * 
+	 * @param user
+	 * @param edge
+	 * @param branchUuid
+	 * @param requestedVersion
+	 * @return
+	 */
+	default boolean hasReadPermission(HibUser user, HibNodeFieldContainerEdge edge, String branchUuid, String requestedVersion) {
+		PersistingContentDao contentDao = CommonTx.get().contentDao();
+		HibNode node = edge.getNode();
 		ContainerType type = ContainerType.forVersion(requestedVersion);
 
 		if (ContainerType.PUBLISHED.equals(type)) {
-			boolean published = contentDao.isPublished(container, branchUuid);
+			boolean published = contentDao.isType(edge, type, branchUuid);
 			return published && hasPermission(user, node, READ_PUBLISHED_PERM);
 		}
-
 		return hasPermission(user, node, READ_PERM);
 	}
 
