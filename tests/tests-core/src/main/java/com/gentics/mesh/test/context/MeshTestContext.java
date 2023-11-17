@@ -794,7 +794,9 @@ public class MeshTestContext implements TestRule {
 			return;
 		}
 		waitForSearchIdleEvent();
-		trackingSearchProvider.clear().blockingAwait();
+		if (trackingSearchProvider != null) {
+			trackingSearchProvider.clear().blockingAwait();
+		}
 	}
 
 	/**
