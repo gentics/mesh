@@ -21,44 +21,49 @@ public class NamedEntityDuplicationTest extends AbstractMeshTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateProject() {
-		testDuplicate("project", (name, tx) -> Tx.get().projectDao().create(name, "localhost", false, "", user(), schemaContainer("folder").getLatestVersion(), data().createBatch()));
+		testDuplicate("project", (name, tx) -> tx.projectDao().create(name, "localhost", false, "", user(), schemaContainer("folder").getLatestVersion(), data().createBatch()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateRole() {
-		testDuplicate("role", (name, tx) -> Tx.get().roleDao().create(name, user()));
+		testDuplicate("role", (name, tx) -> tx.roleDao().create(name, user()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateBranch() {
-		testDuplicate("branch", (name, tx) -> Tx.get().branchDao().create(project(), name, user(), data().createBatch()));
+		testDuplicate("branch", (name, tx) -> tx.branchDao().create(project(), name, user(), data().createBatch()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateTag() {
-		testDuplicate("tag", (name, tx) -> Tx.get().tagDao().create(tagFamily("colors"), name, project(), user()));
+		testDuplicate("tag", (name, tx) -> tx.tagDao().create(tagFamily("colors"), name, project(), user()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateTagFamily() {
-		testDuplicate("tagfamily", (name, tx) -> Tx.get().tagFamilyDao().create(project(), name, user()));
+		testDuplicate("tagfamily", (name, tx) -> tx.tagFamilyDao().create(project(), name, user()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateGroup() {
-		testDuplicate("group", (name, tx) -> Tx.get().groupDao().create(name, user()));
+		testDuplicate("group", (name, tx) -> tx.groupDao().create(name, user()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateLanguage() {
-		testDuplicate("language", (name, tx) -> Tx.get().languageDao().create(name, "lng"));
+		testDuplicate("language", (name, tx) -> tx.languageDao().create(name, "lng"));
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testDuplicateUser() {
+		testDuplicate("user", (name, tx) -> tx.userDao().create(name, user()));
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateSchema() {
 		testDuplicate("schema", (name, tx) -> {
 			try {
-				return Tx.get().schemaDao().create(new SchemaModelImpl().setName(name), user());
+				return tx.schemaDao().create(new SchemaModelImpl().setName(name), user());
 			} catch (MeshSchemaException e) {
 				throw new IllegalStateException(e);
 			}
@@ -67,18 +72,18 @@ public class NamedEntityDuplicationTest extends AbstractMeshTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testDuplicateMicroschema() {
-		testDuplicate("microschema", (name, tx) -> Tx.get().microschemaDao().create(new MicroschemaModelImpl().setName(name), user(), data().createBatch()));
+		testDuplicate("microschema", (name, tx) -> tx.microschemaDao().create(new MicroschemaModelImpl().setName(name), user(), data().createBatch()));
 	}
 
 	protected <E extends HibNamedElement> void testDuplicate(String entityName, BiFunction<String, Tx, E> creator) {
 		String name = entityName + "_" + Long.toHexString(System.currentTimeMillis());
 
 		tx(tx -> {
-			E role = creator.apply(name, tx);
-			assertNotNull(role);
-			assertEquals(name, role.getName());
+			E entity = creator.apply(name, tx);
+			assertNotNull(entity);
+			assertEquals(name, entity.getName());
 
-			role = creator.apply(name, tx);
+			entity = creator.apply(name, tx);
 		});
 	}
 }

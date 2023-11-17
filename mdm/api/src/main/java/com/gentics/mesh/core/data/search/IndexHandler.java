@@ -165,4 +165,13 @@ public interface IndexHandler<T extends HibBaseElement> {
 	 * @return completable
 	 */
 	Completable check();
+
+	/**
+	 * Does definition of the index of this type depend on the data?
+	 * 
+	 * @return
+	 */
+	default boolean isDefinitionDataDependent() {
+		return false;
+	}
 }

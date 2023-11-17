@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -183,18 +185,20 @@ public interface BaseHelper {
 	 * @param modifier
 	 */
 	private void modifyUser(Consumer<HibUser> modifier) {
-		Runnable modifyAction = () -> {
-			HibUser user = CommonTx.get().userDao().findByUuid(user().getUuid());
+		Consumer<Tx> modifyAction = tx -> {
+			PersistingUserDao userDao = tx.<CommonTx>unwrap().userDao();
+			HibUser user = userDao.findByUuid(user().getUuid());
 			modifier.accept(user);
-			CommonTx.get().userDao().mergeIntoPersisted(user);
+			userDao.mergeIntoPersisted(user);
 		};
 
 		CommonTx tx = CommonTx.get();
 		if (tx != null) {
-			modifyAction.run();
+			modifyAction.accept(tx);
 			tx.commit();
+			tx.data().maybeGetEventQueueBatch().ifPresent(EventQueueBatch::dispatch);
 		} else {
-			tx(modifyAction::run);
+			tx(modifyAction::accept);
 		}
 	}
 

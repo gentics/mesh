@@ -5,7 +5,6 @@ import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
 import javax.inject.Inject;
 
-import dagger.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.mesh.Mesh;
@@ -52,7 +51,6 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
@@ -63,6 +61,7 @@ import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
+import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -335,10 +334,5 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public PasswordEncoder passwordEncoder() {
 		return security.passwordEncoder();
-	}
-
-	@Override
-	public EventQueueBatch createBatch() {
-		return txData.mesh().batchProvider().get();
 	}
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphdb.tx.impl;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
@@ -12,6 +14,7 @@ import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.event.EventQueueBatch;
 
 import io.vertx.core.Vertx;
 
@@ -23,6 +26,7 @@ public class TxDataImpl implements CommonTxData {
 	private final OrientDBBootstrapInitializer boot;
 	private final OrientDBMeshOptions options;
 	private final PermissionRoots permissionRoots;
+	private Optional<EventQueueBatch> qBatch;
 
 	@Inject
 	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot,
@@ -30,6 +34,7 @@ public class TxDataImpl implements CommonTxData {
 		this.options = options;
 		this.boot = boot;
 		this.permissionRoots = permissionRoots;
+		this.qBatch = Optional.empty();
 	}
 
 	@Override
@@ -70,5 +75,15 @@ public class TxDataImpl implements CommonTxData {
 	@Override
 	public S3BinaryStorage s3BinaryStorage() {
 		return mesh().s3binaryStorage();
+	}
+
+	@Override
+	public void setEventQueueBatch(EventQueueBatch batch) {
+		this.qBatch = Optional.ofNullable(batch);
+	}
+
+	@Override
+	public Optional<EventQueueBatch> maybeGetEventQueueBatch() {
+		return qBatch;
 	}
 }
