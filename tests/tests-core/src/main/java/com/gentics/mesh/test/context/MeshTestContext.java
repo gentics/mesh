@@ -84,6 +84,8 @@ import okhttp3.OkHttpClient;
 
 public class MeshTestContext implements TestRule {
 
+	public static final String UNREACHABLE_HOST = "http://localhost:1";
+
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 		System.setProperty("memory.directMemory.preallocate", "false");
@@ -606,7 +608,7 @@ public class MeshTestContext implements TestRule {
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
 			if (settings.elasticsearch() == UNREACHABLE) {
-				searchOptions.setUrl("http://localhost:1");
+				searchOptions.setUrl(UNREACHABLE_HOST);
 			} else {
 				searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 			}
@@ -790,7 +792,7 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void waitAndClearSearchIdleEvents() {
-		if (null == mesh || null == mesh.getOptions().getSearchOptions().getUrl()) {
+		if (null == mesh || null == mesh.getOptions().getSearchOptions().getUrl() || UNREACHABLE_HOST.equals(mesh.getOptions().getSearchOptions().getUrl())) {
 			return;
 		}
 		waitForSearchIdleEvent();
