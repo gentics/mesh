@@ -17,6 +17,17 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.20]]
+== 1.10.20 (17.11.2023)
+
+icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
+
+icon:check[] Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
+
+icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
+
+icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
+
 [[v1.10.19]]
 == 1.10.19 (02.11.2023)
 

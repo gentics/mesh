@@ -1696,7 +1696,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("slug", FieldUtil.createStringField(newSlug));
 
 		// 3. Invoke update
-		searchProvider().clear().blockingAwait();
+		waitAndClearSearchIdleEvents();
 
 		expect(NODE_UPDATED).match(1, NodeMeshEventModel.class, event -> {
 			assertThat(event)

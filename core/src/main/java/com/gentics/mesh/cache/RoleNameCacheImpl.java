@@ -22,7 +22,7 @@ public class RoleNameCacheImpl extends AbstractNameCache<HibRole> implements Rol
 	@Inject
 	public RoleNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
 		super("rolename", factory, registry, new MeshEvent[] {
-				CLUSTER_NODE_JOINED, CLUSTER_DATABASE_CHANGE_STATUS, MeshEvent.ROLE_UPDATED, MeshEvent.ROLE_DELETED
+				CLUSTER_NODE_JOINED, CLUSTER_DATABASE_CHANGE_STATUS, MeshEvent.ROLE_UPDATED, MeshEvent.ROLE_DELETED, MeshEvent.ROLE_CREATED
 		});
 	}
 }

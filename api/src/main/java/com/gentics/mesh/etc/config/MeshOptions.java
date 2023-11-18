@@ -590,4 +590,6 @@ public abstract class MeshOptions implements Option {
 	public void validate(MeshOptions options) {
 		validate();
 	}
+
+	public abstract boolean hasDatabaseLevelCache();
 }

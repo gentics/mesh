@@ -1,5 +1,14 @@
 package com.gentics.mesh.cache;
 
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
+import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_CREATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_DELETED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_FAMILY_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.TAG_UPDATED;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -19,7 +28,7 @@ public class TagNameCacheImpl extends AbstractNameCache<HibTag> implements TagNa
 	@Inject
 	public TagNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {
 		super("tagname", factory, registry, new MeshEvent[] {
-			MeshEvent.TAG_DELETED, MeshEvent.TAG_UPDATED, MeshEvent.TAG_FAMILY_DELETED, MeshEvent.TAG_FAMILY_UPDATED
+				CLUSTER_NODE_JOINED, CLUSTER_DATABASE_CHANGE_STATUS, TAG_DELETED, TAG_UPDATED, TAG_FAMILY_DELETED, TAG_FAMILY_UPDATED, TAG_FAMILY_CREATED, TAG_CREATED
 		});
 	}
 }

@@ -78,6 +78,7 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 	@Before
 	public void setupEventAsserter() {
 		eventAsserter = new EventAsserter(getTestContext());
+		testContext.waitAndClearSearchIdleEvents();
 	}
 
 	@After

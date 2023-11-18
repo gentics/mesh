@@ -166,6 +166,10 @@ public interface EventHelper extends BaseHelper {
 		getTestContext().waitForSearchIdleEvent();
 	}
 
+	default void waitAndClearSearchIdleEvents() {
+		getTestContext().waitAndClearSearchIdleEvents();
+	}
+
 	default void waitForSearchIdleEvent(Completable completable) {
 		waitForEvent(MeshEvent.SEARCH_IDLE, () -> {
 			completable.subscribe(() -> vertx().eventBus().publish(MeshEvent.SEARCH_FLUSH_REQUEST.address, null));

@@ -61,4 +61,10 @@ public class OrientDBMeshOptions extends MeshOptions {
 		storageOptions.setNativeQueryFiltering(nativeQueryFiltering);
 		return this;
 	}
+
+	@Override
+	@JsonIgnore
+	public boolean hasDatabaseLevelCache() {
+		return false;
+	}
 }

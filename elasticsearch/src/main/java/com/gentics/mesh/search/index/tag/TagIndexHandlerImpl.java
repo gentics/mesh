@@ -159,4 +159,9 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 		return Tx.get().tagDao().findAll().stream();
 	}
 
+	@Override
+	public boolean isDefinitionDataDependent() {
+		// We depend on the project.
+		return true;
+	}
 }

@@ -9,7 +9,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -38,22 +41,22 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	}
 
 	public DummySearchProviderAssert recordedStoreEvents(int count) {
+		return recordedEvents(p -> p.getStoreEvents().keySet(), takeAll -> true, count);
+	}
+
+	public DummySearchProviderAssert recordedEvents(Function<TrackingSearchProvider, Collection<String>> getter, Predicate<String> filter, int count) {
 		isNotNull();
-		String info = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + info + "\n}", count, actual
-				.getStoreEvents().size());
+		String info = getter.apply(actual).stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		int found = getter.apply(actual).size();
+		if (found != count) {
+			failWithMessage("The search provider did not record the correct amount {%s} of events. Found {%s} events: {\n" + info + "\n}",
+					count, found);
+		}
 		return this;
 	}
 
 	public DummySearchProviderAssert recordedDeleteEvents(int count) {
-		isNotNull();
-		String info = actual.getDeleteEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-		int found = actual.getDeleteEvents().size();
-		if (found != count) {
-			failWithMessage("The search provider did not record the correct amount {%s} of delete events. Found {%s} events: {\n" + info + "\n}",
-					count, found);
-		}
-		return this;
+		return recordedEvents(TrackingSearchProvider::getDeleteEvents, takeAll -> true, count);
 	}
 
 	public DummySearchProviderAssert hasNoStoreEvents() {
