@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
@@ -38,6 +39,6 @@ public interface PersistingNamedEntityDao<T extends HibNamedElement> {
 	 * @param event
 	 */
 	default void addBatchEvent(MeshEventModel event) {
-		Tx.maybeGet().map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
+		Tx.maybeGet().filter(tx -> tx.<CommonTx>unwrap().data().isVertxReady()).map(tx -> tx.createBatch()).ifPresent(bp -> bp.add(event));
 	}
 }
