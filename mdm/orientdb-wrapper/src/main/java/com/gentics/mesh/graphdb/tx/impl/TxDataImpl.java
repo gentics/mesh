@@ -63,6 +63,11 @@ public class TxDataImpl implements CommonTxData {
 	}
 
 	@Override
+	public boolean isVertxReady() {
+		return boot.isVertxReady();
+	}
+
+	@Override
 	public ServerSchemaStorage serverSchemaStorage() {
 		return mesh().serverSchemaStorage();
 	}

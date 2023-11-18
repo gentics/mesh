@@ -19,7 +19,6 @@ import com.gentics.mesh.metric.CachingMetric;
 import com.gentics.mesh.metric.MetricsService;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.Policy.Eviction;
 import com.github.benmanes.caffeine.cache.Weigher;
 
 import io.micrometer.core.instrument.Counter;
@@ -65,13 +64,13 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		this(name, maxSize, expireAfter, expireAfterAccess, eventBusStore, options, metricsService, filter, onNext, Optional.empty(), events);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public EventAwareCacheImpl(String name, long maxSize, Duration expireAfter, Duration expireAfterAccess, EventBusStore eventBusStore, MeshOptions options, MetricsService metricsService,
 							   Predicate<Message<JsonObject>> filter,
-							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, Optional<Weigher<K, V>> maybeWeigher, MeshEvent... events) {
+							   BiConsumer<Message<JsonObject>, EventAwareCache<K, V>> onNext, Optional<Weigher<K, Optional<V>>> maybeWeigher, MeshEvent... events) {
 		this.options = options;
 		this.maxSize = maxSize;
-		Caffeine<Object, Object> cacheBuilder = maybeWeigher.map(weigher -> (Caffeine<Object, Object>) Caffeine.newBuilder().maximumWeight(maxSize).weigher(weigher)).orElseGet(() -> Caffeine.newBuilder().maximumSize(maxSize));
+		Caffeine<K, Optional<V>> cacheBuilder = maybeWeigher.map(weigher -> Caffeine.newBuilder().maximumWeight(maxSize).weigher(weigher)).orElseGet(() -> (Caffeine) Caffeine.newBuilder().maximumSize(maxSize));
 		if (expireAfter != null) {
 			cacheBuilder = cacheBuilder.expireAfterWrite(expireAfter.getSeconds(), TimeUnit.SECONDS);
 		}
@@ -251,7 +250,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		private String name;
 		private MeshOptions options;
 		private MetricsService metricsService;
-		private Optional<Weigher<K, V>> maybeWeigher = Optional.empty();
+		private Optional<Weigher<K, Optional<V>>> maybeWeigher = Optional.empty();
 
 		/**
 		 * Build the cache instance.
@@ -395,7 +394,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 		 * @param maybeWeigher
 		 * @return Fluent API
 		 */
-		public Builder<K, V> setWeigher(Weigher<K, V> weigher) {
+		public Builder<K, V> setWeigher(Weigher<K, Optional<V>> weigher) {
 			this.maybeWeigher = Optional.ofNullable(weigher);
 			return this;
 		}

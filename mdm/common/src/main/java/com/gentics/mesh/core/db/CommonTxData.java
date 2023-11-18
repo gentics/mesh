@@ -35,6 +35,13 @@ public interface CommonTxData extends TxData {
 	Optional<EventQueueBatch> maybeGetEventQueueBatch();
 
 	/**
+	 * Check if Vert.x is settled
+	 * 
+	 * @return
+	 */
+	boolean isVertxReady();
+
+	/**
 	 * Remove the queue batch from the transaction, if there was any.
 	 * 
 	 * @param batch
