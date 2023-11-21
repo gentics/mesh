@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -16,6 +17,10 @@ import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -80,5 +85,23 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 			.repeat(100);
 
 		Completable.merge(calls).blockingAwait();
+	}
+
+	@Test
+	public void testEmptySchemaQuery() throws JSONException {
+		SchemaCreateRequest request = new SchemaCreateRequest().setName("emptyschema");
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		assertTrue(schemaResponse.getFields().isEmpty());
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, "{empty: schema(name:\"emptyschema\") {name fields{name}}}"));
+		MeshJSONAssert.assertEquals("{'empty': {'name': 'emptyschema','fields': []}}", response.getData());
+	}
+
+	@Test
+	public void testEmptyMicroschemaQuery() throws JSONException {
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest().setName("emptymicroschema");
+		MicroschemaResponse schemaResponse = call(() -> client().createMicroschema(request));
+		assertTrue(schemaResponse.getFields().isEmpty());
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, "{empty: microschema(name:\"emptymicroschema\") {name fields{name}}}"));
+		MeshJSONAssert.assertEquals("{'empty': {'name': 'emptymicroschema','fields': []}}", response.getData());
 	}
 }
