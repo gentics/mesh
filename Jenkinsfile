@@ -6,7 +6,7 @@ import com.gentics.*
 JobContext.set(this)
 
 final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
-final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave-openjdk8"
+final def dockerImageName      = buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh")
 
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
 
