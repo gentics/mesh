@@ -10,6 +10,21 @@ final def dockerImageName      = buildEnvironmentDockerImage(".jenkins/Dockerfil
 
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
 
+
+pipeline {
+  agent {
+    kubernetes {
+      inheritFrom 'mesh-root-worker'
+      yaml """
+      spec:
+        containers:
+        - name: maven
+          image:    """ + buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh") + """
+"""
+    }
+  }
+ }
+
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
