@@ -11,13 +11,13 @@ import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFER
 import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.createNodeContentWithSoftPermissions;
 import static com.gentics.mesh.graphql.type.PluginTypeProvider.PLUGIN_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.PluginTypeProvider.PLUGIN_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.NodeTypeProvider.createNodeContentWithSoftPermissions;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_PAGE_TYPE_NAME;
@@ -45,8 +45,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import graphql.GraphQLError;
-import graphql.execution.DataFetcherResult;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -85,6 +84,8 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import graphql.ExceptionWhileDataFetching;
+import graphql.GraphQLError;
+import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -655,8 +656,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(createNodeEnumType());
 
 		Versioned.doSince(2, context, () -> {
-			additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
-			additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
+			List<GraphQLObjectType> schemaFieldTypes = nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(schemaFieldTypes)) {
+				additionalTypes.addAll(schemaFieldTypes);
+			}
+			List<GraphQLObjectType> microschemaFieldTypes = micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(microschemaFieldTypes)) {
+				additionalTypes.addAll(microschemaFieldTypes);
+			}
 		});
 
 		GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();

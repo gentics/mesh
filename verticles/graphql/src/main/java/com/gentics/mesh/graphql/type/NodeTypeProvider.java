@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.dataloader.DataLoader;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -198,7 +199,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			nodeType.description(
 				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
 			interfaceTypeProvider.addCommonFields(nodeType, true);
-			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
+			List<GraphQLFieldDefinition> fields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(fields)) {
+				nodeType.fields(fields);
+			}
 			return nodeType.build();
 		}).since(2, () -> {
 			GraphQLInterfaceType.Builder nodeType = newInterface();
@@ -214,8 +218,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return env.getSchema().getObjectType(schemaName);
 			});
 
-			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
-
+			List<GraphQLFieldDefinition> versionedFields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(versionedFields)) {
+				nodeType.fields(versionedFields);
+			}
 			return nodeType.build();
 		}).build();
 	}
@@ -857,7 +863,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				fieldsField.name("fields").type(fieldsType);
 				root.field(fieldsField);
 			}
-			root.fields(createNodeInterfaceFields(context).forVersion(context));
+			List<GraphQLFieldDefinition> nodeFields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(nodeFields)) {
+				root.fields(nodeFields);
+			}
 			interfaceTypeProvider.addCommonFields(root, true);
 			return root.build();
 		}).collect(Collectors.toList());
