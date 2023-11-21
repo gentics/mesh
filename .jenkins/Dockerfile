@@ -1,5 +1,5 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
-FROM jenkinsci/jnlp-slave:3.27-1
+FROM docker.apa-it.at/maven:3.9.2-amazoncorretto-17-debian-bullseye
 USER root
 
 # APT
@@ -33,14 +33,14 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
     mv docker/* /usr/bin &&\
     rm -rf docke*
 
-# Install Java 11 (default)
+# Install Java 11
 RUN mkdir -p /usr/lib/jvm/ && \
    cd /usr/lib/jvm/ && \
    wget -nv -O openjdk-11.tar.gz "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz" && \
    tar xfz openjdk-11.tar.gz && \
    rm *.gz && \
    mv jdk-11* java-11
-ENV JAVA_HOME /usr/lib/jvm/java-11
+ENV JAVA_11_HOME /usr/lib/jvm/java-11
 
 # Install Java 15
 RUN mkdir -p /usr/lib/jvm/ && \
@@ -99,3 +99,4 @@ ENV LANG en_US.UTF-8
 
 USER jenkins
 
+ENV JAVA_HOME "/usr/lib/jvm/java-17-amazon-corretto/"
