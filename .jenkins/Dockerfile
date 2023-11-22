@@ -21,10 +21,6 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
   && rm -Rf /var/lib/apt/lists/*
 
 
-# Maven
-RUN cd /opt && wget -nv -O maven.tar.gz "https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz" && \
-    tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
-    ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
 # kubectl
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl" && \
@@ -37,23 +33,6 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
     mv docker/* /usr/bin &&\
     rm -rf docke*
 
-# Install Java 11
-RUN mkdir -p /usr/lib/jvm/ && \
-   cd /usr/lib/jvm/ && \
-   wget -nv -O openjdk-11.tar.gz "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.8%2B10/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz" && \
-   tar xfz openjdk-11.tar.gz && \
-   rm *.gz && \
-   mv jdk-11* java-11
-ENV JAVA_11_HOME /usr/lib/jvm/java-11
-
-# Install Java 15
-RUN mkdir -p /usr/lib/jvm/ && \
-   cd /usr/lib/jvm/ && \
-   wget -nv -O openjdk-15.tar.gz "https://github.com/AdoptOpenJDK/openjdk15-binaries/releases/download/jdk-15%2B36/OpenJDK15U-jdk_x64_linux_hotspot_15_36.tar.gz" && \
-   tar xfz openjdk-15.tar.gz && \
-   rm *.gz && \
-   mv jdk-15* java-15
-ENV JAVA_1_15_HOME /usr/lib/jvm/java-15
 
 # Add Jenkins user
 RUN echo "jenkins:jenkins" | chpasswd
