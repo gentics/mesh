@@ -34,7 +34,7 @@ def registryHost = registryHostStaging;
 final def dockerImageName = buildEnvironmentDockerImage("build/Dockerfile", "mesh")
 
 
-podTemplate(inheritFrom: 'mesh-root-worker-11', containers: [
+podTemplate(inheritFrom: 'mesh-root-worker-11',  label: 'mesh-root-worker-11', containers: [
     containerTemplate(name: 'jnlp', image: dockerImageName)
   ]) {
 
