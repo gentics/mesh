@@ -14,12 +14,12 @@ final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
 pipeline {
   agent {
     kubernetes {
-      inheritFrom 'mesh-root-worker'
+      inheritFrom 'mesh-root-worker-11'
       yaml """
       spec:
         containers:
-        - name: maven
-          image:    """ + buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh") + """
+        - name: jnlp
+          image:    """ + buildEnvironmentDockerImage("ci/Dockerfile", "portal-java") + """
 """
     }
   }
