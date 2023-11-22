@@ -11,6 +11,7 @@ final def dockerImageName      = buildEnvironmentDockerImage(".jenkins/Dockerfil
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
 
 
+/*
 pipeline {
   agent {
     kubernetes {
@@ -19,11 +20,18 @@ pipeline {
       spec:
         containers:
         - name: jnlp
-          image:    """ + buildEnvironmentDockerImage("ci/Dockerfile", "portal-java") + """
+          image:    """ + dockerImageName + """
 """
     }
   }
  }
+ */
+
+podTemplate(inheritFrom: 'mesh-root-worker-11', containers: [
+    containerTemplate(name: 'jnlp', image: 'maven:3.8.2-eclipse-temurin-17')
+  ]) {
+
+}
 
 properties([
 	parameters([
