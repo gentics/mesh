@@ -1,0 +1,61 @@
+<settings>settings
+	<mirrors>
+		<mirror>
+			<id>lan.mirror</id>
+			<name>Gentics LAN Mirror Repository</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-mirror/</url>
+			<mirrorOf>central,maven2,maven2-repository,oss.sonatype.org,jboss-repository,maven-repository.dev.java.net,repo.jenkins-ci.org</mirrorOf>
+		</mirror>
+		<mirror>
+			<id>lan.internal</id>
+			<name>Gentics LAN Mirror Repository</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-internal/</url>
+			<mirrorOf>maven.gentics.com</mirrorOf>
+		</mirror>
+	</mirrors>
+	<servers>
+		<server>
+			<id>lan.snapshots</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>lan.thirdparty</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>lan.mirror</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>lan.internal</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>lan.releases</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
+			<id>lan.releases.staging.gcn</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+	</servers>
+
+	<profiles>
+		<profile>
+			<id>gentics.gpg</id>
+			<properties>
+				<gpg.keyname>${env.gpgKeyName}</gpg.keyname>
+				<gpg.passphrase>${env.gpgKeyPass}</gpg.passphrase>
+			</properties>
+		</profile>
+	</profiles>
+	<activeProfiles>
+		<activeProfile>gentics.gpg</activeProfile>
+	</activeProfiles>
+</settings>
