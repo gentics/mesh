@@ -5,9 +5,6 @@ import com.gentics.*
 // Make the helpers aware of this jobs environment
 JobContext.set(this)
 
-final def dockerImageName = buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh")
-
-
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
@@ -34,13 +31,12 @@ final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-
 final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
 
 def registryHost = registryHostStaging;
-
+final def dockerImageName = buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh")
 
 
 podTemplate(inheritFrom: 'mesh-root-worker-11', containers: [
     containerTemplate(name: 'jnlp', image: dockerImageName)
   ]) {
-
 
   stage("Setup Build Environment") {
     node("mesh-root-worker-11") {

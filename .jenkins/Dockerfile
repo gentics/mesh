@@ -2,11 +2,13 @@
 FROM docker.apa-it.at/maven:3.9.2-amazoncorretto-17-debian-bullseye
 USER root
 
+ARG DEBIAN_RELEASE="bullseye"
+
 # APT
-RUN echo 'deb http://debian.apa.at/debian buster main contrib non-free' > /etc/apt/sources.list && \
-   echo 'deb http://debian.apa.at/debian buster-backports main' >> /etc/apt/sources.list && \
-   echo 'deb http://security.debian.org/ buster/updates main contrib' >> /etc/apt/sources.list && \
-   echo 'deb http://security.debian.org/debian-security buster/updates main contrib' >> /etc/apt/sources.list && \
+RUN echo 'deb http://debian.apa.at/debian ${DEBIAN_RELEASE} main contrib non-free' > /etc/apt/sources.list && \
+   echo 'deb http://debian.apa.at/debian ${DEBIAN_RELEASE}-backports main' >> /etc/apt/sources.list && \
+   echo 'deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main contrib' >> /etc/apt/sources.list && \
+   echo 'deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}/updates main contrib' >> /etc/apt/sources.list && \
    apt-get update  && \
    apt-get -y upgrade && \
    apt-get install -y git-core gawk sed wget curl sudo \
