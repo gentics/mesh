@@ -86,7 +86,6 @@ spec:
         ansiColor('xterm')
     }
 
-
     environment {
         DOCKER_TAG = "${env.GIT_BRANCH}"
         GITLAB_WEBHOOK_SECRETTOKEN = credentials('gitlab-webhook-secrettoken')
@@ -107,43 +106,42 @@ spec:
             secretToken: env.GITLAB_WEBHOOK_SECRETTOKEN)
     }
 
-  stages {
-        stage("Setup Build Environment") {
+    stages {
+          stage("Setup Build Environment") {
             steps {
-                script {
-                    echo "Setup of GPG"
-                    sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-public-key.asc"
-                    sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-secret-key.asc"
-                }
-            }
+              script {
+                  echo "Setup of GPG"
+                  sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-public-key.asc"
+                  sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-secret-key.asc"
+              }
 
-            script {
-                currentBuild.description = env.GIT_COMMIT + "\n" + GitHelper.getLastCommitMessage().readLines()[0]
-            }
+              script {
+                  currentBuild.description = env.GIT_COMMIT + "\n" + GitHelper.getLastCommitMessage().readLines()[0]
+              }
 
-            updateGitlabCommitStatus name: 'Jenkins build', state: "running"
-        }
-        stage("Maven Build") {
-            when {
-                expression {
-                    return params.runMavenBuild
-                }
+              updateGitlabCommitStatus name: 'Jenkins build', state: "running"
             }
-            steps {
-                script {
-                    sshagent(["git"]) {
-                        if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
-                            withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-                                sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
-                            }
-                        } else {
-                            sh "mvn -B -DskipTests clean package"
-                        }
-                    }
-                }
-            }
-
-        }
+          }
+          stage("Maven Build") {
+              when {
+                  expression {
+                      return params.runMavenBuild
+                  }
+              }
+              steps {
+                  script {
+                      sshagent(["git"]) {
+                          if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
+                              withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+                                  sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
+                              }
+                          } else {
+                              sh "mvn -B -DskipTests clean package"
+                          }
+                      }
+                  }
+              }
+          }
 
     }
   
