@@ -31,7 +31,7 @@ final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-
 final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
 
 def registryHost = registryHostStaging;
-final def dockerImageName = buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh")
+final def dockerImageName = buildEnvironmentDockerImage("build/Dockerfile", "mesh")
 
 
 podTemplate(inheritFrom: 'mesh-root-worker-11', containers: [
