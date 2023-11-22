@@ -10,28 +10,23 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
   && echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE}-updates main" >> /etc/apt/sources.list \
   && apt-get update \
   && apt-get -y upgrade \
-  && apt-get update  \
-  && apt-get -y upgrade \
   && apt-get install -y git-core gawk sed wget curl sudo \
                       less vim curl tar wget sed psmisc \
                       file pwgen locales zip unzip \
                       software-properties-common devscripts \
                       bzip2 rsync gpg  \
+  && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+  && add-apt-repository "deb https://download.docker.com/linux/debian ${DEBIAN_RELEASE} stable" \
+  && apt-get update \
+  && apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
   && apt-get clean \
   && rm -Rf /var/lib/apt/lists/*
-
 
 
 # kubectl
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.19.0/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/kubectl
-
-# Docker
-RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz" > docker.tgz &&\
-    tar -xzf docker.tgz &&\
-    mv docker/* /usr/bin &&\
-    rm -rf docke*
 
 
 # Add Jenkins user
