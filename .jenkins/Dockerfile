@@ -1,8 +1,10 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
 FROM docker.apa-it.at/maven:3.9.2-amazoncorretto-17-debian-bullseye
-USER root
 
 ARG DEBIAN_RELEASE="bullseye"
+ARG USER_NAME="jenkins"
+
+USER root
 
 RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non-free" > /etc/apt/sources.list \
   && echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE}-backports main" >> /etc/apt/sources.list \
@@ -28,27 +30,20 @@ RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.19.0/
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/kubectl
 
-
-# Add Jenkins user
-RUN echo "jenkins:jenkins" | chpasswd
-RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
-
 ADD ./files/settings.xml /opt/maven/conf/settings.xml
-#ADD ./files/gentics /home/jenkins/.gnupg/gentics
-RUN chown jenkins: /home/jenkins -R
 
-RUN echo "root:root" | chpasswd
-ADD ./files/config /home/jenkins/.ssh/config
-RUN ssh-keyscan github.com >> /home/jenkins/.ssh/known_hosts
-RUN ssh-keyscan git.gentics.com >> /home/jenkins/.ssh/known_hosts
+# Add User
+RUN groupadd --system --gid 10000 ${USER_NAME} && useradd --create-home --no-log-init --uid 10000 --gid ${USER_NAME} ${USER_NAME}
 
-RUN mkdir -p /home/jenkins/.m2/repository
-RUN chown jenkins: /home/jenkins -R
+ADD ./files/config /home/${USER_NAME}/.ssh/config
+RUN ssh-keyscan github.com >> /home/${USER_NAME}/.ssh/known_hosts
+RUN ssh-keyscan git.gentics.com >> /home/${USER_NAME}/.ssh/known_hosts
+
+RUN mkdir -p /home/${USER_NAME}/.m2/repository
 
 # Update Bash RC
-RUN rm /home/jenkins/.bashrc
-RUN echo '. /etc/profile.d/*.sh' > /home/jenkins/.bashrc
-RUN chown jenkins: /home/jenkins/.bashrc
+RUN rm /home/${USER_NAME}/.bashrc
+RUN echo '. /etc/profile.d/*.sh' > /home/${USER_NAME}/.bashrc
 
 # Setup locale
 RUN sed -i  's/.*\(en_US.UTF-8.*\)/\1/' /etc/locale.gen
@@ -65,16 +60,15 @@ RUN cp /usr/share/zoneinfo/Europe/Vienna /etc/localtime
 RUN echo "Europe/Vienna" > /etc/timezone
 
 # Setup Git
-ADD ./files/.gitconfig /home/jenkins/.gitconfig
-RUN chown jenkins: /home/jenkins/.gitconfig
+ADD ./files/.gitconfig /home/${USER_NAME}/.gitconfig
+RUN chown ${USER_NAME}: /home/${USER_NAME}/.gitconfig
 
-RUN chown jenkins: /opt -R
+RUN chown ${USER_NAME}: /opt -R
 
 # Fix docker socket permission issue
-RUN groupadd -g 117 docker && usermod -aG docker jenkins
+RUN groupadd -g 117 docker && usermod -aG docker ${USER_NAME}
+
+USER ${USER_NAME}
 
 ENV LANG en_US.UTF-8
-
-USER jenkins
-
 ENV JAVA_HOME "/usr/lib/jvm/java-17-amazon-corretto/"
