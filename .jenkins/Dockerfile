@@ -4,19 +4,22 @@ USER root
 
 ARG DEBIAN_RELEASE="bullseye"
 
-RUN echo "deb http://debian.apa.at/debian ${DEBIAN_RELEASE} main contrib non-free" > /etc/apt/sources.list && \
-   echo "deb http://debian.apa.at/debian ${DEBIAN_RELEASE}-backports main" >> /etc/apt/sources.list && \
-   echo "deb http://security.debian.org/ ${DEBIAN_RELEASE}/updates main contrib" >> /etc/apt/sources.list && \
-   echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}/updates main contrib" >> /etc/apt/sources.list && \
-   apt-get update  && \
-   apt-get -y upgrade && \
-   apt-get install -y git-core gawk sed wget curl sudo \
+RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non-free" > /etc/apt/sources.list \
+  && echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE}-backports main" >> /etc/apt/sources.list \
+  && echo "deb http://security.debian.org/debian-security ${DEBIAN_RELEASE}-security main" >> /etc/apt/sources.list \
+  && echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE}-updates main" >> /etc/apt/sources.list \
+  && apt-get update \
+  && apt-get -y upgrade \
+  && apt-get update  \
+  && apt-get -y upgrade \
+  && apt-get install -y git-core gawk sed wget curl sudo \
                       less vim curl tar wget sed psmisc \
                       file pwgen locales zip unzip \
                       software-properties-common devscripts \
-                      bzip2 rsync gpg && \
-   apt-get clean && \
-   rm -Rf /var/lib/apt/lists/*
+                      bzip2 rsync gpg  \
+  && apt-get clean \
+  && rm -Rf /var/lib/apt/lists/*
+
 
 # Maven
 RUN cd /opt && wget -nv -O maven.tar.gz "https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz" && \
@@ -68,13 +71,13 @@ RUN ssh-keyscan git.gentics.com >> /home/jenkins/.ssh/known_hosts
 RUN mkdir -p /home/jenkins/.m2/repository
 RUN chown jenkins: /home/jenkins -R
 
-# Update Bash RC 
+# Update Bash RC
 RUN rm /home/jenkins/.bashrc
 RUN echo '. /etc/profile.d/*.sh' > /home/jenkins/.bashrc
 RUN chown jenkins: /home/jenkins/.bashrc
 
 # Setup locale
-RUN sed -i  's/.*\(en_US.UTF-8.*\)/\1/' /etc/locale.gen 
+RUN sed -i  's/.*\(en_US.UTF-8.*\)/\1/' /etc/locale.gen
 RUN locale-gen
 RUN locale-gen en_US.UTF-8
 RUN update-locale LANG=en_US.UTF-8
@@ -84,8 +87,8 @@ RUN echo "LANG=en_US.UTF-8" > /etc/default/locale
 RUN echo "LANGUAGE=en_US:en" >> /etc/default/locale
 
 # Setup timezone
-RUN cp /usr/share/zoneinfo/Europe/Vienna /etc/localtime 
-RUN echo "Europe/Vienna" > /etc/timezone 
+RUN cp /usr/share/zoneinfo/Europe/Vienna /etc/localtime
+RUN echo "Europe/Vienna" > /etc/timezone
 
 # Setup Git
 ADD ./files/.gitconfig /home/jenkins/.gitconfig
