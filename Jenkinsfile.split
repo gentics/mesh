@@ -33,7 +33,7 @@ final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.a
 def registryHost = registryHostStaging;
 
 stage("Setup Build Environment") {
-	node("build-worker-java-17") {
+	node("mesh-root-worker-17") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
