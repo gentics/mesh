@@ -5,6 +5,22 @@ import com.gentics.*
 // Make the helpers aware of this jobs environment
 JobContext.set(this)
 
+final def dockerImageName = buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh")
+
+pipeline {
+  agent {
+    kubernetes {
+      inheritFrom 'mesh-root-worker-11'
+      yaml """
+      spec:
+        containers:
+        - name: jnlp
+          image:    """ + dockerImageName + """
+"""
+    }
+  }
+}
+
 properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
@@ -309,7 +325,7 @@ stage("Setup Build Environment") {
 		} finally {
 			deleteDir()
 			githubBuildEnded()
-			notifyMattermostUsers()
+			// notifyMattermostUsers()
 		}
 	}
 }

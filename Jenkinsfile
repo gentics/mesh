@@ -6,32 +6,9 @@ import com.gentics.*
 JobContext.set(this)
 
 final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
-final def dockerImageName      = buildEnvironmentDockerImage(".jenkins/Dockerfile", "mesh")
+final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave-openjdk8"
 
 final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
-
-
-/*
-pipeline {
-  agent {
-    kubernetes {
-      inheritFrom 'mesh-root-worker-11'
-      yaml """
-      spec:
-        containers:
-        - name: jnlp
-          image:    """ + dockerImageName + """
-"""
-    }
-  }
- }
- */
-
-podTemplate(inheritFrom: 'mesh-root-worker-11', containers: [
-    containerTemplate(name: 'jnlp', image: 'maven:3.8.2-eclipse-temurin-17')
-  ]) {
-
-}
 
 properties([
 	parameters([
