@@ -63,8 +63,8 @@ spec:
       booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not")
       booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks")
       booleanParam(name: 'runUnstableTests',    defaultValue: true,  description: "Whether to run tests in failing group.")
-      booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
-      booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
+      booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests.")
+      booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests.")
       booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps.")
       booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps.")
       booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps.")
