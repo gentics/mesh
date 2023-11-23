@@ -32,8 +32,20 @@ final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.a
 
 def registryHost = registryHostStaging;
 
+final def dockerImage = 'gtx-docker-jenkinsbuilds.docker.apa-it.at/gentics/jenkinsbuilds/java-worker:java17'
+
 stage("Setup Build Environment") {
-	node("mesh-root-worker-17") {
+	node("mesh-root-worker-11") {
+		podTemplate(
+			cloud: 'kubernetes',
+			containers: [
+				containerTemplate(
+					name: 'jnlp',
+					image: dockerImage,
+				)
+			]
+		)
+
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
