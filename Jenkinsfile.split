@@ -107,9 +107,6 @@ spec:
     }
 
     stages {
-		  stage("Checkout") {
-				checkout scm
-		  }
 
           stage("Setup Build Environment") {
             steps {
