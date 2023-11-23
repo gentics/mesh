@@ -12,6 +12,11 @@ final def runs = 20;
 final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at";
 final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
 
+def branchName = null
+def version = null
+def extraFlags = "-Djacoco.skip=true"
+
+
 def registryHost = registryHostStaging;
 final def dockerImageName = buildEnvironmentDockerImage("build/Dockerfile", "build-worker-java17")
 
@@ -58,11 +63,11 @@ spec:
         }
 
     parameters {
-      booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests")
-      booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests or not")
+      booleanParam(name: 'runTests',            defaultValue: false,  description: "Whether to run the unit tests")
+      booleanParam(name: 'splitTests',          defaultValue: false,  description: "Whether to split tests or not")
       booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not")
       booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks")
-      booleanParam(name: 'runUnstableTests',    defaultValue: true,  description: "Whether to run tests in failing group.")
+      booleanParam(name: 'runUnstableTests',    defaultValue: false,  description: "Whether to run tests in failing group.")
       booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests.")
       booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests.")
       booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps.")
@@ -107,43 +112,41 @@ spec:
     }
 
     stages {
+		stage("Prebuild") {
+			steps {
+				script {
+					echo "Setup of GPG"
+					sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-public-key.asc"
+					sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-secret-key.asc"
 
-          stage("Setup Build Environment") {
-            steps {
-              script {
-                  echo "Setup of GPG"
-                  sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-public-key.asc"
-                  sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-secret-key.asc"
-              }
-
-              script {
-                  currentBuild.description = env.GIT_COMMIT + "\n" + GitHelper.getLastCommitMessage().readLines()[0]
-              }
-
-              updateGitlabCommitStatus name: 'Jenkins build', state: "running"
-
-            }
-          }
-          stage("Maven Build") {
-              when {
-                  expression {
-                      return params.runMavenBuild
-                  }
-              }
-              steps {
-                  script {
-                      sshagent(["git"]) {
-                          if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
-                              withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-                                  sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
-                              }
-                          } else {
-                              sh "mvn -B -DskipTests clean package"
-                          }
-                      }
-                  }
-              }
-          }
+					def branchName = GitHelper.fetchCurrentBranchName()
+					def version = MavenHelper.getVersion()
+					
+					updateGitlabCommitStatus name: 'Jenkins build', state: "running"
+					currentBuild.description = env.GIT_COMMIT + "\n" + GitHelper.getLastCommitMessage().readLines()[0]
+				}
+			}
+		}
+		stage("Maven Build") {
+			when {
+				expression {
+					return params.runMavenBuild
+				}
+			}
+			steps {
+				script {
+					sshagent(["git"]) {
+						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
+							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
+							}
+						} else {
+							sh "mvn -B -DskipTests clean package"
+						}
+					}
+				}
+			}
+		}
 
     }
   
