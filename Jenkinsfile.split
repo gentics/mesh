@@ -119,9 +119,9 @@ spec:
 					sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-public-key.asc"
 					sh "gpg --no-tty --batch --import /home/jenkins/.gpg-keys/gpg-secret-key.asc"
 
-					def branchName = GitHelper.fetchCurrentBranchName()
-					def version = MavenHelper.getVersion()
-					
+					branchName = GitHelper.fetchCurrentBranchName()
+					version = MavenHelper.getVersion()
+
 					updateGitlabCommitStatus name: 'Jenkins build', state: "running"
 					currentBuild.description = env.GIT_COMMIT + "\n" + GitHelper.getLastCommitMessage().readLines()[0]
 				}
