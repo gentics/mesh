@@ -141,8 +141,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphStringList.createString(item);
 		}
+		graphStringList.createStrings(stringList.getItems());
 	};
 
 	public static FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
