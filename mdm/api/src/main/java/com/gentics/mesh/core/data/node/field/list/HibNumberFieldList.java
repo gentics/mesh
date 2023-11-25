@@ -26,10 +26,9 @@ public interface HibNumberFieldList extends HibMicroschemaListableField, HibList
 	 * Create an ordered list of number fields from the given values, adding all to the list.
 	 * 
 	 * @param items
-	 * @return
 	 */
-	default List<HibNumberField> createNumbers(List<Number> items) {
-		return items.stream().map(this::createNumber).collect(Collectors.toList());
+	default void createNumbers(List<Number> items) {
+		items.stream().forEach(this::createNumber);
 	}
 
 	/**

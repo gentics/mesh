@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -106,11 +107,11 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibStringFieldList list = container.createStringList(STRING_LIST);
-
-			List<HibStringField> stringField = list.createStrings(List.of("1","2","3","4","whatever"));
-			assertNotNull(stringField);
+			List<String> params = List.of("1","2","3","4","whatever");
+			list.createStrings(params);
 			assertEquals(5, list.getSize());
 			assertEquals(5, list.getList().size());
+			assertTrue(CollectionUtils.isEqualCollection(params, list.getValues()));
 		}
 	}
 

@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -96,10 +97,11 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibDateFieldList list = container.createDateList(DATE_LIST);
 			assertNotNull(list);
-			List<HibDateField> dateField = list.createDates(List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L));
-			assertNotNull(dateField);
+			List<Long> params = List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L);
+			list.createDates(params);
 			assertEquals(8, list.getSize());
 			assertEquals(8, list.getList().size());
+			assertTrue(CollectionUtils.isEqualCollection(params, list.getValues()));
 		}
 	}
 

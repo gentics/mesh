@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -105,10 +106,10 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibHtmlFieldList list = container.createHTMLList(HTML_LIST);
 			assertNotNull(list);
 			List<String> params = List.of("<head>", "</head>", "<body>", "</body>");
-			List<HibHtmlField> htmlField = list.createHTMLs(params);
-			assertNotNull(htmlField);
+			list.createHTMLs(params);
 			assertEquals(4, list.getSize());
 			assertEquals(4, list.getList().size());
+			assertTrue(CollectionUtils.isEqualCollection(params, list.getValues()));
 		}
 	}
 

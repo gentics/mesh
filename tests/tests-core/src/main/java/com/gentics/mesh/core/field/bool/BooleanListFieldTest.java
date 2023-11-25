@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -104,6 +105,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HibBooleanFieldList list = container.createBooleanList(BOOLEAN_LIST);
 			list.createBooleans(List.of(true, false, null, true, false, null));
 			assertEquals("Only non-null values are persisted.", 4, list.getList().size());
+			assertTrue(CollectionUtils.isEqualCollection(List.of(true, false, true, false), list.getValues()));
 		}
 	}
 

@@ -17,7 +17,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -98,9 +97,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 		try (Tx tx = tx()) {
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibNumberFieldList list = container.createNumberList(NUMBER_LIST);
-
-			List<HibNumberField> numberField = list.createNumbers(List.of(9,8,7,6,5,4,3,2,1,0));
-			assertNotNull(numberField);
+			List<Number> params = List.of(9,8,7,6,5,4,3,2,1,0);
+			list.createNumbers(params);
 			assertEquals(10, list.getSize());
 			assertEquals(10, list.getList().size());
 		}
