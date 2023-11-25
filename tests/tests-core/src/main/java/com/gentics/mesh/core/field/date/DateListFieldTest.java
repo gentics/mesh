@@ -9,6 +9,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -84,6 +86,20 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			list.removeAll();
 			assertEquals(0, list.getSize());
 			assertEquals(0, list.getList().size());
+		}
+	}
+
+	@Test
+	@Override
+	public void testBulkFieldUpdate() throws Exception {
+		try (Tx tx = tx()) {
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibDateFieldList list = container.createDateList(DATE_LIST);
+			assertNotNull(list);
+			List<HibDateField> dateField = list.createDates(List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L));
+			assertNotNull(dateField);
+			assertEquals(8, list.getSize());
+			assertEquals(8, list.getList().size());
 		}
 	}
 

@@ -22,7 +22,7 @@ public interface HibStringFieldList extends HibMicroschemaListableField, HibList
 	HibStringField createString(String string);
 
 	/**
-	 * Create new string fields, adding all to the list.
+	 * Create an ordered list of string fields from the values, adding all to the list.
 	 * 
 	 * @param strings
 	 * @return ordered list of fields

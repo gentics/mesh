@@ -9,6 +9,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -92,6 +94,21 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			list.removeAll();
 			assertEquals(0, list.getSize());
 			assertEquals(0, list.getList().size());
+		}
+	}
+
+	@Test
+	@Override
+	public void testBulkFieldUpdate() throws Exception {
+		try (Tx tx = tx()) {
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibHtmlFieldList list = container.createHTMLList(HTML_LIST);
+			assertNotNull(list);
+			List<String> params = List.of("<head>", "</head>", "<body>", "</body>");
+			List<HibHtmlField> htmlField = list.createHTMLs(params);
+			assertNotNull(htmlField);
+			assertEquals(4, list.getSize());
+			assertEquals(4, list.getList().size());
 		}
 	}
 

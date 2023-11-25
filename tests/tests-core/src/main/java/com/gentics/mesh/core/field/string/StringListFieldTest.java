@@ -9,12 +9,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
@@ -94,6 +97,20 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			list.removeAll();
 			assertEquals(0, list.getSize());
 			assertEquals(0, list.getList().size());
+		}
+	}
+
+	@Test
+	@Override
+	public void testBulkFieldUpdate() throws Exception {
+		try (Tx tx = tx()) {
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibStringFieldList list = container.createStringList(STRING_LIST);
+
+			List<HibStringField> stringField = list.createStrings(List.of("1","2","3","4","whatever"));
+			assertNotNull(stringField);
+			assertEquals(5, list.getSize());
+			assertEquals(5, list.getList().size());
 		}
 	}
 

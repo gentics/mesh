@@ -22,6 +22,16 @@ public interface HibHtmlFieldList extends HibMicroschemaListableField, HibListFi
 	HibHtmlField createHTML(String html);
 
 	/**
+	 * Create an ordered list of HTML fields from values, adding all to the list.
+	 * 
+	 * @param items
+	 * @return
+	 */
+	default List<HibHtmlField> createHTMLs(List<String> items) {
+		return items.stream().map(this::createHTML).collect(Collectors.toList());
+	}
+
+	/**
 	 * Return the html graph field at the given index position.
 	 * 
 	 * @param index
