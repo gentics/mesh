@@ -1006,6 +1006,29 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// }
 
 	@Test
+	public void testUpdatePasswordWithEmptyPassword() {
+		String uuid;
+		String oldHash;
+
+		try (Tx tx = tx()) {
+			tx.userDao().updatePasswordHash(user(), null);
+			uuid = user().getUuid();
+			oldHash = user().getPasswordHash();
+		}
+
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		updateRequest.setPassword("   ");
+
+		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
+		assertThat(restUser).matches(updateRequest);
+
+		try (Tx tx = tx()) {
+			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
+			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+		}
+	}
+
+	@Test
 	public void testUpdatePasswordWithNoOldPassword() {
 		String uuid;
 		String oldHash;
@@ -1026,7 +1049,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
-
 	}
 
 	@Test
@@ -1159,6 +1181,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setFirstname("Joe");
 		newUser.setLastname("Doe");
 		newUser.setUsername("new_user_test123");
+		newUser.setGroupUuid(groupUuid());
+		call(() -> client().createUser(newUser), BAD_REQUEST, "user_missing_password");
+	}
+
+	@Test
+	public void testCreateUserWithEmptyPassword() throws Exception {
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setEmailAddress("n.user@spam.gentics.com");
+		newUser.setFirstname("Joe");
+		newUser.setLastname("Doe");
+		newUser.setUsername("new_user_test123");
+		newUser.setPassword("      ");
 		newUser.setGroupUuid(groupUuid());
 		call(() -> client().createUser(newUser), BAD_REQUEST, "user_missing_password");
 	}
