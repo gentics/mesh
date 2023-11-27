@@ -14,7 +14,7 @@ final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.a
 
 def branchName = null
 def version = null
-def extraFlags = "-Djacoco.skip=true -Dskip.test-plugins=true -Dskip.demodump=true"
+def extraFlags = "-Djacoco.skip=true -Dskip.test-plugins=true"
 
 
 def registryHost = registryHostStaging;

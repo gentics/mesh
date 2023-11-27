@@ -689,6 +689,11 @@
 				<artifactId>graphql-java-filter</artifactId>
 				<version>3.0.1</version>
 			</dependency>
+			<dependency>
+				<groupId>org.openjdk.nashorn</groupId>
+				<artifactId>nashorn-core</artifactId>
+				<version>15.0</version>
+			</dependency>
 
 		</dependencies>
 
