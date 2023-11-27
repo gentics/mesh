@@ -121,12 +121,21 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
 				<configuration>
 					<verbose>false</verbose>
-					<compilerVersion>11</compilerVersion>
-					<source>11</source>
-					<target>11</target>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<source>17</source>
+					<target>17</target>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>com.google.dagger</groupId>
+						<artifactId>dagger-compiler</artifactId>
+						<version>${dagger.version}</version>
+						<optional>true</optional>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
