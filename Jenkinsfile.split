@@ -35,11 +35,11 @@ spec:
     image: """ + DOCKER_IMAGE_NAME + """
     resources:
       limits:
-        cpu: 4
-        memory: 4Gi
+        cpu: 8
+        memory: 8Gi
       requests:
-        cpu: 4
-        memory: 4Gi
+        cpu: 8
+        memory: 8Gi
     env:
       - name: HOME
         value: /home/jenkins
