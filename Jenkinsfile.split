@@ -141,7 +141,7 @@ spec:
                   sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
                 }
               } else {
-                sh "mvn -B -DskipTests clean package"
+                sh "mvn -B -DskipTests ${extraFlags} clean package"
               }
             }
           }
