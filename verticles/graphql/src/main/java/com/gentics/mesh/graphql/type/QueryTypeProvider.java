@@ -618,7 +618,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(nodeReferenceTypeProvider.createType());
 		additionalTypes.add(newPageType(NODE_REFERENCE_PAGE_TYPE_NAME, NODE_REFERENCE_TYPE_NAME));
 
-		additionalTypes.add(micronodeFieldTypeProvider.createType(context).forVersion(context));
+		micronodeFieldTypeProvider.createType(context).forVersion(context).ifPresent(additionalTypes::add);
 
 		additionalTypes.add(projectTypeProvider.createType(project));
 		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
