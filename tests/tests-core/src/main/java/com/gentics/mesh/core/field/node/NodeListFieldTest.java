@@ -79,7 +79,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
 			// Create node field
-			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null);
+			HibNode node = tx.<CommonTx>unwrap().nodeDao().createPersisted(project(), null, unused -> {});
 			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			HibNodeFieldList list = container.createNodeList(NODE_LIST);
 

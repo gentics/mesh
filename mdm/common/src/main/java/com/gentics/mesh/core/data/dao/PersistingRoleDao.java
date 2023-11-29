@@ -221,9 +221,10 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 
 	@Override
 	default HibRole create(String name, HibUser creator, String uuid) {
-		HibRole role = createPersisted(uuid);
-		role.setName(name);
-		role.setCreated(creator);
+		HibRole role = createPersisted(uuid, r -> {
+			r.setName(name);
+			r.setCreated(creator);
+		});
 		role.generateBucketId();
 		addRole(role);
 		addBatchEvent(role.onCreated());

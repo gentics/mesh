@@ -29,7 +29,9 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
-			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschema microschema = microschemaDao.createPersisted(null, m -> {
+				m.setName(m.getUuid());
+			});
 			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setDescription("test");
@@ -42,7 +44,9 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
-			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschema microschema = microschemaDao.createPersisted(null, m -> {
+				m.setName(m.getUuid());
+			});
 			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
@@ -70,7 +74,9 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
-			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschema microschema = microschemaDao.createPersisted(null, m -> {
+				m.setName(m.getUuid());
+			});
 			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
@@ -87,7 +93,9 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
 			PersistingMicroschemaDao microschemaDao = tx.<CommonTx>unwrap().microschemaDao();
-			HibMicroschema microschema = microschemaDao.createPersisted(null);
+			HibMicroschema microschema = microschemaDao.createPersisted(null, m -> {
+				m.setName(m.getUuid());
+			});
 			HibMicroschemaVersion version = microschemaDao.createPersistedVersion(microschema, v -> {});
 			HibUpdateMicroschemaChange change = (HibUpdateMicroschemaChange) microschemaDao.createPersistedChange(version, SchemaChangeOperation.UPDATEMICROSCHEMA);
 			change.setName("vcard");

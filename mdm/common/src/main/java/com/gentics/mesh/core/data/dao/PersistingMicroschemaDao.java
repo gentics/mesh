@@ -216,7 +216,10 @@ public interface PersistingMicroschemaDao
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		HibMicroschema container = createPersisted(uuid);
+		HibMicroschema container = createPersisted(uuid, m -> {
+			m.setCreated(user);
+			m.setName(microschema.getName());
+		});
 		HibMicroschemaVersion version = createPersistedVersion(container, v -> {
 			// set the initial version
 			microschema.setVersion("1.0");
@@ -225,8 +228,6 @@ public interface PersistingMicroschemaDao
 			v.setSchemaContainer(container);
 		});
 		container.setLatestVersion(version);
-		container.setCreated(user);
-		container.setName(microschema.getName());
 		container.generateBucketId();
 
 		addBatchEvent(container.onCreated());

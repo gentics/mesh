@@ -110,8 +110,8 @@ public class JobTest extends AbstractMeshTest {
 	public void testJobRootTypeHandling() {
 		try (Tx tx = tx()) {
 			JobDao dao = tx.jobDao();
-			HibSchema schema = tx.<CommonTx>unwrap().schemaDao().createPersisted(null);
-			HibMicroschema microschema = tx.<CommonTx>unwrap().microschemaDao().createPersisted(null);
+			HibSchema schema = tx.<CommonTx>unwrap().schemaDao().createPersisted(null, s -> {});
+			HibMicroschema microschema = tx.<CommonTx>unwrap().microschemaDao().createPersisted(null, s -> {});
 			dao.enqueueSchemaMigration(user(), latestBranch(), createSchemaVersion(tx, schema, v -> {}), createSchemaVersion(tx, schema, v -> {}));
 			dao.enqueueMicroschemaMigration(user(), latestBranch(), createMicroschemaVersion(tx, microschema, v -> {}), createMicroschemaVersion(tx, microschema, v -> {}));
 			dao.enqueueBranchMigration(user(), latestBranch());

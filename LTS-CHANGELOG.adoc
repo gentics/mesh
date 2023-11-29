@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.21]]
 == 1.10.21 (TBD)
 
+icon:check[] Core: A regression of creation of the named entities has been fixed.
+
 icon:check[] Core: Improve the internal Java API of the list field creation, targeting better batch performance.
 
 [[v1.10.20]]

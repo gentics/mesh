@@ -188,8 +188,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @return
 	 */
 	default HibUser create(String username, HibUser creator, String uuid) {
-		HibUser user = createPersisted(uuid);
-		init(user, username, creator);
+		HibUser user = createPersisted(uuid, u -> {
+			init(u, username, creator);
+		});		
 		addBatchEvent(user.onCreated());
 		uncacheSync(user);
 		return mergeIntoPersisted(user);

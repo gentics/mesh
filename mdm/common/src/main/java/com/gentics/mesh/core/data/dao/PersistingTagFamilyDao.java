@@ -87,11 +87,11 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 
 	@Override
 	default HibTagFamily create(HibProject project, String name, HibUser user, String uuid) {
-		HibTagFamily tagFamily = createPersisted(project, uuid);
-		tagFamily.setName(name);
-		tagFamily.setCreated(user);
-
-		tagFamily.setProject(project);
+		HibTagFamily tagFamily = createPersisted(project, uuid, f -> {
+			f.setName(name);
+			f.setCreated(user);
+			f.setProject(project);
+		});
 		tagFamily.generateBucketId();
 		addBatchEvent(tagFamily.onCreated());
 		uncacheSync(tagFamily);
