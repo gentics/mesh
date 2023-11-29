@@ -9,6 +9,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -86,6 +88,19 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			list.removeAll();
 			assertEquals(0, list.getSize());
 			assertEquals(0, list.getList().size());
+		}
+	}
+
+	@Test
+	@Override
+	public void testBulkFieldUpdate() throws Exception {
+		try (Tx tx = tx()) {
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList list = container.createNumberList(NUMBER_LIST);
+			List<Number> params = List.of(9,8,7,6,5,4,3,2,1,0);
+			list.createNumbers(params);
+			assertEquals(10, list.getSize());
+			assertEquals(10, list.getList().size());
 		}
 	}
 
