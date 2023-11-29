@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.10.21]]
-== 1.10.21 (TBD)
+== 1.10.21 (29.11.2023)
 
 icon:check[] Core: A regression of creation of the named entities has been fixed.
 
