@@ -134,10 +134,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+			s.setName(s.getUuid());
+			s.setCreated(user());
+		});
 		container.generateBucketId();
-		container.setName(container.getUuid());
-		container.setCreated(user());
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
 						removedFieldName));
@@ -217,10 +218,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		HibMicroschema container = microschemaDao.createPersisted(null);
+		HibMicroschema container = microschemaDao.createPersisted(null, m -> {
+			m.setName(microschemaName);
+			m.setCreated(user());	
+		});
 		container.generateBucketId();
-		container.setName(microschemaName);
-		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(persistentFieldName),
 			creator.create(removedFieldName));
 
@@ -323,10 +325,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
-		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+			s.setName(s.getUuid());
+			s.setCreated(user());
+		});
 		container.generateBucketId();
-		container.setName(container.getUuid());
-		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", creator.create(oldFieldName));
@@ -410,10 +413,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		String micronodeFieldName = "micronodefield";
 
 		// create version 1 of the microschema
-		HibMicroschema container = microschemaDao.createPersisted(null);
+		HibMicroschema container = microschemaDao.createPersisted(null, m -> {
+			m.setName(microschemaName);
+			m.setCreated(user());	
+		});
 		container.generateBucketId();
-		container.setName(microschemaName);
-		container.setCreated(user());
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", creator.create(oldFieldName));
 
 		// create version 2 of the microschema (with the field renamed)
@@ -529,10 +533,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 			// create version 1 of the schema
 			oldFieldSchema.set(oldField.create(fieldName));
-			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+			HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+				s.setName(schemaName);
+				s.setCreated(user());
+			});
 			container.generateBucketId();
-			container.setName(schemaName);
-			container.setCreated(user());
 			HibSchemaVersion versionA = createSchemaVersion(tx, container, v -> {
 				CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldFieldSchema.get());
 				container.setLatestVersion(v);
@@ -668,9 +673,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 			// create version 1 of the microschema
 			oldFieldSchema.set(oldField.create(fieldName));
-			HibMicroschema container = microschemaDao.createPersisted(null);
-			container.setName(microschemaName);
-			container.setCreated(user());
+			HibMicroschema container = microschemaDao.createPersisted(null, m -> {
+				m.setName(microschemaName);
+				m.setCreated(user());
+			});
 			microschemaUuid.set(container.getUuid());
 			HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldFieldSchema.get());
 			versionAUuid.set(versionA.getUuid());
@@ -814,10 +820,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+			s.setName(UUIDUtil.randomUUID());
+			s.setCreated(user());
+		});
 		container.generateBucketId();
-		container.setName(UUIDUtil.randomUUID());
-		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			CoreTestUtils.fillSchemaVersion(v, container, schemaName, "1.0", oldField);
@@ -895,10 +902,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		HibMicroschema container = microschemaDao.createPersisted(null);
+		HibMicroschema container = microschemaDao.createPersisted(null, m -> {
+			m.setName(UUIDUtil.randomUUID());
+			m.setCreated(user());
+		});
 		container.generateBucketId();
-		container.setName(microschemaName);
-		container.setCreated(user());
 
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
 
@@ -1001,9 +1009,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the schema
 		FieldSchema oldField = creator.create(fieldName);
-		HibSchema container = schemaDao.createPersisted(null);
-		container.setName(UUIDUtil.randomUUID());
-		container.setCreated(user());
+		HibSchema container = schemaDao.createPersisted(null, s -> {
+			s.setName(UUIDUtil.randomUUID());
+			s.setCreated(user());
+		});
 
 		schemaDao.mergeIntoPersisted(container);
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
@@ -1070,9 +1079,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// create version 1 of the microschema
 		FieldSchema oldField = creator.create(fieldName);
-		HibMicroschema container = microschemaDao.createPersisted(null);
-		container.setName(microschemaName);
-		container.setCreated(user());
+		HibMicroschema container = microschemaDao.createPersisted(null, m -> {
+			m.setName(microschemaName);
+			m.setCreated(user());
+		});
 
 		HibMicroschemaVersion versionA = createMicroschemaVersion(container, microschemaName, "1.0", oldField);
 

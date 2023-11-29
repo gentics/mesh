@@ -15,6 +15,7 @@
  */
 package com.gentics.mesh.core.db;
 
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -118,12 +119,13 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	}
 
 	@Override
-	public <B extends HibElement> B create(String uuid, Class<? extends B> classOfB) {
+	public <B extends HibElement> B create(String uuid, Class<? extends B> classOfB, Consumer<B> inflater) {
 		B entity = getGraph().addFramedVertex(classOfB);
 		if (StringUtils.isNotBlank(uuid)) {
 			entity.setUuid(uuid);
-			persist(entity);
 		}
+		inflater.accept(entity);
+		persist(entity);
 		return entity;
 	}
 	

@@ -106,13 +106,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 */
 	default HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
-		HibBranch branch = createPersisted(project, uuid);
-		UserDao userRoot = Tx.get().userDao();
-
-		branch.setCreated(creator);
-		branch.setName(name);
-		branch.setActive(true);
-		branch.setMigrated(false);
+		HibBranch branch = createPersisted(project, uuid, b -> {
+			b.setCreated(creator);
+			b.setName(name);
+			b.setActive(true);
+			b.setMigrated(false);
+		});
 
 		if (baseBranch == null) {
 			// if this is the first branch, make it the initial branch
@@ -125,6 +124,8 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		if (setLatest || baseBranch == null) {
 			branch.setLatest();
 		}
+
+		UserDao userRoot = Tx.get().userDao();
 
 		// set initial permissions on the branch
 		userRoot.inheritRolePermissions(creator, project, branch);

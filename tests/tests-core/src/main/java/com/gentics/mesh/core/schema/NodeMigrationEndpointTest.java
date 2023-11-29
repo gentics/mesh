@@ -947,9 +947,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			// create version 1 of the microschema
-			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID(), m -> {
+				m.setCreated(user());
+				m.setName(UUID.randomUUID().toString());
+			});
 			container.generateBucketId();
-			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx, container, v-> {
 				container.setLatestVersion(v);					
 				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
@@ -1058,9 +1060,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 			ContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
-			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID(), m -> {
+				m.setCreated(user());
+				m.setName(UUID.randomUUID().toString());
+			});
 			container.generateBucketId();
-			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx, container, v -> {
 				container.setLatestVersion(v);
 				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
@@ -1195,9 +1199,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			PersistingMicroschemaDao microschemaDao = (PersistingMicroschemaDao) tx.microschemaDao();
 			ContentDao contentDao = tx.contentDao();
 			// create version 1 of the microschema
-			container = microschemaDao.createPersisted(UUIDUtil.randomUUID());
+			container = microschemaDao.createPersisted(UUIDUtil.randomUUID(), m -> {
+				m.setCreated(user());
+				m.setName(UUID.randomUUID().toString());
+			});
 			container.generateBucketId();
-			container.setCreated(user());
 			versionA = createMicroschemaVersion(tx, container, v -> {
 				container.setLatestVersion(v);
 				MicroschemaModelImpl microschemaA = new MicroschemaModelImpl();
@@ -1301,7 +1307,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		PersistingSchemaDao schemaDao = CommonTx.get().schemaDao();
 
 		// create version 1 of the schema
-		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID());
+		HibSchema container = schemaDao.createPersisted(UUIDUtil.randomUUID(), s -> {
+			s.setName(UUID.randomUUID().toString());
+			s.setCreated(user());
+		});
 		HibSchemaVersion versionA = createSchemaVersion(Tx.get(), container, v -> {
 			SchemaVersionModel schemaA = new SchemaModelImpl();
 			schemaA.setName("migratedSchema");
@@ -1318,8 +1327,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			container.setLatestVersion(v);
 		});
 		container.generateBucketId();
-		container.setName(UUID.randomUUID().toString());
-		container.setCreated(user());
 		schemaDao.mergeIntoPersisted(container);
 		
 		// create version 2 of the schema (with the field renamed)
