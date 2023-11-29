@@ -23,6 +23,15 @@ public interface HibNumberFieldList extends HibMicroschemaListableField, HibList
 	HibNumberField createNumber(Number value);
 
 	/**
+	 * Create an ordered list of number fields from the given values, adding all to the list.
+	 * 
+	 * @param items
+	 */
+	default void createNumbers(List<Number> items) {
+		items.stream().forEach(this::createNumber);
+	}
+
+	/**
 	 * Return the graph number field at the given position.
 	 * 
 	 * @param index

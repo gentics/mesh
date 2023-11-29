@@ -2106,12 +2106,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
-		HibNode node = createPersisted(project, uuid);
-		node.setSchemaContainer(version.getSchemaContainer());
+		HibNode node = createPersisted(project, uuid, n -> {
+			n.setSchemaContainer(version.getSchemaContainer());
 
-		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
-		node.setCreator(creator);
-		node.setCreationTimestamp();
+			// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
+			n.setCreator(creator);
+			n.setCreationTimestamp();
+		});
 		node.generateBucketId();
 
 		return node;

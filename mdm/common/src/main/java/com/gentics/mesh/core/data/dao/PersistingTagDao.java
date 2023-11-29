@@ -146,11 +146,12 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, P
 
 	@Override
 	default HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
-		HibTag tag = createPersisted(uuid);
+		HibTag tag = createPersisted(uuid, t -> {
+			t.setName(name);
+			t.setCreated(creator);
+			t.setProject(project);
+		});
 
-		tag.setName(name);
-		tag.setCreated(creator);
-		tag.setProject(project);
 		tag.generateBucketId();
 
 		// And to the tag family

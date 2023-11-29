@@ -122,8 +122,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		PersistingBranchDao branchDao = CommonTx.get().branchDao();
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		
-		HibProject project = createPersisted(uuid);
-		project.setName(name);
+		HibProject project = createPersisted(uuid, p -> {
+			p.setName(name);
+		});		
 
 		// triggering node permission root creation
 		getNodePermissionRoot(project);
@@ -171,10 +172,11 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		BranchDao branchDao = ctx.branchDao();
 		PersistingNodeDao nodeDao = ctx.nodeDao();
 		if (baseNode == null) {
-			baseNode = nodeDao.createPersisted(project, null);
-			baseNode.setSchemaContainer(schemaVersion.getSchemaContainer());
-			baseNode.setProject(project);
-			baseNode.setCreated(creator);
+			baseNode = nodeDao.createPersisted(project, null, n -> {
+				n.setSchemaContainer(schemaVersion.getSchemaContainer());
+				n.setProject(project);
+				n.setCreated(creator);
+			});
 			HibLanguage language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
 			contentDao.createFieldContainer(baseNode, language.getLanguageTag(), branchDao.getLatestBranch(project), creator);
 			project.setBaseNode(baseNode);

@@ -29,6 +29,15 @@ public interface HibBooleanFieldList extends HibMicroschemaListableField, HibLis
 	 */
 	HibBooleanField createBoolean(Boolean flag);
 
+	/**
+	 * Create an ordered list of boolean items, adding all to the list.
+	 * 
+	 * @param items
+	 */
+	default void createBooleans(List<Boolean> items) {
+		items.stream().forEach(this::createBoolean);
+	}
+
 	@Override
 	default BooleanFieldListImpl transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		BooleanFieldListImpl restModel = new BooleanFieldListImpl();

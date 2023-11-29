@@ -76,9 +76,10 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 
 	@Override
 	default HibGroup create(String name, HibUser user, String uuid) {
-		HibGroup group = createPersisted(uuid);
-		group.setName(name);
-		group.setCreated(user);
+		HibGroup group = createPersisted(uuid, g -> {
+			g.setName(name);
+			g.setCreated(user);
+		});
 		group.generateBucketId();
 		addBatchEvent(group.onCreated());
 		uncacheSync(group);

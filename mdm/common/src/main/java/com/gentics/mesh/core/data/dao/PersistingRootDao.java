@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,9 +38,10 @@ public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>
 	 * 
 	 * @param root
 	 * @param uuid if null, the generated UUID will be attached to the created element.
+	 * @param inflater the instance inflater
 	 * @return
 	 */
-	L createPersisted(R root, String uuid);
+	L createPersisted(R root, String uuid, Consumer<L> inflater);
 
 	/**
 	 * Merge the entity data into its persistent state.
