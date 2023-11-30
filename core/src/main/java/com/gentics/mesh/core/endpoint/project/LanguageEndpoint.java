@@ -59,7 +59,7 @@ public class LanguageEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleDelete(ac, uuid);
 		}, isOrderedBlockingHandlers());
 
-		Route getAllRoute = route("/:projectUuid/languages")
+		Route getAllRoute = route("/")
 				.method(GET)
 				.produces(APPLICATION_JSON);
 		getAllRoute.blockingHandler(rc -> {
@@ -74,6 +74,15 @@ public class LanguageEndpoint extends AbstractProjectEndpoint {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("languageUuid");
 			crudHandler.handleRead(ac, uuid);
+		}, false);
+
+		Route getByTagRoute = route("/tag/:languageTag")
+				.method(GET)
+				.produces(APPLICATION_JSON);
+		getByTagRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tag = ac.getParameter("languageTag");
+			crudHandler.handleReadByTag(ac, tag);
 		}, false);
 	}
 }

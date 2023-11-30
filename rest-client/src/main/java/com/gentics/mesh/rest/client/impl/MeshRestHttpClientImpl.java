@@ -47,6 +47,8 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -321,6 +323,23 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(
 			parameters), NodeListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String tag, ParameterProvider... parameters) {
+		Objects.requireNonNull(tag, "tag must not be null");
+		return prepareRequest(GET, "/languages/tag/" + encodeSegment(tag) + getQuery(parameters), LanguageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String uuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/languages/" + uuid + getQuery(parameters), LanguageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameters) {
+		return prepareRequest(GET, "/languages" + getQuery(parameters), LanguageListResponse.class);
 	}
 
 	@Override
