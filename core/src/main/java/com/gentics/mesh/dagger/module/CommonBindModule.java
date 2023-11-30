@@ -17,6 +17,7 @@ import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.action.GroupDAOActions;
 import com.gentics.mesh.core.action.JobDAOActions;
+import com.gentics.mesh.core.action.LanguageDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.action.ProjectDAOActions;
@@ -29,6 +30,7 @@ import com.gentics.mesh.core.actions.impl.BranchDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.DAOActionsCollectionImpl;
 import com.gentics.mesh.core.actions.impl.GroupDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.JobDAOActionsImpl;
+import com.gentics.mesh.core.actions.impl.LanguageDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.MicroschemaDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.NodeDAOActionsImpl;
 import com.gentics.mesh.core.actions.impl.ProjectDAOActionsImpl;
@@ -61,10 +63,6 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
-import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
@@ -239,6 +237,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract JobWorkerVerticle jobWorkerVerticle(JobWorkerVerticleImpl e);
+
+	@Binds
+	abstract LanguageDAOActions languageDAOActions(LanguageDAOActionsImpl e);
 
 	@Binds
 	abstract UserDAOActions userDAOActions(UserDAOActionsImpl e);

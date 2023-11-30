@@ -38,7 +38,6 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 			return branchDao.findByUuid(ctx.project(), uuid);
 		} else {
 			return branchDao.loadObjectByUuid(ctx.project(), ctx.ac(), uuid, perm, errorIfNotFound);
-
 		}
 	}
 

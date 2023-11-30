@@ -7,10 +7,9 @@ import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -25,9 +24,12 @@ import io.vertx.ext.web.Route;
  */
 public class LanguageEndpoint extends AbstractProjectEndpoint {
 
+	private final LanguageCrudHandler crudHandler;
+
 	@Inject
-	public LanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
+	public LanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
 		super("languages", chain, boot, localConfigApi, db, options);
+		this.crudHandler = crudHandler;
 	}
 
 	@Override
@@ -40,21 +42,38 @@ public class LanguageEndpoint extends AbstractProjectEndpoint {
 		secureAll();
 
 		// TODO Add method that allows assigning languages from and to the project
-		Route createRoute = route("/:projectUuid/languages").method(POST).produces(APPLICATION_JSON);
-		createRoute.handler(rc -> {
-			throw new NotImplementedException("not implemented");
-		});
+		Route createRoute = route("/")
+				.method(POST)
+				.produces(APPLICATION_JSON);
+		createRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			crudHandler.handleCreate(ac);
+		}, isOrderedBlockingHandlers());
 
-		Route deleteRoute = route("/:projectUuid/languages").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
-			// Unassign languages should cause a batch process that removes the FieldContainers for the given language.
-			throw new NotImplementedException("not implemented");
-		});
+		Route deleteRoute = route("/:languageUuid")
+				.method(DELETE)
+				.produces(APPLICATION_JSON);
+		deleteRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("languageUuid");
+			crudHandler.handleDelete(ac, uuid);
+		}, isOrderedBlockingHandlers());
 
-		Route getRoute = route("/:projectUuid/languages").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
-			throw new NotImplementedException("not implemented");
-		});
+		Route getAllRoute = route("/:projectUuid/languages")
+				.method(GET)
+				.produces(APPLICATION_JSON);
+		getAllRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			crudHandler.handleReadList(ac);
+		}, false);
+
+		Route getRoute = route("/:languageUuid")
+				.method(GET)
+				.produces(APPLICATION_JSON);
+		getRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("languageUuid");
+			crudHandler.handleRead(ac, uuid);
+		}, false);
 	}
-
 }
