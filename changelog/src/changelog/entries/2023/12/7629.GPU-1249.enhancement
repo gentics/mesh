@@ -1,0 +1,1 @@
+REST: A new 'languages' endpoint has been added, providing the list of the installed languages, as well as the lookup over UUID or 2-character language tag.
