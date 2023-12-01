@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.actions.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -27,16 +30,12 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 
 	@Override
 	public HibLanguage create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw new RuntimeException("Cannot create languages on the fly. Please use MeshOptions to specify extra languages.");
+		throw error(BAD_REQUEST, "error_language_creation_forbidden");
 	}
 
 	@Override
 	public HibLanguage loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		if (perm == null) {
-			return ctx.tx().languageDao().findByUuid(uuid);
-		} else {
-			return ctx.tx().languageDao().loadObjectByUuid(ctx.ac(), uuid, perm, errorIfNotFound);
-		}
+		return ctx.tx().languageDao().findByUuid(uuid);
 	}
 
 	@Override
@@ -52,13 +51,13 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 
 	@Override
 	public boolean update(Tx tx, HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
-		throw new RuntimeException("Cannot update languages on the fly. Please use MeshOptions to modify extra languages.");
+		return tx.languageDao().update(element, ac, batch);
 	}
 
 	@Override
 	public void delete(Tx tx, HibLanguage element, BulkActionContext bac) {
 		// Unassign languages should cause a batch process that removes the FieldContainers for the given language.
-		throw new RuntimeException("Cannot delete languages on the fly.");
+		tx.languageDao().delete(element, bac);
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import com.gentics.mesh.core.endpoint.microschema.MicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.microschema.ProjectMicroschemaEndpoint;
 import com.gentics.mesh.core.endpoint.navroot.NavRootEndpoint;
 import com.gentics.mesh.core.endpoint.node.NodeEndpoint;
+import com.gentics.mesh.core.endpoint.project.LanguageEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectEndpoint;
 import com.gentics.mesh.core.endpoint.project.ProjectInfoEndpoint;
 import com.gentics.mesh.core.endpoint.role.RoleEndpoint;
@@ -70,6 +71,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 	protected final Provider<RouterStorageImpl> routerStorage;
 
 	protected final Provider<UserEndpoint> userEndpoint;
+
+	protected final Provider<LanguageEndpoint> languageEndpoint;
 
 	protected final Provider<RoleEndpoint> roleEndpoint;
 
@@ -131,7 +134,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 
 	@Inject
 	public RestAPIVerticle(Provider<RouterStorageImpl> routerStorage, Provider<UserEndpoint> userEndpoint,
-			Provider<RoleEndpoint> roleEndpoint, Provider<GroupEndpoint> groupEndpoint,
+			Provider<RoleEndpoint> roleEndpoint, Provider<GroupEndpoint> groupEndpoint, Provider<LanguageEndpoint> languageEndpoint,
 			Provider<ProjectEndpoint> projectEndpoint, Provider<NodeEndpoint> nodeEndpoint,
 			Provider<TagFamilyEndpoint> tagFamilyEndpoint, Provider<BranchEndpoint> branchEndpoint,
 			Provider<SchemaEndpoint> schemaEndpoint, Provider<ProjectSearchEndpointImpl> projectSearchEndpoint,
@@ -147,6 +150,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 			RouterStorageRegistryImpl routerStorageRegistry, io.vertx.reactivex.core.Vertx rxVertx, Vertx vertx,
 			MeshOptions meshOptions) {
 		this.routerStorage = routerStorage;
+		this.languageEndpoint = languageEndpoint;
 		this.userEndpoint = userEndpoint;
 		this.roleEndpoint = roleEndpoint;
 		this.groupEndpoint = groupEndpoint;
@@ -294,6 +298,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		List<AbstractInternalEndpoint> endpoints = new ArrayList<>();
 		endpoints.add(restInfoEndpoint.get());
 		// verticles.add(projectInfoVerticle());
+		endpoints.add(languageEndpoint.get());
 
 		// User Group Role verticles
 		endpoints.add(userEndpoint.get());

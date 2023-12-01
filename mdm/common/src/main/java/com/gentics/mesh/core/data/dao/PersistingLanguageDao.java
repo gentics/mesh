@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
@@ -39,11 +42,11 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 
 	@Override
 	default boolean update(HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
-		throw new IllegalStateException("Languages can't be updated");
+		throw error(BAD_REQUEST, "error_language_update_forbidden");
 	}
 
 	@Override
 	default void delete(HibLanguage element, BulkActionContext bac) {
-		throw new IllegalStateException("Languages can't be deleted");
+		throw error(BAD_REQUEST, "error_language_deletion_forbidden");
 	}
 }
