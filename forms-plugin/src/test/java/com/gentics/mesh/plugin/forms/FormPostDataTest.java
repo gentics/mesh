@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
@@ -279,6 +280,50 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(response.code())
 			.as("Authenticated response code")
 			.isEqualTo(HttpResponseStatus.OK.code());
+	}
+
+	/**
+	 * Test posting a file, which is not allowed
+	 * @throws IOException
+	 */
+	@Test
+	public void testPostFileNotAllowedFakeFiletype() throws IOException {
+		FormsTestPlugin.instance.configuration.getFileUpload().setUseMagicByteCheck(true);
+
+		String uuid = createForm("filefield_allow_by_default.json");
+
+		// try uploading an image (not allowed)
+		RequestBody requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("file1", "fake-filename-actually-png.json", requestBodyFromFile("file-uploads/test.png"))
+			.build();
+
+		Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).header("Referer", "ref").post(requestBody).build();
+		Response response = client().newCall(postRequest).execute();
+		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
+
+		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		NodeResponse dataNode = dataNodes.getData().get(0);
+
+		String errors = dataNode.getFields().getStringField("errors").getString();
+		assertThat(errors).as("Errors").isNotEmpty();
+
+		// try again with json file (allowed)
+		requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("file1", "filefield_allow_by_default.json", requestBodyFromFile("filefield_allow_by_default.json"))
+			.build();
+		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
+		response = client().newCall(postRequest).execute();
+		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
+
+		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
+		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
+		dataNode = dataNodes.getData().get(0);
+
+		errors = dataNode.getFields().getStringField("errors").getString();
+		assertThat(errors).as("Errors").isEmpty();
 	}
 
 	/**
