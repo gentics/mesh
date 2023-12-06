@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-tests</artifactId>
-		<version>2.0.9-SNAPSHOT</version>
+		<version>2.0.11-SNAPSHOT</version>
 	</parent>
 	<artifactId>tests-mesh-changelog-system</artifactId>
 	<name>Mesh Changelog System - Shared tests</name>

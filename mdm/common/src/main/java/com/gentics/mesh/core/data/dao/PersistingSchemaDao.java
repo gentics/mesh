@@ -53,7 +53,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingSchemaDao 
 			extends SchemaDao, 
-			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel> {
+			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, PersistingNamedEntityDao<HibSchema> {
 
 	/**
 	 * Create the schema.
@@ -76,8 +76,7 @@ public interface PersistingSchemaDao
 		}
 		HibSchema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
 		userDao.inheritRolePermissions(requestUser, schemaRoot, container);
-		container = mergeIntoPersisted(container);
-		batch.add(container.onCreated());
+		mergeIntoPersisted(container);
 		return container;
 	}
 
@@ -205,7 +204,10 @@ public interface PersistingSchemaDao
 			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		HibSchema container = createPersisted(uuid);
+		HibSchema container = createPersisted(uuid, s -> {
+			s.setCreated(creator);
+			s.setName(schema.getName());
+		});
 		HibSchemaVersion version = createPersistedVersion(container, v -> {
 			// set the initial version
 			schema.setVersion("1.0");
@@ -214,10 +216,10 @@ public interface PersistingSchemaDao
 			v.setSchemaContainer(container);			
 		});
 		container.setLatestVersion(version);
-		container.setCreated(creator);
-		container.setName(schema.getName());
 		container.generateBucketId();
 
+		addBatchEvent(container.onCreated());
+		uncacheSync(container);
 		return mergeIntoPersisted(container);
 	}
 
@@ -338,7 +340,8 @@ public interface PersistingSchemaDao
 	default HibSchema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibSchema schema = create(ac, batch, uuid);
 		assign(schema, root, ac.getUser(), batch);
-		CommonTx.get().projectDao().mergeIntoPersisted(root);
+		PersistingProjectDao projectDao = CommonTx.get().projectDao();
+		projectDao.mergeIntoPersisted(root);
 		assignEvents(schema, UNASSIGNED).forEach(batch::add);
 		return schema;
 	}

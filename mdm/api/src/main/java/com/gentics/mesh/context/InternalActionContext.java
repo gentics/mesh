@@ -1,7 +1,6 @@
 package com.gentics.mesh.context;
 
 import java.util.List;
-import java.util.Set;
 
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;

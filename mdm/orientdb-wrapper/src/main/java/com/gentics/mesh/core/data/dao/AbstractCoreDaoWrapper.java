@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
@@ -33,12 +34,13 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public T createPersisted(String uuid) {
+	public T createPersisted(String uuid, Consumer<T> inflater) {
 		D vertex = getRoot().create();
 		if (uuid != null) {
 			vertex.setUuid(uuid);
 		}
 		getRoot().addItem(vertex);
+		inflater.accept((T) vertex);
 		return (T) vertex;
 	}
 

@@ -93,7 +93,6 @@ public interface Taggable {
 					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {
 						tag = tagDao.create(tagFamily, tagReference.getName(), project, user);
 						userDao.inheritRolePermissions(user, tagFamily, tag);
-						batch.add(tag.onCreated());
 					} else {
 						throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(), tagReference
 							.getName());

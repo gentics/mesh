@@ -61,10 +61,15 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 	@Override
 	public boolean grantRolePermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive,
 			InternalPermission... permissions) {
+		Set<String> roleUuids = roles.stream().map(HibRole::getUuid).collect(Collectors.toSet());
+		return grantRolePermissionsWithUuids(roleUuids, element, exclusive, permissions);
+	}
+
+	@Override
+	public boolean grantRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
 		boolean permissionGranted = false;
-		Set<String> roleUuids = roles.stream().map(HibRole::getUuid).collect(Collectors.toSet());
-
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 
@@ -103,14 +108,21 @@ public class RoleDaoWrapperImpl extends AbstractCoreDaoWrapper<RoleResponse, Hib
 
 	@Override
 	public boolean revokeRolePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions) {
+		Set<String> roleUuids = roles.stream().map(HibRole::getUuid).collect(Collectors.toSet());
+		return revokeRolePermissionsWithUuids(roleUuids, element, permissions);
+	}
+
+	@Override
+	public boolean revokeRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element,
+			InternalPermission... permissions) {
 		MeshVertex vertex = (MeshVertex) element;
 
 		boolean permissionRevoked = false;
 		for (InternalPermission permission : permissions) {
 			Set<String> allowedRoles = getRoleUuidsForPerm(vertex, permission);
 			if (allowedRoles != null) {
-				for (HibRole role : roles) {
-					permissionRevoked = allowedRoles.remove(role.getUuid()) || permissionRevoked;
+				for (String roleUuid : roleUuids) {
+					permissionRevoked = allowedRoles.remove(roleUuid) || permissionRevoked;
 				}
 				vertex.setRoleUuidForPerm(permission, allowedRoles);
 			}

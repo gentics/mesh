@@ -1,0 +1,1 @@
+GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.

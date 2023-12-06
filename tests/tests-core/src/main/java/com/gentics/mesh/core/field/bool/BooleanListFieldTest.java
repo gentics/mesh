@@ -8,6 +8,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -91,6 +94,19 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			list.removeAll();
 			assertEquals(0, list.getSize());
 			assertEquals(0, list.getList().size());
+		}
+	}
+
+	@Test
+	@Override
+	public void testBulkFieldUpdate() throws Exception {
+		try (Tx tx = tx()) {
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibBooleanFieldList list = container.createBooleanList(BOOLEAN_LIST);
+			List<Boolean> params = List.of(Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.FALSE);
+			list.createBooleans(params);
+			assertEquals(4, list.getList().size());
+			assertTrue(CollectionUtils.isEqualCollection(params, list.getValues()));
 		}
 	}
 
