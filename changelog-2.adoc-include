@@ -6,6 +6,18 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.10]]
+== 2.0.10 (06.12.2023)
+
+icon:check[] Core: A regression of creation of the named entities has been fixed.
+
+
+icon:check[] Core: Improve the internal Java API of the list field creation, targeting better batch performance.
+
+
+icon:check[] Core: Improve the internal Java API for granting and revoking permissions.
+
+
 [[v2.0.9]]
 == 2.0.9 (18.11.2023)
 
