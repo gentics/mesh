@@ -71,6 +71,18 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 			InternalPermission... permissions);
 
 	/**
+	 * Grant the given permissions on the element to the set of roles, identified by their uuids. Implementations do not need to invalidate the cache
+	 *
+	 * @param roleUuids set of role uuids
+	 * @param element element to grant permission on
+	 * @param exclusive true to revoke the given permissions on all other roles
+	 * @param permissions permissions to grant
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean grantRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions);
+
+	/**
 	 * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
 	 * @param role the role
 	 * @param element
@@ -86,6 +98,15 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	 * @return true, iff permissions were effectively changed
 	 */
 	boolean revokeRolePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions);
+
+	/**
+	 * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
+	 * @param roleUuids set of role uuids
+	 * @param element element to revoke permissions from
+	 * @param permissions permissions to revoke
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean revokeRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Create a new role
@@ -142,6 +163,17 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		return permissionsGranted;
 	}
 
+	@Override
+	default boolean grantPermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions) {
+		boolean permissionsGranted = grantRolePermissionsWithUuids(roleUuids, element, exclusive, permissions);
+		if (permissionsGranted) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsGranted;
+	}
+
 	/**
 	 * Revoke the given permissions and clear the cache when successful
 	 *
@@ -162,6 +194,17 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	@Override
 	default boolean revokePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions) {
 		boolean permissionsRevoked = revokeRolePermissions(roles, element, permissions);
+		if (permissionsRevoked) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsRevoked;
+	}
+
+	@Override
+	default boolean revokePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element,
+			InternalPermission... permissions) {
+		boolean permissionsRevoked = revokeRolePermissionsWithUuids(roleUuids, element, permissions);
 		if (permissionsRevoked) {
 			PermissionCache cache = Tx.get().permissionCache();
 			cache.clear();
