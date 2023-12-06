@@ -8,8 +8,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -17,6 +20,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -34,7 +38,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<HibProject, HibTagFamily> {
+public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<HibProject, HibTagFamily>, PersistingNamedEntityDao<HibTagFamily> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagFamilyDao.class);
 
@@ -77,22 +81,21 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 		HibTagFamily tagFamily = create(project, name, requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, projectTagFamilyRoot, tagFamily);
 
-		batch.add(tagFamily.onCreated());
 		return tagFamily;
 	}
 
 
 	@Override
 	default HibTagFamily create(HibProject project, String name, HibUser user, String uuid) {
-		HibTagFamily tagFamily = createPersisted(project, uuid);
-		tagFamily.setName(name);
-		tagFamily.setCreated(user);
-
-		tagFamily.setProject(project);
+		HibTagFamily tagFamily = createPersisted(project, uuid, f -> {
+			f.setName(name);
+			f.setCreated(user);
+			f.setProject(project);
+		});
 		tagFamily.generateBucketId();
-		mergeIntoPersisted(project, tagFamily);
-
-		return tagFamily;
+		addBatchEvent(tagFamily.onCreated());
+		uncacheSync(tagFamily);
+		return mergeIntoPersisted(project, tagFamily);
 	}
 
 	@Override
@@ -179,5 +182,10 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	@Override
 	default void removeTag(HibTagFamily tagFamily, HibTag tag) {
 		tagFamily.removeTag(tag);
+	}
+
+	@Override
+	default Optional<NameCache<HibTagFamily>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().tagFamilyNameCache());
 	}
 }

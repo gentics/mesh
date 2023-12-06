@@ -48,7 +48,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
-			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel> {
+			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, PersistingNamedEntityDao<HibMicroschema> {
 
 	/**
 	 * Find all micronodes belonging to this microschema version
@@ -158,7 +158,8 @@ public interface PersistingMicroschemaDao
 	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		HibMicroschema microschema = create(ac, batch, uuid);
 		assign(microschema, root, ac.getUser(), batch);
-		CommonTx.get().projectDao().mergeIntoPersisted(root);
+		PersistingProjectDao projectDao = CommonTx.get().projectDao();
+		projectDao.mergeIntoPersisted(root);
 		return microschema;
 	}
 
@@ -184,7 +185,6 @@ public interface PersistingMicroschemaDao
 		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
 		mergeIntoPersisted(container);
-		batch.add(container.onCreated());
 		return container;
 	}
 
@@ -216,7 +216,10 @@ public interface PersistingMicroschemaDao
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		HibMicroschema container = createPersisted(uuid);
+		HibMicroschema container = createPersisted(uuid, m -> {
+			m.setCreated(user);
+			m.setName(microschema.getName());
+		});
 		HibMicroschemaVersion version = createPersistedVersion(container, v -> {
 			// set the initial version
 			microschema.setVersion("1.0");
@@ -225,10 +228,10 @@ public interface PersistingMicroschemaDao
 			v.setSchemaContainer(container);
 		});
 		container.setLatestVersion(version);
-		container.setCreated(user);
-		container.setName(microschema.getName());
 		container.generateBucketId();
 
+		addBatchEvent(container.onCreated());
+		uncacheSync(container);
 		return mergeIntoPersisted(container);
 	}
 

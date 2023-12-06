@@ -1,23 +1,27 @@
 package com.gentics.mesh.util;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import org.apache.commons.lang.RandomStringUtils;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
  * Utils for core tests.
@@ -102,5 +106,40 @@ public final class CoreTestUtils {
 		microschemaVersion.setSchemaContainer(microschema);
 
 		return microschemaVersion;
+	}
+
+	/**
+	 * Check whether the throwable is a {@link MeshRestClientMessageException} with {@link MeshRestClientMessageException#getStatusCode()} {@link HttpResponseStatus#CONFLICT}.
+	 * @param t throwable
+	 * @return true for conflict errors, false otherwise
+	 */
+	public static boolean isConflict(Throwable t) {
+		return isResponseStatus(t, HttpResponseStatus.CONFLICT);
+	}
+
+	/**
+	 * Check whether the throwable is a {@link MeshRestClientMessageException} with the given {@link MeshRestClientMessageException#getStatusCode()}.
+	 * @param t throwable
+	 * @param status status code in question
+	 * @return true, iff the status code matches
+	 */
+	public static boolean isResponseStatus(Throwable t, HttpResponseStatus status) {
+		return getMeshRestClientMessageException(t).map(meshException -> meshException.getStatusCode() == status.code()).orElse(false);
+	}
+
+	/**
+	 * Get the optional {@link MeshRestClientMessageException} instance wrapped in the given {@link Throwable}.
+	 * @param t throwable
+	 * @return optional MeshRestClientMessageException
+	 */
+	public static Optional<MeshRestClientMessageException> getMeshRestClientMessageException(Throwable t) {
+		if (t instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException meshException = ((MeshRestClientMessageException) t);
+			return Optional.of(meshException);
+		} else if (t.getCause() != null && t.getCause() != t) {
+			return getMeshRestClientMessageException(t.getCause());
+		} else {
+			return Optional.empty();
+		}
 	}
 }

@@ -25,6 +25,15 @@ public interface HibDateFieldList extends HibMicroschemaListableField, HibListFi
 	HibDateField createDate(Long date);
 
 	/**
+	 * Create an ordered list of date fields from values, adding all to the list.
+	 * 
+	 * @param dates
+	 */
+	default void createDates(List<Long> dates) {
+		dates.stream().forEach(this::createDate);
+	}
+
+	/**
 	 * Return the date field at the given index of the list.
 	 * 
 	 * @param index
