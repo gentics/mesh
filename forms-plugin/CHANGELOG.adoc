@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.10]]
+== 1.10.10 (2023-12-07)
+
+icon:plus[]: Forms: New configuration item `fileUpload.useMagicByteCheck` determines whether the MIME type of submitted files should be checked by comparing the magic bytes of the file.
+
 [[v1.10.9]]
 == 1.10.9 (2023-11-02)
 
