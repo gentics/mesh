@@ -220,7 +220,7 @@ public class FileElement extends FormElement {
 			metadata.add(Metadata.RESOURCE_NAME_KEY, providedFileName);
 			String mimeType = detector.detect(tikaInputStream, metadata).toString();
 
-			log.debug(String.format("Tika detected mime type %s", mimeType.toString()));
+			log.debug(String.format("Tika detected mime type %s", mimeType));
 			return mimeType;
 		}
 	}
