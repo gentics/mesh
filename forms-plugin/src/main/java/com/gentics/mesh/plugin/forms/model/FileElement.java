@@ -1,23 +1,5 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
-import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.detect.Detector;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
@@ -29,6 +11,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
 
 /**
  * Element for file uploads
@@ -191,7 +192,7 @@ public class FileElement extends FormElement {
 		}
 
 		String mimeType = getConfiguration().getFileUpload().isUseMagicByteCheck()
-			? determineMimeType(fileUpload.uploadedFileName())
+			? determineMimeType(fileUpload.uploadedFileName(), fileUpload.fileName())
 			: fileUpload.contentType();
 
 		if (mimeType == null) {
@@ -206,16 +207,22 @@ public class FileElement extends FormElement {
 	/**
 	 * Determine MIME type from file contents.
 	 *
-	 * @param filename The path to the file to inspect.
+	 * @param uploadedFileName The path to the file to inspect.
+	 * @param providedFileName the provided file name
 	 * @return The detected MIME type.
 	 */
-	private String determineMimeType(String filename) throws IOException {
+	private String determineMimeType(String uploadedFileName, String providedFileName) throws IOException {
 		TikaConfig tikaConfig = TikaConfig.getDefaultConfig();
 		Detector detector = tikaConfig.getDetector();
-		FileInputStream inputStream = new FileInputStream(filename);
-		MediaType mimeType = detector.detect(TikaInputStream.get(inputStream), new Metadata());
 
-		return mimeType == null ? null : mimeType.getType();
+		try (FileInputStream inputStream = new FileInputStream(uploadedFileName); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
+			Metadata metadata = new Metadata();
+			metadata.add(Metadata.RESOURCE_NAME_KEY, providedFileName);
+			String mimeType = detector.detect(tikaInputStream, metadata).toString();
+
+			log.debug(String.format("Tika detected mime type %s", mimeType.toString()));
+			return mimeType;
+		}
 	}
 
 	/**
