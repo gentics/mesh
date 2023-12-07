@@ -13,6 +13,8 @@ public class FileUploadOptions {
 
 	private Set<String> defaultAllowed;
 
+	private boolean useMagicByteCheck;
+
 	/**
 	 * Get the allowed file types
 	 * @return allowed file types
@@ -59,5 +61,23 @@ public class FileUploadOptions {
 	 */
 	public void setDefaultAllowed(Set<String> defaultAllowed) {
 		this.defaultAllowed = defaultAllowed;
+	}
+
+	/**
+	 * Whether to check a files magic bytes to verify the MIME type.
+	 * @return {@code true} if the magic bytes must be verified.
+	 */
+	public boolean isUseMagicByteCheck() {
+		return useMagicByteCheck;
+	}
+
+	/**
+	 * Set whether to check a files magic bytes to verify the MIME type.
+	 * @param useMagicByteCheck {@code true} if the magic bytes must be verified.
+	 */
+	public FileUploadOptions setUseMagicByteCheck(boolean useMagicByteCheck) {
+		this.useMagicByteCheck = useMagicByteCheck;
+
+		return this;
 	}
 }
