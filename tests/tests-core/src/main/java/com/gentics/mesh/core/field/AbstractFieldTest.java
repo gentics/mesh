@@ -46,7 +46,7 @@ import com.gentics.mesh.util.Tuple;
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
-	
+
 	protected PersistingContentDao contentDao() {
 		return contentDao(Tx.get());
 	}

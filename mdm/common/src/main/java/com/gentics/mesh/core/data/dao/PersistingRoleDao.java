@@ -13,13 +13,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.collections.CollectionUtils;
-import com.gentics.mesh.core.data.user.MeshAuthUser;
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -28,6 +29,8 @@ import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -46,7 +49,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * @author plyhun
  *
  */
-public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole> {
+public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>, PersistingNamedEntityDao<HibRole> {
 	/**
 	 * Grant role permission. Consumers implementing this method do not need to invalidate the cache
 	 * @param role the role
@@ -68,6 +71,18 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 			InternalPermission... permissions);
 
 	/**
+	 * Grant the given permissions on the element to the set of roles, identified by their uuids. Implementations do not need to invalidate the cache
+	 *
+	 * @param roleUuids set of role uuids
+	 * @param element element to grant permission on
+	 * @param exclusive true to revoke the given permissions on all other roles
+	 * @param permissions permissions to grant
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean grantRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions);
+
+	/**
 	 * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
 	 * @param role the role
 	 * @param element
@@ -83,6 +98,15 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	 * @return true, iff permissions were effectively changed
 	 */
 	boolean revokeRolePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions);
+
+	/**
+	 * Revoke role permission. Consumers implementing this method do not need to invalidate the cache
+	 * @param roleUuids set of role uuids
+	 * @param element element to revoke permissions from
+	 * @param permissions permissions to revoke
+	 * @return true, iff permissions were effectively changed
+	 */
+	boolean revokeRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Create a new role
@@ -115,7 +139,6 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 
 		HibRole role = create(requestModel.getName(), requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, roleRoot, role);
-		batch.add(role.onCreated());
 		return role;
 	}
 
@@ -133,6 +156,17 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	default boolean grantPermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive,
 			InternalPermission... permissions) {
 		boolean permissionsGranted = grantRolePermissions(roles, element, exclusive, permissions);
+		if (permissionsGranted) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsGranted;
+	}
+
+	@Override
+	default boolean grantPermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive,
+			InternalPermission... permissions) {
+		boolean permissionsGranted = grantRolePermissionsWithUuids(roleUuids, element, exclusive, permissions);
 		if (permissionsGranted) {
 			PermissionCache cache = Tx.get().permissionCache();
 			cache.clear();
@@ -160,6 +194,17 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 	@Override
 	default boolean revokePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions) {
 		boolean permissionsRevoked = revokeRolePermissions(roles, element, permissions);
+		if (permissionsRevoked) {
+			PermissionCache cache = Tx.get().permissionCache();
+			cache.clear();
+		}
+		return permissionsRevoked;
+	}
+
+	@Override
+	default boolean revokePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element,
+			InternalPermission... permissions) {
+		boolean permissionsRevoked = revokeRolePermissionsWithUuids(roleUuids, element, permissions);
 		if (permissionsRevoked) {
 			PermissionCache cache = Tx.get().permissionCache();
 			cache.clear();
@@ -219,12 +264,15 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 
 	@Override
 	default HibRole create(String name, HibUser creator, String uuid) {
-		HibRole role = createPersisted(uuid);
-		role.setName(name);
-		role.setCreated(creator);
+		HibRole role = createPersisted(uuid, r -> {
+			r.setName(name);
+			r.setCreated(creator);
+		});
 		role.generateBucketId();
 		addRole(role);
-		return role;
+		addBatchEvent(role.onCreated());
+		uncacheSync(role);
+		return mergeIntoPersisted(role);
 	}
 
 	@Override
@@ -309,10 +357,14 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<HibRole>
 		return restRole;
 	}
 
+	@Override
+	default Optional<NameCache<HibRole>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().roleNameCache());
+	}
+
 	private void setGroups(HibRole role, InternalActionContext ac, RoleResponse restRole) {
 		for (HibGroup group : role.getGroups()) {
 			restRole.getGroups().add(group.transformToReference());
 		}
 	}
-
 }

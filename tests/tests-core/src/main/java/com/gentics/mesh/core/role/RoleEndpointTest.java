@@ -457,7 +457,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(event).hasName("extra role").hasUuid(extraRoleUuid);
 		});
 
-		trackingSearchProvider().clear().blockingAwait();
+		waitAndClearSearchIdleEvents();
 		call(() -> client().deleteRole(extraRoleUuid));
 
 		awaitEvents();

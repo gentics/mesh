@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.PersistingTagDao;
 import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
+import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * A developer API of {@link Tx}.
@@ -36,6 +37,11 @@ public interface CommonTx extends Tx, TxEntityPersistenceManager {
 	@Override
 	default int txId() {
 		return hashCode();
+	}
+
+	@Override
+	default EventQueueBatch createBatch() {
+		return data().getOrCreateEventQueueBatch();
 	}
 
 	@Override

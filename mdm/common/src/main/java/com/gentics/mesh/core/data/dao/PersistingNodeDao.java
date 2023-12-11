@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
@@ -60,7 +61,6 @@ import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.tag.HibTag;
@@ -108,7 +108,6 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -1752,9 +1751,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		RoleDao roleDao = tx.roleDao();
 		UserDao userDao = tx.userDao();
 
-		Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
-		Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
-		Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+		Set<Triple<String, String, Object>> allRoles = roleDao.findAll(ac);
+		Map<String, Triple<String, String, Object>> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(Triple::getLeft, Function.identity()));
+		Map<String, Triple<String, String, Object>> allRolesByName = allRoles.stream().collect(Collectors.toMap(Triple::getMiddle, Function.identity()));
 
 		InternalPermission[] possiblePermissions = node.hasPublishPermissions()
 				? InternalPermission.values()
@@ -1763,10 +1762,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		for (InternalPermission perm : possiblePermissions) {
 			List<RoleReference> roleRefsToSet = grant.get(perm.getRestPerm());
 			if (roleRefsToSet != null) {
-				Set<HibRole> rolesToSet = new HashSet<>();
+				Set<Triple<String, String, Object>> rolesToSet = new HashSet<>();
 				for (RoleReference roleRef : roleRefsToSet) {
 					// find the role for the role reference
-					HibRole role = null;
+					Triple<String, String, Object> role = null;
 					if (!StringUtils.isEmpty(roleRef.getUuid())) {
 						role = allRolesByUuid.get(roleRef.getUuid());
 
@@ -1784,36 +1783,43 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 					}
 
 					// check update permission
-					if (!userDao.hasPermission(requestUser, role, UPDATE_PERM)) {
-						throw error(FORBIDDEN, "error_missing_perm", role.getUuid(), UPDATE_PERM.getRestPerm().getName());
+					if (!userDao.hasPermissionForId(requestUser, role.getRight(), UPDATE_PERM)) {
+						throw error(FORBIDDEN, "error_missing_perm", role.getLeft(), UPDATE_PERM.getRestPerm().getName());
 					}
 
 					rolesToSet.add(role);
 				}
 
-				roleDao.grantPermissions(rolesToSet, node, false, perm);
+				roleDao.grantPermissionsWithUuids(rolesToSet.stream().map(Triple::getLeft).collect(Collectors.toSet()),
+						node, false, perm);
 
 				// handle "exclusive" flag by revoking perm from all "other" roles
 				if (grant.isExclusive()) {
+					Set<String> currentRoleIds = roleDao.getRoleUuidsForPerm(node, perm);
+
 					// start with all roles, the user can see
-					Set<HibRole> rolesToRevoke = new HashSet<>(allRoles);
+					Set<Triple<String, String, Object>> rolesToRevoke = new HashSet<>(allRoles);
 					// remove all roles, which get the permission granted
 					rolesToRevoke.removeAll(rolesToSet);
+
+					// remove all roles, which are not currently set
+					rolesToRevoke.removeIf(role -> !currentRoleIds.contains(role.getLeft()));
 
 					// remove all roles, which should be ignored
 					if (grant.getIgnore() != null) {
 						rolesToRevoke.removeIf(role -> {
 							return grant.getIgnore().stream().filter(ign -> {
-								return StringUtils.equals(ign.getUuid(), role.getUuid()) || StringUtils.equals(ign.getName(), role.getName());
+								return StringUtils.equals(ign.getUuid(), role.getLeft()) || StringUtils.equals(ign.getName(), role.getMiddle());
 							}).findAny().isPresent();
 						});
 					}
 
 					// remove all roles without UPDATE_PERM
-					rolesToRevoke.removeIf(role -> !userDao.hasPermission(requestUser, role, UPDATE_PERM));
+					rolesToRevoke.removeIf(role -> !userDao.hasPermissionForId(requestUser, role.getRight(), UPDATE_PERM));
 
 					if (!rolesToRevoke.isEmpty()) {
-						roleDao.revokePermissions(rolesToRevoke, node, perm);
+						roleDao.revokePermissionsWithUuids(
+								rolesToRevoke.stream().map(Triple::getLeft).collect(Collectors.toSet()), node, perm);
 					}
 				}
 			}
@@ -2115,12 +2121,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
-		HibNode node = createPersisted(project, uuid);
-		node.setSchemaContainer(version.getSchemaContainer());
+		HibNode node = createPersisted(project, uuid, n -> {
+			n.setSchemaContainer(version.getSchemaContainer());
 
-		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
-		node.setCreator(creator);
-		node.setCreationTimestamp();
+			// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
+			n.setCreator(creator);
+			n.setCreationTimestamp();
+		});
 		node.generateBucketId();
 
 		return node;

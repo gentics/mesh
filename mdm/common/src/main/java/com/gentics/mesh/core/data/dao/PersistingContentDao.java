@@ -1074,8 +1074,18 @@ public interface PersistingContentDao extends ContentDao {
 			}
 
 		}
-
 		return fields;
 	}
+
+	/**
+	 * Check whether this field container edge has the given type in the given branch.
+	 *
+	 * @param type
+	 * @param branchUuid
+	 * @return true if it matches the type, false if not
+	 */
+	default boolean isType(HibNodeFieldContainerEdge edge, ContainerType type, String branchUuid) {
+		return edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid);
+	}		
 }
 

@@ -633,4 +633,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		return CommonTx.get().nodeDao().findAllGlobal();
 	}
 
+	@Override
+	public boolean isDefinitionDataDependent() {
+		// We depend on the project.
+		return true;
+	}
 }

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
-import java.util.Optional;
+import java.util.function.Consumer;
 
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -33,13 +33,14 @@ public abstract class AbstractRootDaoWrapper<RM extends RestModel, L extends Hib
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public L createPersisted(R root, String uuid) {
+	public L createPersisted(R root, String uuid, Consumer<L> inflater) {
 		D vertex = getRoot(root).create();
 		L entity = (L) vertex;
 		if (uuid != null) {
 			entity.setUuid(uuid);
 		}
 		getRoot(root).addItem(vertex);
+		inflater.accept(entity);
 		return entity;
 	}
 

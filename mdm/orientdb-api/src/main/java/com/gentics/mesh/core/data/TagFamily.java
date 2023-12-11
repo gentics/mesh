@@ -20,6 +20,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public interface TagFamily extends MeshCoreVertex<TagFamilyResponse>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
 	RootVertex<Tag>, ProjectElement, HibTagFamily, GraphDBBucketableElement {
+	String UNIQUENAME_INDEX_NAME = "uniqueTagFamilyNameIndex";
 
 	/**
 	 * Return the description of the tag family.

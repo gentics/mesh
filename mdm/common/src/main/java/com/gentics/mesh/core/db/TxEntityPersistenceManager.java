@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.db;
 
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.gentics.mesh.core.data.HibElement;
@@ -22,8 +23,22 @@ public interface TxEntityPersistenceManager {
 	 * @param classOfT the persistence class to use
 	 * @return
 	 */
-	<T extends HibElement> T create(String uuid, Class<? extends T> classOfT);
+	default <T extends HibElement> T create(String uuid, Class<? extends T> classOfT) {
+		return create(uuid, classOfT, unused -> {});
+	}
 	
+	/**
+	 * Create a new persisted entity with the given optional uuid, inflating it before the persisting. 
+	 * If uuid parameter is null, a new generated UUID will be used.<br>
+	 * 
+	 * @param <T>
+	 * @param uuid 
+	 * @param classOfT the persistence class to use
+	 * @param inflater the instance inflater
+	 * @return
+	 */
+	<T extends HibElement> T create(String uuid, Class<? extends T> classOfT, Consumer<T> inflater);
+
 	/**
 	 * Merge the data from given POJO into the persistent entity.<br>
 	 * 

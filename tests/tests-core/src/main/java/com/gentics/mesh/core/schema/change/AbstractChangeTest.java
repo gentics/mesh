@@ -61,7 +61,9 @@ public abstract class AbstractChangeTest extends AbstractMeshTest {
 				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
 				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
 			> SCV createVersion(PersistingContainerDao<R, RM, RE, SC, SCV, ?> dao) {
-		SC container = dao.createPersisted(null);
+		SC container = dao.createPersisted(null, s -> {
+			s.setName(s.getUuid());
+		});
 		SCV version = dao.createPersistedVersion(container, v -> {});
 		return version;
 	}

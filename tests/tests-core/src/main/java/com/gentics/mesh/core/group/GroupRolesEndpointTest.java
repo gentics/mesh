@@ -100,7 +100,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			return extraRole.getUuid();
 		});
 
-		searchProvider().clear().blockingAwait();
+		waitAndClearSearchIdleEvents();
 		expect(GROUP_ROLE_ASSIGNED).match(1, GroupRoleAssignModel.class, event -> {
 			GroupReference group = event.getGroup();
 			assertNotNull(group);

@@ -13,4 +13,5 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 public interface Tag
 	extends MeshCoreVertex<TagResponse>, ReferenceableElement<TagReference>, UserTrackingVertex, ProjectElement, HibTag, GraphDBBucketableElement {
 
+	String UNIQUENAME_INDEX_NAME = "uniqueTagNameIndex";
 }

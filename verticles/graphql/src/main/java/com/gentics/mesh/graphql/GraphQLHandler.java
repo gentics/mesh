@@ -106,6 +106,7 @@ public class GraphQLHandler {
 					dataLoaderRegistry.register(NodeDataLoader.CHILDREN_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.CHILDREN_LOADER, dlOptions));
 					dataLoaderRegistry.register(NodeDataLoader.PATH_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PATH_LOADER, dlOptions));
 					dataLoaderRegistry.register(NodeDataLoader.PARENT_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.PARENT_LOADER, dlOptions));
+					dataLoaderRegistry.register(NodeDataLoader.REFERENCED_BY_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.REFERENCED_BY_LOADER, dlOptions));
 					dataLoaderRegistry.register(NodeDataLoader.BREADCRUMB_LOADER_KEY, DataLoader.newDataLoader(NodeDataLoader.BREADCRUMB_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().LINK_REPLACER_LOADER, dlOptions));
 					dataLoaderRegistry.register(FieldDefinitionProvider.BOOLEAN_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().BOOLEAN_LIST_VALUE_LOADER, dlOptions));
