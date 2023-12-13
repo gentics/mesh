@@ -22,6 +22,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
 
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
 [[v1.10.22]]
 == 1.10.22 (06.12.2023)
 
