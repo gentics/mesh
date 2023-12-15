@@ -1,0 +1,30 @@
+{
+	nodes(sort: { schema: { name: ASCENDING } }) {
+		# [$.data.nodes.elements.length()=19]
+		elements {
+			schema {
+				# [$.data.nodes.elements[0].schema.name=content]
+				# [$.data.nodes.elements[1].schema.name=content]
+				# [$.data.nodes.elements[2].schema.name=content]
+				# [$.data.nodes.elements[3].schema.name=content]
+				# [$.data.nodes.elements[4].schema.name=content]
+				# [$.data.nodes.elements[5].schema.name=content]
+				# [$.data.nodes.elements[6].schema.name=content]
+				# [$.data.nodes.elements[7].schema.name=content]
+				# [$.data.nodes.elements[8].schema.name=content]
+				# [$.data.nodes.elements[9].schema.name=content]
+				# [$.data.nodes.elements[10].schema.name=folder]
+				# [$.data.nodes.elements[11].schema.name=folder]
+				# [$.data.nodes.elements[12].schema.name=folder]
+				# [$.data.nodes.elements[13].schema.name=folder]
+				# [$.data.nodes.elements[14].schema.name=folder]
+				# [$.data.nodes.elements[15].schema.name=folder]
+				# [$.data.nodes.elements[16].schema.name=folder]
+				# [$.data.nodes.elements[17].schema.name=folder]
+				# [$.data.nodes.elements[18].schema.name=folder]
+				name
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]
