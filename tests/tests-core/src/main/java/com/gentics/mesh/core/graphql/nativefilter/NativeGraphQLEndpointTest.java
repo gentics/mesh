@@ -36,7 +36,9 @@ public class NativeGraphQLEndpointTest extends GraphQLEndpointTest {
 	public static Stream<List<Object>> queries() {
 		return Stream.<List<Object>>of(
 				Arrays.asList("filtering/nodes-sorted", true, false, "draft"),
-				Arrays.asList("filtering/nodes-nodereferences-native", true, false, "draft")
+				Arrays.asList("filtering/nodes-nodereferences-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-sorted-by-schema", true, false, "draft"),
+				Arrays.asList("filtering/children-sorted-by-schema", true, false, "draft")
 			);
 	}
 
