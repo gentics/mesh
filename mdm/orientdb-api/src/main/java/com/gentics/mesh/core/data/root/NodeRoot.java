@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.root;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -32,4 +34,12 @@ public interface NodeRoot extends RootVertex<Node> {
 			PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		return findAllStream(ac, permission, paging, Optional.empty(), maybeFilter);
 	}
+
+	/**
+	 * Stream the edges with the given languages.
+	 * 
+	 * @param languageTags
+	 * @return
+	 */
+	Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(Collection<String> languageTags);
 }

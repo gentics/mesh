@@ -2052,6 +2052,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			});
 	}
 
+	Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(HibProject project, Collection<String> languageTags);
+
 	/**
 	 * Get the edges for the given node, that satisfy the webroot lookup data.
 	 * 

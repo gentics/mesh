@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
@@ -10,6 +11,7 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +22,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -41,7 +44,10 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
@@ -105,6 +111,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return findAll(user, perm, tx.getProject(ac).getUuid(), paging, maybeContainerType, maybeFilter)
 			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+	}
+
+	@Override
+	public Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(Collection<String> languageTags) {
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> containerTraversal = out(getRootLabel()).mark().outE(HAS_FIELD_CONTAINER);
+		return toStream(GraphFieldContainerEdgeImpl.filterLanguages(containerTraversal, languageTags).frameExplicit(GraphFieldContainerEdgeImpl.class));
 	}
 
 	/**

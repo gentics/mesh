@@ -3,11 +3,18 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Collections;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * A persisting extension to {@link LanguageDao}
@@ -17,11 +24,49 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<HibLanguage> {
 
+	static final Logger log = LoggerFactory.getLogger(PersistingLanguageDao.class);
+
 	default HibLanguage create(String languageName, String languageTag, String uuid) {
 		HibLanguage language = createPersisted(uuid);
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
 		return mergeIntoPersisted(language);
+	}
+
+	@Override
+	default void assign(HibLanguage language, HibProject project, EventQueueBatch batch, boolean throwOnExisting) {
+		project.getLanguages().stream()
+			.filter(l -> l.getLanguageTag().equals(language.getLanguageTag()))
+			.findAny()
+			.ifPresentOrElse(existing -> {
+					if (throwOnExisting) {
+						throw error(BAD_REQUEST, "error_language_already_assigned");
+					} else {
+						log.debug("Language [{}] is already assigned to the project [{}]", language.getLanguageTag(), project.getName());
+					}
+				}, () -> {
+					project.addLanguage(language);					
+				});
+	}
+
+	@Override
+	default void unassign(HibLanguage language, HibProject project, EventQueueBatch batch, boolean throwOnInexisting) {
+		project.getLanguages().stream()
+			.filter(l -> l.getLanguageTag().equals(language.getLanguageTag()))
+			.findAny()
+			.ifPresentOrElse(existing -> {
+					CommonTx.get().nodeDao().findLanguageEdges(project, Collections.singletonList(language.getLanguageTag())).findAny().ifPresentOrElse(existingContent -> {
+						throw error(BAD_REQUEST, "error_language_still_in_use");
+					}, () -> {
+						project.removeLanguage(language);
+					});
+				}, () -> {
+					if (throwOnInexisting) {
+						throw error(BAD_REQUEST, "error_language_not_assigned");
+					} else {
+						log.debug("Language [{}] is not assigned to the project [{}]", language.getLanguageTag(), project.getName());
+					}
+				});
 	}
 
 	@Override
