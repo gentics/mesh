@@ -15,9 +15,13 @@ public class GraphQLOptions implements Option {
 
 	public static final long DEFAULT_ASYNC_WAIT_TIMEOUT = 120_000L;
 
+	public static final long DEFAULT_SCHEMA_CACHE_SIZE = 1000L;
+
 	public static final String MESH_GRAPHQL_SLOW_THRESHOLD_ENV = "MESH_GRAPHQL_SLOW_THRESHOLD";
 
 	public static final String MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV = "MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT";
+
+	public static final String MESH_GRAPHQL_SCHEMA_CACHE_SIZE_ENV = "MESH_GRAPHQL_SCHEMA_CACHE_SIZE";
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Threshold for logging slow graphql queries. Default: " + DEFAULT_SLOW_THRESHOLD + "ms")
@@ -28,6 +32,11 @@ public class GraphQLOptions implements Option {
 	@JsonPropertyDescription("Threshold for waiting for asynchronous graphql queries. Default: " + DEFAULT_ASYNC_WAIT_TIMEOUT + "ms")
 	@EnvironmentVariable(name = MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT_ENV, description = "Override the configured graphQl async wait timeout.")
 	private Long asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Cache size for graphQl Schema instances. Setting this to 0 will disable the cache. Default: " + DEFAULT_SCHEMA_CACHE_SIZE)
+	@EnvironmentVariable(name = MESH_GRAPHQL_SCHEMA_CACHE_SIZE_ENV, description = "Override the configured graphQl schema cache size.")
+	private long schemaCacheSize = DEFAULT_SCHEMA_CACHE_SIZE;
 
 	/**
 	 * Get the threshold for logging slow graphQl queries (in milliseconds)
@@ -66,6 +75,24 @@ public class GraphQLOptions implements Option {
 		if (this.asyncWaitTimeout == null) {
 			this.asyncWaitTimeout = DEFAULT_ASYNC_WAIT_TIMEOUT;
 		}
+		return this;
+	}
+
+	/**
+	 * Get the schema cache size
+	 * @return schema cache size
+	 */
+	public long getSchemaCacheSize() {
+		return schemaCacheSize;
+	}
+
+	/**
+	 * Set the schema cache size
+	 * @param schemaCacheSize schema cache size
+	 * @return fluent API
+	 */
+	public GraphQLOptions setSchemaCacheSize(long schemaCacheSize) {
+		this.schemaCacheSize = schemaCacheSize;
 		return this;
 	}
 }
