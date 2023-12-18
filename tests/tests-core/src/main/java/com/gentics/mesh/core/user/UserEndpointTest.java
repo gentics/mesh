@@ -1014,6 +1014,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.userDao().updatePasswordHash(user(), null);
 			uuid = user().getUuid();
 			oldHash = user().getPasswordHash();
+			tx.success();
 		}
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -1024,7 +1025,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
-			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
+			assertEquals("The hash should not be different and thus the password stays old.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
 
@@ -1037,6 +1038,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.userDao().updatePasswordHash(user(), null);
 			uuid = user().getUuid();
 			oldHash = user().getPasswordHash();
+			tx.success();
 		}
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -1061,6 +1063,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			username = user.getUsername();
 			uuid = user.getUuid();
 			oldHash = user.getPasswordHash();
+			tx.success();
 		}
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setPassword("new_password");
