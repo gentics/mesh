@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -39,7 +40,7 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 		this.context = context;
 	}
 
-	private GraphQLEnumType schemaEnum() {
+	private Optional<GraphQLEnumType> schemaEnum() {
 		Tx tx = Tx.get();
 		SchemaDao schemaDao = tx.schemaDao();
 		HibProject project = tx.getProject(context);
@@ -54,18 +55,18 @@ public class SchemaFilter extends MainFilter<HibSchema> {
 						.build();
 			}).collect(Collectors.toList());
 
-		return GraphQLEnumType
+		return Optional.ofNullable(values).filter(v -> !v.isEmpty()).map(v -> GraphQLEnumType
 				.newEnum()
-				.name("SChemaEnum")
+				.name("SchemaEnum")
 				.description("Enumerates all schemas")
-				.values(values)
-				.build();
+				.values(v)
+				.build());
 	}
 
 	@Override
 	protected List<FilterField<HibSchema, ?>> getFilters() {
 		List<FilterField<HibSchema, ?>> filters = new ArrayList<>();
-		filters.add(FilterField.create("is", "Filters by schema", schemaEnum(), uuid -> schema -> schema.getUuid().equals(uuid)));
+		schemaEnum().ifPresent(schemaEnum -> filters.add(FilterField.create("is", "Filters by schema", schemaEnum, uuid -> schema -> schema.getUuid().equals(uuid))));
 		filters.add(new MappedFilter<>("isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		filters.add(CommonFields.hibNameFilter());
 		filters.add(CommonFields.hibUuidFilter());
