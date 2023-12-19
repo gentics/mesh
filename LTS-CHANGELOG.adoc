@@ -26,6 +26,8 @@ icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has
 
 icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
 
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string. 
+
 [[v1.10.22]]
 == 1.10.22 (06.12.2023)
 
