@@ -86,13 +86,13 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 		db.singleTxWriteLock(
 			(batch, tx) -> {
 				CommonTx ctx = tx.unwrap();
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				HibProject project = tx.getProject(ac);
+				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				HibProject project = tx.getProject(ac);
 				HibBranch branch = tx.getBranch(ac);
 				NodeDao nodeDao = tx.nodeDao();
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);

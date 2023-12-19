@@ -40,12 +40,12 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 			.findAny()
 			.ifPresentOrElse(existing -> {
 					if (throwOnExisting) {
-						throw error(BAD_REQUEST, "error_language_already_assigned");
+						throw error(BAD_REQUEST, "error_language_already_assigned", language.getLanguageTag(), project.getName());
 					} else {
 						log.debug("Language [{}] is already assigned to the project [{}]", language.getLanguageTag(), project.getName());
 					}
 				}, () -> {
-					project.addLanguage(language);					
+					project.addLanguage(language);
 				});
 	}
 
@@ -56,13 +56,13 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 			.findAny()
 			.ifPresentOrElse(existing -> {
 					CommonTx.get().nodeDao().findLanguageEdges(project, Collections.singletonList(language.getLanguageTag())).findAny().ifPresentOrElse(existingContent -> {
-						throw error(BAD_REQUEST, "error_language_still_in_use");
+						throw error(BAD_REQUEST, "error_language_still_in_use", language.getLanguageTag(), project.getName());
 					}, () -> {
 						project.removeLanguage(language);
 					});
 				}, () -> {
 					if (throwOnInexisting) {
-						throw error(BAD_REQUEST, "error_language_not_assigned");
+						throw error(BAD_REQUEST, "error_language_not_assigned", language.getLanguageTag(), project.getName());
 					} else {
 						log.debug("Language [{}] is not assigned to the project [{}]", language.getLanguageTag(), project.getName());
 					}

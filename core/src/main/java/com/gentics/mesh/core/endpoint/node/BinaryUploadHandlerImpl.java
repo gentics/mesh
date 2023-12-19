@@ -305,7 +305,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 					binary = binaries.create(binaryUuid, hash, upload.size(), checkStatus).runInExistingTx(tx);
 				}
 
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

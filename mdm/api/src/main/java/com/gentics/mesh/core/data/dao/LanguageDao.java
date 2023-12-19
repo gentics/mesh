@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
@@ -18,6 +17,14 @@ public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<Hi
 	 * @return
 	 */
 	HibLanguage findByLanguageTag(String tag);
+
+	/**
+	 * Return the project language for the given language tag.
+	 * 
+	 * @param tag
+	 * @return
+	 */
+	HibLanguage findByLanguageTag(HibProject project, String tag);
 
 	/**
 	 * Create the language.

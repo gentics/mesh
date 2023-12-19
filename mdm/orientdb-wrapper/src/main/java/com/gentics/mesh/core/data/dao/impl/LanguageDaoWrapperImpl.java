@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao.impl;
 
+import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -18,6 +20,7 @@ import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
@@ -44,6 +47,13 @@ public class LanguageDaoWrapperImpl extends AbstractCoreDaoWrapper<LanguageRespo
 	 */
 	public Language findByLanguageTag(String languageTag) {
 		return boot.get().meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
+	}
+
+	/**
+	 * @see LanguageRoot
+	 */
+	public Language findByLanguageTag(HibProject project, String languageTag) {
+		return toGraph(project).findLanguageByTag(languageTag);
 	}
 
 	/**

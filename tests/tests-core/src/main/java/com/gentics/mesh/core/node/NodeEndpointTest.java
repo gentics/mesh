@@ -1563,6 +1563,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibProject project = tx.projectDao().findByUuid(project().getUuid());
 			HibNode parentNode = nodeDao.findByUuid(project, folder("products").getUuid());
 			HibLanguage languageNl = tx.languageDao().findByLanguageTag("nl");
+			project.addLanguage(languageNl);
 			HibSchemaVersion version = tx.schemaDao().findByUuid(schemaContainer("content").getUuid()).getLatestVersion();
 			HibUser user = tx.userDao().findByUuid(user().getUuid());
 			node = nodeDao.create(parentNode, user, version, project);

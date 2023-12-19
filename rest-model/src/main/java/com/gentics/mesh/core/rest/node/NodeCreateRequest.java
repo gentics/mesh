@@ -43,6 +43,10 @@ public class NodeCreateRequest implements FieldContainer {
 	private boolean publish = false;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Assign a requested language to the project, if none was so far.")
+	private boolean assignLanguage = true;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Permissions to be granted to roles on the created node.")
 	private ObjectPermissionGrantRequest grant;
 
@@ -206,6 +210,26 @@ public class NodeCreateRequest implements FieldContainer {
 	 */
 	public NodeCreateRequest setGrant(ObjectPermissionGrantRequest grant) {
 		this.grant = grant;
+		return this;
+	}
+
+	/**
+	 * Automatically assign the requested language to the project, if none was so far.
+	 * 
+	 * @return
+	 */
+	public boolean isAssignLanguage() {
+		return assignLanguage;
+	}
+
+	/**
+	 * Set the flag to automatically assign the requested language to the project, if none was so far.
+	 * 
+	 * @param assignLanguage
+	 * @return
+	 */
+	public NodeCreateRequest setAssignLanguage(boolean assignLanguage) {
+		this.assignLanguage = assignLanguage;
 		return this;
 	}
 }

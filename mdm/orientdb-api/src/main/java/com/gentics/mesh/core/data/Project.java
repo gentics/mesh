@@ -75,6 +75,9 @@ public interface Project extends MeshCoreVertex<ProjectResponse>, ReferenceableE
 	Node findNode(String uuid);
 
 	@Override
+	Language findLanguageByTag(String languageTag);
+
+	@Override
 	default Result<? extends HibSchema> getSchemas() {
 		return getSchemaContainerRoot().findAll();
 	}

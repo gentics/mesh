@@ -392,7 +392,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		String[] langs = nodeParameters.getLanguages();
 		if (langs != null) {
 			for (String languageTag : langs) {
-				HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = Tx.get().languageDao().findByLanguageTag(node.getProject(), languageTag);
 				if (language == null) {
 					throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 				}
@@ -1001,9 +1001,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
-		HibLanguage language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
+		HibLanguage language = Tx.get().languageDao().findByLanguageTag(project, requestModel.getLanguage());
 		if (language == null) {
-			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+			if (requestModel.isAssignLanguage()) {
+				language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
+				if (language == null) {
+					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+				}
+				project.addLanguage(language);
+				log.info("Assigning language [{}] to the project [{}] per node request", requestModel.getLanguage(), project.getName());
+			} else {
+				throw error(BAD_REQUEST, "error_language_not_assigned", requestModel.getLanguage(), project.getName());
+			}
 		}
 		ContentDao contentDao = Tx.get().contentDao();
 		HibNodeFieldContainer container = contentDao.createFirstFieldContainerForNode(node, language.getLanguageTag(), branch, requestUser);
@@ -1423,9 +1432,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		nodeParameters.setLanguages(languageTag);
 
 		Tx tx = Tx.get();
-		HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+		HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 		if (language == null) {
-			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+			if (requestModel.isAssignLanguage()) {
+				language = tx.languageDao().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+				}
+				project.addLanguage(language);
+				log.info("Assigning language [{}] to the project [{}] per node request", languageTag, project.getName());
+			} else {
+				throw error(BAD_REQUEST, "error_language_not_assigned", requestModel.getLanguage(), project.getName());
+			}
 		}
 		ContentDao contentDao = tx.contentDao();
 		HibBranch branch = tx.getBranch(ac, node.getProject());

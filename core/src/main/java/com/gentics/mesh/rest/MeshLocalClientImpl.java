@@ -463,10 +463,9 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	@Deprecated
 	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class);
-		// TODO add implementation
-		return new MeshLocalRequestImpl<>(ac.getFuture());
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
 	}
 
 	@Override
@@ -2185,6 +2184,64 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameters) {
 		LocalActionContextImpl<LanguageListResponse> ac = createContext(LanguageListResponse.class, parameters);
 		languageCrudHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String projectName, String uuid,
+			ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageResponse> ac = createContext(LanguageResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleRead(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String projectName, String tag,
+			ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageResponse> ac = createContext(LanguageResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleReadByTag(ac, tag);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(String projectName, ParameterProvider... parameters) {
+		LocalActionContextImpl<LanguageListResponse> ac = createContext(LanguageListResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleReadList(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleAssignLanguageToProject(ac, uuid, "languageUuid");
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByTag(String projectName, String tag, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleAssignLanguageToProject(ac, tag, "languageTag");
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleUnassignLanguageFromProject(ac, uuid, "languageUuid");
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByTag(String projectName, String tag, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectResponse> ac = createContext(ProjectResponse.class, parameters);
+		ac.setProject(projectName);
+		languageCrudHandler.handleUnassignLanguageFromProject(ac, tag, "languageTag");
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 }
