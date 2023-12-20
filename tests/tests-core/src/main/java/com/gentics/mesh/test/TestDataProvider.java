@@ -393,6 +393,8 @@ public class TestDataProvider {
 		Tx.get().commit();
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
+		project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
+		project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
 		HibUser jobUser = userInfo.getUser();
 		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
