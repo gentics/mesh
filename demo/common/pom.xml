@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-demos</artifactId>
-		<version>1.10.23</version>
+		<version>1.10.24-SNAPSHOT</version>
 	</parent>
 
 	<properties>

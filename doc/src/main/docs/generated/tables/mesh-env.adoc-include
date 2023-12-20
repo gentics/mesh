@@ -368,6 +368,9 @@
 | *MESH_BINARY_UPLOAD_TEMP_DIR*
 | Override the configured upload temporary directory.
 
+| *MESH_GRAPHQL_SCHEMA_CACHE_SIZE*
+| Override the configured graphQl schema cache size.
+
 | *MESH_GRAPH_DB_DIRECTORY*
 | Override the graph database storage directory.
 
