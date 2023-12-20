@@ -6,6 +6,20 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.11]]
+== 2.0.11 (20.12.2023)
+
+icon:check[] GraphQL: More test cases for sorting have been added.
+
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
+
+icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
+
 [[v2.0.10]]
 == 2.0.10 (06.12.2023)
 
