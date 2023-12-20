@@ -92,9 +92,10 @@ public class TestDataProvider {
 
 	// References to dummy data
 
-	private String english = "en";
-
-	private String german = "de";
+	private final String english = "en";
+	private final String german = "de";
+	private final String italian = "it";
+	private final String french = "fr";
 
 	private HibProject project;
 	private String projectUuid;
@@ -678,6 +679,14 @@ public class TestDataProvider {
 
 	public String getGerman() {
 		return german;
+	}
+
+	public String getItalian() {
+		return italian;
+	}
+
+	public String getFrench() {
+		return french;
 	}
 
 	public HibProject getProject() {

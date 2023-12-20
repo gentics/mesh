@@ -33,7 +33,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	@Before
 	public void setup() {
 		tx(tx -> {
-			tx.languageDao().assign(tx.languageDao().findByLanguageTag(english()), project(), null, false);
+			tx.languageDao().assign(tx.languageDao().findByLanguageTag(italian()), project(), null, false);
 			tx.success();
 		});
 	}
@@ -71,12 +71,12 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	@Override
 	@Test
 	public void testReadByUUID() throws Exception {
-		String englishUuid = tx(tx -> { 
-			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		String italianUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(italian()).getUuid();
 		});
-		LanguageResponse english = call(() -> client().findLanguageByUuid(englishUuid));
-		assertEquals(englishUuid, english.getUuid());
-		assertEquals(english(), english.getLanguageTag());
+		LanguageResponse italian = call(() -> client().findLanguageByUuid(italianUuid));
+		assertEquals(italianUuid, italian.getUuid());
+		assertEquals(italian(), italian.getLanguageTag());
 	}
 
 	@Override
@@ -178,72 +178,72 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 
 	@Test
 	public void testReadByTag() {
-		String englishUuid = tx(tx -> { 
-			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		String italianUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(italian()).getUuid();
 		});
-		LanguageResponse english = call(() -> client().findLanguageByTag(english()));
-		assertEquals(englishUuid, english.getUuid());
-		assertEquals(english(), english.getLanguageTag());
+		LanguageResponse italian = call(() -> client().findLanguageByTag(italian()));
+		assertEquals(italianUuid, italian.getUuid());
+		assertEquals(italian(), italian.getLanguageTag());
 	}
 
 	@Test
 	public void testReadFromProjectByTag() {
-		String englishUuid = tx(tx -> { 
-			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		String italianUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(italian()).getUuid();
 		});
-		LanguageResponse english = call(() -> client().findLanguageByTag(PROJECT_NAME, english()));
-		assertEquals(englishUuid, english.getUuid());
-		assertEquals(english(), english.getLanguageTag());
+		LanguageResponse italian = call(() -> client().findLanguageByTag(PROJECT_NAME, italian()));
+		assertEquals(italianUuid, italian.getUuid());
+		assertEquals(italian(), italian.getLanguageTag());
 		assertTrue("The project should contain the language", tx(tx -> { 
-			return project().getLanguages().stream().anyMatch(lang -> lang.getUuid().equals(englishUuid) && lang.getLanguageTag().equals(english())); 
+			return project().getLanguages().stream().anyMatch(lang -> lang.getUuid().equals(italianUuid) && lang.getLanguageTag().equals(italian())); 
 		}));
 	}
 
 	@Test
 	public void testReadFromProjectByUUID() throws Exception {
-		String englishUuid = tx(tx -> { 
-			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		String italianUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(italian()).getUuid();
 		});
-		LanguageResponse english = call(() -> client().findLanguageByUuid(PROJECT_NAME, englishUuid));
-		assertEquals(englishUuid, english.getUuid());
-		assertEquals(english(), english.getLanguageTag());
+		LanguageResponse italian = call(() -> client().findLanguageByUuid(PROJECT_NAME, italianUuid));
+		assertEquals(italianUuid, italian.getUuid());
+		assertEquals(italian(), italian.getLanguageTag());
 		assertTrue("The project should contain the language", tx(tx -> { 
-			return project().getLanguages().stream().anyMatch(lang -> lang.getUuid().equals(englishUuid) && lang.getLanguageTag().equals(english())); 
+			return project().getLanguages().stream().anyMatch(lang -> lang.getUuid().equals(italianUuid) && lang.getLanguageTag().equals(italian())); 
 		}));
 	}
 
 	@Test
 	public void testAssignByUuid() {
-		String englishUuid = tx(tx -> { 
-			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		String frenchUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(french()).getUuid();
 		});
-		ProjectResponse projectResponse = call(() -> client().assignLanguageToProjectByUuid(PROJECT_NAME, englishUuid, new ProjectLoadParametersImpl().setLangs(true)));
+		ProjectResponse projectResponse = call(() -> client().assignLanguageToProjectByUuid(PROJECT_NAME, frenchUuid, new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
-		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).contains(englishUuid);
+		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).contains(frenchUuid);
 	}
 
 	@Test
 	public void testAssignByTag() {
-		ProjectResponse projectResponse = call(() -> client().assignLanguageToProjectByTag(PROJECT_NAME, english(), new ProjectLoadParametersImpl().setLangs(true)));
+		ProjectResponse projectResponse = call(() -> client().assignLanguageToProjectByTag(PROJECT_NAME, french(), new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
-		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getLanguageTag)).contains(english());
+		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getLanguageTag)).contains(french());
 	}
 
 	@Test
 	public void testUnassignByUuid() {
-		String englishUuid = tx(tx -> { 
-			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		String italianUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(italian()).getUuid();
 		});
-		ProjectResponse projectResponse = call(() -> client().unassignLanguageFromProjectByUuid(PROJECT_NAME, englishUuid, new ProjectLoadParametersImpl().setLangs(true)));
+		ProjectResponse projectResponse = call(() -> client().unassignLanguageFromProjectByUuid(PROJECT_NAME, italianUuid, new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
-		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).doesNotContain(englishUuid);
+		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).doesNotContain(italianUuid);
 	}
 
 	@Test
 	public void testUnassignByTag() {
-		ProjectResponse projectResponse = call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, english(), new ProjectLoadParametersImpl().setLangs(true)));
+		ProjectResponse projectResponse = call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, italian(), new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
-		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).doesNotContain(english());
+		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).doesNotContain(italian());
 	}
 
 	@Test
@@ -251,7 +251,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 		call(() -> client().findLanguageByTag(PROJECT_NAME, "bogus"), HttpResponseStatus.NOT_FOUND, "error_language_not_found", "bogus");
 
 		assertTrue("The project should not contain the false language", tx(tx -> { 
-			return project().getLanguages().stream().noneMatch(lang -> lang.getUuid().equals("bogus") && lang.getLanguageTag().equals(english())); 
+			return project().getLanguages().stream().noneMatch(lang -> lang.getUuid().equals("bogus") && lang.getLanguageTag().equals(italian())); 
 		}));
 	}
 
