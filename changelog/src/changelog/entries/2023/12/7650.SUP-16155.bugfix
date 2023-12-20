@@ -1,0 +1,1 @@
+Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.

@@ -17,6 +17,17 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.23]]
+== 1.10.23 (20.12.2023)
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
+
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string. 
+
 [[v1.10.22]]
 == 1.10.22 (06.12.2023)
 

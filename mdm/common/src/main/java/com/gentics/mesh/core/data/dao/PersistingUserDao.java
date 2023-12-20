@@ -10,7 +10,7 @@ import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -514,10 +514,10 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		if (requestModel == null) {
 			throw error(BAD_REQUEST, "error_parse_request_json_error");
 		}
-		if (isEmpty(requestModel.getPassword())) {
+		if (isBlank(requestModel.getPassword())) {
 			throw error(BAD_REQUEST, "user_missing_password");
 		}
-		if (isEmpty(requestModel.getUsername())) {
+		if (isBlank(requestModel.getUsername())) {
 			throw error(BAD_REQUEST, "user_missing_username");
 		}
 		if (!hasPermission(requestUser, userRoot, CREATE_PERM)) {
@@ -547,7 +547,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		inheritRolePermissions(requestUser, userRoot, user);
 		ExpandableNode reference = requestModel.getNodeReference();
 
-		if (!isEmpty(groupUuid)) {
+		if (!isBlank(groupUuid)) {
 			HibGroup parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			groupDao.addUser(parentGroup, user);
 			// batch.add(parentGroup.onUpdated());
@@ -559,7 +559,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			String referencedNodeUuid = basicReference.getUuid();
 			String projectName = basicReference.getProjectName();
 
-			if (isEmpty(projectName) || isEmpty(referencedNodeUuid)) {
+			if (isBlank(projectName) || isBlank(referencedNodeUuid)) {
 				throw error(BAD_REQUEST, "user_incomplete_node_reference");
 			}
 
@@ -601,6 +601,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	// blocking
 	@Override
 	default HibUser setPassword(HibUser user, String password) {
+		if (isBlank(password)) {
+			throw error(BAD_REQUEST, "user_missing_password");
+		}
 		String hashedPassword = Tx.get().passwordEncoder().encode(password);
 		updatePasswordHash(user, hashedPassword);
 		return mergeIntoPersisted(user);
@@ -676,7 +679,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			modified = true;
 		}
 
-		if (!isEmpty(requestModel.getPassword())) {
+		if (!isBlank(requestModel.getPassword())) {
 			if (!dry) {
 				updatePasswordHash(user, Tx.get().passwordEncoder().encode(requestModel.getPassword()));
 			}
@@ -694,14 +697,14 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 					throw error(BAD_REQUEST, "user_incomplete_node_reference");
 				}
 				projectName = project.getName();
-				if (isEmpty(projectName)) {
+				if (isBlank(projectName)) {
 					throw error(BAD_REQUEST, "user_incomplete_node_reference");
 				}
 				referencedNodeUuid = response.getUuid();
 			}
 			if (reference instanceof NodeReference) {
 				NodeReference basicReference = ((NodeReference) reference);
-				if (isEmpty(basicReference.getProjectName()) || isEmpty(reference.getUuid())) {
+				if (isBlank(basicReference.getProjectName()) || isBlank(reference.getUuid())) {
 					throw error(BAD_REQUEST, "user_incomplete_node_reference");
 				}
 				referencedNodeUuid = basicReference.getUuid();
