@@ -635,9 +635,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			additionalTypes.add(schemaTypeProvider.createType(context));
 			additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
 
-			additionalTypes.add(schemaTypeProvider.createType(context));
-			additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
-
 			additionalTypes.add(microschemaTypeProvider.createType());
 			additionalTypes.add(newPageType(MICROSCHEMA_PAGE_TYPE_NAME, MICROSCHEMA_TYPE_NAME));
 
@@ -676,11 +673,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			additionalTypes.add(pluginProvider.createType());
 			additionalTypes.add(newPageType(PLUGIN_PAGE_TYPE_NAME, PLUGIN_TYPE_NAME));
 
-			// Shared argument types
-			additionalTypes.add(createLinkEnumType());
-			additionalTypes.add(createNodeEnumType());
-			additionalTypes.add(createNativeFilterEnumType());
-			additionalTypes.add(Sorting.getSortingEnumType());
 			additionalTypes.add(meshTypeProvider.createType());
 			additionalTypes.add(interfaceTypeProvider.createPermInfoType());
 			additionalTypes.add(fieldDefProvider.createBinaryFieldType());
@@ -689,6 +681,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			// Shared argument types
 			additionalTypes.add(createLinkEnumType());
 			additionalTypes.add(createNodeEnumType());
+			additionalTypes.add(createNativeFilterEnumType());
+			additionalTypes.add(Sorting.getSortingEnumType());
 
 			Versioned.doSince(2, context, () -> {
 				additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
