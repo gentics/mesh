@@ -14,10 +14,15 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -271,5 +276,40 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 		ProjectResponse projectResponse = call(() -> client().findProjectByName(PROJECT_NAME, new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
 		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).doesNotContain("bogus");
+	}
+
+	@Test
+	public void testCreateAssignedLanguage() {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setSchemaName("folder");
+		nodeCreateRequest.setLanguage(italian());
+		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Buon Compleanno!"));
+		nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages(italian()), new GenericParametersImpl().setFields("fields", "language")));
+		assertEquals(nodeResponse.getLanguage(), italian());
+		assertEquals(nodeResponse.getFields().getStringField("name").getValue(), "Buon Compleanno!");
+	}
+
+	@Test
+	public void testCreateUnssignedLanguage() {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setSchemaName("folder");
+		nodeCreateRequest.setLanguage(french());
+		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Bonne Fête!"));
+		nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages(french()), new GenericParametersImpl().setFields("fields", "language")), 
+				HttpResponseStatus.BAD_REQUEST, "error_language_not_assigned", french(), PROJECT_NAME);
+	}
+
+	@Test
+	public void testCreateUnssignedLanguageAutoAssign() {
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest().setAssignLanguage(true);
+		nodeCreateRequest.setSchemaName("folder");
+		nodeCreateRequest.setLanguage(french());
+		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Bonne Fête!"));
+		nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages(french()), new GenericParametersImpl().setFields("fields", "language")));
+		assertEquals(nodeResponse.getLanguage(), french());
+		assertEquals(nodeResponse.getFields().getStringField("name").getValue(), "Bonne Fête!");
 	}
 }
