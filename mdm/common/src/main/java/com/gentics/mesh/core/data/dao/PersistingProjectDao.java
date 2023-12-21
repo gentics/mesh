@@ -128,6 +128,9 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		HibProject project = createPersisted(uuid);
 		project.setName(name);
 
+		// add the default language
+		project.addLanguage(Tx.get().languageDao().findByLanguageTag(Tx.get().data().options().getDefaultLanguage()));
+
 		// triggering node permission root creation
 		getNodePermissionRoot(project);
 
