@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -209,8 +210,8 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
-	public HibBranch createPersisted(HibProject root, String uuid) {
-		HibBranch branch = super.createPersisted(root, uuid);
+	public HibBranch createPersisted(HibProject root, String uuid, Consumer<HibBranch> inflater) {
+		HibBranch branch = super.createPersisted(root, uuid, inflater);
 		branch.setProject(root);
 		return branch;
 	}

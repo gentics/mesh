@@ -16,6 +16,13 @@ public interface MeshCache<K, V> {
 	void clear();
 
 	/**
+	 * Clear a particular key.
+	 * 
+	 * @param key
+	 */
+	void clear(K key);
+
+	/**
 	 * Return the cache entry.
 	 * 
 	 * @param key

@@ -84,6 +84,8 @@ import okhttp3.OkHttpClient;
 
 public class MeshTestContext implements TestRule {
 
+	public static final String UNREACHABLE_HOST = "http://localhost:1";
+
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
 		System.setProperty("memory.directMemory.preallocate", "false");
@@ -160,13 +162,25 @@ public class MeshTestContext implements TestRule {
 	public void setup(MeshTestSetting settings) throws Exception {
 		meshTestContextProvider.getInstanceProvider().initMeshData(settings, meshDagger);
 		initFolders(mesh.getOptions());
-		boolean setAdminPassword = settings.optionChanger() != MeshCoreOptionChanger.INITIAL_ADMIN_PASSWORD;
-		setupData(mesh.getOptions(), setAdminPassword);
 		listenToSearchIdleEvent();
+		// Set up the index definition of data independent entities.
 		switch (settings.elasticsearch()) {
 		case CONTAINER_ES6:
 		case CONTAINER_ES7:
-			setupIndexHandlers();
+			setupIndexHandlers(true);
+			break;
+		default:
+			break;
+		}
+
+		boolean setAdminPassword = settings.optionChanger() != MeshCoreOptionChanger.INITIAL_ADMIN_PASSWORD;
+		setupData(mesh.getOptions(), setAdminPassword);
+
+		// Set up the index definition of data dependent entities.
+		switch (settings.elasticsearch()) {
+		case CONTAINER_ES6:
+		case CONTAINER_ES7:
+			setupIndexHandlers(false);
 			break;
 		default:
 			break;
@@ -293,10 +307,12 @@ public class MeshTestContext implements TestRule {
 		System.setProperty("mesh.confDirName", CONF_PATH);
 	}
 
-	protected void setupIndexHandlers() throws Exception {
+	protected void setupIndexHandlers(boolean dataIndependent) throws Exception {
 		// We need to call init() again in order create missing indices for the created test data
 		for (IndexHandler<?> handler : meshDagger.indexHandlerRegistry().getHandlers()) {
-			handler.init().blockingAwait();
+			if (dataIndependent ^ handler.isDefinitionDataDependent()) {
+				handler.init().blockingAwait();
+			}
 		}
 	}
 
@@ -592,7 +608,7 @@ public class MeshTestContext implements TestRule {
 			elasticsearch.waitingFor(Wait.forHttp("/"));
 
 			if (settings.elasticsearch() == UNREACHABLE) {
-				searchOptions.setUrl("http://localhost:1");
+				searchOptions.setUrl(UNREACHABLE_HOST);
 			} else {
 				searchOptions.setUrl("http://" + elasticsearch.getHost() + ":" + elasticsearch.getMappedPort(9200));
 			}
@@ -773,6 +789,16 @@ public class MeshTestContext implements TestRule {
 				idleLatch.countDown();
 			}
 		});
+	}
+
+	public void waitAndClearSearchIdleEvents() {
+		if (null == mesh || null == mesh.getOptions().getSearchOptions().getUrl() || UNREACHABLE_HOST.equals(mesh.getOptions().getSearchOptions().getUrl())) {
+			return;
+		}
+		waitForSearchIdleEvent();
+		if (trackingSearchProvider != null) {
+			trackingSearchProvider.clear().blockingAwait();
+		}
 	}
 
 	/**

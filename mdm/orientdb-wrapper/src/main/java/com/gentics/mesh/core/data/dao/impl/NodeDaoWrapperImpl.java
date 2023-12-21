@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;
@@ -267,11 +269,12 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public HibNode createPersisted(HibProject root, String uuid) {
+	public HibNode createPersisted(HibProject root, String uuid, Consumer<HibNode> inflater) {
 		HibNode node = toGraph(root).getNodeRoot().create();
 		if (uuid != null) {
 			node.setUuid(uuid);
 		}
+		inflater.accept(node);
 		node.setProject(root);
 		return node;
 	}

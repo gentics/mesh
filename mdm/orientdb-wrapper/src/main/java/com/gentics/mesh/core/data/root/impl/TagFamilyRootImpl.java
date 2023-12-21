@@ -59,6 +59,8 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	@Override
 	public void addTagFamily(TagFamily tagFamily) {
 		addItem(tagFamily);
+		// small hack: set the name of the tagfamily again, so the uniqueName (which contains the root uuid) will get updated
+		tagFamily.setName(tagFamily.getName());
 	}
 
 	@Override

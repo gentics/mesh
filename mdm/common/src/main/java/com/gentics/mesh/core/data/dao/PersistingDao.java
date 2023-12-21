@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
@@ -24,9 +26,11 @@ public interface PersistingDao<T extends HibBaseElement> {
 	 * 
 	 * @param uuid
 	 *            Optional uuid
+	 * @param inflater
+	 *            The instance inflater
 	 * @return
 	 */
-	T createPersisted(String uuid);
+	T createPersisted(String uuid, Consumer<T> inflater);
 
 	/**
 	 * Merge the entity into its persisted state.

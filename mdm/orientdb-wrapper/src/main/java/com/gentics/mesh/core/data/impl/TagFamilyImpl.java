@@ -5,8 +5,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
+import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
+import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -51,6 +53,8 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> implements TagFamily {
 
+	public static final String UNIQUENAME_PROPERTY_KEY = "uniqueName";
+
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
 	/**
@@ -66,6 +70,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 		index.createIndex(edgeIndex(HAS_TAG));
 		index.createIndex(edgeIndex(HAS_TAG).withInOut().withOut());
 		addUserTrackingRelation(TagFamilyImpl.class);
+
+		index.createIndex(vertexIndex(TagFamilyImpl.class)
+				.withName(TagFamily.UNIQUENAME_INDEX_NAME)
+				.withField(UNIQUENAME_PROPERTY_KEY, STRING)
+				.unique());
 	}
 
 	@Override
@@ -86,6 +95,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public void setName(String name) {
 		property("name", name);
+		property(UNIQUENAME_PROPERTY_KEY, String.format("%s-%s", Optional.ofNullable(getTagFamilyRoot()).map(TagFamilyRoot::getUuid).orElse(""), name));
 	}
 
 	@Override
@@ -167,6 +177,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public void addTag(HibTag tag) {
 		addItem(toGraph(tag));
+		// small hack: set the name of the tag again, so the uniqueName (which contains the tagfamily uuid) will get updated
+		tag.setName(tag.getName());
 	}
 
 	@Override

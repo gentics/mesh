@@ -51,7 +51,6 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
@@ -335,10 +334,5 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public PasswordEncoder passwordEncoder() {
 		return security.passwordEncoder();
-	}
-
-	@Override
-	public EventQueueBatch createBatch() {
-		return txData.mesh().batchProvider().get();
 	}
 }

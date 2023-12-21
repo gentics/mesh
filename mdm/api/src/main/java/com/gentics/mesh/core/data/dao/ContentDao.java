@@ -11,7 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -526,6 +525,15 @@ public interface ContentDao {
 	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
 
 	/**
+	 * Gets all NodeField edges that reference the nodes.
+	 * 
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, HibNode>> getInboundReferences(Collection<HibNode> nodes) {
+		return nodes.stream().flatMap(node -> getInboundReferences(node).map(ref -> Pair.of(ref, node)));
+	}
+
+	/**
 	 * Return the index name for the given parameters.
 	 *
 	 * @param projectUuid
@@ -544,6 +552,16 @@ public interface ContentDao {
 	 */
 	default String getDocumentId(HibNodeFieldContainer content) {
 		return ContentDao.composeDocumentId(getNode(content).getUuid(), getLanguageTag(content));
+	}
+
+	/**
+	 * Batch load the containers, referencing each of the field.
+	 *
+	 * @param fields
+	 * @return
+	 */
+	default Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
+		return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
 	}
 
 	/**
@@ -591,6 +609,15 @@ public interface ContentDao {
 	 * @return The node field container for the given field.
 	 */
 	HibNodeFieldContainer getNodeFieldContainer(HibField field);
+
+	/**
+	 * Get the parent nodes to which the containers belong.
+	 *
+	 * @return
+	 */
+	default Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer>  contents) {
+		return contents.stream().map(content -> Pair.of(content, getNode(content)));
+	}
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -976,6 +1003,15 @@ public interface ContentDao {
 	 * @return
 	 */
 	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
+
+	/**
+	 * Return a stream of all the edges of all containers.
+	 * @param container
+	 * @return
+	 */
+	default Stream<Pair<HibNodeFieldContainer, Collection<? extends HibNodeFieldContainerEdge>>> getContainerEdges(Collection<HibNodeFieldContainer> containers) {
+		return containers.stream().map(container -> Pair.of(container, getContainerEdges(container).collect(Collectors.toSet())));
+	}
 
 	/**
 	 * Retrieve a conflicting edge for the given segment info, branch uuid and type, or null if there's no conflicting

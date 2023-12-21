@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.branch.HibBranch;
@@ -51,7 +52,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch> {
+public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch>, PersistingNamedEntityDao<HibBranch> {
 	static final Logger log = LoggerFactory.getLogger(BranchDao.class);
 
 	/**
@@ -105,13 +106,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 */
 	default HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
-		HibBranch branch = createPersisted(project, uuid);
-		UserDao userRoot = Tx.get().userDao();
-
-		branch.setCreated(creator);
-		branch.setName(name);
-		branch.setActive(true);
-		branch.setMigrated(false);
+		HibBranch branch = createPersisted(project, uuid, b -> {
+			b.setCreated(creator);
+			b.setName(name);
+			b.setActive(true);
+			b.setMigrated(false);
+		});
 
 		if (baseBranch == null) {
 			// if this is the first branch, make it the initial branch
@@ -125,6 +125,8 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			branch.setLatest();
 		}
 
+		UserDao userRoot = Tx.get().userDao();
+
 		// set initial permissions on the branch
 		userRoot.inheritRolePermissions(creator, project, branch);
 
@@ -134,6 +136,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 
 		mergeIntoPersisted(project, branch);
 
+		batch.add(branch.onCreated());
 		return branch;
 	}
 
@@ -186,7 +189,6 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		tx.jobDao().enqueueBranchMigration(creator, branch);
 		assignSchemas(project, creator, baseBranch, branch, true, batch);
 
-		batch.add(branch.onCreated());
 		batch.add(() -> MeshEvent.triggerJobWorker(tx.data().mesh().vertx().eventBus(), tx.data().options()));
 
 		return branch;
@@ -450,5 +452,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	@Override
 	default HibBranch findBranchOrLatest(HibProject project, String branchNameOrUuid) {
 		return findBranchOpt(project, branchNameOrUuid).orElseGet(() -> getLatestBranch(project));
+	}
+
+	@Override
+	default Optional<NameCache<HibBranch>> maybeGetCache() {
+		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().branchCache());
 	}
 }

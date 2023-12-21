@@ -230,16 +230,23 @@ public interface PersistingContentDao extends ContentDao {
 		String branchUuid = branch.getUuid();
 
 		if (handleDraftEdge) {
-			HibNodeFieldContainerEdge draftEdge = getEdge(node, languageTag, branchUuid, DRAFT);
+			HibNodeFieldContainerEdge oldDraftEdge = getEdge(node, languageTag, branchUuid, DRAFT);
+			String segmentInfo = null;
+			if (oldDraftEdge != null) {
+				segmentInfo = oldDraftEdge.getSegmentInfo();
+			}
 
 			// remove existing draft edge
-			if (draftEdge != null) {
-				removeEdge(draftEdge);
+			if (oldDraftEdge != null) {
+				removeEdge(oldDraftEdge);
 			}
 			// create a new draft edge
-			createContainerEdge(node, newContainer, branchUuid, languageTag, DRAFT);
+			HibNodeFieldContainerEdge newDraftEdge = createContainerEdge(node, newContainer, branchUuid, languageTag, DRAFT);
+			if (!StringUtils.isEmpty(segmentInfo)) {
+				newDraftEdge.setSegmentInfo(segmentInfo);
+			}
 
-			updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update");
+			updateWebrootPathInfo(newContainer, branchUuid, "node_conflicting_segmentfield_update", false);
 		}
 
 		// if there is no initial edge, create one
@@ -674,6 +681,12 @@ public interface PersistingContentDao extends ContentDao {
 		if (segment != null && StringUtils.isNotBlank(segmentFieldName)) {
 			HibNode parentNode = nodeDao.getParentNode(node, branchUuid);
 			String segmentInfo = composeSegmentInfo(parentNode, segment);
+
+			String currentSegmentInfo = edge.getSegmentInfo();
+			if (StringUtils.equals(segmentInfo, currentSegmentInfo)) {
+				return true;
+			}
+
 			// check for uniqueness of webroot path
 			HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootPath(content, segmentInfo, branchUuid, type, edge);
 			if (conflictingEdge != null) {
@@ -1074,8 +1087,18 @@ public interface PersistingContentDao extends ContentDao {
 			}
 
 		}
-
 		return fields;
 	}
+
+	/**
+	 * Check whether this field container edge has the given type in the given branch.
+	 *
+	 * @param type
+	 * @param branchUuid
+	 * @return true if it matches the type, false if not
+	 */
+	default boolean isType(HibNodeFieldContainerEdge edge, ContainerType type, String branchUuid) {
+		return edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid);
+	}		
 }
 

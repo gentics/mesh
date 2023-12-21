@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
@@ -99,8 +100,8 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			File tempFolder = new File(options.getDirectory(), "temp");
 			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxMove(sourceFilePath, path).doOnError(e -> {
-					log.error("Failed to move upload file {} to temp dir {}", sourceFilePath, path, e);
-				}));
+					log.info("Failed to move upload file {} to temp dir {}", sourceFilePath, path, e);
+				}).onErrorComplete(e -> e instanceof FileAlreadyExistsException));
 		});
 	}
 

@@ -1,0 +1,1 @@
+Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
