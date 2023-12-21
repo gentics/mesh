@@ -1,0 +1,1 @@
+Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.

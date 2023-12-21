@@ -20,6 +20,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.function.Consumer;
+
 import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
@@ -41,6 +43,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
@@ -602,6 +605,78 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotEquals(hash, userDao.getRolesHash(oldUser));
 			// ... but NOT for newUser.
 			assertEquals(hash, userDao.getRolesHash(newUser));
+		}
+	}
+
+	@Test
+	public void createWithEmptyPassword() {
+		createWithPassword("   ", e -> {
+			if (e instanceof GenericRestException) {
+				assertEquals(((GenericRestException) e).getI18nKey(), "user_missing_password");
+			} else {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	@Test
+	public void createWithNullPassword() {
+		createWithPassword(null, e -> {
+			if (e instanceof GenericRestException) {
+				assertEquals(((GenericRestException) e).getI18nKey(), "user_missing_password");
+			} else {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+
+	@Test
+	public void updateWithEmptyPassword() {
+		HibUser user = createWithPassword("random", e -> {
+			throw new RuntimeException(e);
+		});
+		updateWithPassword(user, "       ", e -> {
+			if (e instanceof GenericRestException) {
+				assertEquals(((GenericRestException) e).getI18nKey(), "user_missing_password");
+			} else {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	@Test
+	public void updateWithNullPassword() {
+		HibUser user = createWithPassword("random", e -> {
+			throw new RuntimeException(e);
+		});
+		updateWithPassword(user, null, e -> {
+			if (e instanceof GenericRestException) {
+				assertEquals(((GenericRestException) e).getI18nKey(), "user_missing_password");
+			} else {
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	protected HibUser createWithPassword(String password, Consumer<Exception> exceptionConsumer) {
+		try (Tx tx = tx()) {
+			UserDao userDao = tx.userDao();
+			HibUser user = userDao.create("user" + Long.toHexString(System.currentTimeMillis()), user());
+			return userDao.setPassword(user, password);
+		} catch (Exception e) {
+			exceptionConsumer.accept(e);
+			return null;
+		}
+	}
+
+	protected HibUser updateWithPassword(HibUser user, String password, Consumer<Exception> exceptionConsumer) {
+		try (Tx tx = tx()) {
+			UserDao userDao = tx.userDao();
+			return userDao.setPassword(user, password);
+		} catch (Exception e) {
+			exceptionConsumer.accept(e);
+			return null;
 		}
 	}
 }

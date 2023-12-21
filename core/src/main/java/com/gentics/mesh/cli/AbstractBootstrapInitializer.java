@@ -262,7 +262,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				adminUser.setLastEditedTimestamp();
 
 				String pw = config.getInitialAdminPassword();
-				if (pw != null) {
+				if (StringUtils.isNotBlank(pw)) {
 					StringBuffer sb = new StringBuffer();
 					String hash = passwordEncoder.encode(pw);
 					sb.append("-----------------------\n");
