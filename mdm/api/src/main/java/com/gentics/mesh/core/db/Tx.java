@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.db;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.context.InternalActionContext;
@@ -11,6 +12,8 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.security.SecurityUtils;
+
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
@@ -29,7 +32,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 *            Transaction
 	 */
 	static void setActive(Tx tx) {
-		Tx.threadLocalGraph.set(tx);
+		Optional.ofNullable(Vertx.currentContext()).ifPresentOrElse(ctx -> ctx.put("tx", Optional.ofNullable(tx)), () -> Tx.threadLocalGraph.set(tx));
 	}
 
 	/**
@@ -38,7 +41,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 * @return Currently active transaction
 	 */
 	static Tx get() {
-		return Tx.threadLocalGraph.get();
+		return Optional.ofNullable(Vertx.currentContext()).map(ctx -> Optional.ofNullable(ctx.<Optional<Tx>>get("tx")).flatMap(Function.identity()).orElse(null)).orElseGet(() -> Tx.threadLocalGraph.get());
 	}
 
 	/**
