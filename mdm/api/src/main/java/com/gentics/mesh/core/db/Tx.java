@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.security.SecurityUtils;
 
+import io.vertx.reactivex.core.Context;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -32,7 +33,11 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 *            Transaction
 	 */
 	static void setActive(Tx tx) {
-		Optional.ofNullable(Vertx.currentContext()).ifPresentOrElse(ctx -> ctx.put("tx", Optional.ofNullable(tx)), () -> Tx.threadLocalGraph.set(tx));
+		Optional.ofNullable(Vertx.currentContext())
+			.ifPresentOrElse(
+					ctx -> ctx.put("tx", Optional.ofNullable(tx)), 
+					() -> Tx.threadLocalGraph.set(tx)
+			);
 	}
 
 	/**
@@ -41,7 +46,13 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 * @return Currently active transaction
 	 */
 	static Tx get() {
-		return Optional.ofNullable(Vertx.currentContext()).map(ctx -> Optional.ofNullable(ctx.<Optional<Tx>>get("tx")).flatMap(Function.identity()).orElse(null)).orElseGet(() -> Tx.threadLocalGraph.get());
+		Optional<Context> maybeVertxContext = Optional.ofNullable(Vertx.currentContext());
+		if (maybeVertxContext.isPresent()) {
+			Context vertxContext = maybeVertxContext.get();
+			return Optional.ofNullable(vertxContext.<Optional<Tx>>get("tx")).flatMap(Function.identity()).orElse(null);
+		} else {
+			return Tx.threadLocalGraph.get();
+		}
 	}
 
 	/**
