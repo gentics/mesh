@@ -27,7 +27,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	static ThreadLocal<Tx> threadLocalGraph = new ThreadLocal<>();
 
 	/**
-	 * Set the nested active transaction for the current thread.
+	 * Set the nested active transaction for the current Vert.x context, or thread.
 	 * 
 	 * @param tx
 	 *            Transaction
@@ -41,7 +41,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	}
 
 	/**
-	 * Return the current active transaction. A transaction should be the only place where this threadlocal is updated.
+	 * Return the current active transaction. A transaction should be the only place where this context/threadlocal is updated.
 	 * 
 	 * @return Currently active transaction
 	 */
