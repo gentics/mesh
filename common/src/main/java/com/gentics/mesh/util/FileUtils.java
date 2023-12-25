@@ -43,6 +43,23 @@ public final class FileUtils {
 	}
 
 	/**
+	 * Generate a SHA 512 checksum from the data in the given buffer and synchronously return the hex encoded hash as a string.
+	 * 
+	 * @param buffer
+	 * @return Observable returning the SHA 512 checksum
+	 */
+	public static String hashSync(byte[] bytes) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			md.update(bytes);
+			return bytesToHex(md.digest());
+		} catch (Exception e) {
+			log.error("Error while hashing data", e);
+			throw error(INTERNAL_SERVER_ERROR, "generic_error", e);
+		}
+	}
+
+	/**
 	 * Generate a SHA 512 checksum from the data in the given buffer and asynchronously return the hex encoded hash as a string.
 	 * 
 	 * @param buffer
