@@ -71,6 +71,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 				.andThen(fileSystem.rxMove(source, target)
 					.onErrorComplete(e -> {
 						if (e instanceof FileAlreadyExistsException || (e.getCause() instanceof FileAlreadyExistsException)) {
+							// We cannot use async API here, because of a lack of onErrorResume variant with completeness predicate. Using the async File API within onErrorComplete results in a deadlock.
 							try (FileInputStream sourceFis = new FileInputStream(new File(source)); FileInputStream targetFis = new FileInputStream(new File(target))) {
 								String sourceHash = FileUtils.hashSync(sourceFis.readAllBytes());
 								String targetHash = FileUtils.hashSync(targetFis.readAllBytes());
