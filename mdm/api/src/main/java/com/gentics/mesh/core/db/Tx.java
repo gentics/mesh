@@ -35,7 +35,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	static void setActive(Tx tx) {
 		Optional.ofNullable(Vertx.currentContext())
 			.ifPresentOrElse(
-					ctx -> ctx.put("tx", Optional.ofNullable(tx)), 
+					ctx -> ctx.putLocal("tx", Optional.ofNullable(tx)), 
 					() -> Tx.threadLocalGraph.set(tx)
 			);
 	}
@@ -49,7 +49,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 		Optional<Context> maybeVertxContext = Optional.ofNullable(Vertx.currentContext());
 		if (maybeVertxContext.isPresent()) {
 			Context vertxContext = maybeVertxContext.get();
-			return Optional.ofNullable(vertxContext.<Optional<Tx>>get("tx")).flatMap(Function.identity()).orElse(null);
+			return Optional.ofNullable(vertxContext.<Optional<Tx>>getLocal("tx")).flatMap(Function.identity()).orElse(null);
 		} else {
 			return Tx.threadLocalGraph.get();
 		}
