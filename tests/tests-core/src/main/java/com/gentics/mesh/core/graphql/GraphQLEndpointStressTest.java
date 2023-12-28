@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.graphql;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +17,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -58,22 +54,6 @@ public class GraphQLEndpointStressTest extends AbstractGraphQLEndpointTest {
 		this.clientV1 = client("v1");
 	}
 
-	public void testProjectsCreation() throws InterruptedException {
-		CountDownLatch latch = new CountDownLatch(simultaneousCalls);
-		List<Thread> threads = IntStream.range(0, simultaneousCalls).mapToObj(number -> {
-			MeshRequest<ProjectResponse> request = clientV2.createProject(new ProjectCreateRequest().setName("ProjectStress_" + number).setSchemaRef("folder"));
-			return new Thread() {
-				public void run() {
-					ProjectResponse response = request.blockingGet();
-					assertThat(response.getName()).isEqualTo("ProjectStress_" + number);
-					latch.countDown();
-				}
-			};
-		}).collect(Collectors.toList());
-		threads.stream().forEach(Thread::run);
-		latch.await(5, TimeUnit.MINUTES);
-	}
-
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testSimultaneousCalls() throws Exception {
@@ -105,7 +85,7 @@ public class GraphQLEndpointStressTest extends AbstractGraphQLEndpointTest {
 				}
 			};
 		}).collect(Collectors.toList());
-		threads.stream().forEach(Thread::run);
+		threads.stream().forEach(Thread::start);
 		latch.await(5, TimeUnit.MINUTES);
 	}
 }
