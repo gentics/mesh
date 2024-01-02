@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.function.Consumer;
+
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -27,12 +29,13 @@ public abstract class AbstractCoreDaoWrapper<R extends RestModel, T extends HibC
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public T createPersisted(String uuid) {
+	public T createPersisted(String uuid, Consumer<T> inflater) {
 		D vertex = getRoot().create();
 		if (uuid != null) {
 			vertex.setUuid(uuid);
 		}
 		getRoot().addItem(vertex);
+		inflater.accept((T) vertex);
 		return (T) vertex;
 	}
 

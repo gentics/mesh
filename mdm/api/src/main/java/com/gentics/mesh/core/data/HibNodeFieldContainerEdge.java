@@ -23,6 +23,12 @@ public interface HibNodeFieldContainerEdge {
 	void setSegmentInfo(String segmentInfo);
 
 	/**
+	 * Get the webroot segment info
+	 * @return webroot segment info
+	 */
+	String getSegmentInfo();
+
+	/**
 	 * Set the url field info.
 	 *
 	 * @param urlFieldInfo

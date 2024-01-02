@@ -133,6 +133,7 @@ debugInfo:
 graphQL:
   slowThreshold: 60000
   asyncWaitTimeout: 120000
+  schemaCacheSize: 1000
 storage:
   directory: "data/graphdb"
   backupDirectory: "data/backup"

@@ -8,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +60,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
+import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -141,8 +143,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphStringList.createString(item);
 		}
+		graphStringList.createStrings(stringList.getItems());
 	};
 
 	public static FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -211,9 +213,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphNumberFieldList.createNumber(item);
 		}
-
+		graphNumberFieldList.createNumbers(numberList.getItems());
 	};
 
 	public static FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -281,9 +282,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphDateFieldList.createDate(fromISO8601(item));
 		}
-
+		graphDateFieldList.createDates(dateList.getItems().stream().map(DateUtils::fromISO8601).collect(Collectors.toList()));
 	};
 
 	public static FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -352,9 +352,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphBooleanFieldList.createBoolean(item);
 		}
-
+		graphBooleanFieldList.createBooleans(booleanList.getItems());
 	};
 
 	public static FieldUpdater HTML_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
@@ -421,8 +420,8 @@ public class RestUpdaters {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			graphHtmlFieldList.createHTML(item);
 		}
+		graphHtmlFieldList.createHTMLs(htmlList.getItems());
 	};
 
 	public static FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {

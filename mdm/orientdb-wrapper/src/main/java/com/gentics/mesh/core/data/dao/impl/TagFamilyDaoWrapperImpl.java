@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
+
 import dagger.Lazy;
 
 /**
@@ -171,8 +173,8 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	}
 
 	@Override
-	public HibTagFamily createPersisted(HibProject root, String uuid) {
-		HibTagFamily tf = super.createPersisted(root, uuid);
+	public HibTagFamily createPersisted(HibProject root, String uuid, Consumer<HibTagFamily> inflater) {
+		HibTagFamily tf = super.createPersisted(root, uuid, inflater);
 		tf.setProject(root);
 		return tf;
 	}
