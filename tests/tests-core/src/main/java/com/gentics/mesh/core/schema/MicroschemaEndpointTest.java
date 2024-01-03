@@ -20,6 +20,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -42,6 +43,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
@@ -501,5 +505,47 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 		client().createSchema(schemaRequest).blockingAwait();
 		call(() -> client().createMicroschema(microSchemaRequest), CONFLICT, "schema_conflicting_name", "test");
+	}
+
+	@Test
+	public void testReadAssignedProjects() {
+		String microschemaUuid = tx(tx -> { 
+			return microschemaContainer("vcard").getUuid();
+		});
+		ProjectListResponse projects = call(() -> client().findMicroschemaProjects(microschemaUuid));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData()).hasSize(1);
+	}
+
+	@Test
+	public void testReadAssignedProjectsFalseMicroschema() {
+		call(() -> client().findMicroschemaProjects("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");		
+	}
+
+	@Test
+	public void testReadJustAssignedProject() {
+		String microschemaUuid = tx(tx -> { 
+			return microschemaContainer("vcard").getUuid();
+		});
+		ProjectListResponse projects = client().createProject(new ProjectCreateRequest().setSchemaRef("folder").setName("MicroschemaAssignmentTest")).toSingle()
+			.flatMap(project -> client().assignMicroschemaToProject(project.getName(), microschemaUuid).toSingle())
+			.flatMap(unused -> client().findMicroschemaProjects(microschemaUuid).toSingle())
+			.blockingGet();
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).contains("MicroschemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadJustUnassignedProject() {
+		testReadJustAssignedProject();
+
+		String microschemaUuid = tx(tx -> { 
+			return microschemaContainer("vcard").getUuid();
+		});
+		ProjectListResponse projects = client().unassignMicroschemaFromProject("MicroschemaAssignmentTest", microschemaUuid).toSingle()
+			.flatMap(unused -> client().findMicroschemaProjects(microschemaUuid).toSingle())
+			.blockingGet();
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("MicroschemaAssignmentTest");
 	}
 }
