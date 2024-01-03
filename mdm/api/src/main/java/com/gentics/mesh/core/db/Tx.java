@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.db;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.context.InternalActionContext;
@@ -11,6 +12,9 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.security.SecurityUtils;
+
+import io.vertx.reactivex.core.Context;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
@@ -23,22 +27,32 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	static ThreadLocal<Tx> threadLocalGraph = new ThreadLocal<>();
 
 	/**
-	 * Set the nested active transaction for the current thread.
+	 * Set the nested active transaction for the current Vert.x context, or thread.
 	 * 
 	 * @param tx
 	 *            Transaction
 	 */
 	static void setActive(Tx tx) {
-		Tx.threadLocalGraph.set(tx);
+		Optional.ofNullable(Vertx.currentContext())
+			.ifPresentOrElse(
+					ctx -> ctx.putLocal("tx", Optional.ofNullable(tx)), 
+					() -> Tx.threadLocalGraph.set(tx)
+			);
 	}
 
 	/**
-	 * Return the current active transaction. A transaction should be the only place where this threadlocal is updated.
+	 * Return the current active transaction. A transaction should be the only place where this context/threadlocal is updated.
 	 * 
 	 * @return Currently active transaction
 	 */
 	static Tx get() {
-		return Tx.threadLocalGraph.get();
+		Optional<Context> maybeVertxContext = Optional.ofNullable(Vertx.currentContext());
+		if (maybeVertxContext.isPresent()) {
+			Context vertxContext = maybeVertxContext.get();
+			return Optional.ofNullable(vertxContext.<Optional<Tx>>getLocal("tx")).flatMap(Function.identity()).orElse(null);
+		} else {
+			return Tx.threadLocalGraph.get();
+		}
 	}
 
 	/**
