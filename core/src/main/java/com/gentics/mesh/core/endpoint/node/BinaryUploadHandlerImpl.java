@@ -217,7 +217,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 					log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
 				}
 				return binaryStorage.purgeTemporaryUpload(tmpId)
-						// The file has already been deleted = not an error
 						.onErrorComplete(e1 -> e1 instanceof NoSuchFileException || (e.getCause() instanceof NoSuchFileException))
 						.doOnError(e1 -> {
 							log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
@@ -251,7 +250,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		} else {
 			// File has already been stored. Lets remove the upload from the vert.x tmpdir. We no longer need it.
 			return fs.rxDelete(uploadFilePath)
-				// The file has already been deleted = not an error
 				.onErrorComplete(e1 -> e1 instanceof NoSuchFileException || (e1.getCause() instanceof NoSuchFileException))
 				.doOnComplete(() -> {
 					if (log.isTraceEnabled()) {
