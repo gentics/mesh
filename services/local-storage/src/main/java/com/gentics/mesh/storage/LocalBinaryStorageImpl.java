@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
@@ -16,19 +15,15 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.AbstractBinaryStorage;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.logging.Logger;
@@ -68,23 +63,9 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			}
 			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
 			return createParentPath(uploadFolder.getAbsolutePath())
-				.andThen(fileSystem.rxMove(source, target)
-					.onErrorComplete(e -> {
-						if (e instanceof FileAlreadyExistsException || (e.getCause() instanceof FileAlreadyExistsException)) {
-							try (FileInputStream sourceFis = new FileInputStream(new File(source)); FileInputStream targetFis = new FileInputStream(new File(target))) {
-								String sourceHash = FileUtils.hashSync(sourceFis.readAllBytes());
-								String targetHash = FileUtils.hashSync(targetFis.readAllBytes());
-								boolean match = sourceHash.equals(targetHash);
-								log.warn("The file [{}] exists at the target [{}]. The hashes {}match. {}.", match ? StringUtils.EMPTY : "don't ", match ? "Suppressing the error" : "Aborting the upload");
-								return match;
-							}
-						} else {
-							return false;
-						}
-					})
-					.doOnError(e -> {
-						log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
-					}));
+				.andThen(fileSystem.rxMove(source, target).doOnError(e -> {
+					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
+				}));
 		});
 	}
 

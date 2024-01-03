@@ -81,8 +81,6 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 		initialSyncWrites = initialSyncWrites.or(() -> Optional.of(mesh().globalLock().isSyncWrites()));
 		getTestContext().getInstanceProvider().setSyncWrites(isSyncWrites());
 
-		String defaultFilename = Long.toHexString(System.currentTimeMillis()) + "blume.jpg";
-
 		Observable.range(0, numUploads).flatMapSingle(number -> {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
@@ -95,7 +93,7 @@ public abstract class AbstractBinaryFieldUploadEndpointParameterizedTest extends
 					int size = data.length;
 					InputStream ins = new ByteArrayInputStream(data);
 					return client()
-						.updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", node.getVersion(), "image", ins, size, useSameName ? defaultFilename : (number + defaultFilename), "image/jpeg")
+						.updateNodeBinaryField(projectName(), node.getUuid(), "en", node.getVersion(), "image", ins, size, useSameName ? "blume.jpg" : (number + "blume.jpg"), "image/jpeg")
 						.toSingle();
 				});
 		}).lastOrError().ignoreElement().blockingAwait();

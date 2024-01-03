@@ -9,8 +9,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -216,11 +214,9 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				if (log.isDebugEnabled()) {
 					log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
 				}
-				return binaryStorage.purgeTemporaryUpload(tmpId)
-						.onErrorComplete(e1 -> e1 instanceof NoSuchFileException || (e.getCause() instanceof NoSuchFileException))
-						.doOnError(e1 -> {
-							log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
-						}).andThen(Single.error(e));
+				return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
+					log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
+				}).onErrorComplete().andThen(Single.error(e));
 			} else {
 				return Single.error(e);
 			}
@@ -250,7 +246,6 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 		} else {
 			// File has already been stored. Lets remove the upload from the vert.x tmpdir. We no longer need it.
 			return fs.rxDelete(uploadFilePath)
-				.onErrorComplete(e1 -> e1 instanceof NoSuchFileException || (e1.getCause() instanceof NoSuchFileException))
 				.doOnComplete(() -> {
 					if (log.isTraceEnabled()) {
 						log.trace("Removed temporary file {}", uploadFilePath);
@@ -258,7 +253,7 @@ public class BinaryUploadHandlerImpl extends AbstractHandler implements BinaryUp
 				})
 				.doOnError(e -> {
 					log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
-				});
+				}).onErrorComplete();
 		}
 	}
 
