@@ -1,4 +1,4 @@
-# This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
+# This Dockerfile is used to create a Jenkins agent that connects to the controller and is used to as a worker
 FROM jenkins/inbound-agent:latest-jdk17
 
 ARG DEBIAN_RELEASE="bullseye"

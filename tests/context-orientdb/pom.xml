@@ -8,7 +8,7 @@
   <artifactId>mesh-tests-context-orientdb</artifactId>
   <name>Mesh - Tests context - OrientDB</name>
   
-  	<dependencies>
+	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-tests-context-api</artifactId>

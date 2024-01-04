@@ -132,7 +132,7 @@
 				<version>3.11.0</version>
 				<configuration>
 					<verbose>false</verbose>
-					<compilerVersion>1.8</compilerVersion>
+					<compilerVersion>17</compilerVersion>
 					<source>17</source>
 					<target>17</target>
 				</configuration>
@@ -141,7 +141,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<argLine>--add-opens=java.base/java.lang=ALL-UNNAMED ${jacoco.env}</argLine>
+					<argLine>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED ${jacoco.env}</argLine>
 				</configuration>					
 			</plugin>
 		</plugins>
