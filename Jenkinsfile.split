@@ -198,7 +198,7 @@ stage("Setup Build Environment") {
 			stage("Cluster Tests") {
 				if (Boolean.valueOf(params.runClusterTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-cluster-worker-11") {
+					node("mesh-cluster-worker-17") {
 						try {
 							unstash 'project'
 							sh "mvn -B -DskipTests clean install -pl '!demo/default,!doc'"

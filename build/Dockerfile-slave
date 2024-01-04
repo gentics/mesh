@@ -1,5 +1,5 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
-FROM jenkins/agent:latest-bullseye-jdk17
+FROM jenkins/inbound-agent:latest-jdk17
 
 ARG DEBIAN_RELEASE="bullseye"
 ARG USER_NAME="jenkins"
