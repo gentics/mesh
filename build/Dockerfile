@@ -1,5 +1,5 @@
 # This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
-FROM docker.apa-it.at/maven:3.9.2-amazoncorretto-17-debian-bullseye
+FROM jenkins/inbound-agent:latest-jdk17
 
 ARG DEBIAN_RELEASE="bullseye"
 ARG USER_NAME="jenkins"
@@ -18,7 +18,7 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
                       less vim curl tar wget sed psmisc \
                       file pwgen locales zip unzip \
                       software-properties-common devscripts \
-                      bzip2 rsync gpg  \
+                      bzip2 rsync gpg moreutils \
   && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
   && add-apt-repository "deb https://download.docker.com/linux/debian ${DEBIAN_RELEASE} stable" \
   && apt-get update \
@@ -26,6 +26,10 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
   && apt-get clean \
   && rm -Rf /var/lib/apt/lists/*
 
+# Maven
+RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz" && \
+    tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
+    ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
 # kubectl
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.28.4/bin/linux/amd64/kubectl" && \
@@ -37,14 +41,9 @@ RUN curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-c
   && chmod +x /usr/local/bin/docker-compose
 
 ADD build/settings.xml /opt/maven/conf/settings.xml
-
-# Add User
-RUN groupadd --system --gid 10000 ${USER_NAME} && useradd --create-home --no-log-init --uid 10000 --gid ${USER_NAME} ${USER_NAME}
-
 ADD build/config /home/${USER_NAME}/.ssh/config
 RUN ssh-keyscan github.com >> /home/${USER_NAME}/.ssh/known_hosts
 RUN ssh-keyscan git.gentics.com >> /home/${USER_NAME}/.ssh/known_hosts
-
 RUN mkdir -p /home/${USER_NAME}/.m2/repository
 
 # Update Bash RC
@@ -73,4 +72,3 @@ RUN usermod -aG docker ${USER_NAME}
 USER ${USER_NAME}
 
 ENV LANG en_US.UTF-8
-ENV JAVA_HOME "/usr/lib/jvm/java-17-amazon-corretto/"
