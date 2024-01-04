@@ -29,7 +29,6 @@ final def splits = 20;
 final def runs = 20;
 final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at";
 final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
-final def dockerImageName = buildEnvironmentDockerImage("build/Dockerfile", "jenkins-agent:java17")
 
 def registryHost = registryHostStaging;
 
