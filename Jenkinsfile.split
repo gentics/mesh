@@ -77,7 +77,7 @@ stage("Setup Build Environment") {
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 					withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
 					                 usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
+						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install -pl '!:mesh-demos'"
 					}
 				} else {
 					echo "Omitted since we don't execute tests"
@@ -220,11 +220,6 @@ stage("Setup Build Environment") {
 						registryHost = registryHostTest;
 					}
 
-					// demo
-					sh "rm demo/default/target/*sources.jar || true"
-					sh "rm demo/default/target/*javadoc.jar || true"
-					sh "cd demo/default ; docker build --network=host -t " + registryHost + "/gentics/mesh-demo:latest -t " + registryHost + "/gentics/mesh-demo:" + version + " . "
-
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
@@ -272,11 +267,9 @@ stage("Setup Build Environment") {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 
 							if (Boolean.valueOf(params.runDeploy)) {
-								sh 'docker push ' + registryHost + '/gentics/mesh-demo:latest'
 								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
 							}
 
-							sh 'docker push ' + registryHost + '/gentics/mesh-demo:' + version
 							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
 						}
 					}
