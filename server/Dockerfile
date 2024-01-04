@@ -1,4 +1,4 @@
-FROM docker.apa-it.at/maven:3.9.2-amazoncorretto-17-debian-bullseye
+FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.16.1_1
 
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
@@ -8,14 +8,13 @@ ENV MESH_BINARY_DIR=/uploads
 ENV MESH_TEMP_DIR=/tmp
 ENV HOME=/mesh
 ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=256"
-ENV JAVA_HOME "/usr/lib/jvm/java-17-amazon-corretto/"
 
 EXPOSE 8080
 EXPOSE 8443
 EXPOSE 8081
 
 USER root
-RUN adduser -D -u 1000 -G root --h /mesh mesh && \
+RUN adduser -D -u 1000 -G root -h /mesh mesh && \
     mkdir /graphdb   && chown 1000:0 /graphdb  -R && chmod 770 /graphdb  && \
     mkdir /uploads   && chown 1000:0 /uploads  -R && chmod 770 /uploads  && \
     mkdir /backups   && chown 1000:0 /backups  -R && chmod 770 /backups  && \
