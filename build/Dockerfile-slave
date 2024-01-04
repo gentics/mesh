@@ -26,6 +26,10 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
   && apt-get clean \
   && rm -Rf /var/lib/apt/lists/*
 
+# Maven
+RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz" && \
+    tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
+    ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
 # kubectl
 RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.28.4/bin/linux/amd64/kubectl" && \
@@ -37,14 +41,9 @@ RUN curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-c
   && chmod +x /usr/local/bin/docker-compose
 
 ADD build/settings.xml /opt/maven/conf/settings.xml
-
-# Add User
-#RUN groupadd --system --gid 10000 ${USER_NAME} && useradd --create-home --no-log-init --uid 10000 --gid ${USER_NAME} ${USER_NAME}
-
 ADD build/config /home/${USER_NAME}/.ssh/config
 RUN ssh-keyscan github.com >> /home/${USER_NAME}/.ssh/known_hosts
 RUN ssh-keyscan git.gentics.com >> /home/${USER_NAME}/.ssh/known_hosts
-
 RUN mkdir -p /home/${USER_NAME}/.m2/repository
 
 # Update Bash RC
