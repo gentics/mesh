@@ -134,6 +134,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<compilerVersion>17</compilerVersion>
+					<source>17</source>
+					<target>17</target>
 				</configuration>
 				<dependencies>
 					<dependency>
