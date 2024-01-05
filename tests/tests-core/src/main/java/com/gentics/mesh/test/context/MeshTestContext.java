@@ -513,6 +513,10 @@ public class MeshTestContext implements TestRule {
 
 		MeshOptions meshOptions = meshInstanceProvider.getOptions();
 
+		if (settings.synchronizeWrites()) {
+			meshInstanceProvider.setSyncWrites(true);
+		}
+
 		// disable usage of "ordered" blocking handlers (which seems to be useless anyways)
 		meshOptions.getVertxOptions().setOrderedBlockingHandlers(false);
 

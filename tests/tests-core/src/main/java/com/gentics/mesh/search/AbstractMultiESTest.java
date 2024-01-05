@@ -165,6 +165,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		}
 
 		@Override
+		public boolean synchronizeWrites() {
+			return delegate.synchronizeWrites();
+		}
+
+		@Override
 		public MeshCoreOptionChanger optionChanger() {
 			return delegate.optionChanger();
 		}
