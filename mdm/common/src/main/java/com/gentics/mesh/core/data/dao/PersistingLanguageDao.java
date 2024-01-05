@@ -34,8 +34,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 		FieldsSet fields = generic.getFields();
 
 		LanguageResponse model = new LanguageResponse();
-		// TODO align fields.isEmpty() with other DAOs on a major update - this is breaking at the moment.
-		if (fields.isEmpty() || fields.has("uuid")) {
+		if (fields.has("uuid")) {
 			model.setUuid(element.getUuid());
 
 			// Performance shortcut to return now and ignore the other checks
@@ -43,7 +42,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 				return model;
 			}
 		}
-		if (fields.isEmpty() || fields.has("name")) {
+		if (fields.has("name")) {
 			model.setName(element.getName());
 
 			// Performance shortcut to return now and ignore the other checks
@@ -51,7 +50,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 				return model;
 			}
 		}
-		if (fields.isEmpty() || fields.has("tag")) {
+		if (fields.has("languageTag")) {
 			model.setLanguageTag(element.getLanguageTag());
 
 			// Performance shortcut to return now and ignore the other checks
@@ -59,7 +58,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 				return model;
 			}
 		}
-		if (fields.isEmpty() || fields.has("nativeName")) {
+		if (fields.has("nativeName")) {
 			model.setNativeName(element.getNativeName());
 		}		
 		return model;
