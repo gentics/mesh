@@ -3,16 +3,17 @@ package com.gentics.mesh.core.language;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -50,11 +51,24 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 		}
 	}
 
+	/**
+	 * Here we are looking for the visible fields, since languages are off the permission system.
+	 */
 	@Test
 	@Override
-	@Ignore("Not yet implemented")
 	public void testFindAllVisible() throws InvalidArgumentException {
-		fail("Not yet implemented");
+		LanguageResponse response = tx(tx -> {
+			LanguageDao languageDao = tx.languageDao();
+			HibLanguage english = languageDao.findByLanguageTag("en");
+			InternalActionContext ac = mockActionContext();
+			ac.getGenericParameters().setFields("languageTag");
+			return languageDao.transformToRestSync(english, ac, 0);
+		});
+		assertNotNull(response.getLanguageTag());
+		assertEquals(response.getLanguageTag(), "en");
+		assertNull(response.getUuid());
+		assertNull(response.getNativeName());
+		assertNull(response.getName());
 	}
 
 	@Test
