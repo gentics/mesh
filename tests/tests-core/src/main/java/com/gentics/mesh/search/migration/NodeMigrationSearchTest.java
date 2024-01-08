@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
-	public void testNodeMigrationConflict() {
+	public void testNodeMigrationConflict() throws TimeoutException {
 		final String rootFolderUuid = tx(() -> project().getBaseNode().getUuid());
 		final String SCHEMA_NAME = "testSchema";
 
@@ -62,6 +63,8 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Assign schema to project
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+
+		waitForSearchIdleEvent();
 
 		// 3. Create nodes
 		for (int i = 0; i < 5; i++) {
@@ -100,6 +103,9 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		}, JobStatus.COMPLETED, 1);
 
 		waitForSearchIdleEvent();
+		// we need to check the index mapping, because when updating the schema, it might happen that the new ES index is created "on the fly" (during the node migration)
+		// and will therefore have the wrong mapping
+		checkIndexMapping(10_000);
 
 		// After update
 		assertEquals(1, call(() -> client().searchNodes(PROJECT_NAME, queryName("sameValue"))).getMetainfo().getTotalCount());
@@ -149,6 +155,9 @@ public class NodeMigrationSearchTest extends AbstractNodeSearchEndpointTest {
 		}, COMPLETED, 1);
 
 		waitForSearchIdleEvent();
+		// we need to check the index mapping, because when updating the schema, it might happen that the new ES index is created "on the fly" (during the node migration)
+		// and will therefore have the wrong mapping
+		checkIndexMapping(10_000);
 
 		// Now search again and verify that we still find the same amount of elements
 		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
