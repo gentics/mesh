@@ -220,9 +220,7 @@
 				<version>3.11.0</version>
 				<configuration>
 					<verbose>false</verbose>
-					<compilerVersion>17</compilerVersion>
-					<source>17</source>
-					<target>17</target>
+					<release>17</release>
 				</configuration>
 			</plugin>
 			<plugin>
