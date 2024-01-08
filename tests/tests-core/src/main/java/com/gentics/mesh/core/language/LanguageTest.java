@@ -1,24 +1,38 @@
 package com.gentics.mesh.core.language;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
+import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.google.common.collect.Iterators;
+
+import io.vertx.ext.web.RoutingContext;
 
 @MeshTestSetting(testSize = TestSize.PROJECT, startServer = false)
 public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -130,8 +144,17 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 
 	@Test
 	@Override
-	@Ignore("languages are currently not transformable")
 	public void testTransformation() {
+		try (Tx tx = tx()) {
+			LanguageDao languageDao = tx.languageDao();
+			HibLanguage language = tx.languageDao().findByName("German");
+
+			doTransformationTests(languageDao, language,
+					Pair.of("uuid", HibLanguage::getUuid),
+					Pair.of("name", HibLanguage::getName),
+					Pair.of("nativeName", HibLanguage::getNativeName),
+					Pair.of("languageTag", HibLanguage::getLanguageTag));
+	}
 	}
 
 	@Test
