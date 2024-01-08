@@ -72,3 +72,4 @@ RUN usermod -aG docker ${USER_NAME}
 USER ${USER_NAME}
 
 ENV LANG en_US.UTF-8
+ENV TZ=Europe/Vienna
