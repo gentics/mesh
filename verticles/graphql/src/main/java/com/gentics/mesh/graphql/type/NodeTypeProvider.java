@@ -479,14 +479,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			newFieldDefinition().name("schema").description("Schema of the node").type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
 				.dataFetcher(env -> {
 					NodeContent content = env.getSource();
-					if (content == null) {
+					if (content == null || content.getNode() == null) {
 						return null;
 					}
-					HibNodeFieldContainer container = content.getContainer();
-					if (container == null) {
-						return null;
+					if (content.getContainer() != null) {
+						return content.getContainer().getSchemaContainerVersion();
+					} else {
+						return content.getNode().getSchemaContainer().getLatestVersion();
 					}
-					return container.getSchemaContainerVersion();
 				}).build(),
 
 			// .isPublished

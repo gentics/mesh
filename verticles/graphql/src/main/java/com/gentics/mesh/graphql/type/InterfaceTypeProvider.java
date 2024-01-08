@@ -8,16 +8,17 @@ import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibCreatorTracking;
 import com.gentics.mesh.core.data.user.HibEditorTracking;
@@ -142,23 +143,13 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 		// .uuid
 		setField.accept(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString).dataFetcher(env -> {
-			HibBaseElement element = null;
-			Object source = env.getSource();
-			if (source instanceof NodeContent) {
-				element = ((NodeContent) source).getNode();
-			} else if (source instanceof HibSchemaVersion) {
-				element = ((HibSchemaVersion) source).getSchemaContainer();
-			} else {
-				element = env.getSource();
-			}
-			return element.getUuid();
+			return getMeshCoreElement(env.getSource(), source -> env.getSource()).getUuid();
 		}));
 
 		// .etag
 		setField.accept(newFieldDefinition().name("etag").description("ETag of the element").type(GraphQLString).dataFetcher(env -> {
 			GraphQLContext gc = env.getContext();
-			HibTransformableElement<?> element = env.getSource();
-			return element.getETag(gc);
+			return getMeshCoreElement(env.getSource(), unused -> env.getSource()).getETag(gc);
 		}));
 
 		// .permission
@@ -166,7 +157,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME))
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				HibCoreElement<?> element = getMeshCoreElement(env.getSource());
+				HibCoreElement<?> element = getMeshCoreElement(env.getSource(), source -> (HibCoreElement<?>) source);
 
 				UserDao userDao = Tx.get().userDao();
 				return userDao.getPermissionInfo(gc.getUser(), element);
@@ -183,7 +174,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			)
 			.dataFetcher(env -> {
 				GraphQLContext gc = env.getContext();
-				HibCoreElement<?> element = getMeshCoreElement(env.getSource());
+				HibCoreElement<?> element = getMeshCoreElement(env.getSource(), source -> (HibCoreElement<?>) source);
 
 				RoleDao roleDao = Tx.get().roleDao();
 				return roleDao.getRolePermissions(element, gc, env.getArgument("role"));
@@ -253,13 +244,14 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private HibCoreElement<?> getMeshCoreElement(Object source) {
+	@SuppressWarnings("rawtypes")
+	private HibCoreElement<?> getMeshCoreElement(Object source, Function<Object, HibCoreElement<?>> defaultMapper) {
 		if (source instanceof NodeContent) {
 			return ((NodeContent) source).getNode();
-		} else if (source instanceof HibSchemaVersion) {
-			return ((HibSchemaVersion) source).getSchemaContainer();
+		} else if (source instanceof HibFieldSchemaVersionElement) {
+			return ((HibFieldSchemaVersionElement) source).getSchemaContainer();
 		} else {
-			return (HibCoreElement<?>) source;
+			return defaultMapper.apply(source);
 		}
 	}
 
