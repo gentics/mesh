@@ -6,6 +6,8 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import java.util.concurrent.TimeoutException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -32,7 +34,7 @@ public class BatchedNodeMigrationSearchTest extends NodeMigrationSearchTest {
 	}
 
 	@Test
-	public void testNodeMigrationBatch() {
+	public void testNodeMigrationBatch() throws TimeoutException {
 		final String rootFolderUuid = tx(() -> project().getBaseNode().getUuid());
 		final String SCHEMA_NAME = "batchSchema";
 
@@ -44,6 +46,8 @@ public class BatchedNodeMigrationSearchTest extends NodeMigrationSearchTest {
 
 		// 2. Assign schema to project
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+
+		waitForSearchIdleEvent();
 
 		// 3. Create nodes
 		for (int i = 0; i < 100; i++) {
@@ -69,6 +73,9 @@ public class BatchedNodeMigrationSearchTest extends NodeMigrationSearchTest {
 
 		waitForJobs(() -> call(() -> client().updateSchema(schemaResponse.getUuid(), schemaUpdateRequest)), JobStatus.COMPLETED, 1, 120);
 		waitForSearchIdleEvent();
+		// we need to check the index mapping, because when updating the schema, it might happen that the new ES index is created "on the fly" (during the node migration)
+		// and will therefore have the wrong mapping
+		checkIndexMapping(10_000);
 
 		// After update
 		NodeListResponse searchResponse = call(() -> client().searchNodes(PROJECT_NAME, queryName("value")));
