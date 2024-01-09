@@ -103,7 +103,7 @@ import io.reactivex.Observable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true)
+@MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, synchronizeWrites = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test

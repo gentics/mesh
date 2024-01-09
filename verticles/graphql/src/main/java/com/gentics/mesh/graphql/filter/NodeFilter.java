@@ -2,6 +2,8 @@ package com.gentics.mesh.graphql.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -57,24 +59,28 @@ public class NodeFilter extends StartMainFilter<NodeContent> {
 			content -> content.getContainer().getLastEditedTimestamp()));
 		filters.add(new MappedFilter<>("editor", "Filters by editor", UserFilter.filter(),
 			content -> content.getContainer().getEditor()));
-		filters.add(new MappedFilter<>("fields", "Filters by fields", createAllFieldFilters(), Function.identity()));
+		createAllFieldFilters().ifPresent(fieldFilters -> filters.add(new MappedFilter<>("fields", "Filters by fields", fieldFilters, Function.identity())));
 
 		return filters;
 	}
 
-	private MainFilter<NodeContent> createAllFieldFilters() {
+	private Optional<MainFilter<NodeContent>> createAllFieldFilters() {
 		HibProject project = Tx.get().getProject(context);
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		List<FilterField<NodeContent, ?>> schemaFields = StreamSupport
 			.stream(schemaDao.findAll(project).spliterator(), false)
 			.map(this::createFieldFilter)
+			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
-		return MainFilter.mainFilter("FieldFilter", "Filters by fields", schemaFields, false);
+		return Optional.ofNullable(schemaFields).filter(fields -> !fields.isEmpty()).map(fields -> MainFilter.mainFilter("FieldFilter", "Filters by fields", fields, false));
 	}
 
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
-		return new MappedFilter<>(schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
-			FieldFilter.filter(context, schema.getLatestVersion().getSchema()),
-			NodeContent::getContainer);
+		return Optional.ofNullable(FieldFilter.filter(context, schema.getLatestVersion().getSchema()))
+				.filter(fieldFilter -> !fieldFilter.getFilters().isEmpty())
+				.map(fieldFilter -> new MappedFilter<>(schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
+							fieldFilter,
+							NodeContent::getContainer))
+				.orElse(null);
 	}
 }

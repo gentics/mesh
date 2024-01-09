@@ -82,6 +82,12 @@ public @interface MeshTestSetting {
 	boolean monitoring() default true;
 
 	/**
+	 * Flag which indicates that write operations should be synchronized.
+	 * @return
+	 */
+	boolean synchronizeWrites() default false;
+
+	/**
 	 * Predefined set of options changers that can be used to alter the mesh options for the test.
 	 * 
 	 * @return
