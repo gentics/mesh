@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -33,6 +34,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.dataloader.DataLoader;
 
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -198,7 +200,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			nodeType.description(
 				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
 			interfaceTypeProvider.addCommonFields(nodeType, true);
-			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
+			List<GraphQLFieldDefinition> fields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(fields)) {
+				nodeType.fields(fields);
+			}
 			return nodeType.build();
 		}).since(2, () -> {
 			GraphQLInterfaceType.Builder nodeType = newInterface();
@@ -214,8 +219,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return env.getSchema().getObjectType(schemaName);
 			});
 
-			nodeType.fields(createNodeInterfaceFields(context).forVersion(context));
-
+			List<GraphQLFieldDefinition> versionedFields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(versionedFields)) {
+				nodeType.fields(versionedFields);
+			}
 			return nodeType.build();
 		}).build();
 	}
@@ -572,17 +579,18 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Supplier<List<GraphQLFieldDefinition>> withNodeFieldsSupplier = () -> {
 			List<GraphQLFieldDefinition> withNodeFields = new ArrayList<>(baseFields);
 
-			withNodeFields.add(newFieldDefinition()
-				.name("fields")
-				.description("Contains the fields of the content.")
-				.type(createFieldsUnionType(context).forVersion(context))
-				.deprecate("Usage of fields has changed in /api/v2. See https://github.com/gentics/mesh/issues/428")
-				.dataFetcher(env -> {
-					// The fields can be accessed via the container so we can directly pass it along.
-					NodeContent content = env.getSource();
-					return content.getContainer();
-				}).build());
-
+			createFieldsUnionType(context).ifPresent(type -> {
+				withNodeFields.add(newFieldDefinition()
+					.name("fields")
+					.description("Contains the fields of the content.")
+					.type(type.forVersion(context))
+					.deprecate("Usage of fields has changed in /api/v2. See https://github.com/gentics/mesh/issues/428")
+					.dataFetcher(env -> {
+						// The fields can be accessed via the container so we can directly pass it along.
+						NodeContent content = env.getSource();
+						return content.getContainer();
+					}).build());
+			});
 			return withNodeFields;
 		};
 
@@ -703,26 +711,28 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}
 	}
 
-	private Versioned<GraphQLUnionType> createFieldsUnionType(GraphQLContext context) {
+	private Optional<Versioned<GraphQLUnionType>> createFieldsUnionType(GraphQLContext context) {
 		GraphQLObjectType[] typeArray = generateSchemaFieldTypes(context).forVersion(context).toArray(new GraphQLObjectType[0]);
 
-		GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(typeArray).description("Fields of the node.")
-			.typeResolver(env -> {
-				Object object = env.getObject();
-				if (object instanceof HibNodeFieldContainer) {
-					HibNodeFieldContainer fieldContainer = (HibNodeFieldContainer) object;
-					String schemaName = fieldContainer.getSchemaContainerVersion().getName();
-					GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
-					if (foundType == null) {
-						throw new GraphQLException("The type for the schema with name {" + schemaName
-							+ "} could not be found. Maybe the schema is not linked to the project.");
-					}
-					return foundType;
-				}
-				return null;
-			}).build();
+		return Optional.ofNullable(typeArray).filter(a -> a.length > 0).map(a -> {
+			GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(a).description("Fields of the node.")
+					.typeResolver(env -> {
+						Object object = env.getObject();
+						if (object instanceof HibNodeFieldContainer) {
+							HibNodeFieldContainer fieldContainer = (HibNodeFieldContainer) object;
+							String schemaName = fieldContainer.getSchemaContainerVersion().getName();
+							GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
+							if (foundType == null) {
+								throw new GraphQLException("The type for the schema with name {" + schemaName
+									+ "} could not be found. Maybe the schema is not linked to the project.");
+							}
+							return foundType;
+						}
+						return null;
+					}).build();
 
-		return Versioned.forVersion(1, fieldType).build();
+				return Versioned.forVersion(1, fieldType).build();
+		});
 	}
 
 	/**
@@ -857,7 +867,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				fieldsField.name("fields").type(fieldsType);
 				root.field(fieldsField);
 			}
-			root.fields(createNodeInterfaceFields(context).forVersion(context));
+			List<GraphQLFieldDefinition> nodeFields = createNodeInterfaceFields(context).forVersion(context);
+			if (CollectionUtils.isNotEmpty(nodeFields)) {
+				root.fields(nodeFields);
+			}
 			interfaceTypeProvider.addCommonFields(root, true);
 			return root.build();
 		}).collect(Collectors.toList());

@@ -10,12 +10,15 @@ import static graphql.schema.GraphQLUnionType.newUnionType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -61,30 +64,28 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		this.fields = fields;
 	}
 
-	public Versioned<GraphQLType> createType(GraphQLContext context) {
-		return Versioned.<GraphQLType>
+	public Versioned<Optional<GraphQLType>> createType(GraphQLContext context) {
+		return Versioned.<Optional<GraphQLType>>
 		since(1, () -> {
 			List<GraphQLObjectType> types = generateMicroschemaFieldTypes(context).forVersion(context);
-			// No microschemas have been found - We need to add a dummy type in order to keep the type system working
-			if (types.isEmpty()) {
-				types.add(newObject().name("dummy").field(newFieldDefinition().name("dummy").type(GraphQLString).staticValue(null).build()).description("Placeholder dummy microschema type").build());
-			}
-			GraphQLObjectType[] typeArray = types.toArray(new GraphQLObjectType[0]);
+			return Optional.ofNullable(types).filter(CollectionUtils::isNotEmpty).map(list -> {
+				GraphQLObjectType[] typeArray = list.toArray(new GraphQLObjectType[0]);
 
-			GraphQLUnionType fieldType = newUnionType().name(MICRONODE_TYPE_NAME).possibleTypes(typeArray).description("Fields of the micronode.")
-				.typeResolver(env -> {
-					Object object = env.getObject();
-					if (object instanceof HibMicronode) {
-						HibMicronode fieldContainer = (HibMicronode) object;
-						HibMicroschemaVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
-						String schemaName = micronodeFieldSchema.getName();
-						GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
-						return foundType;
-					}
-					return null;
-				}).build();
+				GraphQLUnionType fieldType = newUnionType().name(MICRONODE_TYPE_NAME).possibleTypes(typeArray).description("Fields of the micronode.")
+					.typeResolver(env -> {
+						Object object = env.getObject();
+						if (object instanceof HibMicronode) {
+							HibMicronode fieldContainer = (HibMicronode) object;
+							HibMicroschemaVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
+							String schemaName = micronodeFieldSchema.getName();
+							GraphQLObjectType foundType = env.getSchema().getObjectType(schemaName);
+							return foundType;
+						}
+						return null;
+					}).build();
 
-			return fieldType;
+				return fieldType;
+			});
 		}).since(2, () -> {
 			GraphQLInterfaceType fieldType = newInterface()
 				.name(MICRONODE_TYPE_NAME)
@@ -97,7 +98,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.fields(createMicronodeFields())
 				.build();
 
-			return fieldType;
+			return Optional.of(fieldType);
 		}).build();
 	}
 
