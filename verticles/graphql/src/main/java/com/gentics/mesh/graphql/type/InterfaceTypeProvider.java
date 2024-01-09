@@ -14,7 +14,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibTransformableElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -149,7 +148,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		// .etag
 		setField.accept(newFieldDefinition().name("etag").description("ETag of the element").type(GraphQLString).dataFetcher(env -> {
 			GraphQLContext gc = env.getContext();
-			return getMeshCoreElement(env.getSource(), unused -> env.getSource()).getETag(gc);
+			return getMeshCoreElement(env.getSource(), source -> (HibCoreElement<?>) source).getETag(gc);
 		}));
 
 		// .permission
