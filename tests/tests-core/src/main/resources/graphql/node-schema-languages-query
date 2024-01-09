@@ -1,0 +1,49 @@
+{
+	exists: node(uuid:"1234567890abcdef1234567890abcdef", lang:["en"]) {
+		# [$.data.exists.availableLanguages.size()=2]
+		availableLanguages
+		schema {
+			# [$.data.exists.schema.uuid=<is-uuid>]
+			uuid
+		}
+		languages {
+			# [$.data.exists.languages[0].uuid=<is-uuid>]
+			# [$.data.exists.languages[1].uuid=<is-uuid>]
+			uuid
+
+			# This will be asserted by a special asserter
+			path
+			language
+		}
+		# [$.data.exists.fields.title=News_2015 english title]
+		... on content {
+			fields {
+				title
+			}
+		}
+	}
+	missing: node(uuid:"1234567890abcdef1234567890abcdef", lang:["qq"]) {
+		# [$.data.missing.availableLanguages.size()=2]
+		availableLanguages
+		schema {
+			# [$.data.missing.schema.uuid=<is-uuid>]
+			uuid
+		}
+		languages {
+			# [$.data.missing.languages[0].uuid=<is-uuid>]
+			# [$.data.missing.languages[1].uuid=<is-uuid>]
+			uuid
+
+			# This will be asserted by a special asserter
+			path
+			language
+		}
+		# [$.data.missing.fields=<is-null>]
+		... on content {
+			fields {
+				title
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]
