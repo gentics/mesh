@@ -213,6 +213,7 @@ public class SchemaEndpoint extends RolePermissionHandlingEndpoint {
 		readOne.description("Load the projects, attached to the schema with the given uuid.");
 		readOne.exampleResponse(OK, projectExamples.getProjectListResponse(), "Loaded projects.");
 		readOne.addQueryParameters(GenericParametersImpl.class);
+		readOne.addQueryParameters(PagingParametersImpl.class);
 		readOne.produces(APPLICATION_JSON);
 		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");

@@ -353,10 +353,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 		utils.syncTx(ac, tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
+			UserDao userDao = tx.userDao();
 			HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
 
 			Result<HibProject> result = schemaDao.findLinkedProjects(schema);
-			Page<? extends HibProject> page = new DynamicStreamPageImpl<>(result.stream(), pagingInfo);
+			Page<? extends HibProject> page = new DynamicStreamPageImpl<>(result.stream().filter(p -> userDao.hasPermission(ac.getUser(), p, READ_PERM)), pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

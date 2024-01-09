@@ -18,8 +18,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
-
 import com.gentics.mesh.core.rest.job.JobWarningList;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -32,7 +32,8 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-	private HibBranchVersionAssignment versionEdge;
+	private Object versionEdgeId;
+	private Class<? extends HibBranchVersionAssignment> versionEdgeClass;
 
 	private long completionCount = 0;
 
@@ -54,15 +55,16 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		if (status == null) {
 			status = job.getStatus();
 		}
-		if (versionEdge != null) {
-			versionEdge = CommonTx.get().load(versionEdge.getId(), versionEdge.getClass());
-			versionEdge.setMigrationStatus(status);
+		if (versionEdgeId != null && versionEdgeClass != null) {
+			HibBranchVersionAssignment versionEdge = CommonTx.get().load(versionEdgeId, versionEdgeClass);
+			if (versionEdge != null) {
+				versionEdge.setMigrationStatus(status);
+			}
 		}
 		job.setCompletionCount(completionCount);
 		job.setStatus(status);
 
-		Database db = CommonTx.get().data().mesh().database();
-		db.tx().commit();
+		Tx.maybeGet().ifPresent(Tx::commit);
 		return this;
 	}
 
@@ -135,7 +137,8 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	@Override
 	public void setVersionEdge(HibBranchVersionAssignment versionEdge) {
-		this.versionEdge = versionEdge;
+		this.versionEdgeId = versionEdge.getId();
+		this.versionEdgeClass = versionEdge.getClass();
 	}
 
 	@Override

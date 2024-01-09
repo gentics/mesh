@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.After;
 import org.junit.Ignore;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
@@ -337,6 +339,22 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	}
 
 	@Test
+	public void testReadPagedProjects() {
+		String schemaUuid = tx(tx -> { 
+			return schemaContainer("content").getUuid();
+		});
+		Observable.range(0, 7)
+			.flatMapSingle(index -> client().createProject(new ProjectCreateRequest().setSchemaRef("folder").setName("SchemaAssignmentPagingTest" + index)).toSingle())
+			.flatMapSingle(project -> client().assignSchemaToProject(project.getName(), schemaUuid).toSingle())
+			.ignoreElements()
+			.blockingAwait();
+		
+		ProjectListResponse projects = call(() -> client().findSchemaProjects(schemaUuid, new PagingParametersImpl(2, 5L)));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData()).hasSize(3);
+	}
+
+	@Test
 	public void testReadJustUnassignedProject() {
 		testReadJustAssignedProject();
 
@@ -348,6 +366,35 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			.blockingGet();
 		assertNotNull(projects.getData());
 		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("SchemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadNotPermittedProject() {
+		testReadJustAssignedProject();
+
+		String schemaUuid = tx(tx -> {
+			assertTrue(tx.roleDao().revokePermissions(role(), tx.projectDao().findByName("SchemaAssignmentTest"), READ_PERM));
+			String uuid = schemaContainer("content").getUuid();
+			tx.success();
+			return uuid;
+		});
+		ProjectListResponse projects = call(() -> client().findSchemaProjects(schemaUuid));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("SchemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadProjectsOfNotPermittedSchema() {
+		testReadJustAssignedProject();
+
+		String schemaUuid = tx(tx -> {
+			HibSchema schema = schemaContainer("content");
+			assertTrue(tx.roleDao().revokePermissions(role(), schema, READ_PERM));
+			String uuid = schema.getUuid();
+			tx.success();
+			return uuid;
+		});
+		call(() -> client().findSchemaProjects(schemaUuid), FORBIDDEN, "error_missing_perm", schemaUuid, "read");
 	}
 
 	@Test

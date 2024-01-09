@@ -277,10 +277,11 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<HibMicroschema, 
 
 		utils.syncTx(ac, tx -> {
 			MicroschemaDao microschemaDao = tx.microschemaDao();
+			UserDao userDao = tx.userDao();
 			HibMicroschema microschema = microschemaDao.loadObjectByUuid(ac, microschemaUuid, READ_PERM);
 
 			Result<HibProject> result = microschemaDao.findLinkedProjects(microschema);
-			Page<? extends HibProject> page = new DynamicStreamPageImpl<>(result.stream(), pagingInfo);
+			Page<? extends HibProject> page = new DynamicStreamPageImpl<>(result.stream().filter(p -> userDao.hasPermission(ac.getUser(), p, READ_PERM)), pagingInfo);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {

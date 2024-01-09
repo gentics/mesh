@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Ignore;
@@ -53,6 +54,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -547,5 +549,50 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			.blockingGet();
 		assertNotNull(projects.getData());
 		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("MicroschemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadNotPermittedProject() {
+		testReadJustAssignedProject();
+
+		String microschemaUuid = tx(tx -> {
+			assertTrue(tx.roleDao().revokePermissions(role(), tx.projectDao().findByName("MicroschemaAssignmentTest"), READ_PERM));
+			String uuid = microschemaContainer("vcard").getUuid();
+			tx.success();
+			return uuid;
+		});
+		ProjectListResponse projects = call(() -> client().findMicroschemaProjects(microschemaUuid));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData().stream().map(ProjectResponse::getName)).doesNotContain("MicroschemaAssignmentTest");
+	}
+
+	@Test
+	public void testReadProjectsOfNotPermittedMicroschema() {
+		testReadJustAssignedProject();
+
+		String microschemaUuid = tx(tx -> {
+			HibMicroschema microschema = microschemaContainer("vcard");
+			assertTrue(tx.roleDao().revokePermissions(role(), microschema, READ_PERM));
+			String uuid = microschema.getUuid();
+			tx.success();
+			return uuid;
+		});
+		call(() -> client().findMicroschemaProjects(microschemaUuid), FORBIDDEN, "error_missing_perm", microschemaUuid, "read");
+	}
+
+	@Test
+	public void testReadPagedProjects() {
+		String microschemaUuid = tx(tx -> { 
+			return microschemaContainer("vcard").getUuid();
+		});
+		Observable.range(0, 7)
+			.flatMapSingle(index -> client().createProject(new ProjectCreateRequest().setSchemaRef("folder").setName("MicroschemaAssignmentPagingTest" + index)).toSingle())
+			.flatMapSingle(project -> client().assignMicroschemaToProject(project.getName(), microschemaUuid).toSingle())
+			.ignoreElements()
+			.blockingAwait();
+		
+		ProjectListResponse projects = call(() -> client().findMicroschemaProjects(microschemaUuid, new PagingParametersImpl(2, 5L)));
+		assertNotNull(projects.getData());
+		assertThat(projects.getData()).hasSize(3);
 	}
 }
