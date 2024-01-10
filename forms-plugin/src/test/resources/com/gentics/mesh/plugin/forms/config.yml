@@ -30,6 +30,8 @@ fileUpload:
       - "audio/.*"
     video:
       - "video/.*"
+    text:
+      - "text/plain"
     html:
       - "text/html"
     json:

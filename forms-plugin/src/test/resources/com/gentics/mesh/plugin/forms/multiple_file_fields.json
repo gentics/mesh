@@ -1,0 +1,47 @@
+{
+	"name": "Form with Textfield",
+	"cms_id": 1,
+	"elements": [
+		{
+			"type": "input",
+			"name": "input1",
+			"placeholderName": "",
+			"label": "Text",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"value": "",
+			"minVal": "",
+			"maxVal": "",
+			"maxCharCount": "",
+			"elements": []
+		},
+		{
+			"type": "file",
+			"name": "file1",
+			"placeholderName": "",
+			"label": "File1",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"allowed_filetypes": [],
+			"max_filesize": "10",
+			"elements": []
+		},
+		{
+			"type": "file",
+			"name": "file2",
+			"placeholderName": "",
+			"label": "File2",
+			"mandatory": true,
+			"info": "",
+			"tooltip": "",
+			"validation": "",
+			"allowed_filetypes": [],
+			"max_filesize": "10",
+			"elements": []
+		}
+	]
+}
