@@ -58,6 +58,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -93,6 +94,10 @@ import graphql.schema.GraphQLUnionType;
  */
 @Singleton
 public class NodeTypeProvider extends AbstractTypeProvider {
+
+	public static final String SCHEMAS = "schemasCache";
+
+	public static final String SCHEMA_FIELD_TYPES = "schemaFieldTypes";
 
 	public static final String NODE_TYPE_NAME = "Node";
 
@@ -712,7 +717,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	private Optional<Versioned<GraphQLUnionType>> createFieldsUnionType(GraphQLContext context) {
-		GraphQLObjectType[] typeArray = generateSchemaFieldTypes(context).forVersion(context).toArray(new GraphQLObjectType[0]);
+		GraphQLObjectType[] typeArray = context.getOrStore(SCHEMA_FIELD_TYPES, () -> generateSchemaFieldTypes(context).forVersion(context)) .toArray(new GraphQLObjectType[0]);
 
 		return Optional.ofNullable(typeArray).filter(a -> a.length > 0).map(a -> {
 			GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(a).description("Fields of the node.")
@@ -754,7 +759,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		HibProject project = tx.getProject(context);
 		List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-		for (HibSchema container : schemaDao.findAll(project)) {
+		Result<? extends HibSchema> schemas = context.getOrStore(SCHEMAS + project.getName(), () -> schemaDao.findAll(project));
+		for (HibSchema container : schemas) {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
@@ -782,7 +788,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					root.field(fields.createBooleanDef(fieldSchema));
 					break;
 				case NODE:
-					fields.createNodeDef(fieldSchema).ifPresent(root::field);
+					root.field(fields.createNodeDef(fieldSchema));
 					break;
 				case BINARY:
 					root.field(fields.createBinaryDef(fieldSchema));
@@ -792,10 +798,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					fields.createListDef(context, listFieldSchema).ifPresent(root::field);
+					fields.createListDef(context, listFieldSchema, project).ifPresent(root::field);
 					break;
 				case MICRONODE:
-					fields.createMicronodeDef(fieldSchema, project).ifPresent(root::field);
+					fields.createMicronodeDef(context, fieldSchema, project).ifPresent(root::field);
 					break;
 				}
 			}
@@ -810,7 +816,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		HibProject project = tx.getProject(context);
 
 		SchemaDao schemaDao = Tx.get().schemaDao();
-		return schemaDao.findAll(project).stream().map(container -> {
+		return context.getOrStore(SCHEMAS + project.getName(), () -> schemaDao.findAll(project)).stream().map(container -> {
 			HibSchemaVersion version = container.getLatestVersion();
 			SchemaModel schema = version.getSchema();
 			GraphQLObjectType.Builder root = newObject();
@@ -847,7 +853,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						fieldsType.field(fields.createBooleanDef(fieldSchema));
 						break;
 					case NODE:
-						fields.createNodeDef(fieldSchema).ifPresent(fieldsType::field);
+						fieldsType.field(fields.createNodeDef(fieldSchema));
 						break;
 					case BINARY:
 						fieldsType.field(fields.createBinaryDef(fieldSchema));
@@ -857,10 +863,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						break;
 					case LIST:
 						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-						fields.createListDef(context, listFieldSchema).ifPresent(fieldsType::field);
+						fields.createListDef(context, listFieldSchema, project).ifPresent(fieldsType::field);
 						break;
 					case MICRONODE:
-						fields.createMicronodeDef(fieldSchema, project).ifPresent(fieldsType::field);
+						fields.createMicronodeDef(context, fieldSchema, project).ifPresent(fieldsType::field);
 						break;
 					}
 				}

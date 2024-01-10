@@ -612,6 +612,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 			Set<GraphQLType> additionalTypes = new HashSet<>();
 
+			List<GraphQLObjectType> schemaFieldTypes = context.getOrStore(NodeTypeProvider.SCHEMA_FIELD_TYPES, () -> nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
+			List<GraphQLObjectType> microschemaFieldTypes = context.getOrStore(MicronodeFieldTypeProvider.MICROSCHEMA_FIELD_TYPES, () -> micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
+
 			additionalTypes.add(schemaTypeProvider.createType(context));
 			additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
 
@@ -659,11 +662,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			additionalTypes.add(fieldDefProvider.createS3BinaryFieldType());
 
 			Versioned.doSince(2, context, () -> {
-				List<GraphQLObjectType> schemaFieldTypes = nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context);
 				if (CollectionUtils.isNotEmpty(schemaFieldTypes)) {
 					additionalTypes.addAll(schemaFieldTypes);
 				}
-				List<GraphQLObjectType> microschemaFieldTypes = micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context);
 				if (CollectionUtils.isNotEmpty(microschemaFieldTypes)) {
 					additionalTypes.addAll(microschemaFieldTypes);
 				}

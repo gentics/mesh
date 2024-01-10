@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLFloat;
 import static graphql.Scalars.GraphQLInt;
@@ -68,6 +67,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
@@ -495,11 +495,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param schema
 	 * @return
 	 */
-	public Optional<GraphQLFieldDefinition> createListDef(GraphQLContext context, ListFieldSchema schema) {
-		if ("micronode".equals(schema.getListType()) && Tx.maybeGet().map(tx -> tx.microschemaDao().findAll().isEmpty()).orElse(false)) {
-			return Optional.empty();
-		}
-		if ("node".equals(schema.getListType()) && Tx.maybeGet().map(tx -> tx.schemaDao().findAll().isEmpty()).orElse(false)) {
+	public Optional<GraphQLFieldDefinition> createListDef(GraphQLContext context, ListFieldSchema schema, HibProject project) {
+		if ("micronode".equals(schema.getListType()) 
+				&& context.<Result<?>>getOrStore(
+						MicronodeFieldTypeProvider.MICROSCHEMAS, 
+						() -> Tx.get().microschemaDao().findAll(project))
+				.isEmpty()) {
 			return Optional.empty();
 		}
 		GraphQLType type = getElementTypeOfList(schema);
@@ -700,19 +701,22 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param project
 	 * @return Created field definition
 	 */
-	public Optional<GraphQLFieldDefinition> createMicronodeDef(FieldSchema schema, HibProject project) {
-		return Tx.maybeGet()
-				.filter(tx -> !tx.microschemaDao().findAll().isEmpty())
-				.map(microschemasExist -> 
-					newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
-						.dataFetcher(env -> {
-							HibFieldContainer container = env.getSource();
-							HibMicronodeField micronodeField = container.getMicronode(schema.getName());
-							if (micronodeField != null) {
-								return micronodeField.getMicronode();
-							}
-							return null;
-						}).build());
+	public Optional<GraphQLFieldDefinition> createMicronodeDef(GraphQLContext context, FieldSchema schema, HibProject project) {
+		if (context.<Result<?>>getOrStore(MicronodeFieldTypeProvider.MICROSCHEMAS + project.getName(), () -> Tx.get().microschemaDao().findAll(project)).isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(newFieldDefinition().name(schema.getName())
+					.description(schema.getLabel())
+					.type(new GraphQLTypeReference(MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME))
+					.dataFetcher(env -> {
+						HibFieldContainer container = env.getSource();
+						HibMicronodeField micronodeField = container.getMicronode(schema.getName());
+						if (micronodeField != null) {
+							return micronodeField.getMicronode();
+						}
+						return null;
+					}).build());
+		}
 	}
 
 	/**
@@ -721,40 +725,38 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param schema
 	 * @return
 	 */
-	public Optional<GraphQLFieldDefinition> createNodeDef(FieldSchema schema) {
-		return Tx.maybeGet()
-				.filter(tx -> !tx.schemaDao().findAll().isEmpty())
-				.map(schemasExist -> newFieldDefinition()
-						.name(schema.getName())
-						.argument(createLanguageTagArg(false))
-						.argument(createNodeVersionArg())
-						.description(schema.getLabel())
-						.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-							ContentDao contentDao = Tx.get().contentDao();
-							GraphQLContext gc = env.getContext();
-							HibFieldContainer source = env.getSource();
-							ContainerType type = getNodeVersion(env);
+	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
+		return newFieldDefinition()
+				.name(schema.getName())
+				.argument(createLanguageTagArg(false))
+				.argument(createNodeVersionArg())
+				.description(schema.getLabel())
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
+					ContentDao contentDao = Tx.get().contentDao();
+					GraphQLContext gc = env.getContext();
+					HibFieldContainer source = env.getSource();
+					ContainerType type = getNodeVersion(env);
 
-							// TODO decide whether we want to reference the default content by default
-							HibNodeField nodeField = source.getNode(schema.getName());
-							if (nodeField != null) {
-								HibNode node = nodeField.getNode();
-								if (node != null) {
-									//Note that we would need to check for micronodes which are not language specific!
-									List<String> languageTags = getLanguageArgument(env, source);
-									// Check permissions for the linked node
-									gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+					// TODO decide whether we want to reference the default content by default
+					HibNodeField nodeField = source.getNode(schema.getName());
+					if (nodeField != null) {
+						HibNode node = nodeField.getNode();
+						if (node != null) {
+							//Note that we would need to check for micronodes which are not language specific!
+							List<String> languageTags = getLanguageArgument(env, source);
+							// Check permissions for the linked node
+							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 
-									NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-									DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-									return contentLoader.load(node, context).thenApply((containers) -> {
-										HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
-										return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
-									});
-								}
-							}
-							return null;
-						}).build());
+							NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+							DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+							return contentLoader.load(node, context).thenApply((containers) -> {
+								HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+								return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
+							});
+						}
+					}
+					return null;
+				}).build();
 	}
 
 	/**

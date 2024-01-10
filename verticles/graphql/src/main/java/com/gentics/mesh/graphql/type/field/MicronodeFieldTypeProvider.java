@@ -31,6 +31,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
@@ -52,6 +53,8 @@ import io.vertx.core.logging.LoggerFactory;
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
+	public static final String MICROSCHEMA_FIELD_TYPES = "microschemaFieldTypes";
+	public static final String MICROSCHEMAS = "microschemasCache";
 	public static final String MICRONODE_TYPE_NAME = "Micronode";
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeFieldTypeProvider.class);
@@ -67,7 +70,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	public Versioned<Optional<GraphQLType>> createType(GraphQLContext context) {
 		return Versioned.<Optional<GraphQLType>>
 		since(1, () -> {
-			List<GraphQLObjectType> types = generateMicroschemaFieldTypes(context).forVersion(context);
+			List<GraphQLObjectType> types = context.getOrStore(MICROSCHEMA_FIELD_TYPES, () -> generateMicroschemaFieldTypes(context).forVersion(context));
 			return Optional.ofNullable(types).filter(CollectionUtils::isNotEmpty).map(list -> {
 				GraphQLObjectType[] typeArray = list.toArray(new GraphQLObjectType[0]);
 
@@ -133,7 +136,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 			MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 			List<GraphQLObjectType> schemaTypes = new ArrayList<>();
-			for (HibMicroschema container : microschemaDao.findAll(project)) {
+			Result<? extends HibMicroschema> microschemas = context.getOrStore(MICROSCHEMAS + project.getName(), () -> microschemaDao.findAll(project));
+			for (HibMicroschema container : microschemas) {
 				HibMicroschemaVersion version = container.getLatestVersion();
 				MicroschemaModel microschemaModel = version.getSchema();
 				Builder microschemaType = newObject();
@@ -159,18 +163,17 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 							microschemaType.field(fields.get().createBooleanDef(fieldSchema).transform(addDeprecation));
 							break;
 						case NODE:
-							fields.get().createNodeDef(fieldSchema).ifPresent(field -> microschemaType.field(field.transform(addDeprecation)));
+							microschemaType.field(fields.get().createNodeDef(fieldSchema).transform(addDeprecation));
 							break;
 						case LIST:
 							ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-							fields.get().createListDef(context, listFieldSchema).ifPresent(field -> microschemaType.field(field.transform(addDeprecation)));
+							fields.get().createListDef(context, listFieldSchema, project).ifPresent(field -> microschemaType.field(field.transform(addDeprecation)));
 							break;
 						default:
 							log.error("Micronode field type {" + type + "} is not supported.");
 							// TODO throw exception for unsupported type
 							break;
 					}
-
 				}
 				GraphQLObjectType type = microschemaType.build();
 				schemaTypes.add(type);
@@ -179,7 +182,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		}).since(2, () -> {
 			Tx tx = Tx.get();
 			HibProject project = tx.getProject(context);
-			return tx.microschemaDao().findAll(project).stream().map(container -> {
+			Result<? extends HibMicroschema> microschemas = context.getOrStore(MICROSCHEMAS + project.getName(), () -> tx.microschemaDao().findAll(project));
+			return microschemas.stream().map(container -> {
 				HibMicroschemaVersion version = container.getLatestVersion();
 				MicroschemaModel microschemaModel = version.getSchema();
 				String microschemaName = microschemaModel.getName();
@@ -215,11 +219,11 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 							fieldsType.field(fields.get().createBooleanDef(fieldSchema));
 							break;
 						case NODE:
-							fields.get().createNodeDef(fieldSchema).ifPresent(fieldsType::field);
+							fieldsType.field(fields.get().createNodeDef(fieldSchema));
 							break;
 						case LIST:
 							ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-							fields.get().createListDef(context, listFieldSchema).ifPresent(fieldsType::field);
+							fields.get().createListDef(context, listFieldSchema, project).ifPresent(fieldsType::field);
 							break;
 						default:
 							log.error("Micronode field type {" + type + "} is not supported.");
