@@ -232,7 +232,7 @@ stage("Setup Build Environment") {
 			stage("Performance Tests") {
 				if (Boolean.valueOf(params.runPerformanceTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-performance-worker-11") {
+					node("mesh-performance-worker-17") {
 						try {
 							unstash 'project'
 							sh "mvn -B -U clean package -pl '!doc,!demo/default,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/"
