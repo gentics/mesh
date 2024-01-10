@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
@@ -67,6 +68,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
@@ -494,7 +496,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param schema
 	 * @return
 	 */
-	public GraphQLFieldDefinition createListDef(GraphQLContext context, ListFieldSchema schema) {
+	public Optional<GraphQLFieldDefinition> createListDef(GraphQLContext context, ListFieldSchema schema, HibProject project) {
+		if ("micronode".equals(schema.getListType()) 
+				&& context.<Result<?>>getOrStore(
+						MicronodeFieldTypeProvider.MICROSCHEMAS, 
+						() -> Tx.get().microschemaDao().findAll(project))
+				.isEmpty()) {
+			return Optional.empty();
+		}
 		GraphQLType type = getElementTypeOfList(schema);
 		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition()
 			.name(schema.getName())
@@ -515,7 +524,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			break;
 		}
 
-		return fieldType.dataFetcher(env -> {
+		fieldType.dataFetcher(env -> {
 			Tx tx = Tx.get();
 			ContentDao contentDao = tx.contentDao();
 			HibFieldContainer container = env.getSource();
@@ -661,7 +670,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			default:
 				return null;
 			}
-		}).build();
+		});
+		return Optional.of(fieldType.build());
 	}
 
 	private GraphQLType getElementTypeOfList(ListFieldSchema schema) {
@@ -677,9 +687,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		case "date":
 			return GraphQLString;
 		case "node":
-			return new GraphQLTypeReference("Node");
+			return new GraphQLTypeReference(NODE_TYPE_NAME);
 		case "micronode":
-			return new GraphQLTypeReference("Micronode");
+			return new GraphQLTypeReference(MICRONODE_TYPE_NAME);
 		default:
 			return null;
 		}
@@ -692,16 +702,22 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param project
 	 * @return Created field definition
 	 */
-	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, HibProject project) {
-		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
-			.dataFetcher(env -> {
-				HibFieldContainer container = env.getSource();
-				HibMicronodeField micronodeField = container.getMicronode(schema.getName());
-				if (micronodeField != null) {
-					return micronodeField.getMicronode();
-				}
-				return null;
-			}).build();
+	public Optional<GraphQLFieldDefinition> createMicronodeDef(GraphQLContext context, FieldSchema schema, HibProject project) {
+		if (context.<Result<?>>getOrStore(MicronodeFieldTypeProvider.MICROSCHEMAS + project.getName(), () -> Tx.get().microschemaDao().findAll(project)).isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(newFieldDefinition().name(schema.getName())
+					.description(schema.getLabel())
+					.type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
+					.dataFetcher(env -> {
+						HibFieldContainer container = env.getSource();
+						HibMicronodeField micronodeField = container.getMicronode(schema.getName());
+						if (micronodeField != null) {
+							return micronodeField.getMicronode();
+						}
+						return null;
+					}).build());
+		}
 	}
 
 	/**
