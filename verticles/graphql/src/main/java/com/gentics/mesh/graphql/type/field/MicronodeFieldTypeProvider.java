@@ -159,11 +159,11 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 							microschemaType.field(fields.get().createBooleanDef(fieldSchema).transform(addDeprecation));
 							break;
 						case NODE:
-							microschemaType.field(fields.get().createNodeDef(fieldSchema).transform(addDeprecation));
+							fields.get().createNodeDef(fieldSchema).ifPresent(field -> microschemaType.field(field.transform(addDeprecation)));
 							break;
 						case LIST:
 							ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-							microschemaType.field(fields.get().createListDef(context, listFieldSchema).transform(addDeprecation));
+							fields.get().createListDef(context, listFieldSchema).ifPresent(field -> microschemaType.field(field.transform(addDeprecation)));
 							break;
 						default:
 							log.error("Micronode field type {" + type + "} is not supported.");
@@ -215,11 +215,11 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 							fieldsType.field(fields.get().createBooleanDef(fieldSchema));
 							break;
 						case NODE:
-							fieldsType.field(fields.get().createNodeDef(fieldSchema));
+							fields.get().createNodeDef(fieldSchema).ifPresent(fieldsType::field);
 							break;
 						case LIST:
 							ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-							fieldsType.field(fields.get().createListDef(context, listFieldSchema));
+							fields.get().createListDef(context, listFieldSchema).ifPresent(fieldsType::field);
 							break;
 						default:
 							log.error("Micronode field type {" + type + "} is not supported.");

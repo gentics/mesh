@@ -782,7 +782,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					root.field(fields.createBooleanDef(fieldSchema));
 					break;
 				case NODE:
-					root.field(fields.createNodeDef(fieldSchema));
+					fields.createNodeDef(fieldSchema).ifPresent(root::field);
 					break;
 				case BINARY:
 					root.field(fields.createBinaryDef(fieldSchema));
@@ -792,10 +792,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					root.field(fields.createListDef(context, listFieldSchema));
+					fields.createListDef(context, listFieldSchema).ifPresent(root::field);
 					break;
 				case MICRONODE:
-					root.field(fields.createMicronodeDef(fieldSchema, project));
+					fields.createMicronodeDef(fieldSchema, project).ifPresent(root::field);
 					break;
 				}
 			}
@@ -847,7 +847,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						fieldsType.field(fields.createBooleanDef(fieldSchema));
 						break;
 					case NODE:
-						fieldsType.field(fields.createNodeDef(fieldSchema));
+						fields.createNodeDef(fieldSchema).ifPresent(fieldsType::field);
 						break;
 					case BINARY:
 						fieldsType.field(fields.createBinaryDef(fieldSchema));
@@ -857,10 +857,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						break;
 					case LIST:
 						ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-						fieldsType.field(fields.createListDef(context, listFieldSchema));
+						fields.createListDef(context, listFieldSchema).ifPresent(fieldsType::field);
 						break;
 					case MICRONODE:
-						fieldsType.field(fields.createMicronodeDef(fieldSchema, project));
+						fields.createMicronodeDef(fieldSchema, project).ifPresent(fieldsType::field);
 						break;
 					}
 				}
