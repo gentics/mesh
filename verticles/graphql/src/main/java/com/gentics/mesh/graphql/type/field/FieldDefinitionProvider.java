@@ -727,36 +727,36 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
 		return newFieldDefinition()
-				.name(schema.getName())
-				.argument(createLanguageTagArg(false))
-				.argument(createNodeVersionArg())
-				.description(schema.getLabel())
-				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
-					ContentDao contentDao = Tx.get().contentDao();
-					GraphQLContext gc = env.getContext();
-					HibFieldContainer source = env.getSource();
-					ContainerType type = getNodeVersion(env);
+			.name(schema.getName())
+			.argument(createLanguageTagArg(false))
+			.argument(createNodeVersionArg())
+			.description(schema.getLabel())
+			.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
+				ContentDao contentDao = Tx.get().contentDao();
+				GraphQLContext gc = env.getContext();
+				HibFieldContainer source = env.getSource();
+				ContainerType type = getNodeVersion(env);
 
-					// TODO decide whether we want to reference the default content by default
-					HibNodeField nodeField = source.getNode(schema.getName());
-					if (nodeField != null) {
-						HibNode node = nodeField.getNode();
-						if (node != null) {
-							//Note that we would need to check for micronodes which are not language specific!
-							List<String> languageTags = getLanguageArgument(env, source);
-							// Check permissions for the linked node
-							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+				// TODO decide whether we want to reference the default content by default
+				HibNodeField nodeField = source.getNode(schema.getName());
+				if (nodeField != null) {
+					HibNode node = nodeField.getNode();
+					if (node != null) {
+						//Note that we would need to check for micronodes which are not language specific!
+						List<String> languageTags = getLanguageArgument(env, source);
+						// Check permissions for the linked node
+						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 
-							NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
-							DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-							return contentLoader.load(node, context).thenApply((containers) -> {
-								HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
-								return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
-							});
-						}
+						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags);
+						DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+						return contentLoader.load(node, context).thenApply((containers) -> {
+							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
+							return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
+						});
 					}
-					return null;
-				}).build();
+				}
+				return null;
+			}).build();
 	}
 
 	/**
