@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLFloat;
 import static graphql.Scalars.GraphQLInt;
@@ -686,9 +687,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		case "date":
 			return GraphQLString;
 		case "node":
-			return new GraphQLTypeReference(NodeTypeProvider.NODE_TYPE_NAME);
+			return new GraphQLTypeReference(NODE_TYPE_NAME);
 		case "micronode":
-			return new GraphQLTypeReference(MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME);
+			return new GraphQLTypeReference(MICRONODE_TYPE_NAME);
 		default:
 			return null;
 		}
@@ -707,7 +708,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		} else {
 			return Optional.of(newFieldDefinition().name(schema.getName())
 					.description(schema.getLabel())
-					.type(new GraphQLTypeReference(MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME))
+					.type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
 					.dataFetcher(env -> {
 						HibFieldContainer container = env.getSource();
 						HibMicronodeField micronodeField = container.getMicronode(schema.getName());
