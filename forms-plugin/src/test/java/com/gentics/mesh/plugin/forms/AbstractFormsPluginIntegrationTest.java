@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -46,7 +47,6 @@ import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.UUIDUtil;
-import com.github.jknack.handlebars.internal.lang3.StringUtils;
 import com.google.common.net.HttpHeaders;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.ServerSetupTest;

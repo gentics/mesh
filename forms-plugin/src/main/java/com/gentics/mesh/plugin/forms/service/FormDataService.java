@@ -1061,7 +1061,10 @@ public class FormDataService {
 					prm.fail(e);
 					return;
 				}
-				adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
+
+				// Always use the draft version because updating the binary field will increase the version of the node,
+				// which can lead to problems when multiple files are uploaded.
+				adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
 						fileUpload.name(),
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle().subscribe(prm::complete, prm::fail);
