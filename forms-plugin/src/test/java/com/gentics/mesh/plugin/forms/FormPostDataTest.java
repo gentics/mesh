@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -154,11 +155,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			c -> c.expiresAt() < System.currentTimeMillis(),
 			"is expired");
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo(value);
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		assertSingleDataNode(uuid, dataNode -> {
+			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo(value);
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 	}
 
 	/**
@@ -181,11 +181,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Optional<Cookie> cookie = Cookie.parseAll(postRequest.url(), response.headers()).stream().filter(c -> FormDataService.COOKIE_NAME_DATA.equals(c.name()))
 				.findFirst();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("");
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("0.1");
+		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
+			assertThat(node.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("");
+			assertThat(node.getVersion()).as("Data Node Version").isEqualTo("0.1");
+		});
 
 		Request getRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).get().build();
 
@@ -197,6 +196,87 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 
 		assertThat(cookie).as("Cookie").isPresent();
 		assertThat(cookie.get()).as("Cookie").matches(c -> dataNode.getUuid().equals(c.value()), "Value is not empty");
+	}
+
+	/**
+	 * Test posting updates with multiple files after an initial post with
+	 * missing mandatory elements.
+	 */
+	@Test
+	public void testPostDataUpdateMultipleFiles() throws IOException {
+		String formDefinition = "multiple_file_fields.json";
+		String formUuid = createForm(formDefinition);
+
+		// First post incomplete data with missing files.
+		RequestBody requestBody = new MultipartBody.Builder()
+				.setType(MultipartBody.FORM)
+				.addFormDataPart("input1", "test")
+				.build();
+
+		Request postRequest = new Request.Builder()
+			.url(projectUrl("/forms/" + formUuid + "/data"))
+			.header("Referer", "ref")
+			.post(requestBody)
+			.build();
+		Response response = client().newCall(postRequest).execute();
+
+		// Result must be a redirect.
+		assertThat(response.isRedirect())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+		assertThat(response.header("Location"))
+			.as("Location Header")
+			.isEqualTo("ref");
+
+		// There must be exactly one data node now.
+		NodeResponse dataNode = assertSingleDataNode(formUuid, node -> {
+			assertThat(node.getFields().getStringField("input1").getString())
+				.as("Data Node Field")
+				.isEqualTo("test");
+			assertThat(node.getVersion())
+				.as("Data Node Version")
+				.isEqualTo("0.1");
+		});
+		String dataUuid = dataNode.getUuid();
+
+		// Make update post containing all fields including two files.
+		requestBody = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("input1", "test")
+			.addFormDataPart("file1", formDefinition, requestBodyFromFile(formDefinition))
+			.addFormDataPart("file2", formDefinition, requestBodyFromFile(formDefinition))
+			.build();
+
+		postRequest = new Request.Builder()
+			.url(projectUrl("/forms/" + formUuid + "/data/" + dataUuid))
+			.post(requestBody)
+			.build();
+		response = client().newCall(postRequest).execute();
+
+		// Result must be successful and there must still be exactly one data node.
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		dataNode = assertSingleDataNode(formUuid, node -> {/* Nothing more to assert */});
+
+		String lang = dataNode.getLanguage();
+
+		// Assert that the correct files have been uploaded.
+		for (int i = 1; i <= 2; i++) {
+			String fieldName = String.format("file%d", i);
+			MeshBinaryResponse file = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataUuid, lang, fieldName));
+
+			assertThat(file.getFilename())
+				.as(String.format("Filename %d", i))
+				.isEqualTo(formDefinition);
+
+			Buffer buffer = RxUtil.readEntireData(file.getFlowable()).blockingGet();
+
+			assertThat(buffer.toString())
+				.as(String.format("File contents", i))
+				.isEqualTo(fromFile(formDefinition));
+		}
 	}
 
 	/**
@@ -217,12 +297,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
-		assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		assertSingleDataNode(uuid, dataNode -> {
+			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
+			assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 	}
 
 	/**
@@ -244,12 +323,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
-		assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		assertSingleDataNode(uuid, dataNode -> {
+			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field input1").isEqualTo("Bla");
+			assertThat(dataNode.getFields().getStringField("input2")).as("Data Node Field input2").isNull();
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 	}
 
 	/**
@@ -289,6 +367,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testPostFileNotAllowedFakeFiletype() throws IOException {
 		FormsTestPlugin.instance.configuration.getFileUpload().setUseMagicByteCheck(true);
+		FormsTestPlugin.instance.configuration.getFileUpload().setDefaultAllowed(Collections.singleton("json"));
 
 		String uuid = createForm("filefield_allow_by_default.json");
 
@@ -302,28 +381,24 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
+			String errors = node.getFields().getStringField("errors").getString();
+			assertThat(errors).as("Errors").isNotEmpty();
+		});
 
-		String errors = dataNode.getFields().getStringField("errors").getString();
-		assertThat(errors).as("Errors").isNotEmpty();
-
-		// try again with json file (allowed)
+		// try again with text file (allowed)
 		requestBody = new MultipartBody.Builder()
 			.setType(MultipartBody.FORM)
-			.addFormDataPart("file1", "filefield_allow_by_default.json", requestBodyFromFile("filefield_allow_by_default.json"))
+			.addFormDataPart("file1", "test.txt", requestBodyFromFile("file-uploads/test.txt"))
 			.build();
 		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
+
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
-
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
-
-		errors = dataNode.getFields().getStringField("errors").getString();
-		assertThat(errors).as("Errors").isEmpty();
+		assertSingleDataNode(uuid, node -> {
+			String errors = node.getFields().getStringField("errors").getString();
+			assertThat(errors).as("Errors").isEmpty();
+		});
 	}
 
 	/**
@@ -332,6 +407,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	@Test
 	public void testPostFileNotAllowed() throws IOException {
+		FormsTestPlugin.instance.configuration.getFileUpload().setUseMagicByteCheck(false);
+		FormsTestPlugin.instance.configuration.getFileUpload().setDefaultAllowed(Collections.singleton("json"));
 		String uuid = createForm("filefield_allow_image.json");
 
 		// try uploading a json file (not allowed)
@@ -344,28 +421,24 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
+			String errors = node.getFields().getStringField("errors").getString();
+			assertThat(errors).as("Errors").isNotEmpty();
+		});
 
-		String errors = dataNode.getFields().getStringField("errors").getString();
-		assertThat(errors).as("Errors").isNotEmpty();
-
-		// try again with html file (allowed)
+		// try again with text file (allowed)
 		requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
-				.addFormDataPart("file1", "admin_mail_element_mail.html", RequestBody.create(MediaType.parse("text/html"), fromFile("admin_mail_element_mail.html")))
+				.addFormDataPart("file1", "test.txt", RequestBody.create(MediaType.parse("text/html"), fromFile("file-uploads/test.txt")))
 				.build();
 		postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + dataNode.getUuid())).header("Referer", "ref").post(requestBody).build();
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
 
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
-
-		errors = dataNode.getFields().getStringField("errors").getString();
-		assertThat(errors).as("Errors").isEmpty();
+		assertSingleDataNode(uuid, node -> {
+			String errors = node.getFields().getStringField("errors").getString();
+			assertThat(errors).as("Errors").isEmpty();
+		});
 	}
 
 	/**
@@ -374,6 +447,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 */
 	@Test
 	public void testPostFileNotAllowedByDefault() throws IOException {
+		FormsTestPlugin.instance.configuration.getFileUpload().setUseMagicByteCheck(false);
+		FormsTestPlugin.instance.configuration.getFileUpload().setDefaultAllowed(Collections.singleton("json"));
 		String uuid = createForm("filefield_allow_by_default.json");
 
 		// try uploading a json file (not allowed)
@@ -386,12 +461,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isRedirect()).as(String.format("Response is redirect %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-
-		String errors = dataNode.getFields().getStringField("errors").getString();
-		assertThat(errors).as("Errors").isNotEmpty();
+		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
+			String errors = node.getFields().getStringField("errors").getString();
+			assertThat(errors).as("Errors").isNotEmpty();
+		});
 
 		// try again with html file (allowed)
 		requestBody = new MultipartBody.Builder()
@@ -402,12 +475,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response is success %d (%s)", response.code(), response.message())).isTrue();
 
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
-
-		errors = dataNode.getFields().getStringField("errors").getString();
-		assertThat(errors).as("Errors").isEmpty();
+		assertSingleDataNode(uuid, node -> {
+			String errors = node.getFields().getStringField("errors").getString();
+			assertThat(errors).as("Errors").isEmpty();
+		});
 	}
 
 	/**
@@ -727,10 +798,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-
+		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {/* Nothing more to assert on data node */});
 		MeshBinaryResponse download = call(() -> server.client().downloadBinaryField(PROJECT_NAME, dataNode.getUuid(), dataNode.getLanguage(), "file1"));
 		assertThat(download.getFilename()).as("Filename").isEqualTo(formFile);
 
@@ -770,11 +838,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 		assertThat(response.code()).as("Response code").isEqualTo(205);
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		assertSingleDataNode(uuid, dataNode -> {
+			assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 	}
 
 	/**
@@ -794,8 +861,9 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			client().newCall(postRequest).execute();
 		}
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		for (NodeResponse nodeResponse : dataNodes.getData()) {
+		List<NodeResponse> dataNodes = getFormDataNodes(uuid);
+
+		for (NodeResponse nodeResponse : dataNodes) {
 			Request loadRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data/" + nodeResponse.getUuid())).get().build();
 			Response response = client().newCall(loadRequest).execute();
 			assertThat(response.code())
@@ -821,13 +889,12 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
-		assertThat(dataNode.getFields().getStringField("custom1")).as("Data Node Field").isNotNull();
-		assertThat(dataNode.getFields().getStringField("custom1").getString()).as("Data Node Field").isEqualTo("custom someValue");
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		assertSingleDataNode(uuid, dataNode -> {
+			assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
+			assertThat(dataNode.getFields().getStringField("custom1")).as("Data Node Field").isNotNull();
+			assertThat(dataNode.getFields().getStringField("custom1").getString()).as("Data Node Field").isEqualTo("custom someValue");
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 
 		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).header("Accept", "text/html").get().build();
 		Response renderResponse = client().newCall(renderRequest).execute();
@@ -853,13 +920,12 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 		Response response = client().newCall(postRequest).execute();
 		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
-		assertThat(dataNode.getFields().getStringField("customconfig1")).as("Data Node Field").isNotNull();
-		assertThat(dataNode.getFields().getStringField("customconfig1").getString()).as("Data Node Field").isEqualTo("custom someValue");
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		assertSingleDataNode(uuid, dataNode -> {
+			assertThat(dataNode.getFields()).as("Data Node Fields").isNotNull();
+			assertThat(dataNode.getFields().getStringField("customconfig1")).as("Data Node Field").isNotNull();
+			assertThat(dataNode.getFields().getStringField("customconfig1").getString()).as("Data Node Field").isEqualTo("custom someValue");
+			assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 
 		Request renderRequest = new Request.Builder().url(projectUrl("/forms/" + uuid)).header("Accept", "text/html").get().build();
 		Response renderResponse = client().newCall(renderRequest).execute();
@@ -886,11 +952,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.build();
 		client().newCall(postRequest).execute();
 
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("0.1");
+		NodeResponse dataNode = assertSingleDataNode(uuid, node -> {
+			assertThat(node.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+			assertThat(node.getVersion()).as("Data Node Version").isEqualTo("0.1");
+		});
 
 		// Empty update to publish
 		postRequest = new Request.Builder()
@@ -899,11 +964,11 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.post(requestBody)
 			.build();
 		client().newCall(postRequest).execute();
-		dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, uuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		dataNode = dataNodes.getData().get(0);
-		assertThat(dataNode.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
-		assertThat(dataNode.getVersion()).as("Data Node Version").isEqualTo("1.0");
+
+		assertSingleDataNode(uuid, node -> {
+			assertThat(node.getFields().getStringField("input1").getString()).as("Data Node Field").isEqualTo("someValue");
+			assertThat(node.getVersion()).as("Data Node Version").isEqualTo("1.0");
+		});
 	}
 
 	/**
@@ -1418,9 +1483,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * @return data node
 	 */
 	protected NodeResponse assertSingleDataNode(String formUuid, Consumer<NodeResponse> asserter) {
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 
 		if (asserter != null) {
 			asserter.accept(dataNode);

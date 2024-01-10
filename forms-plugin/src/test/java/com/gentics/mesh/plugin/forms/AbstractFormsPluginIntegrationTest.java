@@ -14,8 +14,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -543,5 +545,32 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 		}
 
 		return new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+	}
+
+	/**
+	 * Get the list of form data nodes for the given form
+	 * @param formUuid form UUID
+	 * @return list of form data nodes
+	 */
+	protected List<NodeResponse> getFormDataNodes(String formUuid) {
+		NodeListResponse formNodeChildren = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
+		return formNodeChildren.getData().stream()
+			.filter(n -> StringUtils.equals(n.getSchema().getName(), "form_" + formUuid))
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get the one existing form data node for the given form. This method will fail, if not exactly one form data node exists.
+	 * @param formUuid form UUID
+	 * @return existing single form data node
+	 */
+	protected NodeResponse getSingleFormDataNode(String formUuid) {
+		List<NodeResponse> dataNodes = getFormDataNodes(formUuid);
+
+		assertThat(dataNodes)
+			.as("Data node list")
+			.hasSize(1);
+
+		return dataNodes.get(0);
 	}
 }
