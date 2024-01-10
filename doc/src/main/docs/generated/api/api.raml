@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.10.23"
+version: "1.10.24"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -308,6 +308,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: medium
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 page: 
                     description: Number of page to be loaded.
                     type: number
@@ -322,11 +328,11 @@ mediaType: application/json
                     repeat: false
                     example: en,de
                 fields: 
-                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
-                    type: boolean
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
                     required: false
                     repeat: false
-                    default: "true"
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -937,6 +943,18 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "24cf92691c7641158f92691c76c115ef"
+                resolveLinks: 
+                    description: The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved WebRoot path. No resolving occurs if no link has been specified.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: medium
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
                     type: string
@@ -944,17 +962,11 @@ mediaType: application/json
                     repeat: false
                     example: en,de
                 fields: 
-                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
-                    type: boolean
-                    required: false
-                    repeat: false
-                    default: "true"
-                resolveLinks: 
-                    description: The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved WebRoot path. No resolving occurs if no link has been specified.
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
                     required: false
                     repeat: false
-                    example: medium
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -1503,7 +1515,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "385d0eeaa6b24a7689a3da0129fd33fa"
+                            "uuid" : "0ff7431b1c7845518809ccc792c57569"
                           } ]
                         }
             responses: 
@@ -2049,7 +2061,7 @@ mediaType: application/json
         get: 
             description: Load multiple roles and return a paged list response
             queryParameters: 
-                fields: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -2068,6 +2080,12 @@ mediaType: application/json
                     repeat: false
                     default: "1"
                     example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             responses: 
                 "200": 
                     description: Loaded list of roles.
@@ -2302,6 +2320,12 @@ mediaType: application/json
             description: Load the role with the given uuid.
             queryParameters: 
                 fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -3011,7 +3035,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "16af8f4b1797441ba4e767e2d8704c87"
+                            "uuid" : "d0cd0df34ddb45a2a7d05ba57633183c"
                           } ]
                         }
             responses: 
@@ -3487,6 +3511,12 @@ mediaType: application/json
         get: 
             description: Read multiple groups and return a paged list response.
             queryParameters: 
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 perPage: 
                     description: Number of elements per page.
                     type: number
@@ -3510,11 +3540,11 @@ mediaType: application/json
                     repeat: false
                     example: "24cf92691c7641158f92691c76c115ef"
                 fields: 
-                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
-                    type: boolean
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
                     required: false
                     repeat: false
-                    default: "true"
+                    default: ""
             responses: 
                 "200": 
                     description: List response which contains the found  groups.
@@ -3734,6 +3764,12 @@ mediaType: application/json
             description: Read the group with the given uuid.
             queryParameters: 
                 fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -4292,7 +4328,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7242d56438474817b60954706261bcfc"
+                            "uuid" : "1ad950ceb7e041359f89411fa76b3b52"
                           } ]
                         }
             responses: 
@@ -6666,7 +6702,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "51f18140f0c545ac937c99545d2e15d5"
+                            "uuid" : "1239265f2ce544eb825bce80a677e5e0"
                           } ]
                         }
             responses: 
@@ -6975,7 +7011,7 @@ mediaType: application/json
         get: 
             description: Read multiple schemas and return a paged list response.
             queryParameters: 
-                fields: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -6994,6 +7030,12 @@ mediaType: application/json
                     repeat: false
                     default: "1"
                     example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             responses: 
                 "200": 
                     description: Loaded list of schemas.
@@ -7691,12 +7733,18 @@ mediaType: application/json
         get: 
             description: Load the schema with the given uuid.
             queryParameters: 
-                fields: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
                     repeat: false
                     default: "true"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -8970,7 +9018,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8f3702e609d04854923686c3bc13f035"
+                            "uuid" : "c2b4b896390f4382bd19b7c1045da778"
                           } ]
                         }
             responses: 
@@ -10635,7 +10683,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "be5a031124f54401aa746bcaf0d88a2f"
+                            "uuid" : "5d4d4fea696e412da79d5f8f1d457eef"
                           } ]
                         }
             responses: 
@@ -17014,7 +17062,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.10.23",
+                                  "meshVersion" : "1.10.24",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -17888,6 +17936,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: medium
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 page: 
                     description: Number of page to be loaded.
                     type: number
@@ -17902,11 +17956,11 @@ mediaType: application/json
                     repeat: false
                     example: en,de
                 fields: 
-                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
-                    type: boolean
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
                     required: false
                     repeat: false
-                    default: "true"
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -18490,6 +18544,18 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: "24cf92691c7641158f92691c76c115ef"
+                resolveLinks: 
+                    description: The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved WebRoot path. No resolving occurs if no link has been specified.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: medium
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
                     type: string
@@ -18497,11 +18563,11 @@ mediaType: application/json
                     repeat: false
                     example: en,de
                 fields: 
-                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
-                    type: boolean
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
                     required: false
                     repeat: false
-                    default: "true"
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -18515,12 +18581,6 @@ mediaType: application/json
                     repeat: false
                     default: draft
                     example: "1.1"
-                resolveLinks: 
-                    description: The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved WebRoot path. No resolving occurs if no link has been specified.
-                    type: string
-                    required: false
-                    repeat: false
-                    example: medium
             responses: 
                 "404": 
                     description: The node could not be found.
@@ -20846,6 +20906,12 @@ mediaType: application/json
                     required: false
                     repeat: false
                     example: medium
+                etag: 
+                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "true"
                 page: 
                     description: Number of page to be loaded.
                     type: number
@@ -20860,11 +20926,11 @@ mediaType: application/json
                     repeat: false
                     example: en,de
                 fields: 
-                    description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
-                    type: boolean
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
                     required: false
                     repeat: false
-                    default: "true"
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -22749,7 +22815,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8a06d8b790694aa4abdbfeea16f3add0"
+                            "uuid" : "7f46c0e7ec7d48ff8526440847e1edff"
                           } ]
                         }
             responses: 
@@ -24116,12 +24182,18 @@ mediaType: application/json
         get: 
             description: Return a list of all tags which tag the node.
             queryParameters: 
-                fields: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
                     repeat: false
                     default: "true"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
                 branch: 
                     description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
                     type: string
@@ -26123,7 +26195,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "a56e2091f9f14181b48196a061d198d1"
+                            "uuid" : "38f5b8c087ec462eb58d56530ea3a7e2"
                           } ]
                         }
             responses: 
@@ -26601,7 +26673,7 @@ mediaType: application/json
         get: 
             description: Load tags which were assigned to this tag family and return a paged list response.
             queryParameters: 
-                fields: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -26620,6 +26692,12 @@ mediaType: application/json
                     repeat: false
                     default: "1"
                     example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             responses: 
                 "200": 
                     description: List of tags.
@@ -26858,6 +26936,12 @@ mediaType: application/json
             description: Read the specified tag from the tag family.
             queryParameters: 
                 fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -27974,7 +28058,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "83af88bdb10841b680f0ab600dfb2314"
+                            "uuid" : "b2bf00ea8dff49eea9aaeb67c7e2f0aa"
                           } ]
                         }
             responses: 
@@ -30313,7 +30397,7 @@ mediaType: application/json
         get: 
             description: Load multiple branches and return a paged list response.
             queryParameters: 
-                fields: 
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -30332,6 +30416,12 @@ mediaType: application/json
                     repeat: false
                     default: "1"
                     example: "42"
+                fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
             responses: 
                 "200": 
                     description: Loaded branches.
@@ -30628,6 +30718,12 @@ mediaType: application/json
             description: Load the branch with the given uuid.
             queryParameters: 
                 fields: 
+                    description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
+                    type: string
+                    required: false
+                    repeat: false
+                    default: ""
+                etag: 
                     description: Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.
                     type: boolean
                     required: false
@@ -31770,7 +31866,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "63f2c4aabfa447fc8305d7573e42adb9"
+                            "uuid" : "3b22bbc7037046c8bd1075c94535c948"
                           } ]
                         }
             responses: 
