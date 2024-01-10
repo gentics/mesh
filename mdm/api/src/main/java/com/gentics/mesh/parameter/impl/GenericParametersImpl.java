@@ -48,7 +48,7 @@ public class GenericParametersImpl extends AbstractParameters implements Generic
 			"Parameter which can be used to disable the etag parameter generation and thus increase performance when etags are not needed.");
 		etagParam.setType(ParamType.BOOLEAN);
 		etagParam.setDefaultValue("true");
-		parameters.put(FIELDS_PARAM_KEY, etagParam);
+		parameters.put(ETAG_PARAM_KEY, etagParam);
 
 		return parameters;
 	}
