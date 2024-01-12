@@ -42,6 +42,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 
 	private void addLive() {
 		InternalEndpointRoute deployEndpoint = createRoute();
+		deployEndpoint.setInsecure(true);
 		deployEndpoint.path("/live");
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is alive.");
@@ -51,6 +52,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 	private void addReady() {
 		InternalEndpointRoute deployEndpoint = createRoute();
 		deployEndpoint.path("/ready");
+		deployEndpoint.setInsecure(true);
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is ready. Responds with 503 otherwise.");
 		deployEndpoint.handler(rc -> monitoringCrudHandler.handleReady(rc));
@@ -59,6 +61,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 	private void addWritable() {
 		InternalEndpointRoute deployEndpoint = createRoute();
 		deployEndpoint.path("/writable");
+		deployEndpoint.setInsecure(true);
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is writable. Responds with 503 otherwise.");
 		deployEndpoint.handler(rc -> monitoringCrudHandler.handleWritable(rc));
