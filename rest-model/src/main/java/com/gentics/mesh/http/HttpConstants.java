@@ -21,6 +21,8 @@ public final class HttpConstants {
 
 	public static final String MULTIPART_FORM_DATA = "multipart/form-data";
 
+	public static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
+
 	public static final String TEXT_PLAIN = "text/plain";
 
 	public static final String TEXT_PLAIN_UTF8 = TEXT_PLAIN + "; charset=utf-8";

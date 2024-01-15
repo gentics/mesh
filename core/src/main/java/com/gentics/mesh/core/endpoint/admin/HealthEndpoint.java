@@ -11,6 +11,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+
 /**
  * Endpoint definition for health / readiness checks
  */
@@ -46,6 +48,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.path("/live");
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is alive.");
+		deployEndpoint.exampleResponse(HttpResponseStatus.OK, "Mesh is alive.");
 		deployEndpoint.handler(rc -> monitoringCrudHandler.handleLive(rc));
 	}
 
@@ -55,6 +58,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.setInsecure(true);
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is ready. Responds with 503 otherwise.");
+		deployEndpoint.exampleResponse(HttpResponseStatus.OK, "Mesh is ready.");
 		deployEndpoint.handler(rc -> monitoringCrudHandler.handleReady(rc));
 	}
 
@@ -64,6 +68,7 @@ public class HealthEndpoint extends AbstractInternalEndpoint {
 		deployEndpoint.setInsecure(true);
 		deployEndpoint.method(GET);
 		deployEndpoint.description("Returns an empty response with status code 200 if Gentics Mesh is writable. Responds with 503 otherwise.");
+		deployEndpoint.exampleResponse(HttpResponseStatus.OK, "Mesh is writable.");
 		deployEndpoint.handler(rc -> monitoringCrudHandler.handleWritable(rc));
 	}
 }
