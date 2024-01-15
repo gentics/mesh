@@ -125,8 +125,7 @@
 				<configuration>
 					<verbose>false</verbose>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-					<source>17</source>
-					<target>17</target>
+					<release>17</release>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -148,7 +147,9 @@
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${java.home}/bin/java</jvm>
 					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
-						-Dstorage.diskCache.bufferSize=128 ${jacoco.env}</argLine>
+						-Dstorage.diskCache.bufferSize=128
+						--add-opens java.base/java.lang=ALL-UNNAMED ${jacoco.env}
+					</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
