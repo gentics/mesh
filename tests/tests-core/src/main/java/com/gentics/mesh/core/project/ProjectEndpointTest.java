@@ -56,6 +56,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
@@ -77,6 +78,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -323,7 +325,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	@Override
-	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testReadMultiple() throws Exception {
 		final int nProjects = 142;
 		final String noPermProjectName = "no_perm_project";
@@ -391,6 +392,26 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals(0, listResponse.getData().size());
 
 		verifySorting(param -> call(() -> client().findProjects(param)), ProjectResponse::getName, "name", "List of project names");
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName(name);
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
+			ProjectResponse response = call(() -> client().createProject(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.projectDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		ProjectListResponse list = call(() -> client().findProjects(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 6", 6, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Test
