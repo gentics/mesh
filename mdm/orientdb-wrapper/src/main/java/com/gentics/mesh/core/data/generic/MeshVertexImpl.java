@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
@@ -371,6 +374,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 									log.error("Mismatch in requested and found relations for {}.{}: requested {}, found {}", src.getKey(), src.getValue(), dst.getKey(), relation.getRelatedVertexClass());
 									// TODO throw?
 								} else {
+									// ctype may be null for Language, but Language should not reach this point.
 									srcField = relation.getEdgeFieldName().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ctype.getCode() + "']");
 								}
 							}
