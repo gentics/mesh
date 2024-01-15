@@ -37,18 +37,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.endpoint.eventbus.EventbusEndpoint;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 import com.hazelcast.core.HazelcastInstance;
 
-import io.swagger.v3.core.util.Json;
-import io.swagger.v3.core.util.Yaml;
+import io.swagger.v3.core.util.Json31;
+import io.swagger.v3.core.util.OpenAPI30To31;
+import io.swagger.v3.core.util.Yaml31;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.SpecVersion;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -113,20 +117,22 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			throw new RuntimeException("Could not add all verticles to raml generator", e);
 		}
 
+		//new OpenAPI30To31().process(openApi);
+		//openApi.jsonSchemaDialect("https://spec.openapis.org/oas/3.1/dialect/base");
 		String formatted;
 		String mime;
 		switch (format) {
 		case "yaml":
 			try {
 				mime = APPLICATION_YAML_UTF8;
-				formatted = Yaml.pretty().writeValueAsString(openApi);
+				formatted = Yaml31.pretty().writeValueAsString(openApi);
 			} catch (JsonProcessingException e) {
 				throw new RuntimeException("Could not generate YAML", e);
 			}
 			break;
 		case "json":
 			mime = APPLICATION_JSON_UTF8;
-			formatted = Json.pretty(openApi);
+			formatted = Json31.pretty(openApi);
 			break;
 		default:
 			throw error(BAD_REQUEST, "Please specify a response format: YAML or JSON");
@@ -237,6 +243,9 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 			consumer.setPaths(paths);
 		}
 		for (InternalEndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
+			if ("eventbus".equals(verticle.getBasePath())) {
+				continue;
+			}
 			String fullPath = API_VERSION_PATH_PREFIX + CURRENT_API_VERSION + basePath + "/" + verticle.getBasePath()
 					+ endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
@@ -302,6 +311,16 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 				responseBody.addMediaType(e, new MediaType());
 				response.setContent(responseBody);
 				response.setDescription(e);
+				if (HttpConstants.APPLICATION_OCTET_STREAM.equals(e)) {
+					response.setExtensions(Map.of("x-is-file", true));
+					Schema<String> schema = new Schema<>();
+					schema.setType("string");
+					schema.setFormat("binary");
+					MediaType mediaType = new MediaType();
+					mediaType.setSchema(schema);
+					responseBody.addMediaType("application/octet-stream", mediaType);
+					response.setContent(responseBody);
+				}
 				return new UnmodifiableMapEntry<String, ApiResponse>("default", response);
 			}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(e.getKey(), e.getValue()));
 			endpoint.getExampleResponses().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))
@@ -332,7 +351,7 @@ public class OpenAPIv3Generator extends AbstractEndpointGenerator<OpenAPI> {
 					return new UnmodifiableMapEntry<Integer, ApiResponse>(e.getKey(), response);
 				}).filter(Objects::nonNull).forEach(e -> responses.addApiResponse(Integer.toString(e.getKey()), e.getValue()));
 			operation.setResponses(responses);
-			if (endpoint.getExampleRequestMap() != null) {
+			if (endpoint.getExampleRequestMap() != null && !HttpMethod.DELETE.equals(method)) {
 				RequestBody requestBody = new RequestBody();
 				Content content = new Content();
 				endpoint.getExampleRequestMap().entrySet().stream().filter(e -> Objects.nonNull(e.getValue()))

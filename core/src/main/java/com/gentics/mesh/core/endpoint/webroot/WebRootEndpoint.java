@@ -3,6 +3,7 @@ package com.gentics.mesh.core.endpoint.webroot;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -85,6 +86,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	private void addErrorHandlers() {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/error/404");
+		endpoint.exampleResponse(NOT_FOUND, "Web root not found");
 		endpoint.description("Fallback endpoint for unresolvable links which returns 404.");
 		endpoint.handler(rc -> {
 			rc.data().put("statuscode", "404");

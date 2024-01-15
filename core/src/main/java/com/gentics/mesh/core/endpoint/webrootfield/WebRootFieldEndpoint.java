@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.endpoint.webrootfield;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
@@ -70,6 +71,7 @@ public class WebRootFieldEndpoint extends AbstractProjectEndpoint {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/error/404");
 		endpoint.description("Fallback endpoint for unresolvable links which returns 404.");
+		endpoint.exampleResponse(NOT_FOUND, "Web root field not found");
 		endpoint.handler(rc -> {
 			rc.data().put("statuscode", "404");
 			rc.next();

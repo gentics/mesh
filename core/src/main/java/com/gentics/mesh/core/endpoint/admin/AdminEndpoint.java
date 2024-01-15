@@ -17,6 +17,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.REPAIR_START;
 import static com.gentics.mesh.example.ExampleUuids.JOB_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PLUGIN_1_ID;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_OCTET_STREAM;
+import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -359,6 +361,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
 		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
+		deleteJob.exampleResponse(NO_CONTENT, "Job has been deleted.");
 		deleteJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
 			String uuid = ac.getParameter("jobUuid");
@@ -369,6 +372,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		processJob.path("/jobs/:jobUuid/process");
 		processJob.method(POST);
 		processJob.description("Process the job. Failed jobs will be automatically reset and put in queued state.");
+		processJob.exampleResponse(OK, "Job has been queued for processing.");
 		processJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		processJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -380,6 +384,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
+		resetJob.exampleResponse(NO_CONTENT, "Job has been reset.");
 		resetJob.addUriParameter("jobUuid", "Uuid of the job.", JOB_UUID);
 		resetJob.blockingHandler(rc -> {
 			InternalActionContext ac = wrap(rc);
@@ -392,6 +397,8 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute route = createRoute();
 		route.path("/debuginfo");
 		route.method(GET);
+		route.produces(APPLICATION_OCTET_STREAM);
+		route.exampleResponse(OK, "ZIP file");
 		route.description("Downloads a zip file of various [debug information](/docs/administration-guide/#debuginfo) files.");
 		route.addQueryParameter("include", "Information to include. See the [documentation](/docs/administration-guide/#debuginfo) for possible values.", "-backup,consistencyCheck");
 		route.handler(rc -> debugInfoHandler.handle(rc));
