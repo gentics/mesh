@@ -71,7 +71,6 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
 		</dependency>
-
 		<!-- Additional test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -128,19 +127,10 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
-				<configuration>
-					<verbose>false</verbose>
-					<release>17</release>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>--add-opens java.base/java.util=ALL-UNNAMED ${jacoco.env}</argLine>
-				</configuration>					
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
