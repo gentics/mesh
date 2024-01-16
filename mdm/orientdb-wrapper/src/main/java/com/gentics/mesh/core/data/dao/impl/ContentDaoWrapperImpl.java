@@ -387,6 +387,11 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	}
 
 	@Override
+	public Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
 	public Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields) {
 		return micronodeFields.stream().distinct().collect(Collectors.toMap(Function.identity(), HibMicronodeField::getMicronode));
 	}

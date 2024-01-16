@@ -1116,6 +1116,13 @@ public interface ContentDao {
 	Map<String, List<String>> getStringListFieldValues(List<String> listUuids);
 
 	/**
+	 * Get the Micronode list field values for the given list UUIDs
+	 * @param listUuids list UUIDs
+	 * @return map of list UUIDs to lists of micronode field values
+	 */
+	Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids);
+
+	/**
 	 * Load the micronodes for the given collection of micronode fields
 	 * @param micronodeFields micronode fields
 	 * @return map of field to micronode

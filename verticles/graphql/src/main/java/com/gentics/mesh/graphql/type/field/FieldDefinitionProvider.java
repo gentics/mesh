@@ -14,7 +14,6 @@ import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -126,6 +125,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public static final String STRING_LIST_VALUES_DATA_LOADER_KEY = "stringListLoader";
 
 	/**
+	 * Key for the data loader for micronode list field values
+	 */
+	public static final String MICRONODE_LIST_VALUES_DATA_LOADER_KEY = "micronodeUuidListLoader";
+
+	/**
 	 * Key for the data loader for micronode field values
 	 */
 	public static final String MICRONODE_DATA_LOADER_KEY = "micronodeLoader";
@@ -215,6 +219,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public BatchLoaderWithContext<String, List<String>> STRING_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getStringListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of micronode lists
+	 */
+	public BatchLoaderWithContext<String, List<HibMicronode>> MICRONODE_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getMicronodeListFieldValues, Functions.identity());
 	};
 
 	/**
@@ -686,7 +698,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (micronodeList == null) {
 					return null;
 				}
-				return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+
+				String micronodeListUuid = micronodeList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(micronodeListUuid)) {
+					DataLoader<String, List<HibMicronode>> micronodeListValueLoader = env.getDataLoader(FieldDefinitionProvider.MICRONODE_LIST_VALUES_DATA_LOADER_KEY);
+					return micronodeListValueLoader.load(micronodeListUuid);
+				} else {
+					return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+				}
 			default:
 				return null;
 			}
