@@ -37,6 +37,13 @@ public class PageTransformer {
 	 * @return
 	 */
 	public ListResponse<RestModel> transformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac, int level) {
+		if (page.getSize() > 0) {
+			HibCoreElement<? extends RestModel> element = page.getWrappedList().get(0);
+			ElementType type = element.getTypeInfo().getType();
+			DaoTransformable<HibCoreElement<? extends RestModel>, RestModel> dao = daos.get(type);
+			dao.beforeTransformToRestSync(page, ac);
+		}
+
 		List<RestModel> responses = transformToRestSync(page.stream(), ac, level).collect(Collectors.toList());
 		ListResponse<RestModel> listResponse = new ListResponse<>();
 		page.setPaging(listResponse);

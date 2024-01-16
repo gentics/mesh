@@ -124,6 +124,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public static final String STRING_LIST_VALUES_DATA_LOADER_KEY = "stringListLoader";
 
+	/**
+	 * Key for the data loader for micronode list field values
+	 */
+	public static final String MICRONODE_LIST_VALUES_DATA_LOADER_KEY = "micronodeUuidListLoader";
+
+	/**
+	 * Key for the data loader for micronode field values
+	 */
+	public static final String MICRONODE_DATA_LOADER_KEY = "micronodeLoader";
+
 	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	protected final WebRootLinkReplacerImpl linkReplacer;
@@ -209,6 +219,28 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public BatchLoaderWithContext<String, List<String>> STRING_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getStringListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of micronode lists
+	 */
+	public BatchLoaderWithContext<String, List<HibMicronode>> MICRONODE_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getMicronodeListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for micronodes
+	 */
+	public BatchLoaderWithContext<HibMicronodeField, HibMicronode> MICRONODE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<HibMicronodeField, HibMicronode> micronodes = contentDao.getMicronodes(keys);
+
+		Promise<List<HibMicronode>> promise = Promise.promise();
+		List<HibMicronode> result = keys.stream().map(field -> micronodes.get(field)).collect(Collectors.toList());
+		promise.complete(result);
+
+		return promise.future().toCompletionStage();
 	};
 
 	@Inject
@@ -666,7 +698,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (micronodeList == null) {
 					return null;
 				}
-				return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+
+				String micronodeListUuid = micronodeList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(micronodeListUuid)) {
+					DataLoader<String, List<HibMicronode>> micronodeListValueLoader = env.getDataLoader(FieldDefinitionProvider.MICRONODE_LIST_VALUES_DATA_LOADER_KEY);
+					return micronodeListValueLoader.load(micronodeListUuid);
+				} else {
+					return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+				}
 			default:
 				return null;
 			}
@@ -713,7 +752,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						HibFieldContainer container = env.getSource();
 						HibMicronodeField micronodeField = container.getMicronode(schema.getName());
 						if (micronodeField != null) {
-							return micronodeField.getMicronode();
+
+							DataLoader<HibMicronodeField, HibMicronode> micronodeLoader = env.getDataLoader(MICRONODE_DATA_LOADER_KEY);
+							return micronodeLoader.load(micronodeField);
 						}
 						return null;
 					}).build());

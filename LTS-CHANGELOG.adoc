@@ -17,12 +17,17 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.25]]
+== 1.10.25 (TBD)
+
+icon:check[] GraphQL: Fetching of micronode fields has been improved to allow batch loading.
+
 [[v1.10.24]]
 == 1.10.24 (10.01.2024)
 
 icon:check[] REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.
 
-icon:check[] GraphQL. Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
+icon:check[] GraphQL: Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
 
 [[v1.10.23]]
 == 1.10.23 (20.12.2023)

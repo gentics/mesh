@@ -3,21 +3,22 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.data.user.HibUser;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -39,13 +40,13 @@ import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.VersionNumber;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
@@ -383,5 +384,15 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Map<String, List<String>> getStringListFieldValues(List<String> listUuids) {
 		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields) {
+		return micronodeFields.stream().distinct().collect(Collectors.toMap(Function.identity(), HibMicronodeField::getMicronode));
 	}
 }
