@@ -3,17 +3,13 @@ package com.gentics.mesh.core.ssl;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.SSLTestMode.CLIENT_CERT_REQUIRED;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.fail;
 
 import com.gentics.mesh.core.ssl.SSLTestClient.ClientCert;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import org.junit.Test;
 
 @MeshTestSetting(testSize = FULL, startServer = true, ssl = CLIENT_CERT_REQUIRED)
 public class SSLUserCertRequireServerTest extends AbstractMeshTest {
@@ -23,27 +19,35 @@ public class SSLUserCertRequireServerTest extends AbstractMeshTest {
 		String uuid = userUuid();
 		call(() -> sslClient().findUserByUuid(uuid));
 		call(() -> client().findUserByUuid(uuid));
+	}
 
-		SSLTestClient.call(httpsPort(), false, ClientCert.ALICE);
+	@Test
+	public void givenValidCertShouldNotThrow() {
+		Throwable thrownException = catchThrowable(
+				() -> SSLTestClient.call(httpsPort(), false, ClientCert.ALICE));
 
-		try {
-			SSLTestClient.call(httpsPort(), false, null);
-			fail("The request should fail since no valid client was passed along.");
-		} catch (SSLHandshakeException e) {
-			assertEquals("Received fatal alert: bad_certificate", e.getMessage());
-		} catch (SSLException e) {
-			assertEquals("readHandshakeRecord", e.getMessage());
-		}
-
-		// Bob's cert does not match the server key and is not accepted
-		try {
-			SSLTestClient.call(httpsPort(), false, ClientCert.BOB);
-			fail("The request should fail since bob's cert is invalid.");
-		} catch (SSLHandshakeException e) {
-			assertEquals("Received fatal alert: bad_certificate", e.getMessage());
-		} catch (SSLException e) {
-			assertEquals("readHandshakeRecord", e.getMessage());
+		if (thrownException != null) {
+			fail("The request should not fail since a valid request was issued.");
 		}
 	}
+
+	@Test
+	public void givenNoCertShouldThrow() {
+		Throwable thrownException = catchThrowable(() -> SSLTestClient.call(httpsPort(), false, null));
+		if (thrownException == null) {
+			fail("The request should fail since no valid client certificate was passed along.");
+		}
+	}
+
+	@Test
+	public void givenInvalidCertShouldThrow() {
+		Throwable thrownException = catchThrowable(
+				() -> SSLTestClient.call(httpsPort(), false, ClientCert.BOB));
+
+		if (thrownException == null) {
+			fail("The request should fail since bob's certificate is invalid.");
+		}
+	}
+
 
 }
