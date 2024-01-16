@@ -44,26 +44,6 @@
 		<pluginManagement>
 			<plugins>
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
-					<configuration>
-						<verbose>false</verbose>
-						<compilerVersion>11</compilerVersion>
-						<source>11</source>
-						<target>11</target>
-						<forceJavacCompilerUse>true</forceJavacCompilerUse>
-					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>com.google.dagger</groupId>
-							<artifactId>dagger-compiler</artifactId>
-							<version>${dagger.version}</version>
-							<optional>true</optional>
-						</dependency>
-					</dependencies>
-				</plugin>
-				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
 					<version>0.8.2</version>
@@ -90,7 +70,10 @@
 						<reuseForks>false</reuseForks>
 						<forkCount>1</forkCount>
 						<trimStackTrace>false</trimStackTrace>
-						<argLine>-Xms64m -Xmx128m ${argLine}</argLine>
+						<argLine>
+							-Xms64m -Xmx128m ${argLine}
+							--add-opens java.base/java.lang=ALL-UNNAMED
+						</argLine>
 						<environmentVariables>
 							<LICENSEKEY>FBF4-6D85-75CD-7FA0-3EAE-FB5E-3D31-B936</LICENSEKEY>
 						</environmentVariables>

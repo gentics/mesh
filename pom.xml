@@ -121,12 +121,20 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
 				<configuration>
 					<verbose>false</verbose>
-					<compilerVersion>11</compilerVersion>
-					<source>11</source>
-					<target>11</target>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					<release>17</release>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>com.google.dagger</groupId>
+						<artifactId>dagger-compiler</artifactId>
+						<version>${dagger.version}</version>
+						<optional>true</optional>
+					</dependency>
+				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -139,7 +147,8 @@
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${java.home}/bin/java</jvm>
 					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
-						-Dstorage.diskCache.bufferSize=128 ${jacoco.env}</argLine>
+						--add-opens java.base/java.lang=ALL-UNNAMED ${jacoco.env}
+					</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
 					<rerunFailingTestsCount>0</rerunFailingTestsCount>
 					<reuseForks>false</reuseForks>
