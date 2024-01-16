@@ -147,7 +147,6 @@
 					<skip>${skip.unit.tests}</skip>
 					<jvm>${java.home}/bin/java</jvm>
 					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
-						-Dstorage.diskCache.bufferSize=128
 						--add-opens java.base/java.lang=ALL-UNNAMED ${jacoco.env}
 					</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
