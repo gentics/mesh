@@ -112,6 +112,7 @@ public class GraphQLHandler {
 					dataLoaderRegistry.register(FieldDefinitionProvider.NUMBER_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().NUMBER_LIST_VALUE_LOADER, options));
 					dataLoaderRegistry.register(FieldDefinitionProvider.HTML_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().HTML_LIST_VALUE_LOADER, options));
 					dataLoaderRegistry.register(FieldDefinitionProvider.STRING_LIST_VALUES_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().STRING_LIST_VALUE_LOADER, options));
+					dataLoaderRegistry.register(FieldDefinitionProvider.MICRONODE_DATA_LOADER_KEY, DataLoader.newDataLoader(typeProvider.getFieldDefProvider().MICRONODE_LOADER, options));
 
 					ExecutionInput executionInput = ExecutionInput
 						.newExecutionInput()

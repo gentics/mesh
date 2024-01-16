@@ -14,6 +14,7 @@ import static graphql.scalars.java.JavaPrimitives.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -124,6 +125,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public static final String STRING_LIST_VALUES_DATA_LOADER_KEY = "stringListLoader";
 
+	/**
+	 * Key for the data loader for micronode field values
+	 */
+	public static final String MICRONODE_DATA_LOADER_KEY = "micronodeLoader";
+
 	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	protected final WebRootLinkReplacerImpl linkReplacer;
@@ -209,6 +215,20 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public BatchLoaderWithContext<String, List<String>> STRING_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getStringListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for micronodes
+	 */
+	public BatchLoaderWithContext<HibMicronodeField, HibMicronode> MICRONODE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<HibMicronodeField, HibMicronode> micronodes = contentDao.getMicronodes(keys);
+
+		Promise<List<HibMicronode>> promise = Promise.promise();
+		List<HibMicronode> result = keys.stream().map(field -> micronodes.get(field)).collect(Collectors.toList());
+		promise.complete(result);
+
+		return promise.future().toCompletionStage();
 	};
 
 	@Inject
@@ -713,7 +733,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						HibFieldContainer container = env.getSource();
 						HibMicronodeField micronodeField = container.getMicronode(schema.getName());
 						if (micronodeField != null) {
-							return micronodeField.getMicronode();
+
+							DataLoader<HibMicronodeField, HibMicronode> micronodeLoader = env.getDataLoader(MICRONODE_DATA_LOADER_KEY);
+							return micronodeLoader.load(micronodeField);
 						}
 						return null;
 					}).build());
