@@ -18,6 +18,7 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.isFailureMessage;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.ElasticsearchTestMode.TRACKING;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -41,6 +42,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -86,10 +88,57 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Observable;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = TestSize.FULL, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+	@Test
+	public void testRenameDeleteCreateProject() throws InterruptedException, TimeoutException {
+		// create project named "project"
+		ProjectResponse project = createProject("project");
+
+		// get tag families of project (this will put project into cache)
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// rename project to "newproject"
+		project = updateProject(project.getUuid(), "newproject");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		long maxWaitMs = 1000;
+		long delayMs = 100;
+		boolean repeat = false;
+
+		// get tag families of newproject (this will put project into cache)
+		long start = System.currentTimeMillis();
+		do {
+			try {
+				call(() -> client().findTagFamilies("newproject"));
+				repeat = false;
+			} catch (Throwable t) {
+				if (isFailureMessage(t, HttpResponseStatus.NOT_FOUND) && (System.currentTimeMillis() - start) < maxWaitMs) {
+					Thread.sleep(delayMs);
+					repeat = true;
+				} else {
+					throw t;
+				}
+			}
+		} while (repeat);
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+
+		// delete "newproject"
+		deleteProject(project.getUuid());
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// create (again)
+		project = createProject("project");
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(0);
+
+		// get tag families of project
+		call(() -> client().findTagFamilies("project"));
+		assertThat(mesh().projectNameCache().size()).as("Project name cache size").isEqualTo(1);
+	}
 
 	@Test
 	public void testCreateNoSchemaReference() {

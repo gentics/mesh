@@ -23,6 +23,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -43,6 +44,7 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -51,6 +53,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -230,6 +233,25 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		String rootUuid = db().tx(() -> Tx.get().data().permissionRoots().group().getUuid());
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid, CREATE_PERM.getRestPerm().getName());
 
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			GroupCreateRequest request = new GroupCreateRequest();
+			request.setName(name);
+			GroupResponse response = call(() -> client().createGroup(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.groupDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		GroupListResponse list = call(() -> client().findGroups(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 8", 8, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Test

@@ -108,16 +108,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	/**
-	 * Finds all nodes of a project.
-	 * 
-	 * @param projectUuid
-	 * @return
-	 */
-	private Stream<Vertex> findAll(HibUser user, InternalPermission perm, String projectUuid) {
-		return findAll(user, perm, projectUuid, null, Optional.empty(), Optional.empty());
-	}
-
-	/**
 	 * Find and sort all nodes.
 	 * 
 	 * @param projectUuid

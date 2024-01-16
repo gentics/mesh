@@ -56,6 +56,7 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -85,6 +86,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -213,6 +215,25 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			SchemaCreateRequest request = new SchemaCreateRequest();
+			request.setName(name);
+			SchemaResponse response = call(() -> client().createSchema(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.schemaDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		SchemaListResponse list = call(() -> client().findSchemas(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 8", 8, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Test

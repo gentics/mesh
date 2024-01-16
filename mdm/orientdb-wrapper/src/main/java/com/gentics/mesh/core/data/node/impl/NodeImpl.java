@@ -249,7 +249,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter, Optional<HibUser> maybeUser) {
 		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> maybeUser
 				.map(user -> parseFilter(f, containerType, user, containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.empty()))
-				.orElseGet(() -> parseFilter(f, containerType)))), NodeImpl.class));
+				.orElseGet(() -> parseFilter(f, containerType)))
+				.or(() -> maybeUser.flatMap(user -> permissionFilter(user, containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.empty(), Optional.ofNullable(containerType))))), NodeImpl.class));
 	}
 
 	private Iterator<Vertex> getUnframedChildren(String branchUuid, PagingParameters sorting, Optional<String> maybeFilter) {

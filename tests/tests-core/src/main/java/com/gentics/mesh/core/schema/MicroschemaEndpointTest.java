@@ -20,6 +20,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -32,6 +33,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -43,6 +45,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -50,6 +53,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -81,6 +85,24 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 				.flatMapCompletable(i -> client().findMicroschemaByUuid(uuid).toCompletable())
 				.blockingAwait();
 		}
+	}
+
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			MicroschemaCreateRequest request = new MicroschemaCreateRequest();
+			request.setName(name);
+			MicroschemaResponse response = call(() -> client().createMicroschema(request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.microschemaDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		MicroschemaListResponse list = call(() -> client().findMicroschemas(new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 6", 6, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Ignore("Not yet implemented")
