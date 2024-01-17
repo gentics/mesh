@@ -3,16 +3,17 @@ package com.gentics.mesh.core.data.dao.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -390,5 +391,15 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 	@Override
 	public Map<String, List<String>> getStringListFieldValues(List<String> listUuids) {
 		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids) {
+		throw new NotImplementedException("Prefetching of list values is not implemented");
+	}
+
+	@Override
+	public Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields) {
+		return micronodeFields.stream().distinct().collect(Collectors.toMap(Function.identity(), HibMicronodeField::getMicronode));
 	}
 }
