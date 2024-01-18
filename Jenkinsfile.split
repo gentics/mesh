@@ -15,7 +15,7 @@ properties([
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
-		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to deploy for the testing systems. This will skip building the demo and changelog."),
+		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to deploy for the testing systems. This will skip building the changelog."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
