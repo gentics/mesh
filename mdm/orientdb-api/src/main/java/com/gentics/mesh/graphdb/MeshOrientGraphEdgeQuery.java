@@ -54,6 +54,7 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 		text.append(QUERY_FROM);
 		text.append(OrientBaseGraph.encodeClassName(edgeLabel));
 		text.append(" ");
+		buildOrderEntityRequest(text, true, fetchPlan == null);
 
 		// Build the query params
 		final List<Object> queryParams = manageFilters(text);

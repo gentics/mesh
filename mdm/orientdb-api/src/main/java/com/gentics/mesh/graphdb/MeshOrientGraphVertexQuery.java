@@ -41,6 +41,7 @@ public class MeshOrientGraphVertexQuery extends MeshOrientGraphQuery<Vertex, Opt
 		buildOrderFieldRequest(text, false, fetchPlan == null);		
 		text.append(QUERY_FROM);
 		text.append(OrientBaseGraph.encodeClassName(vertexClass.getSimpleName()));
+		buildOrderEntityRequest(text, false, fetchPlan == null);
 
 		// Build the query params, including the labels (including the one provided with vertexClass).
 		final List<Object> queryParams = manageFilters(text);

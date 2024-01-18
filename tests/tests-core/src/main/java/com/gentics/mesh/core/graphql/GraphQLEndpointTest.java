@@ -525,12 +525,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
 		//System.out.println(jsonResponse.encodePrettily());
-		if (assertion == null) {
-			assertThat(jsonResponse)
-					.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
-					.compliesToAssertions(queryName, apiVersion);
-		} else {
-			assertion.accept(jsonResponse);
+		try {
+			if (assertion == null) {
+				assertThat(jsonResponse)
+						.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
+						.compliesToAssertions(queryName, apiVersion);
+			} else {
+				assertion.accept(jsonResponse);
+			}
+		} catch (Throwable e) {
+			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, response.toJson());
+			throw e;
 		}
 	}
 

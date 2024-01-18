@@ -275,10 +275,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 						key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
 					}
 					// else process as non-schema content field
-				} else if ("creator".equals(keyParts[0]) || "editor".equals(keyParts[0])) {
-					// pass it
-				} else {
-					throw new IllegalArgumentException("The sort key is currently not supported: " + key + ". Either an entity field (e.g. 'uuid') or node fields (e.g. 'fields.<schema_name>.<field_name>') are implemented.");
 				}
 			}
 			sorting.putSort(key,  entry.getValue());
