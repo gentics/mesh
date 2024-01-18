@@ -33,7 +33,7 @@ final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.a
 def registryHost = registryHostStaging;
 
 stage("Setup Build Environment") {
-	node("mesh-root-worker-11") {
+	node("mesh-root-worker-17") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
@@ -77,7 +77,7 @@ stage("Setup Build Environment") {
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 					withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
 					                 usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
+						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install -pl '!demo/default,!demo/common'"
 					}
 				} else {
 					echo "Omitted since we don't execute tests"
@@ -97,7 +97,7 @@ stage("Setup Build Environment") {
 						for (int i = 0; i < runs; i++) {
 							def current = i
 							branches["split${current}"] = {
-								node('mesh-worker-11') {
+								node('mesh-worker-17') {
 									echo "Preparing slave environment for ${current}"
 									sh "rm -rf split${current}"
 									sh "mkdir split${current}"
@@ -166,10 +166,10 @@ stage("Setup Build Environment") {
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy -pl '!demo/default,!demo/common'"
 							}
 						} else {
-							sh "mvn -B -DskipTests clean package"
+							sh "mvn -B -DskipTests clean package -pl '!demo/default,!demo/common'"
 						}
 					}
 				} else {
@@ -198,7 +198,7 @@ stage("Setup Build Environment") {
 			stage("Cluster Tests") {
 				if (Boolean.valueOf(params.runClusterTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-cluster-worker-11") {
+					node("mesh-cluster-worker-17") {
 						try {
 							unstash 'project'
 							sh "mvn -B -DskipTests clean install -pl '!demo/default,!doc'"
@@ -220,11 +220,6 @@ stage("Setup Build Environment") {
 						registryHost = registryHostTest;
 					}
 
-					// demo
-					sh "rm demo/default/target/*sources.jar || true"
-					sh "rm demo/default/target/*javadoc.jar || true"
-					sh "cd demo/default ; docker build --network=host -t " + registryHost + "/gentics/mesh-demo:latest -t " + registryHost + "/gentics/mesh-demo:" + version + " . "
-
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
@@ -237,7 +232,7 @@ stage("Setup Build Environment") {
 			stage("Performance Tests") {
 				if (Boolean.valueOf(params.runPerformanceTests)) {
 					stash includes: '**', name: 'project'
-					node("mesh-performance-worker-11") {
+					node("mesh-performance-worker-17") {
 						try {
 							unstash 'project'
 							sh "mvn -B -U clean package -pl '!doc,!demo/default,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/"
@@ -272,11 +267,9 @@ stage("Setup Build Environment") {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 
 							if (Boolean.valueOf(params.runDeploy)) {
-								sh 'docker push ' + registryHost + '/gentics/mesh-demo:latest'
 								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
 							}
 
-							sh 'docker push ' + registryHost + '/gentics/mesh-demo:' + version
 							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
 						}
 					}
