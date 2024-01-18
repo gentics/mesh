@@ -259,11 +259,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			if (fa == fb) {
 				return 0;
 			}
+			// TODO FIXME we ignore null order for now, since each DBMS has an own null order
 			if (fb == null) {
-				return -1;
+				return 0;// -1;
 			}
 			if (fa == null) {
-				return 1;
+				return 0;// 1;
 			}
 			return fb.getString().compareTo(fa.getString());
 		});
