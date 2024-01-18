@@ -67,9 +67,9 @@ stage("Setup Build Environment") {
 
 			stage("Prebuild") {
 				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests)) {
-					def extraFlags = ''
+					def extraFlags = ""
 					if (Boolean.valueOf(params.runSonar)) {
-						extraFlags = '-Djacoco.skip=false'
+						extraFlags = "-Djacoco.skip=false"
 					}
 					// Install is needed to provide deps for the test plugin build
 					echo "Setup of GPG"
@@ -164,7 +164,7 @@ stage("Setup Build Environment") {
 						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							def extraFlags = ""
 							if (Boolean.valueOf(params.runDeployTesting)) {
-								extraFlags = "-am -pl bom,server,plugin-bom,plugin-parent,'!demo/default',!demo/common' -Dversion=0.0.0-SNAPSHOT"
+								extraFlags = "-am -pl bom,server,plugin-bom,plugin-parent,'!demo/default,!demo/common' -Dversion=0.0.0-SNAPSHOT"
 							}
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
