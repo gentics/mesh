@@ -15,7 +15,7 @@ properties([
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
-		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
+		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to deploy for the testing systems. This will skip building the demo and changelog."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
@@ -66,7 +66,7 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Prebuild") {
-				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests) || Boolean.valueOf(params.runDeployTesting)) {
+				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests)) {
 					def extraFlags = ""
 					if (Boolean.valueOf(params.runSonar)) {
 						extraFlags = "-Djacoco.skip=false"
@@ -161,12 +161,16 @@ stage("Setup Build Environment") {
 			stage("Maven Build") {
 				if (Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
-						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
+						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
+							def extraFlags = ""
+							if (Boolean.valueOf(params.runDeployTesting)) {
+								extraFlags = "-am -pl bom,server,plugin-bom,plugin-parent,'!demo/default',!demo/common' -Dversion=0.0.0-SNAPSHOT"
+							}
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy -pl '!demo/default,!demo/common'"
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
 							}
 						} else {
 							sh "mvn -B -DskipTests clean package -pl '!demo/default,!demo/common'"
