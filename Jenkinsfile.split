@@ -67,9 +67,9 @@ stage("Setup Build Environment") {
 
 			stage("Prebuild") {
 				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests)) {
-					def extraFlags = ""
+					def extraFlags = ''
 					if (Boolean.valueOf(params.runSonar)) {
-						extraFlags = "-Djacoco.skip=false"
+						extraFlags = '-Djacoco.skip=false'
 					}
 					// Install is needed to provide deps for the test plugin build
 					echo "Setup of GPG"
