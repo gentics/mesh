@@ -145,6 +145,46 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.gentics</groupId>
+				<artifactId>dependency-reporting-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>java-transform</id>
+						<goals>
+							<goal>java-transform</goal>
+						</goals>
+						<configuration>
+							<reportFile>../target/dependency-updates-aggregate-report.xml</reportFile>
+							<componentName>${dependency.report.component.name}</componentName>
+							<moduleName>Like Plugin</moduleName>
+							<ignoredNames>
+								<ignoredName>com\.gentics\.mesh\.plugin\.commercial:.*</ignoredName>
+							</ignoredNames>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<?m2e ignore?>
+						<id>make-report-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<appendAssemblyId>true</appendAssemblyId>
+							<descriptors>
+								<descriptor>report-assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
