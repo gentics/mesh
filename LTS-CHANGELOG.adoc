@@ -32,7 +32,7 @@ icon:check[] GraphQL: Fetching of micronode fields has been improved to allow ba
 
 icon:check[] REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.
 
-icon:check[] GraphQL. Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
+icon:check[] GraphQL: Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
 
 [[v1.10.23]]
 == 1.10.23 (20.12.2023)
