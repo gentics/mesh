@@ -1,8 +1,12 @@
 package com.gentics.mesh.parameter.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,12 +91,21 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 		return Stream.of(sort.entrySet().stream(), SortingParameters.super.getSort().entrySet().stream())
 				.flatMap(Function.identity())
 				// TODO proper SQL de-inject by param whitelisting
-				.collect(Collectors.toMap(e -> e.getKey().replaceAll("[\\s\\;\\r\\n]", "_"), e -> e.getValue(), (a, b) -> a, LinkedHashMap::new));
+				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> a, LinkedHashMap::new));
 	}
 
 	@Override
 	public SortingParameters clearSort() {
 		sort.clear();
 		return SortingParameters.super.clearSort();
+	}
+
+	@Override
+	public void validate() {
+		String sortParam = getParameter(SORT_BY_PARAMETER_KEY);
+		if (Optional.ofNullable(sortParam).filter(sort -> sort.matches("[\\s\\;\\r\\n]")).isPresent()) {
+			throw error(BAD_REQUEST, "error_invalid_parameter", SORT_BY_PARAMETER_KEY, sortParam);
+		}
+		super.validate();
 	}
 }
