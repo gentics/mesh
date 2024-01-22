@@ -90,7 +90,6 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 	public Map<String, SortOrder> getSort() {
 		return Stream.of(sort.entrySet().stream(), SortingParameters.super.getSort().entrySet().stream())
 				.flatMap(Function.identity())
-				// TODO proper SQL de-inject by param whitelisting
 				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (a, b) -> a, LinkedHashMap::new));
 	}
 
