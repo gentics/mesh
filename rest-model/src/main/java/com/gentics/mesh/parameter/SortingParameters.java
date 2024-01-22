@@ -42,7 +42,8 @@ public interface SortingParameters extends ParameterProvider {
 	 * @return
 	 */
 	default SortingParameters putSort(String sortBy, SortOrder order) {
-		setParameter(SortingParameters.SORT_BY_PARAMETER_KEY, sortBy);
+		// TODO proper SQL de-inject by param whitelisting
+		setParameter(SortingParameters.SORT_BY_PARAMETER_KEY, sortBy.replaceAll("[\\s\\;\\r\\n]", "_"));
 		setParameter(SortingParameters.SORT_ORDER_PARAMETER_KEY, order.getValue());
 		return this;
 	}
