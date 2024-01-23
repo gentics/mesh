@@ -2,11 +2,11 @@ package com.gentics.mesh.core.data.root;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -36,10 +36,10 @@ public interface NodeRoot extends RootVertex<Node> {
 	}
 
 	/**
-	 * Stream the edges with the given languages.
+	 * Check if the requested languages being used by any node in the given root.
 	 * 
 	 * @param languageTags
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(Collection<String> languageTags);
+	Set<String> findUsedLanguages(Collection<String> languageTags);
 }

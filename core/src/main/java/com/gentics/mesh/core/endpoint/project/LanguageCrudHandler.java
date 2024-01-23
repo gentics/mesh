@@ -56,7 +56,7 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 				}
 				page = new DynamicTransformableStreamPageImpl<>(tx.projectDao().findLanguages(project).stream(), pagingInfo);
 			} else {
-				page = ((LanguageDAOActions) actions).loadAll(context(tx, ac, null), pagingInfo);
+				page = actions.loadAll(context(tx, ac, null), pagingInfo);
 			}
 
 			// Handle etag
@@ -84,7 +84,7 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 				}
 				element = tx.projectDao().findLanguages(project).stream().filter(l -> l.getUuid().equals(uuid)).findAny().orElse(null);
 			} else {
-				element = ((LanguageDAOActions) actions).loadByUuid(context(tx, ac, null), uuid, InternalPermission.READ_PERM, false);
+				element = actions.loadByUuid(context(tx, ac, null), uuid, InternalPermission.READ_PERM, false);
 			}
 			if (element == null) {
 				throw error(NOT_FOUND, "error_language_not_found", uuid);
@@ -152,7 +152,7 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 				}
 				HibLanguage language;
 				if (UUIDUtil.isUUID(languageUuidOrTag)) {
-					language = ((LanguageDAOActions) actions).loadByUuid(context(tx, ac, null), languageUuidOrTag, READ_PERM, true);
+					language = actions.loadByUuid(context(tx, ac, null), languageUuidOrTag, READ_PERM, true);
 				} else {
 					language = ((LanguageDAOActions) actions).loadByTag(context(tx, ac, null), languageUuidOrTag);
 				}
@@ -180,7 +180,7 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 				}
 				HibLanguage language;
 				if (UUIDUtil.isUUID(languageUuidOrTag)) {
-					language = ((LanguageDAOActions) actions).loadByUuid(context(tx, ac, null), languageUuidOrTag, READ_PERM, true);
+					language = actions.loadByUuid(context(tx, ac, null), languageUuidOrTag, READ_PERM, true);
 				} else {
 					language = ((LanguageDAOActions) actions).loadByTag(context(tx, ac, null), languageUuidOrTag);
 				}

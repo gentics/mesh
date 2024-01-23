@@ -2078,7 +2078,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			});
 	}
 
-	Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(HibProject project, Collection<String> languageTags);
+	/**
+	 * Check if the requested languages being used by any node in the given project.
+	 * 
+	 * @param project
+	 * @param languageTags
+	 * @return
+	 */
+	Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags);
 
 	/**
 	 * Get the edges for the given node, that satisfy the webroot lookup data.

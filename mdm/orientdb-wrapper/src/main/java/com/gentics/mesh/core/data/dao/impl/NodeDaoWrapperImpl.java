@@ -2,10 +2,8 @@ package com.gentics.mesh.core.data.dao.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,7 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;
@@ -47,11 +44,9 @@ import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -60,7 +55,6 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import dagger.Lazy;
 
@@ -254,11 +248,6 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
-	public Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(HibProject project, Collection<String> languageTags) {
-		return toGraph(project).getNodeRoot().findLanguageEdges(languageTags);
-	}
-
-	@Override
 	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type) {
 		return toGraph(node).getWebrootEdges(segmentInfo, branchUuid, type);
 	}
@@ -304,5 +293,10 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		} else {
 			return NodeDaoWrapper.super.findAllContent(schemaVersion, ac, languageTags, type, paging, maybeFilter);
 		}
+	}
+
+	@Override
+	public Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags) {
+		return toGraph(project).getNodeRoot().findUsedLanguages(languageTags);
 	}
 }

@@ -57,7 +57,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 			.filter(l -> l.getLanguageTag().equals(language.getLanguageTag()))
 			.findAny()
 			.ifPresentOrElse(existing -> {
-					CommonTx.get().nodeDao().findLanguageEdges(project, Collections.singletonList(language.getLanguageTag())).findAny().ifPresentOrElse(existingContent -> {
+					CommonTx.get().nodeDao().findUsedLanguages(project, Collections.singletonList(language.getLanguageTag())).stream().findAny().ifPresentOrElse(existingContent -> {
 						throw error(BAD_REQUEST, "error_language_still_in_use", language.getLanguageTag(), project.getName());
 					}, () -> {
 						project.removeLanguage(language);
