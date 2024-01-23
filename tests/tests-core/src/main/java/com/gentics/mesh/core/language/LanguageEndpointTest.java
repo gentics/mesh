@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.client.GenericParametersImpl;
@@ -311,5 +312,15 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages(french()), new GenericParametersImpl().setFields("fields", "language")));
 		assertEquals(nodeResponse.getLanguage(), french());
 		assertEquals(nodeResponse.getFields().getStringField("name").getValue(), "Bonne Fête!");
+	}
+
+	@Test
+	public void testUnassignOccupiedLanguage() {
+		NodeListResponse nodes = call(() -> client().findNodes(PROJECT_NAME));
+		assertThat(nodes.getData()).isNotEmpty();
+		call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, english(), new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.BAD_REQUEST, "error_language_still_in_use", english(), PROJECT_NAME);
+		ProjectResponse projectResponse = call(() -> client().findProjectByName(PROJECT_NAME, new ProjectLoadParametersImpl().setLangs(true)));
+		assertNotNull(projectResponse.getLanguages());
+		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getLanguageTag)).contains(english());
 	}
 }

@@ -115,8 +115,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Stream<? extends HibNodeFieldContainerEdge> findLanguageEdges(Collection<String> languageTags) {
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> containerTraversal = out(getRootLabel()).mark().outE(HAS_FIELD_CONTAINER);
-		return toStream(GraphFieldContainerEdgeImpl.filterLanguages(containerTraversal, languageTags).frameExplicit(GraphFieldContainerEdgeImpl.class));
+		return getProject().findNodes().stream().flatMap(node -> toStream(GraphFieldContainerEdgeImpl.filterLanguages((EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>>) node.outE(HAS_FIELD_CONTAINER), languageTags).frameExplicit(GraphFieldContainerEdgeImpl.class)));
 	}
 
 	/**
