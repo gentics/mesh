@@ -4,6 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
@@ -12,6 +13,9 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.example.ExampleUuids;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
@@ -40,6 +44,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		secureAll();
 
 		InternalEndpointRoute createRoute = createRoute();
+		createRoute.description("Create a new language. Currently unused, throwing an error.");
 		createRoute.path("/");
 		createRoute.method(POST);
 		createRoute.produces(APPLICATION_JSON);
@@ -49,6 +54,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute deleteRoute = createRoute();
+		deleteRoute.description("Delete the language. Currently unused, throwing an error.");
 		deleteRoute.path("/:languageUuid");
 		deleteRoute.method(DELETE);
 		deleteRoute.produces(APPLICATION_JSON);
@@ -60,6 +66,10 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute getAllRoute = createRoute();
 		getAllRoute.path("/");
+		getAllRoute.description("Get all system installed languages");
+		getAllRoute.exampleResponse(OK, languageExamples.getLanguageListResponse(), "List of languages");
+		getAllRoute.addQueryParameters(GenericParametersImpl.class);
+		getAllRoute.addQueryParameters(PagingParametersImpl.class);
 		getAllRoute.method(GET);
 		getAllRoute.produces(APPLICATION_JSON);
 		getAllRoute.blockingHandler(rc -> {
@@ -69,6 +79,9 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/:languageUuid");
+		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
+		getRoute.addQueryParameters(GenericParametersImpl.class);
+		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getRoute.method(GET);
 		getRoute.produces(APPLICATION_JSON);
 		getRoute.blockingHandler(rc -> {
@@ -79,6 +92,9 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute getByTagRoute = createRoute();
 		getByTagRoute.path("/tag/:languageTag");
+		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
+		getByTagRoute.addQueryParameters(GenericParametersImpl.class);
+		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getByTagRoute.method(GET);
 		getByTagRoute.produces(APPLICATION_JSON);
 		getByTagRoute.blockingHandler(rc -> {
