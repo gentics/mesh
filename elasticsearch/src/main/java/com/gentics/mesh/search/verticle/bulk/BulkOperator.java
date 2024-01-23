@@ -3,11 +3,15 @@ package com.gentics.mesh.search.verticle.bulk;
 import static com.gentics.mesh.search.verticle.eventhandler.Util.skipIfMultipleThreads;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -85,12 +89,22 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushing.compareAndSet(true, false)) {
 						timer.stop();
 						log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
-						BulkRequest request = new BulkRequest(bulkableRequests.asList());
-						bulkableRequests.clear();
-						if (log.isDebugEnabled()) {
-							log.debug("Sending bulk to elasticsearch:\n{}", request);
-						}
-						subscriber.onNext(request);
+						do {
+							Long[] bulkLength = new Long[] { 0L };
+							List<Bulkable> requests = IntStream.range(0, requestLimit)
+								.mapToObj(index -> bulkableRequests.poll())
+								.takeWhile(maybeBulkable -> maybeBulkable
+										.filter(bulkable -> bulkLength[0] < lengthLimit)
+										.isPresent())
+								.map(Optional::get)
+								.peek(bulkable -> bulkLength[0] += bulkable.bulkLength())
+								.collect(Collectors.toList());
+							BulkRequest request = new BulkRequest(requests);
+							if (log.isDebugEnabled()) {
+								log.debug("Sending bulk to elasticsearch:\n{}", request);
+							}
+							subscriber.onNext(request);
+						} while (!bulkableRequests.isEmpty());
 						BackpressureHelper.produced(requested, 1);
 					}
 

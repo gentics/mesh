@@ -59,7 +59,14 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 			}
 		});
 		server.rxListen().blockingGet();
+	}
 
+	@Test
+	public void testHugeBatch() throws IOException {
+		String username = "testuser";
+		for (int i = 0; i < 1200; i++) {
+			createUser(username + i);
+		}
 	}
 
 	@Test
