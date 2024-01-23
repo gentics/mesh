@@ -415,16 +415,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 	@Override
 	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
-		return prepareRequest(POST, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
-		return prepareRequest(DELETE, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid);
 	}
 
 	@Override

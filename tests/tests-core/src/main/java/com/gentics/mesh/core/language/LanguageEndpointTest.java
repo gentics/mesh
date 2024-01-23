@@ -15,6 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.lang.LanguageListResponse;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
@@ -45,31 +46,31 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language creation allowed")
 	@Test
 	public void testCreate() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language manipulation allowed")
 	@Test
 	public void testCreateReadDelete() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language creation allowed")
 	@Test
 	public void testCreateWithNoPerm() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language creation allowed")
 	@Test
 	public void testCreateWithUuid() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language creation allowed")
 	@Test
 	public void testCreateWithDuplicateUuid() throws Exception {
 	}
@@ -86,13 +87,13 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language permissions supposrted")
 	@Test
 	public void testReadByUuidWithRolePerms() {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language permissions supposrted")
 	@Test
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 	}
@@ -105,13 +106,13 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language permissions supposrted")
 	@Test
 	public void testPermissionResponse() {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language update allowed")
 	@Test
 	public void testUpdate() throws Exception {
 	}
@@ -123,25 +124,25 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language creation allowed")
 	@Test
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language removal allowed")
 	@Test
 	public void testDeleteByUUID() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language removal allowed")
 	@Test
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language update allowed")
 	@Test
 	public void testUpdateMultithreaded() throws Exception {
 	}
@@ -159,13 +160,13 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language removal allowed")
 	@Test
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 	}
 
 	@Override
-	@Ignore
+	@Ignore("No Language creation allowed")
 	@Test
 	public void testCreateMultithreaded() throws Exception {
 	}
@@ -315,12 +316,53 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Test
-	public void testUnassignOccupiedLanguage() {
+	public void testUnassignOccupiedLanguageByTag() {
 		NodeListResponse nodes = call(() -> client().findNodes(PROJECT_NAME));
 		assertThat(nodes.getData()).isNotEmpty();
 		call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, english(), new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.BAD_REQUEST, "error_language_still_in_use", english(), PROJECT_NAME);
 		ProjectResponse projectResponse = call(() -> client().findProjectByName(PROJECT_NAME, new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
 		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getLanguageTag)).contains(english());
+	}
+
+	@Test
+	public void testUnassignOccupiedLanguageByUuid() {
+		NodeListResponse nodes = call(() -> client().findNodes(PROJECT_NAME));
+		assertThat(nodes.getData()).isNotEmpty();
+		String englishUuid = tx(tx -> { 
+			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		});
+		call(() -> client().unassignLanguageFromProjectByUuid(PROJECT_NAME, englishUuid, new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.BAD_REQUEST, "error_language_still_in_use", english(), PROJECT_NAME);
+		ProjectResponse projectResponse = call(() -> client().findProjectByName(PROJECT_NAME, new ProjectLoadParametersImpl().setLangs(true)));
+		assertNotNull(projectResponse.getLanguages());
+		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).contains(englishUuid);
+	}
+
+	@Test
+	public void testNotPermittedProject() {
+		String englishUuid = tx(tx -> {
+			assertTrue(tx.roleDao().revokePermissions(role(), project(), InternalPermission.values()));
+			return tx.languageDao().findByLanguageTag(english()).getUuid();
+		});
+		String projectUuid = tx(() -> {
+			return project().getUuid();
+		});
+		call(() -> client().findLanguages(PROJECT_NAME), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.READ_PERM.getRestPerm().getName());
+		call(() -> client().findLanguageByUuid(PROJECT_NAME, englishUuid), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.READ_PERM.getRestPerm().getName());
+		call(() -> client().findLanguageByTag(PROJECT_NAME, english()), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.READ_PERM.getRestPerm().getName());
+		call(() -> client().findLanguageByTag(PROJECT_NAME, english()), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.READ_PERM.getRestPerm().getName());
+		call(() -> client().assignLanguageToProjectByUuid(PROJECT_NAME, englishUuid), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().assignLanguageToProjectByTag(PROJECT_NAME, english()), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().unassignLanguageFromProject(PROJECT_NAME, englishUuid), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.UPDATE_PERM.getRestPerm().getName());
+		call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, english()), HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.UPDATE_PERM.getRestPerm().getName());
+		{
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setSchemaName("folder");
+			nodeCreateRequest.setLanguage(italian());
+			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Buon Compleanno!"));
+			nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages(italian()), new GenericParametersImpl().setFields("fields", "language")), 
+					HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.READ_PERM.getRestPerm().getName());
+		}
 	}
 }

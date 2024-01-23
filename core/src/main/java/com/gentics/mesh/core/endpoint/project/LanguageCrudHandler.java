@@ -13,13 +13,12 @@ import javax.inject.Inject;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.LanguageDAOActions;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
+import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -50,10 +49,12 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-
 			Page<? extends HibLanguage> page;
 			if (project != null) {
-				page = new DynamicTransformableStreamPageImpl<>(tx.<CommonTx>unwrap().projectDao().findLanguages(project).stream(), pagingInfo);
+				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
+				}
+				page = new DynamicTransformableStreamPageImpl<>(tx.projectDao().findLanguages(project).stream(), pagingInfo);
 			} else {
 				page = ((LanguageDAOActions) actions).loadAll(context(tx, ac, null), pagingInfo);
 			}
@@ -76,10 +77,12 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-
 			HibLanguage element;
 			if (project != null) {
-				element = tx.<CommonTx>unwrap().projectDao().findLanguages(project).stream().filter(l -> l.getUuid().equals(uuid)).findAny().orElse(null);
+				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
+				}
+				element = tx.projectDao().findLanguages(project).stream().filter(l -> l.getUuid().equals(uuid)).findAny().orElse(null);
 			} else {
 				element = ((LanguageDAOActions) actions).loadByUuid(context(tx, ac, null), uuid, InternalPermission.READ_PERM, false);
 			}
@@ -110,10 +113,12 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 
 		utils.syncTx(ac, tx -> {
 			HibProject project = tx.getProject(ac);
-
 			HibLanguage element;
 			if (project != null) {
-				element = tx.<CommonTx>unwrap().projectDao().findLanguages(project).stream().filter(l -> l.getLanguageTag().equals(tag)).findAny().orElse(null);
+				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
+					throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
+				}
+				element = tx.projectDao().findLanguages(project).stream().filter(l -> l.getLanguageTag().equals(tag)).findAny().orElse(null);
 			} else {
 				element = ((LanguageDAOActions) actions).loadByTag(context(tx, ac, null), tag);
 			}
@@ -138,7 +143,7 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (batch, tx) -> {
-				PersistingLanguageDao languageDao = tx.<CommonTx>unwrap().languageDao();
+				LanguageDao languageDao = tx.languageDao();
 
 				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
@@ -166,7 +171,7 @@ public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, Langua
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (batch, tx) -> {
-				PersistingLanguageDao languageDao = tx.<CommonTx>unwrap().languageDao();
+				LanguageDao languageDao = tx.languageDao();
 
 				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
