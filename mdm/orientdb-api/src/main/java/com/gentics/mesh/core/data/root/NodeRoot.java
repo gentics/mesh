@@ -39,7 +39,8 @@ public interface NodeRoot extends RootVertex<Node> {
 	 * Check if the requested languages being used by any node in the given root.
 	 * 
 	 * @param languageTags
+	 * @param assignedLanguagesOnly pick only languages, known to this project.
 	 * @return
 	 */
-	Set<String> findUsedLanguages(Collection<String> languageTags);
+	Set<String> findUsedLanguages(Collection<String> languageTags, boolean assignedLanguagesOnly);
 }

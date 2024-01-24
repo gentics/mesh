@@ -23,6 +23,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -204,11 +205,19 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Set<String> findUsedLanguages(Collection<String> languageTags) {
+	public Set<String> findUsedLanguages(Collection<String> languageTags, boolean assignedLanguagesOnly) {
+		Set<String> projectLangs = getProject().getLanguages().stream().map(HibLanguage::getLanguageTag).collect(Collectors.toSet());
 		Set<String> result = new HashSet<>(languageTags.size());
 		getProject().findNodes().stream()
 			.flatMap(node -> toStream(GraphFieldContainerEdgeImpl.filterLanguages((EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>>) node.outE(HAS_FIELD_CONTAINER), languageTags).frameExplicit(GraphFieldContainerEdgeImpl.class)))
 			.takeWhile(edge -> !result.containsAll(languageTags))
+			.filter(edge -> {
+				if (assignedLanguagesOnly) {
+					return projectLangs.contains(edge.getLanguageTag());
+				} else {
+					return true;
+				}
+			})
 			.peek(edge -> result.add(edge.getLanguageTag()))
 			.collect(Collectors.counting());
 		return result;

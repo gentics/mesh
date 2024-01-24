@@ -68,7 +68,6 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		getAllRoute.path("/");
 		getAllRoute.description("Get all system installed languages");
 		getAllRoute.exampleResponse(OK, languageExamples.getLanguageListResponse(), "List of languages");
-		getAllRoute.addQueryParameters(GenericParametersImpl.class);
 		getAllRoute.addQueryParameters(PagingParametersImpl.class);
 		getAllRoute.method(GET);
 		getAllRoute.produces(APPLICATION_JSON);
@@ -80,7 +79,6 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/:languageUuid");
 		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
-		getRoute.addQueryParameters(GenericParametersImpl.class);
 		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getRoute.method(GET);
 		getRoute.produces(APPLICATION_JSON);
@@ -93,7 +91,6 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 		InternalEndpointRoute getByTagRoute = createRoute();
 		getByTagRoute.path("/tag/:languageTag");
 		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
-		getByTagRoute.addQueryParameters(GenericParametersImpl.class);
 		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getByTagRoute.method(GET);
 		getByTagRoute.produces(APPLICATION_JSON);

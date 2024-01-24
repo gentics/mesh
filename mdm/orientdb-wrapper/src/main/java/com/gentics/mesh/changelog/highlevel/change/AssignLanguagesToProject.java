@@ -1,7 +1,6 @@
 package com.gentics.mesh.changelog.highlevel.change;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,18 +10,12 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
-import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
-import com.gentics.mesh.core.data.dao.PersistingNodeDao;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.relationship.GraphRelationships;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -64,9 +57,8 @@ public class AssignLanguagesToProject extends AbstractHighLevelChange {
 		CommonTx ctx = CommonTx.get();
 		PersistingLanguageDao languageDao = ctx.languageDao();
 		Map<HibProject, Set<String>> projectLangs = ctx.projectDao().findAll().stream()
-			.flatMap(project -> HibClassConverter.toGraph(project).getNodeRoot().findAll().stream().map(node -> Pair.of(project, node)))
-			.flatMap(projectNode -> StreamUtil.toStream(projectNode.getValue().outE(GraphRelationships.HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)).map(edge -> Pair.of(projectNode.getKey(), edge.getLanguageTag())))
-			.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toSet())));
+			.map(project -> Pair.of(project, ctx.nodeDao().findUsedLanguages(project, languageDao.findAll().stream().map(HibLanguage::getLanguageTag).collect(Collectors.toSet()), false)))
+			.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
 		projectLangs.entrySet().stream()
 			.flatMap(projectLang -> projectLang.getValue().stream().map(langTag -> {

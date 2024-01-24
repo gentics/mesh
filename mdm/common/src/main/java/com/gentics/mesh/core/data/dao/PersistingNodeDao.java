@@ -2079,13 +2079,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	/**
-	 * Check if the requested languages being used by any node in the given project.
+	 * Check if the requested languages being used by any node in the given project. 
 	 * 
 	 * @param project
 	 * @param languageTags
 	 * @return
 	 */
-	Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags);
+	Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly);
 
 	/**
 	 * Get the edges for the given node, that satisfy the webroot lookup data.
