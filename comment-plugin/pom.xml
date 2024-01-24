@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.gentics.mesh.plugin.commercial</groupId>
 		<artifactId>mesh-commercial-plugins</artifactId>
-		<version>1.10.12-SNAPSHOT</version>
+		<version>1.10.12</version>
 	</parent>
 
 	<properties>
