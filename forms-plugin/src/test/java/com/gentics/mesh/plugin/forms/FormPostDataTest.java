@@ -9,10 +9,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.model.PostDataResponse;
 import com.gentics.mesh.plugin.forms.model.response.FormOnlineResponse;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
@@ -1228,7 +1226,8 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	@Test
 	public void testConditionalContainerPerformValidation() throws IOException {
 		String uuid = createForm("conditional_container.json", true, true);
-		ResponseWithCookies rs = submit(uuid, true, "checked_input", "process_conditional_container");
+		ResponseWithCookies rs = submit(uuid, true,
+			"checked_input", "process_conditional_container");
 		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
 		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
 
@@ -1236,9 +1235,10 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 			.as("Saved elements")
 			.containsOnly("checked_input", "errors");
 
+
 		assertThat(new JsonObject(savedDataFields.getString("errors")).fieldNames())
 			.as("Validation errors")
-			.containsOnly("conditional_input");
+			.containsOnly("conditional_input", "conditional_file", "mandatory_group");
 	}
 
 	/**
@@ -1281,12 +1281,44 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * checked element is not set to the expected value.
 	 */
 	@Test
-	public void testConditionalContaierSkipSave() throws IOException {
-		String uuid = createForm("conditional_container.json", true, true);
-		ResponseWithCookies rs = submit(uuid, true,
+	public void testConditionalContainerSkipSave() throws IOException {
+		String formDefinition = "conditional_container.json";
+		String uuid = createForm(formDefinition, true, true);
+		String[] data = new String[] {
 			"checked_input", "ignore_container_contents",
 			"normal_input", "test value",
-			"conditional_input", "this should not be saved");
+			"conditional_input", "this should not be saved",
+			"mandatory_group_input", "this should also not be saved"
+		};
+		MultipartBody.Builder body = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		for (int ii = 0; ii < data.length; ii++) {
+			String field = data[ii++];
+			String value = ii < data.length ? data[ii] : "";
+
+			body.addFormDataPart(field, value);
+		}
+
+		body.addFormDataPart("conditional_file", formDefinition, requestBodyFromFile(formDefinition));
+
+		Request.Builder requestBuilder = new Request.Builder()
+			.url(projectUrl(String.format("/forms/%s/%sdata%s", uuid, "json", "")))
+			.header("Referer", "ref");
+
+		Request postRequest = requestBuilder.post(body.build()).build();
+		Response response = client().newCall(postRequest).execute();
+
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		assertThat(response.code())
+			.as("Response code")
+			.isEqualTo(HttpResponseStatus.OK.code());
+
+		ResponseWithCookies rs = new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+
 		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
 		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
 
@@ -1331,14 +1363,55 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 	 * checked element is set to the expected value.
 	 */
 	@Test
-	public void testConditionalContaierPerformSave() throws IOException {
-		String uuid = createForm("conditional_container.json", true, true);
-		ResponseWithCookies rs = submit(uuid, true,
+	public void testConditionalContainerPerformSave() throws IOException {
+		String formDefinition = "conditional_container.json";
+		String uuid = createForm(formDefinition, true, true);
+		String[] data = new String[] {
 			"checked_input", "process_conditional_container",
 			"normal_input", "test value",
-			"conditional_input", "this should be saved");
+			"conditional_input", "this should be saved",
+			"mandatory_group_input", "this should also be saved"
+		};
+		MultipartBody.Builder body = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM);
+
+		for (int ii = 0; ii < data.length; ii++) {
+			String field = data[ii++];
+			String value = ii < data.length ? data[ii] : "";
+
+			body.addFormDataPart(field, value);
+		}
+
+		body.addFormDataPart("conditional_file", formDefinition, requestBodyFromFile(formDefinition));
+
+		Request.Builder requestBuilder = new Request.Builder()
+			.url(projectUrl(String.format("/forms/%s/%sdata%s", uuid, "json", "")))
+			.header("Referer", "ref");
+
+		Request postRequest = requestBuilder.post(body.build()).build();
+		Response response = client().newCall(postRequest).execute();
+
+		assertThat(response.isSuccessful())
+			.as(String.format("Response success %d (%s)", response.code(), response.message()))
+			.isTrue();
+
+		assertThat(response.code())
+			.as("Response code")
+			.isEqualTo(HttpResponseStatus.OK.code());
+
+		ResponseWithCookies rs = new ResponseWithCookies(response, Cookie.parseAll(postRequest.url(), response.headers()));
+
 		PostDataResponse postResponse = JsonUtil.readValue(rs.response.body().string(), PostDataResponse.class);
 		JsonObject savedDataFields = loadNode(postResponse.getDataUuid()).map(node -> new JsonObject(node.getFields().toJson())).get();
+
+		assertThat(savedDataFields.fieldNames())
+			.as("Saved elements contains mandatory file")
+			.contains("conditional_file");
+
+		// Check for the uploaded file separately, since the other fields are just normal string comparisons.
+		assertThat(savedDataFields.remove("conditional_file"))
+			.as("Conditional file")
+			.matches(f -> ((JsonObject) f).getString("fileName").equals("conditional_container.json"));
 
 		assertThat(savedDataFields)
 			.as("Saved elements")
@@ -1346,6 +1419,7 @@ public class FormPostDataTest extends AbstractFormPostDataTest {
 				Pair.of("normal_input", "test value"),
 				Pair.of("checked_input", "process_conditional_container"),
 				Pair.of("conditional_input", "this should be saved"),
+				Pair.of("mandatory_group_input", "this should also be saved"),
 				Pair.of("errors", ""));
 	}
 
