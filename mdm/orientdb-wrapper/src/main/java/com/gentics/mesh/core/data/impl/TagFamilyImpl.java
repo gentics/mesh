@@ -235,6 +235,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 				Optional.empty(),
 				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty())).or(() -> permissionFilter(ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()))
 			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
+		return new DynamicStreamPageImpl<>(stream, pagingInfo, maybeExtraFilter.isPresent());
 	}
 }
