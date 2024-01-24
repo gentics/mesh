@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.13]]
+== 2.0.13 (24.01.2024)
+
+icon:check[] GraphQL: Fetching of micronode fields has been improved to allow batch loading.
+
 [[v2.0.12]]
 == 2.0.12 (10.01.2024)
 
