@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -22,6 +23,7 @@ import com.gentics.mesh.plugin.forms.FormsPlugin;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.context.FormDataSaveContext;
 import com.gentics.mesh.plugin.forms.export.Exporter;
+import com.gentics.mesh.plugin.forms.model.FileElement;
 import com.gentics.mesh.plugin.forms.model.Form;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormType;
@@ -68,6 +70,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class FormDataService {
@@ -457,7 +460,7 @@ public class FormDataService {
 		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
 
 		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), form, postedData, errors)
-			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), savedFormDataNode, ctx.getFileUploads()))
+			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
 					return publishFormData(ctx, savedFileUploads, errors);
@@ -547,13 +550,26 @@ public class FormDataService {
 	 *
 	 * @param projectName
 	 *            project name
+	 * @param form
+	 *            saved form
 	 * @param formDataNode
 	 *            form data node
+	 * @param postedData
+	 *            posted form data
 	 * @param fileUploads
 	 *            validated file uploads
 	 * @return single of the form data node
 	 */
-	private Single<NodeResponse> saveFileUploads(String projectName, NodeResponse formDataNode, Set<FileUpload> fileUploads) {
+	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
+		Set<String> validUploadElements = form.flattened()
+			.filter(FormElement::isActive)
+			.flatMap(elem -> elem instanceof FileElement && !elem.skipElement(postedData)
+				? Stream.of(elem.getName())
+				: Stream.empty())
+			.collect(Collectors.toSet());
+
+		fileUploads = fileUploads.stream().filter(fileUpload -> validUploadElements.contains(fileUpload.name())).collect(Collectors.toSet());
+
 		if (fileUploads.isEmpty()) {
 			return Single.just(formDataNode);
 		}
