@@ -17,11 +17,13 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -187,14 +189,20 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 
 	protected Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, ContainerType ctype, Optional<FilterOperation<?>> maybeExtraFilter) {
 		InternalPermission perm = ctype == ContainerType.PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : READ_PERM;
+		PagingParameters sorting = mapSorting(pagingInfo);
+		Optional<String> maybeParsedFilter = maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty())).or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.of(ctype)));
 		Stream<? extends T> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},
 				new Object[]{},
-				mapSorting(pagingInfo),
+				sorting,
 				Optional.empty(),
-				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty())).or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.of(ctype)))
+				maybeParsedFilter
 			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, maybeExtraFilter.isPresent());
+		if (PersistingRootDao.shouldSort(pagingInfo) || maybeExtraFilter.isPresent()) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, db().countVertices(getPersistanceClass(), new String[] {}, new Object[] {}, maybeParsedFilter, Optional.empty()));
+		} else {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo, maybeExtraFilter.isPresent());
+		}
 	}
 }

@@ -22,6 +22,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -78,7 +80,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type, pagingInfo), pagingInfo);
+		Stream<? extends Node> stream = findAllStream(ac, type, pagingInfo);
+		if (PersistingRootDao.shouldSort(pagingInfo) && PersistingRootDao.shouldPage(pagingInfo)) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, 
+					db().countVertices(getPersistanceClass(), new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getProject().getUuid() }, Optional.empty(), Optional.of(type)));
+		} else {
+			return new DynamicTransformableStreamPageImpl<>(stream, pagingInfo);
+		}
 	}
 
 	@Override
@@ -107,6 +115,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
+	@Override
+	public long countAll(InternalActionContext ac, InternalPermission perm, Optional<ContainerType> maybeContainerType,
+			Optional<FilterOperation<?>> maybeFilter) {
+		return db().countVertices(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getProject() }, 
+				maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), ac.getUser(), perm, Optional.empty())), maybeContainerType);
+	}
+
 	/**
 	 * Find and sort all nodes.
 	 * 
@@ -119,7 +134,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
-			new Object[]{projectUuid},
+			new Object[]{ projectUuid },
 			mapSorting(paging),
 			maybeContainerType,
 			maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
@@ -134,22 +149,23 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 		UserDao userDao = Tx.get().userDao();
 
-		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid(), pagingInfo, Optional.ofNullable(type), Optional.empty()).filter(item -> {
-			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
-		}).filter(item -> {
-			boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
-			if (hasRead) {
-				return true;
-			} else if (type == PUBLISHED) {
-				// Check whether the node is published. In this case we need to check the read publish perm.
-				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
-				if (isPublishedForBranch) {
-					return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
-				}
-			}
-			return false;
-		}).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, getProject().getUuid(), pagingInfo, Optional.ofNullable(type), Optional.empty())
+				.filter(item -> {
+					// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
+					return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
+				}).filter(item -> {
+					boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
+					if (hasRead) {
+						return true;
+					} else if (type == PUBLISHED) {
+						// Check whether the node is published. In this case we need to check the read publish perm.
+						boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
+						if (isPublishedForBranch) {
+							return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
+						}
+					}
+					return false;
+				}).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override

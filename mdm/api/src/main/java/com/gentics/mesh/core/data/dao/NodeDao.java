@@ -478,6 +478,18 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
+	 * Count all contents for the provided project in the action context branch and the container type.
+	 * If the content is published, checks for read published permissions, otherwise check for read permissions. An optional initial data filtering may be applied.
+	 * @param project
+	 * @param ac
+	 * @param languageTags
+	 * @param type
+	 * @param maybeFilter
+	 * @return
+	 */
+	long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter);
+
+	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.
 	 * If the content is published, checks for read published permissions, otherwise check for read permissions
 	 * @param schemaVersion

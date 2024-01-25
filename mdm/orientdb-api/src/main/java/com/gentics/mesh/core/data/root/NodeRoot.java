@@ -28,8 +28,9 @@ public interface NodeRoot extends RootVertex<Node> {
 	Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter);
 
 	@Override
-	default Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission permission,
-			PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+	default Stream<? extends Node> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		return findAllStream(ac, permission, paging, Optional.empty(), maybeFilter);
 	}
+
+	long countAll(InternalActionContext ac, InternalPermission perm, Optional<ContainerType> ofNullable, Optional<FilterOperation<?>> maybeFilter);
 }

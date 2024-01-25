@@ -1,11 +1,13 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
@@ -35,11 +37,14 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 	protected Optional<String> maybeCustomFilter = Optional.empty();
 	protected String[] orderPropsAndDirs = null;
 	protected Direction relationDirection = Direction.OUT;
-	protected final Class<?> vertexClass;
 
-	public MeshOrientGraphQuery(Graph iGraph, Class<?> vertexClass) {
+	protected final Class<?> vertexClass;
+	protected final Optional<TotalsCache> maybeTotalsCache;
+
+	protected MeshOrientGraphQuery(Graph iGraph, Class<?> vertexClass, Optional<TotalsCache> maybeTotalsCache) {
 		super(iGraph);
 		this.vertexClass = vertexClass;
+		this.maybeTotalsCache = maybeTotalsCache;
 	}
 
 	public MeshOrientGraphQuery<T, P> filter(Optional<String> maybeCustomFilter) {
@@ -80,8 +85,24 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 	 * @return
 	 */
 	public abstract Iterable<T> fetch(P extraParam);
-	
-	
+
+	/**
+	 * Fetch the results of this query.
+	 * 
+	 * @param propsAndDirs 
+	 * @param extraParam
+	 * @return
+	 */
+	public abstract long count(P extraParam);
+
+	/**
+	 * Build core query part, with no pagination and ordering.
+	 * 
+	 * @param text a builder to fill the query.
+	 * @return query params
+	 */
+	protected abstract List<Object> buildCoreQuery(StringBuilder text, P extraParam);
+
 	/**
 	 * Sanitize the 'orderBy' input against
 	 * 1. chars disallowed in the field naming

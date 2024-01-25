@@ -1,11 +1,14 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
+import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
@@ -26,8 +29,13 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 
 	protected final String edgeLabel;
 
+
 	public MeshOrientGraphEdgeQuery(Graph iGraph, Class<?> vertexClass, String edgeLabel) {
-		super(iGraph, vertexClass);
+		this(iGraph, vertexClass, edgeLabel, Optional.empty());
+	}
+
+	public MeshOrientGraphEdgeQuery(Graph iGraph, Class<?> vertexClass, String edgeLabel, Optional<TotalsCache> maybeTotalsCache) {
+		super(iGraph, vertexClass, maybeTotalsCache);
 		this.edgeLabel = edgeLabel;
 	}
 
@@ -37,12 +45,75 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 	 * @param propsAndDirs sorting parameters, in a form of 'field sortOrder', 'field sortOrder', etc.
 	 * @return
 	 */
+	@Override
 	public Iterable<Edge> fetch(Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
 		if (limit == 0)
 			return Collections.emptyList();
 
 		final StringBuilder text = new StringBuilder(512);
 
+		List<Object> queryParams = buildCoreQuery(text, maybeFermaTypes);
+
+		// Build the order clause
+		if (orderPropsAndDirs != null && orderPropsAndDirs.length > 0) {
+			text.append(ORDERBY);
+			// format: path.name direction, e.g. 'fields.fullname desc'
+			for (String propAndDir : orderPropsAndDirs) {
+				if (!propAndDir.equals(orderPropsAndDirs[0])) {
+					text.append(", ");
+				}
+				String[] sortParts = propAndDir.split(" ");
+				String sanitizedPart = sanitizeInput(sortParts[0]);
+				text.append("`");
+				text.append(sanitizedPart.replace(".", "-"));
+				text.append("`");
+				if (sortParts.length > 1) {
+					text.append(" ");
+					text.append(sortParts[1]);
+				}
+			}
+		}
+		if (skip > 0 && skip < Integer.MAX_VALUE) {
+			text.append(SKIP);
+			text.append(skip);
+		}
+
+		if (limit > 0 && limit < Integer.MAX_VALUE) {
+			text.append(LIMIT);
+			text.append(limit);
+		}
+		String sqlQuery = text.toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
+
+		log.debug("EDGE QUERY: {}", sqlQuery);
+
+		// Explicit fetch plan is not supported by a newer SQL API, so we use it
+		// to tell apart the usage of a new and old API.
+		if (fetchPlan != null) {
+			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(sqlQuery);
+			query.setFetchPlan(fetchPlan);
+			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
+					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
+		} else {
+			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams.toArray()), false)
+					.map(oresult -> (Edge) new OrientEdgeImpl((OrientBaseGraph) graph, oresult.toElement()))
+					.iterator();
+		}
+	}
+	
+	/**
+	 * For whatever reason Tinkerpop Blueprints ORM did not provide an edge entity, so it has to be done manually.
+	 * 
+	 * @author plyhun
+	 *
+	 */
+	private final class OrientEdgeImpl extends OrientEdge {
+		public OrientEdgeImpl(final OrientBaseGraph rawGraph, final OIdentifiable rawEdge) {
+			super(rawGraph, rawEdge);
+		}
+	}
+
+	@Override
+	protected List<Object> buildCoreQuery(StringBuilder text, Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
 		// First build the fields to retrieve and sort by
 		text.append(QUERY_SELECT);
 		text.append("*");		
@@ -97,61 +168,23 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 			}
 			text.append(filter);
 		});
-
-		// Build the order clause
-		if (orderPropsAndDirs != null && orderPropsAndDirs.length > 0) {
-			text.append(ORDERBY);
-			// format: path.name direction, e.g. 'fields.fullname desc'
-			for (String propAndDir : orderPropsAndDirs) {
-				if (!propAndDir.equals(orderPropsAndDirs[0])) {
-					text.append(", ");
-				}
-				String[] sortParts = propAndDir.split(" ");
-				String sanitizedPart = sanitizeInput(sortParts[0]);
-				text.append("`");
-				text.append(sanitizedPart.replace(".", "-"));
-				text.append("`");
-				if (sortParts.length > 1) {
-					text.append(" ");
-					text.append(sortParts[1]);
-				}
-			}
-		}
-		if (maybeCustomFilter.isPresent() && skip > 0 && skip < Integer.MAX_VALUE) {
-			text.append(SKIP);
-			text.append(skip);
-		}
-
-		if (maybeCustomFilter.isPresent() && limit > 0 && limit < Integer.MAX_VALUE) {
-			text.append(LIMIT);
-			text.append(limit);
-		}
-		String sqlQuery = text.toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
-		log.debug("EDGE QUERY: {}", sqlQuery);
-
-		// Explicit fetch plan is not supported by a newer SQL API, so we use it
-		// to tell apart the usage of a new and old API.
-		if (fetchPlan != null) {
-			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(sqlQuery);
-			query.setFetchPlan(fetchPlan);
-			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
-					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
-		} else {
-			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams.toArray()), false)
-					.map(oresult -> (Edge) new OrientEdgeImpl((OrientBaseGraph) graph, oresult.toElement()))
-					.iterator();
-		}
+		return queryParams;
 	}
-	
-	/**
-	 * For whatever reason Tinkerpop Blueprints ORM did not provide an edge entity, so it has to be done manually.
-	 * 
-	 * @author plyhun
-	 *
-	 */
-	private final class OrientEdgeImpl extends OrientEdge {
-		public OrientEdgeImpl(final OrientBaseGraph rawGraph, final OIdentifiable rawEdge) {
-			super(rawGraph, rawEdge);
-		}
+
+	@Override
+	public long count(Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
+		final StringBuilder text = new StringBuilder(512);
+
+		Object[] queryParams = buildCoreQuery(text, maybeFermaTypes).toArray();
+
+		String sqlQuery = text.insert(0, "SELECT COUNT(1) as count FROM (").append(")").toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
+
+		log.debug("EDGE COUNT QUERY: {}", sqlQuery);
+		System.err.println(Arrays.toString(queryParams));
+
+		Function<String, Long> counter = key -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(key, queryParams), false)
+				.map(oresult -> oresult.<Long>getProperty("count")).findAny().orElse(0L);
+
+		return maybeTotalsCache.map(cache -> cache.get(sqlQuery + Arrays.hashCode(queryParams), counter)).orElseGet(() -> counter.apply(sqlQuery));
 	}
 }
