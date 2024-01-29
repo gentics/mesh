@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
-import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -62,17 +61,17 @@ public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceF
 		List<FilterField<T, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.<T, Boolean>create("isNull", "Tests if the value is null", GraphQLBoolean, 
 				query -> value -> query == (value == null), 
-				Optional.of((query) -> wrapReferencingEdgeFilter("isNull", query, FilterField.isNull() )), false, getOwner()));
+				Optional.of((query) -> wrapReferencingEdgeFilter("isNull", query, FilterField.isNull() )), false, false, getOwner(), Optional.empty()));
 		filters.add(FilterField.<T, Q>create(referenceType, "Checks if any list item does not match the given predicate", referenceFilter.getType(), 
 				query -> val -> val != null && referenceFilter.createPredicate(query).test(val.getReferencedEntity()), 
-				Optional.of((query) -> wrapReferencedEntity(query)), true));
+				Optional.of((query) -> wrapReferencedEntity(query)), true, referenceFilter.isSortable(), Optional.empty(), Optional.of(referenceFilter.getSortingType())));
 		return filters;
 	}
 
 	protected final <I, QQ> FilterField<T, ?> makeWrappedFieldFilter(String filterName, String description, Filter<I, QQ> edgeTypeFilter, Function<T, I> mapper) {
 		return FilterField.<T, QQ>create(filterName, description, edgeTypeFilter.getType(), 
 				query -> val -> val != null && edgeTypeFilter.createPredicate(query).test(mapper.apply(val)), 
-				Optional.of((query) -> wrapReferencingEdgeFilter(filterName, query, edgeTypeFilter)), true, getOwner());
+				Optional.of((query) -> wrapReferencingEdgeFilter(filterName, query, edgeTypeFilter)), true, edgeTypeFilter.isSortable(), getOwner(), Optional.of(edgeTypeFilter.getSortingType()));
 	}
 
 	protected final <I> FilterOperation<?> wrapReferencingEdgeFilter(String fieldName, FilterQuery<?, I> query, Filter<?, I> edgeFilter) {
