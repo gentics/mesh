@@ -998,7 +998,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 			});
 
 			if (success && !CollectionUtils.isEmpty(asserters)) {
-				tx(tx -> asserters.forEach(asserter -> asserter.accept(tx)));
+				tx(tx -> {
+					asserters.forEach(asserter -> asserter.accept(tx));
+				});
 			}
 
 			if (success && expectedEvents != null) {
