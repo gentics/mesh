@@ -52,6 +52,8 @@ import static com.gentics.mesh.core.rest.MeshEvent.USER_CREATED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.USER_UPDATED;
 
+import java.time.temporal.ChronoUnit;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -67,7 +69,7 @@ public class TotalsCacheImpl extends AbstractMeshCache<String, Long> implements 
 
 	private static final Logger log = LoggerFactory.getLogger(TotalsCacheImpl.class);
 
-	private static final long CACHE_SIZE = 100000;
+	private static final long CACHE_SIZE = 10000;
 
 	private static final MeshEvent EVENTS[] = {
 			CLUSTER_NODE_JOINED,
@@ -138,6 +140,7 @@ public class TotalsCacheImpl extends AbstractMeshCache<String, Long> implements 
 				}
 				cache.invalidate();
 			})
+			.expireAfter(30, ChronoUnit.MINUTES)
 			.maxSize(CACHE_SIZE)
 			.name("totals")
 			.build();
