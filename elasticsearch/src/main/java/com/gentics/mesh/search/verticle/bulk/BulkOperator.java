@@ -49,6 +49,8 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 	private final long lengthLimit;
 	private ActualBulkOperator<SearchRequest> operator;
 
+	final AtomicBoolean flushActive = new AtomicBoolean(true);
+
 	public BulkOperator(Vertx vertx, Duration bulkTime, int requestLimit, long lengthLimit) {
 		this.vertx = vertx;
 		this.bulkTime = bulkTime.toMillis();
@@ -86,9 +88,9 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 			public void drain() {
 				// Drain can be run by multiple threads, we should skip draining if one is already in progress.
 				skipIfMultipleThreads(lock, () -> {
-					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushing.compareAndSet(true, false)) {
+					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushActive.get() && flushing.compareAndSet(true, false)) {
 						timer.stop();
-						log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
+						log.error("Emitting bulk of size {} to subscriber", bulkableRequests.size());
 						do {
 							AtomicLong bulkLength = new AtomicLong(0);
 							List<Bulkable> requests = IntStream.range(0, requestLimit)
@@ -100,8 +102,8 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 								.peek(bulkable -> bulkLength.addAndGet(bulkable.bulkLength()))
 								.collect(Collectors.toList());
 							BulkRequest request = new BulkRequest(requests);
-							if (log.isDebugEnabled()) {
-								log.debug("Sending bulk to elasticsearch:\n{}", request);
+							if (log.isTraceEnabled()) {
+								log.trace("Sending bulk to elasticsearch:\n{}", request);
 							}
 							subscriber.onNext(request);
 							BackpressureHelper.produced(requested, 1);
@@ -110,7 +112,9 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 
 					if (!canceled.get() && requested.get() > 0 && !nonBulkableRequests.isEmpty()) {
 						SearchRequest request = nonBulkableRequests.remove();
-						log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
+						if (log.isTraceEnabled()) {
+							log.trace("Emitting remaining non bulkable request to subscriber: {}", request);
+						}
 						subscriber.onNext(request);
 						BackpressureHelper.produced(requested, 1);
 					}
