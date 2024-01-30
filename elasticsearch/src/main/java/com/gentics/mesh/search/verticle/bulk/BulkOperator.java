@@ -90,22 +90,22 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 						timer.stop();
 						log.trace("Emitting bulk of size {} to subscriber", bulkableRequests.size());
 						do {
-							Long[] bulkLength = new Long[] { 0L };
+							AtomicLong bulkLength = new AtomicLong(0);
 							List<Bulkable> requests = IntStream.range(0, requestLimit)
 								.mapToObj(index -> bulkableRequests.poll())
 								.takeWhile(maybeBulkable -> maybeBulkable
-										.filter(bulkable -> bulkLength[0] < lengthLimit)
+										.filter(bulkable -> bulkLength.get() < lengthLimit)
 										.isPresent())
 								.map(Optional::get)
-								.peek(bulkable -> bulkLength[0] += bulkable.bulkLength())
+								.peek(bulkable -> bulkLength.addAndGet(bulkable.bulkLength()))
 								.collect(Collectors.toList());
 							BulkRequest request = new BulkRequest(requests);
 							if (log.isDebugEnabled()) {
 								log.debug("Sending bulk to elasticsearch:\n{}", request);
 							}
 							subscriber.onNext(request);
+							BackpressureHelper.produced(requested, 1);
 						} while (!bulkableRequests.isEmpty());
-						BackpressureHelper.produced(requested, 1);
 					}
 
 					if (!canceled.get() && requested.get() > 0 && !nonBulkableRequests.isEmpty()) {
