@@ -90,7 +90,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 				skipIfMultipleThreads(lock, () -> {
 					if (!canceled.get() && requested.get() > 0 && !bulkableRequests.isEmpty() && flushActive.get() && flushing.compareAndSet(true, false)) {
 						timer.stop();
-						log.error("Emitting bulk of size {} to subscriber", bulkableRequests.size());
+						log.debug("Emitting bulk of size {} to subscriber", bulkableRequests.size());
 						do {
 							AtomicLong bulkLength = new AtomicLong(0);
 							List<Bulkable> requests = IntStream.range(0, requestLimit)
