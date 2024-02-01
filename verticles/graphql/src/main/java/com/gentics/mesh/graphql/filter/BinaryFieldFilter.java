@@ -32,8 +32,8 @@ public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinary
 	@Override
 	protected List<FilterField<HibBinaryField, ?>> getFilters() {
 		List<FilterField<HibBinaryField, ?>> filters = super.getFilters();
-		filters.add(makeWrappedFieldFilter("filename", "Filters by filename", StringFilter.filter(), HibImageDataField::getFileName));
-		filters.add(makeWrappedFieldFilter("mime", "Filters by MIME type", StringFilter.filter(), HibImageDataField::getMimeType));
+		filters.add(makeWrappedFieldFilter("fileName", "Filters by filename", StringFilter.filter(), HibImageDataField::getFileName));
+		filters.add(makeWrappedFieldFilter("mimeType", "Filters by MIME type", StringFilter.filter(), HibImageDataField::getMimeType));
 		return filters;
 	}
 

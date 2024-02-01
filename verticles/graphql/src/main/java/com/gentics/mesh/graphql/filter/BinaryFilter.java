@@ -39,7 +39,7 @@ public class BinaryFilter extends ImageDataFilter<HibBinary> {
 	@Override
 	public List<FilterField<HibBinary, ?>> getFilters() {
 		List<FilterField<HibBinary, ?>> filters = super.getFilters();
-		filters.add(new MappedFilter<>(owner, "checksum", "Filters by SHA512 checksum", StringFilter.filter(),
+		filters.add(new MappedFilter<>(owner, "sha512sum", "Filters by SHA512 checksum", StringFilter.filter(),
 				content -> content == null ? null : content.getSHA512Sum()));
 		return filters;
 	}
