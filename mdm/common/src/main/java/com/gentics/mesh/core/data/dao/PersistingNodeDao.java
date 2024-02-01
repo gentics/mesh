@@ -1517,6 +1517,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
+				// if requested, make the new container the published one
+				if (requestModel.isPublish()) {
+					contentDao.setVersion(newDraftVersion, newDraftVersion.getVersion().nextPublished());
+					setPublished(node, ac, newDraftVersion, branch.getUuid());
+					batch.add(contentDao.onPublish(newDraftVersion, branch.getUuid()));
+				}
+
 				// Purge the old draft
 				if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled( newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
 					contentDao.purge(latestDraftVersion);
@@ -1526,16 +1533,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 
 				updated = true;
+			} else if (requestModel.isPublish()) {
+				// If the located draft version was already published we are done
+				if (!contentDao.isPublished(latestDraftVersion, branch.getUuid())) {
+					HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, languageTag, branch, ac.getUser());
+					// Invoke a store of the document since it must now also be added to the published index
+					batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
+				}
 			}
 
 			if (requestModel.getGrant() != null) {
 				grantRolePermissions(node, ac, requestModel.getGrant());
-			}
-
-			if (requestModel.isPublish()) {
-				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
-				// Invoke a store of the document since it must now also be added to the published index
-				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
 			}
 
 			return updated;

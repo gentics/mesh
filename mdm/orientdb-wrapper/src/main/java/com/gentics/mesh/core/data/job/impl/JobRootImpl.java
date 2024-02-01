@@ -189,6 +189,22 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
+	public Job enqueueConsistencyCheck(HibUser user, boolean repair) {
+		Job job;
+		if (repair) {
+			job = getGraph().addFramedVertex(ConsistencyRepairJobImpl.class);
+			job.setType(JobType.consistencyrepair);
+		} else {
+			job = getGraph().addFramedVertex(ConsistencyCheckJobImpl.class);
+			job.setType(JobType.consistencycheck);
+		}
+		job.setCreationTimestamp();
+		job.setStatus(QUEUED);
+		addItem(job);
+		return job;
+	}
+
+	@Override
 	public HibBaseElement resolveToElement(HibBaseElement permissionRoot, HibBaseElement root, Stack<String> stack) {
 		throw error(BAD_REQUEST, "Jobs are not accessible");
 	}

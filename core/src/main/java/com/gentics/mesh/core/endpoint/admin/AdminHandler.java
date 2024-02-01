@@ -123,7 +123,7 @@ public abstract class AdminHandler extends AbstractHandler {
 			BackupParameters params = ac.getBackupParameters();
 			if (params.isConsistencyCheck()) {
 				log.info("Starting consistency check as requested.");
-				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false).runInExistingTx(tx);
+				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false, false).runInExistingTx(tx);
 				if (result.getResult() == INCONSISTENT) {
 					long count = result.getInconsistencies().size();
 					log.error("Backup aborted due to found inconsistencies: " + count);

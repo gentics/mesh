@@ -1043,13 +1043,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
-		return prepareRequest(GET, "/admin/consistency/check", ConsistencyCheckResponse.class);
+	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameters) {
+		return prepareRequest(GET, "/admin/consistency/check" + getQuery(parameters), ConsistencyCheckResponse.class);
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
-		return prepareRequest(POST, "/admin/consistency/repair", ConsistencyCheckResponse.class);
+	public MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameters) {
+		return prepareRequest(POST, "/admin/consistency/repair" + getQuery(parameters), ConsistencyCheckResponse.class);
 	}
 
 	@Override
