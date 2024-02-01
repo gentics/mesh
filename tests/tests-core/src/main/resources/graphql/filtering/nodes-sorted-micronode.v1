@@ -1,0 +1,44 @@
+{
+		nodes(filter: {
+	    schema: {is: folder}
+	    fields: {
+	      folder: {
+	        micronode: {micronode: {microschema: {is: vcard} }}
+	      }
+	    }
+	  }
+	  sort: {
+	  	fields: {
+	  	  folder: {
+	  	  	micronode: {
+	  	  	  micronode: {
+	  	  	  	fields: {
+	  	  	  	  vcard: {
+	  	  	  	  	address: DESCENDING
+	  	  	  	  }
+	  	  	  	}
+	  	  	  }
+	  	  	}
+	  	  }
+	  	}
+	  }
+	  ) {
+	    # [$.data.nodes.elements.length()=1]
+	    elements {
+	      uuid
+	      schema {
+	        name
+	      }
+	      fields {
+		    ... on folder {
+		      micronode {
+                    ... on vcard {
+	                            address
+						    }
+				}
+		    }
+		  }
+	    }
+	}
+}
+# [$.errors=<is-undefined>]
