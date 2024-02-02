@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
@@ -200,6 +201,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		switch (gqlName) {
 		case "edited": return "fields.last_edited_timestamp";
 		case "editor": return "fields.editor";
+		case "fileName": return BinaryGraphField.BINARY_FILENAME_PROPERTY_KEY;
+		case "imageDominantColor": return BinaryGraphField.BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY;
+		case "mimeType": return BinaryGraphField.BINARY_CONTENT_TYPE_PROPERTY_KEY;
 		}
 		return super.mapGraphQlFieldNameForSorting(gqlName);
 	}

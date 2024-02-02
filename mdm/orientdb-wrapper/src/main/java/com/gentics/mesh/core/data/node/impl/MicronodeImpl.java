@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -54,6 +55,11 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
 		index.createIndex(VertexIndexDefinition.vertexIndex(MicronodeImpl.class)
 			.withField(MICROSCHEMA_VERSION_KEY_PROPERTY, FieldType.STRING));
+
+		GraphRelationships.addUnmappedRelation(MicronodeImpl.class, MicronodeImpl.class, "micronode");
+		GraphRelationships.addUnmappedRelation(MicronodeImpl.class, MicronodeImpl.class, "fields");
+
+		AbstractGraphFieldContainerImpl.init(type, index, MicronodeImpl.class);
 	}
 
 	@Override
