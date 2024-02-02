@@ -17,6 +17,7 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
+		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
 	])
@@ -49,6 +50,10 @@ stage("Setup Build Environment") {
 					sh 'git add .'
 					sh "git commit -m 'Raise version'"
 					GitHelper.addTag(version, 'Release of version ' + version)
+				} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+					version = branchName
+					echo "Building version " + version
+					MavenHelper.setVersion(version)
 				}
 			}
 
