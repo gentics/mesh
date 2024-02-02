@@ -17,7 +17,7 @@ properties([
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
-		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true)."),
+		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (demo and documentation will be skipped)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
 		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step.")
 	])
@@ -160,6 +160,8 @@ stage("Setup Build Environment") {
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
+						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
+							sh "mvn -B -DskipTests -pl '!demo/default,!doc' clean install"
 						} else {
 							sh "mvn -B -DskipTests clean package"
 						}
