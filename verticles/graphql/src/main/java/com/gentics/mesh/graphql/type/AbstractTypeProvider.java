@@ -646,11 +646,17 @@ public abstract class AbstractTypeProvider {
 		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
-		if (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) {
+		if (filters.getRight().isPresent()) {
 			return new PageImpl<>(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()).collect(Collectors.toList()), 
 					pagingInfo, nodeDao.countAllContent(project, gc, languageTags, type, filters.getRight()));
 		} else {
-			return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type), pagingInfo, filters.getLeft(), filters.getRight().isPresent());
+			Stream<NodeContent> stream;
+			if (PersistingRootDao.shouldSort(pagingInfo)) {
+				stream = nodeDao.findAllContent(project, gc, languageTags, type, (PagingParameters) new PagingParametersImpl(1).putSort(pagingInfo.getSort()), filters.getRight());
+			} else {
+				stream = nodeDao.findAllContent(project, gc, languageTags, type);
+			}
+			return applyNodeFilter(stream, pagingInfo, filters.getLeft(), filters.getRight().isPresent());
 		}
 	}
 
