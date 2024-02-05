@@ -119,7 +119,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public long countAll(InternalActionContext ac, InternalPermission perm, Optional<ContainerType> maybeContainerType,
 			Optional<FilterOperation<?>> maybeFilter) {
-		return db().countVertices(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getProject() }, 
+		return db().countVertices(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getProject().getUuid() }, 
 				maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), ac.getUser(), perm, Optional.empty()))
 					.or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.empty())), maybeContainerType);
 	}

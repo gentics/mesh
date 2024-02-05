@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -54,6 +54,19 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 *            Needed permission
 	 */
 	Stream<? extends L> findAllStream(R root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
+
+	/**
+	 * Count all sorted/filtered elements natively. Only use this method if you know that the root->leaf relation only yields a specific kind of item. This also checks
+	 * permissions.
+	 * 
+	 * @param root
+	 * @param ac
+	 * @param readPerm
+	 * @param pagingInfo
+	 * @param maybeFilter
+	 * @return
+	 */
+	long countAll(R root, InternalActionContext ac, InternalPermission permission, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Find the visible elements and return a paged result.

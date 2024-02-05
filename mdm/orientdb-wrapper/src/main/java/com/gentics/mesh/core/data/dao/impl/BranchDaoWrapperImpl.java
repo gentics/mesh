@@ -118,6 +118,12 @@ public class BranchDaoWrapperImpl extends AbstractRootDaoWrapper<BranchResponse,
 	}
 
 	@Override
+	public long countAll(HibProject root, InternalActionContext ac, InternalPermission permission,
+			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getBranchRoot().countAll(ac, permission, pagingInfo, maybeFilter);
+	}
+
+	@Override
 	public Page<? extends HibBranch> findAllNoPerm(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).getBranchRoot().findAllNoPerm(ac, pagingInfo);
