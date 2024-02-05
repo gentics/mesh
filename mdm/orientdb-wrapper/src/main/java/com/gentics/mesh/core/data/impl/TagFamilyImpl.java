@@ -231,7 +231,9 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Page<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
 		PagingParameters sorting = mapSorting(pagingInfo);
-		Optional<String> maybeParsedFilter = maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty())).or(() -> permissionFilter(ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()));
+		Optional<String> maybeParsedFilter = maybeExtraFilter
+				.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
+				.or(() -> permissionFilter(ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()));
 		Stream<? extends Tag> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},

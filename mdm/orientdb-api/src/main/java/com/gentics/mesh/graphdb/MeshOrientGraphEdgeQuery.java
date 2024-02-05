@@ -116,6 +116,7 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 	protected List<Object> buildCoreQuery(StringBuilder text, Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
 		// First build the fields to retrieve and sort by
 		text.append(QUERY_SELECT);
+		text.append(" distinct ");
 		text.append("*");		
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API. On the other hand,

@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.ElementResolver;
-import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
@@ -85,7 +84,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
 			query.has(Direction.IN.name().toLowerCase(), id());
-			query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()"))));
+			query.filter(maybeFilter
+					.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()")))
+					.or(() -> permissionFilter(user, permission, Optional.empty(), Optional.empty())));
 			if (paging.getPerPage() != null) {
 				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
 				query.limit(paging.getPerPage().intValue());

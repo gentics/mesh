@@ -93,6 +93,7 @@ public class MeshOrientGraphVertexQuery extends MeshOrientGraphQuery<Vertex, Opt
 	protected List<Object> buildCoreQuery(StringBuilder text, Optional<ContainerType> maybeContainerType) {
 		// First build the fields to retrieve and sort by
 		text.append(QUERY_SELECT);
+		text.append(" distinct ");
 		text.append("*");
 		// Explicit fetch plan is not supported by a newer SQL API, so we use it
 		// to tell apart the usage of a new and old API. On the other hand,
