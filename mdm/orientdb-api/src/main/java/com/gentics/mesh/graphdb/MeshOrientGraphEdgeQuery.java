@@ -181,7 +181,6 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 		String sqlQuery = text.insert(0, "SELECT COUNT(1) as count FROM (").append(")").toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
 
 		log.debug("EDGE COUNT QUERY: {}", sqlQuery);
-		System.err.println(Arrays.toString(queryParams));
 
 		Function<String, Long> counter = key -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(key, queryParams), false)
 				.map(oresult -> oresult.<Long>getProperty("count")).findAny().orElse(0L);

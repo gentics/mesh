@@ -135,7 +135,6 @@ public class MeshOrientGraphVertexQuery extends MeshOrientGraphQuery<Vertex, Opt
 		String sqlQuery = text.insert(0, "SELECT COUNT(1) as count FROM (").append(")").toString();
 
 		log.debug("VERTEX COUNT QUERY: {}", sqlQuery);
-		System.err.println(Arrays.toString(queryParams));
 
 		Function<String, Long> counter = key -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams), false)
 				.map(oresult -> oresult.<Long>getProperty("count")).findAny().orElse(0L);

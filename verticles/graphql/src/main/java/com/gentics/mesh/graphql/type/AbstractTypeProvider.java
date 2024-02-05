@@ -647,7 +647,7 @@ public abstract class AbstractTypeProvider {
 
 		PagingParameters pagingInfo = getPagingInfo(env);
 		if (filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)) {
-			return new PageImpl(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()).collect(Collectors.toList()), 
+			return new PageImpl<>(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()).collect(Collectors.toList()), 
 					pagingInfo, nodeDao.countAllContent(project, gc, languageTags, type, filters.getRight()));
 		} else {
 			return applyNodeFilter(nodeDao.findAllContent(project, gc, languageTags, type), pagingInfo, filters.getLeft(), filters.getRight().isPresent());

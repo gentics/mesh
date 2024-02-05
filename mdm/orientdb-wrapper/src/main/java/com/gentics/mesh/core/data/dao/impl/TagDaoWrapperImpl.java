@@ -189,6 +189,12 @@ public class TagDaoWrapperImpl extends AbstractCoreDaoWrapper<TagResponse, HibTa
 	}
 
 	@Override
+	public long countAll(HibTagFamily root, InternalActionContext ac, InternalPermission permission,
+			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).countAll(ac, permission, pagingInfo, maybeFilter);
+	}
+
+	@Override
 	public Page<? extends HibTag> findAllNoPerm(HibTagFamily root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return toGraph(root).findAllNoPerm(ac, fixSortingInfo(pagingInfo));
