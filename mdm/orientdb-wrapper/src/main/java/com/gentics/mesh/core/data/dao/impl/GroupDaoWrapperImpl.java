@@ -5,6 +5,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.inject.Inject;
@@ -25,7 +28,6 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -82,6 +84,17 @@ public class GroupDaoWrapperImpl extends AbstractCoreDaoWrapper<GroupResponse, H
 		Group graphGroup = toGraph(group);
 		GroupRoot groupRoot = boot.get().meshRoot().getGroupRoot();
 		return groupRoot.getRoles(graphGroup);
+	}
+
+	@Override
+	public Map<HibGroup, Collection<? extends HibRole>> getRoles(Collection<HibGroup> groups) {
+		Map<HibGroup, Collection<? extends HibRole>> result = new HashMap<>();
+
+		for (HibGroup group : groups) {
+			result.put(group, getRoles(group).list());
+		}
+
+		return result;
 	}
 
 	@Override

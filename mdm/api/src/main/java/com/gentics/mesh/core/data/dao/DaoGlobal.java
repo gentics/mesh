@@ -70,6 +70,17 @@ public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
 	T findByName(String name);
 
 	/**
+	 * Stream the elements with the given names.
+	 * 
+	 * @param names
+	 *            Names of the elements to be loaded
+	 * @return a pair of name and the corresponding element or null value if the element could not be located
+	 */
+	default Stream<Pair<String, T>> findByNames(Collection<String> names) {
+		return names.stream().map(name -> Pair.of(name, findByName(name)));
+	}
+
+	/**
 	 * Delete the element.
 	 * 
 	 * @param element
