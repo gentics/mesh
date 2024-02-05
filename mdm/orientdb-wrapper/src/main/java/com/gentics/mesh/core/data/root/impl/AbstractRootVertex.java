@@ -190,7 +190,9 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	protected Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo, ContainerType ctype, Optional<FilterOperation<?>> maybeExtraFilter) {
 		InternalPermission perm = ctype == ContainerType.PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : READ_PERM;
 		PagingParameters sorting = mapSorting(pagingInfo);
-		Optional<String> maybeParsedFilter = maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty())).or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.of(ctype)));
+		Optional<String> maybeParsedFilter = maybeExtraFilter
+				.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty()))
+				.or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.of(ctype)));
 		Stream<? extends T> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},
