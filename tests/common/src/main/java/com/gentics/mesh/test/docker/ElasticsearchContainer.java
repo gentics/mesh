@@ -41,8 +41,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
 		withStartupTimeout(Duration.ofSeconds(30L));
-//		waitingFor(new HttpWaitStrategy().forPath("/").withStartupTimeout(Duration.ofMinutes(2)));
-		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(1)));
+		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(2)));
 	}
 
 	public ElasticsearchContainer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
