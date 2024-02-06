@@ -49,6 +49,9 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 	private final long lengthLimit;
 	private ActualBulkOperator<SearchRequest> operator;
 
+	/**
+ 	 * This package-protected switch is for testing purposes only. Avoid using it during runtime.
+    	 */
 	final AtomicBoolean flushActive = new AtomicBoolean(true);
 
 	public BulkOperator(Vertx vertx, Duration bulkTime, int requestLimit, long lengthLimit) {
