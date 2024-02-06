@@ -20,6 +20,11 @@ public abstract class AbstractConsistencyCheck implements ConsistencyCheck {
 	private static final Logger log = LoggerFactory.getLogger(AbstractConsistencyCheck.class);
 	private static final long BATCH_SIZE = 10000L;
 
+	@Override
+	public boolean asyncOnly() {
+		return false;
+	}
+
 	/**
 	 * Loads the elements of the given type from the graph and processes them using the given action.
 	 * 

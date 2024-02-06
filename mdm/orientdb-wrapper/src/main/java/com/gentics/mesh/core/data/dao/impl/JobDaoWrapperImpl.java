@@ -85,7 +85,7 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch) {
 		return boot.get().meshRoot().getJobRoot().enqueueBranchMigration(creator, branch);
 	}
-
+	
 	@Override
 	public void delete(HibJob job, BulkActionContext bac) {
 		toGraph(job).delete(bac);
@@ -140,5 +140,10 @@ public class JobDaoWrapperImpl extends AbstractCoreDaoWrapper<JobResponse, HibJo
 	@Override
 	protected RootVertex<Job> getRoot() {
 		return boot.get().meshRoot().getJobRoot();
+	}
+
+	@Override
+	public HibJob enqueueConsistencyCheck(HibUser user, boolean repair) {
+		return boot.get().meshRoot().getJobRoot().enqueueConsistencyCheck(user, repair);
 	}
 }
