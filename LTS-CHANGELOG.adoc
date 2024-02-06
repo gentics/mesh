@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.26]]
 == 1.10.26 (TBD)
 
+icon:check[] Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.
+
 icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
 
 icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
