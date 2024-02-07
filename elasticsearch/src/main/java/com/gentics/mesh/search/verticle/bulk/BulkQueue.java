@@ -2,6 +2,7 @@ package com.gentics.mesh.search.verticle.bulk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -39,5 +40,12 @@ class BulkQueue {
 
 	public List<Bulkable> asList() {
 		return new ArrayList<>(bulkableRequests);
+	}
+
+	public Optional<Bulkable> poll() {
+		return Optional.ofNullable(bulkableRequests.poll()).map(polled -> {
+			bulkLength -= polled.bulkLength();
+			return polled;
+		});
 	}
 }

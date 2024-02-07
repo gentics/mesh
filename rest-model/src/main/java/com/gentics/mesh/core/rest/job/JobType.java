@@ -11,6 +11,10 @@ public enum JobType {
 
 	branch,
 
-	versionpurge
+	versionpurge,
+
+	consistencycheck,
+
+	consistencyrepair
 
 }

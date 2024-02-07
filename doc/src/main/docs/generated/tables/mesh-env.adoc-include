@@ -362,11 +362,11 @@
 | *MESH_HTTPS_PORT*
 | Override the configured server https port.
 
-| *MESH_IMAGE_MAX_WIDTH*
-| Override the max width for image resize operations.
-
 | *MESH_CONTENT_BATCH_SIZE*
 | Override the batch page size. Default: 5000
+
+| *MESH_IMAGE_MAX_WIDTH*
+| Override the max width for image resize operations.
 
 | *MESH_CLUSTER_INIT*
 | Enable or disable the initial cluster database setup. This is useful for testing.

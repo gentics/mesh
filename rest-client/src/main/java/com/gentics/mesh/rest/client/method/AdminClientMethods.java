@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.parameter.BackupParameters;
+import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.monitoring.MonitoringRestClient;
@@ -93,16 +94,18 @@ public interface AdminClientMethods {
 	/**
 	 * Invoke a consistency check of the graph database.
 	 * 
+	 * @param parameters optional parameters
 	 * @return
 	 */
-	MeshRequest<ConsistencyCheckResponse> checkConsistency();
+	MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameters);
 
 	/**
 	 * Invoke a consistency check and repair of the graph database.
 	 * 
+	 * @param parameters optional parameters
 	 * @return
 	 */
-	MeshRequest<ConsistencyCheckResponse> repairConsistency();
+	MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameters);
 
 	/**
 	 * Gets zip file containing debug information.
