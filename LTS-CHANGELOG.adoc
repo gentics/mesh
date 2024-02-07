@@ -17,6 +17,16 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.27]]
+== 1.10.27 (TBD)
+
+icon:check[] REST client: Improves error handling for WebSocket errors.
+
+[[v1.10.26]]
+== 1.10.26 (TBD)
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
 [[v1.10.25]]
 == 1.10.25 (17.01.2024)
 
@@ -27,7 +37,7 @@ icon:check[] GraphQL: Fetching of micronode fields has been improved to allow ba
 
 icon:check[] REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.
 
-icon:check[] GraphQL: Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed. 
+icon:check[] GraphQL: Some of (micro)schema fields related queries rely on the target (micro)schema having at least one field, crashing in HTTP 500 otherwise. This has now been fixed.
 
 [[v1.10.23]]
 == 1.10.23 (20.12.2023)
@@ -38,7 +48,7 @@ icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has
 
 icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
 
-icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string. 
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
 
 [[v1.10.22]]
 == 1.10.22 (06.12.2023)
@@ -66,7 +76,7 @@ icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more 
 [[v1.10.19]]
 == 1.10.19 (02.11.2023)
 
-icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests. 
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
 
 == 1.10.18 (24.10.2023)
 
@@ -92,7 +102,7 @@ icon:check[] Core: More NPE occurrences during the massive concurrent publishing
 [[v1.10.15]]
 == 1.10.15 (20.09.2023)
 
-icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge, 
+icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge,
 throwing an NPE. This has now been fixed.
 
 [[v1.10.14]]
@@ -140,7 +150,7 @@ icon:check[] GraphQL: Performance of queries that return large amounts of nodes 
 [[v1.9.14]]
 == 1.9.14 (19.04.2023)
 
-icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
 
 CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
@@ -187,7 +197,7 @@ icon:check[] Core: Corner case of updating the webroot info might throw a false 
 [[v1.8.21]]
 == 1.8.21 (19.04.2023)
 
-icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved. 
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
 
 CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
 
