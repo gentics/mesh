@@ -156,7 +156,7 @@ public class CsvExporter extends Exporter {
 			String fieldLabel = fieldLabels.getOrDefault(fieldName, fieldName);
 			String annotatedFieldLabel = this.normalizeValue(fieldName.equals(fieldLabel)
 					? fieldName
-					: fieldName + headerDelimiter + fieldLabel);
+					: options.isIncludeNameFirst() ? fieldName + headerDelimiter + fieldLabel : fieldLabel + headerDelimiter + fieldName);
 
 			headers.add(annotatedFieldLabel);
 
