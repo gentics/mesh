@@ -163,6 +163,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Arrays.asList("node-breadcrumb-query", true, false, "draft"),
 			Arrays.asList("node-breadcrumb-query-with-lang", true, false, "draft"),
 			Arrays.asList("node-language-fallback-query", true, false, "draft"),
+			Arrays.asList("node-schema-languages-query", true, false, "draft"),
 			Arrays.asList("node-languages-query", true, false, "draft", (Consumer<JsonObject>) GraphQLEndpointTest::checkNodeLanguageContent),
 			Arrays.asList("node-not-found-webroot-query", true, false, "draft"),
 			Arrays.asList("node-webroot-query", true, false, "draft"),
