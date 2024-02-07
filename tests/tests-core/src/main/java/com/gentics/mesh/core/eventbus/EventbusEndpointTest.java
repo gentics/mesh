@@ -14,11 +14,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -31,12 +26,16 @@ import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.RxUtil;
-
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 @MeshTestSetting(testSize = FULL, startServer = true)
@@ -153,6 +152,71 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 
 		// Send msg
 		ws.publishEvent("custom.myEvent", "someText");
+	}
+
+	@Test(timeout = 4_000)
+	public void testMultipleRegistration(TestContext context) {
+		Async asyncRec = context.async();
+
+		// Registering the same event twice must not cause an error.
+		ws.registerEvents("custom.myEvent");
+		ws.registerEvents("custom.myEvent");
+
+		// Handle msgs
+		ws.events().firstOrError().subscribe(event -> {
+			String body = event.getBodyAsString();
+			assertEquals("someText", body);
+			asyncRec.complete();
+		});
+
+		// Send msg
+		ws.publishEvent("custom.myEvent", "someText");
+	}
+
+	// TODO: Find a way to pass the test when there _is_ an error while registering the invalid event.
+	@Ignore
+	@Test(timeout = 4_000)
+	public void testOverlongAddress(TestContext context) {
+		Async asyncRec = context.async();
+
+		// Registering an overlong address must not cause an error.
+		ws.registerEvents("custom.314159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196");
+
+		// Handle msgs
+		ws.events().firstOrError()
+			.subscribe(
+				event -> {
+					// This should not happen.
+				},
+				error -> {
+					asyncRec.complete();
+				});
+
+		// Send msg
+		ws.publishEvent("custom.314159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798214808651328230664709384460955058223172535940812848111745028410270193852110555964462294895493038196", "someText");
+	}
+
+	// TODO: Find a way to pass the test when there _is_ an error while registering the invalid event.
+	@Ignore
+	@Test(timeout = 4_000)
+	public void testInvalidCustomAddress(TestContext context) {
+		Async asyncRec = context.async();
+
+		// Registering an invalid custom address must not cause an error.
+		ws.registerEvents("invalid.myEvent");
+
+		// Handle msgs
+		ws.events().firstOrError()
+			.subscribe(
+				event -> {
+					// This should not happen.
+				},
+				error -> {
+					asyncRec.complete();
+				});
+
+		// Send msg
+		ws.publishEvent("invalid.myEvent", "someText");
 	}
 
 	// TODO Fix this test
