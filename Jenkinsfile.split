@@ -158,7 +158,7 @@ stage("Setup Build Environment") {
 					sshagent(["git"]) {
 						try {
 							withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!ferma,!demo/default,!doc,!performance-tests' test -DfailIfNoTests=false"
+								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!ferma,!demo/default,!doc,!performance-tests' test -DfailIfNoTests=false"
 							}
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
