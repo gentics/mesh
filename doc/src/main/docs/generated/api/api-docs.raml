@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.0.13"
+version: "2.0.14"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "01f51662a78743ceb87485b9b41e9824"
+                            "uuid" : "d63c71731f2549b3b1bdc5c7e6f14418"
                           } ]
                         }
             responses: 
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "beee2593db54496dad132da14c9f0625"
+                            "uuid" : "35ba7df9070145ce89c11da3e0348f16"
                           } ]
                         }
             responses: 
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8d5c906bfece46afa07589d6178c88d3"
+                            "uuid" : "c22a86365bc3493c9607fb85c5f629fa"
                           } ]
                         }
             responses: 
@@ -2865,7 +2865,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b0f13e20459445aeb6e0c1e57fe604c7"
+                            "uuid" : "dda6b8a397a44c7491daf52a8cb3e5d7"
                           } ]
                         }
             responses: 
@@ -3845,7 +3845,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c4c9f66232b3497d8ec07aa85bcbd063"
+                            "uuid" : "e4bd077f81634f0cac2be5f40bafd2b3"
                           } ]
                         }
             responses: 
@@ -4502,7 +4502,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "66f780cb93db43cb8ae199fe8bacd371"
+                            "uuid" : "d542dcb4c73c49e0b9a694d4b07669c7"
                           } ]
                         }
             responses: 
@@ -4783,6 +4783,14 @@ mediaType: application/json
     /consistency/check: 
         get: 
             description: Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.
+            queryParameters: 
+                async: 
+                    description: Specifiy whether the consistency check should be executed asynchronously (as job).
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "false"
+                    example: "true"
             responses: 
                 "200": 
                     description: Consistency check report
@@ -4811,6 +4819,14 @@ mediaType: application/json
     /consistency/repair: 
         post: 
             description: Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.
+            queryParameters: 
+                async: 
+                    description: Specifiy whether the consistency check should be executed asynchronously (as job).
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "false"
+                    example: "true"
             responses: 
                 "200": 
                     description: Consistency check and repair report
@@ -7686,7 +7702,7 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "2.0.13",
+                                  "meshVersion" : "2.0.14",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -10206,7 +10222,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "3c302ca4b72d4dd8aa17dce73c463b16"
+                            "uuid" : "e97d8715fc414dd29609a395afd5f2f3"
                           } ]
                         }
             responses: 
@@ -11716,7 +11732,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f0b52bccbd8d497481b6285ffd0ee1a8"
+                            "uuid" : "ccc91e53a60448cc810601b913a47cbc"
                           } ]
                         }
             responses: 
@@ -12532,7 +12548,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6e02e4abcc294f1c9cbcfd92b80b4f0b"
+                            "uuid" : "792f14b7fdcc457ba938d864fe92f9cf"
                           } ]
                         }
             responses: 
@@ -14232,7 +14248,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "3eb72fa371d44451a1a75f6321bc99c9"
+                            "uuid" : "230d072318774487b955eb339a8434ac"
                           } ]
                         }
             responses: 
