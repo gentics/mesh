@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -16,11 +17,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibField;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -60,7 +64,9 @@ import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -74,6 +80,25 @@ import com.syncleus.ferma.traversals.EdgeTraversal;
  */
 public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraphFieldContainerImpl implements GraphFieldContainer {
 	static final Logger log = LoggerFactory.getLogger(AbstractGraphFieldContainerImpl.class);
+
+	/**
+	 * Initialize the vertex type and indices.
+	 * 
+	 * @param type
+	 * @param index
+	 */
+	public static void init(TypeHandler type, IndexHandler index, Class<? extends AbstractGraphFieldContainerImpl> cls) {
+		GraphRelationships.addRelation(cls, MicronodeImpl.class, "*-micronode", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, BinaryImpl.class, "*-binary", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY, 
+				Optional.of(new String[] { BinaryGraphField.BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, BinaryGraphField.BINARY_CONTENT_TYPE_PROPERTY_KEY, BinaryGraphField.BINARY_FILENAME_PROPERTY_KEY }), false);
+		GraphRelationships.addRelation(cls, S3BinaryImpl.class, "*-s3binary", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, StringGraphFieldListImpl.class, "*-stringlist", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, NumberGraphFieldListImpl.class, "*-numberlist", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, BooleanGraphFieldListImpl.class, "*-booleanlist", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, HtmlGraphFieldListImpl.class, "*-htmllist", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, NodeGraphFieldListImpl.class, "*-nodelist", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, MicronodeGraphFieldListImpl.class, "*-micronodelist", HAS_LIST, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+	}
 
 	/**
 	 * Return the parent node of the field container.

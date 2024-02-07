@@ -207,7 +207,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("filtering/nodes-binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-s3binary-field-native", true, false, "draft"),
 				Arrays.asList("filtering/nodes-nodelist-field-native", true, false, "draft"),
-				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft")
+				Arrays.asList("filtering/nodes-micronodelist-field-native", true, false, "draft"),
+				Arrays.asList("filtering/nodes-sorted-micronode", true, false, "draft"),
+				Arrays.asList("filtering/nodes-sorted-binary", true, false, "draft")
 			);
 	}
 
@@ -407,7 +409,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
 			binary.setImageHeight(10).setImageWidth(20).setSize(2048);
 			container.createBinary("binary", binary).setImageDominantColor("00FF00")
-				.setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg");
+				.setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg").setFileName("some_image.jpg");
 
 			// s3binary
 			S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
@@ -534,7 +536,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				assertion.accept(jsonResponse);
 			}
 		} catch (Throwable e) {
-			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, response.toJson());
+			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, jsonResponse.encodePrettily());
 			throw e;
 		}
 	}
