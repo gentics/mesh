@@ -1517,16 +1517,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 
+				// Purge the old draft
+				if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled( newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
+					contentDao.purge(latestDraftVersion);
+				}
+
 				// if requested, make the new container the published one
 				if (requestModel.isPublish()) {
 					contentDao.setVersion(newDraftVersion, newDraftVersion.getVersion().nextPublished());
 					setPublished(node, ac, newDraftVersion, branch.getUuid());
 					batch.add(contentDao.onPublish(newDraftVersion, branch.getUuid()));
-				}
-
-				// Purge the old draft
-				if (ac.isPurgeAllowed() && contentDao.isAutoPurgeEnabled( newDraftVersion) && contentDao.isPurgeable(latestDraftVersion)) {
-					contentDao.purge(latestDraftVersion);
 				}
 
 				latestDraftVersion = newDraftVersion;
