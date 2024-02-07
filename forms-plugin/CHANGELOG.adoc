@@ -14,6 +14,7 @@
 == 1.10.12 (TBD)
 
 icon:check[] Forms: Fixes checks for validation and storing of file elements inside a conditional container. File elements marked as mandatory were required even if the file element was in a conditional container that was to be ignored.
+icon:check[] Forms: Add the possibility to switch the possitions of form name and label in the CSV export.
 
 [[v1.10.11]]
 == 1.10.11 (2024-01-10)

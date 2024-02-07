@@ -7,6 +7,7 @@ public class ExportOptions {
 
 	private boolean includeUuid = false;
 	private boolean includeCreationTimestamp = false;
+	private boolean includeNameFirst = true;
 
 	/**
 	 * Whether to include the node UUID in the export.
@@ -49,6 +50,27 @@ public class ExportOptions {
 	 */
 	public ExportOptions setIncludeCreationTimestamp(boolean includeCreationTimestamp) {
 		this.includeCreationTimestamp = includeCreationTimestamp;
+
+		return this;
+	}
+
+	/**
+	 * Whether to first list name or the label in the export. Default is label first.
+	 *
+	 * @return Whether is the name first listed in the export
+	 */
+	public boolean isIncludeNameFirst() {
+		return includeNameFirst;
+	}
+
+	/**
+	 * Set whether to include the node NameFirst in the export.
+	 *
+	 * @param includeNameFirst Whether to include the node NameFirst in the export
+	 * @return Reference to this for fluent API access
+	 */
+	public ExportOptions setIncludeNameFirst(boolean includeNameFirst) {
+		this.includeNameFirst = includeNameFirst;
 
 		return this;
 	}
