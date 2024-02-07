@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "1.10.25"
+version: "1.10.26"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -1515,7 +1515,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "de93fc3743aa4f9099f53cb1f83b365b"
+                            "uuid" : "b67e8fa887ff4b869e51a713074cc63d"
                           } ]
                         }
             responses: 
@@ -3035,7 +3035,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e83a43d9ff5540d099f71e662b5196f1"
+                            "uuid" : "11f08dd439784e85b0d880e6ea8ff2b8"
                           } ]
                         }
             responses: 
@@ -4328,7 +4328,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "912d64a43b1145c0a6a2adaca3b9701f"
+                            "uuid" : "2775eaf6ad2b4782a88b212f44b75b69"
                           } ]
                         }
             responses: 
@@ -6702,7 +6702,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "d809242d4fb24a908666821bd450f099"
+                            "uuid" : "71d2a1237c8b4269825ffc310a6b77e4"
                           } ]
                         }
             responses: 
@@ -9018,7 +9018,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "48d306206dea43bab44e29f9b6f1dbd6"
+                            "uuid" : "a6ff777c2a2f45b6a06ac9a0105a9063"
                           } ]
                         }
             responses: 
@@ -10683,7 +10683,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "911c94fb23a342f9acf5aa50f584f9be"
+                            "uuid" : "c547f6c0681440648bfe5acb3d07999b"
                           } ]
                         }
             responses: 
@@ -11295,6 +11295,14 @@ mediaType: application/json
     /consistency/check: 
         get: 
             description: Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.
+            queryParameters: 
+                async: 
+                    description: Specifiy whether the consistency check should be executed asynchronously (as job).
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "false"
+                    example: "true"
             responses: 
                 "200": 
                     description: Consistency check report
@@ -11380,6 +11388,14 @@ mediaType: application/json
     /consistency/repair: 
         post: 
             description: Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.
+            queryParameters: 
+                async: 
+                    description: Specifiy whether the consistency check should be executed asynchronously (as job).
+                    type: boolean
+                    required: false
+                    repeat: false
+                    default: "false"
+                    example: "true"
             responses: 
                 "200": 
                     description: Consistency check and repair report
@@ -11887,7 +11903,7 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "The type of the job.",
-                                            "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
+                                            "enum" : [ "schema", "microschema", "branch", "versionpurge", "consistencycheck", "consistencyrepair" ]
                                           },
                                           "status" : {
                                             "type" : "string",
@@ -12068,7 +12084,7 @@ mediaType: application/json
                                       "type" : "string",
                                       "required" : true,
                                       "description" : "The type of the job.",
-                                      "enum" : [ "schema", "microschema", "branch", "versionpurge" ]
+                                      "enum" : [ "schema", "microschema", "branch", "versionpurge", "consistencycheck", "consistencyrepair" ]
                                     },
                                     "status" : {
                                       "type" : "string",
@@ -17062,7 +17078,7 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "1.10.25",
+                                  "meshVersion" : "1.10.26",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
@@ -22815,7 +22831,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "1d3e39fa019144059ca616cdf5e74f13"
+                            "uuid" : "c51e96e631ff450b90939f084c9aa7fb"
                           } ]
                         }
             responses: 
@@ -26195,7 +26211,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e6440f797dd54ec3bdf40934581c2c3f"
+                            "uuid" : "87d513024e424dd69e046f17a2d07413"
                           } ]
                         }
             responses: 
@@ -28058,7 +28074,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "33c8cb6e40454919a8d638d055b2aebf"
+                            "uuid" : "b3d6b1c82f8d4de3a42a46dfab79d17b"
                           } ]
                         }
             responses: 
@@ -31866,7 +31882,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "70ab0b5ec7f647babc8cde6cb3d27f39"
+                            "uuid" : "58cd09305d5746248342cb9b6bac40a3"
                           } ]
                         }
             responses: 
