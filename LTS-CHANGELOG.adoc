@@ -22,6 +22,14 @@ All fixes and changes in LTS releases will be released the next minor release. C
 
 icon:check[] GraphQL: When an inexisting language has been requested for a node, the schema info was not loaded as well. This has been fixed.
 
+icon:check[] Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+
+icon:check[] Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
 [[v1.10.25]]
 == 1.10.25 (17.01.2024)
 

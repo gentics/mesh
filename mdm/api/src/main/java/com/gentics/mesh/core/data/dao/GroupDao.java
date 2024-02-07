@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
+import java.util.Map;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
@@ -112,6 +115,13 @@ public interface GroupDao extends DaoGlobal<HibGroup>, DaoTransformable<HibGroup
 	 * @return Traversal of roles
 	 */
 	Result<? extends HibRole> getRoles(HibGroup group);
+
+	/**
+	 * Return the roles for all given groups
+	 * @param groups collection of groups
+	 * @return map of group to the collections of roles
+	 */
+	Map<HibGroup, Collection<? extends HibRole>> getRoles(Collection<HibGroup> groups);
 
 	/**
 	 * Check whether the user has been assigned to the group.

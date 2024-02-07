@@ -38,4 +38,8 @@ public class GroupUserAssignModel extends AbstractMeshEventModel {
 		this.user = user;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%s, group: %s, user: %s", getEvent(), group, user);
+	}
 }

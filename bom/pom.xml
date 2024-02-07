@@ -33,7 +33,7 @@
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
-		<testcontainers.version>1.17.6</testcontainers.version>
+		<testcontainers.version>1.19.4</testcontainers.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->

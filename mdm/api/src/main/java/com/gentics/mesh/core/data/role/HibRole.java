@@ -11,6 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNamedBaseElement;
 import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.group.HibGroup;
@@ -23,7 +24,7 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for role.
  */
-public interface HibRole extends HibCoreElement<RoleResponse>, HibReferenceableElement<RoleReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
+public interface HibRole extends HibCoreElement<RoleResponse>, HibReferenceableElement<RoleReference>, HibUserTracking, HibBucketableElement, HibNamedBaseElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.ROLE, ROLE_CREATED, ROLE_UPDATED, ROLE_DELETED);
 
