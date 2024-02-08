@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_DELETED;
 import static com.gentics.mesh.core.rest.MeshEvent.BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_DATABASE_CHANGE_STATUS;
 import static com.gentics.mesh.core.rest.MeshEvent.CLUSTER_NODE_JOINED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,6 +30,7 @@ public class ProjectBranchNameCacheImpl extends AbstractNameCache<HibBranch> imp
 				BRANCH_DELETED,
 				CLUSTER_NODE_JOINED,
 				CLUSTER_DATABASE_CHANGE_STATUS,
+				PROJECT_LATEST_BRANCH_UPDATED
 			});
 	}
 }
