@@ -54,6 +54,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -293,7 +294,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		} else {
 			perms = Collections.singletonList(permission);
 		}
-		String roleUuids = StreamUtil.toStream(GraphDBTx.getGraphTx().userDao().getRoles(user)).map(role -> String.format("'%s'", role.getUuid())).collect(Collectors.joining(",", "[", "]"));
+		String roleUuids = StreamUtil.toStream(GraphDBTx.getGraphTx().userDao().getRoles(user)).map(HibRole::getUuid).collect(Collectors.joining("','", "['", "']"));
 		return Optional.of(perms.stream().map(perm -> String.format(" ( %s%s CONTAINSANY %s) ", 
 				maybeOwner.map(owner -> owner + ".").orElse(StringUtils.EMPTY), perm.propertyKey(), roleUuids)).collect(Collectors.joining(" OR ")));
 	}
