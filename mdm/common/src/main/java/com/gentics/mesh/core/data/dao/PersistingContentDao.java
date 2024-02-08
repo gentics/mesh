@@ -683,7 +683,7 @@ public interface PersistingContentDao extends ContentDao {
 			String segmentInfo = composeSegmentInfo(parentNode, segment);
 
 			String currentSegmentInfo = edge.getSegmentInfo();
-			if (StringUtils.equals(segmentInfo, currentSegmentInfo)) {
+			if (StringUtils.equals(segmentInfo, currentSegmentInfo) || (StringUtils.isEmpty(segmentInfo) && StringUtils.isEmpty(currentSegmentInfo))) {
 				return true;
 			}
 

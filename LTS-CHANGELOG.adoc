@@ -20,10 +20,12 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.27]]
 == 1.10.27 (TBD)
 
-icon:check[] REST client: Improves error handling for WebSocket errors.
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
 
 [[v1.10.26]]
-== 1.10.26 (TBD)
+== 1.10.26 (07.02.2024)
+
+icon:check[] REST client: Improves error handling for WebSocket errors.
 
 icon:check[] GraphQL: When an inexisting language has been requested for a node, the schema info was not loaded as well. This has been fixed.
 
