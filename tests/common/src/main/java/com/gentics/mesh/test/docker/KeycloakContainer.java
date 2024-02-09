@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,13 +30,25 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
-	private static final String REALM_CONFIG_PATH = "/opt/jboss/keycloak/realm.json";
+	private static final String REALM_CONFIG_PATH = "/realms";
+	private static final String REALM_CONFIG_NAME = "/realm.json";
 
-	private boolean withConfig = false;
+	private final boolean withConfig;
+	private final boolean withConfigFolder;
+	private final List<String> customArgs;
+
+	public KeycloakContainer(String classPathToConfig, String containerName, String keycloakVersion, List<String> customArgs, boolean withConfigFolder) {
+		super(prepareDockerImage(loadConfig(classPathToConfig), containerName, keycloakVersion));
+		this.withConfig = true;
+		this.withConfigFolder = withConfigFolder;
+		this.customArgs = customArgs;
+	}
 
 	public KeycloakContainer(String classPathToConfig, String keycloakVersion) {
-		super(prepareDockerImage(loadConfig(classPathToConfig), keycloakVersion));
+		super(prepareDockerImage(loadConfig(classPathToConfig), "jboss/keycloak", keycloakVersion));
 		this.withConfig = true;
+		this.withConfigFolder = false;
+		this.customArgs = Arrays.asList("-b", "0.0.0.0");
 	}
 
 	public KeycloakContainer(String classPathToConfig) {
@@ -53,25 +66,24 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 		setStartupAttempts(1);
 
 		List<String> args = new ArrayList<>();
-		args.add("-b");
-		args.add("0.0.0.0");
 		args.add("-Dkeycloak.migration.usersExportStrategy=SAME_FILE");
 		args.add("-Dkeycloak.migration.strategy=OVERWRITE_EXISTING");
+		customArgs.stream().forEach(args::add);
 
 		if (withConfig) {
-			args.add("-Dkeycloak.import=" + REALM_CONFIG_PATH);
+			args.add("-Dkeycloak.import=" + REALM_CONFIG_PATH + (withConfigFolder ? "" : REALM_CONFIG_NAME));
 		}
 		withCommand(args.stream().toArray(String[]::new));
 	}
 
-	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig, String version) {
+	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig, String containerName, String version) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("keycloak-mesh", true);
 		StringBuilder dockerFile = new StringBuilder();
 		dockerFile.append(
-				"FROM " + System.getProperty("mesh.container.image.prefix", "") + "jboss/keycloak:" + version + "\n");
+				"FROM " + System.getProperty("mesh.container.image.prefix", "") + containerName + ":" + version + "\n");
 
 		if (realmConfig != null) {
-			dockerFile.append("ADD /realm.json " + REALM_CONFIG_PATH + "\n");
+			dockerFile.append("ADD " + REALM_CONFIG_NAME + " " + REALM_CONFIG_PATH + REALM_CONFIG_NAME + "\n");
 			dockerImage.withFileFromString("/realm.json", realmConfig.encodePrettily());
 		}
 		dockerImage.withFileFromString("/Dockerfile", dockerFile.toString());
