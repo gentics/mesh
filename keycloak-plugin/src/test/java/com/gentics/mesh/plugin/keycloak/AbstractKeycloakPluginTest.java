@@ -8,17 +8,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
 import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
@@ -33,18 +30,15 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
+public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 
-	@ClassRule
-	public static final KeycloakContainer keycloak = new KeycloakContainer("/keycloak/realm.json", "8.0.1")
-		.waitingFor(Wait.forHttp("/auth/realms/master-test"));
+	public static KeycloakContainer keycloak = null;
 
-	@BeforeClass
-	public static void configurePlugin() {
-		KeycloakTestPlugin.config = new KeycloakPluginConfig()
-			.setRealmName("master-test")
-			.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort())
-			.setLoadPublicKeys(true);
+	@AfterClass
+	public static void cleanup() {
+		if (keycloak != null) {
+			keycloak.close();
+		}
 	}
 
 	@Rule
