@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.27]]
+== 1.10.27 (TBD)
+
+icon:check[] Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
 [[v1.10.26]]
 == 1.10.26 (07.02.2024)
 
