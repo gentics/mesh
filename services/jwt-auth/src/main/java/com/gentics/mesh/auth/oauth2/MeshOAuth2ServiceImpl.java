@@ -42,7 +42,6 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
-import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -429,6 +428,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 	 * @param admin admin user
 	 * @throws CannotWriteException
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin) throws CannotWriteException {
 		RoleDao roleDao = tx.roleDao();
 		GroupDao groupDao = tx.groupDao();
@@ -470,7 +470,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		});
 
 		// check which groups are not yet assigned to the user and add them
-		List<? extends HibGroup> assignedGroups = userDao.getGroups(authUser).list();
+		List<HibGroup> assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		List<HibGroup> toAssign = new ArrayList<>(groupsHelper.getMappedEntities());
 		toAssign.removeAll(assignedGroups);
 
@@ -483,6 +483,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			if (!groupsHelper.wasCreated(group)) {
 				batch.add(group.onUpdated());
 			}
+			assignedGroups.add(group);
 		}
 
 		// collect information about groups <-> roles assignment
@@ -547,6 +548,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				for (HibRole role : rolesToAssign) {
 					groupDao.addRole(group, role);
 					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
+					rolesPerGroup.getOrDefault(group, new ArrayList()).add(role);
 				}
 			}
 		}
