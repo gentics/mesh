@@ -66,9 +66,9 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 		setStartupAttempts(1);
 
 		List<String> args = new ArrayList<>();
+		customArgs.stream().forEach(args::add);
 		args.add("-Dkeycloak.migration.usersExportStrategy=SAME_FILE");
 		args.add("-Dkeycloak.migration.strategy=OVERWRITE_EXISTING");
-		customArgs.stream().forEach(args::add);
 
 		if (withConfig) {
 			args.add("-Dkeycloak.import=" + REALM_CONFIG_PATH + (withConfigFolder ? "" : REALM_CONFIG_NAME));
@@ -77,14 +77,13 @@ public class KeycloakContainer extends GenericContainer<KeycloakContainer> {
 	}
 
 	public static ImageFromDockerfile prepareDockerImage(JsonObject realmConfig, String containerName, String version) {
-		ImageFromDockerfile dockerImage = new ImageFromDockerfile("keycloak-mesh", true);
+		ImageFromDockerfile dockerImage = new ImageFromDockerfile("keycloak-mesh-" + containerName + "-" + version, true);
 		StringBuilder dockerFile = new StringBuilder();
-		dockerFile.append(
-				"FROM " + System.getProperty("mesh.container.image.prefix", "") + containerName + ":" + version + "\n");
+		dockerFile.append("FROM ").append(System.getProperty("mesh.container.image.prefix", "")).append(containerName).append(":").append(version).append("\n");
 
 		if (realmConfig != null) {
-			dockerFile.append("ADD " + REALM_CONFIG_NAME + " " + REALM_CONFIG_PATH + REALM_CONFIG_NAME + "\n");
-			dockerImage.withFileFromString("/realm.json", realmConfig.encodePrettily());
+			dockerFile.append("ADD ").append(REALM_CONFIG_NAME).append(" ").append(REALM_CONFIG_PATH).append(REALM_CONFIG_NAME).append("\n");
+			dockerImage.withFileFromString(REALM_CONFIG_NAME, realmConfig.encodePrettily());
 		}
 		dockerImage.withFileFromString("/Dockerfile", dockerFile.toString());
 		return dockerImage;

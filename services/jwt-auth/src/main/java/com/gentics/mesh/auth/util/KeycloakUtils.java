@@ -82,7 +82,7 @@ public final class KeycloakUtils {
 	public static Set<JsonObject> loadJWKs(String protocol, String host, int port, String realmName, Optional<String> maybeCustomRealmUrlFormat) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
-			.url(String.format(maybeCustomRealmUrlFormat.orElse(DEFAULT_REALM_URL_FORMAT) + "/protocol/openid-connect/certs", protocol, host, port, realmName))
+			.url(String.format(maybeCustomRealmUrlFormat.orElse(DEFAULT_REALM_URL_FORMAT), protocol, host, port, realmName) + "/protocol/openid-connect/certs")
 			.build();
 
 		try (Response response = httpClient().newCall(request).execute()) {
@@ -190,7 +190,7 @@ public final class KeycloakUtils {
 		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
 		Request request = new Request.Builder()
 			.post(body)
-			.url(String.format(DEFAULT_REALM_URL_FORMAT + "/protocol/openid-connect/token", protocol, host, port, realmName))
+			.url(String.format(maybeCustomRealmUrlFormat.orElse(DEFAULT_REALM_URL_FORMAT), protocol, host, port, realmName) + "/protocol/openid-connect/token")
 			.build();
 
 		Response response = httpClient().newCall(request).execute();
