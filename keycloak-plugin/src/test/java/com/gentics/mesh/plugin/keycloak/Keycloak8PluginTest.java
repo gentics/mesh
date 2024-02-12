@@ -21,6 +21,7 @@ public class Keycloak8PluginTest extends AbstractKeycloakPluginTest {
 	public static void configurePlugin() {
 		KeycloakTestPlugin.config = new KeycloakPluginConfig()
 			.setRealmName("master-test")
+			.setRealmUrlFormat(realmUrlFormat)
 			.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort())
 			.setLoadPublicKeys(true);
 	}

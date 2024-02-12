@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.keycloak;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -14,6 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.auth.util.KeycloakUtils;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
@@ -33,6 +36,7 @@ import okhttp3.Response;
 public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 
 	public static KeycloakContainer keycloak = null;
+	protected static String realmUrlFormat = KeycloakUtils.DEFAULT_REALM_URL_FORMAT;
 
 	@AfterClass
 	public static void cleanup() {
@@ -78,8 +82,7 @@ public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalInte
 		System.out.println(me2.toJson());
 
 		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
-		assertEquals("group1", me2.getGroups().get(0).getName());
-		assertEquals("group2", me2.getGroups().get(1).getName());
+		assertThat(me.getGroups().stream().map(GroupReference::getName)).contains("group1", "group2", "group3");
 
 		// Invoke request without token
 		JsonObject meJson = new JsonObject(get(MeshVersion.CURRENT_API_BASE_PATH + "/auth/me"));
@@ -145,7 +148,7 @@ public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalInte
 		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
 		Request request = new Request.Builder()
 			.post(body)
-			.url("http://localhost:" + port + "/auth/realms/master-test/protocol/openid-connect/token")
+			.url(String.format(realmUrlFormat, "http", "localhost", port, "master-test") + "/protocol/openid-connect/token")
 			.build();
 
 		Response response = httpClient().newCall(request).execute();
