@@ -36,7 +36,7 @@ import okhttp3.Response;
 public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 
 	public static KeycloakContainer keycloak = null;
-	protected static String realmUrlFormat = KeycloakUtils.DEFAULT_REALM_URL_FORMAT;
+	protected static String realmUrlPrefix = KeycloakUtils.DEFAULT_REALM_URL_PREFIX;
 
 	@AfterClass
 	public static void cleanup() {
@@ -148,7 +148,7 @@ public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalInte
 		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
 		Request request = new Request.Builder()
 			.post(body)
-			.url(String.format(realmUrlFormat, "http", "localhost", port, "master-test") + "/protocol/openid-connect/token")
+			.url(String.format("%s://%s:%d%s/realms/%s", "http", "localhost", port, realmUrlPrefix, "master-test") + "/protocol/openid-connect/token")
 			.build();
 
 		Response response = httpClient().newCall(request).execute();

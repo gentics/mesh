@@ -10,6 +10,11 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 
 public class Keycloak8PluginTest extends AbstractKeycloakPluginTest {
 
+	static {
+		realmUrlPrefix = "/auth";
+	}
+
+	@SuppressWarnings("resource")
 	@ClassRule
 	public static final TestRule initKeycloak() {
 		keycloak = new KeycloakContainer("/keycloak/realm.json", "8.0.1")
@@ -21,7 +26,7 @@ public class Keycloak8PluginTest extends AbstractKeycloakPluginTest {
 	public static void configurePlugin() {
 		KeycloakTestPlugin.config = new KeycloakPluginConfig()
 			.setRealmName("master-test")
-			.setRealmUrlFormat(realmUrlFormat)
+			.setRealmUrlPrefix(realmUrlPrefix)
 			.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort())
 			.setLoadPublicKeys(true);
 	}

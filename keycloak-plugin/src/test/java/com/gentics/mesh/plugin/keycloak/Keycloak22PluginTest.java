@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.keycloak;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.TestRule;
@@ -13,9 +14,10 @@ import com.gentics.mesh.test.docker.KeycloakContainer;
 public class Keycloak22PluginTest  extends AbstractKeycloakPluginTest {
 
 	static {
-		realmUrlFormat = "%s://%s:%d/realms/%s";
+		realmUrlPrefix = StringUtils.EMPTY;
 	}
 
+	@SuppressWarnings("resource")
 	@ClassRule
 	public static final TestRule initKeycloak() {
 		keycloak = new KeycloakContainer("/keycloak/realm.json", "keycloak/keycloak", "22.0.5", Arrays.asList("start-dev"), true)
@@ -27,7 +29,7 @@ public class Keycloak22PluginTest  extends AbstractKeycloakPluginTest {
 	public static void configurePlugin() {
 		KeycloakTestPlugin.config = new KeycloakPluginConfig()
 			.setRealmName("master-test")
-			.setRealmUrlFormat(realmUrlFormat)
+			.setRealmUrlPrefix(realmUrlPrefix)
 			.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort())
 			.setLoadPublicKeys(true);
 	}

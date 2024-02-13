@@ -16,9 +16,9 @@ public class KeycloakPluginConfig implements Option {
 	private static final String ENV_URL = ENV_PREFIX + "URL";
 	private static final String ENV_REALM = ENV_PREFIX + "REALM_NAME";
 	private static final String ENV_LOAD_PUBLIC_KEYS = ENV_PREFIX + "LOAD_PUBLIC_KEYS";
-	private static final String ENV_REALM_URL_FORMAT = ENV_PREFIX + "REALM_URL_FORMAT";
+	private static final String ENV_REALM_URL_PREFIX = ENV_PREFIX + "REALM_URL_PREFIX";
 
-	public static final String DEFAULT_REALM_URL_FORMAT = KeycloakUtils.DEFAULT_REALM_URL_FORMAT; 
+	public static final String DEFAULT_REALM_URL_PREFIX = KeycloakUtils.DEFAULT_REALM_URL_PREFIX;
 	
 	/**
 	 * URL to keycloak server
@@ -55,9 +55,9 @@ public class KeycloakPluginConfig implements Option {
 	 * Realm to be used
 	 */
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Keycloak realm URL format. Default value is: " + DEFAULT_REALM_URL_FORMAT)
-	@EnvironmentVariable(name = ENV_REALM_URL_FORMAT, description = "Override the keycloak realm URL format")
-	private String realmUrlFormat = DEFAULT_REALM_URL_FORMAT;
+	@JsonPropertyDescription("Keycloak realm URL prefix. Default value is: " + DEFAULT_REALM_URL_PREFIX)
+	@EnvironmentVariable(name = ENV_REALM_URL_PREFIX, description = "Override the keycloak realm URL prefix")
+	private String realmUrlPrefix = DEFAULT_REALM_URL_PREFIX;
 
 	public String getUrl() {
 		return url;
@@ -95,12 +95,12 @@ public class KeycloakPluginConfig implements Option {
 		return this;
 	}
 
-	public String getRealmUrlFormat() {
-		return realmUrlFormat;
+	public String getRealmUrlPrefix() {
+		return realmUrlPrefix;
 	}
 
-	public KeycloakPluginConfig setRealmUrlFormat(String realmUrlFormat) {
-		this.realmUrlFormat = realmUrlFormat;
+	public KeycloakPluginConfig setRealmUrlPrefix(String realmUrlFormat) {
+		this.realmUrlPrefix = realmUrlFormat;
 		return this;
 	}
 }
