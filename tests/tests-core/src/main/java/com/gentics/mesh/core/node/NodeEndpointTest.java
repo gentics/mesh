@@ -67,13 +67,17 @@ import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -2325,6 +2329,66 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		ObjectPermissionResponse rolePermissions = call(
 				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
 		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
+	 * Test creating a language variant of the project root node
+	 */
+	@Test
+	public void testTranslateProjectRootNode() {
+		String projectName = "testproject";
+		String rootNodeSchemaName = "folder";
+		ProjectResponse project = call(() -> client()
+				.createProject(new ProjectCreateRequest().setName(projectName).setSchemaRef(rootNodeSchemaName)));
+
+		// update english version of root node
+		FieldMap fields = new FieldMapImpl();
+		fields.put("name", FieldUtil.createStringField("Name in English"));
+		fields.put("slug", FieldUtil.createStringField("english_root_node"));
+		NodeResponse updated = call(() -> client().updateNode(project.getName(), project.getRootNode().getUuid(),
+				new NodeUpdateRequest().setVersion("draft").setLanguage("en").setFields(fields)));
+		assertThat(updated).as("Updated root node in english")
+			.hasStringField("name", "Name in English")
+			.hasStringField("slug", "english_root_node");
+
+		// update german version of root node
+		fields.put("name", FieldUtil.createStringField("Name auf Deutsch"));
+		fields.put("slug", FieldUtil.createStringField("german_root_node"));
+		updated = call(() -> client().updateNode(project.getName(), project.getRootNode().getUuid(),
+				new NodeUpdateRequest().setVersion("draft").setLanguage("de").setFields(fields)));
+		assertThat(updated).as("Updated root node in german")
+			.hasStringField("name", "Name auf Deutsch")
+			.hasStringField("slug", "german_root_node");
+	}
+
+	/**
+	 * Test creating a language variant of a "normal" node (not the root node)
+	 */
+	@Test
+	public void testTranslatNonRootNode() {
+		String projectName = "testproject";
+		String rootNodeSchemaName = "folder";
+		ProjectResponse project = call(() -> client()
+				.createProject(new ProjectCreateRequest().setName(projectName).setSchemaRef(rootNodeSchemaName)));
+
+		FieldMap fields = new FieldMapImpl();
+		fields.put("name", FieldUtil.createStringField("Name in English"));
+		fields.put("slug", FieldUtil.createStringField("english_root_node"));
+		NodeResponse created = call(() -> client().createNode(project.getName(),
+				new NodeCreateRequest().setParentNodeUuid(project.getRootNode().getUuid()).setSchemaName(rootNodeSchemaName).setLanguage("en").setFields(fields)));
+		assertThat(created).as("Created node in english")
+			.hasStringField("name", "Name in English")
+			.hasStringField("slug", "english_root_node");
+
+		// update german version of root node
+		fields.put("name", FieldUtil.createStringField("Name auf Deutsch"));
+		fields.put("slug", FieldUtil.createStringField("german_root_node"));
+		NodeResponse updated = call(() -> client().updateNode(project.getName(), created.getUuid(),
+				new NodeUpdateRequest().setVersion("draft").setLanguage("de").setFields(fields)));
+		assertThat(updated).as("Updated root node in german")
+			.hasStringField("name", "Name auf Deutsch")
+			.hasStringField("slug", "german_root_node");
+
 	}
 
 	/**

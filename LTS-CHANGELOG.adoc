@@ -24,6 +24,10 @@ icon:check[] A regression regarding OAuth user filtering has been fixed.
 
 icon:check[] Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
 
+icon:check[] Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
+
 [[v1.10.26]]
 == 1.10.26 (07.02.2024)
 
