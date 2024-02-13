@@ -43,26 +43,29 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 	public void registerEndPoints() {
 		secureAll();
 
-		InternalEndpointRoute createRoute = createRoute();
-		createRoute.description("Create a new language. Currently unused, throwing an error.");
-		createRoute.path("/");
-		createRoute.method(POST);
-		createRoute.produces(APPLICATION_JSON);
-		createRoute.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			crudHandler.handleCreate(ac);
-		}, isOrderedBlockingHandlers());
-
-		InternalEndpointRoute deleteRoute = createRoute();
-		deleteRoute.description("Delete the language. Currently unused, throwing an error.");
-		deleteRoute.path("/:languageUuid");
-		deleteRoute.method(DELETE);
-		deleteRoute.produces(APPLICATION_JSON);
-		deleteRoute.blockingHandler(rc -> {
-			InternalActionContext ac = wrap(rc);
-			String uuid = ac.getParameter("languageUuid");
-			crudHandler.handleDelete(ac, uuid);
-		}, isOrderedBlockingHandlers());
+// Unused, due to the 
+//		InternalEndpointRoute createRoute = createRoute();
+//		createRoute.description("Create a new language. Currently unused, throwing an error.");
+//		createRoute.exampleResponse(OK, languageExamples.getGermanLanguageResponse(), "A language");
+//		createRoute.path("/");
+//		createRoute.method(POST);
+//		createRoute.produces(APPLICATION_JSON);
+//		createRoute.blockingHandler(rc -> {
+//			InternalActionContext ac = wrap(rc);
+//			crudHandler.handleCreate(ac);
+//		}, isOrderedBlockingHandlers());
+//
+//		InternalEndpointRoute deleteRoute = createRoute();
+//		deleteRoute.description("Delete the language. Currently unused, throwing an error.");
+//		deleteRoute.exampleResponse(OK, languageExamples.getGermanLanguageResponse(), "A language");
+//		deleteRoute.path("/:languageUuid");
+//		deleteRoute.method(DELETE);
+//		deleteRoute.produces(APPLICATION_JSON);
+//		deleteRoute.blockingHandler(rc -> {
+//			InternalActionContext ac = wrap(rc);
+//			String uuid = ac.getParameter("languageUuid");
+//			crudHandler.handleDelete(ac, uuid);
+//		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute getAllRoute = createRoute();
 		getAllRoute.path("/");
@@ -78,6 +81,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute getRoute = createRoute();
 		getRoute.path("/:languageUuid");
+		getRoute.description("Get a system installed language by its UUID");
 		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
 		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getRoute.method(GET);
@@ -90,6 +94,7 @@ public class LanguageEndpoint extends AbstractInternalEndpoint {
 
 		InternalEndpointRoute getByTagRoute = createRoute();
 		getByTagRoute.path("/tag/:languageTag");
+		getByTagRoute.description("Get a system installed language by its ISO tag");
 		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
 		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
 		getByTagRoute.method(GET);

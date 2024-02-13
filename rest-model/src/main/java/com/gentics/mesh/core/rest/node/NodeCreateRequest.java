@@ -43,8 +43,8 @@ public class NodeCreateRequest implements FieldContainer {
 	private boolean publish = false;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Assign a requested language to the project, if none was so far.")
-	private boolean assignLanguage = false;
+	@JsonPropertyDescription("Assign a requested language to the project, if none was so far. Default is 'true'.")
+	private boolean assignLanguage = true;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Permissions to be granted to roles on the created node.")

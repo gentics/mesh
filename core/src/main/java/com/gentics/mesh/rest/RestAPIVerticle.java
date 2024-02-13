@@ -316,6 +316,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(projectMicroschemaEndpoint.get());
 		endpoints.add(projectSearchEndpoint.get());
 		endpoints.add(projectRawSearchEndpoint.get());
+		endpoints.add(projectLanguageEndpoint.get());
 		endpoints.add(branchEndpoint.get());
 		endpoints.add(graphqlEndpoint.get());
 
@@ -334,7 +335,6 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(utilityEndpoint.get());
 		endpoints.add(projectInfoEndpoint.get());
 		endpoints.add(healthEndpoint.get());
-		endpoints.add(projectLanguageEndpoint.get());
 
 		for (AbstractInternalEndpoint endpoint : endpoints) {
 			endpoint.init(vertx, storage);

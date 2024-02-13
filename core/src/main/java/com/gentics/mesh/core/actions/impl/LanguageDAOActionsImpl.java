@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.actions.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.function.Predicate;
 
@@ -30,17 +31,25 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 
 	@Override
 	public HibLanguage create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		throw error(BAD_REQUEST, "error_language_creation_forbidden");
+		throw error(METHOD_NOT_ALLOWED, "error_language_creation_forbidden");
 	}
 
 	@Override
 	public HibLanguage loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		return ctx.tx().languageDao().findByUuid(uuid);
+		HibLanguage language = ctx.tx().languageDao().findByUuid(uuid);
+		if (language == null && errorIfNotFound) {
+			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid); 
+		}
+		return language;
 	}
 
 	@Override
 	public HibLanguage loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		return ctx.tx().languageDao().findByName(name);
+		HibLanguage language = ctx.tx().languageDao().findByName(name);
+		if (language == null && errorIfNotFound) {
+			throw error(NOT_FOUND, "object_not_found_for_name", name); 
+		}
+		return language;
 	}
 
 	@Override

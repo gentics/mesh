@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.dao;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
 import java.util.Collections;
 
@@ -58,7 +60,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 			.findAny()
 			.ifPresentOrElse(existing -> {
 					CommonTx.get().nodeDao().findUsedLanguages(project, Collections.singletonList(language.getLanguageTag()), true).stream().findAny().ifPresentOrElse(existingContent -> {
-						throw error(BAD_REQUEST, "error_language_still_in_use", language.getLanguageTag(), project.getName());
+						throw error(CONFLICT, "error_language_still_in_use", language.getLanguageTag(), project.getName());
 					}, () -> {
 						project.removeLanguage(language);
 					});
@@ -89,11 +91,11 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 
 	@Override
 	default boolean update(HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
-		throw error(BAD_REQUEST, "error_language_update_forbidden");
+		throw error(METHOD_NOT_ALLOWED, "error_language_update_forbidden");
 	}
 
 	@Override
 	default void delete(HibLanguage element, BulkActionContext bac) {
-		throw error(BAD_REQUEST, "error_language_deletion_forbidden");
+		throw error(METHOD_NOT_ALLOWED, "error_language_deletion_forbidden");
 	}
 }

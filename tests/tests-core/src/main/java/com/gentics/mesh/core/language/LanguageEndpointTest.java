@@ -283,6 +283,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	@Test
 	public void testCreateAssignedLanguage() {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setAssignLanguage(false);
 		nodeCreateRequest.setSchemaName("folder");
 		nodeCreateRequest.setLanguage(italian());
 		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Buon Compleanno!"));
@@ -293,8 +294,9 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	}
 
 	@Test
-	public void testCreateUnssignedLanguage() {
+	public void testCreateUnassignedLanguage() {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setAssignLanguage(false);
 		nodeCreateRequest.setSchemaName("folder");
 		nodeCreateRequest.setLanguage(french());
 		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Bonne Fête!"));
@@ -306,6 +308,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	@Test
 	public void testCreateUnssignedLanguageAutoAssign() {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest().setAssignLanguage(true);
+		nodeCreateRequest.setAssignLanguage(true);
 		nodeCreateRequest.setSchemaName("folder");
 		nodeCreateRequest.setLanguage(french());
 		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("Bonne Fête!"));
@@ -319,7 +322,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	public void testUnassignOccupiedLanguageByTag() {
 		NodeListResponse nodes = call(() -> client().findNodes(PROJECT_NAME));
 		assertThat(nodes.getData()).isNotEmpty();
-		call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, english(), new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.BAD_REQUEST, "error_language_still_in_use", english(), PROJECT_NAME);
+		call(() -> client().unassignLanguageFromProjectByTag(PROJECT_NAME, english(), new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.CONFLICT, "error_language_still_in_use", english(), PROJECT_NAME);
 		ProjectResponse projectResponse = call(() -> client().findProjectByName(PROJECT_NAME, new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
 		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getLanguageTag)).contains(english());
@@ -332,7 +335,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 		String englishUuid = tx(tx -> { 
 			return tx.languageDao().findByLanguageTag(english()).getUuid();
 		});
-		call(() -> client().unassignLanguageFromProjectByUuid(PROJECT_NAME, englishUuid, new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.BAD_REQUEST, "error_language_still_in_use", english(), PROJECT_NAME);
+		call(() -> client().unassignLanguageFromProjectByUuid(PROJECT_NAME, englishUuid, new ProjectLoadParametersImpl().setLangs(true)), HttpResponseStatus.CONFLICT, "error_language_still_in_use", english(), PROJECT_NAME);
 		ProjectResponse projectResponse = call(() -> client().findProjectByName(PROJECT_NAME, new ProjectLoadParametersImpl().setLangs(true)));
 		assertNotNull(projectResponse.getLanguages());
 		assertThat(projectResponse.getLanguages().stream().map(LanguageResponse::getUuid)).contains(englishUuid);
