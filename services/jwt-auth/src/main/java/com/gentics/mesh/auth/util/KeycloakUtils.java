@@ -27,8 +27,10 @@ public final class KeycloakUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(KeycloakUtils.class);
 
-	// TODO The default format has to be changed to the one applicable for KC 22+ (no /auth segment). This is a breaking change though.
-	public static final String DEFAULT_REALM_URL_FORMAT = "%s://%s:%d/auth/realms/%s";
+	private static final String DEFAULT_REALM_URL_FORMAT = "%s://%s:%d%s/realms/%s";
+
+	// TODO consider updating this to the default of KC 17+: empty string
+	public static final String DEFAULT_REALM_URL_PREFIX = "/auth";
 
 	private KeycloakUtils() {
 	}
@@ -75,14 +77,14 @@ public final class KeycloakUtils {
 	 * @param host
 	 * @param port
 	 * @param realmName
-	 * @param maybeCustomRealmUrlFormat optional realm URL format, suitable for Java formatter with parameters [protocol, host, port, realm name], e.g. '%s://%s:%d/auth/realms/%s'
+	 * @param maybeCustomRealmUrlPrefix optional realm URL prefix
 	 * @return
 	 * @throws IOException
 	 */
-	public static Set<JsonObject> loadJWKs(String protocol, String host, int port, String realmName, Optional<String> maybeCustomRealmUrlFormat) throws IOException {
+	public static Set<JsonObject> loadJWKs(String protocol, String host, int port, String realmName, Optional<String> maybeCustomRealmUrlPrefix) throws IOException {
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
-			.url(String.format(maybeCustomRealmUrlFormat.orElse(DEFAULT_REALM_URL_FORMAT), protocol, host, port, realmName) + "/protocol/openid-connect/certs")
+			.url(String.format(DEFAULT_REALM_URL_FORMAT, protocol, host, port, maybeCustomRealmUrlPrefix.orElse(DEFAULT_REALM_URL_PREFIX), realmName) + "/protocol/openid-connect/certs")
 			.build();
 
 		try (Response response = httpClient().newCall(request).execute()) {
@@ -123,15 +125,15 @@ public final class KeycloakUtils {
 	 * @param host
 	 * @param port
 	 * @param realmName
-	 * @param maybeCustomRealmUrlFormat optional realm URL format, suitable for Java formatter with parameters [protocol, host, port, realm name], e.g. '%s://%s:%d/auth/realms/%s'
+	 * @param maybeCustomRealmUrlPrefix optional realm URL prefix
 	 * @return Realm information
 	 * @throws IOException
 	 */
-	public static JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName, Optional<String> maybeCustomRealmUrlFormat) throws IOException {
+	public static JsonObject fetchPublicRealmInfo(String protocol, String host, int port, String realmName, Optional<String> maybeCustomRealmUrlPrefix) throws IOException {
 
 		Request request = new Request.Builder()
 			.header("Accept", "application/json")
-			.url(String.format(maybeCustomRealmUrlFormat.orElse(DEFAULT_REALM_URL_FORMAT), protocol, host, port, realmName))
+			.url(String.format(DEFAULT_REALM_URL_FORMAT, protocol, host, port, maybeCustomRealmUrlPrefix.orElse(DEFAULT_REALM_URL_PREFIX), realmName))
 			.build();
 
 		try (Response response = httpClient().newCall(request).execute()) {
@@ -174,23 +176,31 @@ public final class KeycloakUtils {
 	 * @param username
 	 * @param password
 	 * @param secret
-	 * @param maybeCustomRealmUrlFormat optional realm URL format, suitable for Java formatter with parameters [protocol, host, port, realm name], e.g. '%s://%s:%d/auth/realms/%s'
+	 * @param maybeCustomRealmUrlPrefix optional realm URL prefix
 	 * @return
 	 * @throws IOException
 	 */
 	public static JsonObject loginKeycloak(String protocol, String host, int port, String realmName, String clientId, String username,
-		String password, String secret, Optional<String> maybeCustomRealmUrlFormat) throws IOException {
+		String password, String secret, Optional<String> maybeCustomRealmUrlPrefix) throws IOException {
 
 		StringBuilder content = new StringBuilder();
-		content.append("client_id=" + clientId + "&");
-		content.append("username=" + username + "&");
-		content.append("password=" + password + "&");
-		content.append("grant_type=password&");
-		content.append("client_secret=" + secret);
+		content.append("client_id=");
+		content.append(clientId);
+		content.append("&");
+		content.append("username=");
+		content.append(username);
+		content.append("&");
+		content.append("password=");
+		content.append(password);
+		content.append("&");
+		content.append("grant_type=password");
+		content.append("&");
+		content.append("client_secret=");
+		content.append(secret);
 		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
 		Request request = new Request.Builder()
 			.post(body)
-			.url(String.format(maybeCustomRealmUrlFormat.orElse(DEFAULT_REALM_URL_FORMAT), protocol, host, port, realmName) + "/protocol/openid-connect/token")
+			.url(String.format(DEFAULT_REALM_URL_FORMAT, protocol, host, port, maybeCustomRealmUrlPrefix.orElse(DEFAULT_REALM_URL_PREFIX), realmName) + "/protocol/openid-connect/token")
 			.build();
 
 		Response response = httpClient().newCall(request).execute();
