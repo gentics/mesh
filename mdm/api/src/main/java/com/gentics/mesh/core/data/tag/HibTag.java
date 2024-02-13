@@ -12,7 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibNamedBaseElement;
 import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -32,7 +32,7 @@ import com.gentics.mesh.handler.VersionUtils;
  * Domain model for tags.
  */
 public interface HibTag extends HibCoreElement<TagResponse>, HibReferenceableElement<TagReference>, HibUserTracking, 
-		HibProjectElement, HibBucketableElement, HibNamedElement {
+		HibProjectElement, HibBucketableElement, HibNamedBaseElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAG, TAG_CREATED, TAG_UPDATED, TAG_DELETED);
 
