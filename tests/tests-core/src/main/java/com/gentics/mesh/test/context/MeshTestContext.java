@@ -495,6 +495,9 @@ public class MeshTestContext implements TestRule {
 		JobWorkerVerticle jobWorkerVerticle = meshDagger.jobWorkerVerticle();
 		jobWorkerVerticle.stop();
 
+		// if any jobs are currently running, they will hold the global lock.
+		// so we will wait until we can acquire the lock, which makes sure that
+		// currently running jobs will have stopped.
 		CountDownLatch jobWait = new CountDownLatch(1);
 		jobWorkerVerticle.doWithLock(1000, rh -> {
 			if (rh.succeeded()) {
