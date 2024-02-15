@@ -63,10 +63,25 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			}
 			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
 			return createParentPath(uploadFolder.getAbsolutePath())
-				.andThen(fileSystem.rxMove(source, target).doOnError(e -> {
+				.andThen(fileSystem.rxMove(source, target).onErrorComplete(this::isCausedByFileAlreadyExists).doOnError(e -> {
 					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
 				}));
 		});
+	}
+
+	/**
+	 * Check whether the given throwable either is itself a {@link FileAlreadyExistsException} or is caused by one
+	 * @param t throwable to check
+	 * @return true, when the throwable is itself or is caused by a FileAlreadyExistsException
+	 */
+	protected boolean isCausedByFileAlreadyExists(Throwable t) {
+		if (t instanceof FileAlreadyExistsException) {
+			return true;
+		} else if (t.getCause() != null && t.getCause() != t) {
+			return isCausedByFileAlreadyExists(t.getCause());
+		} else {
+			return false;
+		}
 	}
 
 	@Override

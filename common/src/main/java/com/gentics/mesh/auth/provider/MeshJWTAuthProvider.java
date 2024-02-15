@@ -100,8 +100,6 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 			if (rh.failed()) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not authenticate token.", rh.cause());
-				} else {
-					log.warn("Could not authenticate token.");
 				}
 				resultHandler.handle(Future.failedFuture("Invalid Token"));
 			} else {

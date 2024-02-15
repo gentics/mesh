@@ -69,6 +69,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
@@ -124,6 +125,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * Key for the data loader for string list field values
 	 */
 	public static final String STRING_LIST_VALUES_DATA_LOADER_KEY = "stringListLoader";
+
+	/**
+	 * Key for the data loader for micronode list field values
+	 */
+	public static final String MICRONODE_LIST_VALUES_DATA_LOADER_KEY = "micronodeUuidListLoader";
+
+	/**
+	 * Key for the data loader for micronode field values
+	 */
+	public static final String MICRONODE_DATA_LOADER_KEY = "micronodeLoader";
 
 	protected final MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
@@ -210,6 +221,28 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public BatchLoaderWithContext<String, List<String>> STRING_LIST_VALUE_LOADER = (keys, environment) -> {
 		ContentDao contentDao = Tx.get().contentDao();
 		return listValueDataLoader(keys, contentDao::getStringListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for values of micronode lists
+	 */
+	public BatchLoaderWithContext<String, List<HibMicronode>> MICRONODE_LIST_VALUE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		return listValueDataLoader(keys, contentDao::getMicronodeListFieldValues, Functions.identity());
+	};
+
+	/**
+	 * DataLoader implementation for micronodes
+	 */
+	public BatchLoaderWithContext<HibMicronodeField, HibMicronode> MICRONODE_LOADER = (keys, environment) -> {
+		ContentDao contentDao = Tx.get().contentDao();
+		Map<HibMicronodeField, HibMicronode> micronodes = contentDao.getMicronodes(keys);
+
+		Promise<List<HibMicronode>> promise = Promise.promise();
+		List<HibMicronode> result = keys.stream().map(field -> micronodes.get(field)).collect(Collectors.toList());
+		promise.complete(result);
+
+		return promise.future().toCompletionStage();
 	};
 
 	@Inject
@@ -579,7 +612,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param schema
 	 * @return
 	 */
-	public GraphQLFieldDefinition createListDef(GraphQLContext context, ListFieldSchema schema) {
+	public Optional<GraphQLFieldDefinition> createListDef(GraphQLContext context, ListFieldSchema schema, HibProject project) {
+		if ("micronode".equals(schema.getListType()) 
+				&& context.<Result<?>>getOrStore(
+						MicronodeFieldTypeProvider.MICROSCHEMAS, 
+						() -> Tx.get().microschemaDao().findAll(project))
+				.isEmpty()) {
+			return Optional.empty();
+		}
 		GraphQLType type = getElementTypeOfList(schema);
 		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition()
 			.name(schema.getName())
@@ -600,7 +640,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			break;
 		}
 
-		return fieldType.dataFetcher(env -> {
+		fieldType.dataFetcher(env -> {
 			Tx tx = Tx.get();
 			ContentDao contentDao = tx.contentDao();
 			HibFieldContainer container = env.getSource();
@@ -742,11 +782,19 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (micronodeList == null) {
 					return null;
 				}
-				return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+
+				String micronodeListUuid = micronodeList.getUuid();
+				if (contentDao.supportsPrefetchingListFieldValues() && !StringUtils.isEmpty(micronodeListUuid)) {
+					DataLoader<String, List<HibMicronode>> micronodeListValueLoader = env.getDataLoader(FieldDefinitionProvider.MICRONODE_LIST_VALUES_DATA_LOADER_KEY);
+					return micronodeListValueLoader.load(micronodeListUuid);
+				} else {
+					return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
+				}
 			default:
 				return null;
 			}
-		}).build();
+		});
+		return Optional.of(fieldType.build());
 	}
 
 	private GraphQLType getElementTypeOfList(ListFieldSchema schema) {
@@ -762,9 +810,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		case "date":
 			return GraphQLString;
 		case "node":
-			return new GraphQLTypeReference("Node");
+			return new GraphQLTypeReference(NODE_TYPE_NAME);
 		case "micronode":
-			return new GraphQLTypeReference("Micronode");
+			return new GraphQLTypeReference(MICRONODE_TYPE_NAME);
 		default:
 			return null;
 		}
@@ -777,16 +825,24 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param project
 	 * @return Created field definition
 	 */
-	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, HibProject project) {
-		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
-			.dataFetcher(env -> {
-				HibFieldContainer container = env.getSource();
-				HibMicronodeField micronodeField = container.getMicronode(schema.getName());
-				if (micronodeField != null) {
-					return micronodeField.getMicronode();
-				}
-				return null;
-			}).build();
+	public Optional<GraphQLFieldDefinition> createMicronodeDef(GraphQLContext context, FieldSchema schema, HibProject project) {
+		if (context.<Result<?>>getOrStore(MicronodeFieldTypeProvider.MICROSCHEMAS + project.getName(), () -> Tx.get().microschemaDao().findAll(project)).isEmpty()) {
+			return Optional.empty();
+		} else {
+			return Optional.of(newFieldDefinition().name(schema.getName())
+					.description(schema.getLabel())
+					.type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
+					.dataFetcher(env -> {
+						HibFieldContainer container = env.getSource();
+						HibMicronodeField micronodeField = container.getMicronode(schema.getName());
+						if (micronodeField != null) {
+
+							DataLoader<HibMicronodeField, HibMicronode> micronodeLoader = env.getDataLoader(MICRONODE_DATA_LOADER_KEY);
+							return micronodeLoader.load(micronodeField);
+						}
+						return null;
+					}).build());
+		}
 	}
 
 	/**

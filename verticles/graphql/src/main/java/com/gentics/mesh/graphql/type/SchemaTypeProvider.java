@@ -151,13 +151,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
 
 		// .fields
-		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> {
-			List<FieldSchema> fields = loadModelWithFallback(env).getFields();
-			if (fields.isEmpty()) {
-				fields = Collections.singletonList(emptySchemaFieldDummy("This schema has no fields. Do not use this filter."));
-			}
-			return fields;
-		}));
+		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
 
 		return schemaType.build();
 	}

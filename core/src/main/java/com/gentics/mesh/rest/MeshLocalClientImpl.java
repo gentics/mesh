@@ -1692,12 +1692,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
+	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameters) {
 		return null;
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
+	public MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameters) {
 		return null;
 	}
 

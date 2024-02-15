@@ -73,9 +73,9 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 
 		// Invoke setup once the first time and when the setting changes
 		if (currentMode == null || currentMode != elasticsearch) {
+			AbstractMultiESTest.currentMode = elasticsearch;
 			getTestContext().setupOnce(settings);
 		}
-		AbstractMultiESTest.currentMode = elasticsearch;
 		// Register the cleanup action with the current settings.
 		cleanupAction = () -> {
 			try {
@@ -162,6 +162,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		@Override
 		public boolean monitoring() {
 			return delegate.monitoring();
+		}
+
+		@Override
+		public boolean synchronizeWrites() {
+			return delegate.synchronizeWrites();
 		}
 
 		@Override
