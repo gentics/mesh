@@ -1,7 +1,5 @@
 package com.gentics.mesh.graphql.filter;
 
-import static graphql.schema.GraphQLEnumType.newEnum;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -53,7 +51,7 @@ public abstract class SchemaElementFilter<
 		this.context = context;
 	}
 
-	private GraphQLEnumType schemaElementEnum() {
+	private Optional<GraphQLEnumType> schemaElementEnum() {
 		String elementName = getSchemaElementName();
 		Tx tx = Tx.get();
 		RootDao<HibProject, SC> dao = getSchemaElementDao();
@@ -70,23 +68,23 @@ public abstract class SchemaElementFilter<
 			}).collect(Collectors.toList());
 
 		if (values.isEmpty()) {
-			return newEnum().name(elementName + "Enum").description("Empty placeholder for " + elementName + ".").value("EMPTY").build();
+			return Optional.empty();
 		}
 
-		return GraphQLEnumType
+		return Optional.of(GraphQLEnumType
 				.newEnum()
 				.name(elementName + "Enum")
 				.description("Enumerates all " + elementName + "s")
 				.values(values)
-				.build();
+				.build());
 	}
 
 	@Override
 	protected List<FilterField<SC, ?>> getFilters() {
 		String owner = getEntityType().name();
 		List<FilterField<SC, ?>> filters = new ArrayList<>();
-		filters.add(FilterField.create("is", "Filters by " + getSchemaElementName(), schemaElementEnum(), uuid -> schema -> schema != null && schema.getUuid().equals(uuid), 
-				Optional.of(query -> Comparison.eq(new FieldOperand<>(getEntityType(), "uuid", query.maybeGetJoins(), Optional.empty()), query.makeValueOperand(true), query.getInitiatingFilterName()))));
+		schemaElementEnum().ifPresent(elementEnum -> filters.add(FilterField.create("is", "Filters by " + getSchemaElementName(), elementEnum, uuid -> schema -> schema != null && schema.getUuid().equals(uuid), 
+				Optional.of(query -> Comparison.eq(new FieldOperand<>(getEntityType(), "uuid", query.maybeGetJoins(), Optional.empty()), query.makeValueOperand(true), query.getInitiatingFilterName())))));
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner));

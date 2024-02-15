@@ -199,6 +199,19 @@ public interface EventHelper extends BaseHelper {
 	}
 
 	/**
+	 * Publish the event {@link MeshEvent#INDEX_CHECK_REQUEST}, which will cause the index mapping check to be started.
+	 * Wait for the event {@link MeshEvent#INDEX_CHECK_FINISHED} to be fired (within the given timeout), which signals that
+	 * the index mapping check finished.
+	 * @param timeoutMs timeout in milliseconds
+	 * @throws TimeoutException
+	 */
+	default void checkIndexMapping(int timeoutMs) throws TimeoutException {
+		try (ExpectedEvent finished = expectEvent(MeshEvent.INDEX_CHECK_FINISHED, timeoutMs)) {
+			vertx().eventBus().publish(MeshEvent.INDEX_CHECK_REQUEST.address, null);
+		}
+	}
+
+	/**
 	 * Wait until the given event has been received.
 	 *
 	 * @param event

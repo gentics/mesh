@@ -37,6 +37,7 @@ import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -222,6 +223,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
+		endpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		endpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeCheck(wrap(rc));
 		}, false);
@@ -234,6 +236,7 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.produces(APPLICATION_JSON);
 		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
+		repairEndpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		repairEndpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
 		}, isOrderedBlockingHandlers());

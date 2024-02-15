@@ -5,6 +5,7 @@ import static graphql.schema.GraphQLEnumType.newEnum;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.project.HibProject;
@@ -69,7 +71,7 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 			content -> content == null ? null : content.getContainer().getLastEditedTimestamp(), Pair.pair("edited", new JoinPart("CONTENT", "edited"))));
 		filters.add(new MappedFilter<>(OWNER, "editor", "Filters by editor", UserFilter.filter(),
 			content -> content == null ? null : content.getContainer().getEditor(), Pair.pair("editor", new JoinPart("CONTENT", "uuid"))));
-		filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", createAllFieldFilters(), Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields"))));
+		createAllFieldFilters().ifPresent(fieldFilters -> filters.add(new MappedFilter<>(OWNER, "fields", "Filters by fields", fieldFilters, Function.identity(), Pair.pair("content", new JoinPart("CONTENT", "fields")))));
 		filters.add(new MappedFilter<>(OWNER, "referencedBy", "Filters by all referenced entities", ListFilter.nodeReferenceListFilter(context),
 				content -> content == null ? null : NodeReferenceIn.fromContent(context, content, content.getType()).collect(Collectors.toList()) , Pair.pair("references", new JoinPart("REFERENCE", "value"))));
 		filters.add(new MappedFilter<>(OWNER, "referencedByNodes", "Filters by referenced nodes (no micronodes)", 
@@ -87,21 +89,25 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 		return filters;
 	}
 
-	private MainFilter<NodeContent> createAllFieldFilters() {
+	private Optional<MainFilter<NodeContent>> createAllFieldFilters() {
 		HibProject project = Tx.get().getProject(context);
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		List<FilterField<NodeContent, ?>> schemaFields = schemaDao.findAll(project)
 			.stream()
 			.map(this::createFieldFilter)
+			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
-		return MainFilter.mainFilter("NodeFieldFilter", "Filters by fields", schemaFields, false, Optional.of("CONTENT"));
+		return Optional.ofNullable(schemaFields).filter(fields -> !fields.isEmpty()).map(fields -> MainFilter.mainFilter("NodeFieldFilter", "Filters by fields", fields, false, Optional.of("CONTENT")));
 	}
 
 	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
 		String uuid = schema.getLatestVersion().getUuid();
-		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
-			FieldFilter.filter(context, schema.getLatestVersion()), content -> content == null ? null : content.getContainer(), 
-					Pair.pair(schema.getUuid(), new JoinPart(schema.getName(), uuid)), Optional.of(uuid));
+		return Optional.ofNullable(FieldFilter.filter(context, schema.getLatestVersion()))
+				.filter(fieldFilter -> !fieldFilter.getFilters().isEmpty())
+				.map(fieldFilter -> new MappedFilter<NodeContent, HibFieldContainer, Map<String, ?>>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
+						fieldFilter, content -> (content == null ? null : ((NodeContent) content).getContainer()), 
+								Pair.pair(schema.getUuid(), new JoinPart(schema.getName(), uuid)), Optional.of(uuid)))
+				.orElse(null);
 	}
 
 	@Override

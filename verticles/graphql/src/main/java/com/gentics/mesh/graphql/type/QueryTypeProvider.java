@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.Sorting;
@@ -642,10 +643,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			additionalTypes.add(nodeTypeProvider.createType(context).forVersion(context));
 			additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
 
+			micronodeFieldTypeProvider.createType(context).forVersion(context).ifPresent(additionalTypes::add);
+
 			additionalTypes.add(nodeReferenceTypeProvider.createType());
 			additionalTypes.add(newPageType(NODE_REFERENCE_PAGE_TYPE_NAME, NODE_REFERENCE_TYPE_NAME));
-
-			additionalTypes.add(micronodeFieldTypeProvider.createType(context).forVersion(context));
 
 			additionalTypes.add(projectTypeProvider.createType(project));
 			additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
@@ -678,16 +679,23 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			additionalTypes.add(fieldDefProvider.createBinaryFieldType());
 			additionalTypes.add(fieldDefProvider.createS3BinaryFieldType());
 
+			Versioned.doSince(2, context, () -> {
+				List<GraphQLObjectType> schemaFieldTypes = context.getOrStore(NodeTypeProvider.SCHEMA_FIELD_TYPES, () -> nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
+				if (CollectionUtils.isNotEmpty(schemaFieldTypes)) {
+					additionalTypes.addAll(schemaFieldTypes);
+				}
+				List<GraphQLObjectType> microschemaFieldTypes = context.getOrStore(MicronodeFieldTypeProvider.MICROSCHEMA_FIELD_TYPES, () -> micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
+
+				if (CollectionUtils.isNotEmpty(microschemaFieldTypes)) {
+					additionalTypes.addAll(microschemaFieldTypes);
+				}
+			});
+
 			// Shared argument types
 			additionalTypes.add(createLinkEnumType());
 			additionalTypes.add(createNodeEnumType());
 			additionalTypes.add(createNativeFilterEnumType());
 			additionalTypes.add(Sorting.getSortingEnumType());
-
-			Versioned.doSince(2, context, () -> {
-				additionalTypes.addAll(nodeTypeProvider.generateSchemaFieldTypes(context).forVersion(context));
-				additionalTypes.addAll(micronodeFieldTypeProvider.generateMicroschemaFieldTypes(context).forVersion(context));
-			});
 
 			GraphQLSchema schema = builder.query(getRootType(context)).additionalTypes(additionalTypes).build();
 			return schema;
