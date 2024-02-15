@@ -10,14 +10,14 @@
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>2.0.0</version>
+		<version>2.0.14</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>2.0.0</mesh.version>
+		<mesh.version>2.0.14</mesh.version>
 		<netty.version>4.1.78.Final</netty.version>
 		<license.checker.version>1.0.0</license.checker.version>
 	</properties>
