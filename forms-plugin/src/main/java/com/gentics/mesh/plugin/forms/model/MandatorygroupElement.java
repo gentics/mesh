@@ -56,6 +56,10 @@ public class MandatorygroupElement extends FormElement {
 
 	@Override
 	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+		if (skipElement(postedData)) {
+			return null;
+		}
+
 		if (!getElements().stream().filter(element -> {
 			// filter elements, that are filled
 			List<String> values = element.getMultiFormData(postedData);

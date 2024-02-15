@@ -1,5 +1,37 @@
 package com.gentics.mesh.plugin.forms.service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -64,38 +96,6 @@ import io.vertx.reactivex.core.eventbus.MessageConsumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @Singleton
 public class FormDataService {
@@ -957,7 +957,7 @@ public class FormDataService {
 		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
 
 		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), form, postedData, errors)
-			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), savedFormDataNode, ctx.getFileUploads()))
+			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
 					return publishFormData(ctx, savedFileUploads, errors);
@@ -1040,11 +1040,22 @@ public class FormDataService {
 	 * Save fileuploads to mesh
 	 *
 	 * @param projectName project name
+	 * @param form saved form
 	 * @param formDataNode form data node
+	 * @param postedData posted form data
 	 * @param fileUploads validated file uploads
 	 * @return single of the form data node
 	 */
-	private Single<NodeResponse> saveFileUploads(String projectName, NodeResponse formDataNode, Set<FileUpload> fileUploads) {
+	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
+		Set<String> validUploadElements = form.flattened()
+			.filter(FormElement::isActive)
+			.flatMap(elem -> elem instanceof FileElement && !elem.skipElement(postedData)
+				? Stream.of(elem.getName())
+				: Stream.empty())
+			.collect(Collectors.toSet());
+
+		fileUploads = fileUploads.stream().filter(fileUpload -> validUploadElements.contains(fileUpload.name())).collect(Collectors.toSet());
+
 		if (fileUploads.isEmpty()) {
 			return Single.just(formDataNode);
 		}
@@ -1077,7 +1088,7 @@ public class FormDataService {
 	 * response.
 	 *
 	 * @param ctx Request context
-	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String, NodeResponse, Set)}
+	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, MultiMap, Set)}
 	 * @param errors
 	 * @return single
 	 */

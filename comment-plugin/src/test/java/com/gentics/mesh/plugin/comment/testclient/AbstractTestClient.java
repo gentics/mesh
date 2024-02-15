@@ -109,7 +109,7 @@ import java.io.InputStream;
 /**
  * A client that throws an Exception for every method. Extend this class and override every method you wish to mock.
  */
-public class AbstractTestClient implements MeshRestClient {
+public abstract class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -187,12 +187,12 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
+	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
+	public MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
 
