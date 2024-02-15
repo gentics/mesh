@@ -113,6 +113,11 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
+				} else if (stopped) {
+					log.error("Not executing locked action, because processing was stopped");
+					if (message != null) {
+						message.reply(new JsonObject().put("status", STATUS_REJECTED));
+					}
 				} else {
 					Lock lock = rh.result();
 					if (message != null) {
