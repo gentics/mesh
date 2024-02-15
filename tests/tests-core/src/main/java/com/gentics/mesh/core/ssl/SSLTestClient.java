@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.ssl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
@@ -44,16 +45,22 @@ public class SSLTestClient {
 		log.info("Received response: " + response);
 	}
 
-	public static OkHttpClient client(ClientCert clientCertName, boolean trustAll) throws URISyntaxException {
+	public static OkHttpClient client(ClientCert clientCertName, boolean trustAll) throws URISyntaxException, IOException {
 		com.gentics.mesh.rest.client.MeshRestClientConfig.Builder builder = new MeshRestClientConfig.Builder();
 
 		builder.setHost("localhost");
 		if (clientCertName != null) {
-			builder.setClientKey(MeshTestHelper.getResourcePath(CERT_PATH + clientCertName.name().toLowerCase() + ".key"));
-			builder.setClientCert(MeshTestHelper.getResourcePath(CERT_PATH + clientCertName.name().toLowerCase() + ".pem"));
+			try (InputStream in = MeshTestHelper.class.getResourceAsStream(CERT_PATH + clientCertName.name().toLowerCase() + ".key")) {
+				builder.setClientKey(in);
+			}
+			try (InputStream in = MeshTestHelper.class.getResourceAsStream(CERT_PATH + clientCertName.name().toLowerCase() + ".pem")) {
+				builder.setClientCert(in);
+			}
 		}
 		if (!trustAll) {
-			builder.addTrustedCA(MeshTestHelper.getResourcePath(CERT_PATH + "server.pem"));
+			try (InputStream in = MeshTestHelper.class.getResourceAsStream(CERT_PATH + "server.pem")) {
+				builder.addTrustedCA(in);
+			}
 		}
 		return OkHttpClientUtil.createClient(builder.build());
 

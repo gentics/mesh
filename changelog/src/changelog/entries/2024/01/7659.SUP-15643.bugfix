@@ -1,0 +1,1 @@
+REST: The documentation of the generic parameter `fields` has been fixed. Now `fields` works over the Language entities as well, the values are `uuid`,`name`,`languageTag`,`nativeName`.

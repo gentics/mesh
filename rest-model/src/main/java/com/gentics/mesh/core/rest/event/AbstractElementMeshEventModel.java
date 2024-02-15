@@ -33,4 +33,8 @@ public abstract class AbstractElementMeshEventModel extends AbstractMeshEventMod
 		this.name = name;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%s on %s (uuid: %s)", getEvent(), name, uuid);
+	}
 }

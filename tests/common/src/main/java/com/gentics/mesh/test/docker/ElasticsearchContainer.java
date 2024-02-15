@@ -10,6 +10,7 @@ import org.testcontainers.containers.output.FrameConsumerResultCallback;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.TestEnvironment;
 
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
@@ -40,7 +41,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 		// addEnv("xpack.security.enabled", "false");
 		withExposedPorts(9200);
 		withStartupTimeout(Duration.ofSeconds(30L));
-		waitingFor(new HttpWaitStrategy().forPath("/").withStartupTimeout(Duration.ofMinutes(2)));
+		waitingFor(Wait.forLogMessage(".*started.*", 1).withStartupTimeout(Duration.ofMinutes(2)));
 	}
 
 	public ElasticsearchContainer dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {

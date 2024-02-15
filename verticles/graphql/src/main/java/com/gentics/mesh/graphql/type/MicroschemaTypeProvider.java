@@ -7,15 +7,10 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -25,8 +20,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.json.JsonUtil;
@@ -36,7 +29,6 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -116,13 +108,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 		GraphQLOutputType type = GraphQLList.list(fieldListBuilder.build());
 
 		// .fields
-		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> {
-			List<FieldSchema> fields = loadModelWithFallback(env).getFields();
-			if (fields.isEmpty()) {
-				fields = Collections.singletonList(emptySchemaFieldDummy("This microschema has no fields. Do not use this filter."));
-			}
-			return fields;
-		}));
+		schemaType.field(newFieldDefinition().name("fields").type(type).dataFetcher(env -> loadModelWithFallback(env).getFields()));
 
 		return schemaType.build();
 	}
