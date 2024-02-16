@@ -8,6 +8,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.changelog.highlevel.change.ExtractPlainText;
 import com.gentics.mesh.changelog.highlevel.change.FixNodeVersionOrder;
+import com.gentics.mesh.changelog.highlevel.change.RemoveDupIndex;
 import com.gentics.mesh.changelog.highlevel.change.RestructureWebrootIndex;
 import com.gentics.mesh.changelog.highlevel.change.SetAdminUserFlag;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
@@ -22,14 +23,15 @@ import com.gentics.mesh.core.data.changelog.HighLevelChange;
 public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 
 	protected final RestructureWebrootIndex restructureWebroot;
-
+	protected final RemoveDupIndex removeDupIndex;
 	protected final FixNodeVersionOrder fixNodeVersionOrder;
 
 	@Inject
-	public OrientDBHighLevelChangesList(ExtractPlainText plainText, SetAdminUserFlag setAdminUserFlag, RestructureWebrootIndex restructureWebroot, FixNodeVersionOrder fixNodeVersionOrder) {
+	public OrientDBHighLevelChangesList(ExtractPlainText plainText, SetAdminUserFlag setAdminUserFlag, RestructureWebrootIndex restructureWebroot, FixNodeVersionOrder fixNodeVersionOrder, RemoveDupIndex removeDupIndex) {
 		super(plainText, setAdminUserFlag);
 		this.restructureWebroot = restructureWebroot;
 		this.fixNodeVersionOrder = fixNodeVersionOrder;
+		this.removeDupIndex = removeDupIndex;
 	}
 
 	@Override
@@ -43,6 +45,7 @@ public class OrientDBHighLevelChangesList extends HighLevelChangesList {
 		// WARNING!
 		changeList.add(restructureWebroot);
 		changeList.add(fixNodeVersionOrder);
+		changeList.add(removeDupIndex);
 
 		return changeList;
 	}
