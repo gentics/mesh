@@ -24,6 +24,8 @@ icon:check[] Because of a flawed cache invalidation strategy, the project stayed
 
 icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
 
+icon:check[] Elasticsearch: A full access to the data backed by ES has been given to the admin users.
+
 [[v1.10.26]]
 == 1.10.26 (07.02.2024)
 
