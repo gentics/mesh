@@ -1,11 +1,13 @@
 package com.gentics.madl.tx;
 
+import java.io.IOException;
 import java.util.function.Function;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Element;
+
 import com.gentics.madl.traversal.RawTraversalResult;
-import com.gentics.mesh.madl.tp3.mock.Element;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversalSource;
 
 public interface BaseTransaction extends AutoCloseable {
 
@@ -33,7 +35,7 @@ public interface BaseTransaction extends AutoCloseable {
 	 * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
 	 */
 	@Override
-	void close();
+	void close() throws IOException;
 
 	/**
 	 * Return a framed / wrapped traversal.

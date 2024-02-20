@@ -23,7 +23,7 @@
 		<pf4j.version>3.1.0</pf4j.version>
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>5.5.7</spring.security.version>
-		<ferma.version>${project.version}</ferma.version>
+		<ferma.version>3.3.2</ferma.version>
 		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.2.10</orientdb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
@@ -34,6 +34,7 @@
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<testcontainers.version>1.17.6</testcontainers.version>
+		<gremlin.version>3.7.1</gremlin.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -466,12 +467,14 @@
 				<version>${project.version}</version>
 			</dependency>
 
-			<!-- Graph Database Support -->
+			<!-- ORM -->
 			<dependency>
-				<groupId>com.gentics.mesh</groupId>
-				<artifactId>ferma</artifactId>
-				<version>${ferma.version}</version>
+			    <groupId>com.syncleus.ferma</groupId>
+			    <artifactId>ferma</artifactId>
+			    <version>${ferma.version}</version>
 			</dependency>
+
+			<!-- Graph Database Support -->
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>madl-api</artifactId>
@@ -489,6 +492,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-orientdb</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-orientdb</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -498,10 +506,25 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.tinkerpop.gremlin</groupId>
-				<artifactId>gremlin-java</artifactId>
-				<version>2.6.0</version>
-			</dependency>
+	            <groupId>org.apache.tinkerpop</groupId>
+	            <artifactId>gremlin-core</artifactId>
+	            <version>${gremlin.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.tinkerpop</groupId>
+	            <artifactId>gremlin-server</artifactId>
+	            <version>${gremlin.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.tinkerpop</groupId>
+	            <artifactId>gremlin-driver</artifactId>
+	            <version>${gremlin.version}</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>org.apache.tinkerpop</groupId>
+	            <artifactId>gremlin-util</artifactId>
+	            <version>${gremlin.version}</version>
+	        </dependency>
 
 			<!-- Vertx Hazelcast cluster manager -->
 			<dependency>

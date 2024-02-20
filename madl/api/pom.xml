@@ -21,7 +21,7 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics.mesh</groupId>
+			<groupId>com.syncleus.ferma</groupId>
 			<artifactId>ferma</artifactId>
 			<exclusions>
 				<exclusion>

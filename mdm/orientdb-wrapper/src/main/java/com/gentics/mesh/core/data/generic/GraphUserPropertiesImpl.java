@@ -62,4 +62,9 @@ public class GraphUserPropertiesImpl implements UserProperties {
 			.orElse(null);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T getGraphAttribute(String key) {
+		return (T) GraphDBTx.getGraphTx().getGraph().getBaseGraph().variables().get(key).orElseThrow();
+	}
+
 }

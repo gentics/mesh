@@ -56,6 +56,7 @@ import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.FramedTransactionalGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
@@ -80,7 +81,7 @@ import io.vertx.core.logging.LoggerFactory;
  * <li>Making Tx accessible via threadlocal {@link Tx#setActive(Tx)}
  * </ul>
  */
-public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
+public class OrientDBTx extends AbstractTx<FramedGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 

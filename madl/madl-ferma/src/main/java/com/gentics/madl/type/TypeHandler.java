@@ -4,13 +4,14 @@ import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 
 import java.util.stream.Stream;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.type.ElementTypeDefinition;
 import com.gentics.mesh.madl.type.impl.EdgeTypeDefinitionImpl.EdgeTypeDefinitionBuilder;
 import com.gentics.mesh.madl.type.impl.VertexTypeDefinitionImpl.VertexTypeDefinitionBuilder;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 
 public interface TypeHandler {
 

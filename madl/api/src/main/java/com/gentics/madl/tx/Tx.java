@@ -1,6 +1,8 @@
 package com.gentics.madl.tx;
 
-import com.syncleus.ferma.FramedTransactionalGraph;
+import java.util.Optional;
+
+import com.syncleus.ferma.FramedGraph;
 
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
@@ -18,50 +20,45 @@ public interface Tx extends BaseTransaction {
 	 * @param tx
 	 *            Transaction
 	 */
-	static void setActive(Tx tx) {
+	static void set(Tx tx) {
 		Tx.threadLocalGraph.set(tx);
 	}
 
 	/**
-	 * @deprecated Use {@link #get()} instead.
-	 * @return
-	 */
-	@Deprecated
-	static Tx getActive() {
-		return Tx.threadLocalGraph.get();
-	}
-
-	/**
-	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
+	 * Return the current active transaction. A transaction should be the only place where this threadlocal is updated.
 	 * 
 	 * @return Currently active transaction
 	 */
 	static Tx get() {
-		return getActive();
+		return Tx.threadLocalGraph.get();
 	}
-	//
-	// /**
-	// * Mark the transaction as succeeded. The autoclosable will invoke a commit when completing.
-	// */
-	// void success();
-	//
-	// /**
-	// * Mark the transaction as failed. The autoclosable will invoke a rollback when completing.
-	// */
-	// void failure();
-	//
+
+	/**
+	 * An optional wrapper around {@link Tx#get()}.
+	 * 
+	 * @return
+	 */
+	static Optional<Tx> maybeGet() {
+		return Optional.ofNullable(get());
+	}
+
+	/**
+	 * An automatic cast of a higher level TXx to its implementors.
+	 * 
+	 * @param <T>
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T extends Tx> T unwrap() {
+		return (T) this;
+	}
+
 	 /**
 	 * Return the framed graph that is bound to the transaction.
 	 *
 	 * @return Graph which is bound to the transaction.
 	 */
-	 FramedTransactionalGraph getGraph();
-	//
-	// /**
-	// * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
-	// */
-	// @Override
-	// void close();
+	 FramedGraph getGraph();
 
 	/**
 	 * Add new isolated vertex to the graph.

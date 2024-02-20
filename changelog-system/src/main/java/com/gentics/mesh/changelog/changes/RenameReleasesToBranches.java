@@ -1,16 +1,19 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Changelog entry which renames releases to branches.
@@ -41,27 +44,31 @@ public class RenameReleasesToBranches extends AbstractChange {
 		runBatchAction(() -> migrateVertices("ReleaseRootImpl", "BranchRootImpl", VERTEX_BATCH_LIMIT));
 		runBatchAction(() -> migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl", VERTEX_BATCH_LIMIT));
 
-		migrateEdgeProps("HAS_TAG", EDGE_BATCH_LIMIT);
-		migrateEdgeProps("HAS_FIELD_CONTAINER", EDGE_BATCH_LIMIT);
-		migrateEdgeProps("HAS_PARENT_NODE", EDGE_BATCH_LIMIT);
-
+		try {
+			migrateEdgeProps("HAS_TAG", EDGE_BATCH_LIMIT);
+			migrateEdgeProps("HAS_FIELD_CONTAINER", EDGE_BATCH_LIMIT);
+			migrateEdgeProps("HAS_PARENT_NODE", EDGE_BATCH_LIMIT);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private void migrateEdgeProps(String label, long limit) {
+	private void migrateEdgeProps(String label, long limit) throws Exception {
 		PriorityQueue<Object> jobQueue = new PriorityQueue<>();
-		TransactionalGraph graph = getDb().rawTx();
+		Graph graph = getDb().rawTx();
 		setGraph(graph);
 		try {
 			int r = 0;
-			for (Edge edge : getGraph().getEdges("@class", label)) {
-				jobQueue.add(edge.getId());
+			Iterable<Edge> edges = () -> getGraph().edges("@class", label);
+			for (Edge edge : edges) {
+				jobQueue.add(edge.id());
 				r++;
 				if (r % 10_000 == 0) {
 					log.info("Added element to job queue " + jobQueue.size());
 				}
 			}
 		} finally {
-			graph.shutdown();
+			graph.close();
 		}
 		log.info("Created queue for " + label + " (" + jobQueue.size() + " entries)");
 		runBatchAction(() -> migrateBranchEdgeProperties(label, jobQueue, limit));
@@ -72,28 +79,28 @@ public class RenameReleasesToBranches extends AbstractChange {
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
 
-		Vertex projectRoot = meshRoot.getVertices(OUT, "HAS_PROJECT_ROOT").iterator().next();
-		for (Vertex project : projectRoot.getVertices(OUT, "HAS_PROJECT")) {
+		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").iterator().next();
+		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
 
-			Iterable<Edge> it = project.getEdges(OUT, "HAS_RELEASE_ROOT");
+			Iterable<Edge> it = project.edges(OUT, "HAS_RELEASE_ROOT");
 			for (Edge edge : it) {
 				migrateEdge(edge, "HAS_BRANCH_ROOT", true);
 
 				// Iterate over all releases
-				Vertex in = edge.getVertex(IN);
-				for (Edge edge1 : in.getEdges(OUT, "HAS_RELEASE")) {
-					Vertex release = edge1.getVertex(IN);
-					for (Edge nextReleaseEdge : release.getEdges(OUT, "HAS_NEXT_RELEASE")) {
+				Vertex in = edge.inVertex();
+				for (Edge edge1 : in.edges(OUT, "HAS_RELEASE")) {
+					Vertex release = edge1.inVertex();
+					for (Edge nextReleaseEdge : release.edges(OUT, "HAS_NEXT_RELEASE")) {
 						migrateEdge(nextReleaseEdge, "HAS_NEXT_BRANCH", true);
 					}
 					migrateEdge(edge1, "HAS_BRANCH", true);
 				}
 
-				for (Edge edge1 : in.getEdges(OUT, "HAS_INITIAL_RELEASE")) {
+				for (Edge edge1 : in.edges(OUT, "HAS_INITIAL_RELEASE")) {
 					migrateEdge(edge1, "HAS_INITIAL_BRANCH", true);
 				}
 
-				for (Edge edge1 : in.getEdges(OUT, "HAS_LATEST_RELEASE")) {
+				for (Edge edge1 : in.edges(OUT, "HAS_LATEST_RELEASE")) {
 					migrateEdge(edge1, "HAS_LATEST_BRANCH", true);
 				}
 			}
@@ -105,8 +112,8 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 	private void migrateJobProperties() {
 		Vertex meshRoot = getMeshRootVertex();
-		for (Vertex root : meshRoot.getVertices(OUT, "HAS_JOB_ROOT")) {
-			for (Vertex job : root.getVertices(OUT, "HAS_JOB")) {
+		for (Vertex root : meshRoot.vertices(OUT, "HAS_JOB_ROOT")) {
+			for (Vertex job : root.vertices(OUT, "HAS_JOB")) {
 				migrateProperty(job, "releaseName", "branchName");
 				migrateProperty(job, "releaseUuid", "branchUuid");
 			}
@@ -117,7 +124,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		long n = 0;
 		while (!jobQueue.isEmpty()) {
 			Object id = jobQueue.poll();
-			Edge edge = getGraph().getEdge(id);
+			Edge edge = getGraph().edges(id).next();
 			migrateProperty(edge, "releaseUuid", "branchUuid");
 			n++;
 			double percent = 1;
@@ -126,7 +133,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 			}
 			if (n % 8_000 == 0) {
 				log.info("Migrated {" + n + "} " + label + " edges. Remaining " + jobQueue.size() + " (" + (percent * 100) + "%)");
-				getGraph().commit();
+				getGraph().tx().commit();
 			}
 			if (n > limit) {
 				log.info("Limit for batch reached. Remaining " + jobQueue.size());
@@ -139,39 +146,39 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 	private boolean migrateVertices(String from, String to, long limit) {
 		log.info("Migrating vertex type {" + from + "} to {" + to + "}");
-		Iterable<Vertex> it = getGraph().getVertices("@class", from);
+		Iterable<Vertex> it = () -> getGraph().vertices("@class", from);
 		long count = 0;
 		for (Vertex fromV : it) {
 			// Create new vertex with new type
 			Vertex toV = getGraph().addVertex("class:" + to);
 			// Duplicate the in edges
-			for (Edge inE : fromV.getEdges(Direction.IN)) {
-				Vertex out = inE.getVertex(OUT);
-				Edge e = out.addEdge(inE.getLabel(), toV);
-				for (String key : inE.getPropertyKeys()) {
-					e.setProperty(key, inE.getProperty(key));
+			for (Edge inE : ((Iterable<Edge>) () -> fromV.edges(Direction.IN))) {
+				Vertex out = inE.outVertex();
+				Edge e = out.addEdge(inE.label(), toV);
+				for (Property<Object> property : ((Iterable<Property<Object>>)() -> inE.properties())) {
+					e.property(property.key(), inE.property(property.key()));
 				}
 			}
 			// Duplicate the out edges
-			for (Edge outE : fromV.getEdges(Direction.OUT)) {
-				Vertex in = outE.getVertex(IN);
-				Edge e = toV.addEdge(outE.getLabel(), in);
-				for (String key : outE.getPropertyKeys()) {
-					e.setProperty(key, outE.getProperty(key));
+			for (Edge outE : ((Iterable<Edge>)() -> fromV.edges(Direction.OUT))) {
+				Vertex in = outE.inVertex();
+				Edge e = toV.addEdge(outE.label(), in);
+				for (Property<Object> property : ((Iterable<Property<Object>>)() -> outE.properties())) {
+					e.property(property.key(), outE.property(property.key()));
 				}
 			}
 			// Duplicate properties
-			for (String key : fromV.getPropertyKeys()) {
-				toV.setProperty(key, fromV.getProperty(key));
+			for (VertexProperty<Object> property : ((Iterable<VertexProperty<Object>>)() -> fromV.properties())) {
+				toV.property(property.key(), fromV.property(property.key() ));
 			}
 
 			// Update the ferma type
-			toV.setProperty("ferma_type", to);
+			toV.property("ferma_type", to);
 			fromV.remove();
 			count++;
 			if (count % 1000 == 0) {
 				log.info("Migrated {" + count + "} vertices.");
-				getGraph().commit();
+				getGraph().tx().commit();
 			}
 			if (count >= limit) {
 				log.info("Limit for batch reached");
@@ -186,33 +193,35 @@ public class RenameReleasesToBranches extends AbstractChange {
 	}
 
 	private void migrateProperty(Vertex vertex, String oldPropertyKey, String newPropertyKey) {
-		log.info("Migrating vertex: " + vertex.getId());
-		String value = vertex.getProperty(oldPropertyKey);
-		vertex.removeProperty(oldPropertyKey);
+		log.info("Migrating vertex: " + vertex.id());
+		VertexProperty<String> property = vertex.property(oldPropertyKey);
+		String value = property.orElse(null);
+		property.remove();
 		if (value != null) {
-			vertex.setProperty(newPropertyKey, value);
+			vertex.property(newPropertyKey, value);
 		}
 	}
 
 	private void migrateProperty(Edge edge, String oldPropertyKey, String newPropertyKey) {
-		String value = edge.getProperty(oldPropertyKey);
-		edge.removeProperty(oldPropertyKey);
+		Property<String> property = edge.property(oldPropertyKey);
+		String value = property.orElse(null);
+		property.remove();
 		if (value != null) {
-			edge.setProperty(newPropertyKey, value);
+			edge.property(newPropertyKey, value);
 		}
 	}
 
 	// private Vertex migrateType(Vertex vertex, String newType) {
-	// String type = vertex.getProperty("ferma_type");
-	// vertex.setProperty("ferma_type", newType);
+	// String type = vertex.property("ferma_type");
+	// vertex.property("ferma_type", newType);
 	// Vertex newVertex = getDb().changeType(vertex, newType, getGraph());
 	// log.info("Migrating {" + type + "} to {" + newType + "}");
 	// return newVertex;
 	// }
 
 	private void migrateEdge(Edge edge, String newLabel, boolean reverseOrder) {
-		Vertex in = edge.getVertex(IN);
-		Vertex out = edge.getVertex(OUT);
+		Vertex in = edge.inVertex();
+		Vertex out = edge.outVertex();
 		if (reverseOrder) {
 			out.addEdge(newLabel, in);
 		} else {

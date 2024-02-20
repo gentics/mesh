@@ -3,11 +3,12 @@ package com.gentics.mesh.graphdb.model;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.syncleus.ferma.ElementFrame;
-import com.tinkerpop.blueprints.Element;
+import com.gentics.mesh.madl.frame.ElementFrame;
 
 import io.vertx.core.Vertx;
 

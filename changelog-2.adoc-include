@@ -6,47 +6,96 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.0-SNAPSHOT]]
+== 2.1.0-SNAPSHOT (20.02.2024)
+
+icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+
+
+icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
+
+icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
+
+
+[[v2.0.14-SNAPSHOT]]
+== 2.0.14-SNAPSHOT (07.02.2024)
+
+[[v2.0.13-SNAPSHOT]]
+== 2.0.13-SNAPSHOT (08.02.2024)
+
+[[v2.0.12-SNAPSHOT]]
+== 2.0.12-SNAPSHOT (10.01.2024)
+
 [[v2.0.11]]
 == 2.0.11 (20.12.2023)
 
 icon:check[] GraphQL: More test cases for sorting have been added.
 
 
-icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
+
+icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
 
 icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+[[v2.0.11-SNAPSHOT]]
+== 2.0.11-SNAPSHOT (20.12.2023)
+
+icon:check[] GraphQL: More test cases for sorting have been added.
+
 
 icon:check[] Core: Now it is not allowed to set a new password to an empty or invalid (e.g. spaces) string.
 
 icon:check[] Auth: The unnecessary logging of outdated/mismatched auth token has been removed.
 
+icon:check[] GraphQL: The overall performance of GraphQL requests has been improved by caching the GraphQL schemas.
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+[[v2.0.10-SNAPSHOT]]
+== 2.0.10-SNAPSHOT (29.11.2023)
+
 [[v2.0.10]]
 == 2.0.10 (06.12.2023)
 
-icon:check[] Core: A regression of creation of the named entities has been fixed.
+icon:check[] Core: Improve the internal Java API for granting and revoking permissions.
 
 
 icon:check[] Core: Improve the internal Java API of the list field creation, targeting better batch performance.
 
 
-icon:check[] Core: Improve the internal Java API for granting and revoking permissions.
+icon:check[] Core: A regression of creation of the named entities has been fixed.
 
 
 [[v2.0.9]]
 == 2.0.9 (18.11.2023)
 
+icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
+
+icon:check[] Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
+
 icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
+
+icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
+
+[[v2.0.9-SNAPSHOT]]
+== 2.0.9-SNAPSHOT (19.11.2023)
 
 icon:check[] Tests: Added set of tests of uniqueness of the named entities on a database level.
 
 icon:check[] Core: The cache internal Java API has been presented a new constructor, allowing using the weight instead of entity number for the cache size calculations, as well as some new statistics getters.
+
+icon:check[] GraphQL: `referencedBy` field fetcher has been refactored for more optimal batch loading.
 
 icon:check[] Core: Now caches treat NULL as a valid value, instead of a constant miss.
 
 [[v2.0.8]]
 == 2.0.8 (02.11.2023)
 
-icon:check[] GraphQL: Some more multithreading issues with initialization of GraphQL have been fixed.
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
 
 
 icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
@@ -58,11 +107,13 @@ As a consequence, it may happen that e.g. GraphQL requests are queued for some t
 If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
 
 
-icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+icon:check[] GraphQL: Some more multithreading issues with initialization of GraphQL have been fixed.
 
 
 [[v2.0.7]]
 == 2.0.7 (18.10.2023)
+
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
 
 icon:check[] GraphQL: When the very first GraphQL Queries (after starting the Mesh instance) were executed in parallel, it could happen that
 GraphQL execution failed with some internal errors. This has been fixed.
@@ -70,7 +121,12 @@ GraphQL execution failed with some internal errors. This has been fixed.
 
 icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
 
-icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+[[v2.0.7-SNAPSHOT]]
+== 2.0.7-SNAPSHOT (18.10.2023)
+
+icon:check[] GraphQL: When the very first GraphQL Queries (after starting the Mesh instance) were executed in parallel, it could happen that
+GraphQL execution failed with some internal errors. This has been fixed.
+
 
 [[v2.0.6]]
 == 2.0.6 (04.10.2023)
@@ -87,6 +143,12 @@ throwing an NPE. This has now been fixed.
 [[v2.0.4]]
 == 2.0.4 (05.09.2023)
 
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
+
+
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
+
 icon:check[] Mesh Rest Client: An error has been fixed, which prevented sorting parameters from being passed to the endpoint.
 
 
@@ -98,21 +160,18 @@ icon:check[] Java Rest Client: After logging in with the `login()` method, the l
 even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
 
 
-icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
-
-
-icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
-
+[[v2.0.4-SNAPSHOT]]
+== 2.0.4-SNAPSHOT (31.08.2023)
 
 [[v2.0.3]]
 == 2.0.3 (10.08.2023)
 
 icon:check[] Java filter for Node reference content field has been fixed. Native filtering pagination has been improved. Some other minor stability fixed applied.
 
-icon:check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
-
-
 icon:check[] Core: All named instances have been presented an own cache.
+
+
+icon:check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
 
 
 [[v2.0.2]]
@@ -132,16 +191,16 @@ icon:check[] Clustering: Due to an incorrect check, it was possible that migrati
 [[v2.0.0]]
 == 2.0.0 (29.06.2023)
 
-icon:plus[] Core: Support of database level filtering/sorting has been added to the low level Java API.
-
 icon:plus[] GraphQL: Support of database level filtering/sorting has been added. New `sort` parameter in added for structured sorting, forcing the usage of DB filtering. New GraphQL parameter `nativeFilter` 
 is added to the selected entity lookup methods, with options `NEVER` (old filtering is forced), `ALWAYS` (DB filtering is forced), `IF_POSSIBLE` (if the requested filter is supported by a DB, DB filtering is used, otherwise filtering is fallen back to the old filter mechanism). 
 Please note that not all the currently existing filters are supported by the DB.
-
-icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
 
 icon:plus[] GraphQL: Added new filters for field types: list, micronode, (s3)binary. Added a new experimental filter for referencedBy nodes.
 
 icon:plus[] OrientDB: Basic experimental support for OrientDB native filtering/sorting is added. The GraphQL Mesh options has a new preference `nativeQueryFiltering` with options: `NEVER` (old filtering, default value), `ALWAYS` (DB filtering is forced), 
 `ON_DEMAND` (GraphQL parameter `nativeFilter` is considered).
+
+icon:plus[] Core: Support of database level filtering/sorting has been added to the low level Java API.
+
+icon:plus[] GraphQL: A simplified, native filtering friendly version of `regex` string operation, `like`, has been added, accepting wildcards `%` as a zeroable set of characters, e.g. `like: "hello%world"` requests filtering in the strings, that start with `hello`, end with `world` and have zero-to-unlimited number of any characters in between.
 

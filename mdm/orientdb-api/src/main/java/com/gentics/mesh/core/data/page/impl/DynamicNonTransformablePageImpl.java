@@ -2,16 +2,21 @@ package com.gentics.mesh.core.data.page.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -22,12 +27,10 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.StreamUtil;
+import com.orientechnologies.orient.core.index.OIndex;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+
 
 /**
  * This page implementation will handle paging internally and on-demand. The internal paging will only iterate over as many items as the needed operation
@@ -132,17 +135,15 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement<?>> extend
 	 * @param clazz
 	 *            Element class used to reframe the found elements
 	 */
-	public DynamicNonTransformablePageImpl(HibUser user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, InternalPermission perm,
+	public DynamicNonTransformablePageImpl(HibUser user, GraphTraversal<?, ?> traversal, PagingParameters pagingInfo, InternalPermission perm,
 		Class<? extends T> clazz) {
 		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
 	}
 
-	private void init(Class<? extends T> clazz, VertexTraversal<?, ?, ?> traversal, InternalPermission perm) {
+	private void init(Class<? extends T> clazz, GraphTraversal<?, ?> traversal, InternalPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
-		Stream<Vertex> stream = StreamSupport.stream(traversal.spliterator(), false).map(item -> {
-			return item.getElement();
-		});
+		Stream<Vertex> stream = traversal.toStream().map(Vertex.class::cast);
 		applyPagingAndPermChecks(stream, clazz, perm);
 	}
 
@@ -161,7 +162,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement<?>> extend
 
 		// Only handle elements which are visible to the user
 		if (perm != null) {
-			stream = stream.filter(item -> userDao.hasPermissionForId(requestUser, item.getId(), perm));
+			stream = stream.filter(item -> userDao.hasPermissionForId(requestUser, item.id(), perm));
 		}
 
 		Stream<T> framedStream;
@@ -228,24 +229,32 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement<?>> extend
 	private void init(Class<? extends T> clazz, String rootLabel, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
 		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {
 
+		DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 		// Iterate over all vertices that are managed by this root vertex
-		Spliterator<Edge> itemEdges;
+		Stream<? extends Edge> itemEdges;
 		if (PersistingRootDao.shouldSort(sort)) {
-			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), clazz, rootLabel);
 			query.relationDirection(vertexDirection);
 			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
 			List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
-			itemEdges = query.fetch(maybeVariations).spliterator();
+			itemEdges = StreamUtil.toStream(query.fetch(maybeVariations));
 		} else {
 			// Iterate over all vertices that are managed by this root vertex
-			itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+			OIndex idx = ograph.getBaseGraph().getRawDatabase().getMetadata().getIndexManager().getIndex(indexName);
+			itemEdges = ograph.getBaseGraph().getIndexedEdges(idx, Arrays.asList(indexKey).iterator());
 		}
-		applyPagingAndPermChecks(StreamSupport.stream(itemEdges, false)
+		applyPagingAndPermChecks(itemEdges
 				// Get the vertex from the edge
 				.map(itemEdge -> {
-					return itemEdge.getVertex(vertexDirection);
+					switch(vertexDirection) {
+					case IN:
+						return itemEdge.inVertex();
+					case OUT:
+						return itemEdge.outVertex();
+					default:
+						throw new IllegalStateException("Unsupported direction: " + vertexDirection);
+					}					
 				}), clazz, perm);
 	}
 }

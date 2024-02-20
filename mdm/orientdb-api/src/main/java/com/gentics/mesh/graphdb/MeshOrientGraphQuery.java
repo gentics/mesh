@@ -5,14 +5,14 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.madl.ext.orientdb.OrientGraphQuery;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphQuery;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

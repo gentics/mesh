@@ -15,19 +15,21 @@
  */
 package com.gentics.madl.tx;
 
-import com.syncleus.ferma.FramedTransactionalGraph;
+import java.io.IOException;
+
+import com.syncleus.ferma.FramedGraph;
 
 /**
  * An abstract class that can be used to implement vendor specific graph database Tx classes.
  */
-public abstract class AbstractTx<T extends FramedTransactionalGraph> implements Tx {
+public abstract class AbstractTx<T extends FramedGraph> implements Tx {
 
 	/**
 	 * Graph that is active within the scope of the autoclosable.
 	 */
-	private T currentGraph;
+	protected T currentGraph;
 
-	private boolean isSuccess = false;
+	protected boolean isSuccess = false;
 
 	/**
 	 * Initialize the transaction.
@@ -39,7 +41,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 		setGraph(transactionalGraph);
 		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field.
 		// Overwrite the current active threadlocal graph with the given transactional graph. This way Ferma graph elements will utilize this instance.
-		Tx.setActive(this);
+		Tx.set(this);
 	}
 
 	@Override
@@ -62,8 +64,8 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	}
 
 	@Override
-	public void close() {
-		Tx.setActive(null);
+	public void close() throws IOException {
+		Tx.set(null);
 		if (isSuccess()) {
 			commit();
 		} else {
@@ -71,15 +73,15 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 		}
 		// Restore the old graph that was previously swapped with the current graph
 		getGraph().close();
-		getGraph().shutdown();
+		//getGraph().shutdown();
 	}
 
 	/**
 	 * Invoke a commit on the database of this transaction.
 	 */
 	public void commit() {
-		if (getGraph() instanceof FramedTransactionalGraph) {
-			((FramedTransactionalGraph) getGraph()).commit();
+		if (getGraph() instanceof FramedGraph) {
+			((FramedGraph) getGraph()).tx().commit();
 		}
 	}
 
@@ -87,15 +89,15 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 	 * Invoke a rollback on the database of this transaction.
 	 */
 	public void rollback() {
-		if (getGraph() instanceof FramedTransactionalGraph) {
-			((FramedTransactionalGraph) getGraph()).rollback();
+		if (getGraph() instanceof FramedGraph) {
+			((FramedGraph) getGraph()).tx().rollback();
 		}
 	}
 
 	/**
 	 * Return the internal graph reference.
 	 */
-	public FramedTransactionalGraph getGraph() {
+	public FramedGraph getGraph() {
 		return currentGraph;
 	}
 

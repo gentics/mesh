@@ -5,12 +5,14 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Graph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -22,7 +24,7 @@ public abstract class AbstractChange implements Change {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
 
-	private TransactionalGraph graph;
+	private Graph graph;
 
 	private GraphDatabase db;
 
@@ -31,17 +33,17 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public void apply() {
 		applyOutsideTx();
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		setGraph(graph);
 		try {
 			applyInTx();
-			graph.commit();
+			graph.tx().commit();
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);
-			graph.rollback();
+			graph.tx().rollback();
 			throw e;
 		} finally {
-			graph.shutdown();
+			graph.tx().close();
 		}
 	}
 
@@ -63,14 +65,14 @@ public abstract class AbstractChange implements Change {
 	 * @return
 	 */
 	protected boolean applyBatchActionInTx(BooleanSupplier action) {
-		TransactionalGraph graph = getDb().rawTx();
+		Graph graph = getDb().rawTx();
 		setGraph(graph);
 		try {
 			boolean b = action.getAsBoolean();
-			getGraph().commit();
+			getGraph().tx().commit();
 			return b;
 		} finally {
-			graph.shutdown();
+			graph.tx().close();
 		}
 	}
 
@@ -93,11 +95,11 @@ public abstract class AbstractChange implements Change {
 
 	@Override
 	public boolean isApplied() {
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		setGraph(graph);
 		ChangelogRootWrapper changelogRoot = changelogRoot();
 		boolean hasChange = changelogRoot.hasChange(getUuid());
-		graph.shutdown();
+		graph.tx().close();
 		setGraph(null);
 		return hasChange;
 	}
@@ -112,7 +114,7 @@ public abstract class AbstractChange implements Change {
 		if (meshRoot == null) {
 			throw new RuntimeException("Could not find mesh root node. The change can't be applied without the mesh root vertex.");
 		}
-		Iterator<Vertex> it = meshRoot.getVertices(Direction.OUT, ChangelogRootWrapper.HAS_CHANGELOG_ROOT).iterator();
+		Iterator<Vertex> it = meshRoot.vertices(Direction.OUT, ChangelogRootWrapper.HAS_CHANGELOG_ROOT);
 		Vertex changelogRoot = null;
 		if (it.hasNext()) {
 			changelogRoot = it.next();
@@ -133,21 +135,21 @@ public abstract class AbstractChange implements Change {
 
 	@Override
 	public void markAsComplete() {
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		setGraph(graph);
 		changelogRoot().add(this);
 		setGraph(null);
-		graph.commit();
-		graph.shutdown();
+		graph.tx().commit();
+		graph.tx().close();
 	}
 
 	@Override
-	public void setGraph(TransactionalGraph graph) {
+	public void setGraph(Graph graph) {
 		this.graph = graph;
 	}
 
 	@Override
-	public TransactionalGraph getGraph() {
+	public Graph getGraph() {
 		return graph;
 	}
 

@@ -2,48 +2,35 @@ package com.gentics.madl.frame;
 
 import java.util.Set;
 
-import com.gentics.madl.tx.Tx;
-import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.madl.frame.EdgeFrame;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
-	/**
-	 * @deprecated Replaced by {@link #id()}
-	 */
-	@Deprecated
-	@Override
-	public Object getId() {
-		return super.getId();
-	}
-
 	@Override
 	public Vertex getElement() {
-		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
-		FramedGraph fg = Tx.get().getGraph();
+		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
-		Vertex vertexForId = fg.getVertex(id);
-		if (vertexForId == null) {
-			throw new RuntimeException("No vertex for Id {" + id + "} of type {" + getClass().getName() + "} could be found within the graph");
-		}
-		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
+		Vertex vertexForId = fg.getRawTraversal().V(id()).tryNext().orElseThrow(() -> new RuntimeException("No vertex for Id {" + id() + "} of type {" + getClass().getName() + "} could be found within the graph"));
+		Element vertex = (Element) ((WrappedVertex<?>) vertexForId).getBaseVertex();
 
 		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {
-			vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
+			vertex = (Vertex) ((WrappedElement<?>) vertex).getBaseElement();
 		}
 		return (Vertex) vertex;
 	}
@@ -123,7 +110,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
 		// Unlink all edges with the given label
 		// unlinkOut(null, labels);
-		getElement().getEdges(Direction.OUT, labels).forEach(Element::remove);
+		getElement().edges(Direction.OUT, labels).forEachRemaining(Element::remove);
 		// Create a new edge with the given label
 		// linkOut(vertex, labels);
 		for (String label : labels) {
@@ -132,26 +119,24 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
-		TraversalResult<? extends T> result = new TraversalResult<>(out(label).frameExplicit(clazz));
-		return result;
+	public <T extends ElementFrame> GraphTraversal<?, ?> traversalIn(Class<T> clazz, String... labels) {
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
+		return traversal.addStep(new GraphStep(traversal, clazz, false, labels)).in(labels);
 	}
 
 	@Override
-	public <T extends EdgeFrame> TraversalResult<? extends T> outE(String label, Class<T> clazz) {
-		TraversalResult<? extends T> result = new TraversalResult<>(outE(label).frameExplicit(clazz));
-		return result;
-	}
-
-	@Override
-	public <T extends ElementFrame> TraversalResult<? extends T> in(String label, Class<T> clazz) {
-		TraversalResult<? extends T> result = new TraversalResult<>(in(label).frameExplicit(clazz));
-		return result;
-	}
-
-	@Override
-	public <T extends EdgeFrame> TraversalResult<? extends T> inE(String label, Class<T> clazz) {
-		TraversalResult<? extends T> result = new TraversalResult<>(inE(label).frameExplicit(clazz));
-		return result;
+	public <T extends ElementFrame> GraphTraversal<?, ?> traversalOut(Class<T> clazz, String... labels) {
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
+		return traversal.addStep(new GraphStep(traversal, clazz, false, labels)).out(labels);
 	}
 }

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -12,13 +13,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.dao.ElementResolver;
-import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicNonTransformablePageImpl;
@@ -37,10 +41,6 @@ import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
-import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -74,7 +74,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
-		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
+		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
@@ -94,12 +94,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			itemEdges = query.fetch(maybeVariations).spliterator();
 		} else {
 			String idx = "e." + getRootLabel().toLowerCase() + "_out";
-			itemEdges = graph.getEdges(idx.toLowerCase(), id()).spliterator();
+			Iterable<Edge> iterable = () -> (Iterator) graph.getFramedEdges(idx.toLowerCase(), id(), getPersistanceClass());
+			itemEdges = iterable.spliterator();
 		}
 
 		return StreamSupport.stream(itemEdges, false)
-			.map(edge -> edge.getVertex(Direction.IN))
-			.filter(vertex -> userDao.hasPermissionForId(user, vertex.getId(), permission))
+			.map(Edge::inVertex)
+			.filter(vertex -> userDao.hasPermissionForId(user, vertex.id(), permission))
 			.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
@@ -110,7 +111,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return
 	 */
 	default Result<? extends T> findAllDynamic() {
-		return new TraversalResult<>(out(getRootLabel()).frame(getPersistanceClass()));
+		return new TraversalResult<>(out(getRootLabel(), getPersistanceClass()));
 	}
 
 	/**
@@ -175,8 +176,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param name
 	 * @return Found element or null if element with the name could not be found
 	 */
+	@SuppressWarnings("unchecked")
 	default T findByName(String name) {
-		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
+		return (T) traversalOut(getPersistanceClass(), getRootLabel()).has("name", name).tryNext().orElse(null);
 	}
 
 	/**
@@ -193,8 +195,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		if (t != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			// Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()));
-			if (edges.iterator().hasNext()) {
+			Iterator<?> edges = graph.getFramedEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()), t.getClass());
+			if (edges.hasNext()) {
 				return t;
 			}
 		}
@@ -222,9 +224,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		GraphDatabase db = HibClassConverter.toGraph(db());
 		FramedGraph graph = getGraph();
 		// Check whether the item was already added by checking the index
-		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(),
-			id()));
-		if (!edges.iterator().hasNext()) {
+		Iterator<?> edges = graph.getFramedEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(), id()), item.getClass());
+		if (!edges.hasNext()) {
 			linkOut(item, getRootLabel());
 		}
 	}

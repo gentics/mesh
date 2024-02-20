@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.reflections.Reflections;
+import org.reflections8.Reflections;
 
 import com.gentics.madl.annotations.GraphElement;
 

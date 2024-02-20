@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
@@ -20,6 +23,8 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperand;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -71,8 +76,6 @@ import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -107,11 +110,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	public static <K extends MeshVertex> void addUserTrackingRelation(Class<K> keyClass) {
 		GraphRelationships.addRelation(keyClass, UserImpl.class, "creator");
 		GraphRelationships.addRelation(keyClass, UserImpl.class, "editor");
-	}
-
-	@Override
-	protected void init(FramedGraph graph, Element element, Object id) {
-		super.init(graph, null, id);
 	}
 
 	@Override

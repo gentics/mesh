@@ -1,0 +1,44 @@
+diff --git a/doc/src/main/docs/features.asciidoc b/doc/src/main/docs/features.asciidoc
+index 9ecbd43f72..bc76c3c1da 100644
+--- a/doc/src/main/docs/features.asciidoc
++++ b/doc/src/main/docs/features.asciidoc
+@@ -2357,3 +2357,7 @@ Please note that it is only possible to remove jobs which have failed. Jobs whic
+ == Clustering
+ 
+ Clustering is described in detail in our dedicated link:{{< relref "clustering.asciidoc" >}}[clustering documentation].
++
++== HTTP/2 serving
++
++Mesh supports serving over HTTP/2 out of the box.
+diff --git a/doc/src/main/docs/java-rest-client.asciidoc b/doc/src/main/docs/java-rest-client.asciidoc
+index cca0ca8101..6589465602 100644
+--- a/doc/src/main/docs/java-rest-client.asciidoc
++++ b/doc/src/main/docs/java-rest-client.asciidoc
+@@ -148,7 +148,11 @@ Usage:
+ ----
+ MonitoringRestClient client = MonitoringRestClient.create("localhost", 8081);
+ 
+-client.status().toSingle().subscribe(status -> {
++client.status().toSingle().subscribe(status -> {{
+ 	System.out.println(status.getStatus());
+ }, System.err::println);
+ ----
++
++== Use HTTP/2
++
++Since Mesh supports serving over HTTP/2 out of the box, Mesh REST client allows limiting connection protocol to HTTP/2, so instead of time-consuming protocol support check and upgrade the client may use HTTP/2 right away. This is achievable with using Java API `MeshRestClientConfig.setProtocolVersion()`. 
+diff --git a/doc/src/main/docs/plugin-system.asciidoc b/doc/src/main/docs/plugin-system.asciidoc
+index 822ad2367f..abfc17a353 100644
+--- a/doc/src/main/docs/plugin-system.asciidoc
++++ b/doc/src/main/docs/plugin-system.asciidoc
+@@ -139,6 +139,10 @@ NOTE: Plugins will not be automatically undeployed or unregistered once the writ
+ 
+ TIP: Plugins which use event handling should be aware that every plugin instance in the cluster will process the event. If this is not desireable a locking or negotiation mechansim should be used to prevent concurrent event handling.
+ 
++== HTTP/2
++
++Plugins may use HTTP/2 protocol for the connectivity. This may be set up with setting the boolean environment variable `MESH_PLUGIN_USE_HTTP2`, or Java API `MeshOptions.setPluginUseHttp2()`.
++
+ == Plugin Development
+ 
+ See link:{{< relref "plugin-development" >}}[Plugin Development]

@@ -4,9 +4,15 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
+
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.madl.frame.AbstractEdgeFrame;
 import com.gentics.mesh.core.data.MeshEdge;
-import com.gentics.mesh.core.db.AbstractEdgeFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -15,10 +21,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+import com.syncleus.ferma.WrappedFramedGraph;
 
 import io.vertx.core.Vertx;
 
@@ -35,8 +38,8 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	@Override
-	protected void init(FramedGraph graph, Element e, Object id) {
-		super.init(graph, null, id);
+	public Object getId() {
+		return id();
 	}
 
 	public String getFermaType() {
@@ -65,7 +68,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	public Edge getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
 		// transaction finishes
-		Element edge = ((WrappedEdge) GraphDBTx.getGraphTx().getGraph().getEdge(id())).getBaseElement();
+		Element edge = GraphDBTx.getGraphTx().getGraph().getBaseGraph().edges(id()).next();
 
 		// Element edge = threadLocalElement.get();
 
@@ -93,7 +96,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	 * @return
 	 */
 	public OrientDBMeshComponent mesh() {
-		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		return GraphUserPropertiesImpl.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
 	@Override
@@ -112,11 +115,11 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	public static Edge findEdge(Object nodeId, String languageTag, String branchUuid, ContainerType type) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
+		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		OrientDBMeshComponent mesh = GraphUserPropertiesImpl.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		GraphDatabase db = mesh.database();
-		Iterator<Edge> iterator = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", 
-				db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag)).iterator();
+		Iterator<? extends Edge> iterator = graph.getFramedEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", 
+				db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag), Edge.class);
 		if (iterator.hasNext()) {
 			return iterator.next();
 		} else {

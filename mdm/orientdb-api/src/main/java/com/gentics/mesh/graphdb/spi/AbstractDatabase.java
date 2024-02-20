@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.util.HibClassConverter;
@@ -42,8 +44,8 @@ public abstract class AbstractDatabase extends CommonDatabase implements GraphDa
 		}
 		tx(tx -> {
 			GraphDBTx gtx = HibClassConverter.toGraph(tx);
-			gtx.getGraph().e().removeAll();
-			gtx.getGraph().v().removeAll();
+			gtx.getGraph().getBaseGraph().edges().forEachRemaining(Edge::remove);
+			gtx.getGraph().getBaseGraph().vertices().forEachRemaining(Vertex::remove);
 			tx.success();
 		});
 		if (log.isDebugEnabled()) {

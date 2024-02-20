@@ -1,7 +1,8 @@
 package com.gentics.madl.traversal;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+
 import com.gentics.mesh.madl.frame.ElementFrame;
-import com.gentics.mesh.madl.tp3.mock.Element;
 
 /**
  * Unwrapped traversal result.

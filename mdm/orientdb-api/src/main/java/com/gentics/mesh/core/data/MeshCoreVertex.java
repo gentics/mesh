@@ -26,6 +26,6 @@ public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, Transfo
 
 	@Override
 	default Object getId() {
-		return getElement().getId();
+		return getElement().id();
 	}
 }

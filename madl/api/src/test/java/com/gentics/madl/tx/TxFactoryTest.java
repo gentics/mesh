@@ -5,17 +5,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.verify;
 
+import java.io.IOException;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.tx.FramedTxGraph;
 
 public class TxFactoryTest implements TxFactory {
 
 	private Tx mock = Mockito.mock(Tx.class);
 
 	@Test
-	public void testTx0() {
+	public void testTx0() throws IOException {
 		try (Tx tx = tx()) {
 
 		}
@@ -23,7 +26,7 @@ public class TxFactoryTest implements TxFactory {
 	}
 
 	@Test
-	public void testTx1() {
+	public void testTx1() throws IOException {
 		tx(() -> {
 
 		});
@@ -31,7 +34,7 @@ public class TxFactoryTest implements TxFactory {
 	}
 
 	@Test
-	public void testTx2() {
+	public void testTx2() throws IOException {
 		assertEquals("test", tx(() -> {
 			return "test";
 		}));
@@ -39,7 +42,7 @@ public class TxFactoryTest implements TxFactory {
 	}
 
 	@Test
-	public void testTx3() {
+	public void testTx3() throws IOException {
 		assertEquals("test", tx((tx) -> {
 			tx.failure();
 			tx.success();
@@ -49,10 +52,10 @@ public class TxFactoryTest implements TxFactory {
 	}
 
 	@Test
-	public void testAbstractTxSucceeding() {
+	public void testAbstractTxSucceeding() throws IOException {
 		@SuppressWarnings("unchecked")
-		AbstractTx<FramedTransactionalGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
-		FramedTransactionalGraph graph = Mockito.mock(FramedTransactionalGraph.class);
+		AbstractTx<FramedGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
+		FramedGraph graph = Mockito.mock(FramedGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
 			assertNotNull(Tx.get());
@@ -60,17 +63,17 @@ public class TxFactoryTest implements TxFactory {
 		}
 		assertNull(Tx.get());
 		verify(tx).close();
-		verify(graph).commit();
+		verify(graph).tx().commit();
 		verify(graph).close();
-		verify(graph).shutdown();
-		verify(graph, Mockito.never()).rollback();
+		//verify(graph).shutdown();
+		verify(graph, Mockito.never()).tx().rollback();
 	}
 
 	@Test
-	public void testAbstractTxDefault() {
+	public void testAbstractTxDefault() throws IOException {
 		@SuppressWarnings("unchecked")
-		AbstractTx<FramedTransactionalGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
-		FramedTransactionalGraph graph = Mockito.mock(FramedTransactionalGraph.class);
+		AbstractTx<FramedGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
+		FramedGraph graph = Mockito.mock(FramedGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
 			assertNotNull(Tx.get());
@@ -78,17 +81,17 @@ public class TxFactoryTest implements TxFactory {
 		}
 		assertNull(Tx.get());
 		verify(tx).close();
-		verify(graph).rollback();
+		verify(graph).tx().rollback();
 		verify(graph).close();
-		verify(graph).shutdown();
-		verify(graph, Mockito.never()).commit();
+		//verify(graph).tx().shutdown();
+		verify(graph, Mockito.never()).tx().commit();
 	}
 
 	@Test
-	public void testAbstractTxFailing() {
+	public void testAbstractTxFailing() throws IOException {
 		@SuppressWarnings("unchecked")
-		AbstractTx<FramedTransactionalGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
-		FramedTransactionalGraph graph = Mockito.mock(FramedTransactionalGraph.class);
+		AbstractTx<FramedTxGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
+		FramedTxGraph graph = Mockito.mock(FramedTxGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
 			assertNotNull(Tx.get());
@@ -96,10 +99,10 @@ public class TxFactoryTest implements TxFactory {
 		}
 		assertNull(Tx.get());
 		verify(tx).close();
-		verify(graph).rollback();
+		verify(graph).tx().rollback();
 		verify(graph).close();
-		verify(graph).shutdown();
-		verify(graph, Mockito.never()).commit();
+		//verify(graph).tx().shutdown();
+		verify(graph, Mockito.never()).tx().commit();
 	}
 
 	@Override
@@ -115,6 +118,8 @@ public class TxFactoryTest implements TxFactory {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+		} catch (IOException e1) {
+			throw new RuntimeException(e1);
 		}
 	}
 

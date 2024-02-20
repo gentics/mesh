@@ -4,17 +4,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.orientdb.OGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientEdge;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.madl.frame.ElementFrame;
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientEdge;
-import com.tinkerpop.blueprints.impls.orient.OrientElementIterable;
 
 /**
  * Edge fetch query variant, that supports filtering and ordering.
@@ -52,13 +52,12 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 		buildOrderFieldRequest(text, true, fetchPlan == null);
 		text.append(" ");
 		text.append(QUERY_FROM);
-		text.append(OrientBaseGraph.encodeClassName(edgeLabel));
+		text.append(encodeClassName(edgeLabel));
 		text.append(" ");
 
 		// Build the query params
 		final List<Object> queryParams = manageFilters(text);
-		if (!((OrientBaseGraph) graph).isUseClassForVertexLabel())
-			manageLabels(queryParams.size() > 0, text);
+		manageLabels(queryParams.size() > 0, text);
 		
 		// Build the extra query param for the target vertex name, if specified with the 'vertexClass'
 		if (vertexClass != null) {
@@ -85,7 +84,7 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 			});
 			text.append(relationDirection.name().toLowerCase());
 			text.append("V().");
-			text.append(ElementFrame.TYPE_RESOLUTION_KEY);			
+			text.append("ferma_type");
 		}
 	
 		maybeCustomFilter.ifPresent(filter -> {
@@ -128,29 +127,8 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 		String sqlQuery = text.toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
 		log.debug("EDGE QUERY: {}", sqlQuery);
 
-		// Explicit fetch plan is not supported by a newer SQL API, so we use it
-		// to tell apart the usage of a new and old API.
-		if (fetchPlan != null) {
-			final OSQLSynchQuery<OIdentifiable> query = new OSQLSynchQuery<OIdentifiable>(sqlQuery);
-			query.setFetchPlan(fetchPlan);
-			return new OrientElementIterable<Edge>(((OrientBaseGraph) graph),
-					((OrientBaseGraph) graph).getRawGraph().query(query, queryParams.toArray()));
-		} else {
-			return () -> StreamSupport.stream(((OrientBaseGraph) graph).getRawGraph().query(sqlQuery, queryParams.toArray()), false)
-					.map(oresult -> (Edge) new OrientEdgeImpl((OrientBaseGraph) graph, oresult.toElement()))
-					.iterator();
-		}
-	}
-	
-	/**
-	 * For whatever reason Tinkerpop Blueprints ORM did not provide an edge entity, so it has to be done manually.
-	 * 
-	 * @author plyhun
-	 *
-	 */
-	private final class OrientEdgeImpl extends OrientEdge {
-		public OrientEdgeImpl(final OrientBaseGraph rawGraph, final OIdentifiable rawEdge) {
-			super(rawGraph, rawEdge);
-		}
+		return () -> StreamSupport.stream(((OGraph) graph).querySql(sqlQuery, IntStream.range(0, queryParams.size()).mapToObj(i -> Pair.of(i, queryParams.get(i))).collect(Collectors.toMap(Pair::getKey, Pair::getValue))).spliterator(), false)
+				.map(oresult -> (Edge) new OrientEdge((OGraph) graph, oresult.getRawResult().toElement()))
+				.iterator();
 	}
 }

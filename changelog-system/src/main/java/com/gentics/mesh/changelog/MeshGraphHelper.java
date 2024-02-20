@@ -2,9 +2,10 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 
-import com.syncleus.ferma.ElementFrame;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.mesh.madl.frame.ElementFrame;
 
 /**
  * Graph helper which can be used to return the mesh root vertex which is often the startpoint for changelog operation.
@@ -19,18 +20,19 @@ public final class MeshGraphHelper {
 	 * 
 	 * @return
 	 */
-	public static Vertex getMeshRootVertex(TransactionalGraph graph) {
-		Iterator<Vertex> it = graph.getVertices("@class", MESH_ROOT_TYPE).iterator();
+	public static Vertex getMeshRootVertex(Graph graph) {
+		Iterator<Vertex> it = graph.vertices("@class", MESH_ROOT_TYPE);
 		if (it.hasNext()) {
 			return it.next();
 		} else {
-			Iterator<Vertex> itLegacy = graph.getVertices(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE).iterator();
+			Iterator<Vertex> itLegacy = graph.vertices(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE);
 			if (itLegacy.hasNext()) {
 				return itLegacy.next();
 			} else {
 				// Legacy index less handling
-				for (Vertex vertex : graph.getVertices()) {
-					String fermaType = vertex.getProperty("ferma_type");
+				Iterable<Vertex> vertices = () -> graph.vertices();
+				for (Vertex vertex : vertices) {
+					String fermaType = (String) vertex.property("ferma_type").orElse(null);
 					if (fermaType != null && fermaType.endsWith(MESH_ROOT_TYPE)) {
 						return vertex;
 					}

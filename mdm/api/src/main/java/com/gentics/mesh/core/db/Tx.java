@@ -15,12 +15,7 @@ import com.gentics.mesh.security.SecurityUtils;
 /**
  * A {@link Tx} is an interface for autoclosable transactions.
  */
-public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, SecurityUtils {
-
-	/**
-	 * Thread local that is used to store references to the used graph.
-	 */
-	static ThreadLocal<Tx> threadLocalGraph = new ThreadLocal<>();
+public interface Tx extends com.gentics.madl.tx.Tx, DaoCollection, CacheCollection, SecurityUtils {
 
 	/**
 	 * Set the nested active transaction for the current thread.
@@ -29,7 +24,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 *            Transaction
 	 */
 	static void setActive(Tx tx) {
-		Tx.threadLocalGraph.set(tx);
+		com.gentics.madl.tx.Tx.set(tx);
 	}
 
 	/**
@@ -38,7 +33,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 * @return Currently active transaction
 	 */
 	static Tx get() {
-		return Tx.threadLocalGraph.get();
+		return com.gentics.madl.tx.Tx.maybeGet().map(com.gentics.madl.tx.Tx::<Tx>unwrap).orElse(null);
 	}
 
 	/**
@@ -96,15 +91,4 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	Binaries binaries();
 
 	S3Binaries s3binaries();
-
-	/**
-	 * An automatic cast of a higher level TXx to its implementors.
-	 * 
-	 * @param <T>
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	default <T extends Tx> T unwrap() {
-		return (T) this;
-	}
 }

@@ -17,106 +17,24 @@ package com.gentics.mesh.core.db;
 
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.WrappedFramedGraph;
 
 /**
  * An abstract class that can be used to implement vendor specific graph database Tx classes.
  */
-public abstract class AbstractTx<T extends FramedTransactionalGraph> implements GraphDBTx {
-
-	/**
-	 * Graph that is active within the scope of the autoclosable.
-	 */
-	private T currentGraph;
-
-	private boolean isSuccess = false;
-
-	/**
-	 * Initialize the transaction.
-	 * 
-	 * @param transactionalGraph
-	 */
-	protected void init(T transactionalGraph) {
-		// 1. Set the new transactional graph so that it can be accessed via Tx.getGraph()
-		setGraph(transactionalGraph);
-		// Handle graph multithreading issues by storing the old graph instance that was found in the threadlocal in a field.
-		// Overwrite the current active threadlocal graph with the given transactional graph. This way Ferma graph elements will utilize this instance.
-		Tx.setActive(this);
-	}
+public abstract class AbstractTx<T extends FramedGraph> extends com.gentics.madl.tx.AbstractTx<T> implements GraphDBTx {
 
 	@Override
-	public void success() {
-		isSuccess = true;
-	}
-
-	@Override
-	public void failure() {
-		isSuccess = false;
-	}
-
-	/**
-	 * Return the state of the success status flag.
-	 * 
-	 * @return
-	 */
-	protected boolean isSuccess() {
-		return isSuccess;
-	}
-
-	@Override
-	public void close() {
-		Tx.setActive(null);
-		if (isSuccess()) {
-			commit();
-		} else {
-			rollback();
-		}
-		// Restore the old graph that was previously swapped with the current graph
-		getGraph().close();
-		getGraph().shutdown();
-	}
-
-	/**
-	 * Invoke a commit on the database of this transaction.
-	 */
-	public void commit() {
-		if (getGraph() instanceof FramedTransactionalGraph) {
-			((FramedTransactionalGraph) getGraph()).commit();
-		}
-	}
-
-	/**
-	 * Invoke a rollback on the database of this transaction.
-	 */
-	public void rollback() {
-		if (getGraph() instanceof FramedTransactionalGraph) {
-			((FramedTransactionalGraph) getGraph()).rollback();
-		}
-	}
-
-	/**
-	 * Return the internal graph reference.
-	 */
-	public FramedTransactionalGraph getGraph() {
-		return currentGraph;
-	}
-
-	/**
-	 * Set the internal graph reference.
-	 *
-	 * @param currentGraph
-	 */
-	protected void setGraph(T currentGraph) {
-		this.currentGraph = currentGraph;
-	}
+	public abstract WrappedFramedGraph<? extends Graph> getGraph();
 
 	@Override
 	public <B extends HibElement> B create(String uuid, Class<? extends B> classOfB, Consumer<B> inflater) {
@@ -149,8 +67,7 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 		if (HibBaseElement.class.isAssignableFrom(classOfB)) {
 			return data().mesh().database().count((Class<? extends HibBaseElement>) classOfB);
 		} else {
-			return StreamSupport.stream(getGraph().getVertices(ElementFrame.TYPE_RESOLUTION_KEY, classOfB.getName())
-					.spliterator(), true).count();
+			return StreamUtil.toStream(getGraph().getFramedVertices("ferma_type", classOfB.getName(), classOfB)).count();
 		}
 	}
 
@@ -167,6 +84,6 @@ public abstract class AbstractTx<T extends FramedTransactionalGraph> implements 
 
 	@Override
 	public <I extends HibElement, B extends I> Stream<I> loadAll(Class<B> classOfB) {
-		return StreamUtil.toStream(getGraph().v().has(classOfB).frameExplicit(classOfB)) ;
+		return StreamUtil.toStream(getGraph().getFramedVertices(classOfB));
 	}
 }

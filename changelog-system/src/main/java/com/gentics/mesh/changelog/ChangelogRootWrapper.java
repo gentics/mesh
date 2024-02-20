@@ -2,9 +2,9 @@ package com.gentics.mesh.changelog;
 
 import java.util.Objects;
 
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Simple tinkerpop wrapper for the found vertex which represents the changelog root.
@@ -15,9 +15,9 @@ public class ChangelogRootWrapper {
 	public static final String HAS_CHANGE = "HAS_CHANGE";
 
 	private Vertex rootVertex;
-	private TransactionalGraph graph;
+	private Graph graph;
 
-	public ChangelogRootWrapper(TransactionalGraph graph, Vertex vertex) {
+	public ChangelogRootWrapper(Graph graph, Vertex vertex) {
 		this.graph = graph;
 		this.rootVertex = vertex;
 	}
@@ -30,7 +30,8 @@ public class ChangelogRootWrapper {
 	 */
 	public boolean hasChange(String uuid) {
 		Objects.requireNonNull(uuid, "The uuid of the change must not be null");
-		for (Vertex vertex : rootVertex.getVertices(Direction.OUT, HAS_CHANGE)) {
+		Iterable<Vertex> vertices = () -> rootVertex.vertices(Direction.OUT, HAS_CHANGE);
+		for (Vertex vertex : vertices) {
 			ChangeWrapper change = new ChangeWrapper(vertex);
 			if (uuid.equals(change.getUuid())) {
 				return true;

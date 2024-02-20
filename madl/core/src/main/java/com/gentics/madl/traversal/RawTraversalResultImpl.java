@@ -2,8 +2,9 @@ package com.gentics.madl.traversal;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+
 import com.gentics.mesh.madl.frame.ElementFrame;
-import com.gentics.mesh.madl.tp3.mock.Element;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 
 public class RawTraversalResultImpl<T extends Element> extends AbstractRawTraversal<T> {

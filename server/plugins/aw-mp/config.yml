@@ -1,0 +1,75 @@
+---
+auth:
+  eagerFetch: false
+  strict: false
+wkblue:
+  role: "awmp_wkblue"
+  ssl: true
+  port: 443
+  certificatePassword: ""
+  verifyHosts: false
+  verifyCertificates: false
+  maxConcurrentRequests: 20
+  connectTimeout: 60000
+  writeTimeout: 60000
+  readTimeout: 600000
+  callTimeout: 660000
+  protocol: "https"
+email:
+  enabled: true
+  role: "awmp_email"
+  templateDirectory: "templates"
+  defaultSender: "no-reply@example.com"
+  hostname: "mailcatcher"
+  port: 25
+  ssl: false
+  trustAll: false
+  keepAlive: true
+  allowRcptErrors: false
+cms:
+  ssl: false
+  host: "cms"
+  port: 80
+  basePath: "/CNPortletapp/rest/"
+  verifyHosts: false
+  verifyCertificates: false
+  fetchPublicKeys: false
+  publicKeyFile: ""
+  maxConcurrentRequests: 5
+  connectTimeout: 60000
+  writeTimeout: 60000
+  loginUsername: "node"
+  loginPassword: "node"
+  projectName: "aw_cr"
+  issuer: "Gentics CMS"
+  protocol: "http"
+portal:
+  ssl: false
+  host: "portal"
+  port: 80
+  verifyHosts: false
+  verifyCertificates: false
+  maxConcurrentRequests: 5
+  connectTimeout: 60000
+  writeTimeout: 60000
+  protocol: "http"
+keycloak:
+  ssl: false
+  port: 80
+  verifyHosts: false
+  verifyCertificates: false
+  fetchPublicKeys: false
+  protocol: "http"
+publisher:
+  role: "awmp_publish"
+indexer:
+  role: "awmp_indexer"
+  masterIndex: "company_search"
+  indices: []
+  directory: "indices"
+cleanup:
+  role: "awmp_cleanup"
+health:
+  projects: []
+  path: "/mp-health"
+performSetup: true

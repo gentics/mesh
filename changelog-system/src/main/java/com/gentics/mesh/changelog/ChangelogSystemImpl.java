@@ -1,9 +1,13 @@
 package com.gentics.mesh.changelog;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
@@ -11,9 +15,6 @@ import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.google.common.base.Objects;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -76,7 +77,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 
 	@Override
 	public void markAllAsApplied(List<Change> list) {
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		try {
 			for (Change change : list) {
 				change.setGraph(graph);
@@ -85,7 +86,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
 		} finally {
-			graph.shutdown();
+			graph.close();
 		}
 	}
 
@@ -109,15 +110,15 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 		db.tx(tx -> {
 			Vertex root = MeshGraphHelper.getMeshRootVertex(tx.<GraphDBTx>unwrap().getGraph());
 			String rev = db.getDatabaseRevision();
-			String storedVersion = root.getProperty(MESH_VERSION);
-			String storedRev = root.getProperty(MESH_DB_REV);
-			if (!Objects.equal(storedVersion, currentVersion)) {
+			String storedVersion = (String) root.property(MESH_VERSION).orElse(null);
+			String storedRev = (String) root.property(MESH_DB_REV).orElse(null);
+			if (!Objects.equals(storedVersion, currentVersion)) {
 				log.info("Changing persisted Mesh Version from {} to {}", storedVersion, currentVersion);
-				root.setProperty(MESH_VERSION, currentVersion);
+				root.property(MESH_VERSION, currentVersion);
 			}
-			if (!Objects.equal(storedRev, rev)) {
+			if (!Objects.equals(storedRev, rev)) {
 				log.info("Changing persisted DB Revision from {} to {}", storedRev, rev);
-				root.setProperty(MESH_DB_REV, rev);
+				root.property(MESH_DB_REV, rev);
 			}
 		});
 	}
@@ -125,7 +126,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 	@Override
 	public boolean requiresChanges() {
 		List<Change> changes = ChangesList.getList(options);
-		TransactionalGraph graph = db.rawTx();
+		Graph graph = db.rawTx();
 		try {
 			for (Change change : changes) {
 				change.setGraph(graph);
@@ -136,7 +137,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 				}
 			}
 		} finally {
-			graph.shutdown();
+			graph.close();
 		}
 		return false;
 	}

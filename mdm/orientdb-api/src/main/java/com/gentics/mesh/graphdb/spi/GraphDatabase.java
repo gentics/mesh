@@ -3,18 +3,19 @@ package com.gentics.mesh.graphdb.spi;
 import java.util.Iterator;
 import java.util.Optional;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.EdgeFrame;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.TransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
 
 public interface GraphDatabase extends Database {
 
@@ -94,7 +95,7 @@ public interface GraphDatabase extends Database {
 	 * 
 	 * @return
 	 */
-	TransactionalGraph rawTx();
+	Graph rawTx();
 
 	/**
 	 * Find the vertex with the given key/value setup. Indices which provide this information will automatically be utilized.
