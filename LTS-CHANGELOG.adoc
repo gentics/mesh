@@ -20,6 +20,10 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.27]]
 == 1.10.27 (TBD)
 
+icon:check[] A regression regarding OAuth user filtering has been fixed.
+
+icon:check[] Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
+
 icon:check[] Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
 
 icon:check[] Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
