@@ -9,7 +9,7 @@ import static com.gentics.mesh.ElementType.LANGUAGE;
 /**
  * Domain model for languages.
  */
-public interface HibLanguage extends HibCoreElement<LanguageResponse>, HibNamedElement {
+public interface HibLanguage extends HibCoreElement<LanguageResponse>, HibNamedBaseElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(LANGUAGE, null, null, null);
 

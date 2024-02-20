@@ -93,4 +93,25 @@ public interface TxEntityPersistenceManager {
 	default <T extends HibElement> T create(Class<? extends T> classOfT) {
 		return create(null, classOfT);
 	}
+
+	/**
+	 * Attach the POJO element into the database-driven persistence state, if possible. The default implementation does nothing, not telling apart both states.
+	 * 
+	 * @param element
+	 * @param pushIntoDb if true, the DB data is considered stale and is to be overwritten by the element data, otherwise vice versa. 
+	 * @return
+	 */
+	default <T> T attach(T element, boolean pushIntoDb) {
+		return element;
+	}
+
+	/**
+	 * Make a POJO from possibly database driven persistent element. The default implementation does nothing, not telling apart both states.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	default <T> T detach(T element) {
+		return element;
+	}
 }

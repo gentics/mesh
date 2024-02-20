@@ -4,7 +4,7 @@ import java.util.Map;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibNamedBaseElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.user.HibUserTracking;
@@ -21,7 +21,7 @@ public interface HibFieldSchemaElement<
 			RE extends NameUuidReference<RE>, 
 			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
 			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
-	> extends HibCoreElement<R>, HibReferenceableElement<RE>, HibUserTracking, HibNamedElement {
+	> extends HibCoreElement<R>, HibReferenceableElement<RE>, HibUserTracking, HibNamedBaseElement {
 
 	/**
 	 * Return the latest container version.
