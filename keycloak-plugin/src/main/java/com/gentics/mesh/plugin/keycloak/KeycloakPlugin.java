@@ -132,7 +132,8 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 			}
 
 			String realmName = config.getRealmName();
-			Set<JsonObject> keys = KeycloakUtils.loadJWKs(proto, host, port, realmName);
+			String realmUrlPrefix = config.getRealmUrlPrefix();
+			Set<JsonObject> keys = KeycloakUtils.loadJWKs(proto, host, port, realmName, Optional.ofNullable(realmUrlPrefix));
 
 			if (log.isDebugEnabled()) {
 				for (JsonObject key : keys) {
