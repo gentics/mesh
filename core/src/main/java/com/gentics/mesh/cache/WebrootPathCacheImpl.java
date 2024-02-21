@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_PUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UNPUBLISHED;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_UPDATED;
+import static com.gentics.mesh.core.rest.MeshEvent.PROJECT_LATEST_BRANCH_UPDATED;
 import static com.gentics.mesh.core.rest.MeshEvent.SCHEMA_MIGRATION_FINISHED;
 
 import javax.inject.Inject;
@@ -48,7 +49,9 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 		CLUSTER_NODE_JOINED,
 		CLUSTER_DATABASE_CHANGE_STATUS,
 		SCHEMA_MIGRATION_FINISHED,
-		BRANCH_UPDATED};
+		BRANCH_UPDATED,
+		PROJECT_LATEST_BRANCH_UPDATED
+	};
 
 	@Inject
 	public WebrootPathCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry, MeshOptions options) {

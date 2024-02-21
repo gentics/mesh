@@ -1,0 +1,3 @@
+A regression regarding OAuth user filtering has been fixed.
+
+Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.

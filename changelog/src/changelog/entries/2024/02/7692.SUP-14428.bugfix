@@ -1,0 +1,1 @@
+Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.

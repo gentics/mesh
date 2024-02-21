@@ -43,6 +43,7 @@ import com.gentics.mesh.cli.MeshImpl;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
@@ -463,6 +464,8 @@ public class MeshTestContext implements TestRule {
 	 * @throws Exception
 	 */
 	private void resetDatabase(MeshTestSetting settings) throws Exception {
+		stopJobWorker();
+
 		meshDagger.boot().clearReferences();
 		long start = System.currentTimeMillis();
 		if (settings.inMemoryDB() || settings.clusterMode()) {
@@ -474,11 +477,38 @@ public class MeshTestContext implements TestRule {
 			meshTestContextProvider.getInstanceProvider().cleanupPhysicalStorage();
 			meshDagger.database().setupConnectionPool();
 		}
+		meshDagger.jobWorkerVerticle().start();
 		long duration = System.currentTimeMillis() - start;
 		LOG.info("Clearing DB took {" + duration + "} ms.");
 		if (trackingSearchProvider != null) {
 			trackingSearchProvider.reset();
 		}
+	}
+
+	/**
+	 * Stop the JobWorkerVerticle and wait for any jobs, which are still running
+	 * @throws Exception
+	 */
+	private void stopJobWorker() throws Exception {
+		long start = System.currentTimeMillis();
+
+		JobWorkerVerticle jobWorkerVerticle = meshDagger.jobWorkerVerticle();
+		jobWorkerVerticle.stop();
+
+		// if any jobs are currently running, they will hold the global lock.
+		// so we will wait until we can acquire the lock, which makes sure that
+		// currently running jobs will have stopped.
+		CountDownLatch jobWait = new CountDownLatch(1);
+		jobWorkerVerticle.doWithLock(1000, rh -> {
+			if (rh.succeeded()) {
+				rh.result().release();
+			} else {
+				LOG.warn("Failed to get job worker verticle lock in");
+			}
+			jobWait.countDown();
+		});
+		jobWait.await(2, TimeUnit.SECONDS);
+		LOG.info(String.format("Stopping JobWorkerVerticle took {%d} ms", System.currentTimeMillis() - start));
 	}
 
 	private void cleanupFolders() throws IOException {

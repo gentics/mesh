@@ -5,10 +5,11 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.CONTAINER_ES6;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 
-import com.gentics.mesh.core.data.perm.InternalPermission;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
@@ -20,6 +21,11 @@ import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NodePermissionSearchTest extends AbstractMeshTest {
+
+	@Before
+	public void revokeAdminFromSearchClient() {
+		revokeAdmin();
+	}
 
 	@Test
 	public void testIndexPermUpdate() throws Exception {
@@ -39,7 +45,28 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 		list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should not be found since the requestor has no permission to see it", 0, list.getData().size());
+	}
 
+	@Test
+	public void testIndexPermUpdateAdmin() throws Exception {
+		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
+
+		String json = getESText("nodeWildcard.es");
+
+		waitForSearchIdleEvent();
+		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json));
+		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
+
+		// Revoke read permission
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.getPermissions().setRead(false);
+		call(() -> client().updateRolePermissions(roleUuid(), "/projects/" + PROJECT_NAME + "/nodes/" + response.getUuid(), request));
+
+		waitForSearchIdleEvent();
+		grantAdmin();
+
+		list = call(() -> client().searchNodes(PROJECT_NAME, json));
+		assertEquals("The node should be found since the requestor is an almighty administrator", 1, list.getData().size());
 	}
 
 	@Test

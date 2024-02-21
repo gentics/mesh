@@ -470,7 +470,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 		});
 
 		// check which groups are not yet assigned to the user and add them
-		List<? extends HibGroup> assignedGroups = userDao.getGroups(authUser).list();
+		List<? extends HibGroup> assignedGroups = new ArrayList<>(userDao.getGroups(authUser).list());
 		List<HibGroup> toAssign = new ArrayList<>(groupsHelper.getMappedEntities());
 		toAssign.removeAll(assignedGroups);
 

@@ -17,6 +17,21 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.27]]
+== 1.10.27 (21.02.2024)
+
+icon:check[] A regression regarding OAuth user filtering has been fixed.
+
+icon:check[] Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
+
+icon:check[] Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
+
+icon:check[] Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
+
+icon:check[] Elasticsearch: A full access to the data backed by ES has been given to the admin users.
+
 [[v1.10.26]]
 == 1.10.26 (07.02.2024)
 
