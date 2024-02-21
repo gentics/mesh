@@ -77,16 +77,15 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 
 	@Override
 	public void markAllAsApplied(List<Change> list) {
-		Graph graph = db.rawTx();
-		try {
+		try (Graph graph = db.rawTx()) {
 			for (Change change : list) {
 				change.setGraph(graph);
 				change.setDb(db);
 				change.markAsComplete();
 				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
-		} finally {
-			graph.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -108,7 +107,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 		String currentVersion = Mesh.getPlainVersion();
 
 		db.tx(tx -> {
-			Vertex root = MeshGraphHelper.getMeshRootVertex(tx.<GraphDBTx>unwrap().getGraph());
+			Vertex root = MeshGraphHelper.getMeshRootVertex(tx.<GraphDBTx>unwrap().getGraph().getBaseGraph());
 			String rev = db.getDatabaseRevision();
 			String storedVersion = (String) root.property(MESH_VERSION).orElse(null);
 			String storedRev = (String) root.property(MESH_DB_REV).orElse(null);
@@ -126,8 +125,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 	@Override
 	public boolean requiresChanges() {
 		List<Change> changes = ChangesList.getList(options);
-		Graph graph = db.rawTx();
-		try {
+		try (Graph graph = db.rawTx()) {
 			for (Change change : changes) {
 				change.setGraph(graph);
 				change.setDb(db);
@@ -136,8 +134,8 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 					return true;
 				}
 			}
-		} finally {
-			graph.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		return false;
 	}

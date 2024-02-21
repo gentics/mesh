@@ -1,8 +1,9 @@
 package com.gentics.mesh.changelog.changes;
 
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 /**
  * Changelog entry which removes the binary edges in order to reduce contention when updating / creating binaries.
@@ -27,17 +28,16 @@ public class RemoveBinaryEdges extends AbstractChange {
 	@Override
 	public void apply() {
 		applyOutsideTx();
-		TransactionalGraph graph = getDb().rawTx();
-		setGraph(graph);
+		Graph graph = getDb().rawTx();
 		try {
-			getGraph().getVertices("@class", "BinaryRootImpl").forEach(Element::remove);
-			graph.commit();
+			getGraph().vertices("@class", "BinaryRootImpl").forEachRemaining(Element::remove);
+			graph.tx().commit();
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);
-			graph.rollback();
+			graph.tx().rollback();
 			throw e;
 		} finally {
-			graph.shutdown();
+			graph.tx().close();
 		}
 	}
 }

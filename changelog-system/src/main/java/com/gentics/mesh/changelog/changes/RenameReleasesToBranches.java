@@ -1,6 +1,5 @@
 package com.gentics.mesh.changelog.changes;
 
-import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
 import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.PriorityQueue;
@@ -14,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * Changelog entry which renames releases to branches.
@@ -79,28 +79,28 @@ public class RenameReleasesToBranches extends AbstractChange {
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
 
-		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").iterator().next();
-		for (Vertex project : projectRoot.vertices(OUT, "HAS_PROJECT")) {
+		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").next();
+		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(OUT, "HAS_PROJECT"))) {
 
-			Iterable<Edge> it = project.edges(OUT, "HAS_RELEASE_ROOT");
+			Iterable<Edge> it = StreamUtil.toIterable(project.edges(OUT, "HAS_RELEASE_ROOT"));
 			for (Edge edge : it) {
 				migrateEdge(edge, "HAS_BRANCH_ROOT", true);
 
 				// Iterate over all releases
 				Vertex in = edge.inVertex();
-				for (Edge edge1 : in.edges(OUT, "HAS_RELEASE")) {
+				for (Edge edge1 : StreamUtil.toIterable(in.edges(OUT, "HAS_RELEASE"))) {
 					Vertex release = edge1.inVertex();
-					for (Edge nextReleaseEdge : release.edges(OUT, "HAS_NEXT_RELEASE")) {
+					for (Edge nextReleaseEdge : StreamUtil.toIterable(release.edges(OUT, "HAS_NEXT_RELEASE"))) {
 						migrateEdge(nextReleaseEdge, "HAS_NEXT_BRANCH", true);
 					}
 					migrateEdge(edge1, "HAS_BRANCH", true);
 				}
 
-				for (Edge edge1 : in.edges(OUT, "HAS_INITIAL_RELEASE")) {
+				for (Edge edge1 : StreamUtil.toIterable(in.edges(OUT, "HAS_INITIAL_RELEASE"))) {
 					migrateEdge(edge1, "HAS_INITIAL_BRANCH", true);
 				}
 
-				for (Edge edge1 : in.edges(OUT, "HAS_LATEST_RELEASE")) {
+				for (Edge edge1 : StreamUtil.toIterable(in.edges(OUT, "HAS_LATEST_RELEASE"))) {
 					migrateEdge(edge1, "HAS_LATEST_BRANCH", true);
 				}
 			}
@@ -112,8 +112,8 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 	private void migrateJobProperties() {
 		Vertex meshRoot = getMeshRootVertex();
-		for (Vertex root : meshRoot.vertices(OUT, "HAS_JOB_ROOT")) {
-			for (Vertex job : root.vertices(OUT, "HAS_JOB")) {
+		for (Vertex root : StreamUtil.toIterable(meshRoot.vertices(OUT, "HAS_JOB_ROOT"))) {
+			for (Vertex job : StreamUtil.toIterable(root.vertices(OUT, "HAS_JOB"))) {
 				migrateProperty(job, "releaseName", "branchName");
 				migrateProperty(job, "releaseUuid", "branchUuid");
 			}
@@ -152,7 +152,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 			// Create new vertex with new type
 			Vertex toV = getGraph().addVertex("class:" + to);
 			// Duplicate the in edges
-			for (Edge inE : ((Iterable<Edge>) () -> fromV.edges(Direction.IN))) {
+			for (Edge inE : StreamUtil.toIterable(fromV.edges(Direction.IN))) {
 				Vertex out = inE.outVertex();
 				Edge e = out.addEdge(inE.label(), toV);
 				for (Property<Object> property : ((Iterable<Property<Object>>)() -> inE.properties())) {
@@ -160,7 +160,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 				}
 			}
 			// Duplicate the out edges
-			for (Edge outE : ((Iterable<Edge>)() -> fromV.edges(Direction.OUT))) {
+			for (Edge outE : StreamUtil.toIterable(fromV.edges(Direction.OUT))) {
 				Vertex in = outE.inVertex();
 				Edge e = toV.addEdge(outE.label(), in);
 				for (Property<Object> property : ((Iterable<Property<Object>>)() -> outE.properties())) {

@@ -7,7 +7,7 @@ mvn -pl changelog install
 ////
 
 [[v2.1.0-SNAPSHOT]]
-== 2.1.0-SNAPSHOT (20.02.2024)
+== 2.1.0-SNAPSHOT (21.02.2024)
 
 icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
 

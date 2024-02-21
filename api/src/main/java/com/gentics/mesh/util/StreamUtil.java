@@ -38,6 +38,17 @@ public final class StreamUtil {
 	}
 
 	/**
+	 * Convert the iterator to iterable.
+	 * 
+	 * @param <T>
+	 * @param iterator
+	 * @return
+	 */
+	public static <T> Iterable<T> toIterable(Iterator<? extends T> iterator) {
+		return () -> (Iterator<T>) iterator;
+	}
+
+	/**
 	 * Convert the iterator to a stream.
 	 * 
 	 * @param <T>
@@ -45,7 +56,7 @@ public final class StreamUtil {
 	 * @return
 	 */
 	public static <T> Stream<T> toStream(Iterator<? extends T> iterator) {
-		return toStream(() -> (Iterator<T>) iterator);
+		return toStream(toIterable(iterator));
 	}
 
 	/**

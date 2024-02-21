@@ -9,10 +9,11 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.tinkerpop.blueprints.Graph;
+import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -225,7 +226,7 @@ public abstract class AbstractChange implements Change {
 			count++;
 			if (count % commitInterval == 0) {
 				log.info("Migrated {" + count + "} contents");
-				getGraph().commit();
+				getGraph().tx().commit();
 			}
 		}
 	}
@@ -249,7 +250,7 @@ public abstract class AbstractChange implements Change {
 	 * @param uuidPropertyKey
 	 */
 	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) {
-		iterateWithCommit(getGraph().getVertices("@class", vertexClass), vertex ->
+		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices("@class", vertexClass)), vertex ->
 			replaceSingleEdge(vertex, direction, label, uuidPropertyKey));
 	}
 
@@ -263,21 +264,30 @@ public abstract class AbstractChange implements Change {
 	 * @param uuidPropertyKey
 	 */
 	protected void replaceSingleEdge(Vertex vertex, Direction direction, String label, String uuidPropertyKey) {
-		Iterator<Edge> edges = vertex.getEdges(direction, label).iterator();
+		Iterator<Edge> edges = vertex.edges(direction, label);
 		if (!edges.hasNext()) {
-			log.warn(String.format("Expected vertex with uuid %s to have %s edge %s, but none was found", vertex.getProperty("uuid"), direction, label));
+			log.warn(String.format("Expected vertex with uuid %s to have %s edge %s, but none was found", vertex.property("uuid").orElse(null), direction, label));
 			return;
 		}
 		Edge edge = edges.next();
-		String uuid = edge.getVertex(direction.opposite()).getProperty("uuid");
-		vertex.setProperty(uuidPropertyKey, uuid);
+		Vertex opvertex;
+		switch (direction.opposite()) {
+		case IN:
+			opvertex = edge.inVertex();
+		case OUT:
+			opvertex = edge.outVertex();
+		default:
+			throw new IllegalStateException("Unsupported case: " + direction.opposite());
+		}
+		String uuid = opvertex.<String>property("uuid").orElse(null);
+		vertex.property(uuidPropertyKey, uuid);
 		edge.remove();
 	}
 
 	private void debug(Element element) {
 		System.out.println("---");
-		for (String key : element.getPropertyKeys()) {
-			System.out.println(key + " : " + element.getProperty(key));
+		for (Property<?> p : StreamUtil.<Property<?>>toIterable(element.properties())) {
+			System.out.println(p.key() + " : " + p.orElse(null));
 		}
 		System.out.println("---");
 	}
