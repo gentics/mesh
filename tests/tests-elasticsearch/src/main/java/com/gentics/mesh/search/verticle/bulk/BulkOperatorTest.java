@@ -1,12 +1,13 @@
-package com.gentics.mesh.search.verticle;
+package com.gentics.mesh.search.verticle.bulk;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +15,6 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.search.verticle.bulk.BulkOperator;
 
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.TestSubscriber;
@@ -174,6 +174,30 @@ public class BulkOperatorTest {
 
 		test.assertValueCount(4)
 			.assertNotComplete();
+	}
+
+	@Test
+	public void testBulkOverflowSizeLimit() throws InterruptedException {
+		BulkOperator operator = new BulkOperator(Vertx.vertx(), Duration.ofMinutes(1), 100, 100000000);
+		operator.flushActive.set(false);
+
+		TestSubscriber<SearchRequest> test = createNotCompletedAlternatingRequests(1, 500)
+				.lift(operator)
+				.test();
+
+		test.assertValueCount(1);
+		test.assertValueAt(0, this::isNonBulkRequest);
+
+		operator.flushActive.set(true);
+
+		operator.flush();
+
+		test.assertValueCount(6);
+		IntStream.range(1, 6).forEach(i -> {
+			test.assertValueAt(i, value -> {
+				return isBulkRequest(value) && ((BulkRequest) value).getRequests().size() == 100;
+			});
+		});
 	}
 
 	private boolean isBulkRequest(SearchRequest request) {

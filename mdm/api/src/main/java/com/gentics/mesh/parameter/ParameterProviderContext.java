@@ -2,6 +2,7 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -85,5 +86,9 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default SortingParameters getSortingParameters() {
 		return new SortingParametersImpl(this);
+  }
+
+	default ConsistencyCheckParameters getConsistencyCheckParameters() {
+		return new ConsistencyCheckParametersImpl(this);
 	}
 }

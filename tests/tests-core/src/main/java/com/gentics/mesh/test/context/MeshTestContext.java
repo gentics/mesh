@@ -287,12 +287,14 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDownOnce(MeshTestSetting settings) throws Exception {
-		mesh.shutdown();
+		if (mesh != null) {
+			mesh.shutdown();
+		}
 		removeConfigDirectory();
-		if (elasticsearch != null && elasticsearch.isRunning()) {
+		if (elasticsearch != null) {
 			elasticsearch.stop();
 		}
-		if (keycloak != null && keycloak.isRunning()) {
+		if (keycloak != null) {
 			keycloak.stop();
 		}
 		if (toxiproxy != null) {

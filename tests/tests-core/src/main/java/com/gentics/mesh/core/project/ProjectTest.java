@@ -148,18 +148,21 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (Tx tx = tx()) {
+		String uuid = tx(tx -> {
 			HibProject project = createProject("newProject", "folder");
 			assertNotNull(project);
-			String uuid = project.getUuid();
-			BulkActionContext bac = createBulkContext();
+			return project.getUuid();
+		});
+
+		tx(tx -> {
 			HibProject foundProject = tx.projectDao().findByUuid(uuid);
 			assertNotNull(foundProject);
-			tx.projectDao().delete(project, bac);
+			BulkActionContext bac = createBulkContext();
+			tx.projectDao().delete(foundProject, bac);
 			// TODO check for attached nodes
 			foundProject = tx.projectDao().findByUuid(uuid);
 			assertNull(foundProject);
-		}
+		});
 	}
 
 	@Test

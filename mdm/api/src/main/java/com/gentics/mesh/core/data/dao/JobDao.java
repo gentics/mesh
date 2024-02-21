@@ -136,6 +136,14 @@ public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobR
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
 
 	/**
+	 * Enqueue a consistency check job.
+	 * @param user current user
+	 * @param repair true to repair consistencies
+	 * @return enqueued job
+	 */
+	HibJob enqueueConsistencyCheck(HibUser user, boolean repair);
+
+	/**
 	 * Purge all failed jobs from the job root.
 	 */
 	void purgeFailed();
