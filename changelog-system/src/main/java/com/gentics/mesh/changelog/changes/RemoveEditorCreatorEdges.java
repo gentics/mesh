@@ -2,12 +2,14 @@ package com.gentics.mesh.changelog.changes;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.CREATOR_UUID_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.EDITOR_UUID_PROPERTY_KEY;
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
+
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.util.StreamUtil;
+
 
 /**
  * Change which removed the editor and creator edges from all elements.
@@ -31,7 +33,7 @@ public class RemoveEditorCreatorEdges extends AbstractChange {
 
 	@Override
 	public void applyInTx() {
-		iterateWithCommit(getGraph().getVertices(), v -> {
+		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices()), v -> {
 			replaceUuidEdge(v, "HAS_CREATOR", CREATOR_UUID_PROPERTY_KEY);
 			replaceUuidEdge(v, "HAS_EDITOR", EDITOR_UUID_PROPERTY_KEY);
 		});
@@ -44,9 +46,9 @@ public class RemoveEditorCreatorEdges extends AbstractChange {
 	 * @param uuidPropertyKey
 	 */
 	private void replaceUuidEdge(Vertex vertex, String edgeLabel, String uuidPropertyKey) {
-		for (Edge edge : vertex.getEdges(OUT, edgeLabel)) {
-			Vertex reference = edge.getVertex(IN);
-			vertex.setProperty(uuidPropertyKey, reference.getProperty("uuid"));
+		for (Edge edge : StreamUtil.toIterable(vertex.edges(OUT, edgeLabel))) {
+			Vertex reference = edge.inVertex();
+			vertex.property(uuidPropertyKey, reference.property("uuid").orElse(null));
 			edge.remove();
 		}
 	}

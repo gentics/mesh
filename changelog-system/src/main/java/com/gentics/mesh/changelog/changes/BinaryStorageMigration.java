@@ -1,7 +1,5 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,13 +8,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.StreamUtil;
 import com.google.common.io.Files;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+
 
 /**
  * Migrates the old binary format to the new format.
@@ -83,12 +84,12 @@ public class BinaryStorageMigration extends AbstractChange {
 		// Create binary root
 		Vertex meshRoot = getMeshRootVertex();
 		Vertex binaryRoot = getGraph().addVertex("class:BinaryRootImpl");
-		binaryRoot.setProperty("ferma_type", "BinaryRootImpl");
-		binaryRoot.setProperty("uuid", randomUUID());
-		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).setProperty("uuid", randomUUID());
+		binaryRoot.property("ferma_type", "BinaryRootImpl");
+		binaryRoot.property("uuid", randomUUID());
+		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).property("uuid", randomUUID());
 
 		// Iterate over all binary fields and convert them to edges to binaries
-		Iterable<Vertex> it = getGraph().getVertices("@class", "BinaryGraphFieldImpl");
+		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().vertices("@class", "BinaryGraphFieldImpl"));
 		for (Vertex binaryField : it) {
 			migrateField(binaryField, binaryRoot);
 		}
@@ -101,12 +102,12 @@ public class BinaryStorageMigration extends AbstractChange {
 	 * @param binaryRoot
 	 */
 	private void migrateField(Vertex oldBinaryField, Vertex binaryRoot) {
-		String uuid = oldBinaryField.getProperty("uuid");
-		String fileName = oldBinaryField.getProperty(BINARY_FILENAME_PROPERTY_KEY);
+		String uuid = oldBinaryField.<String>property("uuid").orElse(null);
+		String fileName = oldBinaryField.<String>property(BINARY_FILENAME_PROPERTY_KEY).orElse(null);
 		if (fileName == null) {
 			log.info("Removing stale binary vertex.");
-			for (String key : oldBinaryField.getPropertyKeys()) {
-				System.out.println("key: " + key + " : " + oldBinaryField.getProperty(key));
+			for (VertexProperty<String> p : StreamUtil.<VertexProperty<String>>toIterable(oldBinaryField.properties())) {
+				log.info("key: " + p.key() + " : " + p.orElse(null));
 			}
 			oldBinaryField.remove();
 			return;
@@ -116,14 +117,14 @@ public class BinaryStorageMigration extends AbstractChange {
 
 		log.info("Migrating binary field {" + uuid + "}");
 
-		String hash = oldBinaryField.getProperty(OLD_HASH_KEY);
+		String hash = oldBinaryField.<String>property(OLD_HASH_KEY).orElse(null);
 		if (hash == null && !file.exists()) {
 			try {
-				for (Edge fieldEdge : oldBinaryField.getEdges(Direction.IN, "HAS_FIELD")) {
-					Vertex container = fieldEdge.getVertex(OUT);
-					String fieldKey = fieldEdge.getProperty(FIELD_KEY_PROPERTY_KEY);
-					for (Vertex node : container.getVertices(IN, "HAS_FIELD_CONTAINER")) {
-						log.warn("Binary field {" + fieldKey + "} in node {" + node.getProperty("uuid")
+				for (Edge fieldEdge : StreamUtil.toIterable(oldBinaryField.edges(Direction.IN, "HAS_FIELD"))) {
+					Vertex container = fieldEdge.outVertex();
+					String fieldKey = fieldEdge.<String>property(FIELD_KEY_PROPERTY_KEY).orElse(null);
+					for (Vertex node : StreamUtil.toIterable(container.vertices(Direction.IN, "HAS_FIELD_CONTAINER"))) {
+						log.warn("Binary field {" + fieldKey + "} in node {" + node.<String>property("uuid")
 							+ "} has no binary data file. Touching the file.");
 					}
 				}
@@ -143,9 +144,9 @@ public class BinaryStorageMigration extends AbstractChange {
 				hash = com.gentics.mesh.changelog.utils.FileUtils.hash(file.getAbsolutePath());
 			}
 		}
-		Integer width = oldBinaryField.getProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY);
-		Integer height = oldBinaryField.getProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY);
-		Long size = oldBinaryField.getProperty(BINARY_FILESIZE_PROPERTY_KEY);
+		Integer width = oldBinaryField.<Integer>property(BINARY_IMAGE_WIDTH_PROPERTY_KEY).orElse(null);
+		Integer height = oldBinaryField.<Integer>property(BINARY_IMAGE_HEIGHT_PROPERTY_KEY).orElse(null);
+		Long size = oldBinaryField.<Long>property(BINARY_FILESIZE_PROPERTY_KEY).orElse(null);
 
 		// Try to fetch the filesize if it is missing
 		if (size == null) {
@@ -157,24 +158,24 @@ public class BinaryStorageMigration extends AbstractChange {
 		if (binary == null) {
 			binary = createBinary(hash, size, height, width, binaryRoot);
 		}
-		migrateBinaryData(uuid, binary.getProperty("uuid"));
+		migrateBinaryData(uuid, binary.<String>property("uuid").orElse(null));
 
-		String contentType = oldBinaryField.getProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY);
-		String dominantColor = oldBinaryField.getProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY);
+		String contentType = oldBinaryField.<String>property(BINARY_CONTENT_TYPE_PROPERTY_KEY).orElse(null);
+		String dominantColor = oldBinaryField.<String>property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY).orElse(null);
 		Set<Edge> oldEdges = new HashSet<>();
 
 		// Iterate over all field edges and create a new edge which will replace it.
-		for (Edge fieldEdge : oldBinaryField.getEdges(Direction.IN, "HAS_FIELD")) {
+		for (Edge fieldEdge : StreamUtil.toIterable(oldBinaryField.edges(Direction.IN, "HAS_FIELD"))) {
 			oldEdges.add(fieldEdge);
-			Vertex container = fieldEdge.getVertex(OUT);
-			String fieldKey = fieldEdge.getProperty(FIELD_KEY_PROPERTY_KEY);
+			Vertex container = fieldEdge.outVertex();
+			String fieldKey = fieldEdge.<String>property(FIELD_KEY_PROPERTY_KEY).orElse(null);
 
 			// Correct the missing fieldkey info
 			if (fieldKey == null) {
 				log.info("Found field edge without fieldkey. Correcting this..");
-				Vertex field = fieldEdge.getVertex(IN);
-				fieldKey = field.getProperty(FIELD_KEY_PROPERTY_KEY);
-				fieldEdge.setProperty(FIELD_KEY_PROPERTY_KEY, fieldKey);
+				Vertex field = fieldEdge.inVertex();
+				fieldKey = field.<String>property(FIELD_KEY_PROPERTY_KEY).orElse(null);
+				fieldEdge.property(FIELD_KEY_PROPERTY_KEY, fieldKey);
 			}
 
 			log.info("Creating new edge for binary field between container {" + container + "} and binary with hash {" + hash + "}");
@@ -272,15 +273,15 @@ public class BinaryStorageMigration extends AbstractChange {
 	}
 
 	private Edge createNewFieldEdge(Vertex container, Vertex binary, String fileName, String contentType, String dominantColor, String fieldKey) {
-		Edge edge = getGraph().addEdge("class:BinaryGraphFieldImpl", container, binary, "HAS_FIELD");
-		edge.setProperty("ferma_type", "BinaryGraphFieldImpl");
-		edge.setProperty("uuid", randomUUID());
-		edge.setProperty(BINARY_FILENAME_PROPERTY_KEY, fileName);
-		edge.setProperty(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
+		Edge edge = container.addEdge("class:BinaryGraphFieldImpl", binary, "HAS_FIELD");
+		edge.property("ferma_type", "BinaryGraphFieldImpl");
+		edge.property("uuid", randomUUID());
+		edge.property(BINARY_FILENAME_PROPERTY_KEY, fileName);
+		edge.property(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
 		if (dominantColor != null) {
-			edge.setProperty(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
+			edge.property(BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, dominantColor);
 		}
-		edge.setProperty(FIELD_KEY_PROPERTY_KEY, fieldKey);
+		edge.property(FIELD_KEY_PROPERTY_KEY, fieldKey);
 		return null;
 	}
 
@@ -293,27 +294,27 @@ public class BinaryStorageMigration extends AbstractChange {
 	 */
 	private Vertex createBinary(String hash, Long size, Integer height, Integer width, Vertex binaryRoot) {
 		Vertex binary = getGraph().addVertex("class:BinaryImpl");
-		binary.setProperty("ferma_type", "BinaryImpl");
-		binary.setProperty("uuid", randomUUID());
+		binary.property("ferma_type", "BinaryImpl");
+		binary.property("uuid", randomUUID());
 
 		if (height != null) {
-			binary.setProperty(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, height);
+			binary.property(BINARY_IMAGE_HEIGHT_PROPERTY_KEY, height);
 		}
 		if (width != null) {
-			binary.setProperty(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
+			binary.property(BINARY_IMAGE_WIDTH_PROPERTY_KEY, width);
 		}
-		binary.setProperty(BINARY_FILESIZE_PROPERTY_KEY, size);
-		binary.setProperty(NEW_HASH_KEY, hash);
+		binary.property(BINARY_FILESIZE_PROPERTY_KEY, size);
+		binary.property(NEW_HASH_KEY, hash);
 
-		binaryRoot.addEdge("HAS_BINARY", binary).setProperty("uuid", randomUUID());
+		binaryRoot.addEdge("HAS_BINARY", binary).property("uuid", randomUUID());
 
 		return binary;
 	}
 
 	private Vertex findBinary(String hash, Vertex binaryRoot) {
-		for (Vertex binary : binaryRoot.getVertices(OUT, "HAS_BINARY")) {
-			String foundHash = binary.getProperty(NEW_HASH_KEY);
-			if (foundHash.equals(hash)) {
+		for (Vertex binary : StreamUtil.toIterable(binaryRoot.vertices(Direction.OUT, "HAS_BINARY"))) {
+			String foundHash = binary.<String>property(NEW_HASH_KEY).orElse(null);
+			if (hash.equals(foundHash)) {
 				return binary;
 			}
 		}

@@ -1,9 +1,11 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.tinkerpop.blueprints.Direction.OUT;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
+
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * Changelog entry which removed the global node root vertex.
@@ -28,7 +30,7 @@ public class RemoveGlobalNodeRoot extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex root = getMeshRootVertex();
-		Iterable<Vertex> nodeRoots = root.getVertices(OUT, "HAS_NODE_ROOT");
+		Iterable<Vertex> nodeRoots = StreamUtil.toIterable(root.vertices(OUT, "HAS_NODE_ROOT"));
 		for (Vertex nodeRoot : nodeRoots) {
 			nodeRoot.remove();
 		}

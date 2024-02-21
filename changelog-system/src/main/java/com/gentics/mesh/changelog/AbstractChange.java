@@ -274,8 +274,10 @@ public abstract class AbstractChange implements Change {
 		switch (direction.opposite()) {
 		case IN:
 			opvertex = edge.inVertex();
+			break;
 		case OUT:
 			opvertex = edge.outVertex();
+			break;
 		default:
 			throw new IllegalStateException("Unsupported case: " + direction.opposite());
 		}

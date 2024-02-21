@@ -1,13 +1,5 @@
 package com.gentics.mesh.changelog.changes;
 
-import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -16,6 +8,18 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.util.StreamUtil;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Changelog entry which converts number strings to numbers.
@@ -56,14 +60,14 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	private Schema buildSchemaFromVertex(Vertex schemaVertex, String className) {
-		return schemaMap.computeIfAbsent(schemaVertex.getProperty(UUID), uuid -> {
+		return schemaMap.computeIfAbsent(schemaVertex.<String>property(UUID).orElse(null), uuid -> {
 			Schema schema = new Schema();
 			schema.type = className;
 			schema.uuid = uuid;
-			Object val = schemaVertex.getProperty("version");
+			Object val = schemaVertex.<String>property("version");
 			schema.version = String.valueOf(val);
 
-			String json = schemaVertex.getProperty(JSON_FIELD);
+			String json = schemaVertex.<String>property(JSON_FIELD).orElse(null);
 			if (json == null) {
 				return schema;
 			}
@@ -85,14 +89,14 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	private void updateProperty(String propertyName, Vertex node) {
-		Object obj = node.getProperty(propertyName);
+		Object obj = node.<String>property(propertyName);
 		if (obj == null) {
 			return;
 		}
 		if (!(obj instanceof String)) {
 			if (log.isDebugEnabled()) {
 				log.debug("Property '{}' for node '{}' in database is no string so we don't convert it. {}: '{}'", propertyName,
-					node.getProperty(UUID), obj.getClass(), obj);
+					node.<String>property(UUID), obj.getClass(), obj);
 			}
 			return;
 		}
@@ -101,18 +105,19 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		try {
 			numVal = format.parse(strVal);
 		} catch (ParseException e) {
-			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.getId());
+			log.warn("Could not parse the number '{}', for field '{}' in node {}", strVal, propertyName, node.id());
 			numVal = 0;
 		}
-		node.removeProperty(propertyName);
-		node.setProperty(propertyName, numVal);
+		node.property(propertyName).remove();
+		node.property(propertyName, numVal);
 	}
 
 	private void updateLists(Vertex container, Map<String, JsonObject> fieldMap) {
-		for (Vertex listElement : container.getVertices(Direction.OUT, HAS_LIST)) {
-			String fieldName = listElement.getProperty(FIELD_KEY);
+		for (Vertex listElement : StreamUtil.toIterable(container.vertices(Direction.OUT, HAS_LIST))) {
+			String fieldName = listElement.<String>property(FIELD_KEY).orElse(null);
 			if (fieldMap.containsKey(fieldName) && NUMBER_TYPE.equals(fieldMap.get(fieldName).getString(FIELD_LIST_TYPE_KEY))) {
-				listElement.getPropertyKeys().stream()
+				StreamUtil.toStream(listElement.properties())
+					.map(Property::key)
 					.filter(k -> k.startsWith(ITEM_PREFIX))
 					.forEach(k -> updateProperty(k, listElement));
 			}
@@ -128,26 +133,26 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 
 	private void updateVerticesForSchema(Vertex schemaVertex, Map<String, JsonObject> fieldMap, String label) {
 		long count = 0;
-		for (Vertex vertex : schemaVertex.getVertices(Direction.IN, label)) {
+		for (Vertex vertex : StreamUtil.toIterable(schemaVertex.vertices(Direction.IN, label))) {
 			count++;
 			updateFields(vertex, fieldMap);
 			updateLists(vertex, fieldMap);
 			if (count % 10000 == 0) {
 				log.debug("Commit the changes for the last 10.000 vertices to database...");
-				getGraph().commit();
+				getGraph().tx().commit();
 				log.info("Updated vertices {}", count);
 			}
 		}
 	}
 
 	private void convertViaSchema(String schemaVersionClassName, String label) {
-		for (Vertex schemaVertex : getGraph().getVertices("@class", schemaVersionClassName)) {
+		for (Vertex schemaVertex : StreamUtil.toIterable(getGraph().vertices("@class", schemaVersionClassName))) {
 			Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
 			if (!schema.fieldMap.isEmpty()) {
 				log.info("Update vertices for {}", schema);
 				updateVerticesForSchema(schemaVertex, schema.fieldMap, label);
 				log.debug("Commit the changes for the remaining vertices of schema {} to database...", schema);
-				getGraph().commit();
+				getGraph().tx().commit();
 			}
 		}
 	}

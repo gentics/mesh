@@ -1,15 +1,13 @@
 package com.gentics.mesh.changelog.changes;
 
-import static com.gentics.mesh.core.data.BranchParentEntry.branchParentEntry;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.BRANCH_PARENTS_KEY_PROPERTY;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
-
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * Changelog entry which removes the HAS_PARENT_NODE edges.
@@ -33,7 +31,7 @@ public class ReplaceParentEdges extends AbstractChange {
 
 	@Override
 	public void applyInTx() {
-		iterateWithCommit(getGraph().getVertices("@class", "NodeImpl"), vertex -> {
+		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices("@class", "NodeImpl")), vertex -> {
 			Set<String> parents = new HashSet<>();
 			Set<String> branchParents = new HashSet<>();
 			for (Edge edge : vertex.getEdges(Direction.OUT, "HAS_PARENT_NODE")) {

@@ -1,13 +1,14 @@
 package com.gentics.mesh.changelog.changes;
 
-import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
-import static com.tinkerpop.blueprints.Direction.IN;
-import static com.tinkerpop.blueprints.Direction.OUT;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * Changelog entry which replaces editor edges with properties to reduce contention.
@@ -27,27 +28,26 @@ public class NodeContentEditorMigration extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		long count = 0;
-		Iterable<Vertex> it = getGraph().getVertices("@class", "NodeGraphFieldContainerImpl");
+		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().vertices("@class", "NodeGraphFieldContainerImpl"));
 		for (Vertex nodeContainer : it) {
 			migrateContainer(nodeContainer);
 			count++;
 			if (count % 1000 == 0) {
 				log.info("Migrated {" + count + "} contents");
-				getGraph().commit();
+				getGraph().tx().commit();
 			}
 		}
 	}
 
 	private void migrateContainer(Vertex nodeContainer) {
-		Iterator<Edge> it = nodeContainer.getEdges(OUT, "HAS_EDITOR").iterator();
+		Iterator<Edge> it = nodeContainer.edges(OUT, "HAS_EDITOR");
 		if (!it.hasNext()) {
 			// We skip containers which have no editor set. Those need to be cleaned using the consistency check.
 			return;
 		}
 		Edge editorEdge = it.next();
-		String editorUuid = editorEdge
-			.getVertex(IN).getProperty("uuid");
-		nodeContainer.setProperty("editor", editorUuid);
+		String editorUuid = editorEdge.inVertex().<String>property("uuid").orElse(null);
+		nodeContainer.property("editor", editorUuid);
 		editorEdge.remove();
 	}
 

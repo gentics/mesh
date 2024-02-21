@@ -2,8 +2,9 @@ package com.gentics.mesh.changelog.changes;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.SCHEMA_CONTAINER_VERSION_KEY_PROPERTY;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
 
 /**
  * Changelog entry which removed the schema version edges with properties

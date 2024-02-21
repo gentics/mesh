@@ -1,8 +1,10 @@
 package com.gentics.mesh.changelog.changes;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * Changelog entry which migrates the publish flag. 
@@ -27,12 +29,12 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex nodeRoot = meshRoot.getVertices(Direction.OUT, "HAS_NODE_ROOT").iterator().next();
+		Vertex nodeRoot = meshRoot.vertices(Direction.OUT, "HAS_NODE_ROOT").next();
 
 		log.info("Migrating node publish flag..");
 		long i = 0;
 		// Iterate over all nodes
-		for (Vertex node : nodeRoot.getVertices(Direction.OUT, "HAS_NODE")) {
+		for (Vertex node : StreamUtil.toIterable(nodeRoot.vertices(Direction.OUT, "HAS_NODE"))) {
 			migrateNode(node);
 			i++;
 		}
@@ -43,17 +45,17 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	private void migrateNode(Vertex node) {
 
 		// Extract and remove the published flag from the node
-		String publishFlag = node.getProperty("published");
-		node.removeProperty("published");
+		String publishFlag = node.<String>property("published").orElse(null);
+		node.property("published").remove();
 
 		// Set the published flag to all node graph field containers
-		Iterable<Vertex> containers = node.getVertices(Direction.OUT, "HAS_FIELD_CONTAINER");
+		Iterable<Vertex> containers = StreamUtil.toIterable(node.vertices(Direction.OUT, "HAS_FIELD_CONTAINER"));
 		for (Vertex container : containers) {
 			if (publishFlag != null) {
-				container.setProperty("published", publishFlag);
+				container.property("published", publishFlag);
 			}
 		}
-		log.info("Migrated node {" + node.getProperty("uuid") + "}");
+		log.info("Migrated node {" + node.<String>property("uuid") + "}");
 	}
 
 }
