@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
@@ -632,7 +633,7 @@ public abstract class AbstractTypeProvider {
 	 *            the environment of the request
 	 * @return the filtered nodes
 	 */
-	protected DynamicStreamPageImpl<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
+	protected Page<NodeContent> fetchFilteredNodes(DataFetchingEnvironment env) {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 		GraphQLContext gc = env.getContext();
@@ -645,10 +646,18 @@ public abstract class AbstractTypeProvider {
 		Pair<Predicate<NodeContent>, Optional<FilterOperation<?>>> filters = parseFilters(env, nodeFilter);
 
 		PagingParameters pagingInfo = getPagingInfo(env);
-		return applyNodeFilter(filters.getRight().isPresent() || PersistingRootDao.shouldSort(pagingInfo)
-				? nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()) 
-				: nodeDao.findAllContent(project, gc, languageTags, type), 
-			pagingInfo, filters.getLeft(), filters.getRight().isPresent());
+		if (filters.getRight().isPresent()) {
+			return new PageImpl<>(nodeDao.findAllContent(project, gc, languageTags, type, pagingInfo, filters.getRight()).collect(Collectors.toList()), 
+					pagingInfo, nodeDao.countAllContent(project, gc, languageTags, type, filters.getRight()));
+		} else {
+			Stream<NodeContent> stream;
+			if (PersistingRootDao.shouldSort(pagingInfo)) {
+				stream = nodeDao.findAllContent(project, gc, languageTags, type, (PagingParameters) new PagingParametersImpl(1).putSort(pagingInfo.getSort()), filters.getRight());
+			} else {
+				stream = nodeDao.findAllContent(project, gc, languageTags, type);
+			}
+			return applyNodeFilter(stream, pagingInfo, filters.getLeft(), filters.getRight().isPresent());
+		}
 	}
 
 	public <T> Pair<Predicate<T>,Optional<FilterOperation<?>>> parseFilters(DataFetchingEnvironment env, EntityFilter<T> filterProvider) {

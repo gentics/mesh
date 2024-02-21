@@ -36,6 +36,17 @@ public interface GraphDatabase extends Database {
 	}
 
 	/**
+	 * Count vertices using SQL.
+	 *
+	 * @param classOfVertex
+	 * @param fieldNames
+	 * @param fieldValues
+	 * @param maybeFilter
+	 * @return
+	 */
+	long countVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, Optional<String> maybeFilter, Optional<ContainerType> maybeContainerType);
+
+	/**
 	 * Utilize the index and locate the matching vertices, considering paging parameters. Optionally, data fetch filtering may be applied.
 	 *
 	 * @param classOfVertex

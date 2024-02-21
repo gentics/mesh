@@ -22,6 +22,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -63,6 +65,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -127,6 +130,25 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			String uuid = tagFamily.getUuid();
 			call(() -> client().findTags(PROJECT_NAME, uuid));
 		}
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		for (int i = 0; i < 10; i++) {
+			final String name = "test12345_" + i;
+			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
+			request.setName(name);
+			TagFamilyResponse response = call(() -> client().createTagFamily(PROJECT_NAME, request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.tagFamilyDao().findByUuid(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+		TagFamilyListResponse list = call(() -> client().findTagFamilies(PROJECT_NAME, new SortingParametersImpl("name", SortOrder.DESCENDING)));
+		assertEquals("Total data size should be 7", 7, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 
 	@Test

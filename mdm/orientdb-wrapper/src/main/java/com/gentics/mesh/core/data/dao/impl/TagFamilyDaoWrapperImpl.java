@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -20,6 +21,7 @@ import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -180,6 +182,17 @@ public class TagFamilyDaoWrapperImpl extends AbstractRootDaoWrapper<TagFamilyRes
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public Page<? extends HibTagFamily> findAll(InternalActionContext ac, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
-		return new DynamicStreamPageImpl(boot.get().meshRoot().getTagFamilyRoot().findAllStream(ac, InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)), pagingInfo, true);
+		Stream<? extends TagFamily> stream = boot.get().meshRoot().getTagFamilyRoot().findAllStream(ac, InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter));
+		if (PersistingRootDao.shouldPage(pagingInfo)) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, 
+					boot.get().meshRoot().getTagFamilyRoot().countAll(ac, InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)));
+		} else {
+			return new DynamicStreamPageImpl(stream, pagingInfo, true);
+		}
+	}
+
+	@Override
+	public long countAll(HibProject root, InternalActionContext ac, InternalPermission permission, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getTagFamilyRoot().countAll(ac, permission, pagingInfo, maybeFilter);
 	}
 }

@@ -22,7 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;
@@ -35,7 +34,6 @@ import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.AbstractRootDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDao;
@@ -181,9 +179,13 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 	}
 
 	@Override
+	public long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(project).getNodeRoot().countAll(ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.ofNullable(type), maybeFilter);
+	}
+
+	@Override
 	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeType, Optional<FilterOperation<?>> maybeFilter) {
-		Project graphProject = toGraph(project);
-		return graphProject.getNodeRoot().findAllStream(ac, perm, paging, maybeType, maybeFilter);
+		return toGraph(project).getNodeRoot().findAllStream(ac, perm, paging, maybeType, maybeFilter);
 	}
 
 	@Override

@@ -40,6 +40,8 @@ public interface CrudEndpointTestCases {
 
 	void testReadMultiple() throws Exception;
 
+	void testReadPermittedSorted() throws Exception;
+
 	void testPermissionResponse();
 
 	// Update

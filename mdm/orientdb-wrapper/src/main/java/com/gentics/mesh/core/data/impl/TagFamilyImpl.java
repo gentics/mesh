@@ -7,10 +7,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -22,12 +23,14 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -227,14 +230,22 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	@Override
 	public Page<? extends Tag> findAll(InternalActionContext ac, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter) {
+		PagingParameters sorting = mapSorting(pagingInfo);
+		Optional<String> maybeParsedFilter = maybeExtraFilter
+				.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
+				.or(() -> permissionFilter(ac.getUser(), READ_PERM, Optional.empty(), Optional.empty()));
 		Stream<? extends Tag> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},
 				new Object[]{},
-				mapSorting(pagingInfo),
+				sorting,
 				Optional.empty(),
-				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
+				maybeParsedFilter
 			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
-		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
+		if (PersistingRootDao.shouldSort(pagingInfo) || maybeExtraFilter.isPresent()) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, db().countVertices(getPersistanceClass(), new String[] {}, new Object[] {}, maybeParsedFilter, Optional.empty()));
+		} else {
+			return new DynamicStreamPageImpl<>(stream, pagingInfo, maybeExtraFilter.isPresent());
+		}
 	}
 }

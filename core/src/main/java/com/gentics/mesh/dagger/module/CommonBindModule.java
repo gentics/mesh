@@ -9,6 +9,8 @@ import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.CacheCollectionImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
+import com.gentics.mesh.cache.TotalsCache;
+import com.gentics.mesh.cache.TotalsCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -61,10 +63,6 @@ import com.gentics.mesh.core.endpoint.role.RoleCrudHandler;
 import com.gentics.mesh.core.endpoint.role.RoleCrudHandlerImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.link.WebRootLinkReplacerImpl;
-import com.gentics.mesh.core.migration.BranchMigration;
-import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
-import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandlerImpl;
 import com.gentics.mesh.core.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticleImpl;
@@ -149,6 +147,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
+
+	@Binds
+	abstract TotalsCache totalsCache(TotalsCacheImpl e);
 
 	@Binds
 	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);
