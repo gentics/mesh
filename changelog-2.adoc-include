@@ -6,6 +6,25 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.15]]
+== 2.0.15 (21.02.2024)
+
+icon:check[] REST: When requesting sorted data, the permission limitations are violated. This has been fixed.
+
+icon:check[] Core: Creating a translation for the root node of a project always failed with a "Bad Request" error, which has been fixed.
+
+icon:check[] Elasticsearch: A full access to the data backed by ES has been given to the admin users.
+
+icon:check[] Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
+
+Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.
+
+icon:check[] A regression regarding OAuth user filtering has been fixed.
+
+Minor improvements in authentication-related utilities Java API, allowing more control over authentication URL management.
+
 [[v2.0.14]]
 == 2.0.14 (07.02.2024)
 
