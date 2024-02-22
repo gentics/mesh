@@ -24,7 +24,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.tinkerpop.gremlin.orientdb.OrientElement;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -62,11 +73,13 @@ import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
@@ -76,26 +89,12 @@ import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexCursor;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
+import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration;
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
 import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
-import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientElement;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
-import com.tinkerpop.pipes.util.FastNoSuchElementException;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
@@ -282,7 +281,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return txProvider.rawTx();
 	}
 
-	protected OrientGraphNoTx rawNoTx() {
+	protected OTransactionNoTx rawNoTx() {
 		return txProvider.rawNoTx();
 	}
 
@@ -326,7 +325,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		Graph orientBaseGraph = unwrapCurrentGraph();
 		Iterator<Vertex> ret;
 		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
 			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(orientBaseGraph, classOfVertex);
@@ -347,24 +346,23 @@ public class OrientDBDatabase extends AbstractDatabase {
 			query.setOrderPropsAndDirs(sorted);
 			ret = query.fetch(maybeContainerType).iterator();
 		} else {
-			ret = orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+			ret = orientBaseGraph.vertices(classOfVertex.getSimpleName(), fieldNames, fieldValues);
 		}
 		return ret;
 	}
 
 	@Override
 	public Iterable<Vertex> getVerticesForRange(Class<?> classOfVertex, String indexPostfix, String[] fieldNames, Object[] fieldValues, String rangeKey, long start, long end) {
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		OrientVertexType elementType = orientBaseGraph.getVertexType(classOfVertex.getSimpleName());
+		OrientGraph orientBaseGraph = unwrapCurrentGraph();
 		String indexName = classOfVertex.getSimpleName() + "_" + indexPostfix;
-		OIndex index = elementType.getClassIndex(indexName);
+		OIndex index = orientBaseGraph.getRawDatabase().getMetadata().getIndexManager().getClassIndex(classOfVertex.getSimpleName(), indexName);
 		Object startKey = index().createComposedIndexKey(fieldValues[0], start);
 		Object endKey = index().createComposedIndexKey(fieldValues[0], end);
 		OIndexCursor entries = index.getInternal().iterateEntriesBetween(startKey, true, endKey, true, false);
-		return () -> entries.toEntries().stream().map(entry -> {
+		return StreamUtil.toIterable(entries.toEntries().stream().map(entry -> {
 			Vertex vertex = new OrientVertex(orientBaseGraph, entry.getValue());
 			return vertex;
-		}).iterator();
+		}));
 	}
 
 	@Override
@@ -379,9 +377,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		Graph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
+		Iterator<Vertex> rawIt = orientBaseGraph.vertices("@class", classOfVertex.getSimpleName());
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 
@@ -390,25 +388,24 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 *
 	 * @return
 	 */
-	public OrientBaseGraph unwrapCurrentGraph() {
+	public OrientGraph unwrapCurrentGraph() {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
-		return tx;
+		OrientGraph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
+		return baseGraph;
 	}
 
 	@Override
 	public void enableMassInsert() {
-		OrientBaseGraph tx = unwrapCurrentGraph();
-		tx.getRawGraph().getTransaction().setUsingLog(false);
-		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true));
+		OrientGraph tx = unwrapCurrentGraph();
+		tx.getRawDatabase().getTransaction().setUsingLog(false);
+		tx.getRawDatabase().declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true));
 	}
 
 	@Override
 	public <T extends MeshElement> T findVertex(String fieldKey, Object fieldValue, Class<T> clazz) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		Iterator<Vertex> it = orientBaseGraph.getVertices(clazz.getSimpleName(), new String[] { fieldKey }, new Object[] { fieldValue }).iterator();
+		Graph orientBaseGraph = unwrapCurrentGraph();
+		Iterator<Vertex> it = orientBaseGraph.vertices(clazz.getSimpleName(), new String[] { fieldKey }, new Object[] { fieldValue });
 		if (it.hasNext()) {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}
@@ -417,22 +414,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public long count(Class<? extends HibBaseElement> clazz) {
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		OrientVertexType type = orientBaseGraph.getVertexType(clazz.getSimpleName());
-		if (type == null) {
-			type = orientBaseGraph.getVertexType(clazz.getSimpleName() + "Impl");
+		OrientGraph orientBaseGraph = unwrapCurrentGraph();
+		long count = orientBaseGraph.getRawDatabase().countClass(clazz.getSimpleName(), false);
+		if (count < 1) {
+			count = orientBaseGraph.getRawDatabase().countClass(clazz.getSimpleName() + "Impl", false);
 		}
-		if (type == null) {
-			throw new RuntimeException("Count for class " + clazz.getName() + " could not be determined.");
-		}
-		return type.count();
+		return count;
 	}
 
 	@Override
 	public <T extends EdgeFrame> T findEdge(String fieldKey, Object fieldValue, Class<T> clazz) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		Iterator<Edge> it = orientBaseGraph.getEdges(fieldKey, fieldValue).iterator();
+		Graph orientBaseGraph = unwrapCurrentGraph();
+		Iterator<Edge> it = orientBaseGraph.edges(fieldKey, fieldValue);
 		if (it.hasNext()) {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}
@@ -445,7 +439,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (metrics.isEnabled()) {
 				metrics.counter(SimpleMetric.GRAPH_ELEMENT_RELOAD).increment();
 			}
-			((OrientElement) element).reload();
+			((OrientElement) element).getRecord().reload();
 		}
 	}
 
@@ -591,10 +585,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public String getElementVersion(Element element) {
 		if (element instanceof WrappedVertex) {
-			element = ((WrappedVertex) element).getBaseElement();
+			element = ((WrappedVertex<Element>) element).getBaseVertex();
 		}
 		OrientElement e = (OrientElement) element;
-		String uuid = element.getProperty("uuid");
+		String uuid = element.<String>property("uuid").orElse(null);
 		return ETag.hash(uuid + e.getRecord().getVersion());
 	}
 
@@ -749,7 +743,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public boolean isEmptyDatabase() {
-		return tx(tx -> !toGraph(tx).getGraph().v().hasNext());
+		return tx(tx -> !toGraph(tx).getGraph().getBaseGraph().vertices().hasNext());
 	}
 
 	@Override

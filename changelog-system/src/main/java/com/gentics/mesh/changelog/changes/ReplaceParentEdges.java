@@ -1,5 +1,9 @@
 package com.gentics.mesh.changelog.changes;
 
+import static com.gentics.mesh.core.data.BranchParentEntry.branchParentEntry;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.BRANCH_PARENTS_KEY_PROPERTY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS_KEY_PROPERTY;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,20 +38,20 @@ public class ReplaceParentEdges extends AbstractChange {
 		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices("@class", "NodeImpl")), vertex -> {
 			Set<String> parents = new HashSet<>();
 			Set<String> branchParents = new HashSet<>();
-			for (Edge edge : vertex.getEdges(Direction.OUT, "HAS_PARENT_NODE")) {
-				String parentUuid = edge.getVertex(Direction.IN).getProperty("uuid");
-				String branchUuid = edge.getProperty("branchUuid");
+			for (Edge edge : StreamUtil.toIterable(vertex.edges(Direction.OUT, "HAS_PARENT_NODE"))) {
+				String parentUuid = edge.inVertex().<String>property("uuid").orElse(null);
+				String branchUuid = edge.<String>property("branchUuid").orElse(null);
 				if (branchUuid == null) {
 					log.warn("Parent edge from child {} to parent {} does not have a branch uuid. Skipping this edge.",
-						vertex.getProperty("uuid"), branchUuid);
+						vertex.<String>property("uuid").orElse(null), branchUuid);
 					continue;
 				}
 				parents.add(parentUuid);
 				branchParents.add(branchParentEntry(branchUuid, parentUuid).encode());
 				edge.remove();
 			}
-			vertex.setProperty(PARENTS_KEY_PROPERTY, parents);
-			vertex.setProperty(BRANCH_PARENTS_KEY_PROPERTY, branchParents);
+			vertex.property(PARENTS_KEY_PROPERTY, parents);
+			vertex.property(BRANCH_PARENTS_KEY_PROPERTY, branchParents);
 		});
 	}
 }

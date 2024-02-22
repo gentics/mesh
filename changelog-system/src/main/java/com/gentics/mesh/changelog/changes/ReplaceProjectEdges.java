@@ -2,9 +2,11 @@ package com.gentics.mesh.changelog.changes;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+
 import com.gentics.mesh.changelog.AbstractChange;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
+import com.gentics.mesh.util.StreamUtil;
 
 /**
  * Changelog entry which replaces the project edges.
@@ -28,8 +30,8 @@ public class ReplaceProjectEdges extends AbstractChange {
 
 	@Override
 	public void applyInTx() {
-		iterateWithCommit(getGraph().getVertices("@class", "NodeImpl"), vertex -> {
-			vertex.getEdges(Direction.IN, "HAS_NODE").forEach(Edge::remove);
+		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices("@class", "NodeImpl")), vertex -> {
+			vertex.edges(Direction.IN, "HAS_NODE").forEachRemaining(Edge::remove);
 			replaceSingleEdge(vertex, Direction.OUT, "ASSIGNED_TO_PROJECT", PROJECT_KEY_PROPERTY);
 		});
 	}

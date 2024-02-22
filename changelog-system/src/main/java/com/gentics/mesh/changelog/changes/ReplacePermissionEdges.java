@@ -12,11 +12,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.core.data.perm.InternalPermission;
+import com.gentics.mesh.util.StreamUtil;
 import com.google.common.collect.ImmutableMap;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
+
 
 /**
  * Changelog entry which removes the permission edges.
@@ -50,16 +53,16 @@ public class ReplacePermissionEdges extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		String[] labels = permLabels.keySet().toArray(new String[0]);
-		iterateWithCommit(getGraph().getVertices(), vertex -> {
-			for (Edge permEdge : vertex.getEdges(Direction.IN, labels)) {
-				String roleUuid = permEdge.getVertex(Direction.OUT).getProperty("uuid");
-				String permissionPropertyKey = permLabels.get(permEdge.getLabel()).propertyKey();
-				Set<String> perms = Optional.ofNullable(vertex.<Set<String>>getProperty(permissionPropertyKey))
+		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices()), vertex -> {
+			for (Edge permEdge : StreamUtil.toIterable(vertex.edges(Direction.IN, labels))) {
+				String roleUuid = permEdge.outVertex().<String>property("uuid").orElse(null);
+				String permissionPropertyKey = permLabels.get(permEdge.label()).propertyKey();
+				Set<String> perms = Optional.ofNullable(vertex.<Set<String>>property(permissionPropertyKey).orElse(null))
 					.map(set -> {
 						set.add(roleUuid);
 						return set;
 					}).orElseGet(() -> Collections.singleton(roleUuid));
-				vertex.setProperty(permissionPropertyKey, perms);
+				vertex.property(permissionPropertyKey, perms);
 				permEdge.remove();
 			}
 		});

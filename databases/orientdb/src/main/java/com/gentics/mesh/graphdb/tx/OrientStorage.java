@@ -3,9 +3,10 @@ package com.gentics.mesh.graphdb.tx;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+
 import com.gentics.mesh.graphdb.spi.GraphStorage;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 
 /**
  * Representation of an orientdb graph storage.
@@ -24,7 +25,7 @@ public interface OrientStorage extends GraphStorage {
 	 * 
 	 * @return
 	 */
-	OrientGraphNoTx rawNoTx();
+	OTransactionNoTx rawNoTx();
 
 	/**
 	 * Set the mass insertion intent.
