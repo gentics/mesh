@@ -11,7 +11,7 @@
 = Mesh Keycloak Plugin Changelog
 
 [[v1.10.14]]
-== 1.10.14
+== 1.10.14 (2024-02-22)
 
 CAUTION: The plugin requires Mesh >= 1.10.27 to run.
 
