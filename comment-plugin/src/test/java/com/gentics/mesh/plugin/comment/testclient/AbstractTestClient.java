@@ -186,12 +186,12 @@ public class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
+	public MeshRequest<ConsistencyCheckResponse> checkConsistency(ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<ConsistencyCheckResponse> repairConsistency() {
+	public MeshRequest<ConsistencyCheckResponse> repairConsistency(ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
 
@@ -1253,7 +1253,7 @@ public class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, ParameterProvider... parameters) {
+		String fieldKey, InputStream fileData, long fileSize, String fileName, String contentType, boolean publish, ParameterProvider... parameters) {
 		throw new NotImplementedException();
 	}
 
