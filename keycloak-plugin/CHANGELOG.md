@@ -10,6 +10,13 @@
 
 = Mesh Keycloak Plugin Changelog
 
+[[v1.10.14]]
+== 1.10.14 (2024-02-22)
+
+CAUTION: The plugin requires Mesh >= 1.10.27 to run.
+
+icon:check[] An ability to setup custom Realms URL format has been added, targeting newer versions of Keycloak.
+
 [[v1.9.2]]
 == 1.9.2 (2022-09-28)
 

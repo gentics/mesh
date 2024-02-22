@@ -1,12 +1,13 @@
 package com.gentics.mesh.plugin.keycloak;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
 import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.env.PluginEnvironment;
-import com.gentics.mesh.plugin.keycloak.KeycloakPlugin;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 
 import io.reactivex.Single;
@@ -35,8 +36,8 @@ public class KeycloakTestPlugin extends KeycloakPlugin {
 
 	@Override
 	public String getMapperScript() {
-		try {
-			return IOUtils.toString(getClass().getResourceAsStream(DEFAULT_SCRIPT_RESOURCE));
+		try (InputStream is = getClass().getResourceAsStream(DEFAULT_SCRIPT_RESOURCE)) {
+			return IOUtils.toString(is, Charset.defaultCharset());
 		} catch (IOException e) {
 			throw new RuntimeException("Could not load default config for test plugin");
 		}
