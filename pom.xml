@@ -20,7 +20,7 @@
 		<mesh.version>2.0.0</mesh.version>
 		<netty.version>4.1.78.Final</netty.version>
 		<license.checker.version>1.0.0</license.checker.version>
-		<dependency.report.component.name>Gentics Mesh Commercial Plugins</dependency.report.component.name>
+		<dependency.report.component.name>Plugins</dependency.report.component.name>
 	</properties>
 
 	<modules>
