@@ -29,7 +29,7 @@ public abstract class AbstractVersionEdge extends MeshEdgeImpl implements Branch
 
 	@Override
 	public Branch getBranch() {
-		return outV().nextOrDefaultExplicit(BranchImpl.class, null);
+		return outV(BranchImpl.class).nextOrNull();
 	}
 
 	@Override

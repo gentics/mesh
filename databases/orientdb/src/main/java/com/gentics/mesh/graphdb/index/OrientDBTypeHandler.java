@@ -8,6 +8,15 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -19,18 +28,14 @@ import com.gentics.mesh.madl.type.ElementTypeDefinition;
 import com.gentics.mesh.madl.type.VertexTypeDefinition;
 import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.id.ORID;
+import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -56,19 +61,20 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex + "}");
 		}
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex);
+			OClass vertexType = noTx.getRawDatabase().getMetadata().getSchema().getClass(clazzOfVertex);
 			if (vertexType == null) {
 				String superClazz = "V";
 				if (superClazzOfVertex != null) {
 					superClazz = superClazzOfVertex;
 				}
-				vertexType = noTx.createVertexType(clazzOfVertex, superClazz);
+				final OClass superType = noTx.getRawDatabase().getMetadata().getSchema().getClass(superClazz);
+				vertexType = noTx.getRawDatabase().getMetadata().getSchema().createClass(clazzOfVertex, superType);
 			} else {
 				// Update the existing vertex type and set the super class
 				if (superClazzOfVertex != null) {
-					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex);
+					final OClass superType = noTx.getRawDatabase().getMetadata().getSchema().getClass(superClazzOfVertex);
 					if (superType == null) {
 						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
 							+ superClazzOfVertex + "} was not yet added to orientdb.");
@@ -77,7 +83,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 				}
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 
 	}
@@ -93,11 +99,11 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex type with name {" + typeName + "}");
 		}
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			noTx.dropEdgeType(typeName);
+			noTx.getRawDatabase().getMetadata().getSchema().dropClass(typeName);
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 	}
 
@@ -106,30 +112,30 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex type with name {" + typeName + "}");
 		}
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			OrientVertexType type = noTx.getVertexType(typeName);
+			final OClass type = noTx.getRawDatabase().getMetadata().getSchema().getClass(typeName);
 			if (type != null) {
-				noTx.dropVertexType(typeName);
+				noTx.getRawDatabase().getMetadata().getSchema().dropClass(typeName);
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 	}
 
 	@Override
 	public Vertex changeType(Vertex vertex, String newType, Graph tx) {
 		OrientVertex v = (OrientVertex) vertex;
-		ORID newId = v.moveToClass(newType);
-		return tx.getVertex(newId);
+		ORID newId = v.getRawElement().moveTo(newType, null);
+		return tx.vertices(newId).next();
 	}
 
 	@Override
 	public void setVertexType(Element element, Class<?> classOfVertex) {
 		if (element instanceof WrappedVertex) {
-			element = ((WrappedVertex) element).getBaseElement();
+			element = ((WrappedVertex<Element>) element).getBaseVertex();
 		}
-		((OrientVertex) element).moveToClass(classOfVertex.getSimpleName());
+		((OrientVertex) element).getRawElement().moveTo(classOfVertex.getSimpleName(), null);
 	}
 
 	@Override
@@ -151,19 +157,20 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			OrientEdgeType e = noTx.getEdgeType(label);
+			OClass e = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
 			if (e == null) {
 				String superClazz = "E";
 				if (superClazzOfEdge != null) {
 					superClazz = superClazzOfEdge.getSimpleName();
 				}
-				e = noTx.createEdgeType(label, superClazz);
+				final OClass superType = noTx.getRawDatabase().getMetadata().getSchema().getClass(superClazz);
+				e = noTx.getRawDatabase().getMetadata().getSchema().createClass(label, superType);
 			} else {
 				// Update the existing edge type and set the super class
 				if (superClazzOfEdge != null) {
-					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
+					final OClass superType = noTx.getRawDatabase().getMetadata().getSchema().getClass(superClazzOfEdge.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
 							+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
@@ -187,9 +194,8 @@ public class OrientDBTypeHandler implements TypeHandler {
 				}
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
-
 	}
 
 	@Override
@@ -206,8 +212,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 
-		Iterable<Vertex> it = orientBaseGraph.getVerticesOfClass(classOfT.getSimpleName());
-		return StreamUtil.toStream(it).map(v -> {
+		return StreamUtil.toStream(orientBaseGraph.getVerticesOfClass(classOfT.getSimpleName())).map(v -> {
 			return (T) graph.getFramedVertexExplicit(classOfT, v.getId());
 		});
 	}

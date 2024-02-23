@@ -4,20 +4,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
+
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
+import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -52,7 +55,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public OrientGraph rawTx() {
+	public org.apache.tinkerpop.gremlin.orientdb.OrientGraph rawTx() {
 		OrientGraph tx = factory.getTx();
 		if (metrics.isEnabled()) {
 			txCounter.increment();
@@ -61,8 +64,8 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public OrientGraphNoTx rawNoTx() {
-		OrientGraphNoTx notx = factory.getNoTx();
+	public OrientGraph rawNoTx() {
+		OrientGraph notx = factory.getNoTx();
 		if (metrics.isEnabled()) {
 			noTxCounter.increment();
 		}
@@ -72,14 +75,14 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public void setMassInsertIntent() {
 		if (factory != null) {
-			factory.declareIntent(new OIntentMassiveInsert());
+			factory.getDatabase(false, false).declareIntent(new OIntentMassiveInsert());
 		}
 	}
 
 	@Override
 	public void resetIntent() {
 		if (factory != null) {
-			factory.declareIntent(null);
+			factory.getDatabase(false, false).declareIntent(null);
 		}
 	}
 
@@ -88,7 +91,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 		if (log.isDebugEnabled()) {
 			log.debug("Running export to {" + outputDirectory + "} directory.");
 		}
-		ODatabaseDocumentTx db = factory.getDatabase();
+		ODatabaseDocument db = factory.getDatabase(false, false);
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
 				@Override
@@ -100,7 +103,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 			String dateString = formatter.format(new Date());
 			String exportFile = "export_" + dateString;
 			new File(outputDirectory).mkdirs();
-			ODatabaseExport export = new ODatabaseExport(db, new File(outputDirectory, exportFile).getAbsolutePath(), listener);
+			ODatabaseExport export = new ODatabaseExport((ODatabaseDocumentInternal) db, new File(outputDirectory, exportFile).getAbsolutePath(), listener);
 			export.exportDatabase();
 			export.close();
 		} finally {
@@ -111,7 +114,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public void importGraph(String importFile) throws IOException {
-		ODatabaseDocumentTx db = factory.getDatabase();
+		ODatabaseDocument db = factory.getDatabase(false, false);
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
 				@Override
@@ -119,7 +122,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 					System.out.println(iText);
 				}
 			};
-			ODatabaseImport databaseImport = new ODatabaseImport(db, importFile, listener);
+			ODatabaseImport databaseImport = new ODatabaseImport((ODatabaseDocumentInternal) db, importFile, listener);
 			databaseImport.importDatabase();
 			databaseImport.close();
 		} finally {
@@ -130,6 +133,6 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public ODatabaseSession createSession() {
-		return factory.getDatabase();
+		return (ODatabaseSession) factory.getDatabase(false, false);
 	}
 }

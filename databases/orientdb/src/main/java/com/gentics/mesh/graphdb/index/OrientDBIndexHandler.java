@@ -11,13 +11,20 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 import com.gentics.mesh.madl.field.FieldType;
+import com.gentics.mesh.madl.frame.EdgeFrame;
+import com.gentics.mesh.madl.frame.ElementFrame;
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.index.EdgeIndexDefinition;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.IndexType;
@@ -30,17 +37,11 @@ import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.ElementFrame;
+import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientElementType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
@@ -75,25 +76,21 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 	@Override
 	public void reindex() {
-		OrientGraph tx = db.get().getTxProvider().rawTx();
-		try {
-			OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
+		try (OrientGraph tx = db.get().getTxProvider().rawTx()) {
+			OIndexManager manager = tx.getRawDatabase().getMetadata().getIndexManager();
 			manager.getIndexes().forEach(i -> i.rebuild());
-		} finally {
-			tx.shutdown();
 		}
 	}
 
 	@Override
 	@Deprecated
 	public void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique) {
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			OrientEdgeType e = noTx.getEdgeType(label);
-			if (e == null) {
+			final OClass e = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
+		    if (e == null) {
 				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
 			}
-
 			for (String key : fields.keySet()) {
 				if (e.getProperty(key) == null) {
 					FieldType type = fields.get(key);
@@ -119,17 +116,17 @@ public class OrientDBIndexHandler implements IndexHandler {
 			}
 
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 	}
 
 	@Override
 	public List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key) {
-		OrientBaseGraph orientBaseGraph = db.get().unwrapCurrentGraph();
+		OrientGraph orientBaseGraph = db.get().unwrapCurrentGraph();
 		List<Object> ids = new ArrayList<>();
 
 		// Load the edge type in order to access the indices of the edge
-		OrientEdgeType edgeType = orientBaseGraph.getEdgeType(edgeLabel);
+		final OClass edgeType = orientBaseGraph.getRawDatabase().getMetadata().getSchema().getClass(edgeLabel);
 		if (edgeType != null) {
 			// Fetch the required index
 			OIndex index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
@@ -160,19 +157,19 @@ public class OrientDBIndexHandler implements IndexHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex index for class {" + clazz.getName() + "}");
 		}
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
 			String name = clazz.getSimpleName();
-			OrientVertexType v = noTx.getVertexType(name);
+			final OClass v = noTx.getRawDatabase().getMetadata().getSchema().getClass(name);
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't remove index {" + indexName + "}");
 			}
 			OIndex index = v.getClassIndex(indexName);
 			if (index != null) {
-				noTx.dropIndex(index.getName());
+				noTx.getRawDatabase().getMetadata().getIndexManager().dropIndex(index.getName());
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 	}
 
@@ -181,36 +178,36 @@ public class OrientDBIndexHandler implements IndexHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing index {" + indexName + "}");
 		}
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			noTx.dropIndex(indexName);
+			noTx.getRawDatabase().getMetadata().getIndexManager().dropIndex(indexName);
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 	}
 
 	@Override
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		OrientBaseGraph orientBaseGraph = db.get().unwrapCurrentGraph();
+		OrientGraph orientBaseGraph = db.get().unwrapCurrentGraph();
 
-		OrientElementType elementType = null;
+		final OClass elementType;
 		if (element instanceof EdgeFrame) {
 			String label = ((EdgeFrame) element).getLabel();
-			elementType = orientBaseGraph.getEdgeType(label);
+			elementType = orientBaseGraph.getRawDatabase().getMetadata().getSchema().getClass(label);
 		} else {
-			elementType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
+			elementType = orientBaseGraph.getRawDatabase().getMetadata().getSchema().getClass(element.getClass().getSimpleName());
 		}
 		if (elementType != null) {
 			OIndex index = elementType.getClassIndex(indexName);
 			if (index != null) {
 				Object recordId = index.get(key);
 				if (recordId != null) {
-					if (recordId.equals(element.getElement().getId())) {
+					if (recordId.equals(element.getElement().id())) {
 						return null;
 					} else {
 						if (element instanceof EdgeFrame) {
-							Edge edge = graph.getEdge(recordId);
+							Edge edge = orientBaseGraph.getRawDatabase().getRecord((OIdentifiable) recordId);
 							if (edge == null) {
 								if (log.isDebugEnabled()) {
 									log.debug("Did not find element with id {" + recordId + "} in graph from index {" + indexName + "}");
@@ -270,11 +267,11 @@ public class OrientDBIndexHandler implements IndexHandler {
 		boolean includeInOut = def.isIncludeInOut();
 		String[] extraFields = {};
 
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
 
 			// 1. Type handling
-			OrientEdgeType e = noTx.getEdgeType(label);
+			final OClass e = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
 			if (e == null) {
 				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
 			}
@@ -341,7 +338,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			}
 
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 
 	}
@@ -361,9 +358,9 @@ public class OrientDBIndexHandler implements IndexHandler {
 			log.debug("Adding vertex index for class {" + name + "}");
 		}
 
-		OrientGraphNoTx noTx = db.get().getTxProvider().rawNoTx();
+		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
 		try {
-			OrientVertexType v = noTx.getVertexType(name);
+			final OClass v = noTx.getRawDatabase().getMetadata().getSchema().getClass(name);
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
 			}
@@ -393,7 +390,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 					null, new ODocument().fields("ignoreNullValues", true), fieldArray);
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 
 	}

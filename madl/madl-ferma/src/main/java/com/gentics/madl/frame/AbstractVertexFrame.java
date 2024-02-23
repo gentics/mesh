@@ -1,18 +1,21 @@
 package com.gentics.madl.frame;
 
-import java.util.Set;
-
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
+import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.core.result.TraversalResult;
+import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
+import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
@@ -38,21 +41,6 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public Object id() {
 		return getId();
-	}
-
-	@Override
-	public <T> T getProperty(String name) {
-		return super.getProperty(name);
-	}
-
-	@Override
-	public Set<String> getPropertyKeys() {
-		return super.getPropertyKeys();
-	}
-
-	@Override
-	public void remove() {
-		super.remove();
 	}
 
 	@Override
@@ -138,5 +126,30 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		}
 		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
 		return traversal.addStep(new GraphStep(traversal, clazz, false, labels)).out(labels);
+	}
+
+	@Override
+	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
+		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.OUT, label)).map(Edge::outVertex).filter(vertex -> vertex.getClass().equals(clazz)).map(clazz::cast));
+	}
+
+	@Override
+	public <T extends EdgeFrame> Result<? extends T> outE(String label, Class<T> clazz) {
+		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.OUT, label)).filter(edge -> edge.getClass().equals(clazz)).map(clazz::cast));
+	}
+
+	@Override
+	public <T extends ElementFrame> Result<? extends T> in(String label, Class<T> clazz) {
+		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.IN, label)).map(Edge::inVertex).filter(vertex -> vertex.getClass().equals(clazz)).map(clazz::cast));
+	}
+
+	@Override
+	public <T extends EdgeFrame> Result<? extends T> inE(String label, Class<T> clazz) {
+		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.IN, label)).filter(edge -> edge.getClass().equals(clazz)).map(clazz::cast));
+	}
+
+	@Override
+	public Element element() {
+		return getElement();
 	}
 }

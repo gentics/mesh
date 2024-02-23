@@ -3,28 +3,28 @@ package com.gentics.mesh.graphdb.tx.impl;
 import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.metric.MetricsService;
-import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.ODatabaseType;
 import com.orientechnologies.orient.core.db.OrientDB;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 /**
  * Storage implementation which utilizes the server context to access the database.
  */
 public class OrientServerStorageImpl extends AbstractOrientStorage {
 
-	private OrientDB context;
+	private final OrientDB context;
+	private final OrientGraphFactory factory;
 
 	public OrientServerStorageImpl(OrientDBMeshOptions options, OrientDB context, MetricsService metrics) {
 		super(options, metrics);
 		this.context = context;
+		this.factory = new OrientGraphFactory(context, DB_NAME, ODatabaseType.PLOCAL, OrientGraphFactory.ADMIN, OrientGraphFactory.ADMIN);
 	}
 
 	@Override
@@ -34,12 +34,12 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 
 	@Override
 	public void close() {
+		factory.close();
 	}
 
 	@Override
 	public OrientGraph rawTx() {
-		ODatabaseSession db = createSession();
-		OrientGraph tx = (OrientGraph) OrientGraphFactory.getTxGraphImplFactory().getGraph((ODatabaseDocumentInternal) db);
+		OrientGraph tx = factory.getTx();
 		if (metrics.isEnabled()) {
 			txCounter.increment();
 		}
@@ -47,13 +47,12 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public OrientGraphNoTx rawNoTx() {
-		ODatabaseSession db = createSession();
-		OrientGraphNoTx notx = (OrientGraphNoTx) OrientGraphFactory.getNoTxGraphImplFactory().getGraph((ODatabaseDocumentInternal) db);
+	public OrientGraph rawNoTx() {
+		OrientGraph noTx = factory.getNoTx();
 		if (metrics.isEnabled()) {
 			noTxCounter.increment();
 		}
-		return notx;
+		return noTx;
 	}
 
 	@Override

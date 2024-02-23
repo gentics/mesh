@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +35,6 @@ import com.gentics.mesh.maven.MavenMetadata;
 import com.gentics.mesh.maven.MavenUtilities;
 import com.gentics.mesh.maven.VersionNumber;
 import com.gentics.mesh.metric.MetricsService;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
@@ -115,7 +115,7 @@ public class ChangelogSystemTest {
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
 		assertTrue("All changes should have been applied", cls.applyChanges(null, testChanges));
-		Iterator<Vertex> it = db.rawTx().getVertices("name", "moped2").iterator();
+		Iterator<Vertex> it = db.rawTx().vertices("name", "moped2");
 		assertTrue("The changelog was executed but the expected vertex which was created could not be found.", it.hasNext());
 		Vertex vertex = it.next();
 		assertNotNull("The node which was created using the changelog system should be found.", vertex);

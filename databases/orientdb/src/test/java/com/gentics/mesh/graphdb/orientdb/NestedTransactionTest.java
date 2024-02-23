@@ -2,6 +2,7 @@ package com.gentics.mesh.graphdb.orientdb;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -10,7 +11,7 @@ import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.tinkerpop.blueprints.Vertex;
+import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -41,11 +42,11 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 		try {
 			db.tx((tx) -> {
 				GraphDBTx gtx = HibClassConverter.toGraph(tx);
-				Vertex v = gtx.getGraph().addVertex(null);
+				Vertex v = gtx.getGraph().addFramedVertex(null);
 				System.out.println("Outer");
 				db.tx((tx2) -> {
 					GraphDBTx gtx2 = HibClassConverter.toGraph(tx2);
-					long count = gtx2.getGraph().v().count();
+					long count = StreamUtil.toStream(gtx2.getGraph().getBaseGraph().vertices()).count();
 					System.out.println("Inner " + count);
 				});
 				System.out.println("Outer Done");
@@ -59,7 +60,7 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 		}
 		long count = db.tx((tx) -> {
 			GraphDBTx gtx = HibClassConverter.toGraph(tx);
-			return gtx.getGraph().v().count();
+			return StreamUtil.toStream(gtx.getGraph().getBaseGraph().vertices()).count();
 		});
 		assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 	}

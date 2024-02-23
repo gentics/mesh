@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb.orientdb;
 import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.run;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeoutException;
@@ -112,6 +113,8 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 			manipulatePerson(tx.getGraph(), p);
 			tx.success();
 			nFriendsBefore = p.getFriends().count();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 
 		CyclicBarrier b = new CyclicBarrier(3);
@@ -125,8 +128,9 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 			p = tx.getGraph().getFramedVertexExplicit(Person.class, p.getId());
 			long nFriendsAfter = p.getFriends().count();
 			assertEquals(nFriendsBefore + 2, nFriendsAfter);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
-
 	}
 
 	private void addFriendToPerson(Person p, CyclicBarrier b) {
@@ -149,6 +153,8 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 				} catch (OConcurrentModificationException e) {
 					//throw e;
 					//break;
+				} catch (IOException e) {
+					throw new RuntimeException(e);
 				}
 				//				} catch (OConcurrentModificationException e) {
 				//					System.out.println("Error " + OConcurrentModificationException.class.getName());

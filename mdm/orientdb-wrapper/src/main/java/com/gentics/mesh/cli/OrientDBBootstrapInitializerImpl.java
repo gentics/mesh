@@ -13,6 +13,9 @@ import java.util.function.Predicate;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cache.CacheRegistry;
@@ -52,9 +55,8 @@ import com.gentics.mesh.search.IndexHandlerRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProviderImpl;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
-import com.syncleus.ferma.FramedTransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
+import com.gentics.mesh.util.StreamUtil;
+import com.syncleus.ferma.WrappedFramedGraph;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
@@ -140,10 +142,10 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		db.tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			HibRole adminRole = roleDao.findByName("admin");
-			FramedTransactionalGraph graph = HibClassConverter.toGraph(tx).getGraph();
-			for (Vertex vertex : graph.getVertices()) {
-				WrappedVertex wrappedVertex = (WrappedVertex) vertex;
-				MeshVertex meshVertex = graph.frameElement(wrappedVertex.getBaseElement(), MeshVertexImpl.class);
+			WrappedFramedGraph<? extends Graph> graph = HibClassConverter.toGraph(tx).getGraph();
+			for (Vertex vertex : StreamUtil.toIterable(graph.getBaseGraph().vertices())) {
+				WrappedVertex<MeshVertexImpl> wrappedVertex = (WrappedVertex<MeshVertexImpl>) vertex;
+				MeshVertex meshVertex = wrappedVertex.getBaseVertex();
 				roleDao.grantPermissions(adminRole, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
 				if (log.isTraceEnabled()) {
 					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");

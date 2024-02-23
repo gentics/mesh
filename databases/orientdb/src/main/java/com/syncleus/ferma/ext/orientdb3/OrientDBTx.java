@@ -3,10 +3,20 @@ package com.syncleus.ferma.ext.orientdb3;
 import static com.gentics.mesh.core.graph.GraphAttribute.MESH_COMPONENT;
 import static com.gentics.mesh.metric.SimpleMetric.COMMIT_TIME;
 
+import java.io.IOException;
+import java.util.function.Function;
+
 import javax.inject.Inject;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.PermissionCache;
@@ -56,11 +66,9 @@ import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.FramedTransactionalGraph;
-import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.syncleus.ferma.WrappedFramedGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
@@ -81,7 +89,7 @@ import io.vertx.core.logging.LoggerFactory;
  * <li>Making Tx accessible via threadlocal {@link Tx#setActive(Tx)}
  * </ul>
  */
-public class OrientDBTx extends AbstractTx<FramedGraph> {
+public class OrientDBTx extends AbstractTx<DelegatingFramedOrientGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 
@@ -121,7 +129,7 @@ public class OrientDBTx extends AbstractTx<FramedGraph> {
 		if (activeTx != null) {
 			// TODO Use this spot here to check for nested / wrapped transactions. Nested Tx must not be used when using MDM / Hibernate
 			isWrapped = true;
-			init(activeTx.getGraph());
+			init((DelegatingFramedOrientGraph) activeTx.getGraph());
 		} else {
 			DelegatingFramedOrientGraph transaction = new DelegatingFramedOrientGraph((OrientGraph) provider.rawTx(), typeResolver);
 			init(transaction);
@@ -163,17 +171,21 @@ public class OrientDBTx extends AbstractTx<FramedGraph> {
 		} finally {
 			if (!isWrapped) {
 				// Restore the old graph that was previously swapped with the current graph
-				getGraph().shutdown();
+				try {
+					getGraph().close();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 				Tx.setActive(null);
 			}
 		}
 	}
 
 	@Override
-	protected void init(FramedTransactionalGraph transactionalGraph) {
+	protected void init(DelegatingFramedOrientGraph transactionalGraph) {
 		Mesh mesh = boot.mesh();
 		if (mesh != null) {
-			transactionalGraph.setAttribute(MESH_COMPONENT, mesh.internal());
+			transactionalGraph.getBaseGraph().variables().set(MESH_COMPONENT, mesh.internal());
 		} else {
 			log.error("Could not set mesh component attribute. Followup errors may happen.");
 		}
@@ -335,5 +347,31 @@ public class OrientDBTx extends AbstractTx<FramedGraph> {
 	@Override
 	public PasswordEncoder passwordEncoder() {
 		return security.passwordEncoder();
+	}
+
+	@Override
+	public <T extends RawTraversalResult<?>> T traversal(
+			Function<GraphTraversalSource, GraphTraversal<?, ?>> traverser) {
+		return currentGraph.traverse(traverser);
+	}
+
+	@Override
+	public GraphTraversalSource rawTraverse() {
+		return currentGraph.getRawTraversal();
+	}
+
+	@Override
+	public <T> T createVertex(Class<T> clazzOfR) {
+		return currentGraph.addFramedVertex(clazzOfR);
+	}
+
+	@Override
+	public <E extends Element> E getElement(Object id) {
+		return currentGraph.getBaseGraph().getRawDatabase().getRecord((OIdentifiable) id);
+	}
+
+	@Override
+	public WrappedFramedGraph<? extends Graph> getGraph() {
+		return currentGraph;
 	}
 }

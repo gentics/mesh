@@ -6,7 +6,6 @@ import java.io.IOException;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 
 import com.gentics.mesh.graphdb.spi.GraphStorage;
-import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 
 /**
  * Representation of an orientdb graph storage.
@@ -25,7 +24,7 @@ public interface OrientStorage extends GraphStorage {
 	 * 
 	 * @return
 	 */
-	OTransactionNoTx rawNoTx();
+	OrientGraph rawNoTx();
 
 	/**
 	 * Set the mass insertion intent.

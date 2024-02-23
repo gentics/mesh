@@ -1,8 +1,8 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.mesh.annotation.Setter;
-import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.result.TraversalResult;
 
 /**
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 public class Person extends AbstractVertexFrame {
 
 	public TraversalResult<? extends Person> getFriends() {
-		return new TraversalResult<>(out("HAS_FRIEND").has(Person.class).frameExplicit(Person.class));
+		return new TraversalResult<>(out("HAS_FRIEND", Person.class));
 	}
 
 	/**
@@ -32,5 +32,4 @@ public class Person extends AbstractVertexFrame {
 	public String getName() {
 		return getProperty("name");
 	}
-
 }

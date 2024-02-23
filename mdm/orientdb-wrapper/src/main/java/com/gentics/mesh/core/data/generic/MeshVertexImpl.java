@@ -23,13 +23,13 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperand;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.madl.frame.AbstractVertexFrame;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.ElementType;
@@ -60,7 +60,6 @@ import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.db.AbstractVertexFrame;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -99,6 +98,11 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		index.createIndex(vertexIndex(MeshVertexImpl.class)
 			.withField("uuid", FieldType.STRING)
 			.unique());
+	}
+
+	@Override
+	public Object getId() {
+		return super.getId();
 	}
 
 	/**

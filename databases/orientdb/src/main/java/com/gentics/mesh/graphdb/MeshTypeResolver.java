@@ -1,16 +1,18 @@
 package com.gentics.mesh.graphdb;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
-import com.syncleus.ferma.AbstractEdgeFrame;
-import com.syncleus.ferma.AbstractVertexFrame;
-import com.syncleus.ferma.EdgeFrame;
-import com.syncleus.ferma.VertexFrame;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+
+import com.gentics.madl.frame.AbstractEdgeFrame;
+import com.gentics.madl.frame.AbstractVertexFrame;
+import com.gentics.mesh.madl.frame.EdgeFrame;
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.gremlin.Tokens;
 
 /**
  * This type resolver will use the Java class stored in the 'java_class' on the element.
@@ -28,7 +30,7 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public <T> Class<? extends T> resolve(final Element element, final Class<T> kind) {
-		final String nodeClazz = element.getProperty(this.typeResolutionKey);
+		final String nodeClazz = element.<String>property(this.typeResolutionKey).orElse(null);
 		if (nodeClazz == null) {
 			return kind;
 		}
@@ -47,33 +49,45 @@ public class MeshTypeResolver implements TypeResolver {
 
 	@Override
 	public Class<?> resolve(final Element element) {
-		final String typeResolutionName = element.getProperty(this.typeResolutionKey);
-		if (typeResolutionName == null)
+		final String typeResolutionName = element.<String>property(this.typeResolutionKey).orElse(null);
+		if (typeResolutionName == null) {
 			return null;
-
+		}
 		return this.reflectionCache.forName(typeResolutionName);
 	}
 
 	@Override
 	public void init(final Element element, final Class<?> kind) {
-		element.setProperty(this.typeResolutionKey, kind.getSimpleName());
+		element.property(this.typeResolutionKey, kind.getSimpleName());
 	}
 
 	@Override
 	public void deinit(final Element element) {
-		element.removeProperty(this.typeResolutionKey);
+		element.property(this.typeResolutionKey).remove();
 	}
 
 	@Override
-	public VertexTraversal<?, ?, ?> hasType(final VertexTraversal<?, ?, ?> traverser, final Class<?> type) {
-		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
-		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
-	}
+    public <P extends Element, T extends Element> GraphTraversal<P, T> hasType(final GraphTraversal<P, T> traverser, final Class<?> type) {
+        final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getName());
+        return traverser.has(typeResolutionKey, org.apache.tinkerpop.gremlin.process.traversal.P.within(allAllowedValues));
+    }
 
-	@Override
-	public EdgeTraversal<?, ?, ?> hasType(final EdgeTraversal<?, ?, ?> traverser, final Class<?> type) {
-		final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getSimpleName());
-		return traverser.has(typeResolutionKey, Tokens.T.in, allAllowedValues);
-	}
+    @Override
+    public <P extends Element, T extends Element> GraphTraversal<P, T> hasNotType(final GraphTraversal<P, T> traverser, final Class<?> type) {
+        final Set<? extends String> allAllowedValues = this.reflectionCache.getSubTypeNames(type.getName());
+        return traverser.filter(new Predicate<Traverser<T>>() {
+            @Override
+            public boolean test(final Traverser<T> toCheck) {
+                final Property<String> property = toCheck.get().property(typeResolutionKey);
+                if( !property.isPresent() )
+                    return true;
 
+                final String resolvedType = property.value();
+                if( allAllowedValues.contains(resolvedType) )
+                    return false;
+                else
+                    return true;
+            }
+        });
+    }
 }

@@ -16,12 +16,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import io.micrometer.core.instrument.Counter;
 import io.vertx.core.logging.Logger;
@@ -62,12 +64,12 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 		}
 		OrientGraph tx = rawTx();
 		try {
-			for (Vertex vertex : tx.getVertices()) {
+			for (Vertex vertex : StreamUtil.toIterable(tx.vertices())) {
 				vertex.remove();
 			}
 		} finally {
 			tx.commit();
-			tx.shutdown();
+			tx.close();
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared graph");

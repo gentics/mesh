@@ -1,6 +1,9 @@
 package com.gentics.mesh.madl.frame;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import com.syncleus.ferma.WrappedFramedGraph;
 
 public interface ElementFrame extends com.syncleus.ferma.ElementFrame {
 
@@ -16,4 +19,9 @@ public interface ElementFrame extends com.syncleus.ferma.ElementFrame {
 	}
 
 	Element element();
+
+	@SuppressWarnings("unchecked")
+	default <T> T getGraphAttribute(String key) {
+		return (T) ((WrappedFramedGraph<? extends Graph>) getGraph()).getBaseGraph().variables().get(key).orElseThrow();
+	}
 }

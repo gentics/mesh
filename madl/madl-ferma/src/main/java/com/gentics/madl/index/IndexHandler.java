@@ -3,11 +3,11 @@ package com.gentics.madl.index;
 import java.util.List;
 
 import com.gentics.mesh.madl.field.FieldMap;
+import com.gentics.mesh.madl.frame.ElementFrame;
+import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.madl.index.ElementIndexDefinition;
 import com.gentics.mesh.madl.index.impl.EdgeIndexDefinitionImpl.EdgeIndexDefinitonBuilder;
 import com.gentics.mesh.madl.index.impl.VertexIndexDefinitionImpl.VertexIndexDefinitionBuilder;
-import com.syncleus.ferma.ElementFrame;
-import com.syncleus.ferma.VertexFrame;
 
 /**
  * Handler for graph database indices.

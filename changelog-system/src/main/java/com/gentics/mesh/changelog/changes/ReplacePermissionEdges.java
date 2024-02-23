@@ -52,7 +52,7 @@ public class ReplacePermissionEdges extends AbstractChange {
 
 	@Override
 	public void applyInTx() {
-		String[] labels = permLabels.keySet().toArray(new String[0]);
+		String[] labels = permLabels.keySet().toArray(new String[permLabels.size()]);
 		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices()), vertex -> {
 			for (Edge permEdge : StreamUtil.toIterable(vertex.edges(Direction.IN, labels))) {
 				String roleUuid = permEdge.outVertex().<String>property("uuid").orElse(null);

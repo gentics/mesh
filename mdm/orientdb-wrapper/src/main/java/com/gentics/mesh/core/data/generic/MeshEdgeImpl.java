@@ -19,6 +19,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.WrappedFramedGraph;
@@ -96,7 +97,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	 * @return
 	 */
 	public OrientDBMeshComponent mesh() {
-		return GraphUserPropertiesImpl.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		return ElementFrame.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
 	@Override
@@ -116,7 +117,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	public static Edge findEdge(Object nodeId, String languageTag, String branchUuid, ContainerType type) {
 		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = GraphUserPropertiesImpl.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		OrientDBMeshComponent mesh = ElementFrame.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 		GraphDatabase db = mesh.database();
 		Iterator<? extends Edge> iterator = graph.getFramedEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", 
 				db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag), Edge.class);

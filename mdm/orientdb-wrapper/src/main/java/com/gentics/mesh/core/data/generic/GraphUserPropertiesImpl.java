@@ -61,10 +61,4 @@ public class GraphUserPropertiesImpl implements UserProperties {
 			.map(GraphDBTx.getGraphTx().userDao()::findByUuid)
 			.orElse(null);
 	}
-
-	@SuppressWarnings("unchecked")
-	public static <T> T getGraphAttribute(String key) {
-		return (T) GraphDBTx.getGraphTx().getGraph().getBaseGraph().variables().get(key).orElseThrow();
-	}
-
 }
