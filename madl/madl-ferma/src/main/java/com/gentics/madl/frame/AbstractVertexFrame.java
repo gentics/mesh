@@ -2,7 +2,6 @@ package com.gentics.madl.frame;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -10,6 +9,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
+import com.gentics.madl.traversal.EdgeTraversal;
+import com.gentics.madl.traversal.EdgeTraversalImpl;
+import com.gentics.madl.traversal.VertexTraversal;
+import com.gentics.madl.traversal.VertexTraversalImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -107,25 +110,47 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	@Override
-	public <T extends ElementFrame> GraphTraversal<?, ?> traversalIn(Class<T> clazz, String... labels) {
+	public EdgeTraversal<?, ?> inE(String... labels) {
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
-		return traversal.addStep(new GraphStep(traversal, clazz, false, labels)).in(labels);
+		return new EdgeTraversalImpl<>(traversal.inE(labels));
 	}
 
 	@Override
-	public <T extends ElementFrame> GraphTraversal<?, ?> traversalOut(Class<T> clazz, String... labels) {
+	public EdgeTraversal<?, ?> outE(String... labels) {
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
-		return traversal.addStep(new GraphStep(traversal, clazz, false, labels)).out(labels);
+		return new EdgeTraversalImpl<>(traversal.outE(labels));
+	}
+
+	@Override
+	public VertexTraversal<?, ?> in(String... labels) {
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
+		return new VertexTraversalImpl<>(traversal.in(labels));
+	}
+
+	@Override
+	public VertexTraversal<?, ?> out(String... labels) {
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
+		return new VertexTraversalImpl<>(traversal.out(labels));
 	}
 
 	@Override

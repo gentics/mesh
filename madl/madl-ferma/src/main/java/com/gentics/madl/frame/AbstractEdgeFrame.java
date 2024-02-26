@@ -1,12 +1,13 @@
 package com.gentics.madl.frame;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
+import com.gentics.madl.traversal.EdgeTraversal;
+import com.gentics.madl.traversal.EdgeTraversalImpl;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -49,14 +50,14 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 
 	@Override
 	public <T extends VertexFrame> TraversalResult<? extends T> inV(Class<T> clazz) {
-		DefaultGraphTraversal<?, ?> traversal = traversal();
-		return new TraversalResult<>(traversal.addStep(new GraphStep(traversal, clazz, false)).inV());
+		TraversalResult<? extends T> result = new TraversalResult<>(traversal().outV().frameExplicit(clazz));
+		return result;
 	}
 
 	@Override
 	public <T extends VertexFrame> TraversalResult<? extends T> outV(Class<T> clazz) {
-		DefaultGraphTraversal<?, ?> traversal = traversal();
-		return new TraversalResult<>(traversal.addStep(new GraphStep(traversal, clazz, false)).outV());
+		TraversalResult<? extends T> result = new TraversalResult<>(traversal().outV().frameExplicit(clazz));
+		return result;
 	}
 
 	@Override
@@ -65,12 +66,12 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	}
 
 	@Override
-	public DefaultGraphTraversal<?, ?> traversal() {
+	public EdgeTraversal<?, ?> traversal() {
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new DefaultGraphTraversal<>(fg.getRawTraversal());
+		return new EdgeTraversalImpl<>(new DefaultGraphTraversal<>(fg.getRawTraversal()));
 	}
 }
