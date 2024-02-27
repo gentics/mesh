@@ -134,6 +134,7 @@
 							<reportFile>../target/dependency-updates-aggregate-report.xml</reportFile>
 							<componentName>Mesh</componentName>
 							<moduleName>Java Backend</moduleName>
+							<staticInput>${project.basedir}/src/static_dependencies.json</staticInput>
 							<ignoredNames>
 								<ignoredName>com\.gentics\.mesh:.*</ignoredName>
 							</ignoredNames>
