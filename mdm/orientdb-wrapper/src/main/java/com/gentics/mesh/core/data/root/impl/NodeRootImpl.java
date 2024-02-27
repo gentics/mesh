@@ -15,6 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -41,8 +44,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedTransactionalGraph;
-import com.tinkerpop.blueprints.Vertex;
+import com.syncleus.ferma.WrappedFramedGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -103,8 +105,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		UserDao userDao = tx.userDao();
 
 		return findAll(user, perm, tx.getProject(ac).getUuid(), paging, maybeContainerType, maybeFilter)
-			.filter(item -> userDao.hasPermissionForId(user, item.getId(), perm))
-				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+			.filter(item -> userDao.hasPermissionForId(user, item.id(), perm))
+				.map(vertex -> getGraph().frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	/**
@@ -138,7 +140,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	private Stream<? extends Node> findAllStream(InternalActionContext ac, ContainerType type, PagingParameters pagingInfo) {
 		HibUser user = ac.getUser();
-		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
+		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 
 		HibBranch branch = Tx.get().getBranch(ac);
 		String branchUuid = branch.getUuid();
@@ -146,16 +148,16 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid(), pagingInfo, Optional.ofNullable(type), Optional.empty()).filter(item -> {
 			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
+			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, type);
 		}).filter(item -> {
-			boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
+			boolean hasRead = userDao.hasPermissionForId(user, item.id(), READ_PERM);
 			if (hasRead) {
 				return true;
 			} else if (type == PUBLISHED) {
 				// Check whether the node is published. In this case we need to check the read publish perm.
-				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
+				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, PUBLISHED);
 				if (isPublishedForBranch) {
-					return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
+					return userDao.hasPermissionForId(user, item.id(), READ_PUBLISHED_PERM);
 				}
 			}
 			return false;

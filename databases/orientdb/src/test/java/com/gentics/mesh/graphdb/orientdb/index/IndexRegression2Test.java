@@ -8,21 +8,23 @@ import static org.junit.Assert.fail;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.metadata.schema.OClass.INDEX_TYPE;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedEdge;
+
 
 public class IndexRegression2Test extends AbstractOrientTest {
 
@@ -76,45 +78,39 @@ public class IndexRegression2Test extends AbstractOrientTest {
 	}
 
 	private Object addGraph() {
-		OrientGraph tx = factory.getTx();
 		Object id;
-		try {
+		try (OrientGraph tx = factory.getTx()) {
 			Vertex node = tx.addVertex("class:NodeImpl");
 			Vertex draftContent = tx.addVertex("class:ContentImpl");
 			Vertex initialContent = tx.addVertex("class:ContentImpl");
-			id = node.getId();
+			id = node.id();
 
 			Edge initialEdge = node.addEdge(EDGE_LABEL, initialContent);
-			initialEdge.setProperty(TYPE_KEY, TYPE_INITIAL);
-			initialEdge.setProperty(LANGUAGE_KEY, LANG_EN);
-			initialEdge.setProperty(BRANCH_KEY, BRANCH_UUID);
+			initialEdge.property(TYPE_KEY, TYPE_INITIAL);
+			initialEdge.property(LANGUAGE_KEY, LANG_EN);
+			initialEdge.property(BRANCH_KEY, BRANCH_UUID);
 
 			Edge draftEdge = node.addEdge(EDGE_LABEL, draftContent);
-			draftEdge.setProperty(TYPE_KEY, TYPE_DRAFT);
-			draftEdge.setProperty(LANGUAGE_KEY, LANG_EN);
-			draftEdge.setProperty(BRANCH_KEY, BRANCH_UUID);
+			draftEdge.property(TYPE_KEY, TYPE_DRAFT);
+			draftEdge.property(LANGUAGE_KEY, LANG_EN);
+			draftEdge.property(BRANCH_KEY, BRANCH_UUID);
 
 			tx.commit();
-		} finally {
-			tx.shutdown();
 		}
 		return id;
 	}
 
 	private void deleteAndLookup(Object nodeId) {
-		OrientGraph tx = factory.getTx();
-		try {
-			Vertex node = tx.getVertex(nodeId);
+		try (OrientGraph tx = factory.getTx()) {
+			Vertex node = StreamUtil.toStream(tx.vertices(nodeId)).findAny().orElse(null);
 
 			// Remove the vertices. This will implicitly also remove the edges
-			node.getVertices(Direction.OUT, EDGE_LABEL).forEach(Vertex::remove);
+			node.vertices(Direction.OUT, EDGE_LABEL).forEachRemaining(Vertex::remove);
 
 			// Now try to lookup the edge for the initial content
 			assertInitialEdgeLookup(nodeId, tx);
 
 			tx.commit();
-		} finally {
-			tx.shutdown();
 		}
 	}
 
@@ -123,20 +119,20 @@ public class IndexRegression2Test extends AbstractOrientTest {
 
 		OCompositeKey compositeKey = new OCompositeKey(nodeId, BRANCH_UUID, TYPE_INITIAL, LANG_EN);
 
-		Iterator<Edge> it = tx.getEdges(INDEX_NAME, compositeKey).iterator();
+		Iterator<Edge> it = tx.edges(INDEX_NAME, compositeKey);
 		boolean foundEdges = false;
 		while (it.hasNext()) {
 			Edge foundEdge = it.next();
 			assertNotNull("The iterator indicated with hasNext a element would exist. But we got null.", foundEdge);
 
-			Vertex inV = foundEdge.getVertex(Direction.IN);
+			Vertex inV = foundEdge.inVertex();
 			assertNotNull(inV);
-			Vertex outV = foundEdge.getVertex(Direction.OUT);
+			Vertex outV = foundEdge.outVertex();
 			assertNotNull(outV);
 
 			if (foundEdge instanceof WrappedEdge) {
 				WrappedEdge wrapped = (WrappedEdge) foundEdge;
-				assertNotNull("The base element inside the wrapper must not be null", wrapped.getBaseElement());
+				assertNotNull("The base element inside the wrapper must not be null", wrapped.getBaseEdge());
 			} else {
 				fail("We only expect wrapped edges but got " + foundEdge.getClass().getName());
 			}
@@ -145,7 +141,7 @@ public class IndexRegression2Test extends AbstractOrientTest {
 		assertFalse("The index should not have returned edges", foundEdges);
 
 		// Also assert direct index lookup
-		OIndexManager manager = tx.getRawGraph().getMetadata().getIndexManager();
+		OIndexManager manager = tx.getRawDatabase().getMetadata().getIndexManager();
 		List<?> entryList = (List<?>) manager.getIndex(INDEX_NAME).get(compositeKey);
 		assertTrue("The index should not have returned a value but got " + entryList, entryList.isEmpty());
 

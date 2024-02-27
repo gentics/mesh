@@ -9,10 +9,16 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.EdgeTraversal;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -37,8 +43,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
+import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -91,7 +96,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public Tag findByName(String name) {
 		return (Tag) mesh().tagNameCache().get(name, tagName -> {
-			return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, tagName).back().nextOrDefaultExplicit(TagImpl.class, null);
+			return out(getRootLabel()).has(TagImpl.TAG_VALUE_KEY, tagName).in(getRootLabel()).nextOrDefaultExplicit(TagImpl.class, null);
 		});
 	}
 
@@ -113,7 +118,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	@Override
 	public Page<? extends Node> findTaggedNodes(Tag tag, HibUser user, Branch branch, List<String> languageTags, ContainerType type,
 		PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(tag, branch, languageTags, type);
+		VertexTraversal<?, ?> traversal = getTaggedNodesTraversal(tag, branch, languageTags, type);
 		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, NodeImpl.class);
 	}
 
@@ -156,16 +161,16 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	 *            Optional type of the node containers to filter by
 	 * @return Traversal which can be used to locate the nodes
 	 */
-	private VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Tag tag, Branch branch, List<String> languageTags, ContainerType type) {
+	private VertexTraversal<?, ?> getTaggedNodesTraversal(Tag tag, Branch branch, List<String> languageTags, ContainerType type) {
 
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(tag, branch).mark().outE(
+		EdgeTraversal<?, ?> traversal = TagEdgeImpl.getNodeTraversal(tag, branch).outE(
 			HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branch.getUuid());
 
 		if (type != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		}
 
-		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
-		return traversal.outV().back();
+		traversal = GraphFieldContainerEdgeImpl.filterLanguages((EdgeTraversal<?, ? extends VertexTraversal<?, ? extends Vertex>>) traversal, languageTags);
+		return traversal.outV().in(HAS_FIELD_CONTAINER);
 	}
 }

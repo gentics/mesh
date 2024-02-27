@@ -10,6 +10,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -23,7 +26,6 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.syncleus.ferma.VertexFrame;
 
 /**
  * @see NodeGraphField
@@ -89,8 +91,8 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		if (skipper.nextVertex instanceof NodeGraphFieldContainer) {
 			return skipper.getName();
 		} else {
-			return skipper.nextVertex.inE(HAS_FIELD, HAS_ITEM)
-				.nextExplicit(NodeGraphFieldImpl.class)
+			return ((NodeGraphFieldImpl) skipper.nextVertex.edges(Direction.IN, HAS_FIELD, HAS_ITEM)
+				.next())
 				.getFieldName();
 		}
 	}
@@ -115,15 +117,15 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	 * Used in {@link #getFieldName()} and {@link #getMicronodeFieldName()} to skip lists and abstract the retrieval of the field name.
 	 */
 	private class ListSkipper {
-		VertexFrame nextVertex;
+		Vertex nextVertex;
 		Supplier<String> nameSupplier;
 
 		private ListSkipper() {
-			VertexFrame framedVertex = outV().next();
+			Vertex framedVertex = outV().next();
 
 			if (framedVertex instanceof ListGraphField) {
 				nameSupplier = ((ListGraphField) framedVertex)::getFieldKey;
-				nextVertex = framedVertex.in(HAS_LIST).next();
+				nextVertex = framedVertex.vertices(Direction.IN, HAS_LIST).next();
 			} else {
 				nextVertex = framedVertex;
 				nameSupplier = NodeGraphFieldImpl.this::getFieldKey;

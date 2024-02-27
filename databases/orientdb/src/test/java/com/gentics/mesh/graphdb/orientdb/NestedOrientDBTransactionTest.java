@@ -4,10 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 import org.junit.Test;
 
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.gentics.mesh.util.StreamUtil;
+
+
 
 public class NestedOrientDBTransactionTest {
 
@@ -21,16 +24,13 @@ public class NestedOrientDBTransactionTest {
 		try {
 			OrientGraph tx = factory.getTx();
 			try {
-				tx.addVertex(null);
+				tx.addVertex();
 				CountDownLatch latch = new CountDownLatch(1);
 
 				new Thread(() -> {
-					OrientGraph tx2 = factory.getTx();
-					try {
-						long count = tx.countVertices();
+					try (OrientGraph tx2 = factory.getTx()) {
+						long count = StreamUtil.toStream(tx.vertices()).count();
 						System.out.println("Inner " + count);
-					} finally {
-						tx2.shutdown();
 					}
 					latch.countDown();
 				}).start();
@@ -41,19 +41,16 @@ public class NestedOrientDBTransactionTest {
 				e.printStackTrace();
 			} finally {
 				tx.rollback();
-				tx.shutdown();
+				tx.close();
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-		OrientGraph tx = factory.getTx();
-		try {
-			long count = tx.countVertices();
+		;
+		try (OrientGraph tx = factory.getTx()) {
+			long count = StreamUtil.toStream(tx.vertices()).count();
 			assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
-		} finally {
-			tx.shutdown();
 		}
-
 	}
 
 	/**
@@ -63,36 +60,31 @@ public class NestedOrientDBTransactionTest {
 	public void testNestedTransaction2() {
 		try {
 			OrientGraph tx = factory.getTx();
-			try {
-				
+			try {				
 				// 1. Add a vertex in the inner transaction
-				tx.addVertex(null);
+				tx.addVertex();
 
 				OrientGraph tx2 = factory.getTx();
 				try {
 					// Verify that the inner count is 1
-					long count = tx2.countVertices();
+					long count = StreamUtil.toStream(tx2.vertices()).count();
 					System.out.println("Inner " + count);
 				} finally {
 					tx2.rollback();
-					tx2.shutdown();
+					tx2.close();
 				}
 				throw new RuntimeException();
 			} finally {
 				tx.rollback();
-				tx.shutdown();
+				tx.close();
 			}
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-		OrientGraph tx = factory.getTx();
-		try {
-			long count = tx.countVertices();
+		try (OrientGraph tx = factory.getTx()) {
+			long count = StreamUtil.toStream(tx.vertices()).count();
 			assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
-		} finally {
-			tx.shutdown();
 		}
-
 	}
 
 }

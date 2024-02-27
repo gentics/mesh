@@ -15,6 +15,7 @@ import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 import java.util.List;
 
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -60,7 +61,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.VersionUtil;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.reactivex.Observable;
 
@@ -374,13 +374,13 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 	@Override
 	public BranchSchemaEdge findBranchSchemaEdge(HibSchemaVersion schemaVersion) {
 		SchemaVersion graphSchemaVersion = toGraph(schemaVersion);
-		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(graphSchemaVersion).back().nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
+		return outE(HAS_SCHEMA_VERSION).inV().retain(graphSchemaVersion).outE(HAS_SCHEMA_VERSION).nextOrDefaultExplicit(BranchSchemaEdgeImpl.class, null);
 	}
 
 	@Override
 	public BranchMicroschemaEdge findBranchMicroschemaEdge(HibMicroschemaVersion microschemaVersion) {
 		MicroschemaVersion graphMicroschemaVersion = toGraph(microschemaVersion);
-		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(graphMicroschemaVersion).back().nextOrDefaultExplicit(
+		return outE(HAS_MICROSCHEMA_VERSION).inV().retain(graphMicroschemaVersion).outE(HAS_MICROSCHEMA_VERSION).nextOrDefaultExplicit(
 			BranchMicroschemaEdgeImpl.class, null);
 	}
 
@@ -403,7 +403,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public void removeTag(HibTag tag) {
-		outE(HAS_BRANCH_TAG).mark().inV().retain(toGraph(tag)).back().removeAll();
+		outE(HAS_BRANCH_TAG).inV().retain(toGraph(tag)).outE(HAS_BRANCH_TAG).removeAll();
 	}
 
 	@Override
@@ -423,7 +423,7 @@ public class BranchImpl extends AbstractMeshCoreVertex<BranchResponse> implement
 
 	@Override
 	public Page<? extends Tag> getTags(HibUser user, PagingParameters params) {
-		VertexTraversal<?, ?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
+		VertexTraversal<?, ?> traversal = outE(HAS_BRANCH_TAG).inV();
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 

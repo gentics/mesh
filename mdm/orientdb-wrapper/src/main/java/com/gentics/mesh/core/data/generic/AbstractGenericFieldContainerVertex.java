@@ -1,8 +1,12 @@
 package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.tinkerpop.blueprints.Direction.IN;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -12,10 +16,8 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * Abstract implementation for field containers. This can be used by {@link NodeImpl}
@@ -49,7 +51,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		Edge edge = MeshEdgeImpl.findEdge(getId(), languageTag, branchUuid, type);
 		if (edge != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-			Vertex in = edge.getVertex(IN);
+			Vertex in = edge.inVertex();
 			return graph.frameElementExplicit(in, classOfU);
 		} else {
 			return null;
@@ -70,9 +72,9 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 
 		// Check all existing containers in order to find existing ones
 		U container = null;
-		EdgeTraversal<?, ?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
+		EdgeTraversal<?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		if (edgeTraversal.hasNext()) {
-			container = edgeTraversal.next().inV().has(classOfU).nextOrDefault(classOfU, null);
+			container = StreamUtil.toStream(edgeTraversal.next().vertices(Direction.IN)).map(classOfU::isInstance).map(classOfU::cast).findAny().orElse(null);
 		}
 
 		// Create a new container if no existing one was found

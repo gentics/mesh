@@ -17,12 +17,15 @@ package com.gentics.madl.tx;
 
 import java.io.IOException;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.syncleus.ferma.FramedGraph;
 
 /**
  * An abstract class that can be used to implement vendor specific graph database Tx classes.
  */
-public abstract class AbstractTx<T extends FramedGraph> implements Tx {
+public abstract class AbstractTx<G extends Graph, T extends DelegatingFramedMadlGraph<G>> implements Tx {
 
 	/**
 	 * Graph that is active within the scope of the autoclosable.
@@ -89,15 +92,13 @@ public abstract class AbstractTx<T extends FramedGraph> implements Tx {
 	 * Invoke a rollback on the database of this transaction.
 	 */
 	public void rollback() {
-		if (getGraph() instanceof FramedGraph) {
-			((FramedGraph) getGraph()).tx().rollback();
-		}
+		 getGraph().tx().rollback();
 	}
 
 	/**
 	 * Return the internal graph reference.
 	 */
-	public FramedGraph getGraph() {
+	public T getGraph() {
 		return currentGraph;
 	}
 

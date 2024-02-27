@@ -1,14 +1,15 @@
 package com.gentics.madl.frame;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.madl.traversal.EdgeTraversalImpl;
 import com.gentics.madl.traversal.VertexTraversal;
@@ -20,6 +21,7 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.TEdge;
 
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
@@ -39,6 +41,11 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			vertex = (Vertex) ((WrappedElement<?>) vertex).getBaseElement();
 		}
 		return (Vertex) vertex;
+	}
+
+	@Override
+	public DelegatingFramedMadlGraph<? extends Graph> getGraph() {
+		return (DelegatingFramedMadlGraph<? extends Graph>) super.getGraph();
 	}
 
 	@Override

@@ -9,14 +9,18 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.IntStream;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.annotations.GraphElement;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.EdgeTraversal;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
@@ -34,7 +38,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
-import com.syncleus.ferma.WrappedFramedGraph;
 
 
 /**
@@ -120,15 +123,10 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @param languageTags
 	 * @return
 	 */
-	public static GraphTraversal<?, ? extends GraphTraversal<?, ?>> filterLanguages(
-		GraphTraversal<?, ? extends GraphTraversal<?, ?>> traversal, List<String> languageTags) {
+	public static EdgeTraversal<?, ? extends VertexTraversal<?, ? extends Vertex>> filterLanguages(
+			EdgeTraversal<?, ? extends VertexTraversal<?, ? extends Vertex>> traversal, List<String> languageTags) {
 		if (languageTags != null && languageTags.size() > 0) {
-			String languageTag = languageTags.get(0);
-			if (languageTags.size() > 1) {
-				return traversal.filter(edge -> edge.get().hasKey(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY).hasValue(languageTag, IntStream.range(1, languageTags.size()).mapToObj(languageTags::get).toArray()).hasNext());
-			} else {
-				return traversal.filter(edge -> edge.get().hasKey(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY).hasValue(languageTag).hasNext());
-			}
+			return traversal.filter(edge -> edge.has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, P.within(languageTags)).hasNext());
 		} else {
 			return traversal;
 		}
@@ -193,10 +191,18 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @return
 	 */
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, ContainerType type) {
-		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getBaseGraph().variables().<OrientDBMeshComponent>get(GraphAttribute.MESH_COMPONENT).orElse(null);
-		Iterator<Edge> edges = graph.getBaseGraph().edges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
+		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
+					mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
+				.orElseGet(() -> new DefaultGraphTraversal<>(graph.getRawTraversal())
+						.has(BRANCH_UUID_KEY, branchUuid)
+						.has(TYPE_RESOLUTION_KEY, type.getCode())
+						.outV()
+						.hasId(nodeId)
+						.inE(HAS_FIELD_CONTAINER)
+						.has(BRANCH_UUID_KEY, branchUuid)
+						.has(TYPE_RESOLUTION_KEY, type.getCode()));
 		return edges.hasNext();
 	}
 
@@ -226,8 +232,8 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @return
 	 */
 	public static Result<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
-		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getBaseGraph().variables().<OrientDBMeshComponent>get(GraphAttribute.MESH_COMPONENT).orElse(null);
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterator<Edge> edges = graph.getBaseGraph().edges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
 		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges, GraphFieldContainerEdgeImpl.class);

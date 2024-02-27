@@ -21,20 +21,19 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.WrappedFramedGraph;
 
 /**
  * An abstract class that can be used to implement vendor specific graph database Tx classes.
  */
-public abstract class AbstractTx<T extends FramedGraph> extends com.gentics.madl.tx.AbstractTx<T> implements GraphDBTx {
+public abstract class AbstractTx<G extends Graph, T extends DelegatingFramedMadlGraph<G>> extends com.gentics.madl.tx.AbstractTx<G, T> implements GraphDBTx {
 
 	@Override
-	public abstract WrappedFramedGraph<? extends Graph> getGraph();
+	public abstract T getGraph();
 
 	@Override
 	public <B extends HibElement> B create(String uuid, Class<? extends B> classOfB, Consumer<B> inflater) {

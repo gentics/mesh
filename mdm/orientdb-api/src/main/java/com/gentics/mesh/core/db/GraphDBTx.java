@@ -2,6 +2,7 @@ package com.gentics.mesh.core.db;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.tx.BaseTransaction;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
@@ -18,7 +19,6 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
-import com.syncleus.ferma.WrappedFramedGraph;
 
 /**
  * A GraphDB-specific extension to {@link Tx}
@@ -33,7 +33,7 @@ public interface GraphDBTx extends CommonTx, BaseTransaction {
 	 *
 	 * @return Graph which is bound to the transaction.
 	 */
-	WrappedFramedGraph<? extends Graph> getGraph();
+	DelegatingFramedMadlGraph<? extends Graph> getGraph();
 
 	/**
 	 * Add new isolated vertex to the graph.

@@ -7,11 +7,11 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.tx.FramedTxGraph;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 
 public class TxFactoryTest implements TxFactory {
 
@@ -54,8 +54,8 @@ public class TxFactoryTest implements TxFactory {
 	@Test
 	public void testAbstractTxSucceeding() throws IOException {
 		@SuppressWarnings("unchecked")
-		AbstractTx<FramedGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
-		FramedGraph graph = Mockito.mock(FramedGraph.class);
+		AbstractTx<? extends Graph, DelegatingFramedMadlGraph<? extends Graph>> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
+		DelegatingFramedMadlGraph<? extends Graph> graph = Mockito.mock(DelegatingFramedMadlGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
 			assertNotNull(Tx.get());
@@ -72,8 +72,8 @@ public class TxFactoryTest implements TxFactory {
 	@Test
 	public void testAbstractTxDefault() throws IOException {
 		@SuppressWarnings("unchecked")
-		AbstractTx<FramedGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
-		FramedGraph graph = Mockito.mock(FramedGraph.class);
+		AbstractTx<? extends Graph, DelegatingFramedMadlGraph<? extends Graph>> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
+		DelegatingFramedMadlGraph<? extends Graph> graph = Mockito.mock(DelegatingFramedMadlGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
 			assertNotNull(Tx.get());
@@ -90,8 +90,8 @@ public class TxFactoryTest implements TxFactory {
 	@Test
 	public void testAbstractTxFailing() throws IOException {
 		@SuppressWarnings("unchecked")
-		AbstractTx<FramedTxGraph> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
-		FramedTxGraph graph = Mockito.mock(FramedTxGraph.class);
+		AbstractTx<? extends Graph, DelegatingFramedMadlGraph<? extends Graph>> tx = Mockito.mock(AbstractTx.class, Mockito.CALLS_REAL_METHODS);
+		DelegatingFramedMadlGraph<? extends Graph> graph = Mockito.mock(DelegatingFramedMadlGraph.class);
 		tx.init(graph);
 		try (Tx tx2 = tx) {
 			assertNotNull(Tx.get());

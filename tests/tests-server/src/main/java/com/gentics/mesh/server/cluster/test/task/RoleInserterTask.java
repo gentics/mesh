@@ -5,7 +5,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.orientechnologies.common.concur.ONeedRetryException;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Test task which inserts roles.

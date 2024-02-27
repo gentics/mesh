@@ -9,16 +9,21 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Optional;
-import java.util.Spliterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -47,11 +52,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedElement;
+import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -228,7 +229,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public Page<? extends Group> getGroups(HibUser user, PagingParameters params) {
-		VertexTraversal<?, ?, ?> traversal = out(HAS_USER);
+		VertexTraversal<?, ?> traversal = out(HAS_USER);
 		return new DynamicTransformablePageImpl<Group>(user, traversal, params, READ_PERM, GroupImpl.class);
 	}
 
@@ -240,9 +241,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public String getRolesHash() {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
-		String roles = StreamSupport.stream(itemEdges, false)
-			.map(itemEdge -> itemEdge.getVertex(Direction.IN).getId().toString())
+		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, Collections.singletonList(id()));
+		String roles = StreamUtil.toStream(itemEdges)
+			.map(itemEdge -> itemEdge.inVertex().id().toString())
 			.sorted()
 			.collect(Collectors.joining());
 
@@ -257,15 +258,15 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public Result<? extends Role> getRolesViaShortcut() {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		Spliterator<Edge> itemEdges = getGraph().getEdges(indexName.toLowerCase(), id()).spliterator();
-		Stream<RoleImpl> roles = StreamSupport.stream(itemEdges, false)
-			.map(itemEdge -> itemEdge.getVertex(Direction.IN))
+		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, Collections.singletonList(id()));
+		Stream<RoleImpl> roles = StreamUtil.toStream(itemEdges)
+			.map(itemEdge -> itemEdge.inVertex())
 			.map(vertex -> {
 				// Unwrap wrapped vertex
 				if (vertex instanceof WrappedElement) {
 					vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
 				}
-				return graph.frameElementExplicit(vertex, RoleImpl.class);
+				return getGraph().frameElementExplicit(vertex, RoleImpl.class);
 			});
 		return new TraversalResult<>(roles);
 	}

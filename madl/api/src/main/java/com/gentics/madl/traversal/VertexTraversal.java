@@ -1,7 +1,10 @@
 package com.gentics.madl.traversal;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -9,6 +12,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
+import com.syncleus.ferma.VertexFrame;
 
 public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 
@@ -24,8 +28,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	}
 
 	/**
-	 * If the incoming element has the provided key/value as check with .equals(), then let the element pass. If the key is id or label, then use respect id or
-	 * label filtering.
+	 * If the incoming element has the provided key/value as check with .equals(), then let the element pass.
 	 *
 	 * @param key
 	 *            the property key to check.
@@ -38,8 +41,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	}
 
 	/**
-	 * If the incoming element has the provided key/value as check with .equals(), then let the element pass. If the key is id or label, then use respect id or
-	 * label filtering.
+	 * If the incoming element has the provided key/value as check with .equals(), then let the element pass.
 	 *
 	 * @param key
 	 *            the property key to check
@@ -63,8 +65,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	}
 
 	/**
-	 * If the incoming element has the provided key/value as check with .equals(), then filter the element. If the key is id or label, then use respect id or
-	 * label filtering.
+	 * If the incoming element has the provided key/value as check with .equals(), then filter the element.
 	 *
 	 * @param key
 	 *            the property key to check
@@ -74,6 +75,18 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 */
 	default VertexTraversal<S, M> hasNot(String key, Object value) {
 		return new VertexTraversalImpl<>(rawTraversal().has(key, P.neq(value)));
+	}
+	/**
+	 * If the incoming element has no provided key, then filter the element.
+	 *
+	 * @param key
+	 *            the property key to check
+	 * @param value
+	 *            the objects to filter on (in an OR manner)
+	 * @return the extended Pipeline
+	 */
+	default VertexTraversal<S, M> hasNot(String key) {
+		return new VertexTraversalImpl<>(rawTraversal().hasNot(key));
 	}
 
 	/**
@@ -256,6 +269,22 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 
 	@Override
 	VertexTraversal<S, M> filter(Predicate<M> filterFunction);
+
+	/**
+	 * Will emit the object only if it is in the provided collection.
+	 *
+	 * @param vertices
+	 *            the collection to retain
+	 * @return the extended Pipeline
+	 */
+	default VertexTraversal<S, M> retain(VertexFrame... vertices) {
+		return new VertexTraversalImpl<>(rawTraversal().is(P.within(Arrays.asList(vertices))));
+	}
+
+	@Override
+	default VertexTraversal<S, M> retain(Iterable<?> collection) {
+		return new VertexTraversalImpl<>(rawTraversal().is(P.within(StreamUtil.toStream(collection).collect(Collectors.toSet()))));
+	}
 
 	/**
 	 * Remove every element at the end of this Pipeline.

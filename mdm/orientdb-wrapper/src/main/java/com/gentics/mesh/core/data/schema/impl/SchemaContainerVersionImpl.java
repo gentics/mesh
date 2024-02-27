@@ -14,7 +14,17 @@ import static com.gentics.mesh.core.rest.common.ContainerType.DRAFT;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Optional;
 import java.util.stream.Stream;
+
+import org.apache.tinkerpop.gremlin.orientdb.OGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphQueryBuilder;
+import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -43,12 +53,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.etc.config.ContentConfig;
+import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -92,21 +99,16 @@ public class SchemaContainerVersionImpl extends
 					NodeGraphFieldContainerImpl.class,
 					new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
 					new Object[] { uuid }))
-				.filter(v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER)).anyMatch(e -> 
-						e.getProperty(BRANCH_UUID_KEY).equals(branchUuid) 
-						&& ContainerType.get(e.getProperty(EDGE_TYPE_KEY)).equals(DRAFT))
-				).map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+				.filter(v -> toStream(v.edges(Direction.IN, HAS_FIELD_CONTAINER)).anyMatch(e -> 
+						branchUuid.equals(e.<String>property(BRANCH_UUID_KEY).orElse(null)) 
+						&& DRAFT.getCode().equals(ContainerType.get(e.<String>property(EDGE_TYPE_KEY).orElse(null)))
+				)).map(NodeGraphFieldContainerImpl.class::cast);
 		} else {
-			OrientBaseGraph baseGraph = database.unwrapCurrentGraph();
-			String query = "select expand(in) as content "
-					+ " from " + HAS_FIELD_CONTAINER + " "
-					+ " where " + EDGE_TYPE_KEY + " = ? and " + BRANCH_UUID_KEY + " = ? "
-					+ " and in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY + " = ? "
-					+ " limit " + limit;
-			OResultSet list = baseGraph.getRawGraph().query(query, new Object[] { DRAFT.getCode(), branchUuid, uuid });
-			stream = toStream(list)
-					.map(oresult -> (Vertex) new OrientVertex(baseGraph, oresult.toElement()))
-					.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+			OGraph baseGraph = database.unwrapCurrentGraph();			
+			Iterable<Edge> edges = new MeshOrientGraphEdgeQuery(baseGraph, NodeGraphFieldContainerImpl.class, HAS_FIELD_CONTAINER).hasAll(new String[] {EDGE_TYPE_KEY, BRANCH_UUID_KEY, "in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY}, new String[] {DRAFT.getCode(), branchUuid, uuid}).fetch(Optional.empty());
+			stream = toStream(edges)
+					.map(Edge::inVertex)
+					.map(NodeGraphFieldContainerImpl.class::cast);
 		}
 		return new TraversalResult<>(stream);
 	}
@@ -126,9 +128,9 @@ public class SchemaContainerVersionImpl extends
 			NodeGraphFieldContainerImpl.class,
 			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
 			new Object[] { getUuid() })).filter(
-				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+				v -> toStream(v.edges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> branchUuid.equals(e.<String>property(BRANCH_UUID_KEY).orElse(null))))
+					.map(NodeGraphFieldContainerImpl.class::cast);
 	}
 
 
@@ -139,9 +141,9 @@ public class SchemaContainerVersionImpl extends
 			"bucket",
 			new String[] { SCHEMA_CONTAINER_VERSION_KEY_PROPERTY },
 			new Object[] { getUuid() }, BUCKET_ID_KEY, (long) bucket.start(), (long) bucket.end())).filter(
-				v -> toStream(v.getEdges(Direction.IN, HAS_FIELD_CONTAINER))
-					.anyMatch(e -> e.getProperty(BRANCH_UUID_KEY).equals(branchUuid)))
-				.map(v -> graph.frameElementExplicit(v, NodeGraphFieldContainerImpl.class));
+				v -> toStream(v.edges(Direction.IN, HAS_FIELD_CONTAINER))
+					.anyMatch(e -> branchUuid.equals(e.<String>property(BRANCH_UUID_KEY).orElse(null))))
+					.map(NodeGraphFieldContainerImpl.class::cast);
 	}
 
 	@Override
@@ -151,12 +153,12 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Iterable<? extends HibJob> referencedJobsViaTo() {
-		return in(HAS_TO_VERSION).frame(Job.class);
+		return (Iterable<? extends HibJob>) in(HAS_TO_VERSION);
 	}
 
 	@Override
 	public Result<HibJob> referencedJobsViaFrom() {
-		return new TraversalResult<>(in(HAS_FROM_VERSION).frame(Job.class));
+		return new TraversalResult<>((Iterable<? extends HibJob>) in(HAS_FROM_VERSION));
 	}
 
 	@Override

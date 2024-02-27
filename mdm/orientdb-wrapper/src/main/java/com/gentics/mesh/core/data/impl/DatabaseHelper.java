@@ -3,6 +3,13 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.core.data.binary.impl.BinaryImpl;
@@ -58,6 +65,9 @@ import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.orientechnologies.orient.core.index.OIndexInternal;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.WrappedFramedGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -169,4 +179,16 @@ public final class DatabaseHelper {
 		}
 	}
 
+	/**
+	 * Iterate indexed edges of arbitrary IDs.
+	 * 
+	 * @param indexName
+	 * @param ids
+	 * @return
+	 */
+	public static Iterator<Edge> indexedEdges(FramedGraph graph, String indexName, List<Object> ids) {
+		OrientGraph ograph = ((WrappedFramedGraph<OrientGraph>) graph).getBaseGraph();
+		Object[] rids = ((OIndexInternal) ograph.getRawDatabase().getMetadata().getIndexManager().getIndex(indexName.toLowerCase())).getRids(ids).collect(Collectors.toList()).toArray();
+		return ograph.edges(rids);		
+	}
 }

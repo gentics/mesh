@@ -48,6 +48,15 @@ public interface Traversal<S, T> extends Iterator<T>, Iterable<T>, AutoCloseable
 	Traversal<S, T> filter(Predicate<T> predicate);
 
 	/**
+	 * Will emit the object only if it is in the provided collection.
+	 *
+	 * @param collection
+	 *            the collection to retain
+	 * @return the extended Pipeline
+	 */
+	Traversal<S, T> retain(Iterable<?> collection);
+
+	/**
 	 * Emit the respective property of the incoming element.
 	 * 
 	 * @param key

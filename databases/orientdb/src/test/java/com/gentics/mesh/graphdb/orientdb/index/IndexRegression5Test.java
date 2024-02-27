@@ -6,19 +6,21 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass.INDEX_TYPE;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+
 
 /**
  * This test creates a parent child relationship graph without edges. The edges are substituted by embedded sets of uuids.
@@ -68,12 +70,9 @@ public class IndexRegression5Test extends AbstractOrientTest {
 
 		// Now iterate tree and delete the elements.
 		// During iteration the index on NodeImpl vertices will be utilized.
-		OrientGraph tx = factory.getTx();
-		try {
+		try (OrientGraph tx = factory.getTx()) {
 			delete(tx, "R0");
 			tx.commit();
-		} finally {
-			tx.shutdown();
 		}
 	}
 
@@ -94,18 +93,17 @@ public class IndexRegression5Test extends AbstractOrientTest {
 			delete(tx, childUuid);
 		}
 		System.out.println("Deleting content of child " + uuid);
-		Vertex vertex = tx.getVertices(UUID_KEY, uuid).iterator().next();
-		System.out.println("Loaded vertex " + uuid + " " + vertex.getId());
-		vertex.getEdges(Direction.OUT, CONTENT_EDGE_LABEL).forEach(e -> {
+		Vertex vertex = DelegatingFramedOrientGraph.<Vertex>getElements(tx, NODE_TYPE, new String[] { UUID_KEY }, new Object[] { uuid }).next();
+		System.out.println("Loaded vertex " + uuid + " " + vertex.id());
+		vertex.edges(Direction.OUT, CONTENT_EDGE_LABEL).forEachRemaining(e -> {
 			e.remove();
-			System.out.println("Removed edge " + e.getId());
+			System.out.println("Removed edge " + e.id());
 		});
 
 	}
 
 	private Object addGraph() {
-		OrientGraph tx = factory.getTx();
-		try {
+		try (OrientGraph tx = factory.getTx()) {
 			Vertex root = createNode(tx, null, "R0");
 
 			Vertex A = createNode(tx, root, "A");
@@ -117,9 +115,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 			Vertex B_2 = createNode(tx, B, "B_2");
 
 			tx.commit();
-			return root.getId();
-		} finally {
-			tx.shutdown();
+			return root.id();
 		}
 	}
 
@@ -127,8 +123,8 @@ public class IndexRegression5Test extends AbstractOrientTest {
 		System.out.println("Index lookup with key: " + parentUuid);
 		String key[] = { PARENTS_KEY };
 		String value[] = { parentUuid };
-		return StreamSupport.stream(tx.getVertices(NODE_TYPE, key, value).spliterator(), false).map(v -> {
-			String uuid = v.getProperty(UUID_KEY);
+		return StreamUtil.toStream(DelegatingFramedOrientGraph.<Vertex>getElements(tx, NODE_TYPE, key, value)).map(v -> {
+			String uuid = v.<String>property(UUID_KEY).orElse(null);
 			return uuid;
 		}).collect(Collectors.toList());
 
@@ -136,10 +132,10 @@ public class IndexRegression5Test extends AbstractOrientTest {
 
 	private Vertex createNode(OrientGraph tx, Vertex parent, String uuid) {
 		Vertex node = tx.addVertex("class:" + NODE_TYPE);
-		node.setProperty(UUID_KEY, uuid);
+		node.property(UUID_KEY, uuid);
 		if (parent != null) {
-			String parentUuid = parent.getProperty(UUID_KEY);
-			node.setProperty(PARENTS_KEY, Collections.singleton(parentUuid));
+			String parentUuid = parent.<String>property(UUID_KEY).orElse(null);
+			node.property(PARENTS_KEY, Collections.singleton(parentUuid));
 			System.out.println("Created node " + uuid + " with parent " + parentUuid);
 		}
 

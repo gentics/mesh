@@ -48,7 +48,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 
 	@Override
 	public HibMicronode getMicronode() {
-		return inV().has(MicronodeImpl.class).nextOrDefaultExplicit(MicronodeImpl.class, null);
+		return inV(MicronodeImpl.class).nextOrNull();
 	}
 
 	@Override

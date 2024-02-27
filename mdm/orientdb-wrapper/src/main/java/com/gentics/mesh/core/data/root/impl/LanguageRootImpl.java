@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @see LanguageRoot

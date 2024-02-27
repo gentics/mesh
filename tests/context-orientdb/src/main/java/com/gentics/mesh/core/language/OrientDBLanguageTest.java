@@ -13,7 +13,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 @MeshTestSetting(testSize = TestSize.PROJECT, startServer = false)
 public class OrientDBLanguageTest extends AbstractMeshTest {

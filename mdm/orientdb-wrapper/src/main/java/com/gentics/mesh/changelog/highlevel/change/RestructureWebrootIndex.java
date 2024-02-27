@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -21,7 +23,9 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.syncleus.ferma.FramedTransactionalGraph;
+import com.gentics.mesh.util.StreamUtil;
+import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.WrappedFramedGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -62,9 +66,9 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 		ContentDao contentDao = Tx.get().contentDao();
 
 		log.info("Applying change: " + getName());
-		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
-		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
-			GraphFieldContainerEdgeImpl.class);
+		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		Iterable<? extends GraphFieldContainerEdgeImpl> edges = StreamUtil.toIterable(graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
+			GraphFieldContainerEdgeImpl.class));
 		long count = 0;
 		long total = 0;
 		for (GraphFieldContainerEdgeImpl edge : edges) {
@@ -99,19 +103,19 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 				edge.setSegmentInfo(null);
 			}
 			if (total % 1000 == 0) {
-				graph.commit();
+				graph.tx().commit();
 			}
 			total++;
 		}
 		log.info("Done updating all content edges. Updated: {" + count + "} of {" + total + "}");
 
-		Iterable<? extends NodeGraphFieldContainerImpl> containers = graph.getFramedVertices("@class",
-			NodeGraphFieldContainerImpl.class.getSimpleName(), NodeGraphFieldContainerImpl.class);
+		Iterable<? extends NodeGraphFieldContainerImpl> containers = StreamUtil.toIterable(graph.getFramedVertices("@class",
+			NodeGraphFieldContainerImpl.class.getSimpleName(), NodeGraphFieldContainerImpl.class));
 		for (NodeGraphFieldContainer container : containers) {
-			container.getElement().removeProperty("publishedWebrootUrlInfo");
-			container.getElement().removeProperty("webrootUrlInfo");
-			container.getElement().removeProperty("publishedWebrootPathInfo");
-			container.getElement().removeProperty("webrootPathInfo");
+			container.getElement().property("publishedWebrootUrlInfo").remove();
+			container.getElement().property("webrootUrlInfo").remove();
+			container.getElement().property("publishedWebrootPathInfo").remove();
+			container.getElement().property("webrootPathInfo").remove();
 		}
 
 	}

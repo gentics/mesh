@@ -3,6 +3,7 @@ package com.gentics.mesh.madl.frame;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.syncleus.ferma.WrappedFramedGraph;
 
 public interface ElementFrame extends com.syncleus.ferma.ElementFrame {
@@ -19,6 +20,9 @@ public interface ElementFrame extends com.syncleus.ferma.ElementFrame {
 	}
 
 	Element element();
+
+	@Override
+	DelegatingFramedMadlGraph<? extends Graph> getGraph();
 
 	@SuppressWarnings("unchecked")
 	default <T> T getGraphAttribute(String key) {

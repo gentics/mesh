@@ -13,7 +13,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -344,7 +343,7 @@ public class ContentDaoWrapperImpl implements ContentDaoWrapper {
 
 	@Override
 	public Stream<? extends HibMicronode> findAllMicronodes() {
-		return StreamUtil.toStream(GraphDBTx.getGraphTx().getGraph().v().has(MicronodeImpl.class).frameExplicit(MicronodeImpl.class));
+		return StreamUtil.toStream(GraphDBTx.getGraphTx().getGraph().getFramedVerticesExplicit(MicronodeImpl.class));
 	}
 
 	@Override

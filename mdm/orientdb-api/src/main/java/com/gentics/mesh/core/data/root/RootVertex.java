@@ -15,9 +15,11 @@ import java.util.stream.StreamSupport;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -176,9 +178,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param name
 	 * @return Found element or null if element with the name could not be found
 	 */
-	@SuppressWarnings("unchecked")
 	default T findByName(String name) {
-		return (T) traversalOut(getPersistanceClass(), getRootLabel()).has("name", name).tryNext().orElse(null);
+		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	/**
@@ -193,10 +194,11 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		// Try to load the element using the index. This way no record load will happen.
 		T t = db.index().findByUuid(getPersistanceClass(), uuid);
 		if (t != null) {
-			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-			// Use the edge index to determine whether the element is part of this root vertex
-			Iterator<?> edges = graph.getFramedEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()), t.getClass());
-			if (edges.hasNext()) {
+			DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+			boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()), t.getClass())
+					.map(Iterator::hasNext)
+					.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(t.getClass(), t.getId()) != null);
+			if (hasEdge) {
 				return t;
 			}
 		}
@@ -222,10 +224,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 */
 	default void addItem(T item) {
 		GraphDatabase db = HibClassConverter.toGraph(db());
-		FramedGraph graph = getGraph();
-		// Check whether the item was already added by checking the index
-		Iterator<?> edges = graph.getFramedEdges("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(), id()), item.getClass());
-		if (!edges.hasNext()) {
+		DelegatingFramedMadlGraph<? extends Graph> graph = getGraph();
+		// Check whether the item was already added
+		boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.getId(), id()), item.getClass())
+				.map(Iterator::hasNext)
+				.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(item.getClass(), item.getId()) != null);
+		if (!hasEdge) {
 			linkOut(item, getRootLabel());
 		}
 	}

@@ -3,11 +3,14 @@ package com.gentics.madl.frame;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.madl.traversal.EdgeTraversalImpl;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
@@ -32,6 +35,11 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 		}
 		return (Edge) edge;
 
+	}
+
+	@Override
+	public DelegatingFramedMadlGraph<? extends Graph> getGraph() {
+		return (DelegatingFramedMadlGraph<? extends Graph>) super.getGraph();
 	}
 
 	@Override
@@ -67,11 +75,21 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 
 	@Override
 	public EdgeTraversal<?, ?> traversal() {
-		FramedGraph fg = getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 		return new EdgeTraversalImpl<>(new DefaultGraphTraversal<>(fg.getRawTraversal()));
+	}
+
+	@Override
+	public VertexTraversal<?, ?> inV() {
+		return traversal().inV();
+	}
+
+	@Override
+	public VertexTraversal<?, ?> outV() {
+		return traversal().outV();
 	}
 }

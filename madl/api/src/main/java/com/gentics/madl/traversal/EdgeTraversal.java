@@ -120,7 +120,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 *            The type of frame for the element.
 	 * @return the next emitted object
 	 */
-	default <T extends M> T next(Class<T> kind) {
+	default <T> T next(Class<T> kind) {
 		return (T) rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next();
 	}
 
@@ -136,7 +136,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 *            The type of frame for the element.
 	 * @return the next emitted object
 	 */
-	default <T extends M> T nextExplicit(Class<T> kind) {
+	default <T> T nextExplicit(Class<T> kind) {
 		return (T) rawTraversal().next();
 	}
 
@@ -152,7 +152,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 *            The kind of framed elements to return.
 	 * @return An iterator of framed elements.
 	 */
-	default <T extends M> Iterable<T> frameExplicit(Class<? extends T> kind) {
+	default <T> Iterable<T> frameExplicit(Class<? extends T> kind) {
 		return StreamUtil.toIterable(rawTraversal().map(e -> kind.cast(e.get())));
 	}
 
@@ -165,7 +165,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 *            The kind of framed elements to return.
 	 * @return a list of all the objects
 	 */
-	default <T extends M> List<? extends T> toList(Class<T> kind) {
+	default <T> List<? extends T> toList(Class<T> kind) {
 		return (List<? extends T>) rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).toList();
 	}
 
@@ -181,7 +181,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 *            The kind of framed elements to return.
 	 * @return a list of all the objects
 	 */
-	default <T extends M> List<? extends T> toListExplicit(Class<T> kind) {
+	default <T> List<? extends T> toListExplicit(Class<T> kind) {
 		return (List<? extends T>) rawTraversal().toList();
 	}
 
@@ -196,6 +196,11 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 
 	@Override
 	EdgeTraversal<S, M> filter(Predicate<M> filterFunction);
+
+	@Override
+	default EdgeTraversal<S, M> retain(Iterable<?> collection) {
+		return new EdgeTraversalImpl<>(rawTraversal().is(P.within(StreamUtil.toStream(collection).collect(Collectors.toSet()))));
+	}
 
 	/**
 	 * Add an OrFilterPipe to the end the Pipeline. Will only emit the object if one or more of the provides pipes yields an object. The provided pipes are

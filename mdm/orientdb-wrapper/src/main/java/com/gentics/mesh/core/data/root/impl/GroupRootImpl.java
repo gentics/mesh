@@ -11,6 +11,7 @@ import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 /**
  * @see GroupRoot
@@ -73,13 +73,13 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 
 	@Override
 	public Page<? extends User> getVisibleUsers(Group group, HibUser user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = group.in(HAS_USER);
+		VertexTraversal<?, ?> traversal = group.in(HAS_USER);
 		return new DynamicTransformablePageImpl<User>(user, traversal, pagingInfo, READ_PERM, UserImpl.class);
 	}
 
 	@Override
 	public Page<? extends Role> getRoles(Group group, HibUser user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = group.in(HAS_ROLE);
+		VertexTraversal<?, ?> traversal = group.in(HAS_ROLE);
 		return new DynamicTransformablePageImpl<Role>(user, traversal, pagingInfo, READ_PERM, RoleImpl.class);
 	}
 

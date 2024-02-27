@@ -7,6 +7,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.Group;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -79,7 +79,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 
 	@Override
 	public Page<? extends Group> getGroups(Role role, HibUser user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = role.out(HAS_ROLE);
+		VertexTraversal<?, ?> traversal = role.out(HAS_ROLE);
 		return new DynamicTransformablePageImpl<Group>(user, traversal, pagingInfo, READ_PERM, GroupImpl.class);
 	}
 

@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Test task

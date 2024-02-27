@@ -12,7 +12,6 @@ import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
@@ -67,7 +66,6 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.syncleus.ferma.WrappedFramedGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 
 import dagger.Lazy;
@@ -89,7 +87,7 @@ import io.vertx.core.logging.LoggerFactory;
  * <li>Making Tx accessible via threadlocal {@link Tx#setActive(Tx)}
  * </ul>
  */
-public class OrientDBTx extends AbstractTx<DelegatingFramedOrientGraph> {
+public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGraph> {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBTx.class);
 
@@ -175,8 +173,9 @@ public class OrientDBTx extends AbstractTx<DelegatingFramedOrientGraph> {
 					getGraph().close();
 				} catch (IOException e) {
 					throw new RuntimeException(e);
+				} finally {
+					Tx.setActive(null);
 				}
-				Tx.setActive(null);
 			}
 		}
 	}
@@ -185,7 +184,7 @@ public class OrientDBTx extends AbstractTx<DelegatingFramedOrientGraph> {
 	protected void init(DelegatingFramedOrientGraph transactionalGraph) {
 		Mesh mesh = boot.mesh();
 		if (mesh != null) {
-			transactionalGraph.getBaseGraph().variables().set(MESH_COMPONENT, mesh.internal());
+			transactionalGraph.setAttribute(MESH_COMPONENT, mesh.internal());
 		} else {
 			log.error("Could not set mesh component attribute. Followup errors may happen.");
 		}
@@ -371,7 +370,7 @@ public class OrientDBTx extends AbstractTx<DelegatingFramedOrientGraph> {
 	}
 
 	@Override
-	public WrappedFramedGraph<? extends Graph> getGraph() {
+	public DelegatingFramedOrientGraph getGraph() {
 		return currentGraph;
 	}
 }

@@ -3,56 +3,58 @@ package com.gentics.mesh.graphdb.orientdb.index;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+
+import com.orientechnologies.orient.core.metadata.schema.OClass;
 
 public abstract class AbstractOrientTest {
 
-	public void addEdgeType(Supplier<OrientGraphNoTx> txProvider, String label, String superTypeName, Consumer<OrientEdgeType> typeModifier) {
+	public void addEdgeType(Supplier<OrientGraph> txProvider, String label, String superTypeName, Consumer<OClass> typeModifier) {
 		System.out.println("Adding edge type for label {" + label + "}");
 
-		OrientGraphNoTx noTx = txProvider.get();
+		OrientGraph noTx = txProvider.get();
 		try {
-			OrientEdgeType edgeType = noTx.getEdgeType(label);
+			OClass edgeType = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
 			if (edgeType == null) {
 				String superClazz = "E";
 				if (superTypeName != null) {
 					superClazz = superTypeName;
 				}
-				edgeType = noTx.createEdgeType(label, superClazz);
+				noTx.createClass(label, superClazz);
+				edgeType = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
 
 				if (typeModifier != null) {
 					typeModifier.accept(edgeType);
 				}
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 
 	}
 
-	public void addVertexType(Supplier<OrientGraphNoTx> txProvider, String typeName, String superTypeName,
-		Consumer<OrientVertexType> typeModifier) {
+	public void addVertexType(Supplier<OrientGraph> txProvider, String typeName, String superTypeName,
+		Consumer<OClass> typeModifier) {
 
 		System.out.println("Adding vertex type for class {" + typeName + "}");
 
-		OrientGraphNoTx noTx = txProvider.get();
+		OrientGraph noTx = txProvider.get();
 		try {
-			OrientVertexType vertexType = noTx.getVertexType(typeName);
+			OClass vertexType = noTx.getRawDatabase().getMetadata().getSchema().getClass(typeName);
 			if (vertexType == null) {
 				String superClazz = "V";
 				if (superTypeName != null) {
 					superClazz = superTypeName;
 				}
-				vertexType = noTx.createVertexType(typeName, superClazz);
+				noTx.createClass(typeName, superClazz);
+				vertexType = noTx.getRawDatabase().getMetadata().getSchema().getClass(typeName);
 
 				if (typeModifier != null) {
 					typeModifier.accept(vertexType);
 				}
 			}
 		} finally {
-			noTx.shutdown();
+			noTx.close();
 		}
 	}
 }

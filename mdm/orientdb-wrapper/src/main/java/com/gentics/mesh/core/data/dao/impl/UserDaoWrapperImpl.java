@@ -10,10 +10,12 @@ import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDao;
@@ -29,11 +31,13 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import dagger.Lazy;
 
@@ -71,17 +75,17 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	 * @return true if the user is granted the permission, false if not
 	 */
 	protected boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 		// Find all roles that are assigned to the user by checking the
 		// shortcut edge from the index
 		String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
 		Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.getId());
 		Vertex vertex = graph.getVertex(elementId);
 		for (Edge roleEdge : roleEdges) {
-			Vertex role = roleEdge.getVertex(Direction.IN);
+			Vertex role = roleEdge.inVertex();
 
-			Set<String> allowedRoles = vertex.getProperty(permission.propertyKey());
-			boolean hasPermission = allowedRoles != null && allowedRoles.contains(role.<String>getProperty("uuid"));
+			Set<String> allowedRoles = vertex.<Set<String>>property(permission.propertyKey()).orElse(null);
+			boolean hasPermission = allowedRoles != null && allowedRoles.contains(role.<String>property(MeshVertex.UUID_KEY).orElse(null));
 			if (hasPermission) {
 				return true;
 			}

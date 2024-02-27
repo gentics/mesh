@@ -7,14 +7,15 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.field.FieldType.STRING;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
-import static com.gentics.mesh.util.StreamUtil.toStream;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
+import static com.gentics.mesh.util.StreamUtil.toStream;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -43,7 +44,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -120,7 +120,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 
 	@Override
 	public Page<? extends Tag> getTags(HibUser user, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
+		VertexTraversal<?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
 		return new DynamicTransformablePageImpl<Tag>(user, traversal, pagingInfo, READ_PERM, TagImpl.class);
 	}
 
@@ -189,9 +189,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 	@Override
 	public Tag findByName(String name) {
 		return out(getRootLabel())
-			.mark()
 			.has(TagImpl.TAG_VALUE_KEY, name)
-			.back()
+			.in(getRootLabel())
 			.nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
@@ -234,7 +233,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse> imp
 				mapSorting(pagingInfo),
 				Optional.empty(),
 				maybeExtraFilter.map(extraFilter -> parseFilter(extraFilter, ContainerType.PUBLISHED, ac.getUser(), READ_PERM, Optional.empty()))
-			)).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+			)).map(vertex -> getGraph().frameElementExplicit(vertex, getPersistanceClass()));
 		return new DynamicStreamPageImpl<>(stream, pagingInfo, true);
 	}
 }

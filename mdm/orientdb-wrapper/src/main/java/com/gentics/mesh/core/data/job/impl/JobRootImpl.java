@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.dao.ElementResolver.log;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
@@ -9,7 +10,7 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -17,6 +18,8 @@ import java.util.Stack;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -26,6 +29,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -39,10 +43,10 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.result.Result;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 /**
  * @see JobRoot
@@ -89,9 +93,9 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
-			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
-				db().index().createComposedIndexKey(potentialElement.getId(), id()));
-			if (edges.iterator().hasNext()) {
+			Iterator<Edge> edges = DatabaseHelper.indexedEdges(getGraph(), "e." + getRootLabel().toLowerCase() + "_inout",
+				Collections.singletonList(db().index().createComposedIndexKey(potentialElement.id(), id())));
+			if (edges.hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());
 			}
@@ -233,16 +237,15 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public void deleteByProject(Project project) {
 		// note: it is very important to use has(VersionPurgeJobImpl.class) to check whether we actually get a job here
 		// otherwise we would also get the ProjectRootImpl and delete it
-		for (VersionPurgeJobImpl versionPurgeJob : project.in(HAS_PROJECT).has(VersionPurgeJobImpl.class)
-				.frameExplicit(VersionPurgeJobImpl.class)) {
-			versionPurgeJob.delete();
+		for (Vertex versionPurgeJob : StreamUtil.toIterable(project.in(HAS_PROJECT).has(ElementFrame.TYPE_RESOLUTION_KEY, VersionPurgeJobImpl.class.getSimpleName()))) {
+			versionPurgeJob.remove();
 		}
 	}
 
 	@Override
 	public void purgeFailed() {
 		log.info("Purging failed jobs..");
-		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
+		Iterable<? extends JobImpl> it = (Iterable<? extends JobImpl>) out(HAS_JOB).hasNot("error");
 		long count = 0;
 		for (Job job : it) {
 			job.delete();
@@ -253,7 +256,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void clear() {
-		out(HAS_JOB).removeAll();
+		out(HAS_JOB).forEachRemaining(Vertex::remove);
 	}
 
 	@Override

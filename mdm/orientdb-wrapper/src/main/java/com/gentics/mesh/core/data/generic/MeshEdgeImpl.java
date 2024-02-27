@@ -7,11 +7,11 @@ import java.util.Iterator;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractEdgeFrame;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.graph.GraphAttribute;
@@ -19,10 +19,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.WrappedFramedGraph;
 
 import io.vertx.core.Vertx;
 
@@ -61,7 +58,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	@Override
-	public FramedGraph getGraph() {
+	public DelegatingFramedMadlGraph<? extends Graph> getGraph() {
 		return GraphDBTx.getGraphTx().getGraph();
 	}
 
@@ -97,7 +94,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	 * @return
 	 */
 	public OrientDBMeshComponent mesh() {
-		return ElementFrame.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		return getGraphAttribute(GraphAttribute.MESH_COMPONENT);
 	}
 
 	@Override
@@ -116,8 +113,8 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	public static Edge findEdge(Object nodeId, String languageTag, String branchUuid, ContainerType type) {
-		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = ElementFrame.getGraphAttribute(GraphAttribute.MESH_COMPONENT);
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		GraphDatabase db = mesh.database();
 		Iterator<? extends Edge> iterator = graph.getFramedEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", 
 				db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag), Edge.class);

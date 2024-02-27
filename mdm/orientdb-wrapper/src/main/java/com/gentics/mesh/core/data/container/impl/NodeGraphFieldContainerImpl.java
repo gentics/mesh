@@ -27,8 +27,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -75,7 +78,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
-import com.syncleus.ferma.traversals.EdgeTraversal;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -200,10 +202,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			bac.batch().add(contentDao.onDeleted(this, branchUuid, PUBLISHED));
 		}
 		// Remove the edge between the node and the container that matches the branch
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).or(
-				e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
-				e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
-			.removeAll();
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.BRANCH_UUID_KEY, branchUuid).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, P.within(DRAFT.getCode(), PUBLISHED.getCode())).forEachRemaining(Edge::remove);
 	}
 
 	@Override
@@ -311,7 +310,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isType(ContainerType type) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		EdgeTraversal<?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 		return traversal.hasNext();
 	}
 
@@ -322,7 +321,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Iterator<GraphFieldContainerEdge> getContainerEdge(ContainerType type, String branchUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER)
+		EdgeTraversal<?, ?> traversal = inE(HAS_FIELD_CONTAINER)
 			.has(BRANCH_UUID_KEY, branchUuid)
 			.has(EDGE_TYPE_KEY, type.getCode());
 		return traversal.<GraphFieldContainerEdge>frameExplicit(GraphFieldContainerEdgeImpl.class).iterator();

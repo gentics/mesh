@@ -6,6 +6,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,11 +18,6 @@ import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass.INDEX_TYPE;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 
 public class IndexRegression3Test extends AbstractOrientTest {
 
@@ -60,7 +59,6 @@ public class IndexRegression3Test extends AbstractOrientTest {
 			assertNotNull("Index was not created.", idxA);
 
 		});
-
 		addVertexType(factory::getNoTx, "NodeImpl", null, null);
 		addVertexType(factory::getNoTx, "ContentImpl", null, null);
 	}
@@ -72,38 +70,32 @@ public class IndexRegression3Test extends AbstractOrientTest {
 	}
 
 	private Object addGraph() {
-		OrientGraph tx = factory.getTx();
 		Object id;
-		try {
+		try (OrientGraph tx = factory.getTx()) {
 			Vertex node = tx.addVertex("class:NodeImpl");
 			Vertex draftContent = tx.addVertex("class:ContentImpl");
 			Vertex initialContent = tx.addVertex("class:ContentImpl");
-			id = node.getId();
+			id = node.id();
 
 			Edge initialEdge = node.addEdge(EDGE_LABEL, initialContent);
-			initialEdge.setProperty(TYPE_KEY, TYPE_INITIAL);
-			initialEdge.setProperty(LANGUAGE_KEY, LANG_EN);
-			initialEdge.setProperty(BRANCH_KEY, BRANCH_UUID);
+			initialEdge.property(TYPE_KEY, TYPE_INITIAL);
+			initialEdge.property(LANGUAGE_KEY, LANG_EN);
+			initialEdge.property(BRANCH_KEY, BRANCH_UUID);
 
 			Edge draftEdge = node.addEdge(EDGE_LABEL, draftContent);
-			draftEdge.setProperty(TYPE_KEY, TYPE_DRAFT);
-			draftEdge.setProperty(LANGUAGE_KEY, LANG_EN);
-			draftEdge.setProperty(BRANCH_KEY, BRANCH_UUID);
+			draftEdge.property(TYPE_KEY, TYPE_DRAFT);
+			draftEdge.property(LANGUAGE_KEY, LANG_EN);
+			draftEdge.property(BRANCH_KEY, BRANCH_UUID);
 
 			tx.commit();
-		} finally {
-			tx.shutdown();
 		}
 		return id;
 	}
 
 	private void deleteAndLookup(Object nodeId) {
-		OrientGraph tx = factory.getTx();
-		try {
+		try (OrientGraph tx = factory.getTx()) {
 			assertInitialEdgeLookup(INDEX_NAME, nodeId, tx, true);
 			tx.commit();
-		} finally {
-			tx.shutdown();
 		}
 	}
 
@@ -111,15 +103,15 @@ public class IndexRegression3Test extends AbstractOrientTest {
 		System.out.println("Index lookup of {" + indexName + "} with composite key.");
 		OCompositeKey compositeKey = new OCompositeKey(nodeId, BRANCH_UUID, TYPE_INITIAL, LANG_EN);
 
-		Iterator<Edge> it = tx.getEdges(indexName, compositeKey).iterator();
+		Iterator<Edge> it = tx.edges(indexName, compositeKey);
 		boolean foundEdges = false;
 		while (it.hasNext()) {
 			Edge foundEdge = it.next();
 			assertNotNull("The iterator indicated with hasNext a element would exist. But we got null.", foundEdge);
 
-			Vertex inV = foundEdge.getVertex(Direction.IN);
+			Vertex inV = foundEdge.inVertex();
 			assertNotNull(inV);
-			Vertex outV = foundEdge.getVertex(Direction.OUT);
+			Vertex outV = foundEdge.outVertex();
 			assertNotNull(outV);
 			foundEdges = true;
 		}

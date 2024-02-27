@@ -81,7 +81,7 @@ public class MicroschemaContainerVersionImpl extends
 		return toStream(db().getVertices(
 			MicronodeImpl.class,
 			new String[] { MICROSCHEMA_VERSION_KEY_PROPERTY },
-			new Object[] { getUuid() })).map(v -> graph.frameElementExplicit(v, MicronodeImpl.class));
+			new Object[] { getUuid() })).map(v -> getGraph().frameElementExplicit(v, MicronodeImpl.class));
 	}
 
 	@Override

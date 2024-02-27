@@ -12,7 +12,6 @@ import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
@@ -30,12 +29,7 @@ import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -202,18 +196,16 @@ public class OrientDBTypeHandler implements TypeHandler {
 	public <T extends VertexFrame> long count(Class<? extends T> persistanceClass) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
-		return orientBaseGraph.countVertices(persistanceClass.getSimpleName());
+		OrientGraph orientBaseGraph = ((OrientGraph) baseGraph);
+		return orientBaseGraph.getRawDatabase().countClass(persistanceClass.getSimpleName());
 	}
 
 	@Override
 	public <T extends VertexFrame> Stream<T> findAll(Class<? extends T> classOfT) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		OrientGraph orientBaseGraph = ((OrientGraph) baseGraph);
 
-		return StreamUtil.toStream(orientBaseGraph.getVerticesOfClass(classOfT.getSimpleName())).map(v -> {
-			return (T) graph.getFramedVertexExplicit(classOfT, v.getId());
-		});
+		return StreamUtil.toStream(orientBaseGraph.vertices()).filter(v -> classOfT.isInstance(v)).map(classOfT::cast);
 	}
 }

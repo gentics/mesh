@@ -37,13 +37,7 @@ import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientElementType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 import dagger.Lazy;
 import io.vertx.core.logging.Logger;
@@ -230,9 +224,9 @@ public class OrientDBIndexHandler implements IndexHandler {
 	public <T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		OrientGraph orientBaseGraph = ((OrientGraph) baseGraph);
 
-		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
+		OClass vertexType = orientBaseGraph.getRawDatabase().getMetadata().getSchema().getClass(classOfT.getSimpleName());
 		if (vertexType != null) {
 			OIndex index = vertexType.getClassIndex(indexName);
 			if (index != null) {
@@ -405,10 +399,10 @@ public class OrientDBIndexHandler implements IndexHandler {
 
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		OrientGraph orientBaseGraph = ((OrientGraph) baseGraph);
 		String type = "MeshVertexImpl";
 
-		OrientVertexType vertexType = orientBaseGraph.getVertexType(type);
+		OClass vertexType = orientBaseGraph.getRawDatabase().getMetadata().getSchema().getClass(type);
 		if (vertexType != null) {
 			OIndex index = vertexType.getClassIndex(type);
 			if (index != null) {

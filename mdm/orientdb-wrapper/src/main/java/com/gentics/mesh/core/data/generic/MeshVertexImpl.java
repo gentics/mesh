@@ -23,6 +23,7 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperand;
@@ -30,6 +31,7 @@ import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.frame.AbstractVertexFrame;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.ElementType;
@@ -164,7 +166,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public FramedGraph getGraph() {
+	public DelegatingFramedMadlGraph<? extends Graph> getGraph() {
 		return GraphDBTx.getGraphTx().getGraph();
 	}
 

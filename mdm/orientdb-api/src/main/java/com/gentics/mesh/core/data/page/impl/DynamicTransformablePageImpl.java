@@ -11,12 +11,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -135,15 +135,15 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param clazz
 	 *            Element class used to reframe the found elements
 	 */
-	public DynamicTransformablePageImpl(HibUser user, GraphTraversal<?, ?> traversal, PagingParameters pagingInfo, InternalPermission perm,
+	public DynamicTransformablePageImpl(HibUser user, VertexTraversal<?, ?> traversal, PagingParameters pagingInfo, InternalPermission perm,
 		Class<? extends T> clazz) {
 		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
 	}
 
-	private void init(Class<? extends T> clazz, GraphTraversal<?, ?> traversal, InternalPermission perm) {
+	private void init(Class<? extends T> clazz, VertexTraversal<?, ?> traversal, InternalPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
-		Stream<Vertex> stream = StreamUtil.toStream(traversal).map(Vertex.class::cast);
+		Stream<Vertex> stream = StreamUtil.toStream((Iterable<Vertex>) traversal).map(Vertex.class::cast);
 		applyPagingAndPermChecks(stream, clazz, perm);
 	}
 

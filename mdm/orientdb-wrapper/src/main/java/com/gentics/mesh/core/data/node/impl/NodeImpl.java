@@ -24,6 +24,8 @@ import static com.gentics.mesh.madl.type.VertexTypeDefinition.vertexType;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +36,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
+import com.gentics.madl.traversal.EdgeTraversal;
+import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
@@ -85,11 +93,10 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.traversals.EdgeTraversal;
-import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -165,11 +172,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.frameExplicit(NodeGraphFieldContainerImpl.class));
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	@SuppressWarnings("unchecked")
 	public long getFieldContainerCount() {
-		return outE(HAS_FIELD_CONTAINER).or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, DRAFT.getCode()), e -> e.traversal()
-			.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, PUBLISHED.getCode())).inV().count();
+		return StreamUtil.toStream((Iterable) outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, P.within(Arrays.asList(DRAFT.getCode(), PUBLISHED.getCode()))).inV()).count();
 	}
 
 	@Override
@@ -211,12 +217,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public void removeTag(HibTag tag, HibBranch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).mark().inV().retain(toGraph(tag)).back().removeAll();
+		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).inV().has(MeshVertex.UUID_KEY, tag.getUuid()).forEachRemaining(Vertex::remove);
 	}
 
 	@Override
 	public void removeAllTags(HibBranch branch) {
-		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).removeAll();
+		outE(HAS_TAG).has(TagEdgeImpl.BRANCH_UUID_KEY, branch.getUuid()).inV().forEachRemaining(Vertex::remove);
 	}
 
 	@Override
@@ -235,7 +241,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Result<HibNode> getChildren() {
-		return new TraversalResult<>(graph.frameExplicit(db().getVertices(
+		return new TraversalResult<>(getGraph().frameExplicit(db().getVertices(
 			NodeImpl.class,
 			new String[] { PARENTS_KEY_PROPERTY },
 			new Object[] { getUuid() }), NodeImpl.class));
@@ -243,7 +249,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter, Optional<HibUser> maybeUser) {
-		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> maybeUser
+		return new TraversalResult<>(getGraph().frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> maybeUser
 				.map(user -> parseFilter(f, containerType, user, containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.empty()))
 				.orElseGet(() -> parseFilter(f, containerType)))), NodeImpl.class));
 	}
@@ -262,8 +268,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Tx tx = GraphDBTx.getGraphTx();
 		UserDao userDao = tx.userDao();
 		return toStream(getUnframedChildren(tx.getBranch(ac).getUuid(), null, Optional.empty()))
-			.filter(node -> userDao.hasPermissionForId(user, node.getId(), perm))
-			.map(node -> graph.frameElementExplicit(node, NodeImpl.class));
+			.filter(node -> userDao.hasPermissionForId(user, node.id(), perm))
+			.map(node -> getGraph().frameElementExplicit(node, NodeImpl.class));
 	}
 
 	@Override
@@ -299,9 +305,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		property(PROJECT_KEY_PROPERTY, project.getUuid());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Stream<HibNodeField> getInboundReferences(boolean lookupInFields, boolean lookupInLists) {
-		EdgeTraversal<?, ?, ?> edges;
+		EdgeTraversal<?, ?> edges;
 		if (lookupInLists && lookupInFields) {
 			edges = inE(HAS_FIELD, HAS_ITEM);
 		} else if (lookupInFields) {
@@ -311,7 +318,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		} else {
 			throw error(BAD_REQUEST, "For inbound references you have to pick at least one source.");
 		}
-		return toStream(edges.has(NodeGraphFieldImpl.class).frameExplicit(NodeGraphFieldImpl.class));
+		return toStream((Iterable<NodeGraphFieldImpl>) edges.has(ElementFrame.TYPE_RESOLUTION_KEY, NodeGraphFieldImpl.class.getSimpleName())).map(NodeGraphFieldImpl.class::cast);
 	}
 
 	@Override
@@ -369,7 +376,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Page<? extends HibTag> getTags(HibUser user, PagingParameters params, HibBranch branch) {
-		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
+		VertexTraversal<?, ?> traversal = TagEdgeImpl.getTagTraversal(this, branch);
 		return new DynamicTransformablePageImpl<>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
@@ -421,7 +428,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class).iterator();
+		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
 	}
 
 	@Override

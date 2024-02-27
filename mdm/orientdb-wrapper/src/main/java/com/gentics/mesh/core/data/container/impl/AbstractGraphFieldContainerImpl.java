@@ -9,13 +9,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -57,6 +53,7 @@ import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListIm
 import com.gentics.mesh.core.data.node.field.list.impl.NodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
@@ -67,7 +64,9 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.syncleus.ferma.traversals.EdgeTraversal;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Abstract implementation for a field container. A {@link GraphFieldContainer} is used to store {@link GraphField} instances.
@@ -360,7 +359,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 		if (existing != null) {
 			unlinkOut(existing, HAS_LIST);
-			if (existing.in(HAS_LIST).count() == 0) {
+			if (!existing.in(HAS_LIST).hasNext()) {
 				existing.remove();
 			}
 		}
@@ -432,7 +431,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	private void deleteFieldEdge(String key) {
-		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
+		EdgeTraversal<?, ?> traversal = outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key);
 		if (traversal.hasNext()) {
 			traversal.next().remove();
 		}

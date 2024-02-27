@@ -25,7 +25,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <T> result element type
  * @param <P> extra parameter type
  */
-abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQuery {
+public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQuery {
 
 	protected static final Logger log = LoggerFactory.getLogger(MeshOrientGraphQuery.class);
 

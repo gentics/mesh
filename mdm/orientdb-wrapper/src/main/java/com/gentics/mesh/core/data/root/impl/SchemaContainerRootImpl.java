@@ -11,6 +11,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -26,7 +28,6 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -94,7 +95,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<Schema> implemen
 			NodeImpl.class,
 			new String[] { SCHEMA_CONTAINER_KEY_PROPERTY },
 			new Object[] { schema.getUuid() });
-		return new TraversalResult<>(graph.frameExplicit(vertices, NodeImpl.class));
+		return new TraversalResult<>(getGraph().frameExplicit(vertices, NodeImpl.class));
 	}
 
 	@Override
