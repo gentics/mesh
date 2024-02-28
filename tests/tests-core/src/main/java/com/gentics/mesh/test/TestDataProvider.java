@@ -225,7 +225,7 @@ public class TestDataProvider {
 		HibRole role = userInfo.getRole();
 		for (HibBaseElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
+				log.trace("Granting CRUD permissions on {" + meshVertex.id() + "} with role {" + role.id() + "}");
 			}
 			roleDao.grantPermissions(role, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM,
 				READ_PUBLISHED_PERM, PUBLISH_PERM);
@@ -682,7 +682,7 @@ public class TestDataProvider {
 
 	public HibProject getProject() {
 		Tx.maybeGet().ifPresent(tx -> {
-			project = tx.<CommonTx>unwrap().load(project.getId(), tx.<CommonTx>unwrap().projectDao().getPersistenceClass());
+			project = tx.<CommonTx>unwrap().load(project.id(), tx.<CommonTx>unwrap().projectDao().getPersistenceClass());
 		});
 		return project;
 	}
@@ -695,7 +695,7 @@ public class TestDataProvider {
 	public HibNode getFolder(String name) {
 		Tx.maybeGet().ifPresent(tx -> {
 			HibNode folder = folders.get(name);
-			folder = tx.<CommonTx>unwrap().load(folder.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(folder.getProject()));
+			folder = tx.<CommonTx>unwrap().load(folder.id(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(folder.getProject()));
 			folders.put(name, folder);
 		});
 		return folders.get(name);
@@ -705,7 +705,7 @@ public class TestDataProvider {
 	public HibTagFamily getTagFamily(String key) {
 		Tx.maybeGet().ifPresent(tx -> {
 			HibTagFamily tf = tagFamilies.get(key);
-			tf = tx.<CommonTx>unwrap().load(tf.getId(), tx.<CommonTx>unwrap().tagFamilyDao().getPersistenceClass(tf.getProject()));
+			tf = tx.<CommonTx>unwrap().load(tf.id(), tx.<CommonTx>unwrap().tagFamilyDao().getPersistenceClass(tf.getProject()));
 			tagFamilies.put(key, tf);
 		});
 		return tagFamilies.get(key);
@@ -715,7 +715,7 @@ public class TestDataProvider {
 	public HibNode getContent(String name) {
 		Tx.maybeGet().ifPresent(tx -> {
 			HibNode content = contents.get(name);
-			content = tx.<CommonTx>unwrap().load(content.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(content.getProject()));
+			content = tx.<CommonTx>unwrap().load(content.id(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(content.getProject()));
 			contents.put(name, content);
 		});
 		return contents.get(name);
@@ -725,7 +725,7 @@ public class TestDataProvider {
 	public HibTag getTag(String name) {
 		Tx.maybeGet().ifPresent(tx -> {
 			HibTag tag = tags.get(name);
-			tag = tx.<CommonTx>unwrap().load(tag.getId(), tx.<CommonTx>unwrap().tagDao().getPersistenceClass());
+			tag = tx.<CommonTx>unwrap().load(tag.id(), tx.<CommonTx>unwrap().tagDao().getPersistenceClass());
 			tags.put(name, tag);
 		});
 		return tags.get(name);
@@ -735,7 +735,7 @@ public class TestDataProvider {
 	public HibSchema getSchemaContainer(String name) {
 		Tx.maybeGet().ifPresent(tx -> {
 			HibSchema schema = schemaContainers.get(name);
-			schema = tx.<CommonTx>unwrap().load(schema.getId(), tx.<CommonTx>unwrap().schemaDao().getPersistenceClass());
+			schema = tx.<CommonTx>unwrap().load(schema.id(), tx.<CommonTx>unwrap().schemaDao().getPersistenceClass());
 			schemaContainers.put(name, schema);
 		});
 		return schemaContainers.get(name);
@@ -745,7 +745,7 @@ public class TestDataProvider {
 	public HibMicroschema getMicroschemaContainer(String name) {
 		Tx.maybeGet().ifPresent(tx -> {
 			HibMicroschema microschema = microschemaContainers.get(name);
-			microschema = tx.<CommonTx>unwrap().load(microschema.getId(), tx.<CommonTx>unwrap().microschemaDao().getPersistenceClass());
+			microschema = tx.<CommonTx>unwrap().load(microschema.id(), tx.<CommonTx>unwrap().microschemaDao().getPersistenceClass());
 			microschemaContainers.put(name, microschema);
 		});
 		return microschemaContainers.get(name);

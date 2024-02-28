@@ -102,7 +102,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	 * @return
 	 */
 	private String createCacheKey(HibProject project, HibBranch branch, ContainerType type, String path) {
-		return project.getId() + "-" + branch.getId() + "-" + type.getCode() + "-" + path;
+		return project.id() + "-" + branch.id() + "-" + type.getCode() + "-" + path;
 	}
 
 }

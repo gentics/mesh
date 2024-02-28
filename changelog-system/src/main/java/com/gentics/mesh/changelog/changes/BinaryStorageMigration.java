@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -15,6 +16,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 import com.google.common.io.Files;
 
@@ -89,7 +91,7 @@ public class BinaryStorageMigration extends AbstractChange {
 		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).property("uuid", randomUUID());
 
 		// Iterate over all binary fields and convert them to edges to binaries
-		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().vertices("@class", "BinaryGraphFieldImpl"));
+		Iterable<Vertex> it = StreamUtil.toIterable(new DefaultGraphTraversal(getGraph()).V().has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryGraphFieldImpl"));
 		for (Vertex binaryField : it) {
 			migrateField(binaryField, binaryRoot);
 		}

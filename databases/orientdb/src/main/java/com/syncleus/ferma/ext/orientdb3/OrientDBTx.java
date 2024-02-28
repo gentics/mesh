@@ -163,7 +163,6 @@ public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGr
 			} else {
 				rollback();
 			}
-
 		} catch (ONeedRetryException e) {
 			throw e;
 		} finally {

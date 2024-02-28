@@ -114,10 +114,10 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 		EdgeFrame originalDraftEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.DRAFT);
 		Optional<Object> originalDraftId = Optional.ofNullable(contentDao.getFieldContainer(node, languageTag, branchUuid, ContainerType.DRAFT))
-			.map(HibElement::getId);
+			.map(HibElement::id);
 		EdgeFrame originalPublishedEdge = node.getGraphFieldContainerEdgeFrame(languageTag, branchUuid, ContainerType.PUBLISHED);
 		Optional<Object> originalPublishedId = Optional.ofNullable(contentDao.getFieldContainer(node, languageTag, branchUuid, ContainerType.PUBLISHED))
-			.map(HibElement::getId);
+			.map(HibElement::id);
 
 		if (log.isDebugEnabled()) {
 			log.debug("Fixing node {}-{}", node.getUuid(), languageTag);
@@ -161,13 +161,13 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 
 		// Reset draft and published edge
 
-		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.getId())) {
+		if (originalDraftId.isPresent() && !originalDraftId.get().equals(highestVersion.id())) {
 			originalDraftEdge.remove();
 			setNewOutV(context, node, toGraph(highestVersion), branchUuid, languageTag, ContainerType.DRAFT);
 			mutated = true;
 		}
 
-		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.getId())) {
+		if (originalPublishedId.isPresent() && latestPublished != null && !originalPublishedId.get().equals(latestPublished.id())) {
 			originalPublishedEdge.remove();
 			setNewOutV(context, node, toGraph(latestPublished), branchUuid, languageTag, ContainerType.PUBLISHED);
 			mutated = true;

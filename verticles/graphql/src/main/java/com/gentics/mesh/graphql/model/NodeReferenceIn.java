@@ -109,7 +109,7 @@ public class NodeReferenceIn {
 			// Here we preload the content nodes to the cache for performance reasons.
 			contentDao.getNodes(fieldReferencingContents.values().stream().flatMap(Collection::stream).collect(Collectors.toSet())).forEach(pair -> {
 				if (log.isTraceEnabled()) {
-					log.trace("{} belongs to {}", pair.getLeft().getId(), pair.getRight().getId());
+					log.trace("{} belongs to {}", pair.getLeft().id(), pair.getRight().id());
 				}
 			});
 		}

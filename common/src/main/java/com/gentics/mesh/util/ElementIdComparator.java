@@ -13,8 +13,8 @@ public class ElementIdComparator implements Comparator<HibElement> {
 
 	@Override
 	public int compare(HibElement o1, HibElement o2) {
-		String idA = o1.getId().toString();
-		String idB = o2.getId().toString();
+		String idA = o1.id().toString();
+		String idB = o2.id().toString();
 		return ObjectUtils.compare(idA, idB);
 	}
 

@@ -1,6 +1,5 @@
 package com.gentics.madl.tx;
 
-import java.io.IOException;
 import java.util.function.Function;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -32,12 +31,6 @@ public interface BaseTransaction extends AutoCloseable {
 	void failure();
 
 	/**
-	 * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
-	 */
-	@Override
-	void close() throws IOException;
-
-	/**
 	 * Return a framed / wrapped traversal.
 	 * 
 	 * @param traverser
@@ -67,6 +60,12 @@ public interface BaseTransaction extends AutoCloseable {
 	 * @return
 	 */
 	<E extends Element> E getElement(Object id);
+
+	/**
+	 * Invoke rollback or commit when closing the autoclosable. By default a rollback will be invoked.
+	 */
+	@Override
+	void close();
 
 	/**
 	 * Return the id of the transaction.

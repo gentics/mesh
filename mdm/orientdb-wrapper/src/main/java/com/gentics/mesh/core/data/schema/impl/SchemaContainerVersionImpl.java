@@ -118,8 +118,8 @@ public class SchemaContainerVersionImpl extends
 		UserDao userDao = Tx.get().userDao();
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		return new TraversalResult<>(schemaDao.getNodes(getSchemaContainer()).stream()
-			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.getId(), branchUuid, type)
-				&& userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)));
+			.filter(node -> GraphFieldContainerEdgeImpl.matchesBranchAndType(node.id(), branchUuid, type)
+				&& userDao.hasPermissionForId(user, node.id(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM)));
 	}
 
 	@Override

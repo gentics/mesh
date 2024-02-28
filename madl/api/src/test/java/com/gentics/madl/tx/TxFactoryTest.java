@@ -118,9 +118,6 @@ public class TxFactoryTest implements TxFactory {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		} catch (IOException e1) {
-			throw new RuntimeException(e1);
 		}
 	}
-
 }

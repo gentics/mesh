@@ -246,6 +246,6 @@ public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, R
 	 */
 	default Set<Triple<String, String, Object>> findAll(InternalActionContext ac) {
 		return findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream()
-				.map(role -> Triple.of(role.getUuid(), role.getName(), role.getId())).collect(Collectors.toSet());
+				.map(role -> Triple.of(role.getUuid(), role.getName(), role.id())).collect(Collectors.toSet());
 	}
 }

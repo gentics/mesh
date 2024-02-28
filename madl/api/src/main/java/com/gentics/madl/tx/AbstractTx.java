@@ -67,7 +67,7 @@ public abstract class AbstractTx<G extends Graph, T extends DelegatingFramedMadl
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		Tx.set(null);
 		if (isSuccess()) {
 			commit();
@@ -75,7 +75,11 @@ public abstract class AbstractTx<G extends Graph, T extends DelegatingFramedMadl
 			rollback();
 		}
 		// Restore the old graph that was previously swapped with the current graph
-		getGraph().close();
+		try {
+			getGraph().close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 		//getGraph().shutdown();
 	}
 

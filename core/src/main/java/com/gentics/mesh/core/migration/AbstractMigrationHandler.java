@@ -229,11 +229,11 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	protected HibSchemaVersion reloadVersion(HibSchemaVersion version) {
-		return CommonTx.get().load(version.getId(), CommonTx.get().schemaDao().getVersionPersistenceClass());
+		return CommonTx.get().load(version.id(), CommonTx.get().schemaDao().getVersionPersistenceClass());
 	}
 
 	protected HibMicroschemaVersion reloadVersion(HibMicroschemaVersion version) {
-		return CommonTx.get().load(version.getId(), CommonTx.get().microschemaDao().getVersionPersistenceClass());
+		return CommonTx.get().load(version.id(), CommonTx.get().microschemaDao().getVersionPersistenceClass());
 	}
 
 	protected HibBranch reloadBranch(HibBranch branch) {

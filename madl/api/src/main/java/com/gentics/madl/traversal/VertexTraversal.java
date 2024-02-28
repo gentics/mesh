@@ -1,12 +1,12 @@
 package com.gentics.madl.traversal;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -62,6 +62,23 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 */
 	default VertexTraversal<S, M> has(Class<?> clazz) {
 		return new VertexTraversalImpl<>(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
+	}
+
+	/**
+	 * If the incoming element has all the provided key/values as check with .equals(), then filter the element.
+	 *
+	 * @param keys
+	 *            the property keys to check
+	 * @param values
+	 *            the objects to filter on (in an AND manner)
+	 * @return the extended Pipeline
+	 */
+	default VertexTraversal<S, M> has(String[] keys, Object[] values) {
+		GraphTraversal<S, M> rawTraversal = rawTraversal();
+		for (int i = 0; i < keys.length; i++) {
+			rawTraversal = rawTraversal.has(keys[i], values[i]);
+		}
+		return new VertexTraversalImpl<>(rawTraversal());
 	}
 
 	/**

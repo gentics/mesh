@@ -46,7 +46,7 @@ public class UserInfo {
 
 	public HibGroup getGroup() {
 		Tx.maybeGet().ifPresent(tx -> {
-			group = tx.<CommonTx>unwrap().load(group.getId(), tx.<CommonTx>unwrap().groupDao().getPersistenceClass());
+			group = tx.<CommonTx>unwrap().load(group.id(), tx.<CommonTx>unwrap().groupDao().getPersistenceClass());
 		});
 		return group;
 	}
@@ -57,7 +57,7 @@ public class UserInfo {
 
 	public HibRole getRole() {
 		Tx.maybeGet().ifPresent(tx -> {
-			role = tx.<CommonTx>unwrap().load(role.getId(), tx.<CommonTx>unwrap().roleDao().getPersistenceClass());
+			role = tx.<CommonTx>unwrap().load(role.id(), tx.<CommonTx>unwrap().roleDao().getPersistenceClass());
 		});
 		return role;
 	}
@@ -68,7 +68,7 @@ public class UserInfo {
 
 	public HibUser getUser() {
 		Tx.maybeGet().ifPresent(tx -> {
-			user = tx.<CommonTx>unwrap().load(user.getId(), tx.<CommonTx>unwrap().userDao().getPersistenceClass());
+			user = tx.<CommonTx>unwrap().load(user.id(), tx.<CommonTx>unwrap().userDao().getPersistenceClass());
 		});
 		return user;
 	}

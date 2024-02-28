@@ -23,6 +23,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.WrappedFramedGraph;
@@ -67,7 +68,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 
 		log.info("Applying change: " + getName());
 		WrappedFramedGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		Iterable<? extends GraphFieldContainerEdgeImpl> edges = StreamUtil.toIterable(graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
+		Iterable<? extends GraphFieldContainerEdgeImpl> edges = StreamUtil.toIterable(graph.getFramedEdgesExplicit(ElementFrame.TYPE_RESOLUTION_KEY, HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class));
 		long count = 0;
 		long total = 0;
@@ -109,7 +110,7 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 		}
 		log.info("Done updating all content edges. Updated: {" + count + "} of {" + total + "}");
 
-		Iterable<? extends NodeGraphFieldContainerImpl> containers = StreamUtil.toIterable(graph.getFramedVertices("@class",
+		Iterable<? extends NodeGraphFieldContainerImpl> containers = StreamUtil.toIterable(graph.getFramedVertices(ElementFrame.TYPE_RESOLUTION_KEY,
 			NodeGraphFieldContainerImpl.class.getSimpleName(), NodeGraphFieldContainerImpl.class));
 		for (NodeGraphFieldContainer container : containers) {
 			container.getElement().property("publishedWebrootUrlInfo").remove();

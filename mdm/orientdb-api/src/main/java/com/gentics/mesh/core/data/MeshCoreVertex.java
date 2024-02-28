@@ -25,7 +25,7 @@ public interface MeshCoreVertex<R extends RestModel> extends MeshVertex, Transfo
 	boolean update(InternalActionContext ac, EventQueueBatch batch);
 
 	@Override
-	default Object getId() {
+	default Object id() {
 		return getElement().id();
 	}
 }

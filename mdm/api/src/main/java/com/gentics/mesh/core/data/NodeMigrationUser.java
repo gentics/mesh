@@ -252,7 +252,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public Object getId() {
+	public Object id() {
 		return null;
 	}
 

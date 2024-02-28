@@ -79,7 +79,7 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 		// Find all roles that are assigned to the user by checking the
 		// shortcut edge from the index
 		String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.getId());
+		Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.id());
 		Vertex vertex = graph.getVertex(elementId);
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.inVertex();

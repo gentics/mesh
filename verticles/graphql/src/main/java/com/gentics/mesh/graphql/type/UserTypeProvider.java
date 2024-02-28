@@ -128,7 +128,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				ContentDao contentDao = tx.contentDao();
 				PersistingUserDao userDao = tx.userDao();
 				GraphQLContext gc = env.getContext();
-				HibUser user = tx.load(env.<HibUser>getSource().getId(), userDao.getPersistenceClass());
+				HibUser user = tx.load(env.<HibUser>getSource().id(), userDao.getPersistenceClass());
 				
 				HibNode node = user.getReferencedNode();
 				if (node == null) {

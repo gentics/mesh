@@ -196,13 +196,14 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 					mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
 				.orElseGet(() -> new DefaultGraphTraversal<>(graph.getRawTraversal())
+						.E()
 						.has(BRANCH_UUID_KEY, branchUuid)
-						.has(TYPE_RESOLUTION_KEY, type.getCode())
+						.has(EDGE_TYPE_KEY, type.getCode())
 						.outV()
 						.hasId(nodeId)
 						.inE(HAS_FIELD_CONTAINER)
 						.has(BRANCH_UUID_KEY, branchUuid)
-						.has(TYPE_RESOLUTION_KEY, type.getCode()));
+						.has(EDGE_TYPE_KEY, type.getCode()));
 		return edges.hasNext();
 	}
 
@@ -234,8 +235,17 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	public static Result<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
-		Iterator<Edge> edges = graph.getBaseGraph().edges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()));
+		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
+			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
+				.orElseGet(() -> new DefaultGraphTraversal<>(graph.getRawTraversal())
+						.E()
+						.has(BRANCH_UUID_KEY, branchUuid)
+						.has(EDGE_TYPE_KEY, type.getCode())
+						.outV()
+						.hasId(nodeId)
+						.inE(HAS_FIELD_CONTAINER)
+						.has(BRANCH_UUID_KEY, branchUuid)
+						.has(EDGE_TYPE_KEY, type.getCode()));
 		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges, GraphFieldContainerEdgeImpl.class);
 		return new TraversalResult<>(frames);
 	}

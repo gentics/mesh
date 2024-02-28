@@ -7,7 +7,6 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
-import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.traversal.EdgeTraversal;
@@ -20,25 +19,42 @@ import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.util.StreamUtil;
+import com.syncleus.ferma.AbstractElementFrame;
 import com.syncleus.ferma.FramedGraph;
-import com.syncleus.ferma.TEdge;
 
+/**
+ * Mesh specific vertex implementation. It must override all calls which would access the element via the field reference.
+ * We don't use the ferma field. Instead the element will always be located using the stored elementId.
+ * The Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread bound and can't be shared across theads.
+ * We thus need to avoid access to it.
+ */
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
+
+	private Object id;
+
+	@Override
+	protected void init(FramedGraph graph, Element element) {
+		super.init(graph, null);
+		this.id = element.id();
+	}
+
+	@Override
+	public <N> N getId() {
+		return (N) id;
+	}
 
 	@Override
 	public Vertex getElement() {
-		FramedGraph fg = getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> fg = getGraph();
 		if (fg == null) {
-			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+			throw new RuntimeException("Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
-		Vertex vertexForId = fg.getRawTraversal().V(id()).tryNext().orElseThrow(() -> new RuntimeException("No vertex for Id {" + id() + "} of type {" + getClass().getName() + "} could be found within the graph"));
-		Element vertex = (Element) ((WrappedVertex<?>) vertexForId).getBaseVertex();
+		Vertex vertex = fg.getBaseGraph().vertices(id).next();
 
 		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {
-			vertex = (Vertex) ((WrappedElement<?>) vertex).getBaseElement();
+			vertex = ((WrappedElement<Vertex>) vertex).getBaseElement();
 		}
 		return (Vertex) vertex;
 	}
@@ -46,11 +62,6 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	public DelegatingFramedMadlGraph<? extends Graph> getGraph() {
 		return (DelegatingFramedMadlGraph<? extends Graph>) super.getGraph();
-	}
-
-	@Override
-	public Object id() {
-		return getId();
 	}
 
 	@Override

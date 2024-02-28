@@ -177,8 +177,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		triggerAndWaitForAllJobs(COMPLETED);
 
 		try (Tx tx = tx()) {
-			assignment1 = CommonTx.get().load(assignment1.getId(), assignment1.getClass());
-			assignment2 = CommonTx.get().load(assignment2.getId(), assignment2.getClass());
+			assignment1 = CommonTx.get().load(assignment1.id(), assignment1.getClass());
+			assignment2 = CommonTx.get().load(assignment2.id(), assignment2.getClass());
 			assertNotNull(assignment2.getJobUuid());
 			assertEquals(COMPLETED, assignment2.getMigrationStatus());
 			assertTrue("The assignment should be active.", assignment2.isActive());
@@ -248,7 +248,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			edge3 = CommonTx.get().load(edge3.getId(), edge3.getClass());
+			edge3 = CommonTx.get().load(edge3.id(), edge3.getClass());
 			PersistingSchemaDao schemaDao = tx.<CommonTx>unwrap().schemaDao();
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(COMPLETED, edge3.getMigrationStatus());

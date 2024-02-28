@@ -25,7 +25,7 @@ public interface HibElement {
 	/**
 	 * @return The id of this element.
 	 */
-	Object getId();
+	Object id();
 
 	/**
 	 * Return the internal element version.

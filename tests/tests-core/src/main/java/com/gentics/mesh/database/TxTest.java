@@ -184,10 +184,10 @@ public class TxTest extends AbstractMeshTest {
 									}
 								}
 								// Load used elements
-								HibTagFamily reloadedTagFamily = ctx.load(tagFamily.getId(), ctx.tagFamilyDao().getPersistenceClass(project()));
-								HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
-								HibUser reloadedUser = ctx.load(user.getId(), ctx.userDao().getPersistenceClass());
-								HibProject reloadedProject = ctx.load(project.getId(), ctx.projectDao().getPersistenceClass());
+								HibTagFamily reloadedTagFamily = ctx.load(tagFamily.id(), ctx.tagFamilyDao().getPersistenceClass(project()));
+								HibNode reloadedNode = ctx.load(node.id(), ctx.nodeDao().getPersistenceClass(project));
+								HibUser reloadedUser = ctx.load(user.id(), ctx.userDao().getPersistenceClass());
+								HibProject reloadedProject = ctx.load(project.id(), ctx.projectDao().getPersistenceClass());
 
 								HibTag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
@@ -227,7 +227,7 @@ public class TxTest extends AbstractMeshTest {
 				TagDao tagDao = tx.tagDao();
 
 				int expect = nThreads * (r + 1);
-				HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
+				HibNode reloadedNode = ctx.load(node.id(), ctx.nodeDao().getPersistenceClass(project));
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
 						tagDao.getTags(reloadedNode, project().getLatestBranch()).count());

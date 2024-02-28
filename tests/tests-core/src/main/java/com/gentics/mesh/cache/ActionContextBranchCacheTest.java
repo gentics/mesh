@@ -67,6 +67,6 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 	}
 
 	public boolean hasBranchInCache() {
-		return cache().get(project().getId() + "-" + initialBranchUuid()) != null;
+		return cache().get(project().id() + "-" + initialBranchUuid()) != null;
 	}
 }

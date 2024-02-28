@@ -5,6 +5,7 @@ import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -13,6 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 /**
@@ -59,7 +61,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		setGraph(graph);
 		try {
 			int r = 0;
-			Iterable<Edge> edges = () -> getGraph().edges("@class", label);
+			Iterable<Edge> edges = () -> new DefaultGraphTraversal(getGraph()).E().has(ElementFrame.TYPE_RESOLUTION_KEY, label);
 			for (Edge edge : edges) {
 				jobQueue.add(edge.id());
 				r++;

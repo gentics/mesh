@@ -3,6 +3,7 @@ package com.gentics.mesh.server.cluster.test.task;
 
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
@@ -12,14 +13,11 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Test task
  */
 public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
-
-	public static final String ROLE = "RoleImpl";
 
 	public RoleCRUDGlobalLockInserterTask(AbstractClusterTest test) {
 		super(test);
@@ -32,8 +30,8 @@ public class RoleCRUDGlobalLockInserterTask extends AbstractLoadTask {
 	 * @param uuid
 	 * @return
 	 */
-	public Vertex createRole(Tx tx, String uuid) {
-		Vertex v = ((GraphDBTx) tx).getGraph().addVertex("class:" + ROLE);
+	public RoleImpl createRole(Tx tx, String uuid) {
+		RoleImpl v = ((GraphDBTx) tx).getGraph().addFramedVertex(RoleImpl.class);
 		v.setProperty("uuid", uuid);
 		v.setProperty("name", "SOME VALUE" + System.nanoTime());
 		return v;

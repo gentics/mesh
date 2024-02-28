@@ -70,13 +70,13 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.parameter.SortingParameters;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.FramedGraph;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -103,7 +103,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 	}
 
 	@Override
-	public Object getId() {
+	public Object id() {
 		return super.getId();
 	}
 

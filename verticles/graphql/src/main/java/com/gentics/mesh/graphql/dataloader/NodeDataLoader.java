@@ -184,7 +184,7 @@ public class NodeDataLoader {
 		if (!user.isAdmin()) {
 			// prepare the permissions for all parent nodes
 			Set<Object> parentNodeIds = parentByNode.values().stream().filter(parent -> parent != null)
-					.map(HibNode::getId).collect(Collectors.toSet());
+					.map(HibNode::id).collect(Collectors.toSet());
 			userDao.preparePermissionsForElementIds(user, parentNodeIds);
 		}
 

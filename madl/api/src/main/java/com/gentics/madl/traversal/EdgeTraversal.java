@@ -42,6 +42,23 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	}
 
 	/**
+	 * If the incoming element has all the provided key/values as check with .equals(), then filter the element.
+	 *
+	 * @param keys
+	 *            the property keys to check
+	 * @param values
+	 *            the objects to filter on (in an AND manner)
+	 * @return the extended Pipeline
+	 */
+	default EdgeTraversal<S, M> has(String[] keys, Object[] values) {
+		GraphTraversal<S, M> rawTraversal = rawTraversal();
+		for (int i = 0; i < keys.length; i++) {
+			rawTraversal = rawTraversal.has(keys[i], values[i]);
+		}
+		return new EdgeTraversalImpl<>(rawTraversal());
+	}
+
+	/**
 	 * Add an IdFilterPipe, LabelFilterPipe, or PropertyFilterPipe to the end of the Pipeline. If the incoming element has the provided key/value as check with
 	 * .equals(), then let the element pass. If the key is id or label, then use respect id or label filtering.
 	 *

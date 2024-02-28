@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.*;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -36,7 +38,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 	}
 
 	@Override
-	public Object getId() {
+	public Object id() {
 		return id();
 	}
 
@@ -116,8 +118,15 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		GraphDatabase db = mesh.database();
-		Iterator<? extends Edge> iterator = graph.getFramedEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang", 
-				db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag), Edge.class);
+		Iterator<? extends Edge> iterator = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_branch_type_lang",	db.index().createComposedIndexKey(nodeId, branchUuid, type.getCode(), languageTag), Edge.class)
+				.orElseGet(() -> new DefaultGraphTraversal(graph.getRawTraversal()).E()
+						.has(BRANCH_UUID_KEY, branchUuid)
+						.has(EDGE_TYPE_KEY, type.getCode())
+						.outV()
+						.hasId(nodeId)
+						.inE(HAS_FIELD_CONTAINER)
+						.has(BRANCH_UUID_KEY, branchUuid)
+						.has(EDGE_TYPE_KEY, type.getCode()));
 		if (iterator.hasNext()) {
 			return iterator.next();
 		} else {

@@ -162,7 +162,7 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		ContentDao contentDao = tx.contentDao();
 		return toGraph(sourceNode).getChildren(branchUuid, type, sorting, maybeFilter, Optional.of(user))
 				.stream()
-				.filter(node -> userDao.hasPermissionForId(user, node.getId(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
+				.filter(node -> userDao.hasPermissionForId(user, node.id(), type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM))
 				.map(node -> {
 					HibNodeFieldContainer container = contentDao.findVersion(node, languageTags, branchUuid, type.getHumanCode());
 					return new NodeContent(node, container, languageTags, type);

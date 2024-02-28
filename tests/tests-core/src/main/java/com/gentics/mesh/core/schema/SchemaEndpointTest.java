@@ -651,7 +651,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		String versionUuid = tx(() -> schemaContainer("content").getLatestVersion().getUuid());
-		Object versionId = tx(() -> schemaContainer("content").getLatestVersion().getId());
+		Object versionId = tx(() -> schemaContainer("content").getLatestVersion().id());
 		assertNotNull("The version should exist.", tx(tx -> {
 			return tx.<CommonTx>unwrap().schemaDao().findVersionByUuid(schemaContainer("content"), versionUuid);
 		}));

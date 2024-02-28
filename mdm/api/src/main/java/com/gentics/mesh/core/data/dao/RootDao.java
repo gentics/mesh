@@ -301,6 +301,6 @@ public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extend
 	 * @return
 	 */
 	default String getCacheKey(R root, String nameOrUuid) {
-		return root.getId() + "-" + nameOrUuid;
+		return root.id() + "-" + nameOrUuid;
 	}
 }

@@ -27,6 +27,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.tinkerpop.gremlin.orientdb.OrientElement;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -36,6 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
+import com.gentics.madl.traversal.VertexTraversalImpl;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -74,6 +77,7 @@ import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.madl.frame.EdgeFrame;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
@@ -325,10 +329,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
-		Graph orientBaseGraph = unwrapCurrentGraph();
+		DelegatingFramedMadlGraph<? extends Graph> madlGraph = GraphDBTx.getGraphTx().getGraph();
 		Iterator<Vertex> ret;
 		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
-			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(orientBaseGraph, classOfVertex);
+			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(madlGraph.getBaseGraph(), classOfVertex);
 			query.relationDirection(Direction.OUT);
 			query.hasAll(fieldNames, fieldValues);
 			query.filter(maybeFilter);
@@ -346,7 +350,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			query.setOrderPropsAndDirs(sorted);
 			ret = query.fetch(maybeContainerType).iterator();
 		} else {
-			ret = orientBaseGraph.vertices(classOfVertex.getSimpleName(), fieldNames, fieldValues);
+			ret = new VertexTraversalImpl<>(new DefaultGraphTraversal<>(madlGraph.getRawTraversal())).has(classOfVertex).has(fieldNames, fieldValues);
 		}
 		return ret;
 	}
@@ -379,7 +383,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
 		Graph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Vertex> rawIt = orientBaseGraph.vertices("@class", classOfVertex.getSimpleName());
+		Iterator<Vertex> rawIt = new DefaultGraphTraversal(orientBaseGraph).V().has(ElementFrame.TYPE_RESOLUTION_KEY, classOfVertex.getSimpleName());
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 
@@ -389,7 +393,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @return
 	 */
 	public OrientGraph unwrapCurrentGraph() {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 		OrientGraph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		return baseGraph;
 	}

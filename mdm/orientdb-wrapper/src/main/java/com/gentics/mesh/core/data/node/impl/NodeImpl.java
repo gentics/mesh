@@ -200,12 +200,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public GraphFieldContainerEdge getGraphFieldContainerEdgeFrame(String languageTag, String branchUuid, ContainerType type) {
-		return GraphFieldContainerEdgeImpl.findEdge(getId(), branchUuid, type, languageTag);
+		return GraphFieldContainerEdgeImpl.findEdge(id(), branchUuid, type, languageTag);
 	}
 
 	@Override
 	public Result<GraphFieldContainerEdgeImpl> getFieldContainerEdges(String branchUuid, ContainerType type) {
-		return GraphFieldContainerEdgeImpl.findEdges(getId(), branchUuid, type);
+		return GraphFieldContainerEdgeImpl.findEdges(id(), branchUuid, type);
 	}
 
 	@Override

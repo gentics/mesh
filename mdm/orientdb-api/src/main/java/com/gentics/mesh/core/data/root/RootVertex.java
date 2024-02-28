@@ -195,9 +195,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		T t = db.index().findByUuid(getPersistanceClass(), uuid);
 		if (t != null) {
 			DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-			boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.getId(), id()), t.getClass())
+			boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.id(), id()), t.getClass())
 					.map(Iterator::hasNext)
-					.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(t.getClass(), t.getId()) != null);
+					.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(t.getClass(), t.id()) != null);
 			if (hasEdge) {
 				return t;
 			}
@@ -226,9 +226,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		GraphDatabase db = HibClassConverter.toGraph(db());
 		DelegatingFramedMadlGraph<? extends Graph> graph = getGraph();
 		// Check whether the item was already added
-		boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.getId(), id()), item.getClass())
+		boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(), id()), item.getClass())
 				.map(Iterator::hasNext)
-				.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(item.getClass(), item.getId()) != null);
+				.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(item.getClass(), item.id()) != null);
 		if (!hasEdge) {
 			linkOut(item, getRootLabel());
 		}

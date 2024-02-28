@@ -44,7 +44,7 @@ public class DelegatingFramedOrientGraph extends DelegatingFramedGraph<OrientGra
 
 	@Override
 	public <T> T addFramedVertex(final Class<T> kind) {
-		return this.addFramedVertex(new DefaultClassInitializer<>(kind), "class:" + kind.getSimpleName());
+		return this.addFramedVertex(new DefaultClassInitializer<>(kind));
 	}
 
 	@Override

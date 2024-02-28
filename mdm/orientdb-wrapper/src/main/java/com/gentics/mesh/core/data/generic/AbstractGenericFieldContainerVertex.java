@@ -48,7 +48,7 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type,
 		Class<U> classOfU) {
-		Edge edge = MeshEdgeImpl.findEdge(getId(), languageTag, branchUuid, type);
+		Edge edge = MeshEdgeImpl.findEdge(id(), languageTag, branchUuid, type);
 		if (edge != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			Vertex in = edge.inVertex();

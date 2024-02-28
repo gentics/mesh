@@ -60,7 +60,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 		assertEquals(CONSISTENT, response.getResult());
 
 		tx(() -> {
-			((User)user()).getVertex().removeProperty(UserImpl.USERNAME_PROPERTY_KEY);
+			((User)user()).getVertex().property(UserImpl.USERNAME_PROPERTY_KEY).remove();
 		});
 		response = call(() -> client().checkConsistency());
 		assertThat(response.getInconsistencies()).hasSize(1);
@@ -69,7 +69,7 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 
 		// Now fix the inconsistency. Otherwise the asserter of the test (within @After) would fail.
 		tx(() -> {
-			((User)user()).getVertex().setProperty(UserImpl.USERNAME_PROPERTY_KEY, "blub");
+			((User)user()).getVertex().property(UserImpl.USERNAME_PROPERTY_KEY, "blub");
 		});
 	}
 

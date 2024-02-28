@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
@@ -18,8 +19,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.util.StreamUtil;
+import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.index.OIndexInternal;
 import com.orientechnologies.orient.core.index.OIndexManager;
 import com.orientechnologies.orient.core.metadata.schema.OClass.INDEX_TYPE;
 import com.orientechnologies.orient.core.metadata.schema.OType;
@@ -119,7 +122,8 @@ public class IndexRegression2Test extends AbstractOrientTest {
 
 		OCompositeKey compositeKey = new OCompositeKey(nodeId, BRANCH_UUID, TYPE_INITIAL, LANG_EN);
 
-		Iterator<Edge> it = tx.edges(INDEX_NAME, compositeKey);
+		List<ORID> list = ((OIndexInternal) tx.getRawDatabase().getMetadata().getIndexManager().getIndex(INDEX_NAME)).getRids(compositeKey).collect(Collectors.toList());
+		Iterator<Edge> it = tx.edges(list.toArray(new Object[list.size()]));
 		boolean foundEdges = false;
 		while (it.hasNext()) {
 			Edge foundEdge = it.next();

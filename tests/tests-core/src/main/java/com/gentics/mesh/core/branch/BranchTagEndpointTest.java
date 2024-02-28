@@ -72,7 +72,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			HibBranch branch = tx(() -> project().getLatestBranch());
 			assertThat(branchResponse).contains(tag);
-			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 		}
 	}
 
@@ -147,7 +147,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		call(() -> client().addTagToBranch(PROJECT_NAME, branchUuid, tagUuid));
 		try (Tx tx = tx()) {
 			HibBranch branch = tx(() -> project().getLatestBranch());
-			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 		}
 
 		expect(BRANCH_UNTAGGED).match(1, BranchTaggedEventModel.class, event -> {
@@ -172,7 +172,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		awaitEvents();
 		try (Tx tx = tx()) {
 			HibBranch branch = tx(() -> project().getLatestBranch());
-			assertFalse(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertFalse(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 		}
 
 	}
@@ -187,7 +187,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			HibBranch branch = tx(() -> project().getLatestBranch());
-			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 			roleDao.revokePermissions(role(), branch, UPDATE_PERM);
 			tx.success();
 		}
@@ -197,7 +197,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			HibBranch branch = tx(() -> project().getLatestBranch());
-			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 		}
 	}
 
@@ -211,7 +211,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			HibBranch branch = tx(() -> project().getLatestBranch());
-			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 			roleDao.revokePermissions(role(), tag, READ_PERM);
 			tx.success();
 		}
@@ -221,7 +221,7 @@ public class BranchTagEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			HibBranch branch = tx(() -> project().getLatestBranch());
-			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.getId().equals(tag.getId())));
+			assertTrue(branch.getTags().stream().anyMatch(bt -> bt.id().equals(tag.id())));
 		}
 	}
 

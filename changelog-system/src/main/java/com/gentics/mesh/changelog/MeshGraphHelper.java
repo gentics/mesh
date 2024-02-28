@@ -32,7 +32,7 @@ public final class MeshGraphHelper {
 				// Legacy index less handling
 				Iterable<Vertex> vertices = () -> graph.vertices();
 				for (Vertex vertex : vertices) {
-					String fermaType = (String) vertex.property("ferma_type").orElse(null);
+					String fermaType = (String) vertex.property(ElementFrame.TYPE_RESOLUTION_KEY).orElse(null);
 					if (fermaType != null && fermaType.endsWith(MESH_ROOT_TYPE)) {
 						return vertex;
 					}

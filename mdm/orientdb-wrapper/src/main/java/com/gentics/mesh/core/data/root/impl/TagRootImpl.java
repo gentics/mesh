@@ -133,9 +133,9 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 		Stream<? extends Node> s = nodes.stream()
 			.filter(item -> {
 				// Check whether the node has at least a draft in the selected branch - Otherwise the node should be skipped
-				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, DRAFT);
+				return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.id(), branchUuid, DRAFT);
 			})
-			.filter(item -> userRoot.hasPermissionForId(user, item.getId(), perm));
+			.filter(item -> userRoot.hasPermissionForId(user, item.id(), perm));
 
 		return new TraversalResult<>(() -> s.iterator());
 	}

@@ -86,13 +86,13 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		if (log.isDebugEnabled()) {
 			log.debug("Checking permissions for element {" + element.getUuid() + "}");
 		}
-		return hasPermissionForId(user, element.getId(), permission);
+		return hasPermissionForId(user, element.id(), permission);
 	}
 
 	@Override
 	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
-		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
+		Boolean cached = permissionCache.hasPermission(user.id(), permission, elementId);
 		if (cached != null) {
 			if (!cached && permission == READ_PUBLISHED_PERM) {
 				return hasPermissionForId(user, elementId, READ_PERM);
@@ -102,12 +102,12 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		} else {
 			// Admin users have all permissions
 			if (user.isAdmin()) {
-				permissionCache.store(user.getId(), EnumSet.allOf(InternalPermission.class), elementId);
+				permissionCache.store(user.id(), EnumSet.allOf(InternalPermission.class), elementId);
 				return true;
 			}
 
 			EnumSet<InternalPermission> permissions = getPermissionsForElementId(user, elementId);
-			permissionCache.store(user.getId(), permissions, elementId);
+			permissionCache.store(user.id(), permissions, elementId);
 			if (permissions.contains(permission)) {
 				return true;
 			}
@@ -621,7 +621,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		return Stream.concat(
 				Stream.of(user.isAdmin() ? "1" : "0"), 
 				StreamSupport.stream(getRoles(user).spliterator(), false)
-					.map(role -> role.getId().toString())
+					.map(role -> role.id().toString())
 					.sorted())
 			.collect(Collectors.joining());
 	}

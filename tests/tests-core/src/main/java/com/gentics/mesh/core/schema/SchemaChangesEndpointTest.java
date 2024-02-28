@@ -789,6 +789,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private HibSchemaVersion reloadSchemaVersion(HibSchemaVersion schemaVersion) {
-		return CommonTx.get().load(schemaVersion.getId(), CommonTx.get().schemaDao().getVersionPersistenceClass());
+		return CommonTx.get().load(schemaVersion.id(), CommonTx.get().schemaDao().getVersionPersistenceClass());
 	}
 }

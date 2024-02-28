@@ -29,7 +29,7 @@ public class OrientDBLanguageTest extends AbstractMeshTest {
 				assertTrue(it2.iterator().hasNext());
 				Vertex vertex = it2.iterator().next();
 				assertNotNull("The language node with languageTag 'en' could not be found.", vertex);
-				assertEquals("en", vertex.getProperty(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY));
+				assertEquals("en", vertex.property(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY).orElse(null));
 			});
 		}
 	}

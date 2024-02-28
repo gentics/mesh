@@ -1,18 +1,16 @@
 package com.gentics.mesh.server.cluster.test.task;
 
+import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.server.cluster.test.AbstractClusterTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.orientechnologies.common.concur.ONeedRetryException;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * Test task which inserts roles.
  */
 public class RoleInserterTask extends AbstractLoadTask {
-
-	public static final String ROLE = "RoleImpl";
 
 	public RoleInserterTask(AbstractClusterTest test) {
 		super(test);
@@ -25,8 +23,8 @@ public class RoleInserterTask extends AbstractLoadTask {
 	 * @param uuid
 	 * @return
 	 */
-	public Vertex createRole(Tx tx, String uuid) {
-		Vertex v = ((GraphDBTx) tx).getGraph().addVertex("class:" + ROLE);
+	public RoleImpl createRole(Tx tx, String uuid) {
+		RoleImpl v = ((GraphDBTx) tx).getGraph().addFramedVertex(RoleImpl.class);
 		v.setProperty("uuid", uuid);
 		v.setProperty("name", "SOME VALUE" + System.nanoTime());
 		return v;
@@ -37,9 +35,9 @@ public class RoleInserterTask extends AbstractLoadTask {
 		try {
 			String roleUuid = UUIDUtil.randomUUID();
 			test.tx(tx -> {
-				Vertex role = createRole(tx, roleUuid);
+				RoleImpl role = createRole(tx, roleUuid);
 				role.setProperty("name", "Test@" + System.nanoTime());
-				System.out.println("Insert " + role.getId() + " " + roleUuid);
+				System.out.println("Insert " + role.id() + " " + roleUuid);
 				tx.success();
 				return role;
 			});

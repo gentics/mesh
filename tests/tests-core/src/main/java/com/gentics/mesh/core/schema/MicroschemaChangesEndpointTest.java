@@ -74,7 +74,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		// 4. Assert migrated node
 		try (Tx tx = tx()) {
-			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
+			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.id(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
 			HibNodeFieldContainer fieldContainer = tx.contentDao().getFieldContainer(node, "en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
@@ -106,7 +106,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
+			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.id(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
 			assertNotNull("The container should now have a new version", reloaded.getNextVersion());
 		}
@@ -137,7 +137,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
+			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.id(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertEquals("The name of the microschema was not updated", newName, reloaded.getNextVersion().getName());
 		}
 	}

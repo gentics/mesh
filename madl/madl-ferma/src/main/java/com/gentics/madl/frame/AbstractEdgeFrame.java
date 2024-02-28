@@ -4,7 +4,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTrav
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
@@ -14,27 +13,45 @@ import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
+import com.syncleus.ferma.AbstractElementFrame;
 import com.syncleus.ferma.FramedGraph;
 
+/**
+ * Mesh specific vertex implementation. It must override all calls which would access the element via the field reference.
+ * We don't use the ferma field. Instead the element will always be located using the stored elementId.
+ * The Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread bound and can't be shared across theads.
+ * We thus need to avoid access to it.
+ */
 public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeFrame implements EdgeFrame {
+
+	private Object id;
+
+	@Override
+	protected void init(FramedGraph graph, Element element) {
+		super.init(graph, null);
+		this.id = element.id();
+	}
+
+	@Override
+	public <N> N getId() {
+		return (N) id;
+	}
 
 	@Override
 	public Edge getElement() {
-		FramedGraph fg = getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
-		Edge edgeForId = fg.getRawTraversal().E(id()).tryNext().orElseThrow(() -> new RuntimeException("No edge for Id {" + id() + "} of type {" + getClass().getName() + "} could be found within the graph"));
-		Element edge = ((WrappedEdge<Edge>) edgeForId).getBaseEdge();
+		Edge edge = fg.getBaseGraph().edges(id).next();
 
 		// Unwrap wrapped vertex
 		if (edge instanceof WrappedElement) {
 			edge = ((WrappedElement<Edge>) edge).getBaseElement();
 		}
 		return (Edge) edge;
-
 	}
 
 	@Override
