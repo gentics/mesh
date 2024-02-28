@@ -6,6 +6,14 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.16]]
+== 2.0.16 (28.02.2024)
+
+icon:check[] GraphQL: In cases of long running GraphQL requests, some other GraphQL requests were queued and executed after the long running request, even if enough workers were still
+available. The behaviour has been changed, so that GraphQL requests will only be queued, if all workers are currently busy.
+
+icon:check[] Cache: The permission cache has been fixed to always return copies of the actually cached entries.
+
 [[v2.0.15]]
 == 2.0.15 (21.02.2024)
 
