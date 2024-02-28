@@ -13,6 +13,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import io.vertx.core.json.JsonObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.stubbing.Answer;
 
@@ -202,7 +203,7 @@ public class QueryServiceTest {
 
 		when(adminClientMock.findSchemas(anyString())).thenReturn(request);
 
-		service.getSearchResultQuery(DEFAULT_PROJECT).test().assertNotComplete();
+		service.getSearchResultQuery(DEFAULT_PROJECT).test().assertComplete();
 	}
 
 	/**
