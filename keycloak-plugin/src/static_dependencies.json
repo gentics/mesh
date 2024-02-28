@@ -8,7 +8,8 @@
           "dependencies": [
             {
               "name": "Keycloak Server",
-              "current": "23.0.7",
+              "description": "Version used by automated tests.",
+              "current": "8.0.1",
               "latest": "23.0.7"
             }
           ]
