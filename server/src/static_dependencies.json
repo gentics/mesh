@@ -8,12 +8,14 @@
             "dependencies": [
               {
                 "name": "Java Runtime",
+                "description": "Version included in the container images.",
                 "current": "11.0.16.1_1",
                 "latest": "11.0.22_7"
               },
               {
                 "name": "Elasticsearch",
-                "current": "7.17",
+                "description": "Version used by automated tests.",
+                "current": "7.4.0",
                 "latest": "8.12"
               }
             ]
