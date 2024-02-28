@@ -139,6 +139,7 @@
 							<reportFile>../target/dependency-updates-aggregate-report.xml</reportFile>
 							<componentName>${dependency.report.component.name}</componentName>
 							<moduleName>Keycloak Plugin</moduleName>
+							<staticInput>${project.basedir}/src/static_dependencies.json</staticInput>
 							<ignoredNames>
 								<ignoredName>com\.gentics\.mesh\.plugin\.commercial:.*</ignoredName>
 							</ignoredNames>

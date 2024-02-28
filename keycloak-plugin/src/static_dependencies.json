@@ -1,0 +1,19 @@
+{
+  "components": [
+    {
+      "name": "Plugins",
+      "modules": [
+        {
+          "name": "Keycloak Plugin",
+          "dependencies": [
+            {
+              "name": "Keycloak Server",
+              "current": "23.0.7",
+              "latest": "23.0.7"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
