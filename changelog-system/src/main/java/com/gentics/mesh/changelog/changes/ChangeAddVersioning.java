@@ -12,6 +12,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.changelog.MeshGraphHelper;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.json.JsonObject;
@@ -39,11 +40,16 @@ public class ChangeAddVersioning extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
-		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(Direction.OUT, GraphRelationships.HAS_PROJECT_ROOT);
+		if (!iter.hasNext()) {
+			log.info("AddVersioning change skipped");
+			return;
+		}
+		Vertex projectRoot = iter.next();
 		Vertex admin = findAdmin();
 
 		// Iterate over all projects
-		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, "HAS_PROJECT"))) {
+		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, GraphRelationships.HAS_PROJECT))) {
 			Vertex releaseRoot = getGraph().addVertex("class:ReleaseRootImpl");
 			releaseRoot.property("ferma_type", "ReleaseRootImpl");
 			releaseRoot.property("uuid", randomUUID());

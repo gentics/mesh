@@ -6,6 +6,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import com.gentics.mesh.madl.frame.ElementFrame;
+
 /**
  * Simple tinkerpop wrapper for the found vertex which represents the changelog root.
  */
@@ -52,7 +54,7 @@ public class ChangelogRootWrapper {
 	 * @param change
 	 */
 	public void add(Change change) {
-		Vertex vertex = graph.addVertex(ChangeWrapper.class);
+		Vertex vertex = graph.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, ChangeWrapper.class.getSimpleName()).element();
 		ChangeWrapper graphChange = new ChangeWrapper(vertex);
 		graphChange.update(change);
 		rootVertex.addEdge(HAS_CHANGE, vertex);

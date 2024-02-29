@@ -1,9 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
+import java.util.Iterator;
+
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.util.StreamUtil;
 
 /**
@@ -29,12 +32,16 @@ public class ChangeAddPublishFlag extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex nodeRoot = meshRoot.vertices(Direction.OUT, "HAS_NODE_ROOT").next();
-
+		Iterator<Vertex> iter = meshRoot.vertices(Direction.OUT, GraphRelationships.HAS_NODE_ROOT);
+		if (!iter.hasNext()) {
+			log.info("AddPublishFlag change skipped");
+			return;
+		}
+		Vertex nodeRoot = iter.next();
 		log.info("Migrating node publish flag..");
 		long i = 0;
 		// Iterate over all nodes
-		for (Vertex node : StreamUtil.toIterable(nodeRoot.vertices(Direction.OUT, "HAS_NODE"))) {
+		for (Vertex node : StreamUtil.toIterable(nodeRoot.vertices(Direction.OUT, GraphRelationships.HAS_NODE))) {
 			migrateNode(node);
 			i++;
 		}
@@ -49,13 +56,13 @@ public class ChangeAddPublishFlag extends AbstractChange {
 		node.property("published").remove();
 
 		// Set the published flag to all node graph field containers
-		Iterable<Vertex> containers = StreamUtil.toIterable(node.vertices(Direction.OUT, "HAS_FIELD_CONTAINER"));
+		Iterable<Vertex> containers = StreamUtil.toIterable(node.vertices(Direction.OUT, GraphRelationships.HAS_FIELD_CONTAINER));
 		for (Vertex container : containers) {
 			if (publishFlag != null) {
 				container.property("published", publishFlag);
 			}
 		}
-		log.info("Migrated node {" + node.<String>property("uuid") + "}");
+		log.info("Migrated node {" + node.<String>property("uuid").orElse(null) + "}");
 	}
 
 }

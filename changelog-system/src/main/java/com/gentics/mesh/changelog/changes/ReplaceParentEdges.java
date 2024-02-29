@@ -7,10 +7,13 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 /**
@@ -34,24 +37,26 @@ public class ReplaceParentEdges extends AbstractChange {
 	}
 
 	@Override
-	public void applyInTx() {
-		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices("@class", "NodeImpl")), vertex -> {
-			Set<String> parents = new HashSet<>();
-			Set<String> branchParents = new HashSet<>();
-			for (Edge edge : StreamUtil.toIterable(vertex.edges(Direction.OUT, "HAS_PARENT_NODE"))) {
-				String parentUuid = edge.inVertex().<String>property("uuid").orElse(null);
-				String branchUuid = edge.<String>property("branchUuid").orElse(null);
-				if (branchUuid == null) {
-					log.warn("Parent edge from child {} to parent {} does not have a branch uuid. Skipping this edge.",
-						vertex.<String>property("uuid").orElse(null), branchUuid);
-					continue;
+	public void applyInTx() throws Exception {
+		try (DefaultGraphTraversal<?, Vertex> t =  new DefaultGraphTraversal<>(getGraph())) {
+			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl")), vertex -> {
+				Set<String> parents = new HashSet<>();
+				Set<String> branchParents = new HashSet<>();
+				for (Edge edge : StreamUtil.toIterable(vertex.edges(Direction.OUT, "HAS_PARENT_NODE"))) {
+					String parentUuid = edge.inVertex().<String>property("uuid").orElse(null);
+					String branchUuid = edge.<String>property("branchUuid").orElse(null);
+					if (branchUuid == null) {
+						log.warn("Parent edge from child {} to parent {} does not have a branch uuid. Skipping this edge.",
+							vertex.<String>property("uuid").orElse(null), branchUuid);
+						continue;
+					}
+					parents.add(parentUuid);
+					branchParents.add(branchParentEntry(branchUuid, parentUuid).encode());
+					edge.remove();
 				}
-				parents.add(parentUuid);
-				branchParents.add(branchParentEntry(branchUuid, parentUuid).encode());
-				edge.remove();
-			}
-			vertex.property(PARENTS_KEY_PROPERTY, parents);
-			vertex.property(BRANCH_PARENTS_KEY_PROPERTY, branchParents);
-		});
+				vertex.property(PARENTS_KEY_PROPERTY, parents);
+				vertex.property(BRANCH_PARENTS_KEY_PROPERTY, branchParents);
+			});
+		}
 	}
 }

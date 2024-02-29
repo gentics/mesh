@@ -2,6 +2,7 @@ package com.gentics.mesh.changelog;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -21,18 +22,18 @@ public final class MeshGraphHelper {
 	 * @return
 	 */
 	public static Vertex getMeshRootVertex(Graph graph) {
-		Iterator<Vertex> it = graph.vertices("@class", MESH_ROOT_TYPE);
+		Iterator<Vertex> it = new DefaultGraphTraversal(graph).has(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_TYPE);
 		if (it.hasNext()) {
 			return it.next();
 		} else {
-			Iterator<Vertex> itLegacy = graph.vertices(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE);
+			Iterator<Vertex> itLegacy = new DefaultGraphTraversal(graph).has(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE);
 			if (itLegacy.hasNext()) {
 				return itLegacy.next();
 			} else {
 				// Legacy index less handling
 				Iterable<Vertex> vertices = () -> graph.vertices();
 				for (Vertex vertex : vertices) {
-					String fermaType = (String) vertex.property(ElementFrame.TYPE_RESOLUTION_KEY).orElse(null);
+					String fermaType = vertex.<String>property(ElementFrame.TYPE_RESOLUTION_KEY).orElse(null);
 					if (fermaType != null && fermaType.endsWith(MESH_ROOT_TYPE)) {
 						return vertex;
 					}

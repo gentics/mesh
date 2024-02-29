@@ -25,7 +25,7 @@ import com.syncleus.ferma.FramedGraph;
 /**
  * Mesh specific vertex implementation. It must override all calls which would access the element via the field reference.
  * We don't use the ferma field. Instead the element will always be located using the stored elementId.
- * The Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread bound and can't be shared across theads.
+ * The Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread bound and can't be shared across threads.
  * We thus need to avoid access to it.
  */
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
@@ -35,6 +35,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	protected void init(FramedGraph graph, Element element) {
 		super.init(graph, null);
+		element.property(TYPE_RESOLUTION_KEY, getClass().getSimpleName());
 		this.id = element.id();
 	}
 

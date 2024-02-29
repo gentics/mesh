@@ -27,7 +27,7 @@ public class ReplaceMicroschemaVersionEdges extends AbstractChange {
 	}
 
 	@Override
-	public void applyInTx() {
+	public void applyInTx() throws Exception {
 		replaceSingleEdge("MicronodeImpl", Direction.OUT, "HAS_MICROSCHEMA_CONTAINER", MICROSCHEMA_VERSION_KEY_PROPERTY);
 	}
 }

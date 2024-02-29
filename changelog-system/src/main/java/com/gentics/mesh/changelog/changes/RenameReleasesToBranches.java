@@ -2,6 +2,7 @@ package com.gentics.mesh.changelog.changes;
 
 import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
+import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -59,9 +60,9 @@ public class RenameReleasesToBranches extends AbstractChange {
 		PriorityQueue<Object> jobQueue = new PriorityQueue<>();
 		Graph graph = getDb().rawTx();
 		setGraph(graph);
-		try {
+		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
 			int r = 0;
-			Iterable<Edge> edges = () -> new DefaultGraphTraversal(getGraph()).E().has(ElementFrame.TYPE_RESOLUTION_KEY, label);
+			Iterable<Edge> edges = StreamUtil.toIterable(t.E().has(ElementFrame.TYPE_RESOLUTION_KEY, label));
 			for (Edge edge : edges) {
 				jobQueue.add(edge.id());
 				r++;
@@ -74,14 +75,17 @@ public class RenameReleasesToBranches extends AbstractChange {
 		}
 		log.info("Created queue for " + label + " (" + jobQueue.size() + " entries)");
 		runBatchAction(() -> migrateBranchEdgeProperties(label, jobQueue, limit));
-
 	}
 
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-
-		Vertex projectRoot = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(OUT, "HAS_PROJECT_ROOT");
+		if (!iter.hasNext()) {
+			log.info("RenameReleasesToBranches change skipped");
+			return;
+		}
+		Vertex projectRoot = iter.next();
 		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(OUT, "HAS_PROJECT"))) {
 
 			Iterable<Edge> it = StreamUtil.toIterable(project.edges(OUT, "HAS_RELEASE_ROOT"));
@@ -148,45 +152,50 @@ public class RenameReleasesToBranches extends AbstractChange {
 
 	private boolean migrateVertices(String from, String to, long limit) {
 		log.info("Migrating vertex type {" + from + "} to {" + to + "}");
-		Iterable<Vertex> it = () -> getGraph().vertices("@class", from);
 		long count = 0;
-		for (Vertex fromV : it) {
-			// Create new vertex with new type
-			Vertex toV = getGraph().addVertex("class:" + to);
-			// Duplicate the in edges
-			for (Edge inE : StreamUtil.toIterable(fromV.edges(Direction.IN))) {
-				Vertex out = inE.outVertex();
-				Edge e = out.addEdge(inE.label(), toV);
-				for (Property<Object> property : ((Iterable<Property<Object>>)() -> inE.properties())) {
-					e.property(property.key(), inE.property(property.key()));
+		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+			Iterable<Vertex> it = () -> t.has(ElementFrame.TYPE_RESOLUTION_KEY, from);
+			for (Vertex fromV : it) {
+				// Create new vertex with new type
+				Vertex toV = getGraph().addVertex("class:" + to);
+				// Duplicate the in edges
+				for (Edge inE : StreamUtil.toIterable(fromV.edges(Direction.IN))) {
+					Vertex out = inE.outVertex();
+					Edge e = out.addEdge(inE.label(), toV);
+					for (Property<Object> property : ((Iterable<Property<Object>>)() -> inE.properties())) {
+						e.property(property.key(), inE.property(property.key()));
+					}
 				}
-			}
-			// Duplicate the out edges
-			for (Edge outE : StreamUtil.toIterable(fromV.edges(Direction.OUT))) {
-				Vertex in = outE.inVertex();
-				Edge e = toV.addEdge(outE.label(), in);
-				for (Property<Object> property : ((Iterable<Property<Object>>)() -> outE.properties())) {
-					e.property(property.key(), outE.property(property.key()));
+				// Duplicate the out edges
+				for (Edge outE : StreamUtil.toIterable(fromV.edges(Direction.OUT))) {
+					Vertex in = outE.inVertex();
+					Edge e = toV.addEdge(outE.label(), in);
+					for (Property<Object> property : ((Iterable<Property<Object>>)() -> outE.properties())) {
+						e.property(property.key(), outE.property(property.key()));
+					}
 				}
-			}
-			// Duplicate properties
-			for (VertexProperty<Object> property : ((Iterable<VertexProperty<Object>>)() -> fromV.properties())) {
-				toV.property(property.key(), fromV.property(property.key() ));
-			}
+				// Duplicate properties
+				for (VertexProperty<Object> property : ((Iterable<VertexProperty<Object>>)() -> fromV.properties())) {
+					toV.property(property.key(), fromV.property(property.key() ));
+				}
 
-			// Update the ferma type
-			toV.property("ferma_type", to);
-			fromV.remove();
-			count++;
-			if (count % 1000 == 0) {
-				log.info("Migrated {" + count + "} vertices.");
-				getGraph().tx().commit();
+				// Update the ferma type
+				toV.property("ferma_type", to);
+				fromV.remove();
+				count++;
+				if (count % 1000 == 0) {
+					log.info("Migrated {" + count + "} vertices.");
+					getGraph().tx().commit();
+				}
+				if (count >= limit) {
+					log.info("Limit for batch reached");
+					return true;
+				}
 			}
-			if (count >= limit) {
-				log.info("Limit for batch reached");
-				return true;
-			}
+		} catch (Exception e1) {
+			throw new RuntimeException(e1);
 		}
+		
 		log.info("Migrated total of {" + count + "} vertices from {" + from + "} to {" + to + "}");
 		if (count == 0) {
 			return false;

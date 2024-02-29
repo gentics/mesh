@@ -7,6 +7,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.changelog.MeshGraphHelper;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.util.StreamUtil;
 
 
@@ -33,7 +34,12 @@ public class ChangeFixReleaseRelationship extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = MeshGraphHelper.getMeshRootVertex(getGraph());
-		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(Direction.OUT, GraphRelationships.HAS_PROJECT_ROOT);
+		if (!iter.hasNext()) {
+			log.info("AddVersioning change skipped");
+			return;
+		}
+		Vertex projectRoot = iter.next();
 		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, "HAS_PROJECT"))) {
 			Iterator<Vertex> it = project.vertices(Direction.OUT, "HAS_RELEASE_ROOT");
 			if (it.hasNext()) {

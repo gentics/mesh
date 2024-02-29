@@ -4,10 +4,12 @@ import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 /**
@@ -28,14 +30,18 @@ public class NodeContentEditorMigration extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		long count = 0;
-		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().vertices("@class", "NodeGraphFieldContainerImpl"));
-		for (Vertex nodeContainer : it) {
-			migrateContainer(nodeContainer);
-			count++;
-			if (count % 1000 == 0) {
-				log.info("Migrated {" + count + "} contents");
-				getGraph().tx().commit();
+		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+			Iterable<Vertex> it = StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl"));
+			for (Vertex nodeContainer : it) {
+				migrateContainer(nodeContainer);
+				count++;
+				if (count % 1000 == 0) {
+					log.info("Migrated {" + count + "} contents");
+					getGraph().tx().commit();
+				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

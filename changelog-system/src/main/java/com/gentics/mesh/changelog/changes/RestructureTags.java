@@ -31,7 +31,12 @@ public class RestructureTags extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex root = getMeshRootVertex();
-		Vertex tagFamilyRoot = root.vertices(OUT, "HAS_TAGFAMILY_ROOT").next();
+		Iterator<Vertex> iter = root.vertices(OUT, "HAS_TAGFAMILY_ROOT");
+		if (!iter.hasNext()) {
+			log.info("RestructureTags change skipped");
+			return;
+		}
+		Vertex tagFamilyRoot = iter.next();
 		// Iterate over all tag families
 		Iterator<Vertex> iterator = tagFamilyRoot.vertices(OUT, "HAS_TAG_FAMILY");
 		while (iterator.hasNext()) {

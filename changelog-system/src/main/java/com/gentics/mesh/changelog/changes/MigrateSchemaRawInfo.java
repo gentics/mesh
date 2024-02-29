@@ -34,7 +34,12 @@ public class MigrateSchemaRawInfo extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex microschemaRoot = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT");
+		if (!iter.hasNext()) {
+			log.info("MigrateSchemaRawInfo change skipped");
+			return;
+		}
+		Vertex microschemaRoot = iter.next();
 		Iterator<Vertex> microschemaIt = microschemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (microschemaIt.hasNext()) {
 			Vertex microschemaVertex = microschemaIt.next();

@@ -2,6 +2,8 @@ package com.gentics.mesh.changelog.changes;
 
 import static  org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
+import java.util.Iterator;
+
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
@@ -25,7 +27,12 @@ public class ChangeRemoveSearchQueueNodes extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex searchQueueRoot = meshRoot.vertices(OUT, "HAS_SEARCH_QUEUE_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(OUT, "HAS_SEARCH_QUEUE_ROOT");
+		if (!iter.hasNext()) {
+			log.info("RemoveSearchQueueNodes change skipped");
+			return;
+		}
+		Vertex searchQueueRoot = iter.next();
 
 		for (Vertex batch : StreamUtil.toIterable(searchQueueRoot.vertices(OUT, "HAS_BATCH"))) {
 			for (Vertex entry : StreamUtil.toIterable(batch.vertices(OUT, "HAS_ITEM"))) {

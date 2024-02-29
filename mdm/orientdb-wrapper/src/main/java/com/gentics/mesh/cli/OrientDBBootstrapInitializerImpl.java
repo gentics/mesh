@@ -305,7 +305,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 		DatabaseHelper.init(db);
 
 		// Now run the high level changelog entries
-		highlevelChangelogSystem.apply(flags, meshRoot.getChangelogRoot(), null);
+		highlevelChangelogSystem.apply(flags, db.tx(() -> meshRoot.getChangelogRoot()), null);
 
 		log.info("Changelog completed.");
 		cls.setCurrentVersionAndRev();

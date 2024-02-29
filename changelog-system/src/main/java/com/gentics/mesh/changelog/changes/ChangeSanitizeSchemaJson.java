@@ -28,7 +28,12 @@ public class ChangeSanitizeSchemaJson extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex schemaRoot = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA").next();
+		Iterator<Vertex> iter = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA");
+		if (!iter.hasNext()) {
+			log.info("SanitizeSchemaJson change skipped");
+			return;
+		}
+		Vertex schemaRoot = iter.next();
 		Iterator<Vertex> schemaIt = schemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (schemaIt.hasNext()) {
 			Vertex schemaVertex = schemaIt.next();

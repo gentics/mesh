@@ -30,7 +30,12 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT");
+		if (!iter.hasNext()) {
+			log.info("UpdateReleaseSchemaEdge change skipped");
+			return;
+		}
+		Vertex projectRoot = iter.next();
 		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, "HAS_PROJECT"))) {
 			Iterator<Vertex> it = project.vertices(Direction.OUT, "HAS_RELEASE_ROOT");
 			if (it.hasNext()) {

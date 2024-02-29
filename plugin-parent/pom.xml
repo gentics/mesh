@@ -360,6 +360,11 @@
 			<artifactId>gremlin-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>gremlin-groovy</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- Mesh Test Internals -->
 		<dependency>

@@ -1,9 +1,12 @@
 package com.gentics.mesh.changelog.changes;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.madl.frame.ElementFrame;
 
 /**
  * Changelog entry which removes the binary edges in order to reduce contention when updating / creating binaries.
@@ -29,13 +32,14 @@ public class RemoveBinaryEdges extends AbstractChange {
 	public void apply() {
 		applyOutsideTx();
 		Graph graph = getDb().rawTx();
-		try {
-			getGraph().vertices("@class", "BinaryRootImpl").forEachRemaining(Element::remove);
+		setGraph(graph);
+		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+			t.has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryRootImpl").forEachRemaining(Element::remove);
 			graph.tx().commit();
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);
 			graph.tx().rollback();
-			throw e;
+			throw new RuntimeException(e);
 		} finally {
 			graph.tx().close();
 		}

@@ -38,7 +38,12 @@ public class ChangeSchemaVersionType extends AbstractChange {
 	}
 
 	private void updateMicroschemas(Vertex meshRoot) {
-		Vertex microschemaRoot = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT").next();
+		Iterator<Vertex> iter = meshRoot.vertices(OUT, "HAS_MICROSCHEMA_ROOT");
+		if (!iter.hasNext()) {
+			log.info("SchemaVersionType change skipped");
+			return;
+		}
+		Vertex microschemaRoot = iter.next();
 		Iterator<Vertex> microschemaIt = microschemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (microschemaIt.hasNext()) {
 			Vertex microschemaVertex = microschemaIt.next();
@@ -63,7 +68,12 @@ public class ChangeSchemaVersionType extends AbstractChange {
 	}
 
 	private void updateSchemas(Vertex meshRoot) {
-		Vertex schemaRoot = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA").next();
+		Iterator<Vertex> iter = meshRoot.vertices(OUT, "HAS_ROOT_SCHEMA");
+		if (!iter.hasNext()) {
+			log.info("SchemaVersionType change skipped");
+			return;
+		}
+		Vertex schemaRoot = iter.next();
 		Iterator<Vertex> schemaIt = schemaRoot.vertices(OUT, "HAS_SCHEMA_CONTAINER_ITEM");
 		while (schemaIt.hasNext()) {
 			Vertex schemaVertex = schemaIt.next();

@@ -27,7 +27,7 @@ public class ReplaceSchemaVersionEdges extends AbstractChange {
 	}
 
 	@Override
-	public void applyInTx() {
+	public void applyInTx() throws Exception {
 		replaceSingleEdge("NodeGraphFieldContainerImpl", Direction.OUT, "HAS_SCHEMA_CONTAINER_VERSION", SCHEMA_CONTAINER_VERSION_KEY_PROPERTY);
 	}
 }

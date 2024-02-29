@@ -9,11 +9,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.json.JsonArray;
@@ -145,20 +147,22 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 		}
 	}
 
-	private void convertViaSchema(String schemaVersionClassName, String label) {
-		for (Vertex schemaVertex : StreamUtil.toIterable(getGraph().vertices("@class", schemaVersionClassName))) {
-			Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
-			if (!schema.fieldMap.isEmpty()) {
-				log.info("Update vertices for {}", schema);
-				updateVerticesForSchema(schemaVertex, schema.fieldMap, label);
-				log.debug("Commit the changes for the remaining vertices of schema {} to database...", schema);
-				getGraph().tx().commit();
+	private void convertViaSchema(String schemaVersionClassName, String label) throws Exception {
+		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+			for (Vertex schemaVertex : StreamUtil.toIterable(t.V().has(ElementFrame.TYPE_RESOLUTION_KEY, schemaVersionClassName))) {
+				Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
+				if (!schema.fieldMap.isEmpty()) {
+					log.info("Update vertices for {}", schema);
+					updateVerticesForSchema(schemaVertex, schema.fieldMap, label);
+					log.debug("Commit the changes for the remaining vertices of schema {} to database...", schema);
+					getGraph().tx().commit();
+				}
 			}
 		}
 	}
 
 	@Override
-	public void applyInTx() {
+	public void applyInTx() throws Exception {
 		log.info("Start converting numbers in nodes.");
 		convertViaSchema(SCHEMA_CONTAINER_VERSION_CLASS, HAS_SCHEMA_CONTAINER_VERSION);
 		log.info("Start converting numbers in micro-nodes.");

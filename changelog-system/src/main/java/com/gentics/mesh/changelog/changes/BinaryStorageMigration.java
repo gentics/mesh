@@ -85,7 +85,7 @@ public class BinaryStorageMigration extends AbstractChange {
 
 		// Create binary root
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex binaryRoot = getGraph().addVertex("class:BinaryRootImpl");
+		Vertex binaryRoot = getGraph().addVertex();
 		binaryRoot.property("ferma_type", "BinaryRootImpl");
 		binaryRoot.property("uuid", randomUUID());
 		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).property("uuid", randomUUID());

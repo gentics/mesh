@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -13,6 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
@@ -42,7 +44,7 @@ public abstract class AbstractChange implements Change {
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);
 			graph.tx().rollback();
-			throw e;
+			throw new RuntimeException(e);
 		} finally {
 			graph.tx().close();
 		}
@@ -86,8 +88,9 @@ public abstract class AbstractChange implements Change {
 
 	/**
 	 * You may override this method to apply code within a transaction.
+	 * @throws Exception 
 	 */
-	public void applyInTx() {
+	public void applyInTx() throws Exception {
 
 	}
 
@@ -124,7 +127,7 @@ public abstract class AbstractChange implements Change {
 		// Create the change if it could not be found.
 		if (changelogRoot == null) {
 			log.debug("The changelog root could not be found. Creating it...");
-			changelogRoot = graph.addVertex(ChangelogRootWrapper.class);
+			changelogRoot = graph.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, ChangelogRootWrapper.class.getSimpleName()).element();
 			meshRoot.addEdge(ChangelogRootWrapper.HAS_CHANGELOG_ROOT, changelogRoot);
 		}
 		return new ChangelogRootWrapper(graph, changelogRoot);
@@ -249,9 +252,11 @@ public abstract class AbstractChange implements Change {
 	 * @param label
 	 * @param uuidPropertyKey
 	 */
-	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) {
-		iterateWithCommit(StreamUtil.toIterable(getGraph().vertices("@class", vertexClass)), vertex ->
+	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) throws Exception {
+		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, vertexClass)), vertex ->
 			replaceSingleEdge(vertex, direction, label, uuidPropertyKey));
+		}
 	}
 
 	/**

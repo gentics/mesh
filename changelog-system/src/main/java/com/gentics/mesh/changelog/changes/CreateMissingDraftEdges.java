@@ -1,5 +1,7 @@
 package com.gentics.mesh.changelog.changes;
 
+import java.util.Iterator;
+
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -25,8 +27,12 @@ public class CreateMissingDraftEdges extends AbstractChange {
 	@Override
 	public void applyInTx() {
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex projectRoot = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT").next();
-
+		Iterator<Vertex> iter = meshRoot.vertices(Direction.OUT, "HAS_PROJECT_ROOT");
+		if (!iter.hasNext()) {
+			log.info("MissingDraftEdges change skipped");
+			return;
+		}
+		Vertex projectRoot = iter.next();
 		// Iterate over all projects
 		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, "HAS_PROJECT"))) {
 			// Migrate all nodes of the project

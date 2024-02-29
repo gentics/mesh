@@ -27,7 +27,7 @@ public class ReplaceSchemaEdges extends AbstractChange {
 	}
 
 	@Override
-	public void applyInTx() {
+	public void applyInTx() throws Exception {
 		replaceSingleEdge("NodeImpl", Direction.OUT, "HAS_SCHEMA_CONTAINER", SCHEMA_CONTAINER_KEY_PROPERTY);
 	}
 }
