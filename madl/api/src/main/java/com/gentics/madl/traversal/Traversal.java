@@ -21,24 +21,6 @@ public interface Traversal<S, T> extends Iterator<T>, Iterable<T>, AutoCloseable
 	GraphTraversal<S, T> rawTraversal();
 
 	/**
-	 * Traverse over all the vertices in the graph.
-	 * 
-	 * @return The traversal representing all vertices in the graph.
-	 */
-	default VertexTraversal<?, ?> v() {
-		return new VertexTraversalImpl<>(rawTraversal().V());
-	}
-
-	/**
-	 * Traverse over all the edges in the graph.
-	 * 
-	 * @return The traversal representing all the edges in the graph.
-	 */
-	default EdgeTraversal<?, ?> e() {
-		return new EdgeTraversalImpl<>(rawTraversal().E());
-	}
-
-	/**
 	 * The serves are an arbitrary filter where the filter criteria is provided by the filterFunction.
 	 *
 	 * @param predicate

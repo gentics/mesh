@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass.INDEX_TYPE;
@@ -93,7 +94,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 			delete(tx, childUuid);
 		}
 		System.out.println("Deleting content of child " + uuid);
-		Vertex vertex = DelegatingFramedOrientGraph.<Vertex>getElements(tx, NODE_TYPE, new String[] { UUID_KEY }, new Object[] { uuid }).next();
+		Vertex vertex = DelegatingFramedOrientGraph.<Vertex>getElements(tx.traversal().V(), NODE_TYPE, new String[] { UUID_KEY }, new Object[] { uuid }).next();
 		System.out.println("Loaded vertex " + uuid + " " + vertex.id());
 		vertex.edges(Direction.OUT, CONTENT_EDGE_LABEL).forEachRemaining(e -> {
 			e.remove();
@@ -123,7 +124,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 		System.out.println("Index lookup with key: " + parentUuid);
 		String key[] = { PARENTS_KEY };
 		String value[] = { parentUuid };
-		return StreamUtil.toStream(DelegatingFramedOrientGraph.<Vertex>getElements(tx, NODE_TYPE, key, value)).map(v -> {
+		return StreamUtil.toStream(DelegatingFramedOrientGraph.<Vertex>getElements(tx.traversal().V(), NODE_TYPE, key, value)).map(v -> {
 			String uuid = v.<String>property(UUID_KEY).orElse(null);
 			return uuid;
 		}).collect(Collectors.toList());
@@ -131,7 +132,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 	}
 
 	private Vertex createNode(OrientGraph tx, Vertex parent, String uuid) {
-		Vertex node = tx.addVertex("class:" + NODE_TYPE);
+		Vertex node = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, NODE_TYPE).element();
 		node.property(UUID_KEY, uuid);
 		if (parent != null) {
 			String parentUuid = parent.<String>property(UUID_KEY).orElse(null);
@@ -140,7 +141,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 		}
 
 		// Add a content vertex to the given node vertex
-		Vertex content = tx.addVertex("class:" + CONTENT_TYPE);
+		Vertex content = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, CONTENT_TYPE).element();
 		node.addEdge(CONTENT_EDGE_LABEL, content);
 
 		return node;

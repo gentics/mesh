@@ -4,7 +4,7 @@ import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 
 import java.util.Iterator;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -31,7 +31,7 @@ public class NodeContentLanguageMigration extends AbstractChange {
 	@Override
 	public void applyInTx() throws Exception {
 		long count = 0;
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			Iterable<Vertex> it = StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl"));
 			for (Vertex nodeContainer : it) {
 				migrateContainer(nodeContainer);

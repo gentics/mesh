@@ -7,7 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.PARENTS
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -38,7 +38,7 @@ public class ReplaceParentEdges extends AbstractChange {
 
 	@Override
 	public void applyInTx() throws Exception {
-		try (DefaultGraphTraversal<?, Vertex> t =  new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t =  getGraph().traversal().V()) {
 			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl")), vertex -> {
 				Set<String> parents = new HashSet<>();
 				Set<String> branchParents = new HashSet<>();

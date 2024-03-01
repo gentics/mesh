@@ -27,7 +27,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.tinkerpop.gremlin.orientdb.OrientElement;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -93,7 +92,6 @@ import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.index.OIndexCursor;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
-import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration;
 import com.orientechnologies.orient.server.distributed.ODistributedConfiguration.ROLES;
 import com.orientechnologies.orient.server.distributed.OModifiableDistributedConfiguration;
@@ -350,7 +348,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 			query.setOrderPropsAndDirs(sorted);
 			ret = query.fetch(maybeContainerType).iterator();
 		} else {
-			ret = new VertexTraversalImpl<>(new DefaultGraphTraversal<>(madlGraph.getRawTraversal())).has(classOfVertex).has(fieldNames, fieldValues);
+			List<Vertex> list;
+			try (VertexTraversalImpl<?, ?> t = new VertexTraversalImpl<>(madlGraph)) {
+				list = StreamUtil.toStream((Iterable<Vertex>) t.has(classOfVertex).has(fieldNames, fieldValues)).collect(Collectors.toList());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			ret = list.iterator();
 		}
 		return ret;
 	}
@@ -383,7 +387,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
 		Graph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Vertex> rawIt = new DefaultGraphTraversal(orientBaseGraph).V().has(ElementFrame.TYPE_RESOLUTION_KEY, classOfVertex.getSimpleName());
+		Iterator<Vertex> rawIt = orientBaseGraph.traversal().V().has(ElementFrame.TYPE_RESOLUTION_KEY, classOfVertex.getSimpleName());
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 

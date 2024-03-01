@@ -2,7 +2,6 @@ package com.gentics.madl.traversal;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -14,7 +13,7 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 
-public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
+public interface EdgeTraversal<S, M extends Edge> extends FramedTraversal<S, M> {
 
 	/**
 	 * Check if the element has a property with provided key.
@@ -24,7 +23,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> has(String key) {
-		return new EdgeTraversalImpl<>(rawTraversal().has(key));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().has(key));
 	}
 
 	/**
@@ -38,7 +37,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> has(String key, Object value) {
-		return new EdgeTraversalImpl<>(rawTraversal().has(key, value));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().has(key, value));
 	}
 
 	/**
@@ -55,7 +54,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 		for (int i = 0; i < keys.length; i++) {
 			rawTraversal = rawTraversal.has(keys[i], values[i]);
 		}
-		return new EdgeTraversalImpl<>(rawTraversal());
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal);
 	}
 
 	/**
@@ -71,7 +70,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> has(String key, P predicate) {
-		return new EdgeTraversalImpl<>(rawTraversal().has(key, predicate));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().has(key, predicate));
 	}
 
 	/**
@@ -82,7 +81,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> has(Class<?> clazz) {
-		return new EdgeTraversalImpl<>(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
 	}
 
 	/**
@@ -93,7 +92,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> hasNot(String key) {
-		return new EdgeTraversalImpl<>(rawTraversal().hasNot(key));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().hasNot(key));
 	}
 
 	/**
@@ -107,7 +106,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> hasNot(String key, Object value) {
-		return new EdgeTraversalImpl<>(rawTraversal().has(key, P.neq(value)));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().has(key, P.neq(value)));
 	}
 
 	/**
@@ -116,7 +115,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, ?> inV() {
-		return new VertexTraversalImpl<>(rawTraversal().inV());
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().inV());
 	}
 
 	/**
@@ -125,7 +124,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, ?> outV() {
-		return new VertexTraversalImpl<>(rawTraversal().outV());
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().outV());
 	}
 
 	/**
@@ -138,7 +137,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <T> T next(Class<T> kind) {
-		return (T) rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next();
+		return frameElement(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next(), kind);
 	}
 
 	/**
@@ -154,7 +153,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <T> T nextExplicit(Class<T> kind) {
-		return (T) rawTraversal().next();
+		return frameElementExplicit(rawTraversal().next(), kind);
 	}
 
 	/**
@@ -170,7 +169,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return An iterator of framed elements.
 	 */
 	default <T> Iterable<T> frameExplicit(Class<? extends T> kind) {
-		return StreamUtil.toIterable(rawTraversal().map(e -> kind.cast(e.get())));
+		return StreamUtil.toIterable(frameExplicit(rawTraversal(), kind));
 	}
 
 	/**
@@ -183,7 +182,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return a list of all the objects
 	 */
 	default <T> List<? extends T> toList(Class<T> kind) {
-		return (List<? extends T>) rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).toList();
+		return (List<? extends T>) StreamUtil.toStream(frame(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()), kind)).collect(Collectors.toList());
 	}
 
 	/**
@@ -199,7 +198,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return a list of all the objects
 	 */
 	default <T> List<? extends T> toListExplicit(Class<T> kind) {
-		return (List<? extends T>) rawTraversal().toList();
+		return (List<? extends T>) StreamUtil.toStream(frameExplicit(rawTraversal(), kind)).collect(Collectors.toList());
 	}
 
 	/**
@@ -216,7 +215,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 
 	@Override
 	default EdgeTraversal<S, M> retain(Iterable<?> collection) {
-		return new EdgeTraversalImpl<>(rawTraversal().is(P.within(StreamUtil.toStream(collection).collect(Collectors.toSet()))));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().is(P.within(StreamUtil.toStream(collection).collect(Collectors.toSet()))));
 	}
 
 	/**
@@ -228,7 +227,7 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> or(Traversal<S, M>... pipes) {
-		return new EdgeTraversalImpl<>(rawTraversal().or(Arrays.stream(pipes).map(Traversal::rawTraversal).collect(Collectors.toList()).toArray(new GraphTraversal[pipes.length])));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().or(Arrays.stream(pipes).map(Traversal::rawTraversal).collect(Collectors.toList()).toArray(new GraphTraversal[pipes.length])));
 	}
 
 	/**
@@ -253,11 +252,8 @@ public interface EdgeTraversal<S, M extends Edge> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <N> N nextOrDefaultExplicit(Class<N> kind, N defaultValue) {
-		Optional<M> maybe = rawTraversal().tryNext();
-		if (maybe.isPresent()) {
-			return (N) maybe.get();
-		} else {
-			return defaultValue;
-		}
+		return rawTraversal().tryNext()
+				.map(element -> frameElementExplicit(element, kind))
+				.orElse(defaultValue);
 	}
 }

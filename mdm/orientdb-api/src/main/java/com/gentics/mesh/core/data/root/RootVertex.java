@@ -42,7 +42,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
 
 /**
  * A root vertex is an aggregation vertex that is used to aggregate various basic elements such as users, nodes, groups.
@@ -76,7 +75,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 */
 	default Stream<? extends T> findAllStream(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		HibUser user = ac.getUser();
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
@@ -96,8 +95,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 			itemEdges = query.fetch(maybeVariations).spliterator();
 		} else {
 			String idx = "e." + getRootLabel().toLowerCase() + "_out";
-			Iterable<Edge> iterable = () -> (Iterator) graph.getFramedEdges(idx.toLowerCase(), id(), getPersistanceClass());
-			itemEdges = iterable.spliterator();
+			Iterable<Edge> iter = () -> graph.maybeGetIndexedFramedElements(idx, id(), Edge.class).map(Iterator.class::cast).orElseGet(() -> graph.getVertex(id()).edges(Direction.OUT, getRootLabel()));
+			itemEdges = iter.spliterator();
 		}
 
 		return StreamSupport.stream(itemEdges, false)

@@ -1,6 +1,5 @@
 package com.gentics.madl.frame;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -98,7 +97,7 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new EdgeTraversalImpl<>(new DefaultGraphTraversal<>(fg.getRawTraversal()));
+		return new EdgeTraversalImpl<>(fg);
 	}
 
 	@Override

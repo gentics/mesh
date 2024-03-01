@@ -1,6 +1,6 @@
 package com.gentics.madl.frame;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -135,8 +135,8 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
-		return new EdgeTraversalImpl<>(traversal.inE(labels));
+		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
+		return new EdgeTraversalImpl<>(getGraph(), traversal.inE(labels));
 	}
 
 	@Override
@@ -146,8 +146,8 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
-		return new EdgeTraversalImpl<>(traversal.outE(labels));
+		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
+		return new EdgeTraversalImpl<>(getGraph(), traversal.outE(labels));
 	}
 
 	@Override
@@ -157,8 +157,8 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
-		return new VertexTraversalImpl<>(traversal.in(labels));
+		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
+		return new VertexTraversalImpl<>(getGraph(), traversal.in(labels));
 	}
 
 	@Override
@@ -168,8 +168,8 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		DefaultGraphTraversal<?, ?> traversal = new DefaultGraphTraversal<>(fg.getRawTraversal());
-		return new VertexTraversalImpl<>(traversal.out(labels));
+		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
+		return new VertexTraversalImpl<>(getGraph(), traversal.out(labels));
 	}
 
 	@Override

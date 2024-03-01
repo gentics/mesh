@@ -1,7 +1,6 @@
 package com.gentics.madl.traversal;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -14,7 +13,7 @@ import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.VertexFrame;
 
-public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
+public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S, M> {
 
 	/**
 	 * Check if the element has a property with provided key.
@@ -24,7 +23,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> has(String key) {
-		return new VertexTraversalImpl<>(rawTraversal().has(key));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().has(key));
 	}
 
 	/**
@@ -37,7 +36,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> has(String key, Object value) {
-		return new VertexTraversalImpl<>(rawTraversal().has(key, value));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().has(key, value));
 	}
 
 	/**
@@ -50,7 +49,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> has(String key, P<?> predicate) {
-		return new VertexTraversalImpl<>(rawTraversal().has(key, predicate));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().has(key, predicate));
 	}
 
 	/**
@@ -61,7 +60,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> has(Class<?> clazz) {
-		return new VertexTraversalImpl<>(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
 	}
 
 	/**
@@ -78,7 +77,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 		for (int i = 0; i < keys.length; i++) {
 			rawTraversal = rawTraversal.has(keys[i], values[i]);
 		}
-		return new VertexTraversalImpl<>(rawTraversal());
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal);
 	}
 
 	/**
@@ -91,7 +90,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> hasNot(String key, Object value) {
-		return new VertexTraversalImpl<>(rawTraversal().has(key, P.neq(value)));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().has(key, P.neq(value)));
 	}
 	/**
 	 * If the incoming element has no provided key, then filter the element.
@@ -103,7 +102,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> hasNot(String key) {
-		return new VertexTraversalImpl<>(rawTraversal().hasNot(key));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().hasNot(key));
 	}
 
 	/**
@@ -114,7 +113,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, ?> out(String... labels) {
-		return new VertexTraversalImpl<>(rawTraversal().E(Direction.OUT).has(ElementFrame.TYPE_RESOLUTION_KEY, labels).<Vertex>flatMap(e -> e.get().vertices(Direction.OUT)));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().E(Direction.OUT).has(ElementFrame.TYPE_RESOLUTION_KEY, labels).<Vertex>flatMap(e -> e.get().vertices(Direction.OUT)));
 	}
 
 	/**
@@ -125,7 +124,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, ?> in(String... labels) {
-		return new VertexTraversalImpl<>(rawTraversal().E(Direction.IN).has(ElementFrame.TYPE_RESOLUTION_KEY, labels).<Vertex>flatMap(e -> e.get().vertices(Direction.IN)));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().E(Direction.IN).has(ElementFrame.TYPE_RESOLUTION_KEY, labels).<Vertex>flatMap(e -> e.get().vertices(Direction.IN)));
 	}
 
 	/**
@@ -136,7 +135,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, ?> outE(String... labels) {
-		return new EdgeTraversalImpl<>(rawTraversal().E(Direction.OUT).has(ElementFrame.TYPE_RESOLUTION_KEY, labels));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().E(Direction.OUT).has(ElementFrame.TYPE_RESOLUTION_KEY, labels));
 	}
 
 	/**
@@ -147,7 +146,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, ?> inE(String... labels) {
-		return new EdgeTraversalImpl<>(rawTraversal().E(Direction.IN).has(ElementFrame.TYPE_RESOLUTION_KEY, labels));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().E(Direction.IN).has(ElementFrame.TYPE_RESOLUTION_KEY, labels));
 	}
 
 	/**
@@ -160,7 +159,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <N> N next(Class<N> kind) {
-		return (N) rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next();
+		return frameElement(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next(), kind);
 	}
 
 	/**
@@ -176,7 +175,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <N> N nextExplicit(Class<N> kind) {
-		return (N) rawTraversal().next();
+		return frameElementExplicit(rawTraversal().next(), kind);
 	}
 
 	/**
@@ -191,12 +190,9 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <N> N nextOrDefault(Class<N> kind, N defaultValue) {
-		Optional<M> maybe = rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).tryNext();
-		if (maybe.isPresent()) {
-			return (N) maybe.get();
-		} else {
-			return defaultValue;
-		}
+		return rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).tryNext()
+				.map(element -> frameElement(element, kind))
+				.orElse(defaultValue);
 	}
 
 	/**
@@ -229,12 +225,9 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the next emitted object
 	 */
 	default <N> N nextOrDefaultExplicit(Class<N> kind, N defaultValue) {
-		Optional<M> maybe = rawTraversal().tryNext();
-		if (maybe.isPresent()) {
-			return (N) maybe.get();
-		} else {
-			return defaultValue;
-		}
+		return rawTraversal().tryNext()
+				.map(element -> frameElementExplicit(element, kind))
+				.orElse(defaultValue);
 	}
 
 	/**
@@ -265,7 +258,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return An iterator of framed elements.
 	 */
 	default <N> Iterable<N> frame(Class<N> kind) {
-		return StreamUtil.toIterable(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).map(e -> kind.cast(e.get())));
+		return StreamUtil.toIterable(frame(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()), kind));
 	}
 
 	/**
@@ -281,7 +274,7 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return An iterator of framed elements.
 	 */
 	default <N> Iterable<N> frameExplicit(Class<N> kind) {
-		return StreamUtil.toIterable(rawTraversal().map(e -> kind.cast(e.get())));
+		return StreamUtil.toIterable(frameExplicit(rawTraversal(), kind));
 	}
 
 	@Override
@@ -295,12 +288,12 @@ public interface VertexTraversal<S, M extends Vertex> extends Traversal<S, M> {
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> retain(VertexFrame... vertices) {
-		return new VertexTraversalImpl<>(rawTraversal().is(P.within(Arrays.asList(vertices))));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().is(P.within(Arrays.asList(vertices))));
 	}
 
 	@Override
 	default VertexTraversal<S, M> retain(Iterable<?> collection) {
-		return new VertexTraversalImpl<>(rawTraversal().is(P.within(StreamUtil.toStream(collection).collect(Collectors.toSet()))));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().is(P.within(StreamUtil.toStream(collection).collect(Collectors.toSet()))));
 	}
 
 	/**

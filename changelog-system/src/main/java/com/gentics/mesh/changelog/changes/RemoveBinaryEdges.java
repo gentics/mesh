@@ -1,6 +1,6 @@
 package com.gentics.mesh.changelog.changes;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -33,7 +33,7 @@ public class RemoveBinaryEdges extends AbstractChange {
 		applyOutsideTx();
 		Graph graph = getDb().rawTx();
 		setGraph(graph);
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			t.has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryRootImpl").forEachRemaining(Element::remove);
 			graph.tx().commit();
 		} catch (Throwable e) {

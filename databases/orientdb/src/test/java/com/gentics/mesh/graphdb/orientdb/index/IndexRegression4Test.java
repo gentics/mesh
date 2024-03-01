@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.util.StreamUtil;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -87,9 +87,9 @@ public class IndexRegression4Test extends AbstractOrientTest {
 	private Object addGraph() {
 		Object id;
 		try (OrientGraph tx = factory.getTx()) {
-			Vertex node = tx.addVertex("class:NodeImpl");
-			Vertex draftContent = tx.addVertex("class:ContentImpl");
-			Vertex initialContent = tx.addVertex("class:ContentImpl");
+			Vertex node = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
+			Vertex draftContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex initialContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 			id = node.id();
 
 			Edge initialEdge = node.addEdge(EDGE_LABEL, initialContent);
@@ -118,8 +118,8 @@ public class IndexRegression4Test extends AbstractOrientTest {
 			assertInitialEdgeLookup(INDEX_A_NAME, nodeId, tx, false);
 			assertInitialEdgeLookup(INDEX_B_NAME, nodeId, tx, false);
 
-			Vertex newDraftContent = tx.addVertex("class:ContentImpl");
-			Vertex newInitialContent = tx.addVertex("class:ContentImpl");
+			Vertex newDraftContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex newInitialContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 
 			Edge newInitialEdge = node.addEdge(EDGE_LABEL, newInitialContent);
 			newInitialEdge.property(TYPE_KEY, TYPE_INITIAL);

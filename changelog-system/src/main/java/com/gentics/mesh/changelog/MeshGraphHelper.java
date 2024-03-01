@@ -22,11 +22,11 @@ public final class MeshGraphHelper {
 	 * @return
 	 */
 	public static Vertex getMeshRootVertex(Graph graph) {
-		Iterator<Vertex> it = new DefaultGraphTraversal(graph).has(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_TYPE);
+		Iterator<Vertex> it = graph.traversal().V().has(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_TYPE);
 		if (it.hasNext()) {
 			return it.next();
 		} else {
-			Iterator<Vertex> itLegacy = new DefaultGraphTraversal(graph).has(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE);
+			Iterator<Vertex> itLegacy = graph.traversal().V().has(ElementFrame.TYPE_RESOLUTION_KEY, MESH_ROOT_LEGACY_TYPE);
 			if (itLegacy.hasNext()) {
 				return itLegacy.next();
 			} else {

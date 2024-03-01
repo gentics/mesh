@@ -1,6 +1,5 @@
 package com.gentics.mesh.madl.frame;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.traversal.EdgeTraversal;
@@ -55,7 +54,7 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	 * @return The traversal for the current element.
 	 */
 	default VertexTraversal<?, ?> traversal() {
-		return new VertexTraversalImpl<>(new DefaultGraphTraversal<>(getGraph().getRawTraversal()));
+		return new VertexTraversalImpl<>(getGraph());
 	}
 
 	/**

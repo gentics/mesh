@@ -16,6 +16,7 @@ import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -73,8 +74,8 @@ public class IndexRegressionTest extends AbstractOrientTest {
 	@Test
 	public void testEdgeLookup() {
 		try (OrientGraph tx = factory.getTx()) {
-			Vertex v1 = tx.addVertex("class:NodeImpl");
-			Vertex v2 = tx.addVertex("class:ContentImpl");
+			Vertex v1 = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
+			Vertex v2 = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 			vertexId = v1.id();
 
 			Edge edge1 = v1.addEdge(EDGE_LABEL, v2);

@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -60,7 +60,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		PriorityQueue<Object> jobQueue = new PriorityQueue<>();
 		Graph graph = getDb().rawTx();
 		setGraph(graph);
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			int r = 0;
 			Iterable<Edge> edges = StreamUtil.toIterable(t.E().has(ElementFrame.TYPE_RESOLUTION_KEY, label));
 			for (Edge edge : edges) {
@@ -153,11 +153,11 @@ public class RenameReleasesToBranches extends AbstractChange {
 	private boolean migrateVertices(String from, String to, long limit) {
 		log.info("Migrating vertex type {" + from + "} to {" + to + "}");
 		long count = 0;
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			Iterable<Vertex> it = () -> t.has(ElementFrame.TYPE_RESOLUTION_KEY, from);
 			for (Vertex fromV : it) {
 				// Create new vertex with new type
-				Vertex toV = getGraph().addVertex("class:" + to);
+				Vertex toV = getGraph().addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, to).element();
 				// Duplicate the in edges
 				for (Edge inE : StreamUtil.toIterable(fromV.edges(Direction.IN))) {
 					Vertex out = inE.outVertex();

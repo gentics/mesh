@@ -10,6 +10,10 @@ import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,6 +25,7 @@ import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -31,13 +36,8 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.syncleus.ferma.FramedGraph;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import com.gentics.mesh.util.StreamUtil;
 
 import dagger.Lazy;
 
@@ -79,7 +79,8 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 		// Find all roles that are assigned to the user by checking the
 		// shortcut edge from the index
 		String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterable<Edge> roleEdges = graph.getEdges(idxKey.toLowerCase(), user.id());
+		Iterable<Edge> roleEdges = StreamUtil.toIterable(graph.maybeGetIndexedFramedElements(idxKey.toLowerCase(), user.id(), Edge.class)
+				.orElseGet(() -> graph.getFramedVertexExplicit(UserImpl.class, user.id()).outE(ASSIGNED_TO_ROLE)));
 		Vertex vertex = graph.getVertex(elementId);
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.inVertex();

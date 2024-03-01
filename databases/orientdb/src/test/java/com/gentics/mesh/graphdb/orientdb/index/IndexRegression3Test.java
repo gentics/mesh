@@ -15,6 +15,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -76,9 +77,9 @@ public class IndexRegression3Test extends AbstractOrientTest {
 	private Object addGraph() {
 		Object id;
 		try (OrientGraph tx = factory.getTx()) {
-			Vertex node = tx.addVertex("class:NodeImpl");
-			Vertex draftContent = tx.addVertex("class:ContentImpl");
-			Vertex initialContent = tx.addVertex("class:ContentImpl");
+			Vertex node = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
+			Vertex draftContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex initialContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 			id = node.id();
 
 			Edge initialEdge = node.addEdge(EDGE_LABEL, initialContent);

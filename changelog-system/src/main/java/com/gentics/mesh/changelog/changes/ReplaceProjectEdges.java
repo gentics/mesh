@@ -2,7 +2,7 @@ package com.gentics.mesh.changelog.changes;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -33,7 +33,7 @@ public class ReplaceProjectEdges extends AbstractChange {
 
 	@Override
 	public void applyInTx() throws Exception {
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl")), vertex -> {
 				vertex.edges(Direction.IN, "HAS_NODE").forEachRemaining(Edge::remove);
 				replaceSingleEdge(vertex, Direction.OUT, "ASSIGNED_TO_PROJECT", PROJECT_KEY_PROPERTY);

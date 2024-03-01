@@ -5,7 +5,7 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -253,7 +253,7 @@ public abstract class AbstractChange implements Change {
 	 * @param uuidPropertyKey
 	 */
 	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) throws Exception {
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, vertexClass)), vertex ->
 			replaceSingleEdge(vertex, direction, label, uuidPropertyKey));
 		}

@@ -195,7 +195,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 					mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
-				.orElseGet(() -> new DefaultGraphTraversal<>(graph.getRawTraversal())
+				.orElseGet(() -> graph.getRawTraversal()
 						.E()
 						.has(BRANCH_UUID_KEY, branchUuid)
 						.has(EDGE_TYPE_KEY, type.getCode())
@@ -237,7 +237,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
 		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
-				.orElseGet(() -> new DefaultGraphTraversal<>(graph.getRawTraversal())
+				.orElseGet(() -> graph.getRawTraversal()
 						.E()
 						.has(BRANCH_UUID_KEY, branchUuid)
 						.has(EDGE_TYPE_KEY, type.getCode())

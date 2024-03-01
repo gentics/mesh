@@ -13,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import com.gentics.mesh.changelog.AbstractChange;
 import com.gentics.mesh.changelog.MeshGraphHelper;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.json.JsonObject;
@@ -50,15 +51,15 @@ public class ChangeAddVersioning extends AbstractChange {
 
 		// Iterate over all projects
 		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, GraphRelationships.HAS_PROJECT))) {
-			Vertex releaseRoot = getGraph().addVertex("class:ReleaseRootImpl");
-			releaseRoot.property("ferma_type", "ReleaseRootImpl");
+			Vertex releaseRoot = getGraph().addVertex();
+			releaseRoot.property(ElementFrame.TYPE_RESOLUTION_KEY, "ReleaseRootImpl");
 			releaseRoot.property("uuid", randomUUID());
 			project.addEdge("HAS_RELEASE_ROOT", releaseRoot);
 
 			// Create release and edges
 			String branchUuid = randomUUID();
-			Vertex release = getGraph().addVertex("class:ReleaseImpl");
-			release.property("ferma_type", "ReleaseImpl");
+			Vertex release = getGraph().addVertex();
+			release.property(ElementFrame.TYPE_RESOLUTION_KEY, "ReleaseImpl");
 			release.property("uuid", branchUuid);
 			release.property("name", project.<String>property("name"));
 			release.property("active", true);
@@ -100,8 +101,8 @@ public class ChangeAddVersioning extends AbstractChange {
 		}
 
 		// Migrate TranslatedImpl edges to GraphFieldContainerEdgeImpl
-		for (Edge edge : StreamUtil.toIterable(getGraph().edges("ferma_type", "TranslatedImpl"))) {
-			edge.property("ferma_type", "GraphFieldContainerEdgeImpl");
+		for (Edge edge : StreamUtil.toIterable(getGraph().edges(ElementFrame.TYPE_RESOLUTION_KEY, "TranslatedImpl"))) {
+			edge.property(ElementFrame.TYPE_RESOLUTION_KEY, "GraphFieldContainerEdgeImpl");
 		}
 
 	}
@@ -157,8 +158,8 @@ public class ChangeAddVersioning extends AbstractChange {
 
 		// The base node has no field containers. Lets create the default one
 		if (!it.hasNext()) {
-			Vertex container = getGraph().addVertex("class:NodeGraphFieldContainerImpl");
-			container.property("ferma_type", "NodeGraphFieldContainerImpl");
+			Vertex container = getGraph().addVertex();
+			container.property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");
 			container.property("uuid", randomUUID());
 
 			// Fields
@@ -167,7 +168,7 @@ public class ChangeAddVersioning extends AbstractChange {
 
 			// field container edge which will later be migrated
 			Edge edge = baseNode.addEdge("HAS_FIELD_CONTAINER", container);
-			edge.property("ferma_type", "GraphFieldContainerEdgeImpl");
+			edge.property(ElementFrame.TYPE_RESOLUTION_KEY, "GraphFieldContainerEdgeImpl");
 			edge.property("languageTag", "en");
 			container.addEdge("HAS_SCHEMA_CONTAINER_VERSION", schemaVersion);
 			container.addEdge("HAS_LANGUAGE", english);
@@ -207,12 +208,12 @@ public class ChangeAddVersioning extends AbstractChange {
 	 * @param element
 	 */
 	private void migrateType(Element element) {
-		String type = element.<String>property("ferma_type").orElse(null);
+		String type = element.<String>property(ElementFrame.TYPE_RESOLUTION_KEY).orElse(null);
 		if (!StringUtils.isEmpty(type)) {
 			int idx = type.lastIndexOf(".");
 			if (idx != -1) {
 				type = type.substring(idx + 1);
-				element.property("ferma_type", type);
+				element.property(ElementFrame.TYPE_RESOLUTION_KEY, type);
 			}
 		}
 	}
@@ -264,7 +265,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			// Create additional draft edge
 			if (!isPublished) {
 				Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
-				draftEdge.property("ferma_type", "GraphFieldContainerEdgeImpl");
+				draftEdge.property(ElementFrame.TYPE_RESOLUTION_KEY, "GraphFieldContainerEdgeImpl");
 				draftEdge.property("branchUuid", branchUuid);
 				draftEdge.property("edgeType", "D");
 				draftEdge.property("languageTag", containerEdge.<String>property("languageTag"));
@@ -296,8 +297,8 @@ public class ChangeAddVersioning extends AbstractChange {
 			if (isPublished) {
 
 				// Now duplicate the field container for version 1.0
-				Vertex publishedContainer = getGraph().addVertex("class:NodeGraphFieldContainerImpl");
-				publishedContainer.property("ferma_type", "NodeGraphFieldContainerImpl");
+				Vertex publishedContainer = getGraph().addVertex();
+				publishedContainer.property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");
 
 				// Copy properties
 				for (VertexProperty<?> p : StreamUtil.toIterable(fieldContainer.properties())) {
@@ -335,7 +336,7 @@ public class ChangeAddVersioning extends AbstractChange {
 
 				// Create the published edge. No need to remove the old HAS_FIELD_CONTAINER because it was not cloned
 				Edge publishedEdge = node.addEdge("HAS_FIELD_CONTAINER", publishedContainer);
-				publishedEdge.property("ferma_type", "GraphFieldContainerEdgeImpl");
+				publishedEdge.property(ElementFrame.TYPE_RESOLUTION_KEY, "GraphFieldContainerEdgeImpl");
 				publishedEdge.property("languageTag", containerEdge.<String>property("languageTag"));
 				publishedEdge.property("branchUuid", branchUuid);
 				publishedEdge.property("edgeType", "P");

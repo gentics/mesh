@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -148,7 +148,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 	}
 
 	private void convertViaSchema(String schemaVersionClassName, String label) throws Exception {
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			for (Vertex schemaVertex : StreamUtil.toIterable(t.V().has(ElementFrame.TYPE_RESOLUTION_KEY, schemaVersionClassName))) {
 				Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
 				if (!schema.fieldMap.isEmpty()) {

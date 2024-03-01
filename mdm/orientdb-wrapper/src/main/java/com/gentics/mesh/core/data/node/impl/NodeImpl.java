@@ -37,11 +37,14 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.madl.traversal.VertexTraversal;
@@ -426,9 +429,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type) {
-		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
 		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		return graph.getFramedEdges(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class);
+		return graph.maybeGetIndexedFramedElements(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
+				.orElseGet(() -> graph.frame(graph.getRawTraversal()
+						.E()
+						.has(ElementFrame.TYPE_RESOLUTION_KEY, GraphFieldContainerEdgeImpl.class)
+						.has(GraphFieldContainerEdge.BRANCH_UUID_KEY, branchUuid)
+						.has(GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY, segmentInfo), 
+					GraphFieldContainerEdgeImpl.class));
 	}
 
 	@Override

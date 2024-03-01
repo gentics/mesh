@@ -14,4 +14,9 @@ public abstract class AbstractTraversal<S, E> implements Traversal<S, E> {
 	public GraphTraversal<S, E> rawTraversal() {
 		return traversal;
 	}
+
+	@Override
+	public void close() throws Exception {
+		traversal.close();
+	}
 }

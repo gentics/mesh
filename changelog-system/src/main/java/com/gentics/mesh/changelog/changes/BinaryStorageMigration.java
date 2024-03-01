@@ -15,6 +15,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import com.gentics.mesh.changelog.AbstractChange;
+import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
@@ -91,7 +92,7 @@ public class BinaryStorageMigration extends AbstractChange {
 		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).property("uuid", randomUUID());
 
 		// Iterate over all binary fields and convert them to edges to binaries
-		Iterable<Vertex> it = StreamUtil.toIterable(new DefaultGraphTraversal(getGraph()).V().has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryGraphFieldImpl"));
+		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().traversal().V().has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryGraphFieldImpl"));
 		for (Vertex binaryField : it) {
 			migrateField(binaryField, binaryRoot);
 		}
@@ -275,8 +276,8 @@ public class BinaryStorageMigration extends AbstractChange {
 	}
 
 	private Edge createNewFieldEdge(Vertex container, Vertex binary, String fileName, String contentType, String dominantColor, String fieldKey) {
-		Edge edge = container.addEdge("class:BinaryGraphFieldImpl", binary, "HAS_FIELD");
-		edge.property("ferma_type", "BinaryGraphFieldImpl");
+		Edge edge = container.addEdge(GraphRelationships.HAS_FIELD, binary);
+		edge.property(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryGraphFieldImpl");
 		edge.property("uuid", randomUUID());
 		edge.property(BINARY_FILENAME_PROPERTY_KEY, fileName);
 		edge.property(BINARY_CONTENT_TYPE_PROPERTY_KEY, contentType);
@@ -295,8 +296,8 @@ public class BinaryStorageMigration extends AbstractChange {
 	 * @return
 	 */
 	private Vertex createBinary(String hash, Long size, Integer height, Integer width, Vertex binaryRoot) {
-		Vertex binary = getGraph().addVertex("class:BinaryImpl");
-		binary.property("ferma_type", "BinaryImpl");
+		Vertex binary = getGraph().addVertex();
+		binary.property(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryImpl");
 		binary.property("uuid", randomUUID());
 
 		if (height != null) {

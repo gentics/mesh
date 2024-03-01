@@ -9,7 +9,9 @@ import java.util.Iterator;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -19,8 +21,6 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.syncleus.ferma.FramedGraph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * @see LanguageRoot
@@ -62,13 +62,13 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	 */
 	@Override
 	public Language findByLanguageTag(String languageTag) {
-		Iterator<Vertex> it = db().getVertices(LanguageImpl.class, new String[] { LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY },
-				new Object[] { languageTag });
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		
+		Iterator<? extends LanguageImpl> it = graph.getFramedVerticesExplicit(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY, languageTag, LanguageImpl.class);
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?
 			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
-			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
+			return it.next();
 		} else {
 			return null;
 		}

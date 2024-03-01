@@ -1,6 +1,7 @@
 package com.gentics.mesh.changelog.changes;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -29,7 +30,7 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 
 	@Override
 	public void applyInTx() throws Exception {
-		try (DefaultGraphTraversal<?, Vertex> t = new DefaultGraphTraversal<>(getGraph())) {
+		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			// Iterate over all field container
 			Iterable<Vertex> vertices = StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl"));
 			for (Vertex container : vertices) {

@@ -7,12 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal.Symbols;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
@@ -67,11 +62,9 @@ public class DelegatingFramedOrientGraph extends DelegatingFramedGraph<OrientGra
 		attributes.put(key, value);
 	}
 
-	public static <T extends Element> GraphTraversal<?,T> getElements(OrientGraph graph, final String label, final String[] iKey, Object[] iValue) {
-		DefaultGraphTraversal<?,T> traversal = new DefaultGraphTraversal<>(graph);
+	public static <T extends Element> GraphTraversal<?,T> getElements(GraphTraversal<?, T> traversal, final String label, final String[] iKey, Object[] iValue) {
 		for (int i = 0; i < iKey.length; i++) {
-			traversal.asAdmin().getBytecode().addStep(Symbols.has, iKey[i], iValue[i]);
-	        TraversalHelper.addHasContainer(traversal.asAdmin(), new HasContainer(iKey[i], P.eq(iValue[i])));
+			traversal = traversal.has(iKey[i], iValue[i]);
 		}
 		return traversal;
 	}
