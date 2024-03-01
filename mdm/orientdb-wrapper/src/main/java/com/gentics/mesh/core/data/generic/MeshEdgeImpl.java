@@ -39,7 +39,7 @@ public class MeshEdgeImpl extends AbstractEdgeFrame implements MeshEdge {
 
 	@Override
 	public Object id() {
-		return id();
+		return super.getId();
 	}
 
 	public String getFermaType() {

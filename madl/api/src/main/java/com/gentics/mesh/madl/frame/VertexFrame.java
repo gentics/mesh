@@ -54,7 +54,7 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	 * @return The traversal for the current element.
 	 */
 	default VertexTraversal<?, ?> traversal() {
-		return new VertexTraversalImpl<>(getGraph());
+		return new VertexTraversalImpl<>(getGraph(), getElement());
 	}
 
 	/**

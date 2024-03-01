@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -241,7 +240,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public String getRolesHash() {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, Collections.singletonList(id()));
+		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, id());
 		String roles = StreamUtil.toStream(itemEdges)
 			.map(itemEdge -> itemEdge.inVertex().id().toString())
 			.sorted()
@@ -258,7 +257,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 	@Override
 	public Result<? extends Role> getRolesViaShortcut() {
 		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, Collections.singletonList(id()));
+		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, id());
 		Stream<RoleImpl> roles = StreamUtil.toStream(itemEdges)
 			.map(itemEdge -> itemEdge.inVertex())
 			.map(vertex -> {

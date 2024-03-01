@@ -349,7 +349,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			ret = query.fetch(maybeContainerType).iterator();
 		} else {
 			List<Vertex> list;
-			try (VertexTraversalImpl<?, ?> t = new VertexTraversalImpl<>(madlGraph)) {
+			try (VertexTraversalImpl<?, ?> t = new VertexTraversalImpl<>(madlGraph, madlGraph.getRawTraversal().V())) {
 				list = StreamUtil.toStream((Iterable<Vertex>) t.has(classOfVertex).has(fieldNames, fieldValues)).collect(Collectors.toList());
 			} catch (Exception e) {
 				throw new RuntimeException(e);

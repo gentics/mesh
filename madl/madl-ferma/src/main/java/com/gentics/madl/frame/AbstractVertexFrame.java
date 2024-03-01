@@ -1,8 +1,6 @@
 package com.gentics.madl.frame;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -18,7 +16,6 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
 import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
-import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.AbstractElementFrame;
 import com.syncleus.ferma.FramedGraph;
 
@@ -135,8 +132,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
-		return new EdgeTraversalImpl<>(getGraph(), traversal.inE(labels));
+		return new EdgeTraversalImpl<>(getGraph(), getRawTraversal().inE(labels));
 	}
 
 	@Override
@@ -146,8 +142,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
-		return new EdgeTraversalImpl<>(getGraph(), traversal.outE(labels));
+		return new EdgeTraversalImpl<>(getGraph(), getRawTraversal().outE(labels));
 	}
 
 	@Override
@@ -157,8 +152,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
-		return new VertexTraversalImpl<>(getGraph(), traversal.in(labels));
+		return new VertexTraversalImpl<>(getGraph(), getRawTraversal().in(labels));
 	}
 
 	@Override
@@ -168,28 +162,27 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		GraphTraversal<Vertex, Vertex> traversal = fg.getRawTraversal().V();
-		return new VertexTraversalImpl<>(getGraph(), traversal.out(labels));
+		return new VertexTraversalImpl<>(getGraph(), getRawTraversal().out(labels));
 	}
 
 	@Override
 	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
-		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.OUT, label)).map(Edge::outVertex).filter(vertex -> vertex.getClass().equals(clazz)).map(clazz::cast));
+		return new TraversalResult<>(getGraph().frameExplicit(getElement().vertices(Direction.OUT, label), clazz));
 	}
 
 	@Override
 	public <T extends EdgeFrame> Result<? extends T> outE(String label, Class<T> clazz) {
-		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.OUT, label)).filter(edge -> edge.getClass().equals(clazz)).map(clazz::cast));
+		return new TraversalResult<>(getGraph().frameExplicit(getElement().edges(Direction.OUT, label), clazz));
 	}
 
 	@Override
 	public <T extends ElementFrame> Result<? extends T> in(String label, Class<T> clazz) {
-		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.IN, label)).map(Edge::inVertex).filter(vertex -> vertex.getClass().equals(clazz)).map(clazz::cast));
+		return new TraversalResult<>(getGraph().frameExplicit(getElement().vertices(Direction.IN, label), clazz));
 	}
 
 	@Override
 	public <T extends EdgeFrame> Result<? extends T> inE(String label, Class<T> clazz) {
-		return new TraversalResult<>(StreamUtil.toStream(getElement().edges(Direction.IN, label)).filter(edge -> edge.getClass().equals(clazz)).map(clazz::cast));
+		return new TraversalResult<>(getGraph().frameExplicit(getElement().edges(Direction.IN, label), clazz));
 	}
 
 	@Override

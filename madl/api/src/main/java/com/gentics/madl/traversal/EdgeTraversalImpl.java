@@ -9,8 +9,8 @@ import com.syncleus.ferma.FramedGraph;
 
 public class EdgeTraversalImpl<S, E extends Edge> extends AbstractElementTraversal<S, E> implements EdgeTraversal<S, E> {
 
-	public EdgeTraversalImpl(FramedGraph graph) {
-		this(graph, (GraphTraversal) graph.getRawTraversal().V());
+	public EdgeTraversalImpl(FramedGraph graph, Edge element) {
+		this(graph, (GraphTraversal) graph.getRawTraversal().E(element.id()));
 	}
 
 	public EdgeTraversalImpl(FramedGraph graph, GraphTraversal<S, E> traversal) {

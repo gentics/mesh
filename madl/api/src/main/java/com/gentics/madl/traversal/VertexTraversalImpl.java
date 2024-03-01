@@ -9,8 +9,8 @@ import com.syncleus.ferma.FramedGraph;
 
 public class VertexTraversalImpl<S, E extends Vertex> extends AbstractElementTraversal<S, E> implements VertexTraversal<S, E> {
 
-	public VertexTraversalImpl(FramedGraph graph) {
-		this(graph, (GraphTraversal) graph.getRawTraversal().V());
+	public VertexTraversalImpl(FramedGraph graph, Vertex element) {
+		this(graph, (GraphTraversal) graph.getRawTraversal().V(element.id()));
 	}
 
 	public VertexTraversalImpl(FramedGraph graph, GraphTraversal<S, E> traversal) {

@@ -75,13 +75,13 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 
 	@Override
 	public <T extends VertexFrame> TraversalResult<? extends T> inV(Class<T> clazz) {
-		TraversalResult<? extends T> result = new TraversalResult<>(traversal().outV().frameExplicit(clazz));
+		TraversalResult<? extends T> result = new TraversalResult<>(inV().frameExplicit(clazz));
 		return result;
 	}
 
 	@Override
 	public <T extends VertexFrame> TraversalResult<? extends T> outV(Class<T> clazz) {
-		TraversalResult<? extends T> result = new TraversalResult<>(traversal().outV().frameExplicit(clazz));
+		TraversalResult<? extends T> result = new TraversalResult<>(outV().frameExplicit(clazz));
 		return result;
 	}
 
@@ -97,7 +97,7 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 			throw new RuntimeException(
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new EdgeTraversalImpl<>(fg);
+		return new EdgeTraversalImpl<>(fg, getElement());
 	}
 
 	@Override

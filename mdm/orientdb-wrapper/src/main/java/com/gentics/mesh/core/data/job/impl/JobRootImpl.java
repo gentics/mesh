@@ -10,7 +10,6 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -94,7 +93,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterator<Edge> edges = DatabaseHelper.indexedEdges(getGraph(), "e." + getRootLabel().toLowerCase() + "_inout",
-				Collections.singletonList(db().index().createComposedIndexKey(potentialElement.id(), id())));
+				db().index().createComposedIndexKey(potentialElement.id(), id()));
 			if (edges.hasNext()) {
 				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());
