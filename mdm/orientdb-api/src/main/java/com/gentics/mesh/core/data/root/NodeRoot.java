@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.root;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
@@ -32,4 +34,13 @@ public interface NodeRoot extends RootVertex<Node> {
 			PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		return findAllStream(ac, permission, paging, Optional.empty(), maybeFilter);
 	}
+
+	/**
+	 * Check if the requested languages being used by any node in the given root.
+	 * 
+	 * @param languageTags
+	 * @param assignedLanguagesOnly pick only languages, known to this project.
+	 * @return
+	 */
+	Set<String> findUsedLanguages(Collection<String> languageTags, boolean assignedLanguagesOnly);
 }

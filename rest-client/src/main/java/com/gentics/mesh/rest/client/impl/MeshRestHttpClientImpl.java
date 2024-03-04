@@ -49,6 +49,8 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -328,6 +330,77 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "languageUuid must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/languages/" + uuid + getQuery(
+			parameters), LanguageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String projectName, String tag, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tag, "languageTag must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/languages/tag/" + tag + getQuery(
+			parameters), LanguageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(String projectName, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/languages" + getQuery(parameters), LanguageListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "languageUuid must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/languages/" + uuid + getQuery(
+			parameters), ProjectResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByTag(String projectName, String tag, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tag, "languageTag must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/languages/tag/" + tag + getQuery(
+			parameters), ProjectResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "languageUuid must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/languages/" + uuid + getQuery(
+			parameters), ProjectResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByTag(String projectName, String tag, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(tag, "languageTag must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/languages/tag/" + tag + getQuery(
+			parameters), ProjectResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String tag, ParameterProvider... parameters) {
+		Objects.requireNonNull(tag, "tag must not be null");
+		return prepareRequest(GET, "/languages/tag/" + encodeSegment(tag) + getQuery(parameters), LanguageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String uuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/languages/" + uuid + getQuery(parameters), LanguageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameters) {
+		return prepareRequest(GET, "/languages" + getQuery(parameters), LanguageListResponse.class);
+	}
+
+	@Override
 	public MeshRequest<ProjectResponse> findProjectByUuid(String uuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(GET, "/projects/" + uuid + getQuery(parameters), ProjectResponse.class);
@@ -346,16 +419,12 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 
 	@Override
 	public MeshRequest<ProjectResponse> assignLanguageToProject(String projectUuid, String languageUuid) {
-		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
-		return prepareRequest(POST, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
+		return assignLanguageToProjectByUuid(projectUuid, languageUuid);
 	}
 
 	@Override
 	public MeshRequest<ProjectResponse> unassignLanguageFromProject(String projectUuid, String languageUuid) {
-		Objects.requireNonNull(projectUuid, "projectUuid must not be null");
-		Objects.requireNonNull(languageUuid, "languageUuid must not be null");
-		return prepareRequest(DELETE, "/projects/" + projectUuid + "/languages/" + languageUuid, ProjectResponse.class);
+		return unassignLanguageFromProjectByUuid(projectUuid, languageUuid);
 	}
 
 	@Override

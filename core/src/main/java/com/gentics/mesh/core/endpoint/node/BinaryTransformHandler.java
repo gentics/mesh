@@ -125,7 +125,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibProject project = tx.getProject(ac);
 			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
@@ -199,7 +199,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 			HibProject project = tx.getProject(ac);
 			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
@@ -284,7 +284,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 				HibProject project = tx.getProject(ac);
 				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 				}

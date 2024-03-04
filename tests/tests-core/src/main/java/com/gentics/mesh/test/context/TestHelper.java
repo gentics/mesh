@@ -255,6 +255,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return "de";
 	}
 
+	default String italian() {
+		return "it";
+	}
+
+	default String french() {
+		return "fr";
+	}
+
 	default Map<String, HibGroup> groups() {
 		return data().getGroups();
 	}

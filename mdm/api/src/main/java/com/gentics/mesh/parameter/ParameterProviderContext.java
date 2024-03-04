@@ -12,6 +12,7 @@ import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -47,6 +48,10 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default ProjectPurgeParameters getProjectPurgeParameters() {
 		return new ProjectPurgeParametersImpl(this);
+	}
+
+	default ProjectLoadParameters getProjectLoadParameters() {
+		return new ProjectLoadParametersImpl(this);
 	}
 
 	default ImageManipulationParameters getImageParameters() {

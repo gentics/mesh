@@ -93,9 +93,10 @@ public class TestDataProvider {
 
 	// References to dummy data
 
-	private String english = "en";
-
-	private String german = "de";
+	private final String english = "en";
+	private final String german = "de";
+	private final String italian = "it";
+	private final String french = "fr";
 
 	private HibProject project;
 	private String projectUuid;
@@ -396,6 +397,8 @@ public class TestDataProvider {
 		batch.dispatch();
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
+		project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
+		project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
 		HibUser jobUser = userInfo.getUser();
 		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
@@ -679,6 +682,14 @@ public class TestDataProvider {
 
 	public String getGerman() {
 		return german;
+	}
+
+	public String getItalian() {
+		return italian;
+	}
+
+	public String getFrench() {
+		return french;
 	}
 
 	public HibProject getProject() {

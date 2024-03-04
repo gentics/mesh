@@ -35,6 +35,10 @@ public class NodeUpdateRequest implements FieldContainer {
 	private boolean publish = false;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Assign a requested language to the project, if none was so far.")
+	private boolean assignLanguage = true;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Permissions to be granted to roles on the updated node.")
 	private ObjectPermissionGrantRequest grant;
 
@@ -160,8 +164,28 @@ public class NodeUpdateRequest implements FieldContainer {
 	}
 
 	/**
+	 * Automatically assign the requested language to the project, if none was so far.
+	 *
+	 * @return
+	 */
+	public boolean isAssignLanguage() {
+		return assignLanguage;
+	}
+
+	/**
+	 * Set the flag to automatically assign the requested language to the project, if none was so far.
+	 *
+	 * @param assignLanguage
+	 * @return
+	 */
+	public NodeUpdateRequest setAssignLanguage(boolean assignLanguage) {
+		this.assignLanguage = assignLanguage;
+		return this;
+	}
+
+	/**
 	 * Get the image manipulation request.
-	 * 
+	 *
 	 * @return
 	 */
 	public ImageManipulationRequest getManipulation() {
@@ -170,9 +194,9 @@ public class NodeUpdateRequest implements FieldContainer {
 
 	/**
 	 * Set the image manipulation.
-	 * 
+	 *
 	 * @param manipulation
-	 * @return 
+	 * @return
 	 */
 	public NodeUpdateRequest setManipulation(ImageManipulationRequest manipulation) {
 		this.manipulation = manipulation;

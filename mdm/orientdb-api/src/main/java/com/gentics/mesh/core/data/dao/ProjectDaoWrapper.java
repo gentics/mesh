@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 
 import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.result.Result;
@@ -40,5 +41,10 @@ public interface ProjectDaoWrapper extends PersistingProjectDao {
 	@Override
 	default Result<? extends HibNode> findNodes(HibProject project) {
 		return toGraph(project).findNodes();
+	}
+
+	@Override
+	default Result<? extends HibLanguage> findLanguages(HibProject project) {
+		return toGraph(project).getLanguages();
 	}
 }
