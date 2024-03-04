@@ -103,9 +103,7 @@ public class AbstractFormPostDataTest extends AbstractFormsPluginIntegrationTest
 	 * @return data node
 	 */
 	protected NodeResponse assertSingleDataNode(String formUuid, Consumer<NodeResponse> asserter) {
-		NodeListResponse dataNodes = call(() -> server.client().findNodeChildren(PROJECT_NAME, formUuid));
-		assertThat(dataNodes.getData()).as("Data node list").hasSize(1);
-		NodeResponse dataNode = dataNodes.getData().get(0);
+		NodeResponse dataNode = getSingleFormDataNode(formUuid);
 
 		if (asserter != null) {
 			asserter.accept(dataNode);

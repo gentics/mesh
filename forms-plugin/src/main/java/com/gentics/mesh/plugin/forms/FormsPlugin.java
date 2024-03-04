@@ -22,6 +22,8 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.dagger.DaggerFormsPluginComponent;
 import com.gentics.mesh.plugin.forms.dagger.FormsPluginComponent;
 import com.gentics.mesh.plugin.forms.handler.AbstractFormsHandler;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 
@@ -122,7 +124,11 @@ public class FormsPlugin extends AbstractPlugin implements RestPlugin {
 			LicenseService licenseService = new LicenseService(configuration);
 			licenseService.isLicenseSufficient(LicensedPlugin.FORMS);
 
-			return component(null).statusService().initialize(getStorageDir().getAbsolutePath());
+			FormsPluginComponent component = component(null);
+			StatusService statusService = component.statusService();
+			FormDataService formDataService = component.formDataService();
+
+			return statusService.initialize(getStorageDir().getAbsolutePath()).andThen(formDataService.initialize());
 		} catch (Exception e) {
 			return Completable.error(e);
 		}

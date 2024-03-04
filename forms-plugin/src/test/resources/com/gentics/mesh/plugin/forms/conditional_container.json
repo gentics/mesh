@@ -27,6 +27,24 @@
 					"name": "conditional_input",
 					"label": "Conditional input",
 					"mandatory": true
+				},
+				{
+					"type": "file",
+					"name": "conditional_file",
+					"label": "Conditional file",
+					"mandatory": true
+				},
+				{
+					"type": "mandatorygroup",
+					"name": "mandatory_group",
+					"label": "Conditional group",
+					"elements": [
+						{
+							"type": "input",
+							"name": "mandatory_group_input",
+							"label": "Mandatory group input"
+						}
+					]
 				}
 			]
 		}

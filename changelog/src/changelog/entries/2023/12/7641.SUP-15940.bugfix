@@ -1,0 +1,1 @@
+Forms: New configuration item `fileUpload.useMagicByteCheck` determines whether the MIME type of submitted files should be checked by comparing the magic bytes of the file.

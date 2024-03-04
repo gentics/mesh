@@ -1,0 +1,9 @@
+query ($uuid: String, $schema: String) {
+  node(uuid: $uuid) {
+    children (filter: {schema: {name: {equals: $schema}}}) {
+      elements {
+        uuid
+      }
+    }
+  }
+}

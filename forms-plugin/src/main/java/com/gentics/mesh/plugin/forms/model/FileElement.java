@@ -12,13 +12,20 @@ import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -89,6 +96,10 @@ public class FileElement extends FormElement {
 
 	@Override
 	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+		if (skipElement(postedData)) {
+			return null;
+		}
+
 		FileUpload fileUpload = getFileUpload(fileUploads);
 		if (fileUpload == null) {
 			if (isMandatory()) {
@@ -110,7 +121,20 @@ public class FileElement extends FormElement {
 			allowedTypes = getDefaultAllowedConfiguration();
 		}
 		if (allowedTypes != null && !allowedTypes.isEmpty()) {
-			if (!fileHasAllowedContentType(fileUpload, allowedTypes) && !fileHasAllowedName(fileUpload, allowedTypes)) {
+			boolean allowedContentType;
+
+			try {
+				allowedContentType = fileHasAllowedContentType(fileUpload, allowedTypes);
+			} catch (IOException e) {
+				log.error("Could not check file type of uploaded file {} ({}): {}", e, fileUpload.fileName(), fileUpload.contentType(), e.getMessage());
+
+				return new ValidationError()
+					.setName(getName())
+					.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.title"))
+					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.check", fileUpload.fileName()));
+			}
+
+			if (!allowedContentType && !fileHasAllowedName(fileUpload, allowedTypes)) {
 				fileUploads.remove(fileUpload);
 				return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.title"))
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type", fileUpload.fileName()));
@@ -160,7 +184,7 @@ public class FileElement extends FormElement {
 	 *            allowed type definitions for the field
 	 * @return true if the file has allowed content-type
 	 */
-	protected boolean fileHasAllowedContentType(FileUpload fileUpload, Collection<String> allowedTypes) {
+	protected boolean fileHasAllowedContentType(FileUpload fileUpload, Collection<String> allowedTypes) throws IOException {
 		Map<String, Set<String>> typesMap = getAllowedTypesConfiguration();
 		Set<String> allowedContentTypes = new HashSet<>();
 		for (String type : allowedTypes) {
@@ -168,7 +192,39 @@ public class FileElement extends FormElement {
 				allowedContentTypes.addAll(typesMap.get(type));
 			}
 		}
-		return allowedContentTypes.stream().filter(pattern -> fileUpload.contentType().matches(pattern)).findFirst().isPresent();
+
+		String mimeType = getConfiguration().getFileUpload().isUseMagicByteCheck()
+			? determineMimeType(fileUpload.uploadedFileName(), fileUpload.fileName())
+			: fileUpload.contentType();
+
+		if (mimeType == null) {
+			return false;
+		}
+
+		return allowedContentTypes.stream()
+			.filter(Objects::nonNull)
+			.filter(pattern -> mimeType.matches(pattern)).findFirst().isPresent();
+	}
+
+	/**
+	 * Determine MIME type from file contents.
+	 *
+	 * @param uploadedFileName The path to the file to inspect.
+	 * @param providedFileName the provided file name
+	 * @return The detected MIME type.
+	 */
+	private String determineMimeType(String uploadedFileName, String providedFileName) throws IOException {
+		TikaConfig tikaConfig = TikaConfig.getDefaultConfig();
+		Detector detector = tikaConfig.getDetector();
+
+		try (FileInputStream inputStream = new FileInputStream(uploadedFileName); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
+			Metadata metadata = new Metadata();
+			metadata.add(Metadata.RESOURCE_NAME_KEY, providedFileName);
+			String mimeType = detector.detect(tikaInputStream, metadata).toString();
+
+			log.debug(String.format("Tika detected mime type %s", mimeType));
+			return mimeType;
+		}
 	}
 
 	/**

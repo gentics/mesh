@@ -10,6 +10,26 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.13]]
+== 1.10.13 (2024-02-07)
+
+icon:check[] Forms: Add the possibility to switch the positions of form name and label in the CSV export.
+
+[[v1.10.12]]
+== 1.10.12 (2024-01-24)
+
+icon:check[] Forms: Fixes checks for validation and storing of file elements inside a conditional container. File elements marked as mandatory were required even if the file element was in a conditional container that was to be ignored.
+
+[[v1.10.11]]
+== 1.10.11 (2024-01-10)
+
+icon:check[] Forms: Fixes an issue when posting updated form data with multiple file fields. Requests to the form data update endpoint would fail when the automatic version purge was enabled.
+
+[[v1.10.10]]
+== 1.10.10 (2023-12-07)
+
+icon:plus[]: Forms: New configuration item `fileUpload.useMagicByteCheck` determines whether the MIME type of submitted files should be checked by comparing the magic bytes of the file.
+
 [[v1.10.9]]
 == 1.10.9 (2023-11-02)
 

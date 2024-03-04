@@ -1,5 +1,42 @@
 package com.gentics.mesh.plugin.forms.service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -12,6 +49,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.client.DeleteParametersImpl;
 import com.gentics.mesh.parameter.client.VersioningParametersImpl;
@@ -45,6 +83,7 @@ import com.gentics.mesh.rest.client.impl.EmptyResponse;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -61,41 +100,6 @@ import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @Singleton
 public class FormDataService {
@@ -149,6 +153,8 @@ public class FormDataService {
 
 	private final File storageDir;
 
+	private final String loadFormDataToMigrateGraphQl;
+
 	@Inject
 	public FormDataService(
 			@AdminClient MeshRestClient adminClient,
@@ -174,6 +180,63 @@ public class FormDataService {
 		this.renderService = renderService;
 		this.statusService = statusService;
 		this.storageDir = storageDir;
+
+		try {
+			this.loadFormDataToMigrateGraphQl = IOUtils.toString(FormsPlugin.class.getResource("loadFormDataToMigrate.graphql"), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	/**
+	 * Initialize the service. This will migrate all form data nodes, which are created directly under the plugin root node
+	 * @return completable
+	 */
+	public Completable initialize() {
+		return statusService.projectsWithPluginActive().flatMapCompletable(this::migrateFormDataNodes);
+	}
+
+	/**
+	 * Migrate form data nodes for all forms of the project
+	 * @param project project
+	 * @return completable
+	 */
+	private Completable migrateFormDataNodes(ProjectResponse project) {
+		String projectName = project.getName();
+
+		return statusService.languageFallback(projectName).flatMapCompletable(lang -> {
+			return formService.listUuids(project.getName())
+					.flatMapCompletable(formUuid -> migrateFormDataNodes(project, formUuid));
+		});
+	}
+
+	/**
+	 * Migrate form data nodes for the given form
+	 * @param project project
+	 * @param formUuid form uuid
+	 * @param lang languages
+	 * @return completable
+	 */
+	private Completable migrateFormDataNodes(ProjectResponse project, String formUuid, String...lang) {
+		String schemaName = formService.getSchemaName(formUuid);
+		String projectName = project.getName();
+
+		GraphQLRequest request = new GraphQLRequest()
+				.setQuery(loadFormDataToMigrateGraphQl)
+				.setVariables(new JsonObject().put("uuid", formUuid).put("schema", schemaName));
+		VersioningParameters params = new VersioningParametersImpl().draft();
+
+		return getFormDataFolderUuid(projectName, formUuid, lang).flatMapCompletable(formDataFolderUuid -> {
+			return adminClient.graphql(projectName, request, params).toSingle().flatMapObservable(response -> {
+				List<String> uuids = FormUtil.getFromResponse(response, "$.data.node.children.elements[*].uuid");
+				return Observable.fromIterable(uuids);
+			}).flatMapCompletable(
+					dataUuid -> adminClient.moveNode(projectName, dataUuid, formDataFolderUuid).toCompletable()
+							.doOnSubscribe(disp -> log
+									.debug(String.format("Move misplaced form data node %s for form %s in project %s",
+											dataUuid, formUuid, projectName))));
+		}).doOnSubscribe(disp -> log.debug(String.format("Checking misplaced form data nodes for form %s in project %s", formUuid, projectName)));
 	}
 
 	/**
@@ -235,9 +298,13 @@ public class FormDataService {
 	 * @return single noderesponse
 	 */
 	public Single<NodeResponse> load(String projectName, String formUuid, String formDataUuid, boolean allowPublished) {
-		return adminClient.findNodeByUuid(projectName, formDataUuid).toSingle()
-			.flatMap(formDataNode -> {
-				if (FormUtil.isFormDataNode(formDataNode) && formUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
+		Single<NodeResponse> singleFormDataNode = adminClient.findNodeByUuid(projectName, formDataUuid).toSingle();
+		Single<String> singleFormDataFolderUuid = getFormDataFolderUuid(projectName, formUuid);
+
+		return Single.zip(singleFormDataNode, singleFormDataFolderUuid, Pair::of).flatMap(pair -> {
+			NodeResponse formDataNode = pair.getLeft();
+			String formDataFolderUuid = pair.getRight();
+			if (FormUtil.isFormDataNode(formDataNode) && formDataFolderUuid.equals(formDataNode.getParentNode().getUuid()) && (allowPublished || !isFormDataPublished(formDataNode))) {
 				return Single.just(formDataNode);
 			} else {
 				String message = String.format("Object with uuid \"%s\" could not be found.", formDataUuid);
@@ -660,7 +727,11 @@ public class FormDataService {
 		if (node == null) {
 			return Single.error(new Exception("GraphQl response contained no data"));
 		}
-		JsonObject children = node.getJsonObject("children");
+		JsonObject dataNode = node.getJsonObject("data");
+		if (dataNode == null) {
+			return Single.error(new Exception("GraphQl response contained no data"));
+		}
+		JsonObject children = dataNode.getJsonObject("children");
 		if (children == null) {
 			return Single.error(new Exception("GraphQl response contained no data"));
 		}
@@ -956,8 +1027,13 @@ public class FormDataService {
 
 		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
 
-		return saveFormData(ctx.getProjectName(), ctx.getFormNode(), ctx.getFormDataNode(), form, postedData, errors)
-			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), savedFormDataNode, ctx.getFileUploads()))
+		String projectName = ctx.getProjectName();
+		NodeResponse formNode = ctx.getFormNode();
+		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
+				ParameterUtil.getLanguages(ctx.getContext()));
+
+		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors))
+			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
 			.flatMap(savedFileUploads -> {
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
 					return publishFormData(ctx, savedFileUploads, errors);
@@ -988,25 +1064,37 @@ public class FormDataService {
 	}
 
 	/**
+	 * Get the uuid of the form data folder as single
+	 * @param projectName project name
+	 * @param formUuid form UUID
+	 * @param languages languages
+	 * @return
+	 */
+	private Single<String> getFormDataFolderUuid(String projectName, String formUuid, String... languages) {
+		return formService.getFormFolderUuid(projectName, formUuid, languages, FormService.DATA_FOLDER_NAME);
+	}
+
+	/**
 	 * Save the form data to mesh
 	 *
 	 * @param projectName project name
 	 * @param formNode form node
+	 * @param dataFolderUuid uuid of the data folder
 	 * @param formDataNode optional form data node (for updating)
 	 * @param form form object
 	 * @param postedData posted data
 	 * @param errors map containing validation errors
 	 * @return single of the node response
 	 */
-	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, NodeResponse formDataNode, Form form, MultiMap postedData,
-		Map<String, ValidationError> errors) {
+	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
+		MultiMap postedData, Map<String, ValidationError> errors) {
 		FieldContainer container = null;
 		NodeCreateRequest createRequest = null;
 		NodeUpdateRequest updateRequest = null;
 
 		if (formDataNode == null) {
 			createRequest = new NodeCreateRequest().setSchemaName(SchemaService.getSchemaName(formNode.getUuid()))
-				.setParentNodeUuid(formNode.getUuid())
+				.setParentNodeUuid(dataFolderUuid)
 				.setLanguage("en");
 			container = createRequest;
 		} else {
@@ -1040,11 +1128,22 @@ public class FormDataService {
 	 * Save fileuploads to mesh
 	 *
 	 * @param projectName project name
+	 * @param form saved form
 	 * @param formDataNode form data node
+	 * @param postedData posted form data
 	 * @param fileUploads validated file uploads
 	 * @return single of the form data node
 	 */
-	private Single<NodeResponse> saveFileUploads(String projectName, NodeResponse formDataNode, Set<FileUpload> fileUploads) {
+	private Single<NodeResponse> saveFileUploads(String projectName, Form form, NodeResponse formDataNode, MultiMap postedData, Set<FileUpload> fileUploads) {
+		Set<String> validUploadElements = form.flattened()
+			.filter(FormElement::isActive)
+			.flatMap(elem -> elem instanceof FileElement && !elem.skipElement(postedData)
+				? Stream.of(elem.getName())
+				: Stream.empty())
+			.collect(Collectors.toSet());
+
+		fileUploads = fileUploads.stream().filter(fileUpload -> validUploadElements.contains(fileUpload.name())).collect(Collectors.toSet());
+
 		if (fileUploads.isEmpty()) {
 			return Single.just(formDataNode);
 		}
@@ -1061,7 +1160,10 @@ public class FormDataService {
 					prm.fail(e);
 					return;
 				}
-				adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), formDataNode.getVersion(),
+
+				// Always use the draft version because updating the binary field will increase the version of the node,
+				// which can lead to problems when multiple files are uploaded.
+				adminClient.updateNodeBinaryField(projectName, formDataNode.getUuid(), formDataNode.getLanguage(), "draft",
 						fileUpload.name(),
 						ins, size, fileUpload.fileName(), fileUpload.contentType())
 					.toSingle().subscribe(prm::complete, prm::fail);
@@ -1074,7 +1176,7 @@ public class FormDataService {
 	 * response.
 	 *
 	 * @param ctx Request context
-	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String, NodeResponse, Set)}
+	 * @param savedFileUploads saved file uploads from {@link #saveFileUploads(String,Form, NodeResponse, MultiMap, Set)}
 	 * @param errors
 	 * @return single
 	 */
