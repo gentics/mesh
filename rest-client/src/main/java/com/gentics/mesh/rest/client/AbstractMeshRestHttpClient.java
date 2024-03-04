@@ -1,6 +1,12 @@
 package com.gentics.mesh.rest.client;
 
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -143,21 +149,31 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	/**
 	 * Return the query aggregated parameter string for the given providers.
-	 * 
+	 * @param config configuration object (may be null)
 	 * @param parameters
+	 * 
 	 * @return
 	 */
-	public static String getQuery(ParameterProvider... parameters) {
-		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < parameters.length; i++) {
-			ParameterProvider provider = parameters[i];
-			builder.append(provider.getQueryParameters());
-			if (i != parameters.length - 1) {
-				builder.append("&");
-			}
+	public static String getQuery(MeshRestClientConfig config, ParameterProvider... parameters) {
+		Map<String, String> params = new LinkedHashMap<>();
+		if (config != null) {
+			// get the default parameters from the configuration (if any)
+			ParameterProvider[] defaultParameters = config.getDefaultParameters();
+			// put all non-blank parameters to the map
+			Stream.of(defaultParameters).flatMap(provider -> provider.getParameters().entrySet().stream())
+					.filter(entry -> StringUtils.isNotBlank(entry.getKey()) && StringUtils.isNotBlank(entry.getValue()))
+					.forEach(entry -> params.put(entry.getKey(), entry.getValue()));
 		}
-		if (builder.length() > 0) {
-			return "?" + builder.toString();
+
+		// put all non-blank parameters from the given providers to the map
+		Stream.of(parameters).flatMap(provider -> provider.getParameters().entrySet().stream())
+				.filter(entry -> StringUtils.isNotBlank(entry.getKey()) && StringUtils.isNotBlank(entry.getValue()))
+				.forEach(entry -> params.put(entry.getKey(), entry.getValue()));
+
+		// combine all parameters to a query string
+		String query = params.entrySet().stream().map(entry -> String.format("%s=%s", entry.getKey(), entry.getValue())).collect(Collectors.joining("&"));
+		if (query.length() > 0) {
+			return "?" + query;
 		} else {
 			return "";
 		}

@@ -20,6 +20,8 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.29]]
 == 1.10.29 (TBD)
 
+icon:check[] REST client: The configuration now allows adding default parameter provider for query parameters, that should be added to every request (unless overwritten).
+
 icon:check[] Tests: The tests API has been extended to allow tests which do not reset the database between test cases.
 
 [[v1.10.28]]
