@@ -36,17 +36,14 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public void apply() {
 		applyOutsideTx();
-		Graph graph = db.rawTx();
-		setGraph(graph);
-		try {
+		try (Graph graph = db.rawTx()) {
+			setGraph(graph);
 			applyInTx();
 			graph.tx().commit();
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);
 			graph.tx().rollback();
 			throw new RuntimeException(e);
-		} finally {
-			graph.tx().close();
 		}
 	}
 
@@ -54,8 +51,9 @@ public abstract class AbstractChange implements Change {
 	 * Run the given action multiple times. Abort if the action returns false.
 	 * 
 	 * @param action
+	 * @throws Exception 
 	 */
-	protected void runBatchAction(BooleanSupplier action) {
+	protected void runBatchAction(BooleanSupplier action) throws Exception {
 		do {
 			log.info("Running batch");
 		} while (applyBatchActionInTx(action));
@@ -66,16 +64,14 @@ public abstract class AbstractChange implements Change {
 	 * 
 	 * @param action
 	 * @return
+	 * @throws Exception 
 	 */
-	protected boolean applyBatchActionInTx(BooleanSupplier action) {
-		Graph graph = getDb().rawTx();
-		setGraph(graph);
-		try {
+	protected boolean applyBatchActionInTx(BooleanSupplier action) throws Exception {
+		try (Graph graph = getDb().rawTx()) {
+			setGraph(graph);
 			boolean b = action.getAsBoolean();
 			getGraph().tx().commit();
 			return b;
-		} finally {
-			graph.tx().close();
 		}
 	}
 
@@ -127,7 +123,8 @@ public abstract class AbstractChange implements Change {
 		// Create the change if it could not be found.
 		if (changelogRoot == null) {
 			log.debug("The changelog root could not be found. Creating it...");
-			changelogRoot = graph.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, ChangelogRootWrapper.class.getSimpleName()).element();
+			changelogRoot = graph.addVertex(ChangelogRootWrapper.class.getSimpleName())
+					.property(ElementFrame.TYPE_RESOLUTION_KEY, ChangelogRootWrapper.class.getSimpleName()).element();
 			meshRoot.addEdge(ChangelogRootWrapper.HAS_CHANGELOG_ROOT, changelogRoot);
 		}
 		return new ChangelogRootWrapper(graph, changelogRoot);
@@ -254,8 +251,8 @@ public abstract class AbstractChange implements Change {
 	 */
 	protected void replaceSingleEdge(String vertexClass, Direction direction, String label, String uuidPropertyKey) throws Exception {
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, vertexClass)), vertex ->
-			replaceSingleEdge(vertex, direction, label, uuidPropertyKey));
+			iterateWithCommit(StreamUtil.toIterable(t.hasLabel(vertexClass)), vertex ->
+				replaceSingleEdge(vertex, direction, label, uuidPropertyKey));
 		}
 	}
 

@@ -9,7 +9,9 @@ public interface ElementFrame extends com.syncleus.ferma.ElementFrame {
 
 	static final String TYPE_RESOLUTION_KEY = "ferma_type";
 
-	Element element();
+	default Element element() {
+		return getElement();
+	}
 
 	@Override
 	DelegatingFramedMadlGraph<? extends Graph> getGraph();

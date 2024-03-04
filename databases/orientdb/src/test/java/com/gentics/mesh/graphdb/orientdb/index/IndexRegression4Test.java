@@ -87,9 +87,9 @@ public class IndexRegression4Test extends AbstractOrientTest {
 	private Object addGraph() {
 		Object id;
 		try (OrientGraph tx = factory.getTx()) {
-			Vertex node = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
-			Vertex draftContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
-			Vertex initialContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex node = tx.addVertex("NodeImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
+			Vertex draftContent = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex initialContent = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 			id = node.id();
 
 			Edge initialEdge = node.addEdge(EDGE_LABEL, initialContent);
@@ -118,8 +118,8 @@ public class IndexRegression4Test extends AbstractOrientTest {
 			assertInitialEdgeLookup(INDEX_A_NAME, nodeId, tx, false);
 			assertInitialEdgeLookup(INDEX_B_NAME, nodeId, tx, false);
 
-			Vertex newDraftContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
-			Vertex newInitialContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex newDraftContent = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex newInitialContent = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 
 			Edge newInitialEdge = node.addEdge(EDGE_LABEL, newInitialContent);
 			newInitialEdge.property(TYPE_KEY, TYPE_INITIAL);

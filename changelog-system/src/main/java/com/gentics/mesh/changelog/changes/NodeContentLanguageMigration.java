@@ -32,7 +32,7 @@ public class NodeContentLanguageMigration extends AbstractChange {
 	public void applyInTx() throws Exception {
 		long count = 0;
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			Iterable<Vertex> it = StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl"));
+			Iterable<Vertex> it = StreamUtil.toIterable(t.hasLabel( "NodeGraphFieldContainerImpl"));
 			for (Vertex nodeContainer : it) {
 				migrateContainer(nodeContainer);
 				count++;

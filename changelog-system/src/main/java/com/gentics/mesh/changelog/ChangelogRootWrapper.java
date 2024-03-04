@@ -54,7 +54,8 @@ public class ChangelogRootWrapper {
 	 * @param change
 	 */
 	public void add(Change change) {
-		Vertex vertex = graph.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, ChangeWrapper.class.getSimpleName()).element();
+		Vertex vertex = graph.addVertex(ChangeWrapper.class.getSimpleName())
+				.property(ElementFrame.TYPE_RESOLUTION_KEY, ChangeWrapper.class.getSimpleName()).element();
 		ChangeWrapper graphChange = new ChangeWrapper(vertex);
 		graphChange.update(change);
 		rootVertex.addEdge(HAS_CHANGE, vertex);

@@ -9,7 +9,6 @@ import static com.gentics.mesh.core.data.util.HibClassConverter.toGraph;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,9 +16,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.traversal.VertexTraversal;
@@ -239,10 +235,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public String getRolesHash() {
-		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, id());
-		String roles = StreamUtil.toStream(itemEdges)
-			.map(itemEdge -> itemEdge.inVertex().id().toString())
+		String roles = StreamUtil.toStream(traversal().outE(ASSIGNED_TO_ROLE).inV().iterator())
+			.map(itemEdge -> itemEdge.id().toString())
 			.sorted()
 			.collect(Collectors.joining());
 
@@ -256,15 +250,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public Result<? extends Role> getRolesViaShortcut() {
-		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterator<Edge> itemEdges = DatabaseHelper.indexedEdges(getGraph(), indexName, id());
-		Stream<RoleImpl> roles = StreamUtil.toStream(itemEdges)
-			.map(itemEdge -> itemEdge.inVertex())
+		Stream<RoleImpl> roles = StreamUtil.toStream(traversal().outE(ASSIGNED_TO_ROLE).inV().iterator())
 			.map(vertex -> {
-				// Unwrap wrapped vertex
-				if (vertex instanceof WrappedElement) {
-					vertex = (Vertex) ((WrappedElement) vertex).getBaseElement();
-				}
 				return getGraph().frameElementExplicit(vertex, RoleImpl.class);
 			});
 		return new TraversalResult<>(roles);

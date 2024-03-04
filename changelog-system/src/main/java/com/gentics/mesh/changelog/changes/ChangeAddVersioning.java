@@ -51,14 +51,14 @@ public class ChangeAddVersioning extends AbstractChange {
 
 		// Iterate over all projects
 		for (Vertex project : StreamUtil.toIterable(projectRoot.vertices(Direction.OUT, GraphRelationships.HAS_PROJECT))) {
-			Vertex releaseRoot = getGraph().addVertex();
+			Vertex releaseRoot = getGraph().addVertex("ReleaseRootImpl");
 			releaseRoot.property(ElementFrame.TYPE_RESOLUTION_KEY, "ReleaseRootImpl");
 			releaseRoot.property("uuid", randomUUID());
 			project.addEdge("HAS_RELEASE_ROOT", releaseRoot);
 
 			// Create release and edges
 			String branchUuid = randomUUID();
-			Vertex release = getGraph().addVertex();
+			Vertex release = getGraph().addVertex("ReleaseImpl");
 			release.property(ElementFrame.TYPE_RESOLUTION_KEY, "ReleaseImpl");
 			release.property("uuid", branchUuid);
 			release.property("name", project.<String>property("name"));
@@ -149,7 +149,7 @@ public class ChangeAddVersioning extends AbstractChange {
 	 */
 	private void migrateBaseNode(Vertex baseNode, Vertex admin) {
 
-		log.info("Migrating basenode {" + baseNode.<String>property("uuid") + "}");
+		log.info("Migrating basenode {" + baseNode.<String>property("uuid").orElse(null) + "}");
 		Vertex schemaContainer = baseNode.vertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").next();
 		Vertex schemaVersion = schemaContainer.vertices(Direction.OUT, "HAS_LATEST_VERSION").next();
 
@@ -158,7 +158,7 @@ public class ChangeAddVersioning extends AbstractChange {
 
 		// The base node has no field containers. Lets create the default one
 		if (!it.hasNext()) {
-			Vertex container = getGraph().addVertex();
+			Vertex container = getGraph().addVertex("NodeGraphFieldContainerImpl");
 			container.property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");
 			container.property("uuid", randomUUID());
 
@@ -297,7 +297,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			if (isPublished) {
 
 				// Now duplicate the field container for version 1.0
-				Vertex publishedContainer = getGraph().addVertex();
+				Vertex publishedContainer = getGraph().addVertex("NodeGraphFieldContainerImpl");
 				publishedContainer.property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl");
 
 				// Copy properties

@@ -149,7 +149,7 @@ public class ChangeNumberStringsToNumber extends AbstractChange {
 
 	private void convertViaSchema(String schemaVersionClassName, String label) throws Exception {
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			for (Vertex schemaVertex : StreamUtil.toIterable(t.V().has(ElementFrame.TYPE_RESOLUTION_KEY, schemaVersionClassName))) {
+			for (Vertex schemaVertex : StreamUtil.toIterable(t.V().hasLabel( schemaVersionClassName))) {
 				Schema schema = buildSchemaFromVertex(schemaVertex, schemaVersionClassName);
 				if (!schema.fieldMap.isEmpty()) {
 					log.info("Update vertices for {}", schema);

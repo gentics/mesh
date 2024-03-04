@@ -79,8 +79,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 	@Override
 	@Deprecated
 	public void addCustomEdgeIndex(String label, String indexPostfix, FieldMap fields, boolean unique) {
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			final OClass e = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
 		    if (e == null) {
 				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
@@ -109,8 +108,6 @@ public class OrientDBIndexHandler implements IndexHandler {
 				}
 			}
 
-		} finally {
-			noTx.close();
 		}
 	}
 
@@ -151,8 +148,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex index for class {" + clazz.getName() + "}");
 		}
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			String name = clazz.getSimpleName();
 			final OClass v = noTx.getRawDatabase().getMetadata().getSchema().getClass(name);
 			if (v == null) {
@@ -162,8 +158,6 @@ public class OrientDBIndexHandler implements IndexHandler {
 			if (index != null) {
 				noTx.getRawDatabase().getMetadata().getIndexManager().dropIndex(index.getName());
 			}
-		} finally {
-			noTx.close();
 		}
 	}
 
@@ -172,11 +166,8 @@ public class OrientDBIndexHandler implements IndexHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing index {" + indexName + "}");
 		}
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			noTx.getRawDatabase().getMetadata().getIndexManager().dropIndex(indexName);
-		} finally {
-			noTx.close();
 		}
 	}
 
@@ -261,8 +252,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 		boolean includeInOut = def.isIncludeInOut();
 		String[] extraFields = {};
 
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 
 			// 1. Type handling
 			final OClass e = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
@@ -331,10 +321,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 				}
 			}
 
-		} finally {
-			noTx.close();
 		}
-
 	}
 
 	private void addVertexIndex(VertexIndexDefinition def) {
@@ -352,8 +339,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 			log.debug("Adding vertex index for class {" + name + "}");
 		}
 
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			final OClass v = noTx.getRawDatabase().getMetadata().getSchema().getClass(name);
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
@@ -383,10 +369,7 @@ public class OrientDBIndexHandler implements IndexHandler {
 				v.createIndex(indexName, typeName,
 					null, new ODocument().fields("ignoreNullValues", true), fieldArray);
 			}
-		} finally {
-			noTx.close();
 		}
-
 	}
 
 	@Override

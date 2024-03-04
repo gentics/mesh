@@ -37,8 +37,9 @@ public class DemoZipHelper {
 				zipFile.delete();
 			}
 			IOUtils.copy(ins, new FileOutputStream(zipFile));
-			ZipFile zip = new ZipFile(zipFile);
-			zip.extractAll(outdir);
+			try (ZipFile zip = new ZipFile(zipFile)) {
+				zip.extractAll(outdir);
+			}
 			zipFile.delete();
 		} else {
 			log.error("The mesh-demo.zip file could not be found within the classpath {" + zipClasspath + "}");

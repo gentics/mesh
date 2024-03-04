@@ -6,8 +6,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
 
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
-import com.gentics.madl.traversal.EdgeTraversal;
-import com.gentics.madl.traversal.EdgeTraversalImpl;
 import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.madl.frame.EdgeFrame;
@@ -28,7 +26,9 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	@Override
 	protected void init(FramedGraph graph, Element element) {
 		super.init(graph, null);
-		element.property(TYPE_RESOLUTION_KEY, getClass().getSimpleName());
+		if (!element.property(TYPE_RESOLUTION_KEY).isPresent()) {
+			element.property(TYPE_RESOLUTION_KEY, getClass().getSimpleName());
+		}
 		this.id = element.id();
 	}
 
@@ -45,13 +45,13 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
-		Edge edge = fg.getBaseGraph().edges(id).next();
+		Edge edge = fg.getEdge(id);
 
-		// Unwrap wrapped vertex
+		// Unwrap wrapped edge
 		if (edge instanceof WrappedElement) {
 			edge = ((WrappedElement<Edge>) edge).getBaseElement();
 		}
-		return (Edge) edge;
+		return edge;
 	}
 
 	@Override
@@ -62,15 +62,6 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	@Override
 	public Element element() {
 		return getElement();
-	}
-
-	/**
-	 * @deprecated Replaced by {@link #label()}
-	 */
-	@Override
-	@Deprecated
-	public String getLabel() {
-		return super.getLabel();
 	}
 
 	@Override
@@ -88,16 +79,6 @@ public abstract class AbstractEdgeFrame extends com.syncleus.ferma.AbstractEdgeF
 	@Override
 	public String label() {
 		return getLabel();
-	}
-
-	@Override
-	public EdgeTraversal<?, ?> traversal() {
-		DelegatingFramedMadlGraph<? extends Graph> fg = getGraph();
-		if (fg == null) {
-			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
-		}
-		return new EdgeTraversalImpl<>(fg, getElement());
 	}
 
 	@Override

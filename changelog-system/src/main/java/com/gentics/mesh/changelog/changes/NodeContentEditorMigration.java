@@ -9,7 +9,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.mesh.changelog.AbstractChange;
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 /**
@@ -31,7 +30,7 @@ public class NodeContentEditorMigration extends AbstractChange {
 	public void applyInTx() {
 		long count = 0;
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			Iterable<Vertex> it = StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl"));
+			Iterable<Vertex> it = StreamUtil.toIterable(t.hasLabel("NodeGraphFieldContainerImpl"));
 			for (Vertex nodeContainer : it) {
 				migrateContainer(nodeContainer);
 				count++;

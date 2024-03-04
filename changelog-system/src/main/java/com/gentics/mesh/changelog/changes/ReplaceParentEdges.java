@@ -39,7 +39,7 @@ public class ReplaceParentEdges extends AbstractChange {
 	@Override
 	public void applyInTx() throws Exception {
 		try (GraphTraversal<Vertex, Vertex> t =  getGraph().traversal().V()) {
-			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl")), vertex -> {
+			iterateWithCommit(StreamUtil.toIterable(t.hasLabel( "NodeImpl")), vertex -> {
 				Set<String> parents = new HashSet<>();
 				Set<String> branchParents = new HashSet<>();
 				for (Edge edge : StreamUtil.toIterable(vertex.edges(Direction.OUT, "HAS_PARENT_NODE"))) {

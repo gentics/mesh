@@ -34,7 +34,7 @@ public class ReplaceProjectEdges extends AbstractChange {
 	@Override
 	public void applyInTx() throws Exception {
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			iterateWithCommit(StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl")), vertex -> {
+			iterateWithCommit(StreamUtil.toIterable(t.hasLabel( "NodeImpl")), vertex -> {
 				vertex.edges(Direction.IN, "HAS_NODE").forEachRemaining(Edge::remove);
 				replaceSingleEdge(vertex, Direction.OUT, "ASSIGNED_TO_PROJECT", PROJECT_KEY_PROPERTY);
 			});

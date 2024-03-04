@@ -387,7 +387,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex) {
 		Graph orientBaseGraph = unwrapCurrentGraph();
 		FramedGraph fermaGraph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Vertex> rawIt = orientBaseGraph.traversal().V().has(ElementFrame.TYPE_RESOLUTION_KEY, classOfVertex.getSimpleName());
+		Iterator<Vertex> rawIt = orientBaseGraph.traversal().V().hasLabel(classOfVertex.getSimpleName());
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 
@@ -423,9 +423,23 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public long count(Class<? extends HibBaseElement> clazz) {
 		OrientGraph orientBaseGraph = unwrapCurrentGraph();
-		long count = orientBaseGraph.getRawDatabase().countClass(clazz.getSimpleName(), false);
-		if (count < 1) {
-			count = orientBaseGraph.getRawDatabase().countClass(clazz.getSimpleName() + "Impl", false);
+		long count = 0;
+		boolean noSuchClass;
+		try {
+			count = orientBaseGraph.getRawDatabase().countClass(clazz.getSimpleName(), false);
+			noSuchClass = false;
+		} catch (Exception e) {
+			log.warn("No class [" + clazz + "] found for count", e);
+			noSuchClass = true;
+		}
+		if (noSuchClass) {
+			try {
+				count = orientBaseGraph.getRawDatabase().countClass(clazz.getSimpleName() + "Impl", false);
+				noSuchClass = false;
+			} catch (Exception e) {
+				log.warn("No class [" + clazz + "Impl] found for count", e);
+				noSuchClass = true;
+			}
 		}
 		return count;
 	}

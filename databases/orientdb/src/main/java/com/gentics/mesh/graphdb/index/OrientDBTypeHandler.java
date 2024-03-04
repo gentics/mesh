@@ -55,8 +55,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex + "}");
 		}
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			OClass vertexType = noTx.getRawDatabase().getMetadata().getSchema().getClass(clazzOfVertex);
 			if (vertexType == null) {
 				String superClazz = "V";
@@ -76,10 +75,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 					vertexType.setSuperClass(superType);
 				}
 			}
-		} finally {
-			noTx.close();
 		}
-
 	}
 
 	@Override
@@ -106,14 +102,11 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Removing vertex type with name {" + typeName + "}");
 		}
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			final OClass type = noTx.getRawDatabase().getMetadata().getSchema().getClass(typeName);
 			if (type != null) {
 				noTx.getRawDatabase().getMetadata().getSchema().dropClass(typeName);
 			}
-		} finally {
-			noTx.close();
 		}
 	}
 
@@ -151,8 +144,7 @@ public class OrientDBTypeHandler implements TypeHandler {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraph noTx = db.get().getTxProvider().rawNoTx();
-		try {
+		try (OrientGraph noTx = db.get().getTxProvider().rawNoTx()) {
 			OClass e = noTx.getRawDatabase().getMetadata().getSchema().getClass(label);
 			if (e == null) {
 				String superClazz = "E";
@@ -187,8 +179,6 @@ public class OrientDBTypeHandler implements TypeHandler {
 					}
 				}
 			}
-		} finally {
-			noTx.close();
 		}
 	}
 
@@ -206,6 +196,6 @@ public class OrientDBTypeHandler implements TypeHandler {
 		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientGraph orientBaseGraph = ((OrientGraph) baseGraph);
 
-		return StreamUtil.toStream(orientBaseGraph.vertices()).filter(v -> classOfT.isInstance(v)).map(classOfT::cast);
+		return StreamUtil.toStream(orientBaseGraph.vertices()).filter(v -> v.label().equals(classOfT.getSimpleName())).map(v -> graph.frameElementExplicit(v, classOfT));
 	}
 }

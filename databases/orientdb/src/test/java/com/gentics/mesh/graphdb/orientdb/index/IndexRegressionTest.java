@@ -74,8 +74,8 @@ public class IndexRegressionTest extends AbstractOrientTest {
 	@Test
 	public void testEdgeLookup() {
 		try (OrientGraph tx = factory.getTx()) {
-			Vertex v1 = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
-			Vertex v2 = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex v1 = tx.addVertex("NodeImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
+			Vertex v2 = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 			vertexId = v1.id();
 
 			Edge edge1 = v1.addEdge(EDGE_LABEL, v2);

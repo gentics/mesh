@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -86,13 +85,13 @@ public class BinaryStorageMigration extends AbstractChange {
 
 		// Create binary root
 		Vertex meshRoot = getMeshRootVertex();
-		Vertex binaryRoot = getGraph().addVertex();
+		Vertex binaryRoot = getGraph().addVertex("BinaryRootImpl");
 		binaryRoot.property("ferma_type", "BinaryRootImpl");
 		binaryRoot.property("uuid", randomUUID());
 		meshRoot.addEdge("HAS_BINARY_ROOT", binaryRoot).property("uuid", randomUUID());
 
 		// Iterate over all binary fields and convert them to edges to binaries
-		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().traversal().V().has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryGraphFieldImpl"));
+		Iterable<Vertex> it = StreamUtil.toIterable(getGraph().traversal().V().hasLabel( "BinaryGraphFieldImpl"));
 		for (Vertex binaryField : it) {
 			migrateField(binaryField, binaryRoot);
 		}
@@ -296,7 +295,7 @@ public class BinaryStorageMigration extends AbstractChange {
 	 * @return
 	 */
 	private Vertex createBinary(String hash, Long size, Integer height, Integer width, Vertex binaryRoot) {
-		Vertex binary = getGraph().addVertex();
+		Vertex binary = getGraph().addVertex("BinaryImpl");
 		binary.property(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryImpl");
 		binary.property("uuid", randomUUID());
 

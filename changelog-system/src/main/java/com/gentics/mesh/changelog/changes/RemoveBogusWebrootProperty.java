@@ -32,7 +32,7 @@ public class RemoveBogusWebrootProperty extends AbstractChange {
 	public void applyInTx() throws Exception {
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			// Iterate over all field container
-			Iterable<Vertex> vertices = StreamUtil.toIterable(t.has(ElementFrame.TYPE_RESOLUTION_KEY, "NodeGraphFieldContainerImpl"));
+			Iterable<Vertex> vertices = StreamUtil.toIterable(t.hasLabel( "NodeGraphFieldContainerImpl"));
 			for (Vertex container : vertices) {
 				migrateContainer(container);
 			}

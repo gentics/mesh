@@ -77,7 +77,12 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 		}
 
 		// GFC must either have a previous GFC, or must be the initial GFC for a Node
-		HibNodeFieldContainer previous = container.getPreviousVersion();
+		HibNodeFieldContainer previous = null;
+		try {
+			previous = container.getPreviousVersion();
+		} catch (Exception e) {
+			log.warn("Failed to get previous version to NodeFieldContainerImpl #" + container.getId(), e);
+		}
 		if (previous == null) {
 			Iterable<GraphFieldContainerEdgeImpl> initialEdges = container.inE(HAS_FIELD_CONTAINER)
 					.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.INITIAL.getCode()).frameExplicit(GraphFieldContainerEdgeImpl.class);
@@ -292,7 +297,12 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 			return container;
 		}
 		HibNodeFieldContainer initial = null;
-		HibNodeFieldContainer previous = container.getPreviousVersion();
+		HibNodeFieldContainer previous = null;
+		try {
+			previous = container.getPreviousVersion();
+		} catch (Exception e) {
+			log.info(e);
+		}
 		while (previous != null) {
 			initial = previous;
 			previous = previous.getPreviousVersion();

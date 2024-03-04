@@ -77,9 +77,9 @@ public class IndexRegression3Test extends AbstractOrientTest {
 	private Object addGraph() {
 		Object id;
 		try (OrientGraph tx = factory.getTx()) {
-			Vertex node = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
-			Vertex draftContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
-			Vertex initialContent = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex node = tx.addVertex("NodeImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "NodeImpl").element();
+			Vertex draftContent = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
+			Vertex initialContent = tx.addVertex("ContentImpl").property(ElementFrame.TYPE_RESOLUTION_KEY, "ContentImpl").element();
 			id = node.id();
 
 			Edge initialEdge = node.addEdge(EDGE_LABEL, initialContent);

@@ -1,15 +1,16 @@
 package com.gentics.madl.traversal;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.VertexFrame;
 
@@ -60,7 +61,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, M> has(Class<?> clazz) {
-		return new VertexTraversalImpl<>(getGraph(), rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().hasLabel(clazz.getSimpleName()));
 	}
 
 	/**
@@ -75,7 +76,25 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	default VertexTraversal<S, M> has(String[] keys, Object[] values) {
 		GraphTraversal<S, M> rawTraversal = rawTraversal();
 		for (int i = 0; i < keys.length; i++) {
-			rawTraversal = rawTraversal.has(keys[i], values[i]);
+			rawTraversal = rawTraversal.has(keys[i], P.test((a, b) -> {
+				boolean rawEquals = Objects.equals(a, b); 
+				if (rawEquals) {
+					return rawEquals;
+				}
+				if (Collection.class.isInstance(b)) {
+					if (Collection.class.isInstance(a)) {
+						return CollectionUtils.disjunction(Collection.class.cast(b), Collection.class.cast(a)).size() == 0;
+					} else {
+						return Collection.class.cast(b).stream().anyMatch(bb -> Objects.equals(bb, a));
+					}
+				} else {
+					if (Collection.class.isInstance(a)) {
+						return Collection.class.cast(a).stream().anyMatch(aa -> Objects.equals(aa, b));
+					} else {
+						return rawEquals;
+					}
+				}
+			}, values[i]));
 		}
 		return new VertexTraversalImpl<>(getGraph(), rawTraversal);
 	}
@@ -106,6 +125,19 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	}
 
 	/**
+	 * If the incoming element has the following type label, then filter the element.
+	 *
+	 * @param label
+	 *            the type label to check
+	 * @param value
+	 *            the objects to filter on (in an OR manner)
+	 * @return the extended Pipeline
+	 */
+	default VertexTraversal<S, M> hasLabel(String label) {
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().hasLabel(label));
+	}
+
+	/**
 	 * Emit the adjacent outgoing vertices of the incoming vertex.
 	 *
 	 * @param labels
@@ -113,7 +145,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, ?> out(String... labels) {
-		return new VertexTraversalImpl<>(getGraph(), rawTraversal().E(Direction.OUT).has(ElementFrame.TYPE_RESOLUTION_KEY, labels).<Vertex>flatMap(e -> e.get().vertices(Direction.OUT)));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().out(labels));
 	}
 
 	/**
@@ -124,7 +156,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the extended Pipeline
 	 */
 	default VertexTraversal<S, ?> in(String... labels) {
-		return new VertexTraversalImpl<>(getGraph(), rawTraversal().E(Direction.IN).has(ElementFrame.TYPE_RESOLUTION_KEY, labels).<Vertex>flatMap(e -> e.get().vertices(Direction.IN)));
+		return new VertexTraversalImpl<>(getGraph(), rawTraversal().in(labels));
 	}
 
 	/**
@@ -135,7 +167,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, ?> outE(String... labels) {
-		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().E(Direction.OUT).has(ElementFrame.TYPE_RESOLUTION_KEY, labels));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().outE(labels));
 	}
 
 	/**
@@ -146,7 +178,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, ?> inE(String... labels) {
-		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().E(Direction.IN).has(ElementFrame.TYPE_RESOLUTION_KEY, labels));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().inE(labels));
 	}
 
 	/**
@@ -159,7 +191,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the next emitted object
 	 */
 	default <N> N next(Class<N> kind) {
-		return frameElement(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next(), kind);
+		return frameElement(rawTraversal().hasLabel(kind.getSimpleName()).next(), kind);
 	}
 
 	/**
@@ -190,7 +222,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return the next emitted object
 	 */
 	default <N> N nextOrDefault(Class<N> kind, N defaultValue) {
-		return rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).tryNext()
+		return rawTraversal().hasLabel(kind.getSimpleName()).tryNext()
 				.map(element -> frameElement(element, kind))
 				.orElse(defaultValue);
 	}
@@ -258,7 +290,7 @@ public interface VertexTraversal<S, M extends Vertex> extends FramedTraversal<S,
 	 * @return An iterator of framed elements.
 	 */
 	default <N> Iterable<N> frame(Class<N> kind) {
-		return StreamUtil.toIterable(frame(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()), kind));
+		return StreamUtil.toIterable(frame(rawTraversal().hasLabel(kind.getSimpleName()), kind));
 	}
 
 	/**

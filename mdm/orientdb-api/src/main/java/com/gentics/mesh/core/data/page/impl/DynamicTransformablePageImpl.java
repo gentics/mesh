@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.page.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +28,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.StreamUtil;
-import com.orientechnologies.orient.core.index.OIndex;
 import com.syncleus.ferma.FramedGraph;
 
 /**
@@ -143,7 +141,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private void init(Class<? extends T> clazz, VertexTraversal<?, ?> traversal, InternalPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
-		Stream<Vertex> stream = StreamUtil.toStream((Iterable<Vertex>) traversal).map(Vertex.class::cast);
+		Stream<Vertex> stream = StreamUtil.toStream(traversal.iterator());
 		applyPagingAndPermChecks(stream, clazz, perm);
 	}
 
@@ -244,8 +242,8 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 			itemEdges = StreamUtil.toStream(query.fetch(maybeVariations));
 		} else {
 			// Iterate over all vertices that are managed by this root vertex
-			OIndex idx = ograph.getBaseGraph().getRawDatabase().getMetadata().getIndexManager().getIndex(indexName);
-			itemEdges = ograph.getBaseGraph().getIndexedEdges(idx, Arrays.asList(indexKey).iterator());
+			Object[] idx = ograph.getBaseGraph().getRawDatabase().getMetadata().getIndexManager().getIndex(indexName).getInternal().getRids(indexKey).collect(Collectors.toList()).toArray();
+			itemEdges = StreamUtil.toStream(ograph.getBaseGraph().edges(idx));
 		}
 		applyPagingAndPermChecks(itemEdges
 				// Get the vertex from the edge

@@ -1,7 +1,9 @@
 package com.gentics.madl.ext.orientdb;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.orientdb.OrientEdge;
 import org.apache.tinkerpop.gremlin.orientdb.OrientElement;
+import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
@@ -29,9 +31,15 @@ public class OrientDBTypeResolver implements TypeResolver {
 		if (element instanceof WrappedElement) {
 			element = ((WrappedElement<Element>) element).getBaseElement();
 		}
-		if (element instanceof OrientElement) {
-			OrientElement orientVertex = (OrientElement) element;
-			return ((OElement) orientVertex.getRecord()).getSchemaType().map(type -> (Class<T>) resolve(type.getName(), kind)).orElse(null);
+		if (element instanceof OrientVertex) {
+			OrientVertex orientVertex = (OrientVertex) element;
+			String name = orientVertex.getRawElement().getSchemaType().get().getName();
+			return resolve(name, kind);
+		}
+		if (element instanceof OrientEdge) {
+			OrientEdge orientEdge = (OrientEdge) element;
+			String name = orientEdge.getRawElement().getSchemaType().get().getSuperClass().getName();
+			return resolve(name, kind);
 		}
 		return null;
 	}

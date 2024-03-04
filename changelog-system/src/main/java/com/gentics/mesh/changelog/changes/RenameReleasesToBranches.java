@@ -43,11 +43,11 @@ public class RenameReleasesToBranches extends AbstractChange {
 		getDb().type().addVertexType("BranchRootImpl", "MeshVertexImpl");
 		getDb().type().addVertexType("BranchMigrationJobImpl", "MeshVertexImpl");
 
-		runBatchAction(() -> migrateVertices("ReleaseImpl", "BranchImpl", VERTEX_BATCH_LIMIT));
-		runBatchAction(() -> migrateVertices("ReleaseRootImpl", "BranchRootImpl", VERTEX_BATCH_LIMIT));
-		runBatchAction(() -> migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl", VERTEX_BATCH_LIMIT));
-
 		try {
+			runBatchAction(() -> migrateVertices("ReleaseImpl", "BranchImpl", VERTEX_BATCH_LIMIT));
+			runBatchAction(() -> migrateVertices("ReleaseRootImpl", "BranchRootImpl", VERTEX_BATCH_LIMIT));
+			runBatchAction(() -> migrateVertices("ReleaseMigrationJobImpl", "BranchMigrationJobImpl", VERTEX_BATCH_LIMIT));
+
 			migrateEdgeProps("HAS_TAG", EDGE_BATCH_LIMIT);
 			migrateEdgeProps("HAS_FIELD_CONTAINER", EDGE_BATCH_LIMIT);
 			migrateEdgeProps("HAS_PARENT_NODE", EDGE_BATCH_LIMIT);
@@ -62,7 +62,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 		setGraph(graph);
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
 			int r = 0;
-			Iterable<Edge> edges = StreamUtil.toIterable(t.E().has(ElementFrame.TYPE_RESOLUTION_KEY, label));
+			Iterable<Edge> edges = StreamUtil.toIterable(t.E().hasLabel( label));
 			for (Edge edge : edges) {
 				jobQueue.add(edge.id());
 				r++;
@@ -154,10 +154,10 @@ public class RenameReleasesToBranches extends AbstractChange {
 		log.info("Migrating vertex type {" + from + "} to {" + to + "}");
 		long count = 0;
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			Iterable<Vertex> it = () -> t.has(ElementFrame.TYPE_RESOLUTION_KEY, from);
+			Iterable<Vertex> it = () -> t.hasLabel( from);
 			for (Vertex fromV : it) {
 				// Create new vertex with new type
-				Vertex toV = getGraph().addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, to).element();
+				Vertex toV = getGraph().addVertex(to).property(ElementFrame.TYPE_RESOLUTION_KEY, to).element();
 				// Duplicate the in edges
 				for (Edge inE : StreamUtil.toIterable(fromV.edges(Direction.IN))) {
 					Vertex out = inE.outVertex();

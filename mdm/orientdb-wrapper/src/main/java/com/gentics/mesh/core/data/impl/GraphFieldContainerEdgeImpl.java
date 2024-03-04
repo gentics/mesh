@@ -196,6 +196,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 					mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
 				.orElseGet(() -> graph.getRawTraversal()
 						.E()
+						.hasLabel(HAS_FIELD_CONTAINER)
 						.has(BRANCH_UUID_KEY, branchUuid)
 						.has(EDGE_TYPE_KEY, type.getCode())
 						.outV()
@@ -216,10 +217,16 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @return
 	 */
 	public static GraphFieldContainerEdge findEdge(Object nodeId, String branchUuid, ContainerType type, String lang) {
-		return GraphDBTx.getGraphTx().getGraph().frameElementExplicit(
-				MeshEdgeImpl.findEdge(nodeId, lang, branchUuid, type), 
+		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
+		Iterator<? extends GraphFieldContainerEdgeImpl> iter = graph.frameExplicit(
+				graph.getRawTraversal().V(nodeId)
+					.outE(HAS_FIELD_CONTAINER)
+					.has(BRANCH_UUID_KEY, branchUuid)
+					.has(EDGE_TYPE_KEY, type.getCode())
+					.has(LANGUAGE_TAG_KEY, lang), 
 				GraphFieldContainerEdgeImpl.class
 			);
+		return iter.hasNext() ? iter.next() : null;
 	}
 
 	/**
@@ -238,6 +245,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
 				.orElseGet(() -> graph.getRawTraversal()
 						.E()
+						.hasLabel(HAS_FIELD_CONTAINER)
 						.has(BRANCH_UUID_KEY, branchUuid)
 						.has(EDGE_TYPE_KEY, type.getCode())
 						.outV()

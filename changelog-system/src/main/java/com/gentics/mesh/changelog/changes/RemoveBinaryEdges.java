@@ -34,7 +34,7 @@ public class RemoveBinaryEdges extends AbstractChange {
 		Graph graph = getDb().rawTx();
 		setGraph(graph);
 		try (GraphTraversal<Vertex, Vertex> t = getGraph().traversal().V()) {
-			t.has(ElementFrame.TYPE_RESOLUTION_KEY, "BinaryRootImpl").forEachRemaining(Element::remove);
+			t.hasLabel( "BinaryRootImpl").forEachRemaining(Element::remove);
 			graph.tx().commit();
 		} catch (Throwable e) {
 			log.error("Invoking rollback due to error", e);

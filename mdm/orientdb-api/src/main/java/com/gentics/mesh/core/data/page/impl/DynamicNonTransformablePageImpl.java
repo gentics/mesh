@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.page.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.StreamUtil;
-import com.orientechnologies.orient.core.index.OIndex;
 import com.syncleus.ferma.FramedGraph;
 
 
@@ -241,8 +239,8 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement<?>> extend
 			itemEdges = StreamUtil.toStream(query.fetch(maybeVariations));
 		} else {
 			// Iterate over all vertices that are managed by this root vertex
-			OIndex idx = ograph.getBaseGraph().getRawDatabase().getMetadata().getIndexManager().getIndex(indexName);
-			itemEdges = ograph.getBaseGraph().getIndexedEdges(idx, Arrays.asList(indexKey).iterator());
+			Object[] rids = ograph.getBaseGraph().getRawDatabase().getMetadata().getIndexManager().getIndex(indexName.toLowerCase()).getInternal().getRids(indexKey).collect(Collectors.toList()).toArray();
+			itemEdges = StreamUtil.toStream(ograph.getBaseGraph().edges(rids));
 		}
 		applyPagingAndPermChecks(itemEdges
 				// Get the vertex from the edge

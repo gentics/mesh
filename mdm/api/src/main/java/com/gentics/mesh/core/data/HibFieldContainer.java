@@ -182,7 +182,8 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 */
 	default Iterable<? extends HibNode> getReferencedNodes() {
 		// Get all fields and group them by type
-		Map<String, List<FieldSchema>> affectedFields = getSchemaContainerVersion().getSchema().getFields().stream()
+		HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version = getSchemaContainerVersion();
+		Map<String, List<FieldSchema>> affectedFields = version.getSchema().getFields().stream()
 			.filter(this::isNodeReferenceType)
 			.collect(Collectors.groupingBy(FieldSchema::getType));
 

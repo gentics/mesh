@@ -9,7 +9,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.util.StreamUtil;
 
 
@@ -81,7 +80,7 @@ public interface EdgeTraversal<S, M extends Edge> extends FramedTraversal<S, M> 
 	 * @return the extended Pipeline
 	 */
 	default EdgeTraversal<S, M> has(Class<?> clazz) {
-		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, clazz.getSimpleName()));
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().hasLabel(clazz.getSimpleName()));
 	}
 
 	/**
@@ -93,6 +92,19 @@ public interface EdgeTraversal<S, M extends Edge> extends FramedTraversal<S, M> 
 	 */
 	default EdgeTraversal<S, M> hasNot(String key) {
 		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().hasNot(key));
+	}
+
+	/**
+	 * If the incoming element has the following type label, then filter the element.
+	 *
+	 * @param label
+	 *            the type label to check
+	 * @param value
+	 *            the objects to filter on (in an OR manner)
+	 * @return the extended Pipeline
+	 */
+	default EdgeTraversal<S, M> hasLabel(String label) {
+		return new EdgeTraversalImpl<>(getGraph(), rawTraversal().hasLabel(label));
 	}
 
 	/**
@@ -137,7 +149,7 @@ public interface EdgeTraversal<S, M extends Edge> extends FramedTraversal<S, M> 
 	 * @return the next emitted object
 	 */
 	default <T> T next(Class<T> kind) {
-		return frameElement(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()).next(), kind);
+		return frameElement(rawTraversal().hasLabel(kind.getSimpleName()).next(), kind);
 	}
 
 	/**
@@ -182,7 +194,7 @@ public interface EdgeTraversal<S, M extends Edge> extends FramedTraversal<S, M> 
 	 * @return a list of all the objects
 	 */
 	default <T> List<? extends T> toList(Class<T> kind) {
-		return (List<? extends T>) StreamUtil.toStream(frame(rawTraversal().has(ElementFrame.TYPE_RESOLUTION_KEY, kind.getSimpleName()), kind)).collect(Collectors.toList());
+		return (List<? extends T>) StreamUtil.toStream(frame(rawTraversal().hasLabel(kind.getSimpleName()), kind)).collect(Collectors.toList());
 	}
 
 	/**

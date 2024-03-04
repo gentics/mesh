@@ -20,10 +20,11 @@ import com.syncleus.ferma.AbstractElementFrame;
 import com.syncleus.ferma.FramedGraph;
 
 /**
- * Mesh specific vertex implementation. It must override all calls which would access the element via the field reference.
- * We don't use the ferma field. Instead the element will always be located using the stored elementId.
- * The Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread bound and can't be shared across threads.
- * We thus need to avoid access to it.
+ * Mesh specific vertex implementation. It must override all calls which would
+ * access the element via the field reference. We don't use the ferma field.
+ * Instead the element will always be located using the stored elementId. The
+ * Edge or Vertex instance of the {@link AbstractElementFrame#element} is thread
+ * bound and can't be shared across threads. We thus need to avoid access to it.
  */
 public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVertexFrame implements VertexFrame {
 
@@ -32,7 +33,9 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	@Override
 	protected void init(FramedGraph graph, Element element) {
 		super.init(graph, null);
-		element.property(TYPE_RESOLUTION_KEY, getClass().getSimpleName());
+		if (!element.property(TYPE_RESOLUTION_KEY).isPresent()) {
+			element.property(TYPE_RESOLUTION_KEY, getClass().getSimpleName());
+		}
 		this.id = element.id();
 	}
 
@@ -45,16 +48,17 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	public Vertex getElement() {
 		DelegatingFramedMadlGraph<? extends Graph> fg = getGraph();
 		if (fg == null) {
-			throw new RuntimeException("Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+			throw new RuntimeException(
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 
-		Vertex vertex = fg.getBaseGraph().vertices(id).next();
+		Vertex vertex = fg.getVertex(id);
 
 		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {
 			vertex = ((WrappedElement<Vertex>) vertex).getBaseElement();
 		}
-		return (Vertex) vertex;
+		return vertex;
 	}
 
 	@Override
@@ -71,13 +75,12 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	/**
-	 * Add a single link <b>in-bound</b> link to the given vertex. Note that this method will remove all other links to other vertices for the given labels and
+	 * Add a single link <b>in-bound</b> link to the given vertex. Note that this
+	 * method will remove all other links to other vertices for the given labels and
 	 * only create a single edge between both vertices per label.
 	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
+	 * @param vertex Target vertex
+	 * @param labels Labels to handle
 	 */
 	@Override
 	public void setSingleLinkInTo(VertexFrame vertex, String... labels) {
@@ -88,13 +91,12 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	/**
-	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
+	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of
+	 * labels. Note that this method will effectively ensure that only one
 	 * <b>in-bound</b> link exists between the two vertices for each label.
 	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
+	 * @param vertex Target vertex
+	 * @param labels Labels to handle
 	 */
 	@Override
 	public void setUniqueLinkInTo(VertexFrame vertex, String... labels) {
@@ -105,13 +107,13 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 	}
 
 	/**
-	 * Remove all out-bound edges with the given label from the current vertex and create a new new <b>out-bound</b> edge between the current and given vertex
-	 * using the specified label. Note that only a single out-bound edge per label will be preserved.
+	 * Remove all out-bound edges with the given label from the current vertex and
+	 * create a new new <b>out-bound</b> edge between the current and given vertex
+	 * using the specified label. Note that only a single out-bound edge per label
+	 * will be preserved.
 	 * 
-	 * @param vertex
-	 *            Target vertex
-	 * @param labels
-	 *            Labels to handle
+	 * @param vertex Target vertex
+	 * @param labels Labels to handle
 	 */
 	@Override
 	public void setSingleLinkOutTo(VertexFrame vertex, String... labels) {
@@ -130,7 +132,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 		return new EdgeTraversalImpl<>(getGraph(), getRawTraversal().inE(labels));
 	}
@@ -140,7 +142,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 		return new EdgeTraversalImpl<>(getGraph(), getRawTraversal().outE(labels));
 	}
@@ -150,7 +152,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
 		return new VertexTraversalImpl<>(getGraph(), getRawTraversal().in(labels));
 	}
@@ -160,29 +162,49 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 		FramedGraph fg = getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
-				"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new VertexTraversalImpl<>(getGraph(), getRawTraversal().out(labels));
+		return new VertexTraversalImpl<>(fg, getRawTraversal().out(labels));
 	}
 
 	@Override
 	public <T extends ElementFrame> Result<? extends T> out(String label, Class<T> clazz) {
-		return new TraversalResult<>(getGraph().frameExplicit(getElement().vertices(Direction.OUT, label), clazz));
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		return new TraversalResult<>(fg.frameExplicit(getElement().vertices(Direction.OUT, label), clazz));
 	}
 
 	@Override
 	public <T extends EdgeFrame> Result<? extends T> outE(String label, Class<T> clazz) {
-		return new TraversalResult<>(getGraph().frameExplicit(getElement().edges(Direction.OUT, label), clazz));
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		return new TraversalResult<>(fg.frameExplicit(getElement().edges(Direction.OUT, label), clazz));
 	}
 
 	@Override
 	public <T extends ElementFrame> Result<? extends T> in(String label, Class<T> clazz) {
-		return new TraversalResult<>(getGraph().frameExplicit(getElement().vertices(Direction.IN, label), clazz));
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		return new TraversalResult<>(fg.frameExplicit(getElement().vertices(Direction.IN, label), clazz));
 	}
 
 	@Override
 	public <T extends EdgeFrame> Result<? extends T> inE(String label, Class<T> clazz) {
-		return new TraversalResult<>(getGraph().frameExplicit(getElement().edges(Direction.IN, label), clazz));
+		FramedGraph fg = getGraph();
+		if (fg == null) {
+			throw new RuntimeException(
+					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
+		}
+		return new TraversalResult<>(fg.frameExplicit(getElement().edges(Direction.IN, label), clazz));
 	}
 
 	@Override

@@ -132,7 +132,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 	}
 
 	private Vertex createNode(OrientGraph tx, Vertex parent, String uuid) {
-		Vertex node = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, NODE_TYPE).element();
+		Vertex node = tx.addVertex(NODE_TYPE).property(ElementFrame.TYPE_RESOLUTION_KEY, NODE_TYPE).element();
 		node.property(UUID_KEY, uuid);
 		if (parent != null) {
 			String parentUuid = parent.<String>property(UUID_KEY).orElse(null);
@@ -141,7 +141,7 @@ public class IndexRegression5Test extends AbstractOrientTest {
 		}
 
 		// Add a content vertex to the given node vertex
-		Vertex content = tx.addVertex().property(ElementFrame.TYPE_RESOLUTION_KEY, CONTENT_TYPE).element();
+		Vertex content = tx.addVertex(CONTENT_TYPE).property(ElementFrame.TYPE_RESOLUTION_KEY, CONTENT_TYPE).element();
 		node.addEdge(CONTENT_EDGE_LABEL, content);
 
 		return node;

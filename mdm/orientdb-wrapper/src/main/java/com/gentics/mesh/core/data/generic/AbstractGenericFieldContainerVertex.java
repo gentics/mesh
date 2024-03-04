@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.data.generic;
 
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.LANGUAGE_TAG_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -48,7 +51,11 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String branchUuid, ContainerType type,
 		Class<U> classOfU) {
-		Edge edge = MeshEdgeImpl.findEdge(id(), languageTag, branchUuid, type);
+		Edge edge = outE(HAS_FIELD_CONTAINER)
+				.has(BRANCH_UUID_KEY, branchUuid)
+				.has(EDGE_TYPE_KEY, type.getCode())
+				.has(LANGUAGE_TAG_KEY, languageTag)
+				.nextOrNull();
 		if (edge != null) {
 			FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
 			Vertex in = edge.inVertex();
@@ -74,7 +81,10 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 		U container = null;
 		EdgeTraversal<?, ?> edgeTraversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
 		if (edgeTraversal.hasNext()) {
-			container = StreamUtil.toStream(edgeTraversal.next().vertices(Direction.IN)).map(classOfU::isInstance).map(classOfU::cast).findAny().orElse(null);
+			container = StreamUtil.toStream(edgeTraversal.next().vertices(Direction.IN))
+					.filter(v -> classOfU.getSimpleName().equals(v.<String>property(TYPE_RESOLUTION_KEY).orElse(null)))
+					.map(v -> getGraph().frameElementExplicit(v, classOfU))
+					.findAny().orElse(null);
 		}
 
 		// Create a new container if no existing one was found

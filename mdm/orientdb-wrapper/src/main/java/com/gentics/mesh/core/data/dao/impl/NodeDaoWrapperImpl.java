@@ -22,7 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;

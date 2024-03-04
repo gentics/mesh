@@ -25,7 +25,6 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +36,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -96,10 +92,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.event.EventQueueBatch;
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.StreamUtil;
-import com.syncleus.ferma.FramedGraph;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -321,7 +315,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		} else {
 			throw error(BAD_REQUEST, "For inbound references you have to pick at least one source.");
 		}
-		return toStream((Iterable<NodeGraphFieldImpl>) edges.has(ElementFrame.TYPE_RESOLUTION_KEY, NodeGraphFieldImpl.class.getSimpleName())).map(NodeGraphFieldImpl.class::cast);
+		return toStream((Iterable<NodeGraphFieldImpl>) edges.hasLabel( NodeGraphFieldImpl.class.getSimpleName())).map(NodeGraphFieldImpl.class::cast);
 	}
 
 	@Override
@@ -434,7 +428,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return graph.maybeGetIndexedFramedElements(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
 				.orElseGet(() -> graph.frame(graph.getRawTraversal()
 						.E()
-						.has(ElementFrame.TYPE_RESOLUTION_KEY, GraphFieldContainerEdgeImpl.class)
+						.hasLabel(GraphFieldContainerEdgeImpl.class.getSimpleName())
 						.has(GraphFieldContainerEdge.BRANCH_UUID_KEY, branchUuid)
 						.has(GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY, segmentInfo), 
 					GraphFieldContainerEdgeImpl.class));

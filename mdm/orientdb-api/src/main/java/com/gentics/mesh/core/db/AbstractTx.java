@@ -66,7 +66,7 @@ public abstract class AbstractTx<G extends Graph, T extends DelegatingFramedMadl
 		if (HibBaseElement.class.isAssignableFrom(classOfB)) {
 			return data().mesh().database().count((Class<? extends HibBaseElement>) classOfB);
 		} else {
-			return StreamUtil.toStream(getGraph().getFramedVertices("ferma_type", classOfB.getName(), classOfB)).count();
+			return StreamUtil.toStream(getGraph().getFramedVertices(classOfB)).count();
 		}
 	}
 

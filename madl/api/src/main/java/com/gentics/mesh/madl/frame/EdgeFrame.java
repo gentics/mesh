@@ -3,6 +3,7 @@ package com.gentics.mesh.madl.frame;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import com.gentics.madl.traversal.EdgeTraversal;
+import com.gentics.madl.traversal.EdgeTraversalImpl;
 import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.result.TraversalResult;
 
@@ -26,7 +27,9 @@ public interface EdgeFrame extends ElementFrame, com.syncleus.ferma.EdgeFrame {
 	 *
 	 * @return the EdgeTraversal of the current element
 	 */
-	EdgeTraversal<?, ?> traversal();
+	default EdgeTraversal<?, ?> traversal() {
+		return new EdgeTraversalImpl<>(getGraph(), getElement());
+	}
 
 	/**
 	 * Return the label of the edge.
