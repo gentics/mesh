@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.comment.testclient;
 
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import java.io.InputStream;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -1440,6 +1442,65 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	@Override
 	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
 			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String uuid,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String projectName, String uuid,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(String projectName,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByUuid(String uuid, String projectName,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByTag(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByUuid(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByTag(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
 }
