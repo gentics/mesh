@@ -15,7 +15,6 @@ import javax.inject.Singleton;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cache.CacheRegistry;
@@ -144,8 +143,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 			HibRole adminRole = roleDao.findByName("admin");
 			WrappedFramedGraph<? extends Graph> graph = HibClassConverter.toGraph(tx).getGraph();
 			for (Vertex vertex : StreamUtil.toIterable(graph.getBaseGraph().vertices())) {
-				WrappedVertex<MeshVertexImpl> wrappedVertex = (WrappedVertex<MeshVertexImpl>) vertex;
-				MeshVertex meshVertex = wrappedVertex.getBaseVertex();
+				MeshVertex meshVertex = graph.frameElement(vertex, MeshVertexImpl.class);
 				roleDao.grantPermissions(adminRole, meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, PUBLISH_PERM, READ_PUBLISHED_PERM);
 				if (log.isTraceEnabled()) {
 					log.trace("Granting admin CRUD permissions on vertex {" + meshVertex.getUuid() + "} for role {" + adminRole.getUuid() + "}");
