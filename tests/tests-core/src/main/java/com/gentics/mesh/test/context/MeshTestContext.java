@@ -132,6 +132,8 @@ public class MeshTestContext implements TestRule {
 
 	private MeshTestContextProvider meshTestContextProvider;
 
+	private boolean needsSetup = true;
+
 	public Statement apply(final Statement base, final Description description) {
 		return new Statement() {
 			@Override
@@ -161,6 +163,10 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void setup(MeshTestSetting settings) throws Exception {
+		if (!needsSetup) {
+			// database has already been setup, so omit this step
+			return;
+		}
 		meshTestContextProvider.getInstanceProvider().initMeshData(settings, meshDagger);
 		initFolders(mesh.getOptions());
 		listenToSearchIdleEvent();
@@ -266,6 +272,11 @@ public class MeshTestContext implements TestRule {
 	}
 
 	public void tearDown(MeshTestSetting settings) throws Exception {
+		if (!settings.resetBetweenTests()) {
+			// the test does not require the database to be reset between test runs
+			needsSetup = false;
+			return;
+		}
 		cleanupFolders();
 		if (settings.startServer()) {
 			undeployAndReset();
@@ -887,5 +898,13 @@ public class MeshTestContext implements TestRule {
 
 	public MeshTestActions actions() {
 		return getInstanceProvider().actions();
+	}
+
+	/**
+	 * Does the test need setup? This will be true whenever the database has been setup from scratch
+	 * @return true if the test needs to be setup
+	 */
+	public boolean needsSetup() {
+		return needsSetup;
 	}
 }

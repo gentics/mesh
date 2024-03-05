@@ -63,7 +63,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public LocalActionContextImpl(BootstrapInitializer boot, MeshAuthUser user, Class<? extends T> classOfResponse,
 		ParameterProvider... requestParameters) {
 		this.boot = boot;
-		this.query = getQuery(requestParameters);
+		this.query = getQuery(null, requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
 		data.put(SecurityLoggingHandler.SECURITY_LOGGER_CONTEXT_KEY, securityLogger);
