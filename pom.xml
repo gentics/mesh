@@ -114,7 +114,7 @@
 				<plugin>
 					<groupId>com.gentics</groupId>
 					<artifactId>dependency-reporting-plugin</artifactId>
-					<version>1.0.0-SNAPSHOT</version>
+					<version>1.0.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
