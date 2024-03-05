@@ -17,7 +17,6 @@ import java.util.Stack;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.index.IndexHandler;
@@ -28,7 +27,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -42,7 +40,6 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -87,17 +84,10 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	 */
 	public Job findByUuid(String uuid) {
 		FramedGraph graph = GraphDBTx.getGraphTx().getGraph();
-		// 1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = db().getVertices(MeshVertexImpl.class, new String[] { "uuid" }, new String[] { uuid });
+		Iterator<Vertex> it = getRawTraversal().out(getRootLabel()).has("uuid", uuid);
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
-			// 2. Use the edge index to determine whether the element is part of this root vertex
-			Iterator<Edge> edges = DatabaseHelper.indexedEdges(getGraph(), "e." + getRootLabel().toLowerCase() + "_inout",
-				db().index().createComposedIndexKey(potentialElement.id(), id()));
-			if (edges.hasNext()) {
-				// Don't frame explicitly since multiple types can be returned
-				return graph.frameElement(potentialElement, getPersistanceClass());
-			}
+			return graph.frameElement(potentialElement, getPersistanceClass());
 		}
 		return null;
 	}

@@ -2,8 +2,8 @@ package com.gentics.mesh.core.data.container.impl;
 
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.BRANCH_UUID_KEY;
 import static com.gentics.mesh.core.data.GraphFieldContainerEdge.EDGE_TYPE_KEY;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_INDEX_NAME;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY;
+import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_URLFIELD_PROPERTY_KEY;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import com.gentics.madl.index.IndexHandler;
@@ -218,17 +219,26 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(String segmentInfo, String branchUuid, ContainerType type, GraphFieldContainerEdge edge) {
-		Object webRootIndexKey = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		// check for uniqueness of webroot path
+		GraphTraversal<Edge, Edge> iter = getGraph().getRawTraversal().E()
+			.hasLabel(HAS_FIELD_CONTAINER)
+			.has(BRANCH_UUID_KEY, branchUuid)
+			.has(EDGE_TYPE_KEY, type.getCode())
+			.has(WEBROOT_PROPERTY_KEY, segmentInfo)
+			.is(P.neq(edge));
 
-		return db().index().checkIndexUniqueness(WEBROOT_INDEX_NAME, edge, webRootIndexKey);
+		return iter.hasNext() ? getGraph().frameElementExplicit(iter.next(), GraphFieldContainerEdgeImpl.class) : null;
 	}
 
 	@Override
 	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(GraphFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootUrlFieldIndexKey(db(), urlFieldValue, branchUuid, type);
+		GraphTraversal<Edge, Edge> iter = getGraph().getRawTraversal().E()
+				.hasLabel(HAS_FIELD_CONTAINER)
+				.has(BRANCH_UUID_KEY, branchUuid)
+				.has(EDGE_TYPE_KEY, type.getCode())
+				.has(WEBROOT_URLFIELD_PROPERTY_KEY, urlFieldValue)
+				.is(P.neq(edge));
 
-		return  mesh().database().index().checkIndexUniqueness(WEBROOT_URLFIELD_INDEX_NAME, edge, key);
+		return iter.hasNext() ? getGraph().frameElementExplicit(iter.next(), GraphFieldContainerEdgeImpl.class) : null;
 	}
 
 	/**

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.node.impl;
 
 import static com.gentics.mesh.core.data.BranchParentEntry.branchParentEntry;
-import static com.gentics.mesh.core.data.GraphFieldContainerEdge.WEBROOT_INDEX_NAME;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.BRANCH_PARENTS_KEY_PROPERTY;
@@ -36,11 +35,9 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.traversal.EdgeTraversal;
 import com.gentics.madl.traversal.VertexTraversal;
@@ -423,15 +420,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(String segmentInfo, String branchUuid, ContainerType type) {
-		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		Object key = GraphFieldContainerEdgeImpl.composeWebrootIndexKey(db(), segmentInfo, branchUuid, type);
-		return graph.maybeGetIndexedFramedElements(WEBROOT_INDEX_NAME, key, GraphFieldContainerEdgeImpl.class)
-				.orElseGet(() -> graph.frame(graph.getRawTraversal()
-						.E()
-						.hasLabel(GraphFieldContainerEdgeImpl.class.getSimpleName())
-						.has(GraphFieldContainerEdge.BRANCH_UUID_KEY, branchUuid)
-						.has(GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY, segmentInfo), 
-					GraphFieldContainerEdgeImpl.class));
+		return getGraph().frameExplicit(outE(HAS_FIELD_CONTAINER)
+			.has(GraphFieldContainerEdge.BRANCH_UUID_KEY, branchUuid)
+			.has(GraphFieldContainerEdge.WEBROOT_PROPERTY_KEY, segmentInfo)
+			.has(GraphFieldContainerEdge.EDGE_TYPE_KEY, type.getCode()), GraphFieldContainerEdgeImpl.class);
 	}
 
 	@Override

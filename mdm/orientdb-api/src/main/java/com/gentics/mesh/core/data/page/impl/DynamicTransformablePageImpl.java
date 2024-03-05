@@ -17,7 +17,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -86,7 +85,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	public DynamicTransformablePageImpl(HibUser requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, InternalPermission perm,
 		Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(root.getPersistanceClass(), root.getRootLabel(), "e." + root.getRootLabel().toLowerCase() + "_out", root.id(), Direction.IN, root.getGraph(), perm, root.getPersistenceClassVariations());
+		init(root.getPersistanceClass(), root.getRootLabel(), root.id(), Direction.IN, root.getGraph(), perm, root.getPersistenceClassVariations());
 	}
 
 	/**
@@ -96,8 +95,6 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            User which is used to check permissions
 	 * @param rootLabel
 	 * 			  Root vertex label     
-	 * @param indexName
-	 *            Name of the index which should be used to lookup the elements
 	 * @param indexKey
 	 *            Key to be used for the index lookup
 	 * @param dir
@@ -113,10 +110,10 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param frameExplicitly
 	 *            Whether to frame the found value explicitily
 	 */
-	public DynamicTransformablePageImpl(HibUser requestUser, String rootLabel, String indexName, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
+	public DynamicTransformablePageImpl(HibUser requestUser, String rootLabel, Object indexKey, Direction dir, Class<T> clazz, PagingParameters pagingInfo,
 		InternalPermission perm, Predicate<T> extraFilter, boolean frameExplicitly) {
 		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
-		init(clazz, rootLabel, indexName, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm, Optional.empty());
+		init(clazz, rootLabel, indexKey, dir, GraphDBTx.getGraphTx().getGraph(), perm, Optional.empty());
 	}
 
 	/**
@@ -228,23 +225,18 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param maybeVariations 
 	 *            Variations of an entity type to fetch. Currently subclasses of {@link HibJob} are used here.
 	 */
-	private void init(Class<? extends T> clazz, String rootLabel, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
+	private void init(Class<? extends T> clazz, String rootLabel, Object indexKey, Direction vertexDirection, FramedGraph graph,
 		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {
 
 		DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-		Stream<? extends Edge> itemEdges;
-		if (PersistingRootDao.shouldSort(sort)) {
-			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), clazz, rootLabel);
-			query.relationDirection(vertexDirection);
-			query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
-			List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
-			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
-			itemEdges = StreamUtil.toStream(query.fetch(maybeVariations));
-		} else {
-			// Iterate over all vertices that are managed by this root vertex
-			Object[] idx = ograph.getBaseGraph().getRawDatabase().getMetadata().getIndexManager().getIndex(indexName).getInternal().getRids(indexKey).collect(Collectors.toList()).toArray();
-			itemEdges = StreamUtil.toStream(ograph.getBaseGraph().edges(idx));
-		}
+		
+		MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), clazz, rootLabel);
+		query.relationDirection(vertexDirection);
+		query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
+		List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+		query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
+		Stream<? extends Edge> itemEdges = StreamUtil.toStream(query.fetch(maybeVariations));
+
 		applyPagingAndPermChecks(itemEdges
 				// Get the vertex from the edge
 				.map(itemEdge -> {

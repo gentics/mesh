@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.root;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
@@ -32,7 +31,6 @@ import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -40,7 +38,6 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -79,25 +76,19 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (maybeFilter.isPresent()) {
-			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
+		DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+		MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
 
-			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
-			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
-			query.has(Direction.IN.name().toLowerCase(), id());
-			query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()"))));
-			if (paging.getPerPage() != null) {
-				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
-				query.limit(paging.getPerPage().intValue());
-			}
-			Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
-			itemEdges = query.fetch(maybeVariations).spliterator();
-		} else {
-			String idx = "e." + getRootLabel().toLowerCase() + "_out";
-			Iterable<Edge> iter = () -> graph.maybeGetIndexedFramedElements(idx, id(), Edge.class).map(Iterator.class::cast).orElseGet(() -> graph.getVertex(id()).edges(Direction.OUT, getRootLabel()));
-			itemEdges = iter.spliterator();
+		List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+		query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
+		query.has(Direction.IN.name().toLowerCase(), id());
+		query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()"))));
+		if (paging.getPerPage() != null) {
+			query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+			query.limit(paging.getPerPage().intValue());
 		}
+		Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
+		itemEdges = query.fetch(maybeVariations).spliterator();
 
 		return StreamSupport.stream(itemEdges, false)
 			.map(Edge::inVertex)
@@ -189,19 +180,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @return Found element or null if the element could not be located
 	 */
 	default T findByUuid(String uuid) {
-		GraphDatabase db = HibClassConverter.toGraph(db());
-		// Try to load the element using the index. This way no record load will happen.
-		T t = db.index().findByUuid(getPersistanceClass(), uuid);
-		if (t != null) {
-			DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-			boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(t.id(), id()), t.getClass())
-					.map(Iterator::hasNext)
-					.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(t.getClass(), t.id()) != null);
-			if (hasEdge) {
-				return t;
-			}
-		}
-		return null;
+		return out(getRootLabel()).has(UUID_KEY, uuid).has(getPersistanceClass()).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	@Override
@@ -222,12 +201,9 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	 * @param item
 	 */
 	default void addItem(T item) {
-		GraphDatabase db = HibClassConverter.toGraph(db());
-		DelegatingFramedMadlGraph<? extends Graph> graph = getGraph();
 		// Check whether the item was already added
-		boolean hasEdge = graph.maybeGetIndexedFramedElements("e." + getRootLabel().toLowerCase() + "_inout", db.index().createComposedIndexKey(item.id(), id()), item.getClass())
-				.map(Iterator::hasNext)
-				.orElseGet(() -> getGraph().getFramedVertexExplicitOrNull(item.getClass(), item.id()) != null);
+		boolean hasEdge = out(getRootLabel()).rawTraversal().hasId(item.id()).hasNext();
+		hasEdge = hasEdge && getGraph().getFramedVertexExplicitOrNull(item.getClass(), item.id()) != null;
 		if (!hasEdge) {
 			linkOut(item, getRootLabel());
 		}

@@ -30,11 +30,9 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.core.graph.GraphAttribute;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldMap;
 
@@ -191,20 +189,13 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static boolean matchesBranchAndType(Object nodeId, String branchUuid, ContainerType type) {
 		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
-		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-					mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
-				.orElseGet(() -> graph.getRawTraversal()
-						.E()
-						.hasLabel(HAS_FIELD_CONTAINER)
-						.has(BRANCH_UUID_KEY, branchUuid)
-						.has(EDGE_TYPE_KEY, type.getCode())
-						.outV()
-						.hasId(nodeId)
-						.inE(HAS_FIELD_CONTAINER)
-						.has(BRANCH_UUID_KEY, branchUuid)
-						.has(EDGE_TYPE_KEY, type.getCode()));
-		return edges.hasNext();
+		return graph.getRawTraversal()
+			.V(nodeId)
+			.hasLabel(NodeImpl.class.getSimpleName())
+			.E()
+			.hasLabel(HAS_FIELD_CONTAINER)
+			.has(BRANCH_UUID_KEY, branchUuid)
+			.has(EDGE_TYPE_KEY, type.getCode()).hasNext();
 	}
 
 	/**
@@ -240,19 +231,13 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 */
 	public static Result<GraphFieldContainerEdgeImpl> findEdges(Object nodeId, String branchUuid, ContainerType type) {
 		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		OrientDBMeshComponent mesh = graph.getAttribute(GraphAttribute.MESH_COMPONENT);
-		Iterator<? extends Edge> edges = graph.maybeGetIndexedFramedElements("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
-			mesh.database().index().createComposedIndexKey(nodeId, branchUuid, type.getCode()), Edge.class)
-				.orElseGet(() -> graph.getRawTraversal()
-						.E()
-						.hasLabel(HAS_FIELD_CONTAINER)
-						.has(BRANCH_UUID_KEY, branchUuid)
-						.has(EDGE_TYPE_KEY, type.getCode())
-						.outV()
-						.hasId(nodeId)
-						.inE(HAS_FIELD_CONTAINER)
-						.has(BRANCH_UUID_KEY, branchUuid)
-						.has(EDGE_TYPE_KEY, type.getCode()));
+		Iterator<? extends Edge> edges = graph.getRawTraversal()
+				.V(nodeId)
+				.hasLabel(NodeImpl.class.getSimpleName())
+				.E()
+				.hasLabel(HAS_FIELD_CONTAINER)
+				.has(BRANCH_UUID_KEY, branchUuid)
+				.has(EDGE_TYPE_KEY, type.getCode());
 		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges, GraphFieldContainerEdgeImpl.class);
 		return new TraversalResult<>(frames);
 	}

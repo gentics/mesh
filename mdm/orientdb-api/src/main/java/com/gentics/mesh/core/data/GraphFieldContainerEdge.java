@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-
 import java.util.Set;
 
 /**
@@ -16,15 +14,11 @@ public interface GraphFieldContainerEdge extends MeshEdge, HibNodeFieldContainer
 
 	String WEBROOT_INDEX_POSTFIX_NAME = "webrootPathInfoIndex";
 
-	String WEBROOT_INDEX_NAME = ("e." + HAS_FIELD_CONTAINER + "_" + WEBROOT_INDEX_POSTFIX_NAME).toLowerCase();
-
 	// Url Field index
 
 	String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
 
 	String WEBROOT_URLFIELD_INDEX_POSTFIX_NAME = "webrootUrlInfoIndex";
-
-	String WEBROOT_URLFIELD_INDEX_NAME = ("e." + HAS_FIELD_CONTAINER + "_" + WEBROOT_URLFIELD_INDEX_POSTFIX_NAME).toLowerCase();
 
 	String LANGUAGE_TAG_KEY = "languageTag";
 

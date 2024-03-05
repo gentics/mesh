@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
 import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
-import com.gentics.madl.traversal.VertexTraversalImpl;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -76,7 +75,6 @@ import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.graphdb.tx.impl.OrientLocalStorageImpl;
 import com.gentics.mesh.graphdb.tx.impl.OrientServerStorageImpl;
 import com.gentics.mesh.madl.frame.EdgeFrame;
-import com.gentics.mesh.madl.frame.ElementFrame;
 import com.gentics.mesh.madl.frame.VertexFrame;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.metric.SimpleMetric;
@@ -328,34 +326,23 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
 		DelegatingFramedMadlGraph<? extends Graph> madlGraph = GraphDBTx.getGraphTx().getGraph();
-		Iterator<Vertex> ret;
-		if (PersistingRootDao.shouldSort(paging) || maybeFilter.isPresent()) {
-			MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(madlGraph.getBaseGraph(), classOfVertex);
-			query.relationDirection(Direction.OUT);
-			query.hasAll(fieldNames, fieldValues);
-			query.filter(maybeFilter);
-			if (PersistingRootDao.shouldPage(paging)) {
-				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
-				query.limit(paging.getPerPage().intValue());
-			}
-			String[] sorted;
-			if (PersistingRootDao.shouldSort(paging)) {
-				List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
-				sorted = sortParams.toArray(new String[sortParams.size()]);
-			} else {
-				sorted = new String[0];
-			}
-			query.setOrderPropsAndDirs(sorted);
-			ret = query.fetch(maybeContainerType).iterator();
-		} else {
-			List<Vertex> list;
-			try (VertexTraversalImpl<?, ?> t = new VertexTraversalImpl<>(madlGraph, madlGraph.getRawTraversal().V())) {
-				list = StreamUtil.toStream((Iterable<Vertex>) t.has(classOfVertex).has(fieldNames, fieldValues)).collect(Collectors.toList());
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-			ret = list.iterator();
+		MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(madlGraph.getBaseGraph(), classOfVertex);
+		query.relationDirection(Direction.OUT);
+		query.hasAll(fieldNames, fieldValues);
+		query.filter(maybeFilter);
+		if (PersistingRootDao.shouldPage(paging)) {
+			query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+			query.limit(paging.getPerPage().intValue());
 		}
+		String[] sorted;
+		if (PersistingRootDao.shouldSort(paging)) {
+			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			sorted = sortParams.toArray(new String[sortParams.size()]);
+		} else {
+			sorted = new String[0];
+		}
+		query.setOrderPropsAndDirs(sorted);
+		Iterator<Vertex> ret = query.fetch(maybeContainerType).iterator();
 		return ret;
 	}
 

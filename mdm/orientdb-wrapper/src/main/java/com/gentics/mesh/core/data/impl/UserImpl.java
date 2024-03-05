@@ -259,8 +259,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse> implements Us
 
 	@Override
 	public Page<? extends Role> getRolesViaShortcut(HibUser user, PagingParameters params) {
-		String indexName = "e." + ASSIGNED_TO_ROLE + "_out";
-		return new DynamicTransformablePageImpl<>(user, ASSIGNED_TO_ROLE, indexName.toLowerCase(), id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
+		return new DynamicTransformablePageImpl<>(user, ASSIGNED_TO_ROLE, id(), Direction.IN, RoleImpl.class, params, READ_PERM, null, true);
 	}
 
 	@Override

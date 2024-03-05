@@ -25,7 +25,6 @@ import com.gentics.mesh.core.data.dao.AbstractCoreDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
@@ -76,11 +75,7 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	 */
 	protected boolean hasPermissionForElementId(HibUser user, Object elementId, InternalPermission permission) {
 		DelegatingFramedMadlGraph<? extends Graph> graph = GraphDBTx.getGraphTx().getGraph();
-		// Find all roles that are assigned to the user by checking the
-		// shortcut edge from the index
-		String idxKey = "e." + ASSIGNED_TO_ROLE + "_out";
-		Iterable<Edge> roleEdges = StreamUtil.toIterable(graph.maybeGetIndexedFramedElements(idxKey.toLowerCase(), user.id(), Edge.class)
-				.orElseGet(() -> graph.getFramedVertexExplicit(UserImpl.class, user.id()).outE(ASSIGNED_TO_ROLE)));
+		Iterable<Edge> roleEdges = StreamUtil.toIterable(toGraph(user).outE(ASSIGNED_TO_ROLE));
 		Vertex vertex = graph.getVertex(elementId);
 		for (Edge roleEdge : roleEdges) {
 			Vertex role = roleEdge.inVertex();

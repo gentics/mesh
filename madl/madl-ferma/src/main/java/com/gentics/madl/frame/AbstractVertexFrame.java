@@ -174,7 +174,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new TraversalResult<>(fg.frameExplicit(getElement().vertices(Direction.OUT, label), clazz));
+		return new TraversalResult<>(fg.frame(getElement().vertices(Direction.OUT, label), clazz));
 	}
 
 	@Override
@@ -184,7 +184,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new TraversalResult<>(fg.frameExplicit(getElement().edges(Direction.OUT, label), clazz));
+		return new TraversalResult<>(fg.frame(getElement().edges(Direction.OUT, label), clazz));
 	}
 
 	@Override
@@ -194,7 +194,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new TraversalResult<>(fg.frameExplicit(getElement().vertices(Direction.IN, label), clazz));
+		return new TraversalResult<>(fg.frame(getElement().vertices(Direction.IN, label), clazz));
 	}
 
 	@Override
@@ -204,7 +204,7 @@ public abstract class AbstractVertexFrame extends com.syncleus.ferma.AbstractVer
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");
 		}
-		return new TraversalResult<>(fg.frameExplicit(getElement().edges(Direction.IN, label), clazz));
+		return new TraversalResult<>(fg.frame(getElement().edges(Direction.IN, label), clazz));
 	}
 
 	@Override
