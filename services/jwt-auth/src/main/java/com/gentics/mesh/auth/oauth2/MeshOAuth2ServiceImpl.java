@@ -6,8 +6,14 @@ import static com.gentics.mesh.event.Assignment.UNASSIGNED;
 import static com.google.common.base.Throwables.getRootCause;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +27,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.auth.AuthHandlerContainer;
 import com.gentics.mesh.auth.AuthServicePluginRegistry;
 import com.gentics.mesh.auth.MeshOAuthService;
+import com.gentics.mesh.auth.util.MappingHelper;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -35,6 +42,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
+import com.gentics.mesh.core.rest.error.NameConflictException;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -191,10 +199,18 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 				rc.setUser(syncedUser);
 				rc.next();
 			}, error -> {
-				if (getRootCause(error) instanceof CannotWriteException) {
+				// if the current instance is not writable, we redirect the request to the master instance
+				Throwable rootCause = getRootCause(error);
+				if (rootCause instanceof CannotWriteException) {
 					delegator.redirectToMaster(rc);
 				} else {
-					rc.fail(error);
+					// all other errors while sync'ing will cause the sync to be repeated once.
+					// the reason is that the error might be caused by a race condition (when parallel requests try to sync the same objects)
+					// trying again (once) increases the chance of the request to actually succeed.
+					syncUser(rc, decodedToken).subscribe(syncedUser -> {
+						rc.setUser(syncedUser);
+						rc.next();
+					}, rc::fail);
 				}
 			});
 		});
@@ -389,168 +405,7 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 						continue;
 					}
 
-					// 2. Map the roles
-					List<RoleResponse> mappedRoles = result.getRoles();
-					if (mappedRoles != null) {
-						for (RoleResponse mappedRole : mappedRoles) {
-							String roleUuid = mappedRole.getUuid();
-							String roleName = mappedRole.getName();
-							HibRole role = null;
-							if (roleUuid != null) {
-								role = roleDao.findByUuid(roleUuid);
-							} else if (roleName != null) {
-								role = roleDao.findByName(roleName);
-							}
-
-							// Role not found - Lets create it
-							if (role == null) {
-								if (roleName != null) {
-									requiresWrite();
-									log.debug("Creating new role {} via mapping request.", roleName);
-									role = roleDao.create(roleName, admin);
-									userDao.inheritRolePermissions(admin, roleRoot, role);
-								} else {
-									log.error("Unable to create role. No role name was specified.");
-								}
-							}
-						}
-					}
-
-					// 3. Map the groups
-					List<GroupResponse> mappedGroups = result.getGroups();
-					if (mappedGroups != null) {
-
-						// Now create the groups and assign the user to the listed groups
-						for (GroupResponse mappedGroup : mappedGroups) {
-							String groupName = mappedGroup.getName();
-							String groupUuid = mappedGroup.getUuid();
-							HibGroup group = null;
-
-							if (groupUuid != null) {
-								group = groupDao.findByUuid(groupUuid);
-							} else if (groupName != null) {
-								group = groupDao.findByName(groupName);
-							}
-
-							// Group not found - Lets create it
-							boolean created = false;
-							if (group == null) {
-								if (groupName != null) {
-									requiresWrite();
-									log.debug("Creating group {} via mapping request.", groupName);
-									group = groupDao.create(groupName, admin);
-									userDao.inheritRolePermissions(admin, groupRoot, group);
-									batch.add(group.onCreated());
-									created = true;
-								} else {
-									log.error("Unable to create group. No group name was specified.");
-									// We can't continue with this mapped group.
-									break;
-								}
-							}
-							if (!groupDao.hasUser(group, authUser)) {
-								requiresWrite();
-								log.debug("Adding user {} to group {} via mapping request.", authUser.getUsername(), group.getName());
-								// Ensure that the user is part of the group
-								groupDao.addUser(group, authUser);
-								batch.add(groupDao.createUserAssignmentEvent(group, authUser, ASSIGNED));
-								// We only need one event
-								if (!created) {
-									batch.add(group.onUpdated());
-								}
-							}
-							// 4. Assign roles to groups
-							for (RoleReference assignedRole : mappedGroup.getRoles()) {
-								String roleName = assignedRole.getName();
-								String roleUuid = assignedRole.getUuid();
-								HibRole role = null;
-
-								if (roleName != null) {
-									role = roleDao.findByName(roleName);
-								} else if (roleUuid != null) {
-									role = roleDao.findByUuid(roleUuid);
-								}
-
-								// Add the role if it is missing
-								if (role != null) {
-									if (!groupDao.hasRole(group, role)) {
-										requiresWrite();
-										log.debug("Adding role {} to group {} via mapping request.", role.getName(), group.getName());
-										groupDao.addRole(group, role);
-										group.setLastEditedTimestamp();
-										group.setEditor(admin);
-										batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
-									}
-								} else {
-									log.warn("Unable to map role to group. The role with name {} / uuid {} could not be found", roleName, roleUuid);
-								}
-							}
-
-							// 5. Check if the plugin wants to remove any of the roles from the mapped group.
-							RoleFilter roleFilter = result.getRoleFilter();
-							if (roleFilter != null) {
-								for (HibRole role : groupDao.getRoles(group)) {
-									if (roleFilter.filter(group.getName(), role.getName())) {
-										requiresWrite();
-										log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
-										groupDao.removeRole(group, role);
-										batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
-									}
-								}
-							}
-						}
-					}
-
-					// 6. Now check the roles again and handle their group assignments
-					if (mappedRoles != null) {
-						for (RoleResponse mappedRole : mappedRoles) {
-							String roleName = mappedRole.getName();
-							HibRole role = roleDao.findByName(roleName);
-
-							if (role == null) {
-								log.warn("Could not find referenced role {" + role + "}");
-								continue;
-							}
-							// Assign groups to roles
-							for (GroupReference assignedGroup : mappedRole.getGroups()) {
-								String groupName = assignedGroup.getName();
-								String groupUuid = assignedGroup.getUuid();
-								HibGroup group = null;
-
-								if (groupName != null) {
-									group = groupDao.findByName(groupName);
-								} else if (groupUuid != null) {
-									group = groupDao.findByUuid(groupUuid);
-								}
-
-								// Add the role if it is missing
-								if (group != null) {
-									if (!groupDao.hasRole(group, role)) {
-										requiresWrite();
-										groupDao.addRole(group, role);
-										batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
-									}
-								} else {
-									log.error("Could not find group in role->group mapping of role {}", role.getName());
-								}
-							}
-
-						}
-					}
-
-					// 7. Check if the plugin wants to remove the user from any of its current groups.
-					GroupFilter groupFilter = result.getGroupFilter();
-					if (groupFilter != null) {
-						for (HibGroup group : userDao.getGroups(authUser)) {
-							if (groupFilter.filter(group.getName())) {
-								requiresWrite();
-								log.info("Unassigning group {" + group.getName() + "} from user {" + authUser.getUsername() + "}");
-								groupDao.removeUser(group, authUser);
-								batch.add(groupDao.createUserAssignmentEvent(group, authUser, UNASSIGNED));
-							}
-						}
-					}
-
+					handleMappingResult(tx, batch, result, authUser, admin);
 				} catch (CannotWriteException e) {
 					throw e;
 				} catch (Exception e) {
@@ -563,6 +418,165 @@ public class MeshOAuth2ServiceImpl implements MeshOAuthService {
 			defaultUserMapper(batch, user, token);
 		}
 
+	}
+
+	/**
+	 * Handle the mapping result by creating groups/roles and changing the assignment user <-> group and group <-> role
+	 * @param tx transaction
+	 * @param batch event queue batch
+	 * @param result mapping result
+	 * @param authUser authenticated user
+	 * @param admin admin user
+	 * @throws CannotWriteException
+	 */
+	public void handleMappingResult(Tx tx, EventQueueBatch batch, MappingResult result, HibUser authUser, HibUser admin) throws CannotWriteException {
+		RoleDao roleDao = tx.roleDao();
+		GroupDao groupDao = tx.groupDao();
+		UserDao userDao = tx.userDao();
+		HibBaseElement groupRoot = permissionRoots.group();
+		HibBaseElement roleRoot = permissionRoots.role();
+
+		List<RoleResponse> mappedRoles = result.getRoles();
+		List<GroupResponse> mappedGroups = result.getGroups();
+
+		// Prepare MappingHelper for roles
+		MappingHelper<HibRole> rolesHelper = new MappingHelper<>(roleDao);
+		rolesHelper.initMapped(mappedRoles, RoleResponse::getUuid, RoleResponse::getName, MappingHelper.Order.UUID_FIRST);
+		rolesHelper.initAssigned(mappedGroups, GroupResponse::getRoles, RoleReference::getUuid, RoleReference::getName, MappingHelper.Order.NAME_FIRST);
+		rolesHelper.load();
+		if (rolesHelper.areMappedEntitiesMissing()) {
+			requiresWrite();
+		}
+		rolesHelper.createMissingMapped(roleName -> {
+			log.debug("Creating new role {} via mapping request.", roleName);
+			return roleDao.create(roleName, admin);
+		}, created -> {
+			userDao.inheritRolePermissions(admin, roleRoot, created);
+		});
+
+		// Prepare MappingHelper for groups
+		MappingHelper<HibGroup> groupsHelper = new MappingHelper<>(groupDao);
+		groupsHelper.initMapped(mappedGroups, GroupResponse::getUuid, GroupResponse::getName, MappingHelper.Order.UUID_FIRST);
+		groupsHelper.initAssigned(mappedRoles, RoleResponse::getGroups, GroupReference::getUuid, GroupReference::getName, MappingHelper.Order.NAME_FIRST);
+		groupsHelper.load();
+		if (groupsHelper.areMappedEntitiesMissing()) {
+			requiresWrite();
+		}
+		groupsHelper.createMissingMapped(groupName -> {
+			log.debug("Creating group {} via mapping request.", groupName);
+			return groupDao.create(groupName, admin);
+		}, created -> {
+			userDao.inheritRolePermissions(admin, groupRoot, created);
+		});
+
+		// check which groups are not yet assigned to the user and add them
+		List<? extends HibGroup> assignedGroups = userDao.getGroups(authUser).list();
+		List<HibGroup> toAssign = new ArrayList<>(groupsHelper.getMappedEntities());
+		toAssign.removeAll(assignedGroups);
+
+		for (HibGroup group : toAssign) {
+			requiresWrite();
+			log.debug("Adding user {} to group {} via mapping request.", authUser.getUsername(), group.getName());
+			userDao.addGroup(authUser, group);
+			batch.add(groupDao.createUserAssignmentEvent(group, authUser, ASSIGNED));
+
+			if (!groupsHelper.wasCreated(group)) {
+				batch.add(group.onUpdated());
+			}
+		}
+
+		// collect information about groups <-> roles assignment
+		Map<String, Set<String>> roleUuidsPerGroupUuid = new HashMap<>();
+		if (mappedGroups != null) {
+			for (GroupResponse mappedGroup : mappedGroups) {
+				groupsHelper.getEntity(mappedGroup.getUuid(), mappedGroup.getName()).ifPresent(group -> {
+					List<RoleReference> roles = mappedGroup.getRoles();
+					if (roles != null) {
+						for (RoleReference assignedRole : roles) {
+							rolesHelper.getEntity(assignedRole.getUuid(), assignedRole.getName())
+									.ifPresent(role -> {
+										roleUuidsPerGroupUuid
+												.computeIfAbsent(group.getUuid(), k -> new HashSet<>())
+												.add(role.getUuid());
+									});
+						}
+					}
+				});
+			}
+		}
+		if (mappedRoles != null) {
+			for (RoleResponse mappedRole : mappedRoles) {
+				rolesHelper.getEntity(mappedRole.getUuid(), mappedRole.getName()).ifPresent(role -> {
+					List<GroupReference> groups = mappedRole.getGroups();
+					if (groups != null) {
+						for (GroupReference assignedGroup : groups) {
+							groupsHelper.getEntity(assignedGroup.getUuid(), assignedGroup.getName())
+									.ifPresent(group -> {
+										roleUuidsPerGroupUuid
+												.computeIfAbsent(group.getUuid(), k -> new HashSet<>())
+												.add(role.getUuid());
+									});
+						}
+					}
+				});
+			}
+		}
+
+		// batch load the roles currently assigned to groups
+		RoleFilter roleFilter = result.getRoleFilter();
+		Set<String> groupUuids = new HashSet<>();
+		groupUuids.addAll(roleUuidsPerGroupUuid.keySet());
+		if (roleFilter != null) {
+			groupUuids.addAll(groupsHelper.getMappedEntities().stream().map(HibGroup::getUuid).collect(Collectors.toSet()));
+		}
+		Map<HibGroup, Collection<? extends HibRole>> rolesPerGroup = groupDao.getRoles(groupsHelper.getEntities(groupUuids));
+
+		// check which group <-> role assignement is not yet present and assign
+		for (Entry<String, Set<String>> entry : roleUuidsPerGroupUuid.entrySet()) {
+			String groupUuid = entry.getKey();
+			Optional<HibGroup> optGroup = groupsHelper.getEntity(groupUuid, null);
+			if (optGroup.isPresent()) {
+				HibGroup group = optGroup.get();
+				List<HibRole> rolesToAssign = new ArrayList<>(rolesHelper.getEntities(entry.getValue()));
+				rolesToAssign.removeAll(rolesPerGroup.getOrDefault(group, Collections.emptyList()));
+
+				if (!rolesToAssign.isEmpty()) {
+					requiresWrite();
+				}
+
+				for (HibRole role : rolesToAssign) {
+					groupDao.addRole(group, role);
+					batch.add(groupDao.createRoleAssignmentEvent(group, role, ASSIGNED));
+				}
+			}
+		}
+
+		// if a role filter is given, remove the filtered group <-> role assignments for the mapped groups
+		if (roleFilter != null) {
+			for (HibGroup group : groupsHelper.getMappedEntities()) {
+				for (HibRole role : rolesPerGroup.getOrDefault(group, Collections.emptyList())) {
+					if (roleFilter.filter(group.getName(), role.getName())) {
+						requiresWrite();
+						log.info("Unassigning role {" + role.getName() + "} from group {" + group.getName() + "}");
+						groupDao.removeRole(group, role);
+						batch.add(groupDao.createRoleAssignmentEvent(group, role, UNASSIGNED));
+					}
+				}
+			}
+		}
+
+		// if a group filter is given, remove the filtered group <-> user assignments
+		GroupFilter groupFilter = result.getGroupFilter();
+		if (groupFilter != null) {
+			for (HibGroup group : assignedGroups) {
+				if (groupFilter.filter(group.getName())) {
+					requiresWrite();
+					log.info("Unassigning group {" + group.getName() + "} from user {" + authUser.getUsername() + "}");
+					groupDao.removeUser(group, authUser);
+					batch.add(groupDao.createUserAssignmentEvent(group, authUser, UNASSIGNED));
+				}
+			}
+		}
 	}
 
 	private void requiresWrite() throws CannotWriteException {

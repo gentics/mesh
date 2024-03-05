@@ -26,4 +26,10 @@ public interface ConsistencyCheck {
 	 * @return
 	 */
 	String getName();
+
+	/**
+	 * Return whether the check is to be performed asynchronously only (i.e. when run as a job)
+	 * @return true for async only jobs
+	 */
+	boolean asyncOnly();
 }

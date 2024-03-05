@@ -12,8 +12,12 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.event.EventQueueBatch;
+import com.gentics.mesh.parameter.GenericParameters;
+import com.gentics.mesh.parameter.value.FieldsSet;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -76,11 +80,37 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 	@Override
 	default LanguageResponse transformToRestSync(HibLanguage element, InternalActionContext ac, int level,
 			String... languageTags) {
+		GenericParameters generic = ac.getGenericParameters();
+		FieldsSet fields = generic.getFields();
+
 		LanguageResponse model = new LanguageResponse();
-		model.setUuid(element.getUuid());
-		model.setLanguageTag(element.getLanguageTag());
-		model.setName(element.getName());
-		model.setNativeName(element.getNativeName());
+		if (fields.has("uuid")) {
+			model.setUuid(element.getUuid());
+
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return model;
+			}
+		}
+		if (fields.has("name")) {
+			model.setName(element.getName());
+
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return model;
+			}
+		}
+		if (fields.has("languageTag")) {
+			model.setLanguageTag(element.getLanguageTag());
+
+			// Performance shortcut to return now and ignore the other checks
+			if (fields.size() == 1) {
+				return model;
+			}
+		}
+		if (fields.has("nativeName")) {
+			model.setNativeName(element.getNativeName());
+		}		
 		return model;
 	}
 
