@@ -39,7 +39,7 @@ public class DelegatingFramedOrientGraph extends DelegatingFramedGraph<OrientGra
 
 	@Override
 	public <T> T addFramedVertex(final Class<T> kind) {
-		return this.addFramedVertex(new DefaultClassInitializer<>(kind));
+		return this.addFramedVertex(new DefaultClassInitializer<>(kind), org.apache.tinkerpop.gremlin.structure.T.label, kind.getSimpleName());
 	}
 
 	@Override

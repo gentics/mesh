@@ -134,7 +134,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public HibSchemaVersion getSchemaContainerVersion() {
-		return db().index().findByUuid(SchemaContainerVersionImpl.class, property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY));
+		return getGraph().frameElementExplicit(getGraph().getRawTraversal().V().hasLabel(SchemaContainerVersionImpl.class.getSimpleName()).has(UUID_KEY, this.<String>property(SCHEMA_CONTAINER_VERSION_KEY_PROPERTY)).next(), SchemaContainerVersionImpl.class);
 	}
 
 	@Override

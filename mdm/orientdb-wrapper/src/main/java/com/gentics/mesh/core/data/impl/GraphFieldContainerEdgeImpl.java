@@ -192,8 +192,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		return graph.getRawTraversal()
 			.V(nodeId)
 			.hasLabel(NodeImpl.class.getSimpleName())
-			.E()
-			.hasLabel(HAS_FIELD_CONTAINER)
+			.outE(HAS_FIELD_CONTAINER)
 			.has(BRANCH_UUID_KEY, branchUuid)
 			.has(EDGE_TYPE_KEY, type.getCode()).hasNext();
 	}
@@ -234,8 +233,7 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 		Iterator<? extends Edge> edges = graph.getRawTraversal()
 				.V(nodeId)
 				.hasLabel(NodeImpl.class.getSimpleName())
-				.E()
-				.hasLabel(HAS_FIELD_CONTAINER)
+				.outE(HAS_FIELD_CONTAINER)
 				.has(BRANCH_UUID_KEY, branchUuid)
 				.has(EDGE_TYPE_KEY, type.getCode());
 		Iterator<? extends GraphFieldContainerEdgeImpl> frames = graph.frameExplicit(edges, GraphFieldContainerEdgeImpl.class);

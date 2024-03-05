@@ -58,7 +58,10 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public HibMicroschemaVersion getSchemaContainerVersion() {
-		return db().index().findByUuid(MicroschemaContainerVersionImpl.class, property(MICROSCHEMA_VERSION_KEY_PROPERTY));
+		return getGraph().frameElementExplicit(
+				getGraph().getRawTraversal().V().hasLabel(MicroschemaContainerVersionImpl.class.getSimpleName()).has(UUID_KEY, this.<String>property(MICROSCHEMA_VERSION_KEY_PROPERTY)).next(), 
+				MicroschemaContainerVersionImpl.class
+			);
 	}
 
 	@Override

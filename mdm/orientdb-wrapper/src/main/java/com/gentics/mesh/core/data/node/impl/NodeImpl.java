@@ -230,7 +230,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (uuid == null) {
 			return null;
 		}
-		return db().index().findByUuid(SchemaContainerImpl.class, uuid);
+		return getGraph().frameElementExplicit(getGraph().getRawTraversal().V().hasLabel(SchemaContainerImpl.class.getSimpleName()).has(UUID_KEY, uuid).next(), SchemaContainerImpl.class);
 	}
 
 	@Override
@@ -276,7 +276,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				.map(BranchParentEntry::fromString)
 				.filter(entry -> entry.getBranchUuid().equals(branchUuid))
 				.findAny()
-				.map(entry -> db().index().findByUuid(NodeImpl.class, entry.getParentUuid()))
+				.map(entry -> getGraph().getRawTraversal().V().hasLabel(NodeImpl.class.getSimpleName()).has(UUID_KEY, entry.getParentUuid()))
+				.filter(Iterator::hasNext)
+				.map(iter -> getGraph().frameElementExplicit(iter.next(), NodeImpl.class))
 				.orElse(null);
 		}
 	}
@@ -291,7 +293,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Project getProject() {
-		return db().index().findByUuid(ProjectImpl.class, property(PROJECT_KEY_PROPERTY));
+		return getGraph().frameElementExplicit(getGraph().getRawTraversal().V().hasLabel(ProjectImpl.class.getSimpleName()).has(UUID_KEY, this.<String>property(PROJECT_KEY_PROPERTY)).next(), ProjectImpl.class);
 	}
 
 	@Override

@@ -154,6 +154,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 		try {
 			Tx tx = mockTx();
+			Tx.setActive(tx);
 			NodeDaoWrapper nodeDao = mock(NodeDaoWrapperImpl.class);
 			BranchDaoWrapper branchDao = mock(BranchDaoWrapperImpl.class);
 			ContentDaoWrapper contentDao = mock(ContentDaoWrapperImpl.class);
@@ -163,6 +164,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 			TagDaoWrapper tagDao = mock(TagDaoWrapperImpl.class);
 			TagFamilyDaoWrapper tagFamilyDao = mock(TagFamilyDaoWrapperImpl.class);
 
+			when(tx.unwrap()).thenReturn(tx);
 			when(tx.nodeDao()).thenReturn(nodeDao);
 			when(tx.contentDao()).thenReturn(contentDao);
 			when(tx.userDao()).thenReturn(userDao);

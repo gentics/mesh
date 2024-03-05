@@ -21,34 +21,6 @@ public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFram
 	EdgeTraversal<?, ?> inE(final String... labels);
 
 	/**
-	 * Create edges from the framed vertex to the supplied vertex with the supplied labels
-	 *
-	 * @param vertex
-	 *            The vertex to link to.
-	 * @param labels
-	 *            The labels for the edges.
-	 * @deprecated Use {@link VertexFrame#setLinkOut(com.syncleus.ferma.VertexFrame, String...)}
-	 */
-	@Deprecated
-	default void linkOut(VertexFrame vertex, String... labels) {
-		setLinkOut(vertex, labels);
-	}
-
-	/**
-	 * Create edges from the supplied vertex to the framed vertex with the supplied labels
-	 *
-	 * @param vertex
-	 *            The vertex to link from.
-	 * @param labels
-	 *            The labels for the edges.
-	 * @deprecated Use {@link VertexFrame#setLinkIn(com.syncleus.ferma.VertexFrame, String...)}
-	 */
-	@Deprecated
-	default void linkIn(VertexFrame vertex, String... labels) {
-		setLinkIn(vertex, labels);
-	}
-
-	/**
 	 * Shortcut to get frame Traversal of current element
 	 *
 	 * @return The traversal for the current element.

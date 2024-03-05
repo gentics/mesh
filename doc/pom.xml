@@ -16,6 +16,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<skip.docs>false</skip.docs>
 	</properties>
 
 	<dependencyManagement>
@@ -63,6 +64,7 @@
 						</goals>
 						<phase>process-classes</phase>
 						<configuration>
+							<skip>${skip.docs}</skip>
 							<executable>${env.JAVA_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
