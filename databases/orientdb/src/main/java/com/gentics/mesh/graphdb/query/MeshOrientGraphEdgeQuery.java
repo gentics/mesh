@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphdb;
+package com.gentics.mesh.graphdb.query;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,10 +11,12 @@ import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.orientdb.OGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientEdge;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
+import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.graphdb.AbstractMeshMadlGraphQuery;
 
 /**
  * Edge fetch query variant, that supports filtering and ordering.
@@ -22,11 +24,11 @@ import com.gentics.mesh.core.rest.common.ContainerType;
  * @author plyhun
  *
  */
-public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optional<? extends Collection<? extends Class<?>>>> {
+public class MeshOrientGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, Optional<? extends Collection<? extends Class<?>>>, OrientGraph> implements MeshGraphEdgeQuery {
 
 	protected final String edgeLabel;
 
-	public MeshOrientGraphEdgeQuery(Graph iGraph, Class<?> vertexClass, String edgeLabel) {
+	public MeshOrientGraphEdgeQuery(OrientGraph iGraph, Class<?> vertexClass, String edgeLabel) {
 		super(iGraph, vertexClass);
 		this.edgeLabel = edgeLabel;
 	}
@@ -37,6 +39,7 @@ public class MeshOrientGraphEdgeQuery extends MeshOrientGraphQuery<Edge, Optiona
 	 * @param propsAndDirs sorting parameters, in a form of 'field sortOrder', 'field sortOrder', etc.
 	 * @return
 	 */
+	@Override
 	public Iterable<Edge> fetch(Optional<? extends Collection<? extends Class<?>>> maybeFermaTypes) {
 		if (limit == 0)
 			return Collections.emptyList();

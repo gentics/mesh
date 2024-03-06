@@ -9,10 +9,11 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
-import com.gentics.madl.ext.orientdb.OrientGraphQuery;
+import com.gentics.madl.query.AbstractMadlGraphQuery;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.db.query.MeshMadlGraphQuery;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -25,9 +26,10 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <T> result element type
  * @param <P> extra parameter type
  */
-public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQuery {
+public abstract class AbstractMeshMadlGraphQuery<T extends Element, P, G extends Graph>
+		extends AbstractMadlGraphQuery<G> implements MeshMadlGraphQuery<T, P> {
 
-	protected static final Logger log = LoggerFactory.getLogger(MeshOrientGraphQuery.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshMadlGraphQuery.class);
 
 	protected static final String QUERY_SELECT = "select ";
 	protected static final String QUERY_FROM = "from ";
@@ -37,24 +39,27 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 	protected Direction relationDirection = Direction.OUT;
 	protected final Class<?> vertexClass;
 
-	public MeshOrientGraphQuery(Graph iGraph, Class<?> vertexClass) {
+	public AbstractMeshMadlGraphQuery(G iGraph, Class<?> vertexClass) {
 		super(iGraph);
 		this.vertexClass = vertexClass;
 	}
 
-	public MeshOrientGraphQuery<T, P> filter(Optional<String> maybeCustomFilter) {
+	@Override
+	public AbstractMeshMadlGraphQuery<T, P, G> filter(Optional<String> maybeCustomFilter) {
 		this.maybeCustomFilter = Optional.ofNullable(maybeCustomFilter).flatMap(Function.identity());
 		return this;
 	}
 
 	/**
-	 * A shortcut method for multiple {@link OrientGraphQuery#has(String, Object) calls}
+	 * A shortcut method for multiple
+	 * {@link AbstractMadlGraphQuery#has(String, Object) calls}
 	 * 
 	 * @param key
 	 * @param value
 	 * @return
 	 */
-	public MeshOrientGraphQuery<T, P> hasAll(final String[] key, final Object[] value) {
+	@Override
+	public AbstractMeshMadlGraphQuery<T, P, G> hasAll(final String[] key, final Object[] value) {
 		for (int i = 0; i < key.length; i++) {
 			super.has(key[i], value[i]);
 		}
@@ -67,7 +72,8 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 	 * @param relationDirection
 	 * @return
 	 */
-	public MeshOrientGraphQuery<T, P> relationDirection(Direction relationDirection) {
+	@Override
+	public AbstractMeshMadlGraphQuery<T, P, G> relationDirection(Direction relationDirection) {
 		this.relationDirection = relationDirection;
 		return this;
 	}
@@ -75,16 +81,15 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 	/**
 	 * Fetch the results of this query.
 	 * 
-	 * @param propsAndDirs 
+	 * @param propsAndDirs
 	 * @param extraParam
 	 * @return
 	 */
+	@Override
 	public abstract Iterable<T> fetch(P extraParam);
-	
-	
+
 	/**
-	 * Sanitize the 'orderBy' input against
-	 * 1. chars disallowed in the field naming
+	 * Sanitize the 'orderBy' input against 1. chars disallowed in the field naming
 	 * 2. SQL injection
 	 * 
 	 * @param input
@@ -113,16 +118,18 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 		}
 		return sb;
 	}
-	
+
 	/**
-	 * Build the request of the fields required for the sorting. Since the sorting may ask for the 
-	 * fields hidden in a vertex relation hierarchy, we need to utilize the relation mappings, set by entities.
-	 * For instance, the request 'nodeReference.fields.fullname-string desc' on a UserImpl needs to map
-	 * 'nodeReference' part through 'HAS_NODE_REFERENCE' edge onto NodeImpl relation, further 'fields' mapped 
-	 * through 'HAS_FIELD_CONTAINER' edge onto NodeGraphFieldContainerImpl relation, and the 'fullname-string'
-	 * is the property of NodeGraphFieldContainerImpl to sort by.
+	 * Build the request of the fields required for the sorting. Since the sorting
+	 * may ask for the fields hidden in a vertex relation hierarchy, we need to
+	 * utilize the relation mappings, set by entities. For instance, the request
+	 * 'nodeReference.fields.fullname-string desc' on a UserImpl needs to map
+	 * 'nodeReference' part through 'HAS_NODE_REFERENCE' edge onto NodeImpl
+	 * relation, further 'fields' mapped through 'HAS_FIELD_CONTAINER' edge onto
+	 * NodeGraphFieldContainerImpl relation, and the 'fullname-string' is the
+	 * property of NodeGraphFieldContainerImpl to sort by.
 	 * 
-	 *  @see GraphRelationship
+	 * @see GraphRelationship
 	 * 
 	 * @param text
 	 * @param propsAndDirs
@@ -145,7 +152,8 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 					String pathPart = pathParts[i];
 					if (relation != null && !sanitizedPart.endsWith(pathPart)
 							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
-						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
+						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart)
+								: relation.get("*");
 						if (useEdgeFilters && relationMapping != null) {
 							if (MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
 								text.append("(SELECT `");
@@ -180,7 +188,9 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 								text.append("')[");
 								text.append(relationMapping.getEdgeFieldName());
 								text.append("='");
-								text.append(relation.get(pathPart) != null ? relationMapping.getDefaultEdgeFieldFilterValue() : pathPart); 
+								text.append(relation.get(pathPart) != null
+										? relationMapping.getDefaultEdgeFieldFilterValue()
+										: pathPart);
 								text.append("'].");
 								text.append(vertexLookupDirOpposite.name().toLowerCase());
 								text.append("V()");
@@ -219,10 +229,12 @@ public abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientG
 		text.append(" ");
 	}
 
+	@Override
 	public String[] getOrderPropsAndDirs() {
 		return orderPropsAndDirs;
 	}
 
+	@Override
 	public void setOrderPropsAndDirs(String[] orderPropsAndDirs) {
 		this.orderPropsAndDirs = orderPropsAndDirs;
 	}

@@ -14,7 +14,6 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.madl.traversal.VertexTraversal;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -23,8 +22,8 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.StreamUtil;
 import com.syncleus.ferma.FramedGraph;
@@ -228,9 +227,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	private void init(Class<? extends T> clazz, String rootLabel, Object indexKey, Direction vertexDirection, FramedGraph graph,
 		InternalPermission perm, Optional<? extends Collection<? extends Class<?>>> maybeVariations) {
 
-		DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-		
-		MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), clazz, rootLabel);
+		MeshGraphEdgeQuery query = GraphDBTx.getGraphTx().edgeQuery(clazz, rootLabel);
 		query.relationDirection(vertexDirection);
 		query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
 		List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());

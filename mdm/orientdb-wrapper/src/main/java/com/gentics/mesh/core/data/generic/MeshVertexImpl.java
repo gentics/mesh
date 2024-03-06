@@ -70,7 +70,7 @@ import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.MeshOrientGraphQuery;
+import com.gentics.mesh.graphdb.AbstractMeshMadlGraphQuery;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.madl.field.FieldType;
@@ -246,7 +246,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		property(permission.propertyKey(), allowedRoles);
 	}
 	/**
-	 * Map default sorting argument to the one acceptable by {@link MeshOrientGraphQuery}.
+	 * Map default sorting argument to the one acceptable by {@link AbstractMeshMadlGraphQuery}.
 	 * 
 	 * @param <S>
 	 * @param sorting

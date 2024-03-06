@@ -17,14 +17,8 @@ import static com.gentics.mesh.util.StreamUtil.toStream;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.apache.tinkerpop.gremlin.orientdb.OGraph;
-import org.apache.tinkerpop.gremlin.orientdb.OrientGraphQueryBuilder;
-import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
@@ -38,12 +32,12 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.BranchImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -53,9 +47,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.etc.config.ContentConfig;
-import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -104,8 +96,7 @@ public class SchemaContainerVersionImpl extends
 						&& DRAFT.getCode().equals(ContainerType.get(e.<String>property(EDGE_TYPE_KEY).orElse(null)))
 				)).map(NodeGraphFieldContainerImpl.class::cast);
 		} else {
-			OGraph baseGraph = database.unwrapCurrentGraph();			
-			Iterable<Edge> edges = new MeshOrientGraphEdgeQuery(baseGraph, NodeGraphFieldContainerImpl.class, HAS_FIELD_CONTAINER).hasAll(new String[] {EDGE_TYPE_KEY, BRANCH_UUID_KEY, "in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY}, new String[] {DRAFT.getCode(), branchUuid, uuid}).fetch(Optional.empty());
+			Iterable<Edge> edges = GraphDBTx.getGraphTx().edgeQuery(NodeGraphFieldContainerImpl.class, HAS_FIELD_CONTAINER).hasAll(new String[] {EDGE_TYPE_KEY, BRANCH_UUID_KEY, "in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY}, new String[] {DRAFT.getCode(), branchUuid, uuid}).fetch(Optional.empty());
 			stream = toStream(edges)
 					.map(Edge::inVertex)
 					.map(NodeGraphFieldContainerImpl.class::cast);

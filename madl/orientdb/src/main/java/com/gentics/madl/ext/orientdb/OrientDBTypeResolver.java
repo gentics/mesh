@@ -19,10 +19,10 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 
 public class OrientDBTypeResolver implements TypeResolver {
 
-	private final ElementTypeClassCache elementTypeCache;
+	private final ElementTypeClassCache<String> elementTypeCache;
 
 	public OrientDBTypeResolver(String... packagePaths) {
-		this.elementTypeCache = new ElementTypeClassCache(packagePaths);
+		this.elementTypeCache = new ElementTypeClassCache<>(packagePaths);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -46,7 +46,7 @@ public class OrientDBTypeResolver implements TypeResolver {
 
 	@SuppressWarnings("unchecked")
 	private <T> Class<? extends T> resolve(String type, Class<T> kind) {
-		final Class<T> nodeKind = (Class<T>) this.elementTypeCache.forName(type);
+		final Class<T> nodeKind = (Class<T>) this.elementTypeCache.forId(type);
 		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
 			|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
 			return nodeKind;
@@ -59,7 +59,7 @@ public class OrientDBTypeResolver implements TypeResolver {
 	public Class<?> resolve(Element element) {
 		if (element instanceof OrientElement) {
 			OrientElement orientVertex = (OrientElement) element;
-			return ((OElement) orientVertex.getRecord()).getSchemaType().map(type -> elementTypeCache.forName(type.getName())).orElse(null);
+			return ((OElement) orientVertex.getRecord()).getSchemaType().map(type -> elementTypeCache.forId(type.getName())).orElse(null);
 		}
 		return null;
 	}

@@ -59,8 +59,12 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
+import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
+import com.gentics.mesh.core.db.query.MeshGraphVertexQuery;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
+import com.gentics.mesh.graphdb.query.MeshOrientGraphEdgeQuery;
+import com.gentics.mesh.graphdb.query.MeshOrientGraphVertexQuery;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.security.SecurityUtils;
@@ -371,5 +375,15 @@ public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGr
 	@Override
 	public DelegatingFramedOrientGraph getGraph() {
 		return currentGraph;
+	}
+
+	@Override
+	public MeshGraphVertexQuery vertexQuery(Class<?> vertexClass) {
+		return new MeshOrientGraphVertexQuery(currentGraph.getBaseGraph(), vertexClass);
+	}
+
+	@Override
+	public MeshGraphEdgeQuery edgeQuery(Class<?> vertexClass, String edgeLabel) {
+		return new MeshOrientGraphEdgeQuery(currentGraph.getBaseGraph(), vertexClass, edgeLabel);
 	}
 }

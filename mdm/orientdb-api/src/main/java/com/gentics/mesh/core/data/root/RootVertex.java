@@ -17,7 +17,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.madl.ext.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.madl.graph.DelegatingFramedMadlGraph;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -32,12 +31,12 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
-import com.gentics.mesh.graphdb.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -76,8 +75,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
-		MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
+		MeshGraphEdgeQuery query = GraphDBTx.getGraphTx().edgeQuery(getPersistanceClass(), getRootLabel().toUpperCase());
 
 		List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 		query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));

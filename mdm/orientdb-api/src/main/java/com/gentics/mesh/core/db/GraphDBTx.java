@@ -19,6 +19,8 @@ import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
+import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
+import com.gentics.mesh.core.db.query.MeshGraphVertexQuery;
 
 /**
  * A GraphDB-specific extension to {@link Tx}
@@ -34,6 +36,20 @@ public interface GraphDBTx extends CommonTx, BaseTransaction {
 	 * @return Graph which is bound to the transaction.
 	 */
 	DelegatingFramedMadlGraph<? extends Graph> getGraph();
+
+	/**
+	 * New typed vertex SQL query instance.
+	 * 
+	 * @return
+	 */
+	MeshGraphVertexQuery vertexQuery(Class<?> vertexClass);
+
+	/**
+	 * New edge SQL query instance.
+	 * 
+	 * @return
+	 */
+	MeshGraphEdgeQuery edgeQuery(Class<?> vertexClass, String edgeLabel);
 
 	/**
 	 * Add new isolated vertex to the graph.

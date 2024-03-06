@@ -69,6 +69,7 @@ import com.gentics.mesh.graphdb.dagger.TransactionComponent;
 import com.gentics.mesh.graphdb.index.OrientDBIndexHandler;
 import com.gentics.mesh.graphdb.index.OrientDBTypeHandler;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphdb.query.MeshOrientGraphVertexQuery;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.GraphStorage;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
@@ -325,7 +326,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<String> maybeFilter) {
-		DelegatingFramedMadlGraph<? extends Graph> madlGraph = GraphDBTx.getGraphTx().getGraph();
+		DelegatingFramedOrientGraph madlGraph = (DelegatingFramedOrientGraph) GraphDBTx.getGraphTx().getGraph();
 		MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(madlGraph.getBaseGraph(), classOfVertex);
 		query.relationDirection(Direction.OUT);
 		query.hasAll(fieldNames, fieldValues);

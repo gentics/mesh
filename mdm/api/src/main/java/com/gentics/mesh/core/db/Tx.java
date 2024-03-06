@@ -88,7 +88,17 @@ public interface Tx extends com.gentics.madl.tx.Tx, DaoCollection, CacheCollecti
 	 */
 	EventQueueBatch createBatch();
 
+	/**
+	 * Access binary storage instance.
+	 * 
+	 * @return
+	 */
 	Binaries binaries();
 
+	/**
+	 * Access S3 binary storage instance.
+	 * 
+	 * @return
+	 */
 	S3Binaries s3binaries();
 }

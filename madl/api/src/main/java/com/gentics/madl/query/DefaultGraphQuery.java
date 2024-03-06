@@ -18,11 +18,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @Deprecated
-public class DefaultGraphQuery extends DefaultQuery implements GraphQuery {
+public class DefaultGraphQuery<G extends Graph> extends DefaultQuery implements GraphQuery {
 
-    protected final Graph graph;
+    protected final G graph;
 
-    public DefaultGraphQuery(final Graph graph) {
+    public DefaultGraphQuery(final G graph) {
         this.graph = graph;
     }
 

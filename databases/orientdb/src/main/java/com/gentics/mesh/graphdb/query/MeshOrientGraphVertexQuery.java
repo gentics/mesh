@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphdb;
+package com.gentics.mesh.graphdb.query;
 
 import java.util.Collections;
 import java.util.List;
@@ -9,11 +9,13 @@ import java.util.stream.StreamSupport;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.orientdb.OGraph;
+import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import com.gentics.mesh.core.db.query.MeshGraphVertexQuery;
 import com.gentics.mesh.core.rest.common.ContainerType;
+import com.gentics.mesh.graphdb.AbstractMeshMadlGraphQuery;
 
 /**
  * Vertex fetch query variant, that supports filtering and ordering.
@@ -21,9 +23,9 @@ import com.gentics.mesh.core.rest.common.ContainerType;
  * @author plyhun
  *
  */
-public class MeshOrientGraphVertexQuery extends MeshOrientGraphQuery<Vertex, Optional<ContainerType>> {
+public class MeshOrientGraphVertexQuery extends AbstractMeshMadlGraphQuery<Vertex, Optional<ContainerType>, OrientGraph> implements MeshGraphVertexQuery {
 
-	public MeshOrientGraphVertexQuery(Graph iGraph, Class<?> vertexClass) {
+	public MeshOrientGraphVertexQuery(OrientGraph iGraph, Class<?> vertexClass) {
 		super(iGraph, vertexClass);
 	}
 
