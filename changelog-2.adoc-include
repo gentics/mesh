@@ -6,6 +6,13 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.17]]
+== 2.0.17 (06.03.2024)
+
+icon:check[] REST client: The configuration now allows adding default parameter provider for query parameters, that should be added to every request (unless overwritten).
+
+Tests: The tests API has been extended to allow tests which do not reset the database between test cases.
+
 [[v2.0.16]]
 == 2.0.16 (28.02.2024)
 
