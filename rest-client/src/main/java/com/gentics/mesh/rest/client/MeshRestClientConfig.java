@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.mesh.parameter.ParameterProvider;
+
 /**
  * Gentics Mesh REST client configuration.
  */
@@ -27,6 +29,7 @@ public class MeshRestClientConfig {
 	private final boolean hostnameVerification;
 	private final int maxRetries;
 	private final int retryDelayMs;
+	private final ParameterProvider[] defaultParameters;
 
 	public MeshRestClientConfig(Builder builder) {
 		this.host = Objects.requireNonNull(builder.host);
@@ -41,6 +44,7 @@ public class MeshRestClientConfig {
 		this.clientKey = builder.clientKey;
 		this.maxRetries = builder.maxRetries;
 		this.retryDelayMs = builder.retryDelayMs;
+		this.defaultParameters = builder.defaultParameters;
 	}
 
 	/**
@@ -106,6 +110,10 @@ public class MeshRestClientConfig {
 		return retryDelayMs;
 	}
 
+	public ParameterProvider[] getDefaultParameters() {
+		return defaultParameters;
+	}
+
 	/**
 	 * Create a fresh config builder.
 	 * 
@@ -134,6 +142,8 @@ public class MeshRestClientConfig {
 		// maximum number of retries with the chosen delay fit inside the
 		// max call timeout.
 		private int retryDelayMs = -1;
+
+		private ParameterProvider[] defaultParameters = new ParameterProvider[0];
 
 		public Builder() {
 			trustedCAs = new HashSet<>();
@@ -398,6 +408,16 @@ public class MeshRestClientConfig {
 		 */
 		public Builder setRetryDelayMs(int retryDelayMs) {
 			this.retryDelayMs = retryDelayMs;
+			return this;
+		}
+
+		/**
+		 * Set default parameters, which should be added to every request (unless overwritten)
+		 * @param defaultParameters default parameters
+		 * @return fluent API
+		 */
+		public Builder setDefaultParameters(ParameterProvider... defaultParameters) {
+			this.defaultParameters = defaultParameters;
 			return this;
 		}
 
