@@ -62,7 +62,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<
 
 	@Override
 	public SchemaChange<?> getNextChange() {
-		return (SchemaChange<?>) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
+		return out(HAS_SCHEMA_CONTAINER).nextOrDefault(SchemaChange.class, null);
 	}
 
 	@Override
@@ -72,7 +72,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<
 
 	@Override
 	public SchemaChange<?> getPreviousChange() {
-		return (SchemaChange<?>) in(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
+		return in(HAS_SCHEMA_CONTAINER).nextOrDefault(SchemaChange.class, null);
 	}
 
 	@Override
