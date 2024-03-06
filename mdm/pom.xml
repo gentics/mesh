@@ -30,7 +30,7 @@
 	<modules>
 		<module>api</module>
 		<module>common</module>
-		<module>orientdb-api</module>
+		<module>graphdb-api</module>
 		<module>orientdb-wrapper</module>
 	</modules>
 </project>

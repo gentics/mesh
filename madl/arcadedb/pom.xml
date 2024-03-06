@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.gentics.mesh</groupId>
+		<artifactId>madl</artifactId>
+		<version>2.2.0-RND-TP3-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>madl-arcadedb</artifactId>
+	<packaging>jar</packaging>
+
+	<description>MADL ArcadeDB Implementation</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-ferma</artifactId>
+		</dependency>
+
+		<!-- OrientDB -->
+		<dependency>
+			<groupId>com.arcadedb</groupId>
+           <artifactId>arcadedb-engine</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.arcadedb</groupId>
+           <artifactId>arcadedb-server</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.arcadedb</groupId>
+           <artifactId>arcadedb-network</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.arcadedb</groupId>
+           <artifactId>arcadedb-gremlin</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+            		<artifactId>gremlin-groovy</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+</project>

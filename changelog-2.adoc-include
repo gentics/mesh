@@ -6,8 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.2.0-RND-TP3-SNAPSHOT]]
+== 2.2.0-RND-TP3-SNAPSHOT (06.03.2024)
+
 [[v2.1.0-SNAPSHOT]]
-== 2.1.0-SNAPSHOT (21.02.2024)
+== 2.1.0-SNAPSHOT (05.03.2024)
 
 icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
 
@@ -17,6 +20,9 @@ icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins h
 
 icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
 
+
+[[v2.0.15-SNAPSHOT]]
+== 2.0.15-SNAPSHOT (21.02.2024)
 
 [[v2.0.14-SNAPSHOT]]
 == 2.0.14-SNAPSHOT (07.02.2024)

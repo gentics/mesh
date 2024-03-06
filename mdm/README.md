@@ -4,5 +4,5 @@ The Gentics Mesh multidatabase module contains the abstraction code to support m
 
 * [api](api/README.md)
 * [common](common/README.md)
-* [orientdb-api](orientdb-api/README.md)
+* [graphdb-api](graphdb-api/README.md)
 * [orientdb-wrapper](orientdb-wrapper/README.md)

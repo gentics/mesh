@@ -39,5 +39,6 @@
 		<module>core</module>
 		<module>madl-ferma</module>
 		<module>orientdb</module>
+        <module>arcadedb</module>
 	</modules>
 </project>
