@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.14]]
+== 1.10.14 (2024-03-07)
+
+icon:check[] Forms: Add the possibility to change timestamp format in the CSV export.
+
 [[v1.10.13]]
 == 1.10.13 (2024-02-07)
 
