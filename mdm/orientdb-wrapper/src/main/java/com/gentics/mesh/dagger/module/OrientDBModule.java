@@ -121,7 +121,7 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
@@ -339,9 +339,9 @@ public abstract class OrientDBModule {
 	abstract OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
 	@Provides
-	public static OrientDBMeshOptions orientDBMeshOptions(MeshOptions meshOptions) {
-		if (meshOptions instanceof OrientDBMeshOptions) {
-			return (OrientDBMeshOptions) meshOptions;
+	public static GraphDBMeshOptions orientDBMeshOptions(MeshOptions meshOptions) {
+		if (meshOptions instanceof GraphDBMeshOptions) {
+			return (GraphDBMeshOptions) meshOptions;
 		} else {
 			throw new IllegalArgumentException("Unsupported MeshOptions class:" + meshOptions.getClass().getCanonicalName());
 		}

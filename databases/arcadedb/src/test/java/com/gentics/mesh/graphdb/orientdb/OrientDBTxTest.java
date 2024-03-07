@@ -15,7 +15,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
@@ -26,7 +26,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db = mockDatabase(new OrientDBMeshOptions());
+		db = mockDatabase(new GraphDBMeshOptions());
 		db.init(null);
 	}
 

@@ -61,7 +61,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
 import com.gentics.mesh.core.db.query.MeshGraphVertexQuery;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
 import com.gentics.mesh.graphdb.query.MeshOrientGraphEdgeQuery;
 import com.gentics.mesh.graphdb.query.MeshOrientGraphVertexQuery;
@@ -116,7 +116,7 @@ public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGr
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
+	public OrientDBTx(GraphDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
 					  OrientDBDaoCollection daos, Lazy<CacheCollection> caches, SecurityUtils security, OrientStorage provider,
 					  TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
 					  ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {

@@ -9,7 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,7 +83,7 @@ public class TopologyChangeReadonlyTest extends AbstractMeshTest {
 		// invoke the graphdb backup (asynchronously)
 		mesh().vertx().executeBlocking(bc -> {
 			try {
-				OrientDBMeshOptions options = (OrientDBMeshOptions) options();
+				GraphDBMeshOptions options = (GraphDBMeshOptions) options();
 				db().backupDatabase(options.getStorageOptions().getBackupDirectory());
 				bc.complete();
 			} catch (IOException e) {

@@ -42,7 +42,7 @@ import com.gentics.mesh.distributed.coordinator.MasterElector;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
@@ -281,8 +281,8 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	@Override
 	protected void initStandalone(MeshOptions options, PostProcessFlags flags, boolean isInitMode) throws Exception {
-		if (options instanceof OrientDBMeshOptions) {
-			GraphStorageOptions storageOptions = ((OrientDBMeshOptions)options).getStorageOptions();
+		if (options instanceof GraphDBMeshOptions) {
+			GraphStorageOptions storageOptions = ((GraphDBMeshOptions)options).getStorageOptions();
 			boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 			if (startOrientServer) {

@@ -31,6 +31,12 @@
 			<artifactId>madl-ferma</artifactId>
 		</dependency>
 
+		<!-- ArcadeDB -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>madl-arcadedb</artifactId>
+		</dependency>
+
 		<!-- Common Tools -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>

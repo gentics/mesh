@@ -11,7 +11,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.CommonDatabase;
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 
 import dagger.Lazy;
@@ -26,7 +26,7 @@ public abstract class AbstractDatabase extends CommonDatabase implements GraphDa
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
-	protected OrientDBMeshOptions options;
+	protected GraphDBMeshOptions options;
 	protected String meshVersion;
 	protected String[] basePaths;
 

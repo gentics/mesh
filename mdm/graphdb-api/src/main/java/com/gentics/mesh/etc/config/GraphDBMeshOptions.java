@@ -12,7 +12,7 @@ import com.gentics.mesh.doc.GenerateDocumentation;
  * Main mesh configuration POJO.
  */
 @GenerateDocumentation
-public class OrientDBMeshOptions extends MeshOptions {
+public class GraphDBMeshOptions extends MeshOptions {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Graph database options.")
@@ -57,7 +57,7 @@ public class OrientDBMeshOptions extends MeshOptions {
 	}
 
 	@JsonIgnore
-	public OrientDBMeshOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering) {
+	public GraphDBMeshOptions setNativeQueryFiltering(NativeQueryFiltering nativeQueryFiltering) {
 		storageOptions.setNativeQueryFiltering(nativeQueryFiltering);
 		return this;
 	}

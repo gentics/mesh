@@ -19,7 +19,7 @@ import java.util.Date;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.StreamUtil;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
@@ -40,20 +40,20 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 
 	protected final MetricsService metrics;
 
-	protected final OrientDBMeshOptions options;
+	protected final GraphDBMeshOptions options;
 
 	protected final Counter txCounter;
 
 	protected final Counter noTxCounter;
 
-	public AbstractOrientStorage(OrientDBMeshOptions options, MetricsService metrics) {
+	public AbstractOrientStorage(GraphDBMeshOptions options, MetricsService metrics) {
 		this.options = options;
 		this.metrics = metrics;
 		this.txCounter = metrics.counter(TX);
 		this.noTxCounter = metrics.counter(NO_TX);
 	}
 
-	public OrientDBMeshOptions getOptions() {
+	public GraphDBMeshOptions getOptions() {
 		return options;
 	}
 

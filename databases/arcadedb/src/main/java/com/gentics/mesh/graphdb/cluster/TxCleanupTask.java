@@ -11,7 +11,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.micrometer.core.instrument.Counter;
@@ -34,7 +34,7 @@ public class TxCleanupTask implements Handler<Long> {
 	private GraphStorageOptions storageOptions;
 
 	@Inject
-	public TxCleanupTask(OrientDBMeshOptions options, MetricsService service) {
+	public TxCleanupTask(GraphDBMeshOptions options, MetricsService service) {
 		this.storageOptions = options.getStorageOptions();
 		this.interruptCounter = service.counter(TX_INTERRUPT_COUNT);
 	}

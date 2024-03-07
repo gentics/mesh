@@ -18,7 +18,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -28,7 +28,7 @@ public class AdminEndpointBackupRestoreLocalTest extends AbstractMeshTest {
 	@Test
 	public void testBackupRestore() throws IOException {
 		final String NEW_PROJECT_NAME = "enemenemuh";
-		final String backupDir = ((OrientDBMeshOptions) testContext.getOptions()).getStorageOptions().getBackupDirectory();
+		final String backupDir = ((GraphDBMeshOptions) testContext.getOptions()).getStorageOptions().getBackupDirectory();
 		assertFilesInDir(backupDir, 0);
 		grantAdmin();
 

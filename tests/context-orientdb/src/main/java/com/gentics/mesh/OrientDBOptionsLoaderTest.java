@@ -9,18 +9,18 @@ import java.io.File;
 import org.junit.Test;
 
 import com.gentics.mesh.etc.config.DiskQuotaOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 
-public class OrientDBOptionsLoaderTest extends OptionsLoaderTest<OrientDBMeshOptions> {
+public class OrientDBOptionsLoaderTest extends OptionsLoaderTest<GraphDBMeshOptions> {
 
 	@Override
-	public OrientDBMeshOptions getOptions() {
-		return new OrientDBMeshOptions();
+	public GraphDBMeshOptions getOptions() {
+		return new GraphDBMeshOptions();
 	}
 
 	@Test(expected = NullPointerException.class)
 	public void testInvalidOptions4() {
-		OrientDBMeshOptions options = getOptions();
+		GraphDBMeshOptions options = getOptions();
 		options.getStorageOptions().setDirectory(null);
 		options.getStorageOptions().setStartServer(true);
 		options.validate();
@@ -28,7 +28,7 @@ public class OrientDBOptionsLoaderTest extends OptionsLoaderTest<OrientDBMeshOpt
 
 	@Test
 	public void testInvalidOptions5() {
-		OrientDBMeshOptions options = getOptions();
+		GraphDBMeshOptions options = getOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		options.getStorageOptions().setDirectory(null);
@@ -37,7 +37,7 @@ public class OrientDBOptionsLoaderTest extends OptionsLoaderTest<OrientDBMeshOpt
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testInvalidDiskQuotaOptions1() {
-		OrientDBMeshOptions options = getOptions();
+		GraphDBMeshOptions options = getOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		DiskQuotaOptions diskQuotaOptions = options.getStorageOptions().getDiskQuotaOptions();
@@ -47,7 +47,7 @@ public class OrientDBOptionsLoaderTest extends OptionsLoaderTest<OrientDBMeshOpt
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testInvalidDiskQuotaOptions2() {
-		OrientDBMeshOptions options = getOptions();
+		GraphDBMeshOptions options = getOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		DiskQuotaOptions diskQuotaOptions = options.getStorageOptions().getDiskQuotaOptions();
@@ -57,7 +57,7 @@ public class OrientDBOptionsLoaderTest extends OptionsLoaderTest<OrientDBMeshOpt
 
 	@Test
 	public void testLegalDiskQuotaOptions() {
-		OrientDBMeshOptions options = getOptions();
+		GraphDBMeshOptions options = getOptions();
 		options.setNodeName("ABC");
 		options.getAuthenticationOptions().setKeystorePassword("ABC");
 		DiskQuotaOptions diskQuotaOptions = options.getStorageOptions().getDiskQuotaOptions();

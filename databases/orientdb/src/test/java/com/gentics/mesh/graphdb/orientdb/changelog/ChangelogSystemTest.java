@@ -28,7 +28,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.changelog.Change;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ChangelogSystemImpl;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.maven.MavenMetadata;
@@ -104,7 +104,7 @@ public class ChangelogSystemTest {
 
 	@Test
 	public void testChangelogSystem() throws Exception {
-		OrientDBMeshOptions options = new OrientDBMeshOptions();
+		GraphDBMeshOptions options = new GraphDBMeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
 		options.setNodeName("dummyNode");
 
@@ -128,7 +128,7 @@ public class ChangelogSystemTest {
 	 * @param options
 	 * @return
 	 */
-	public static OrientDBDatabase getDatabase(OrientDBMeshOptions options) {
+	public static OrientDBDatabase getDatabase(GraphDBMeshOptions options) {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		Mockito.when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		Mockito.when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));

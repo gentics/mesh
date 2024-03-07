@@ -12,7 +12,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -26,7 +26,7 @@ public class AdminEndpointBackupFail2LocalTest extends AbstractMeshTest {
 	public void testBackupWithoutDir() throws IOException {
 		// Use an file as backup dir to provoke an error
 		File testFile = new File("target/test" + System.currentTimeMillis());
-		((OrientDBMeshOptions) testContext.getOptions()).getStorageOptions().setBackupDirectory(testFile.getAbsolutePath());
+		((GraphDBMeshOptions) testContext.getOptions()).getStorageOptions().setBackupDirectory(testFile.getAbsolutePath());
 		testFile.createNewFile();
 		testFile.deleteOnExit();
 		grantAdmin();

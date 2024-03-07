@@ -6,7 +6,7 @@ import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 
 public class OrientDBMeshContainer extends MeshContainer {
 
@@ -15,7 +15,7 @@ public class OrientDBMeshContainer extends MeshContainer {
 	}
 
 	public OrientDBMeshContainer(Function<MeshOptions, ImageFromDockerfile> imageProvider) {
-		super(imageProvider, new OrientDBMeshOptions());
+		super(imageProvider, new GraphDBMeshOptions());
 	}
 
 	@Override

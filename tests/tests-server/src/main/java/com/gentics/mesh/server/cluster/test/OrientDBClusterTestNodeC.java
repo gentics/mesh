@@ -2,7 +2,7 @@ package com.gentics.mesh.server.cluster.test;
 
 import org.junit.Test;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 
 /**
  * Dedicated test runner class for manual cluster tests.
@@ -11,7 +11,7 @@ public class OrientDBClusterTestNodeC extends AbstractClusterTest {
 
 	@Test
 	public void testServer() throws Exception {
-		OrientDBMeshOptions options = init(null);
+		GraphDBMeshOptions options = init(null);
 		options.setNodeName("gentics-mesh-3");
 		options.getStorageOptions().setDirectory("data3/graphdb");
 		options.getClusterOptions().setVertxPort(6153);

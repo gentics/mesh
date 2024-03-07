@@ -60,7 +60,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.graphdb.check.DiskQuotaChecker;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
@@ -165,7 +165,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Inject
 	public OrientDBDatabase(
-			OrientDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, 
+			GraphDBMeshOptions options, Lazy<Vertx> vertx, Lazy<BootstrapInitializer> boot, 
 			Lazy<DaoCollection> daos, MetricsService metrics,
 			OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler,
 			OrientDBClusterManagerImpl clusterManager, TxCleanupTask txCleanupTask,
@@ -245,7 +245,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @param options
 	 * @return
 	 */
-	private int getRidBagValue(OrientDBMeshOptions options) {
+	private int getRidBagValue(GraphDBMeshOptions options) {
 		boolean isClusterMode = options.getClusterOptions() != null && options.getClusterOptions().isEnabled();
 		if (isClusterMode) {
 			// This is the mandatory setting when using OrientDB in clustered mode.

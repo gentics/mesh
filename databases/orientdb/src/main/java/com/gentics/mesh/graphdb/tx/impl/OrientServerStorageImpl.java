@@ -6,7 +6,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.orientechnologies.orient.core.db.ODatabaseSession;
@@ -21,7 +21,7 @@ public class OrientServerStorageImpl extends AbstractOrientStorage {
 	private final OrientDB context;
 	private final OrientGraphFactory factory;
 
-	public OrientServerStorageImpl(OrientDBMeshOptions options, OrientDB context, MetricsService metrics) {
+	public OrientServerStorageImpl(GraphDBMeshOptions options, OrientDB context, MetricsService metrics) {
 		super(options, metrics);
 		this.context = context;
 		this.factory = new OrientGraphFactory(context, DB_NAME, ODatabaseType.PLOCAL, OrientGraphFactory.ADMIN, OrientGraphFactory.ADMIN);

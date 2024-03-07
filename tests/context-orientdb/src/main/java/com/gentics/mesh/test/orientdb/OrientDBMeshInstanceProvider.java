@@ -14,7 +14,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshComponent.Builder;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.gentics.mesh.test.MeshInstanceProvider;
 import com.gentics.mesh.test.MeshTestActions;
@@ -27,15 +27,15 @@ import com.gentics.mesh.util.UUIDUtil;
  * @author plyhun
  *
  */
-public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<OrientDBMeshOptions> {
+public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<GraphDBMeshOptions> {
 	
 	private final MeshComponent.Builder componentBuilder;
-	private final OrientDBMeshOptions meshOptions;
+	private final GraphDBMeshOptions meshOptions;
 	private final OrientDBMeshTestActions actions = new OrientDBMeshTestActions();
 	
 	public OrientDBMeshInstanceProvider(MeshOptions injectedMeshOptions) {
 		componentBuilder = DaggerOrientDBMeshComponent.builder();
-		meshOptions = (OrientDBMeshOptions) injectedMeshOptions;
+		meshOptions = (GraphDBMeshOptions) injectedMeshOptions;
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public class OrientDBMeshInstanceProvider implements MeshInstanceProvider<Orient
 	}
 	
 	@Override
-	public OrientDBMeshOptions getOptions() {
+	public GraphDBMeshOptions getOptions() {
 		return meshOptions;
 	}
 

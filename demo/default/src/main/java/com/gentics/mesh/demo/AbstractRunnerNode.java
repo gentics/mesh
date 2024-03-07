@@ -4,7 +4,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.demo.verticle.DemoAppEndpoint;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.router.EndpointRegistry;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
@@ -13,7 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
-public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<OrientDBMeshOptions> {
+public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<GraphDBMeshOptions> {
 
 	static {
 		System.setProperty("memory.directMemory.preallocate", "false");
@@ -21,7 +21,7 @@ public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<
 	}
 
 	public AbstractRunnerNode(String[] args) {
-		super(args, OrientDBMeshOptions.class);
+		super(args, GraphDBMeshOptions.class);
 	}
 
 	protected abstract String getBasePath();
@@ -35,7 +35,7 @@ public abstract class AbstractRunnerNode extends AbstractMeshOptionsDemoContext<
 	 * @throws Exception
 	 */
 	public void run() throws Exception {
-		OrientDBMeshOptions options = getOptions();
+		GraphDBMeshOptions options = getOptions();
 
 		options.getStorageOptions().setDirectory(getBasePath() + "/graph");
 		// options.getSearchOptions().setDirectory(getBasePath() + "/es");

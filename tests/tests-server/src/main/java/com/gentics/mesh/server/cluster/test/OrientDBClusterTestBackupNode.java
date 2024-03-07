@@ -2,7 +2,7 @@ package com.gentics.mesh.server.cluster.test;
 
 import org.junit.Before;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.server.cluster.test.task.BackupTask;
 
 /**
@@ -12,7 +12,7 @@ public class OrientDBClusterTestBackupNode extends AbstractClusterTest {
 
 	@Before
 	public void testServer() throws Exception {
-		OrientDBMeshOptions options = init(null);
+		GraphDBMeshOptions options = init(null);
 		options.setNodeName("gentics-mesh-backup");
 		options.getStorageOptions().setDirectory("data4/graphdb");
 		options.getClusterOptions().setVertxPort(6154);

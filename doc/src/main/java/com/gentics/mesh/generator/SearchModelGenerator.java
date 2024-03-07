@@ -60,7 +60,7 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.DaggerOrientDBMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.search.index.group.GroupTransformer;
 import com.gentics.mesh.search.index.microschema.MicroschemaTransformer;
 import com.gentics.mesh.search.index.node.NodeContainerTransformer;
@@ -107,7 +107,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 	 * @return
 	 */
 	public static Mesh initPaths() {
-		OrientDBMeshOptions options = new OrientDBMeshOptions();
+		GraphDBMeshOptions options = new GraphDBMeshOptions();
 		options.setNodeName("Example Generator");
 		options.getAuthenticationOptions().setKeystorePassword("ABCD");
 
@@ -147,7 +147,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		// outputDir.mkdirs();
 
 		meshDagger = DaggerOrientDBMeshComponent.builder()
-			.configuration(new OrientDBMeshOptions())
+			.configuration(new GraphDBMeshOptions())
 			.searchProviderType(TRACKING)
 			.mesh(mesh)
 			.build();
@@ -210,7 +210,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 		when(roleDao.getRolesWithPerm(Mockito.any(), Mockito.any())).thenReturn(new TraversalResult<>(Collections.emptyList()));
 
-		write(new NodeContainerTransformer(new OrientDBMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
+		write(new NodeContainerTransformer(new GraphDBMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {

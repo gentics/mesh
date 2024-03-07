@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb.dagger;
 
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.gentics.mesh.graphdb.tx.OrientStorage;
+import com.gentics.mesh.graphdb.tx.ArcadeStorage;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 
 import dagger.BindsInstance;
@@ -26,6 +26,6 @@ public interface TransactionComponent {
 	 */
 	@Subcomponent.Factory
 	interface Factory {
-		TransactionComponent create(@BindsInstance OrientStorage txProvider, @BindsInstance TypeResolver resolver);
+		TransactionComponent create(@BindsInstance ArcadeStorage txProvider, @BindsInstance TypeResolver resolver);
 	}
 }

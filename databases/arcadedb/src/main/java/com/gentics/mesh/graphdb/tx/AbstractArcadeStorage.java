@@ -16,44 +16,42 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.arcadedb.gremlin.ArcadeGraph;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.StreamUtil;
-import com.orientechnologies.orient.core.command.OCommandOutputListener;
-import com.orientechnologies.orient.core.db.ODatabaseSession;
 
 import io.micrometer.core.instrument.Counter;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Abstract implementation of an {@link OrientStorage}. Backup/Restore and clear code are for example shareable across specific implementations.
+ * Abstract implementation of an {@link ArcadeStorage}. Backup/Restore and clear code are for example shareable across specific implementations.
  */
-public abstract class AbstractOrientStorage implements OrientStorage {
+public abstract class AbstractArcadeStorage implements ArcadeStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractOrientStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractArcadeStorage.class);
 
 	protected DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
 	protected final MetricsService metrics;
 
-	protected final OrientDBMeshOptions options;
+	protected final GraphDBMeshOptions options;
 
 	protected final Counter txCounter;
 
 	protected final Counter noTxCounter;
 
-	public AbstractOrientStorage(OrientDBMeshOptions options, MetricsService metrics) {
+	public AbstractArcadeStorage(GraphDBMeshOptions options, MetricsService metrics) {
 		this.options = options;
 		this.metrics = metrics;
 		this.txCounter = metrics.counter(TX);
 		this.noTxCounter = metrics.counter(NO_TX);
 	}
 
-	public OrientDBMeshOptions getOptions() {
+	public GraphDBMeshOptions getOptions() {
 		return options;
 	}
 
@@ -62,13 +60,13 @@ public abstract class AbstractOrientStorage implements OrientStorage {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		OrientGraph tx = rawTx();
+		ArcadeGraph tx = rawTx();
 		try {
 			for (Vertex vertex : StreamUtil.toIterable(tx.vertices())) {
 				vertex.remove();
 			}
 		} finally {
-			tx.commit();
+			tx.tx().commit();
 			tx.close();
 		}
 		if (log.isDebugEnabled()) {

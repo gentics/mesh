@@ -2,18 +2,18 @@ package com.gentics.mesh.cli;
 
 import org.junit.Ignore;
 
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 
 @Ignore
-public class OrientDBMultiMeshIntegrationTest extends MultiMeshIntegrationTest<OrientDBMeshOptions> {
+public class OrientDBMultiMeshIntegrationTest extends MultiMeshIntegrationTest<GraphDBMeshOptions> {
 
 	@Override
-	public OrientDBMeshOptions getOptions() {
-		return new OrientDBMeshOptions();
+	public GraphDBMeshOptions getOptions() {
+		return new GraphDBMeshOptions();
 	}
 
 	@Override
-	protected void setupOptions(OrientDBMeshOptions option, int i) {
+	protected void setupOptions(GraphDBMeshOptions option, int i) {
 		option.getStorageOptions().setDirectory("data/m" + i);		
 	}
 

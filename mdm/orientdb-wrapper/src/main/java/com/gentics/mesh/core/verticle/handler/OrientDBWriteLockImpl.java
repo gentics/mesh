@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.db.cluster.ClusterManager;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.hazelcast.core.HazelcastInstance;
 
@@ -16,10 +16,10 @@ import dagger.Lazy;
 @Singleton
 public class OrientDBWriteLockImpl extends AbstractGenericWriteLock {
 
-	private final OrientDBMeshOptions options;
+	private final GraphDBMeshOptions options;
 
 	@Inject
-	public OrientDBWriteLockImpl(OrientDBMeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService, ClusterManager clusterManager) {
+	public OrientDBWriteLockImpl(GraphDBMeshOptions options, Lazy<HazelcastInstance> hazelcast, MetricsService metricsService, ClusterManager clusterManager) {
 		super(options, hazelcast, metricsService, clusterManager);
 		this.options = options;
 	}

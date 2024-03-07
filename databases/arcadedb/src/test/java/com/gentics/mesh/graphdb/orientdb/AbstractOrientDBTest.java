@@ -9,7 +9,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.DaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
@@ -23,7 +23,7 @@ import io.micrometer.core.instrument.Timer;
 
 public class AbstractOrientDBTest {
 
-	protected Database mockDatabase(OrientDBMeshOptions options) {
+	protected Database mockDatabase(GraphDBMeshOptions options) {
 		MetricsService metrics = Mockito.mock(MetricsService.class);
 		when(metrics.timer(Mockito.any())).thenReturn(Mockito.mock(Timer.class));
 		when(metrics.counter(Mockito.any())).thenReturn(Mockito.mock(Counter.class));

@@ -59,9 +59,9 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.cluster.TxCleanupTask;
-import com.gentics.mesh.graphdb.tx.OrientStorage;
+import com.gentics.mesh.graphdb.tx.ArcadeStorage;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.security.SecurityUtils;
 import com.orientechnologies.common.concur.ONeedRetryException;
@@ -112,8 +112,8 @@ public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGr
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(OrientDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
-					  OrientDBDaoCollection daos, Lazy<CacheCollection> caches, SecurityUtils security, OrientStorage provider,
+	public OrientDBTx(GraphDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
+					  OrientDBDaoCollection daos, Lazy<CacheCollection> caches, SecurityUtils security, ArcadeStorage provider,
 					  TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
 					  ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {
 		this.db = db;

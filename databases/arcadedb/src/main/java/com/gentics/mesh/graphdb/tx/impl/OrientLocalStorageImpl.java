@@ -4,37 +4,29 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
-import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
-
+import com.arcadedb.database.Database;
+import com.arcadedb.database.DatabaseFactory;
+import com.arcadedb.gremlin.ArcadeGraph;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
-import com.gentics.mesh.graphdb.tx.OrientStorage;
+import com.gentics.mesh.graphdb.tx.AbstractArcadeStorage;
+import com.gentics.mesh.graphdb.tx.ArcadeStorage;
 import com.gentics.mesh.metric.MetricsService;
-import com.orientechnologies.orient.core.command.OCommandOutputListener;
-import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
-import com.orientechnologies.orient.core.db.ODatabaseSession;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocument;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
-import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
-import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
-import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import com.orientechnologies.orient.core.tx.OTransactionNoTx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Non-Clustered implementation of an {@link OrientStorage} which uses the {@link OrientGraphFactory} to provide transactions.
+ * Non-Clustered implementation of an {@link ArcadeStorage} which uses the {@link SharedArcadeGraphFactory} to provide transactions.
  */
-public class OrientLocalStorageImpl extends AbstractOrientStorage {
+public class OrientLocalStorageImpl extends AbstractArcadeStorage {
 
-	private static final Logger log = LoggerFactory.getLogger(OrientLocalStorageImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(ArcadeLocalStorageImpl.class);
 
-	private OrientGraphFactory factory;
+	private SharedArcadeGraphFactory factory;
+	private String factoryLocal;
 
-	public OrientLocalStorageImpl(OrientDBMeshOptions options, MetricsService metrics) {
+	public OrientLocalStorageImpl(GraphDBMeshOptions options, MetricsService metrics) {
 		super(options, metrics);
 	}
 
@@ -43,10 +35,11 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		if (storageOptions == null || storageOptions.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop" + System.currentTimeMillis()).setupPool(16, 100);
+			factoryLocal = "memory:tinkerpop" + System.currentTimeMillis();
 		} else {
-			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(16, 100);
+			factoryLocal = "plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath();
 		}
+		factory = SharedArcadeGraphFactory.withLocal(factoryLocal);
 	}
 
 	@Override
@@ -55,8 +48,8 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public org.apache.tinkerpop.gremlin.orientdb.OrientGraph rawTx() {
-		OrientGraph tx = factory.getTx();
+	public ArcadeGraph rawTx() {
+		ArcadeGraph tx = factory.get();
 		if (metrics.isEnabled()) {
 			txCounter.increment();
 		}
@@ -64,8 +57,8 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	}
 
 	@Override
-	public OrientGraph rawNoTx() {
-		OrientGraph notx = factory.getNoTx();
+	public Database rawNoTx() {
+		Database notx = factory.getLocalDatabase();
 		if (metrics.isEnabled()) {
 			noTxCounter.increment();
 		}
@@ -75,14 +68,14 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 	@Override
 	public void setMassInsertIntent() {
 		if (factory != null) {
-			factory.getDatabase(false, false).declareIntent(new OIntentMassiveInsert());
+			factory.getLocalDatabase().declareIntent(new OIntentMassiveInsert());
 		}
 	}
 
 	@Override
 	public void resetIntent() {
 		if (factory != null) {
-			factory.getDatabase(false, false).declareIntent(null);
+			factory.getLocalDatabase(false, false).declareIntent(null);
 		}
 	}
 
@@ -91,7 +84,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 		if (log.isDebugEnabled()) {
 			log.debug("Running export to {" + outputDirectory + "} directory.");
 		}
-		ODatabaseDocument db = factory.getDatabase(false, false);
+		Database db = factory.getLocalDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
 				@Override

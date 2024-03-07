@@ -8,7 +8,7 @@ import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraphFactory;
 
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.tx.AbstractOrientStorage;
 import com.gentics.mesh.graphdb.tx.OrientStorage;
 import com.gentics.mesh.metric.MetricsService;
@@ -34,7 +34,7 @@ public class OrientLocalStorageImpl extends AbstractOrientStorage {
 
 	private OrientGraphFactory factory;
 
-	public OrientLocalStorageImpl(OrientDBMeshOptions options, MetricsService metrics) {
+	public OrientLocalStorageImpl(GraphDBMeshOptions options, MetricsService metrics) {
 		super(options, metrics);
 	}
 

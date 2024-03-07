@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 
 /**
  * Example generator for various JSON / YAML models.
@@ -89,7 +89,7 @@ public class ModelExampleGenerator extends AbstractGenerator {
 	}
 
 	private void writeMeshConfig() throws JsonProcessingException, IOException {
-		OrientDBMeshOptions conf = new OrientDBMeshOptions();
+		GraphDBMeshOptions conf = new GraphDBMeshOptions();
 		conf.setTempDirectory("/opt/mesh/data/tmp");
 		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
 		conf.getAuthenticationOptions().setKeystorePassword("<Your Password>");

@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTxData;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.dagger.OrientDBMeshComponent;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.vertx.core.Vertx;
@@ -24,12 +24,12 @@ import io.vertx.core.Vertx;
 public class TxDataImpl implements CommonTxData {
 
 	private final OrientDBBootstrapInitializer boot;
-	private final OrientDBMeshOptions options;
+	private final GraphDBMeshOptions options;
 	private final PermissionRoots permissionRoots;
 	private Optional<EventQueueBatch> qBatch;
 
 	@Inject
-	public TxDataImpl(OrientDBMeshOptions options, OrientDBBootstrapInitializer boot,
+	public TxDataImpl(GraphDBMeshOptions options, OrientDBBootstrapInitializer boot,
 			PermissionRoots permissionRoots) {
 		this.options = options;
 		this.boot = boot;
@@ -43,7 +43,7 @@ public class TxDataImpl implements CommonTxData {
 	}
 
 	@Override
-	public OrientDBMeshOptions options() {
+	public GraphDBMeshOptions options() {
 		return options;
 	}
 

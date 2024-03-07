@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 
 @Ignore
@@ -33,7 +33,7 @@ public class OrientDBServerTest extends AbstractOrientDBTest {
 
 	@Test
 	public void testServer() throws Exception {
-		OrientDBMeshOptions options = new OrientDBMeshOptions();
+		GraphDBMeshOptions options = new GraphDBMeshOptions();
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
 

@@ -3,28 +3,28 @@ package com.gentics.mesh.graphdb.tx;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
-
+import com.arcadedb.database.Database;
+import com.arcadedb.gremlin.ArcadeGraph;
 import com.gentics.mesh.graphdb.spi.GraphStorage;
 
 /**
  * Representation of an orientdb graph storage.
  */
-public interface OrientStorage extends GraphStorage {
+public interface ArcadeStorage extends GraphStorage {
 
 	/**
 	 * Get a raw tinkerpop transaction.
 	 * 
 	 * @return
 	 */
-	OrientGraph rawTx();
+	ArcadeGraph rawTx();
 
 	/**
 	 * Get a raw noTx tinkerpop transaction.
 	 * 
 	 * @return
 	 */
-	OrientGraph rawNoTx();
+	Database rawNoTx();
 
 	/**
 	 * Set the mass insertion intent.

@@ -507,6 +507,21 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>madl-arcadedb</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-arcadedb</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>mesh-arcadedb</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 	            <groupId>org.apache.tinkerpop</groupId>
 	            <artifactId>gremlin-core</artifactId>
 	            <version>${gremlin.version}</version>

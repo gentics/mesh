@@ -38,7 +38,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.coordinator.Coordinator;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.router.RouterStorageImpl;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
 import com.gentics.mesh.search.SearchProvider;
@@ -69,7 +69,7 @@ public class OrientDBAdminHandler extends AdminHandler {
 		try {
 			vertx.eventBus().publish(GRAPH_BACKUP_START.address, null);
 			mesh.setStatus(MeshStatus.BACKUP);
-			return db.backupDatabase(((OrientDBMeshOptions)options).getStorageOptions().getBackupDirectory());
+			return db.backupDatabase(((GraphDBMeshOptions)options).getStorageOptions().getBackupDirectory());
 		} catch (GenericRestException e) {
 			throw e;
 		} catch (Throwable e) {
@@ -83,7 +83,7 @@ public class OrientDBAdminHandler extends AdminHandler {
 
 	@Override
 	public void handleRestore(InternalActionContext ac) {
-		OrientDBMeshOptions config = (OrientDBMeshOptions) options;
+		GraphDBMeshOptions config = (GraphDBMeshOptions) options;
 		Mesh mesh = boot.mesh();
 		String dir = config.getStorageOptions().getDirectory();
 		File backupDir = new File(config.getStorageOptions().getBackupDirectory());
@@ -147,7 +147,7 @@ public class OrientDBAdminHandler extends AdminHandler {
 			Mesh mesh = boot.mesh();
 			MeshStatus oldStatus = mesh.getStatus();
 			mesh.setStatus(MeshStatus.BACKUP);
-			String exportDir = ((OrientDBMeshOptions)options).getStorageOptions().getExportDirectory();
+			String exportDir = ((GraphDBMeshOptions)options).getStorageOptions().getExportDirectory();
 			log.debug("Exporting graph to {" + exportDir + "}");
 			vertx.eventBus().publish(GRAPH_EXPORT_START.address, null);
 			db.exportDatabase(exportDir);
@@ -164,7 +164,7 @@ public class OrientDBAdminHandler extends AdminHandler {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 		});
-		File importsDir = new File(((OrientDBMeshOptions)options).getStorageOptions().getExportDirectory());
+		File importsDir = new File(((GraphDBMeshOptions)options).getStorageOptions().getExportDirectory());
 
 		// Find the file which was last modified
 		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
@@ -202,6 +202,6 @@ public class OrientDBAdminHandler extends AdminHandler {
 
 	@Override
 	public boolean isBackupSupported() {
-		return ((OrientDBMeshOptions)options).getStorageOptions().getDirectory() != null;
+		return ((GraphDBMeshOptions)options).getStorageOptions().getDirectory() != null;
 	}
 }

@@ -19,7 +19,7 @@
 
 	<modules>
 		<module>orientdb</module>
-		<!-- <module>arcadedb</module> -->		
+		<module>arcadedb</module>		
 	</modules>
 
 	<dependencyManagement>

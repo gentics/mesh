@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.madl.field.FieldType;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -37,7 +37,7 @@ public class OrientDBDatabaseTest extends AbstractMeshTest {
 	public void createOutputDirectory() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
-		((OrientDBMeshOptions) options()).getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
+		((GraphDBMeshOptions) options()).getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
 		// db().reset();
 		// setupData();
 	}
