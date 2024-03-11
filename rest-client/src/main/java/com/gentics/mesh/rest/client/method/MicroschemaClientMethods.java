@@ -7,6 +7,8 @@ import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
+import com.gentics.mesh.core.rest.project.ProjectListResponse;
+import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -109,4 +111,46 @@ public interface MicroschemaClientMethods {
 	 * @return mesh request
 	 */
 	MeshRequest<ObjectPermissionResponse> revokeMicroschemaRolePermissions(String uuid, ObjectPermissionRevokeRequest request);
+
+	/**
+	 * Assign a microschema to the project
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param microschemaUuid
+	 *            microschema uuid
+	 * @return
+	 */
+	MeshRequest<MicroschemaResponse> assignMicroschemaToProject(String projectName, String microschemaUuid);
+
+	/**
+	 * Unassign a microschema from the project
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param microschemaUuid
+	 *            microschema uuid
+	 * @return
+	 */
+	MeshRequest<EmptyResponse> unassignMicroschemaFromProject(String projectName, String microschemaUuid);
+
+	/**
+	 * Find all microschemas assigned to the project
+	 *
+	 * @param projectName
+	 *            project name
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<MicroschemaListResponse> findMicroschemas(String projectName, ParameterProvider... parameters);
+
+	/**
+	 * Find all projects assigned to the microschema
+	 *
+	 * @param uuid
+	 *            microschema UUID
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<ProjectListResponse> findMicroschemaProjects(String uuid, ParameterProvider... parameters);
 }

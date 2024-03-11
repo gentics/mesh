@@ -529,6 +529,22 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
+	public MeshRequest<ProjectListResponse> findSchemaProjects(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectListResponse> ac = createContext(ProjectListResponse.class, parameters);
+		ac.setParameter("schemaUuid", uuid);
+		schemaCrudHandler.handleGetLinkedProjects(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectListResponse> findMicroschemaProjects(String uuid, ParameterProvider... parameters) {
+		LocalActionContextImpl<ProjectListResponse> ac = createContext(ProjectListResponse.class, parameters);
+		ac.setParameter("microschemaUuid", uuid);
+		microschemaCrudHandler.handleGetLinkedProjects(ac, uuid);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
 	public MeshRequest<MicroschemaResponse> assignMicroschemaToProject(String projectName, String microschemaUuid) {
 		LocalActionContextImpl<MicroschemaResponse> ac = createContext(MicroschemaResponse.class);
 		microschemaCrudHandler.handleAddMicroschemaToProject(ac, microschemaUuid);
