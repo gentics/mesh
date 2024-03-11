@@ -204,12 +204,12 @@ public class CsvExporter extends Exporter {
 			timestampValue = timestampValue.substring(0, timestampValue.length() - 1); // strip the Z in the end
 			if(timestampFormat != "" && timestampFormat != "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"){
 				try {
-                LocalDateTime date = LocalDateTime.parse(timestampValue, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(timestampFormat);
-                timestampValue = formatter.format(date); 
-            } catch (Throwable e) {
-                log.warn("Could not parse date", e);
-            }
+					LocalDateTime date = LocalDateTime.parse(timestampValue, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(timestampFormat);
+					timestampValue = formatter.format(date); 
+            	} catch (Throwable e) {
+                	log.warn("Could not parse date", e);
+            	}
 			}
 
 			ret.add(timestampValue);

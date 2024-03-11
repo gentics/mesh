@@ -5,9 +5,10 @@ package com.gentics.mesh.plugin.forms.config;
  */
 public class ExportOptions {
 
+	private final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"; // ISO_INSTANT
 	private boolean includeUuid = false;
 	private boolean includeCreationTimestamp = false;
-	private String timestampFormat = "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"; // ISO_INSTANT
+	private String timestampFormat = DEFAULT_TIMESTAMP_FORMAT; 
 	private boolean includeNameFirst = true;
 
 	/**
@@ -64,7 +65,11 @@ public class ExportOptions {
 	 *
 	 * @return the timestamp
 	 */
-	 public String timestampFormat() {
+	 public String timestampFormat() {		
+		if (timestampFormat == null || timestampFormat.isEmpty()) {
+			timestampFormat = DEFAULT_TIMESTAMP_FORMAT;
+		}
+
 		return timestampFormat;
 	}
 	/**
