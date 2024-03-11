@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.14]]
+== 1.10.14 (TBD)
+
+icon:check[] Forms: Fixes column order in exports containing binary data. Optional binary fields could break the order of columns in the export when a data set did not contain an entry for that file.
+
 [[v1.10.13]]
 == 1.10.13 (2024-02-07)
 

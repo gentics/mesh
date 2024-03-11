@@ -211,6 +211,8 @@ public class CsvExporter extends Exporter {
 					baseUrl,
 					data.getString("uuid"),
 					fieldName));
+			} else if (value == null && binaryFields.contains(fieldName)) {
+				ret.add("");
 			}
 
 			ret.add(value == null ? "" : this.normalizeValue(String.valueOf(value)));
