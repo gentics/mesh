@@ -1,0 +1,48 @@
+{
+	orNodes: nodes( uuids: [ "43ee8f9ff71e4016ae8f9ff71e10161c", "4b1346a2163a4ff89346a2163a9ff883" ]
+		filter: {uuid: { or: [{equals: "43ee8f9ff71e4016ae8f9ff71e10161c"},{equals: "4b1346a2163a4ff89346a2163a9ff883"}] }}
+	) {
+		# [$.data.orNodes.totalCount=2]
+		totalCount
+
+		elements {
+			# [$.data.orNodes.elements[0].uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+			# [$.data.orNodes.elements[1].uuid=4b1346a2163a4ff89346a2163a9ff883]
+			uuid
+		}
+	}
+	oneOfNodes: nodes( uuids: [ "43ee8f9ff71e4016ae8f9ff71e10161c", "4b1346a2163a4ff89346a2163a9ff883" ]
+		filter: {uuid: { oneOf: ["43ee8f9ff71e4016ae8f9ff71e10161c", "4b1346a2163a4ff89346a2163a9ff883"] }}
+	) {
+		# [$.data.oneOfNodes.totalCount=2]
+		totalCount
+
+		elements {
+			# [$.data.oneOfNodes.elements[0].uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+			# [$.data.oneOfNodes.elements[1].uuid=4b1346a2163a4ff89346a2163a9ff883]
+			uuid
+		}
+	}
+	andNodes: nodes( uuids: [ "43ee8f9ff71e4016ae8f9ff71e10161c", "4b1346a2163a4ff89346a2163a9ff883" ]
+		filter: {uuid: { and: [{equals: "43ee8f9ff71e4016ae8f9ff71e10161c"},{equals: "4b1346a2163a4ff89346a2163a9ff883"}] }}
+	) {
+		# [$.data.andNodes.totalCount=0]
+		totalCount
+
+		elements {
+			uuid
+		}
+	}
+	notNodes: nodes( uuids: [ "43ee8f9ff71e4016ae8f9ff71e10161c", "4b1346a2163a4ff89346a2163a9ff883" ]
+		filter: {uuid: { not: {equals: "4b1346a2163a4ff89346a2163a9ff883"}}}
+	) {
+		# [$.data.notNodes.totalCount=1]
+		totalCount
+
+		elements {
+			# [$.data.notNodes.elements[0].uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]
