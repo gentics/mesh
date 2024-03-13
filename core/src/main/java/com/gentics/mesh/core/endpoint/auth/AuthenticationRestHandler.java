@@ -8,6 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
@@ -20,6 +22,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * REST handler for authentication calls.
@@ -71,13 +75,17 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	public void handleLoginJWT(InternalActionContext ac) {
 		try {
 			LoginRequest request = JsonUtil.readValue(ac.getBodyAsString(), LoginRequest.class);
-			if (request.getUsername() == null) {
-				throw error(BAD_REQUEST, "error_json_field_missing", "username");
+			if (StringUtils.isNotBlank(request.getApiKey())) {
+				authProvider.login(ac, request.getApiKey());
+			} else {
+				if (StringUtils.isBlank(request.getUsername())) {
+					throw error(BAD_REQUEST, "error_json_field_missing", "username");
+				}
+				if (StringUtils.isBlank(request.getPassword())) {
+					throw error(BAD_REQUEST, "error_json_field_missing", "password");
+				}
+				authProvider.login(ac, request.getUsername(), request.getPassword(), request.getNewPassword());	
 			}
-			if (request.getPassword() == null) {
-				throw error(BAD_REQUEST, "error_json_field_missing", "password");
-			}
-			authProvider.login(ac, request.getUsername(), request.getPassword(), request.getNewPassword());
 		} catch (GenericRestException e) {
 			throw e;
 		} catch (Exception e) {
