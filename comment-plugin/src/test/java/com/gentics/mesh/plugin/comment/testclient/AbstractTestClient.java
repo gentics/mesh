@@ -1,5 +1,11 @@
 package com.gentics.mesh.plugin.comment.testclient;
 
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
+import java.io.InputStream;
+
+import org.apache.commons.lang.NotImplementedException;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
@@ -41,6 +47,8 @@ import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
@@ -61,8 +69,8 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -99,12 +107,9 @@ import com.gentics.mesh.rest.client.MeshWebrootFieldResponse;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.rest.client.MeshWebsocket;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-
-import org.apache.commons.lang.NotImplementedException;
-
-import java.io.InputStream;
 
 /**
  * A client that throws an Exception for every method. Extend this class and override every method you wish to mock.
@@ -1407,6 +1412,95 @@ public abstract class AbstractTestClient implements MeshRestClient {
 
 	@Override
 	public MeshRequest<EmptyResponse> writable() {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid,
+			String fieldKey, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String uuid,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByUuid(String projectName, String uuid,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageResponse> findLanguageByTag(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<LanguageListResponse> findLanguages(String projectName,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByUuid(String uuid, String projectName,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> assignLanguageToProjectByTag(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByUuid(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> unassignLanguageFromProjectByTag(String projectName, String tag,
+			ParameterProvider... parameterProviders) {
 		throw new NotImplementedException();
 	}
 }
