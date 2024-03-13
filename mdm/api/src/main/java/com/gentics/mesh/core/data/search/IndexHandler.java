@@ -93,11 +93,11 @@ public interface IndexHandler<T extends HibBaseElement> {
 	Set<String> filterUnknownIndices(Set<String> indices);
 
 	/**
-	 * Load a map which contains the applicable indices. The key of the map is the index name.
+	 * Load a map which contains the applicable indices. The key of the map is the index name. If the value is empty, the indexing is disabled and has to be removed, if exists.
 	 * 
 	 * @return Map with index information
 	 */
-	Map<String, IndexInfo> getIndices();
+	Map<String, Optional<IndexInfo>> getIndices();
 
 	/**
 	 * Get the names of all indices for searching purposes. The action context will be examined to determine the project scope and the branch scope. If possible

@@ -85,12 +85,12 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		return db.tx(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 			for (HibProject project : tx.projectDao().findAll()) {
 				IndexInfo info = getIndex(project.getUuid());
-				indexInfo.put(info.getIndexName(), info);
+				indexInfo.put(info.getIndexName(), Optional.of(info));
 			}
 			return indexInfo;
 		});

@@ -154,6 +154,7 @@ public interface HibFieldTypeChange extends HibSchemaFieldChange {
 					throw error(BAD_REQUEST, "Unknown type {" + newType + "} for change " + getUuid());
 			}
 			field.setRequired(fieldSchema.isRequired());
+			field.setNoIndex(fieldSchema.isNoIndex());
 			field.setLabel(fieldSchema.getLabel());
 			field.setName(fieldSchema.getName());
 

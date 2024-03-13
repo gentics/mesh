@@ -30,6 +30,16 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 	}
 
 	@Override
+	public Boolean getNoIndex() {
+		return getRestProperty(SchemaChangeModel.NO_INDEX_KEY);
+	}
+
+	@Override
+	public void setNoIndex(Boolean noIndex) {
+		setRestProperty(SchemaChangeModel.NO_INDEX_KEY, noIndex);
+	}
+
+	@Override
 	public String getDescription() {
 		return getRestProperty(SchemaChangeModel.DESCRIPTION_KEY);
 	}
@@ -61,6 +71,12 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 		String name = getName();
 		if (name != null) {
 			container.setName(name);
+		}
+
+		// no index
+		Boolean noIndex = getNoIndex();
+		if (noIndex != null) {
+			container.setNoIndex(noIndex);
 		}
 
 		// .description
