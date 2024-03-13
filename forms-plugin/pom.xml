@@ -50,10 +50,6 @@
 			<groupId>com.gentics.mesh.plugin.commercial</groupId>
 			<artifactId>mesh-commercial-plugins-common</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh.plugin.commercial</groupId>
-			<artifactId>mesh-commercial-plugins-common</artifactId>
-		</dependency>
 
 		<!-- Dagger -->
 		<dependency>
@@ -165,25 +161,6 @@
 						<LICENSEKEY>FBF4-6D85-75CD-7FA0-3EAE-FB5E-3D31-B936</LICENSEKEY>
 					</environmentVariables>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<verbose>false</verbose>
-					<compilerVersion>11</compilerVersion>
-					<source>11</source>
-					<target>11</target>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>${dagger.version}</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
