@@ -3,7 +3,12 @@ package com.gentics.mesh.router.route;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 
+import java.util.Optional;
+
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.etc.config.HttpServerConfig;
+
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
@@ -13,13 +18,28 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 
+	private final Optional<HttpServerConfig> maybeHttpServerConfig;
+
 	/**
 	 * Create a new 404 handler.
 	 * 
 	 * @return
 	 */
 	public static DefaultNotFoundHandler create() {
-		return new DefaultNotFoundHandler();
+		return new DefaultNotFoundHandler(null);
+	}
+
+	/**
+	 * Create a new 404 handler.
+	 * 
+	 * @return
+	 */
+	public static DefaultNotFoundHandler create(HttpServerConfig httpServerConfig) {
+		return new DefaultNotFoundHandler(Optional.ofNullable(httpServerConfig));
+	}
+
+	private DefaultNotFoundHandler(Optional<HttpServerConfig> maybeHttpServerConfig) {
+		this.maybeHttpServerConfig = maybeHttpServerConfig;
 	}
 
 	@Override
@@ -48,13 +68,13 @@ public class DefaultNotFoundHandler implements Handler<RoutingContext> {
 				+ APPLICATION_JSON + "}";
 		}
 
+		InternalRoutingActionContextImpl ac = new InternalRoutingActionContextImpl(rc, maybeHttpServerConfig.orElse(null));
 		msg.setInternalMessage(internalMessage);
 		msg.setMessage("Not Found");
 		rc.response().putHeader("Content-Type", APPLICATION_JSON_UTF8);
 		rc.response().setStatusCode(404);
 		rc.response().setStatusMessage("Not Found");
-		rc.response().end(msg.toJson());
-
+		rc.response().end(msg.toJson(maybeHttpServerConfig.map(httpServerConfig -> ac.isMinify(httpServerConfig)).orElse(true)));
 	}
 
 }

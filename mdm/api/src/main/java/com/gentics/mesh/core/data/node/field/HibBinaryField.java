@@ -3,13 +3,16 @@ package com.gentics.mesh.core.data.node.field;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.HibDeletableField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.handler.ActionContext;
 
 public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryField>, HibDeletableField, HibDisplayField, HibReferenceField<HibBinary> {
@@ -21,6 +24,20 @@ public interface HibBinaryField extends HibImageDataField, HibBasicField<BinaryF
 	 * @return Fluent API
 	 */
 	HibBinaryField copyTo(HibBinaryField target);
+
+	/**
+	 * Get the parent container.
+	 * 
+	 * @return
+	 */
+	HibNodeFieldContainer getParentContainer();
+
+	/**
+	 * Get the image variants, attached to this binary field.
+	 * 
+	 * @return
+	 */
+	Result<? extends HibImageVariant> getImageVariants();
 
 	@Override
 	HibBinary getBinary();

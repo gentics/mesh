@@ -156,7 +156,7 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleRespon
 					String name = role.getName();
 					if (ac.getSecurityLogger().isInfoEnabled()) {
 						ac.getSecurityLogger().info(String.format("Permission for role {%s} (%s) to {%s} set to %s",
-								role.getName(), roleUuid, pathToElement, requestModel.toJson()));
+								role.getName(), roleUuid, pathToElement, requestModel.toJson(false)));
 					}
 					return message(ac, "role_updated_permission", name);
 				} catch (MissingPermissionException e) {

@@ -150,7 +150,8 @@ public class GraphQLHandler {
 							Map<String, Object> data = result.getData();
 							response.put("data", new JsonObject(data));
 						}
-						gc.send(response.encodePrettily(), OK);
+						boolean minify = gc.isMinify(options.getHttpServerOptions());
+						gc.send(minify ? response.encode() : response.encodePrettily(), OK);
 						promise.complete();
 					} catch (TimeoutException | InterruptedException | ExecutionException e) {
 						// If an error happens while "waiting" for the result, we log the GraphQL query here.

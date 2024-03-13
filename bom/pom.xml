@@ -117,7 +117,7 @@
 			<dependency>
 				<groupId>com.squareup.okhttp3</groupId>
 				<artifactId>okhttp</artifactId>
-				<version>3.12.1</version>
+				<version>3.14.9</version>
 			</dependency>
 
 			<!-- SSL -->
@@ -689,6 +689,11 @@
 				<groupId>com.gentics.graphqlfilter</groupId>
 				<artifactId>graphql-java-filter</artifactId>
 				<version>${graphql-filter.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openjdk.nashorn</groupId>
+				<artifactId>nashorn-core</artifactId>
+				<version>15.0</version>
 			</dependency>
 
 		</dependencies>

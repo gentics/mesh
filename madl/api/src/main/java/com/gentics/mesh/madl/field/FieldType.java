@@ -14,7 +14,7 @@ public enum FieldType {
 
 	STRING_SET,
 
-	LINK;
+	LINK,
 
-
+	FLOAT;
 }

@@ -28,6 +28,7 @@ public class MeshRestClientConfig {
 	private final boolean hostnameVerification;
 	private final int maxRetries;
 	private final int retryDelayMs;
+	private final boolean minifyJson;
 
 	public MeshRestClientConfig(Builder builder) {
 		this.host = Objects.requireNonNull(builder.host);
@@ -43,6 +44,7 @@ public class MeshRestClientConfig {
 		this.clientKey = builder.clientKey;
 		this.maxRetries = builder.maxRetries;
 		this.retryDelayMs = builder.retryDelayMs;
+		this.minifyJson = builder.minifyJson;
 	}
 
 	/**
@@ -112,6 +114,10 @@ public class MeshRestClientConfig {
 		return protocolVersion;
 	}
 
+	public boolean isMinifyJson() {
+		return minifyJson;
+	}
+
 	/**
 	 * Create a fresh config builder.
 	 * 
@@ -141,6 +147,7 @@ public class MeshRestClientConfig {
 		// maximum number of retries with the chosen delay fit inside the
 		// max call timeout.
 		private int retryDelayMs = -1;
+		private boolean minifyJson = true;
 
 		public Builder() {
 			trustedCAs = new HashSet<>();
@@ -180,6 +187,11 @@ public class MeshRestClientConfig {
 		 */
 		public MeshRestClientConfig build() {
 			return new MeshRestClientConfig(this);
+		}
+
+		public Builder setMinifyJson(boolean minify) {
+			this.minifyJson = minify;
+			return this;
 		}
 
 		/**

@@ -63,10 +63,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
 			<!-- Generate and attach the revision file -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>

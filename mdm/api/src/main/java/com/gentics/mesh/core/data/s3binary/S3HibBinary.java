@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.s3binary;
 
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
 import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
@@ -7,7 +8,7 @@ import com.gentics.mesh.core.rest.event.s3binary.S3BinaryEventModel;
 /**
  * Domain model for s3 binaries.
  */
-public interface S3HibBinary extends HibImageDataElement {
+public interface S3HibBinary extends HibImageDataElement, HibAntivirableBinaryElement {
 
 	/**
 	 * Return the mime type of the s3binary data.

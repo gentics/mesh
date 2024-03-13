@@ -99,7 +99,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<HibNode, NodeResponse> 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				HibNode node = crudActions().loadByUuid(context(tx, ac), uuid, DELETE_PERM, true);
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(tx.getProject(ac), languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

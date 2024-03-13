@@ -108,6 +108,14 @@ public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenc
 	Result<? extends HibLanguage> getLanguages();
 
 	/**
+	 * Find an assigned language by its tag.
+	 * @param languageTag 
+	 * 
+	 * @return
+	 */
+	HibLanguage findLanguageByTag(String languageTag);
+
+	/**
 	 * Unassign the language from the project.
 	 *
 	 * @param language

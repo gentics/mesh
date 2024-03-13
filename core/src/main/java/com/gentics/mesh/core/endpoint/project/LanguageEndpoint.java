@@ -4,30 +4,34 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.gentics.mesh.auth.MeshAuthChainImpl;
-import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.router.route.AbstractProjectEndpoint;
-
-import io.vertx.ext.web.Route;
+import com.gentics.mesh.example.ExampleUuids;
+import com.gentics.mesh.parameter.client.GenericParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.rest.InternalEndpointRoute;
+import com.gentics.mesh.router.route.AbstractInternalEndpoint;
 
 /**
  * Endpoint for /api/v1/languages
  * 
  * NOTE: This endpoint is currently not active
  */
-public class LanguageEndpoint extends AbstractProjectEndpoint {
+public class LanguageEndpoint extends AbstractInternalEndpoint {
+
+	private final LanguageCrudHandler crudHandler;
 
 	@Inject
-	public LanguageEndpoint(MeshAuthChainImpl chain, BootstrapInitializer boot, LocalConfigApi localConfigApi, Database db, MeshOptions options) {
-		super("languages", chain, boot, localConfigApi, db, options);
+	public LanguageEndpoint(MeshAuthChainImpl chain, LocalConfigApi localConfigApi, Database db, MeshOptions options, LanguageCrudHandler crudHandler) {
+		super("languages", chain, localConfigApi, db, options);
+		this.crudHandler = crudHandler;
 	}
 
 	@Override
@@ -39,22 +43,66 @@ public class LanguageEndpoint extends AbstractProjectEndpoint {
 	public void registerEndPoints() {
 		secureAll();
 
-		// TODO Add method that allows assigning languages from and to the project
-		Route createRoute = route("/:projectUuid/languages").method(POST).produces(APPLICATION_JSON);
-		createRoute.handler(rc -> {
-			throw new NotImplementedException("not implemented");
-		});
+// Unused, due to the 
+//		InternalEndpointRoute createRoute = createRoute();
+//		createRoute.description("Create a new language. Currently unused, throwing an error.");
+//		createRoute.exampleResponse(OK, languageExamples.getGermanLanguageResponse(), "A language");
+//		createRoute.path("/");
+//		createRoute.method(POST);
+//		createRoute.produces(APPLICATION_JSON);
+//		createRoute.blockingHandler(rc -> {
+//			InternalActionContext ac = wrap(rc);
+//			crudHandler.handleCreate(ac);
+//		}, isOrderedBlockingHandlers());
+//
+//		InternalEndpointRoute deleteRoute = createRoute();
+//		deleteRoute.description("Delete the language. Currently unused, throwing an error.");
+//		deleteRoute.exampleResponse(OK, languageExamples.getGermanLanguageResponse(), "A language");
+//		deleteRoute.path("/:languageUuid");
+//		deleteRoute.method(DELETE);
+//		deleteRoute.produces(APPLICATION_JSON);
+//		deleteRoute.blockingHandler(rc -> {
+//			InternalActionContext ac = wrap(rc);
+//			String uuid = ac.getParameter("languageUuid");
+//			crudHandler.handleDelete(ac, uuid);
+//		}, isOrderedBlockingHandlers());
 
-		Route deleteRoute = route("/:projectUuid/languages").method(DELETE).produces(APPLICATION_JSON);
-		deleteRoute.handler(rc -> {
-			// Unassign languages should cause a batch process that removes the FieldContainers for the given language.
-			throw new NotImplementedException("not implemented");
-		});
+		InternalEndpointRoute getAllRoute = createRoute();
+		getAllRoute.path("/");
+		getAllRoute.description("Get all system installed languages");
+		getAllRoute.exampleResponse(OK, languageExamples.getLanguageListResponse(), "List of languages");
+		getAllRoute.addQueryParameters(PagingParametersImpl.class);
+		getAllRoute.method(GET);
+		getAllRoute.produces(APPLICATION_JSON);
+		getAllRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			crudHandler.handleReadList(ac);
+		}, false);
 
-		Route getRoute = route("/:projectUuid/languages").method(GET).produces(APPLICATION_JSON);
-		getRoute.handler(rc -> {
-			throw new NotImplementedException("not implemented");
-		});
+		InternalEndpointRoute getRoute = createRoute();
+		getRoute.path("/:languageUuid");
+		getRoute.description("Get a system installed language by its UUID");
+		getRoute.addUriParameter("languageUuid", "UUID of a language", ExampleUuids.UUID_1);
+		getRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
+		getRoute.method(GET);
+		getRoute.produces(APPLICATION_JSON);
+		getRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String uuid = ac.getParameter("languageUuid");
+			crudHandler.handleRead(ac, uuid);
+		}, false);
+
+		InternalEndpointRoute getByTagRoute = createRoute();
+		getByTagRoute.path("/tag/:languageTag");
+		getByTagRoute.description("Get a system installed language by its ISO tag");
+		getByTagRoute.addUriParameter("languageTag", "ISO language tag", "jp");
+		getByTagRoute.exampleResponse(OK, languageExamples.getJapaneseLanguageResponse(), "A language");
+		getByTagRoute.method(GET);
+		getByTagRoute.produces(APPLICATION_JSON);
+		getByTagRoute.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			String tag = ac.getParameter("languageTag");
+			crudHandler.handleReadByTag(ac, tag);
+		}, false);
 	}
-
 }

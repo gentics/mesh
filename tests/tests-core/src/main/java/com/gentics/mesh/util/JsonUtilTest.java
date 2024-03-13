@@ -126,6 +126,15 @@ public class JsonUtilTest {
 	}
 
 	@Test
+	public void testMinify() {
+		UserResponse user = new UserResponse();
+		String minUser = JsonUtil.toJson(user, true);
+		assertEquals(-1, minUser.indexOf("\n"));
+		assertEquals(-1, minUser.indexOf("\t"));
+		assertEquals(-1, minUser.indexOf(" "));
+	}
+
+	@Test
 	public void testJsonFormatError() throws IOException {
 		try {
 			String json = "{broken}";

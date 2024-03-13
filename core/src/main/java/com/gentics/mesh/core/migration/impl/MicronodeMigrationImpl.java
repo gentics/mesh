@@ -84,7 +84,8 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 			Set<String> touchedFields = new HashSet<>();
 			try {
-				db.tx(() -> {
+				db.tx(tx -> {
+					ac.setHttpServerConfig(tx.data().options().getHttpServerOptions());
 					prepareMigration(reloadVersion(fromVersion), touchedFields);
 					ac.setProject(branch.getProject());
 					ac.setBranch(branch);

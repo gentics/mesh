@@ -206,7 +206,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			if (s3binary == null) {
 				s3binary = s3binaries.create(nodeUuid, s3ObjectKey, fileName).runInExistingTx(tx);
 			}
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}

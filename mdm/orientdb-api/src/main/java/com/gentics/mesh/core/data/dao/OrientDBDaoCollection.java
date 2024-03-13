@@ -56,6 +56,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 	private final BinaryDaoWrapper binaryDao;
 	private final S3BinaryDaoWrapper s3binaryDao;
 	private final JobDaoWrapper jobDao;
+	private final ImageVariantDaoWrapper imageVariantDao;
 
 	@Inject
 	public OrientDBDaoCollection(
@@ -93,6 +94,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 		BinaryDaoWrapper binaryDao,
 		S3BinaryDaoWrapper s3binaryDao,
 		JobDaoWrapper jobDao,
+		ImageVariantDaoWrapper imageVariantDao,
 
 		ContextDataRegistry contextDataRegistry) {
 		this.userDao = userDao;
@@ -129,6 +131,7 @@ public class OrientDBDaoCollection implements DaoCollection {
 		this.binaryDao = binaryDao;
 		this.s3binaryDao=s3binaryDao;
 		this.jobDao = jobDao;
+		this.imageVariantDao = imageVariantDao;
 	}
 
 	@Override
@@ -251,4 +254,8 @@ public class OrientDBDaoCollection implements DaoCollection {
 		return contentDao;
 	}
 
+	@Override
+	public ImageVariantDaoWrapper imageVariantDao() {
+		return imageVariantDao;
+	}
 }

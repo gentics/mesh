@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
@@ -33,7 +34,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 
 	private static final Logger log = LoggerFactory.getLogger(FailureHandler.class);
 
-	private LivenessManager livenessBean;
+	private final LivenessManager livenessBean;
+
+	private final HttpServerConfig httpServerConfig;
 
 	/**
 	 * Create a new failure handler.
@@ -41,16 +44,17 @@ public class FailureHandler implements Handler<RoutingContext> {
 	 * @param livenessBean liveness bean
 	 * @return created failure handler
 	 */
-	public static Handler<RoutingContext> create(LivenessManager livenessBean) {
-		return new FailureHandler(livenessBean);
+	public static Handler<RoutingContext> create(LivenessManager livenessBean, HttpServerConfig httpServerConfig) {
+		return new FailureHandler(livenessBean, httpServerConfig);
 	}
 
 	/**
 	 * Create an instance with the given liveness bean
 	 * @param livenessBean liveness bean
 	 */
-	public FailureHandler(LivenessManager livenessBean) {
+	public FailureHandler(LivenessManager livenessBean, HttpServerConfig httpServerConfig) {
 		this.livenessBean = livenessBean;
+		this.httpServerConfig = httpServerConfig;
 	}
 
 	/**
@@ -105,7 +109,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 			String msg = I18NUtil.get(ac, "error_not_authorized");
 			ac.getSecurityLogger().info("Access to resource denied.");
-			rc.response().setStatusCode(401).end(new GenericMessageResponse(msg).toJson());
+			rc.response().setStatusCode(401).end(new GenericMessageResponse(msg).toJson(ac.isMinify(httpServerConfig)));
 			return;
 		} else {
 			Throwable failure = rc.failure();
@@ -166,13 +170,13 @@ public class FailureHandler implements Handler<RoutingContext> {
 			if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 				rc.response().setStatusCode(400);
 				String msg = I18NUtil.get(ac, "error_parse_request_json_error");
-				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson());
+				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson(ac.isMinify(httpServerConfig)));
 			}
 			if (failure instanceof AbstractRestException) {
 				AbstractRestException error = (AbstractRestException) failure;
 				rc.response().setStatusCode(code);
 				translateMessage(error, rc);
-				rc.response().end(JsonUtil.toJson(error));
+				rc.response().end(JsonUtil.toJson(error, ac.isMinify(httpServerConfig)));
 			} else {
 				if (failure instanceof OutOfMemoryError) {
 					// set liveness to false
@@ -184,7 +188,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				// That's why we don't reuse the error message here.
 				String msg = I18NUtil.get(ac, "error_internal");
 				rc.response().setStatusCode(500);
-				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg)));
+				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg), ac.isMinify(httpServerConfig)));
 			}
 		}
 

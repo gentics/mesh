@@ -7,8 +7,8 @@ import static com.gentics.mesh.madl.field.FieldType.STRING_SET;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import com.gentics.madl.annotations.GraphElement;
 import com.gentics.madl.index.IndexHandler;
@@ -121,11 +121,13 @@ public class GraphFieldContainerEdgeImpl extends MeshEdgeImpl implements GraphFi
 	 * @return
 	 */
 	public static EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> filterLanguages(
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal, List<String> languageTags) {
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal, Collection<String> languageTags) {
 		if (languageTags != null && languageTags.size() > 0) {
 			LanguageRestrictionFunction[] pipes = new LanguageRestrictionFunction[languageTags.size()];
-			for (int i = 0; i < languageTags.size(); i++) {
-				pipes[i] = new LanguageRestrictionFunction(languageTags.get(0));
+			int i = 0;
+			for (String languageTag : languageTags) {
+				pipes[i] = new LanguageRestrictionFunction(languageTag);
+				i++;
 			}
 			return traversal.or(pipes);
 		} else {

@@ -51,11 +51,9 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<configuration>
 					<verbose>false</verbose>
-					<source>11</source>
-					<target>11</target>
+					<release>17</release>
 					<annotationProcessors>
 						<annotationProcessor>org.pf4j.processor.ExtensionAnnotationProcessor</annotationProcessor>
 					</annotationProcessors>

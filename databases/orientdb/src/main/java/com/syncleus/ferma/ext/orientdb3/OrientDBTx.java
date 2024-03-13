@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
+import com.gentics.mesh.core.data.dao.ImageVariantDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
@@ -314,6 +315,11 @@ public class OrientDBTx extends AbstractTx<FramedTransactionalGraph> {
 	@Override
 	public ContentDaoWrapper contentDao() {
 		return daos.contentDao();
+	}
+
+	@Override
+	public ImageVariantDaoWrapper imageVariantDao() {
+		return daos.imageVariantDao();
 	}
 
 	@Override

@@ -1,15 +1,19 @@
 package com.gentics.mesh.core.data.node.field;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.Map;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.util.UniquenessUtil;
 
 /**
@@ -38,6 +42,18 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	String BINARY_ALT_KEY = "metadata-alt";
 
 	String PLAIN_TEXT_KEY = "plainText";
+
+	/**
+	 * Set the plain text content.
+	 * @param text
+	 */
+	void setPlainText(String text);
+
+	/**
+	 * Return the extracted plain text content of the binary.
+	 * @return
+	 */
+	String getPlainText();
 
 	/**
 	 * Return the binary filename.
@@ -158,14 +174,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	void setUuid(String uuid);
 
 	/**
-	 * Return the referenced binary.
-	 *
-	 * @return
-	 */
-	@Override
-	Binary getBinary();
-
-	/**
 	 * Set the metadata property.
 	 *
 	 * @param key
@@ -179,6 +187,15 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return
 	 */
 	Map<String, String> getMetadataProperties();
+
+	@Override
+	Binary getBinary();
+
+	@Override
+	NodeGraphFieldContainer getParentContainer();
+
+	@Override
+	Result<? extends ImageVariant> getImageVariants();
 
 	/**
 	 * Set the location information.
@@ -266,14 +283,34 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	}
 
 	/**
-	 * Set the plain text content.
-	 * @param text
+	 * Attach the image variant to this binary field.
+	 * 
+	 * @param variant
 	 */
-	void setPlainText(String text);
+	default void attachImageVariant(ImageVariant variant, boolean throwOnExisting) {
+		NodeGraphFieldContainer container = getParentContainer();
+		if (container.findImageVariant(getFieldKey(), variant) == null) {
+			container.attachImageVariant(getFieldKey(), variant);
+		} else {
+			if (throwOnExisting) {
+				throw error(BAD_REQUEST, "image_error_variant_exists", variant.getKey(), getFieldKey());
+			}
+		}
+	}
 
 	/**
-	 * Return the extracted plain text content of the binary.
-	 * @return
+	 * Detach the image variant from this binary field.
+	 * 
+	 * @param variant
 	 */
-	String getPlainText();
+	default void detachImageVariant(ImageVariant variant, boolean throwOnAbsent) {
+		NodeGraphFieldContainer container = getParentContainer();
+		if (container.findImageVariant(getFieldKey(), variant) != null) {
+			container.detachImageVariant(getFieldKey(), variant);
+		} else {
+			if (throwOnAbsent) {
+				throw error(BAD_REQUEST, "image_error_no_variant", variant.getKey(), getFieldKey());
+			}
+		}
+	}
 }

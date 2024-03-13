@@ -18,6 +18,8 @@ import com.gentics.mesh.core.action.UserDAOActions;
  */
 public interface DaoCollection {
 
+	ImageVariantDao imageVariantDao();
+
 	UserDao userDao();
 
 	UserDAOActions userActions();

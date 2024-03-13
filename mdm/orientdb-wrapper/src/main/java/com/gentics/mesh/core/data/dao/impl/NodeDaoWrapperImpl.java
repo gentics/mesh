@@ -22,7 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
-import com.gentics.mesh.core.data.branch.HibBranch;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;
@@ -294,5 +293,10 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 		} else {
 			return NodeDaoWrapper.super.findAllContent(schemaVersion, ac, languageTags, type, paging, maybeFilter);
 		}
+	}
+
+	@Override
+	public Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly) {
+		return toGraph(project).getNodeRoot().findUsedLanguages(languageTags, assignedLanguagesOnly);
 	}
 }
