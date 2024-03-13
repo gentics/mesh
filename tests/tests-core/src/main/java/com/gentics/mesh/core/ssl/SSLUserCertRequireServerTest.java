@@ -28,7 +28,6 @@ public class SSLUserCertRequireServerTest extends AbstractMeshTest {
 
 		if (thrownException != null) {
 			fail("The request should not fail since a valid request was issued.");
-		} catch (SocketException e) {
 		}
 	}
 
@@ -37,7 +36,6 @@ public class SSLUserCertRequireServerTest extends AbstractMeshTest {
 		Throwable thrownException = catchThrowable(() -> SSLTestClient.call(httpsPort(), false, null));
 		if (thrownException == null) {
 			fail("The request should fail since no valid client certificate was passed along.");
-		} catch (SocketException e) {
 		}
 	}
 

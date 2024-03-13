@@ -115,6 +115,8 @@
 							<skipInvocation>${skip.test-plugins}</skipInvocation>
 							<properties>
 								<mesh.version>${project.version}</mesh.version>
+								<maven.compiler.source>17</maven.compiler.source>
+   								<maven.compiler.target>17</maven.compiler.target>
 								<skipTests>true</skipTests>
 							</properties>
 							<!-- Somehow invalid build hook are configured -->
