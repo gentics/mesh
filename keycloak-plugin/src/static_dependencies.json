@@ -1,0 +1,20 @@
+{
+  "components": [
+    {
+      "name": "Plugins",
+      "modules": [
+        {
+          "name": "Keycloak Plugin",
+          "dependencies": [
+            {
+              "name": "Keycloak Server",
+              "description": "Version used by automated tests.",
+              "current": "8.0.1",
+              "latest": "23.0.7"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
