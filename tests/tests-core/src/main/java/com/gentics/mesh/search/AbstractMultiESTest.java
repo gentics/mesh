@@ -40,7 +40,7 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 	private static ElasticsearchTestMode currentMode = null;
 
 	@Parameters(name = "{index}: ({0})")
-	public static Collection esVersions() {
+	public static Collection<Object[]> esVersions() {
 		return Arrays.asList(new Object[][] {
 			{ ElasticsearchTestMode.CONTAINER_ES6 },
 			{ ElasticsearchTestMode.CONTAINER_ES7 },

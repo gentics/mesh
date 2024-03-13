@@ -87,7 +87,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 			if (log.isDebugEnabled()) {
 				log.debug("Created event sent {}", event);
 			}
-			String json = JsonUtil.toJson(entry);
+			String json = JsonUtil.toJson(entry, false);
 			if (log.isTraceEnabled()) {
 				log.trace("Dispatching event '{}' with payload:\n{}", event, json);
 			}

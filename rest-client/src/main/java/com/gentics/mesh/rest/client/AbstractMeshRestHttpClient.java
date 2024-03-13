@@ -1,6 +1,7 @@
 package com.gentics.mesh.rest.client;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -72,24 +73,21 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	}
 
 	/**
-	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
-	 *
-	 * @param method
-	 *            Http method
-	 * @param path
-	 *            Request path
-	 * @param classOfT
-	 *            POJO class for the response
-	 * @param bodyData
-	 *            Buffer which contains the body data which should be send to the server
-	 * @param fileSize
-	 *            Total size of the data in bytes
-	 * @param contentType
-	 *            Content type of the posted data
-	 * @return
+	 * Prepare a request for uploading a file as multipart/form-data
+	 * @param <T> type of the response
+	 * @param method Http method
+	 * @param path Request path
+	 * @param classOfT POJO class for the response
+	 * @param fileName file name
+	 * @param contentType content type
+	 * @param fileData file data as input stream
+	 * @param fileSize file size
+	 * @param fields map containing additional fields which should be contained in the form
+	 * @return request
 	 */
-	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, InputStream bodyData,
-		long fileSize, String contentType);
+	abstract public <T> MeshRequest<T> prepareFileuploadRequest(HttpMethod method, String path,
+			Class<? extends T> classOfT, String fileName, String contentType, InputStream fileData, long fileSize,
+			Map<String, String> fields);
 
 	/**
 	 * Prepare the request using the provides information and return a mesh request which is ready to be invoked.
@@ -140,6 +138,13 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	abstract public <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT);
+
+	/**
+	 * Should the JSON body be minified?
+	 * 
+	 * @return
+	 */
+	abstract protected boolean isMinifyJson();
 
 	/**
 	 * Return the query aggregated parameter string for the given providers.

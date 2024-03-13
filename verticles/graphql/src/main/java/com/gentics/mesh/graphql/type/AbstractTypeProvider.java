@@ -29,9 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.graphqlfilter.Sorting;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
-import com.gentics.graphqlfilter.filter.StartFilter;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibCoreElement;
@@ -833,6 +831,16 @@ public abstract class AbstractTypeProvider {
 
 			@Override
 			public void apply(Map<String, Object> fieldProperties) {
+			}
+
+			@Override
+			public boolean isNoIndex() {
+				return false;
+			}
+
+			@Override
+			public FieldSchema setNoIndex(boolean isNoIndex) {
+				return null;
 			}
 		};
 	}

@@ -99,6 +99,15 @@ public interface VertexTraversal<C, S, M> extends Traversal<VertexFrame, C, S, M
 	VertexTraversal<?, ?, M> hasNot(String key, Object value);
 
 	/**
+	 * If the incoming element has the provided key filled, then filter the element. If the key is id or label, then use respect id or label filtering.
+	 *
+	 * @param key
+	 *            the property key to check
+	 * @return the extended Pipeline
+	 */
+	VertexTraversal<?, ?, M> hasNot(String key);
+
+	/**
 	 * Emit the adjacent outgoing vertices of the incoming vertex.
 	 *
 	 * @param labels

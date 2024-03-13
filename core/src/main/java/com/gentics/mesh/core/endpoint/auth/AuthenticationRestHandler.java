@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -26,13 +27,15 @@ import com.gentics.mesh.json.JsonUtil;
 @Singleton
 public class AuthenticationRestHandler extends AbstractHandler {
 
-	private MeshJWTAuthProvider authProvider;
-	private HandlerUtilities utils;
+	private final MeshJWTAuthProvider authProvider;
+	private final HandlerUtilities utils;
+	private final MeshOptions meshOptions;
 
 	@Inject
-	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, HandlerUtilities utils) {
+	public AuthenticationRestHandler(MeshJWTAuthProvider authProvider, HandlerUtilities utils, MeshOptions options) {
 		this.authProvider = authProvider;
 		this.utils = utils;
+		this.meshOptions = options;
 	}
 
 	/**
@@ -57,7 +60,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 	public void handleLogout(InternalActionContext ac) {
 		ac.logout();
 		GenericMessageResponse message = new GenericMessageResponse("OK");
-		ac.send(message.toJson(), OK);
+		ac.send(message.toJson(ac.isMinify(meshOptions.getHttpServerOptions())), OK);
 	}
 
 	/**

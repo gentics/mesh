@@ -20,6 +20,7 @@ public class ImageManipulatorOptions implements Option {
 	public static final String MESH_IMAGE_JPEG_QUALITY_ENV = "MESH_IMAGE_JPEG_QUALITY";
 	public static final String MESH_IMAGE_RESAMPLE_FILTER_ENV = "MESH_IMAGE_RESAMPLE_FILTER";
 	public static final String MESH_IMAGE_CACHE_DIRECTORY_ENV = "MESH_IMAGE_CACHE_DIRECTORY";
+	public static final String MESH_IMAGE_MANIPULATION_MODE_ENV = "MESH_IMAGE_MANIPULATION_MODE";
 
 	public static final int DEFAULT_MAX_WIDTH = 2048;
 	public static final int DEFAULT_MAX_HEIGHT = 2048;
@@ -27,6 +28,12 @@ public class ImageManipulatorOptions implements Option {
 	public static final String DEFAULT_IMAGE_CACHE_DIRECTORY = "data" + File.separator + "binaryImageCache";
 	// This is the default filter in ImageMagick
 	public static final ResampleFilter DEFAULT_RESAMPLE_FILTER = ResampleFilter.LANCZOS;
+	public static final ImageManipulationMode DEFAULT_IMAGE_MANIPULATION_MODE = ImageManipulationMode.ON_DEMAND;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the image manipulation mode. Default: ON_DEMAND.")
+	@EnvironmentVariable(name = MESH_IMAGE_MANIPULATION_MODE_ENV, description = "Override the image manipulation mode.")
+	private ImageManipulationMode mode = DEFAULT_IMAGE_MANIPULATION_MODE;	
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the path for image cache directory. Default: data/binaryImageCache")
@@ -103,6 +110,16 @@ public class ImageManipulatorOptions implements Option {
 	@Setter
 	public ImageManipulatorOptions setResampleFilter(ResampleFilter resampleFilter) {
 		this.resampleFilter = resampleFilter;
+		return this;
+	}
+
+	public ImageManipulationMode getMode() {
+		return mode;
+	}
+
+	@Setter
+	public ImageManipulatorOptions setMode(ImageManipulationMode mode) {
+		this.mode = mode;
 		return this;
 	}
 

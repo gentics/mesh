@@ -12,11 +12,20 @@ import io.vertx.core.shareddata.Shareable;
 public interface RestModel extends Shareable {
 
 	/**
-	 * Transforms the model into a JSON string.
+	 * Transforms the model into a JSON string, with pretty formatting.
 	 * 
 	 * @return
 	 */
 	default String toJson() {
-		return JsonUtil.toJson(this);
+		return toJson(true);
+	}
+
+	/**
+	 * Transforms the model into a JSON string.
+	 * 
+	 * @return
+	 */
+	default String toJson(boolean minify) {
+		return JsonUtil.toJson(this, minify);
 	}
 }

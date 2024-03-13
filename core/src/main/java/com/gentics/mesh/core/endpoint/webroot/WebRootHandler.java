@@ -134,7 +134,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 			}
 		}, model -> {
 			if (model != null) {
-				ac.send(JsonUtil.toJson(model),
+				ac.send(JsonUtil.toJson(model, ac.isMinify(options.getHttpServerOptions())),
 					HttpResponseStatus.valueOf(NumberUtils.toInt(rc.data().getOrDefault("statuscode", "").toString(), OK.code())));
 			}
 		});
@@ -215,7 +215,5 @@ public class WebRootHandler extends AbstractWebrootHandler {
 		} else {
 			nodeCrudHandler.handleCreate(ac);
 		}
-
 	}
-
 }

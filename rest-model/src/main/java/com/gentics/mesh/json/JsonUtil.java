@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.PrettyPrinter;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -72,6 +74,7 @@ public final class JsonUtil {
 
 	protected static ObjectMapper defaultMapper;
 	protected static JsonSchemaGenerator schemaGen;
+	protected static PrettyPrinter minifyingPrettyPrinter;
 
 	private static final Logger log = LoggerFactory.getLogger(JsonUtil.class);
 
@@ -84,6 +87,8 @@ public final class JsonUtil {
 	 * Initialize the default mapper.
 	 */
 	private static void initDefaultMapper() {
+		minifyingPrettyPrinter = new MinimalPrettyPrinter();
+
 		defaultMapper = new ObjectMapper();
 		defaultMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(Include.NON_NULL, Include.ALWAYS));
 		defaultMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -152,6 +157,7 @@ public final class JsonUtil {
 		schemaGen = new JsonSchemaGenerator(mapper);
 	}
 
+
 	/**
 	 * Transform the given object into a JSON string.
 	 * 
@@ -160,11 +166,27 @@ public final class JsonUtil {
 	 * @throws GenericRestException
 	 */
 	public static <T> String toJson(T obj) throws GenericRestException {
+		return toJson(obj, true);
+	}
+
+	/**
+	 * Transform the given object into a JSON string, considering the HTTP server config.
+	 * 
+	 * @param obj
+	 * @param config
+	 * @return
+	 * @throws GenericRestException
+	 */
+	public static <T> String toJson(T obj, boolean minify) throws GenericRestException {
 		if (obj instanceof JSONObject) {
 			return ((JSONObject) obj).toString();
 		}
 		try {
-			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			if (minify) {
+				return defaultMapper.writer(minifyingPrettyPrinter).writeValueAsString(obj);
+			} else {
+				return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+			}
 		} catch (IOException e) {
 			// TODO i18n
 			String message = "Could not generate json from object";
@@ -238,5 +260,4 @@ public final class JsonUtil {
 	public static ObjectMapper getMapper() {
 		return defaultMapper;
 	}
-
 }

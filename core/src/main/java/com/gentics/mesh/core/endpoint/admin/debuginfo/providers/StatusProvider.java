@@ -45,17 +45,17 @@ public class StatusProvider implements DebugInfoProvider {
 
 	private Flowable<DebugInfoEntry> getClusterStatus() {
 		return db.singleTx(() -> db.clusterManager().getClusterStatus())
-			.map(status -> DebugInfoBufferEntry.fromString("clusterStatus.json", status.toJson()))
+			.map(status -> DebugInfoBufferEntry.fromString("clusterStatus.json", status.toJson(false)))
 			.toFlowable();
 	}
 
 	private Flowable<DebugInfoEntry> getElasticSearchStatus() {
 		return adminIndexHandler.getSearchStatus()
-			.map(status -> DebugInfoBufferEntry.fromString("searchStatus.json", status.toJson()))
+			.map(status -> DebugInfoBufferEntry.fromString("searchStatus.json", status.toJson(false)))
 			.toFlowable();
 	}
 
 	private Flowable<DebugInfoEntry> getVersions(InternalActionContext ac) {
-		return Flowable.just(DebugInfoBufferEntry.fromString("versions.json", adminHandler.getMeshServerInfoModel(ac).toJson()));
+		return Flowable.just(DebugInfoBufferEntry.fromString("versions.json", adminHandler.getMeshServerInfoModel(ac).toJson(false)));
 	}
 }

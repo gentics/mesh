@@ -10,7 +10,6 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
@@ -55,7 +54,7 @@ public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse> implem
 
 	@Override
 	public void setWarnings(JobWarningList warnings) {
-		String json = JsonUtil.toJson(warnings);
+		String json = JsonUtil.toJson(warnings, true);
 		property(WARNING_PROPERTY_KEY, json);
 	}
 

@@ -37,18 +37,6 @@ public class SchemaModelImpl implements SchemaVersionModel {
 	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
 	private List<String> urlFields;
 
-	/**
-	 * Create a new schema with the given name.
-	 * 
-	 * @param name
-	 */
-	public SchemaModelImpl(String name) {
-		setName(name);
-	}
-
-	public SchemaModelImpl() {
-	}
-
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version of the schema")
 	private String version;
@@ -69,6 +57,22 @@ public class SchemaModelImpl implements SchemaVersionModel {
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
 	private Boolean autoPurge;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
+	/**
+	 * Create a new schema with the given name.
+	 * 
+	 * @param name
+	 */
+	public SchemaModelImpl(String name) {
+		setName(name);
+	}
+
+	public SchemaModelImpl() {
+	}
+
 	@Override
 	public String getVersion() {
 		return version;
@@ -88,6 +92,17 @@ public class SchemaModelImpl implements SchemaVersionModel {
 	@Override
 	public SchemaModelImpl setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public SchemaModelImpl setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

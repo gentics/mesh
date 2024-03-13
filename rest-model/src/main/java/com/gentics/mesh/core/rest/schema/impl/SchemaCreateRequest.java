@@ -51,6 +51,10 @@ public class SchemaCreateRequest implements SchemaModel {
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should create new versions.")
 	private Boolean autoPurge;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
 	@Override
 	public String getDescription() {
 		return description;
@@ -59,6 +63,17 @@ public class SchemaCreateRequest implements SchemaModel {
 	@Override
 	public SchemaCreateRequest setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public SchemaCreateRequest setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

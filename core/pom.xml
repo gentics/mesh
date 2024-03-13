@@ -166,6 +166,10 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+			<artifactId>nashorn-core</artifactId>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
@@ -228,21 +232,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<forceJavacCompilerUse>true</forceJavacCompilerUse>
-				</configuration>
-				<dependencies>
-					<dependency>
-						<groupId>com.google.dagger</groupId>
-						<artifactId>dagger-compiler</artifactId>
-						<version>${dagger.version}</version>
-						<optional>true</optional>
-					</dependency>
-				</dependencies>
 			</plugin>
 		</plugins>
 		<pluginManagement>

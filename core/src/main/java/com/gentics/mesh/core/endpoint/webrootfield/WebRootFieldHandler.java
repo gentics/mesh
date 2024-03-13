@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.endpoint.webrootfield;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryDownloadHandler;
 import com.gentics.mesh.core.endpoint.node.BinaryTransformHandler;
+import com.gentics.mesh.core.endpoint.node.BinaryVariantsHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -51,14 +53,16 @@ import io.vertx.ext.web.RoutingContext;
 public class WebRootFieldHandler extends AbstractWebrootHandler {
 	private static final Logger log = LoggerFactory.getLogger(WebRootFieldHandler.class);
 
-	private BinaryDownloadHandler binaryDownloadHandler;
+	private final BinaryDownloadHandler binaryDownloadHandler;
+	private final BinaryVariantsHandler binaryVariantsHandler;
 
 	@Inject
 	public WebRootFieldHandler(Database database, WebRootService webrootService,
-							   BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler,
+							   BinaryTransformHandler binaryTransformHandler, BinaryDownloadHandler binaryDownloadHandler, BinaryVariantsHandler binaryVariantsHandler,
 							   NodeCrudHandler nodeCrudHandler, BootstrapInitializer boot, MeshOptions options, WriteLock writeLock, HandlerUtilities utils) {
 		super(database, webrootService, nodeCrudHandler, boot, options, writeLock, utils);
 		this.binaryDownloadHandler = binaryDownloadHandler;
+		this.binaryVariantsHandler = binaryVariantsHandler;
 	}
 
 	/**
@@ -71,8 +75,6 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 		String fieldName = rc.request().getParam("param0");
 
 		utils.syncTx(ac, tx -> {
-			NodeDao nodeDao = tx.nodeDao();
-
 			// Cut all the common parts off, obtaining the project-based path.
 			String path = rc.request().path();
 			path = path.substring(rc.mountPoint().length());
@@ -117,7 +119,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 				rc.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8);
 				break;
 			}
-			String etag = nodeDao.getETag(node, ac);
+			String etag = tx.nodeDao().getETag(node, ac);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
@@ -144,10 +146,66 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 				// Check if field is JSON, to set corresponding HTTP header value
 				String contentType = rc.response().headers().get(HttpHeaders.CONTENT_TYPE);
 				ac.send(
-					HttpConstants.APPLICATION_JSON_UTF8.equals(contentType) ? field.toJson() : field.toString(),
+					HttpConstants.APPLICATION_JSON_UTF8.equals(contentType) ? field.toJson(ac.isMinify(options.getHttpServerOptions())) : field.toString(),
 					HttpResponseStatus.valueOf(rc.response().getStatusCode()),
 					contentType);
 			}
 		});
+	}
+
+	/**
+	 * Handle a webrootpath post request. At the moment is only used for upserting the binary field variants.
+	 * 
+	 * @param rc
+	 */
+	public void handlePostPathField(RoutingContext rc) {
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		String fieldName = rc.request().getParam("param0");
+
+		utils.syncTx(ac, tx -> {
+			// Cut all the common parts off, obtaining the project-based path.
+			String path = rc.request().path();
+			path = path.substring(rc.mountPoint().length());
+			path = path.substring(fieldName.length() + 1); 
+			if (StringUtils.isNotBlank(path) && !path.startsWith("/")) {
+				path = "/" + path;
+			}
+
+			Path nodePath = findNodePathByProjectPath(ac, path);
+			PathSegment lastSegment = nodePath.getLast();
+			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
+			HibNode node = findNodeByPath(ac, rc, nodePath, path);
+
+			HibNodeFieldContainer container = graphSegment.getContainer();
+			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
+
+			if (fieldSchema == null) {
+				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
+			}
+
+			FieldTypes fieldType = FieldTypes.valueByName(fieldSchema.getType());
+
+			switch (fieldType) {
+			case BINARY:
+				break;
+			default:
+				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
+			}
+
+			// Use the language for which the node was resolved
+			List<String> languageTags = new ArrayList<>();
+			languageTags.add(lastSegment.getLanguageTag());
+			languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
+
+			Field field = container.getRestField(ac, fieldName, fieldSchema, languageTags, 0);
+			if (field == null) {
+				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
+			}
+
+			String fieldTypeName = fieldSchema.getType();
+			log.debug("{} field {} for node with uuid:{} found at {} for reading", fieldTypeName, fieldName, node.getUuid(), path);
+
+			return node.getUuid();
+		}, nodeUuid -> binaryVariantsHandler.handleUpsertBinaryFieldVariants(ac, nodeUuid, fieldName));
 	}
 }

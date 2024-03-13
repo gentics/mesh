@@ -13,6 +13,8 @@ import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidParameterException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -63,6 +65,8 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryUploadRequest;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
@@ -1159,51 +1163,15 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 			throw new IllegalArgumentException("The contentType of the binary field cannot be empty.");
 		}
 
-		// TODO handle escaping of filename
-		String boundary = "--------Geg2Oob";
-		StringBuilder multiPartFormData = new StringBuilder();
-
-		multiPartFormData.append("--").append(boundary).append("\r\n");
-		multiPartFormData.append("Content-Disposition: form-data; name=\"version\"\r\n");
-		multiPartFormData.append("\r\n");
-		multiPartFormData.append(version).append("\r\n");
-
-		multiPartFormData.append("--").append(boundary).append("\r\n");
-		multiPartFormData.append("Content-Disposition: form-data; name=\"language\"\r\n");
-		multiPartFormData.append("\r\n");
-		multiPartFormData.append(languageTag).append("\r\n");
-
+		Map<String, String> fields = new HashMap<>();
+		fields.put("version", version);
+		fields.put("language", languageTag);
 		if (publish) {
-			multiPartFormData.append("--").append(boundary).append("\r\n");
-			multiPartFormData.append("Content-Disposition: form-data; name=\"publish\"\r\n");
-			multiPartFormData.append("\r\n");
-			multiPartFormData.append("true").append("\r\n");
+			fields.put("publish", "true");
 		}
-
-		multiPartFormData.append("--").append(boundary).append("\r\n");
-		multiPartFormData.append("Content-Disposition: form-data; name=\"" + "shohY6d" + "\"; filename=\"").append(fileName).append("\"\r\n");
-		multiPartFormData.append("Content-Type: ").append(contentType).append("\r\n");
-		multiPartFormData.append("Content-Transfer-Encoding: binary\r\n" + "\r\n");
-
-		InputStream prefix;
-		InputStream suffix;
-		try {
-			prefix = new ByteArrayInputStream(multiPartFormData.toString().getBytes("utf-8"));
-			suffix = new ByteArrayInputStream(("\r\n--" + boundary + "--\r\n").getBytes("utf-8"));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-
-		String bodyContentType = "multipart/form-data; boundary=" + boundary;
-
-		Vector<InputStream> streams = new Vector<>(Arrays.asList(
-			prefix,
-			fileData,
-			suffix));
-		SequenceInputStream completeStream = new SequenceInputStream(streams.elements());
-
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
-			NodeResponse.class, completeStream, fileSize, bodyContentType);
+		return prepareFileuploadRequest(POST,
+				"/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
+				NodeResponse.class, fileName, contentType, fileData, fileSize, fields);
 	}
 
 	@Override
@@ -1691,7 +1659,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<JsonObject> put(String path, JsonObject body) {
 		Objects.requireNonNull(path, "path must not be null");
 		Objects.requireNonNull(body, "body must not be null");
-		return handleRequest(PUT, path, JsonObject.class, body.encodePrettily());
+		return handleRequest(PUT, path, JsonObject.class, isMinifyJson() ? body.encode() : body.encodePrettily());
 	}
 
 	@Override
@@ -1716,7 +1684,7 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public MeshRequest<JsonObject> post(String path, JsonObject body) {
 		Objects.requireNonNull(path, "path must not be null");
 		Objects.requireNonNull(body, "body must not be null");
-		return handleRequest(POST, path, JsonObject.class, body.encodePrettily());
+		return handleRequest(POST, path, JsonObject.class, isMinifyJson() ? body.encode() : body.encodePrettily());
 	}
 
 	@Override
@@ -1746,6 +1714,33 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	public <R> MeshRequest<R> delete(String path, Class<R> responseClass) {
 		Objects.requireNonNull(path, "path must not be null");
 		return prepareRequest(DELETE, path, responseClass);
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String path, ImageManipulationRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(fieldName, "fieldName must not be null");
+		Objects.requireNonNull(path, "path must not be null");
+		if (!path.startsWith("/")) {
+			throw new RuntimeException("The path {" + path + "} must start with a slash");
+		}
+		return upsertWebrootFieldImageVariants(projectName, fieldName, path.split("/"), request, parameters);
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertWebrootFieldImageVariants(String projectName, String fieldName,
+			String[] pathSegments, ImageManipulationRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(fieldName, "fieldName must not be null");
+		Objects.requireNonNull(pathSegments, "pathSegments must not be null");
+
+		String path = Arrays.stream(pathSegments)
+			.filter(segment -> segment != null && !segment.isEmpty())
+			.map(URIUtils::encodeSegment)
+			.collect(Collectors.joining("/", "/", ""));
+
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/webrootfield/" + fieldName + path + getQuery(parameters), ImageVariantsResponse.class, request);
 	}
 
 	@Override
@@ -2013,5 +2008,29 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "objectPermissionRequest must not be null");
 		return prepareRequest(DELETE, "/users/" + uuid + "/rolePermissions", ObjectPermissionResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid, String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(fieldKey, "fieldKey must not be null");
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + "/variants" + getQuery(parameters), ImageVariantsResponse.class, request);
+	}
+
+	@Override
+	public MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid, String fieldKey, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(fieldKey, "fieldKey must not be null");
+		return prepareRequest(DELETE, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + "/variants" + getQuery(parameters), EmptyResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid, String fieldKey, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
+		Objects.requireNonNull(fieldKey, "fieldKey must not be null");
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + "/variants" + getQuery(parameters), ImageVariantsResponse.class);
 	}
 }

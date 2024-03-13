@@ -189,11 +189,11 @@ public class MeshImpl implements Mesh {
 	 */
 	private void checkSystemRequirements() {
 		try {
-			// The needed nashorn classfilter was added in JRE 1.8.0 40
-			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
+			// The needed nashorn classfilter was removed from the JRE 15 (https://openjdk.org/jeps/372)
+			getClass().getClassLoader().loadClass("org.openjdk.nashorn.api.scripting.ClassFilter");
 		} catch (ClassNotFoundException e) {
 			log.error(
-				"The nashorn classfilter could not be found. You are most likely using an outdated JRE 8. Please update to at least JRE 1.8.0_40");
+				"The nashorn classfilter could not be found. Make sure the required dependencies are in the classpath");
 			System.exit(10);
 		}
 	}

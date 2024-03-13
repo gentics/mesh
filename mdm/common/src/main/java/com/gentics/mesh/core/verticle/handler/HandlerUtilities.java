@@ -67,6 +67,8 @@ public class HandlerUtilities {
 
 	private final PageTransformer pageTransformer;
 
+	private final MeshOptions meshOptions;
+
 	@Inject
 	public HandlerUtilities(Database database, MeshOptions meshOptions, Provider<EventQueueBatch> queueProvider,
 		Provider<BulkActionContext> bulkProvider, WriteLock writeLock, PageTransformer pageTransformer) {
@@ -75,6 +77,7 @@ public class HandlerUtilities {
 		this.bulkProvider = bulkProvider;
 		this.writeLock = writeLock;
 		this.pageTransformer = pageTransformer;
+		this.meshOptions = meshOptions;
 	}
 
 	/**
@@ -119,6 +122,7 @@ public class HandlerUtilities {
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void deleteElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		DAOActions<T, RM> actions,
 		String uuid) {
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
 			syncTx(ac, tx -> {
 				Object parent = null;
@@ -184,6 +188,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		String uuid, DAOActions<T, RM> actions) {
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
 			AtomicBoolean created = new AtomicBoolean(false);
 			syncTx(ac, (batch, tx) -> {
@@ -248,7 +253,7 @@ public class HandlerUtilities {
 	 */
 	public <T extends HibCoreElement<RM>, RM extends RestModel> void readElement(InternalActionContext ac, Function<Tx, Object> parentLoader, String uuid,
 		DAOActions<T, RM> actions, InternalPermission perm) {
-
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		syncTx(ac, tx -> {
 			Object parent = null;
 			if (parentLoader != null) {
@@ -295,7 +300,7 @@ public class HandlerUtilities {
 		LoadAllAction<T> actions) {
 		PagingParameters pagingInfo = ac.getPagingParameters();
 		ValidationUtil.validate(pagingInfo);
-
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		syncTx(ac, tx -> {
 			Object parent = null;
 			if (parentLoader != null) {
@@ -325,6 +330,7 @@ public class HandlerUtilities {
 	 */
 	public <RM> void syncTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		try {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 			RM model = database.tx(handler);
 			action.accept(model);
 		} catch (Throwable t) {
@@ -342,6 +348,7 @@ public class HandlerUtilities {
 	 */
 	public <RM> void syncTx(InternalActionContext ac, TxEventAction<RM> handler, Consumer<RM> action) {
 		try {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 			RM rm = database.tx((tx) -> {
 				EventQueueBatch eventQueueBatch = queueProvider.get();
 				tx.<CommonTx>unwrap().data().setEventQueueBatch(eventQueueBatch);
@@ -361,6 +368,7 @@ public class HandlerUtilities {
 	 */
 	public void syncTx(InternalActionContext ac, TxEventAction0 handler, Runnable action) {
 		try {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 			database.tx((tx) -> {
 				EventQueueBatch eventQueueBatch = queueProvider.get();
 				tx.<CommonTx>unwrap().data().setEventQueueBatch(eventQueueBatch);
@@ -381,6 +389,7 @@ public class HandlerUtilities {
 	 */
 	public void syncTx(InternalActionContext ac, TxAction0 handler, Runnable action) {
 		try {
+			ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 			database.tx(handler);
 			action.run();
 		} catch (Throwable t) {
@@ -437,8 +446,9 @@ public class HandlerUtilities {
 	 * @param context
 	 */
 	public void requiresAdminRole(RoutingContext context) {
-		InternalRoutingActionContextImpl rc = new InternalRoutingActionContextImpl(context);
-		if (database.tx(() -> !rc.getUser().isAdmin())) {
+		InternalRoutingActionContextImpl ac = new InternalRoutingActionContextImpl(context);
+		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
+		if (database.tx(() -> !ac.getUser().isAdmin())) {
 			throw error(FORBIDDEN, "error_admin_permission_required");
 		} else {
 			context.next();

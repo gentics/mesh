@@ -36,6 +36,10 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
 	private JsonObject elasticsearch;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
@@ -68,6 +72,17 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@Override
 	public MicroschemaResponse setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public MicroschemaResponse setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 
@@ -129,7 +144,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	 * @return
 	 */
 	public MicroschemaUpdateRequest toRequest() {
-		return JsonUtil.readValue(toJson(), MicroschemaUpdateRequest.class);
+		return JsonUtil.readValue(toJson(true), MicroschemaUpdateRequest.class);
 	}
 
 }

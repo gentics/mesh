@@ -37,6 +37,8 @@ import okhttp3.Cookie;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.MultipartBody.Builder;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -76,35 +78,31 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	}
 
 	/**
-	 * Create a new binary request.
-	 * 
-	 * @param <T>
-	 *            Response type
-	 * @param meshClient
-	 *            Mesh Client
-	 * @param client
-	 *            Client to be used
-	 * @param config
-	 *            Configuration
-	 * @param method
-	 *            Request method
-	 * @param url
-	 *            Request url
-	 * @param headers
-	 *            Additional headers
-	 * @param classOfT
-	 *            Response model class
-	 * @param data
-	 *            stream for the binary data
-	 * @param fileSize
-	 *            expected length of the data
-	 * @param contentType
-	 *            Posted content type
-	 * @return
+	 * Create a {@link MeshOkHttpRequestImpl} using the request parameters that sends a multipart/form-data request for uploading a file
+	 * @param <T> type of the response
+	 * @param meshClient mesh client
+	 * @param client okhttp client
+	 * @param config client configuration
+	 * @param method request method
+	 * @param url request url
+	 * @param headers request headers
+	 * @param classOfT class of the response
+	 * @param fileName file name
+	 * @param contentType content type
+	 * @param fileData file data
+	 * @param fileSize file size
+	 * @param fields additional fields to be contained in the form
+	 * @return request implementation
 	 */
-	public static <T> MeshOkHttpRequestImpl<T> BinaryRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
-		Class<? extends T> classOfT, InputStream data, long fileSize, String contentType) {
-		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, new RequestBody() {
+	public static <T> MeshOkHttpRequestImpl<T> FileUploadRequest(MeshRestClient meshClient, OkHttpClient client, MeshRestClientConfig config, String method, String url, Map<String, String> headers,
+		Class<? extends T> classOfT, String fileName, String contentType, InputStream fileData, long fileSize, Map<String, String> fields) {
+		// create request body containing the file
+		RequestBody fileBody = new RequestBody() {
+			@Override
+			public long contentLength() throws IOException {
+				return fileSize;
+			}
+
 			@Override
 			public MediaType contentType() {
 				return MediaType.get(contentType);
@@ -113,12 +111,24 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			@Override
 			public void writeTo(BufferedSink sink) throws IOException {
 				try {
-					sink.writeAll(Okio.source(data));
+					sink.writeAll(Okio.source(fileData));
 				} finally {
-					data.close();
+					fileData.close();
 				}
 			}
-		});
+		};
+
+		// build request body for the whole request
+		Builder builder = new MultipartBody.Builder()
+			.setType(MultipartBody.FORM)
+			.addFormDataPart("shohY6d", fileName, fileBody);
+		if (fields != null) {
+			fields.entrySet().forEach(entry -> {
+				builder.addFormDataPart(entry.getKey(), entry.getValue());
+			});
+		}
+
+		return new MeshOkHttpRequestImpl<>(meshClient, client, config, classOfT, method, url, headers, builder.build());
 	}
 
 	/**
@@ -202,7 +212,12 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		return builder.build();
 	}
 
-	private Single<Response> getOkResponse() {
+	/**
+	 * Get a single of a raw OkHttp Response.
+	 * 
+	 * @return
+	 */
+	public Single<Response> getOkResponse() {
 		Single<Response> response =  Single.create(sub -> {
 			Call call = client.newCall(createRequest());
 			call.enqueue(new Callback() {
@@ -261,6 +276,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 			.ignoreElement();
 	}
 
+	@SuppressWarnings("unchecked")
 	private T mapResponse(Response response) throws IOException, MeshRestClientMessageException {
 		throwOnError(response);
 
@@ -289,7 +305,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 		} else if (resultClass.isAssignableFrom(MeshWebrootResponse.class)) {
 			return (T) new OkHttpWebrootResponse(response);
 		} else if (resultClass.isAssignableFrom(MeshWebrootFieldResponse.class)) {
-			return (T) new OkHttpWebrootFieldResponse(response);
+			return (T) new OkHttpWebrootFieldResponse(response, config.isMinifyJson());
 		} else if (contentType != null && contentType.startsWith("application/json")) {
 			return JsonUtil.readValue(response.body().string(), resultClass);
 		} else if (resultClass.isAssignableFrom(String.class)) {

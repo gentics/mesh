@@ -84,35 +84,40 @@ public class UtilityHandler extends AbstractHandler {
 	public void validateSchema(InternalActionContext ac) {
 		db.asyncTx(() -> {
 			SchemaModel schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
-			JsonObject fullSettings = nodeIndexHandler.createIndexSettings(schema);
 			SchemaValidationResponse response = new SchemaValidationResponse();
-			response.setElasticsearch(fullSettings);
 			response.setStatus(ValidationStatus.VALID);
-			Map<String, JsonObject> languageElasticsearch = schema.findOverriddenSearchLanguages().collect(Collectors.toMap(
-				Function.identity(),
-				lang -> nodeIndexHandler.createIndexSettings(schema, lang)
-			));
-			if (!languageElasticsearch.isEmpty()) {
-				response.setLanguageElasticsearch(languageElasticsearch);
-			}
-			return nodeIndexHandler.validate(schema).onErrorComplete(error -> {
-				log.error("Validation of schema {" + schema.getName() + "} failed with error", error);
-				response.setStatus(ValidationStatus.INVALID);
-
-				GenericMessageResponse msg = new GenericMessageResponse();
-				if (error instanceof AbstractRestException) {
-					AbstractRestException gre = ((AbstractRestException) error);
-					String i18nMsg = I18NUtil.get(ac, gre.getI18nKey(), gre.getI18nParameters());
-					msg.setInternalMessage(gre.getI18nKey());
-					msg.setMessage(i18nMsg);
-				} else {
-					msg.setInternalMessage(error.getMessage());
-					String i18nMsg = I18NUtil.get(ac, "schema_error_index_validation", error.getMessage());
-					msg.setMessage(i18nMsg);
+			nodeIndexHandler.createIndexSettings(schema).ifPresentOrElse(fullSettings -> {
+				response.setElasticsearch(fullSettings);
+				Map<String, JsonObject> languageElasticsearch = schema.findOverriddenSearchLanguages().collect(Collectors.toMap(
+					Function.identity(),
+					lang -> nodeIndexHandler.createIndexSettings(schema, lang).orElseGet(() -> new JsonObject())
+				));
+				if (!languageElasticsearch.isEmpty()) {
+					response.setLanguageElasticsearch(languageElasticsearch);
 				}
-				response.setMessage(msg);
-				return true;
-			}).andThen(Single.just(response));
+				nodeIndexHandler.validate(schema).onErrorComplete(error -> {
+					log.error("Validation of schema {" + schema.getName() + "} failed with error", error);
+					response.setStatus(ValidationStatus.INVALID);
+
+					GenericMessageResponse msg = new GenericMessageResponse();
+					if (error instanceof AbstractRestException) {
+						AbstractRestException gre = ((AbstractRestException) error);
+						String i18nMsg = I18NUtil.get(ac, gre.getI18nKey(), gre.getI18nParameters());
+						msg.setInternalMessage(gre.getI18nKey());
+						msg.setMessage(i18nMsg);
+					} else {
+						msg.setInternalMessage(error.getMessage());
+						String i18nMsg = I18NUtil.get(ac, "schema_error_index_validation", error.getMessage());
+						msg.setMessage(i18nMsg);
+					}
+					response.setMessage(msg);
+					return true;
+				});
+			}, () -> {
+				log.info("Validation of schema {" + schema.getName() + "} skipped, as being excluded from indexing");
+				response.setMessage(new GenericMessageResponse(I18NUtil.get(ac, "schema_error_index_disabled", schema.getName()), "schema_error_index_disabled"));
+			});
+			return Single.just(response);
 		}).subscribe(msg -> ac.send(msg, OK), ac::fail);
 	}
 

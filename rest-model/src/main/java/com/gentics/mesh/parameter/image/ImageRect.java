@@ -3,6 +3,9 @@ package com.gentics.mesh.parameter.image;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 /**
@@ -107,17 +110,23 @@ public class ImageRect {
 					starty));
 			}
 		}
+	}
 
+	@Override
+	@JsonIgnore
+	public int hashCode() {
+		return Objects.hash(height, startX, startY, width);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof ImageRect) {
-			ImageRect rect = (ImageRect) obj;
-			return rect.getStartX() == getStartX() && rect.getStartY() == getStartY() && rect.getWidth() == getWidth() && rect
-				.getHeight() == getHeight();
-		}
-		return false;
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ImageRect other = (ImageRect) obj;
+		return height == other.height && startX == other.startX && startY == other.startY && width == other.width;
 	}
-
 }

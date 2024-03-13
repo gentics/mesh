@@ -1,0 +1,2 @@
+Search: Several enhancements have been applied to the content, sent to the search engine for the indexing. Each (micro)schema is presented a `noIndex` flag, marking the content of the (micro)schema as excluded from the indexing. Each (micro)schema field is presented a similar `noIndex` flag. 
+By default no flag is set, meaning the content to be indexable. This feature serves security purposes, preventing the sensible information from leaking through the search engine. 

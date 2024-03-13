@@ -48,7 +48,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.S3Options;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
@@ -86,7 +85,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	private final Database db;
 	private final Binaries binaries;
 	private final S3Binaries s3binaries;
-	private final S3Options s3Options;
+	private final MeshOptions options;
 
 	@Inject
 	public BinaryTransformHandler(Database db, HandlerUtilities utils, Vertx rxVertx, ImageManipulator imageManipulator,
@@ -100,7 +99,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		this.binaryStorage = binaryStorage;
 		this.binaries = binaries;
 		this.s3binaries = s3binaries;
-		this.s3Options = options.getS3Options();
+		this.options = options;
 	}
 
 	/**
@@ -113,7 +112,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 	 * @param fieldName
 	 */
 	public void handle(RoutingContext rc, String uuid, String fieldName) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc, boot.get().mesh().getOptions().getHttpServerOptions());
 		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
 		if (isEmpty(transformation.getLanguage())) {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
@@ -224,7 +223,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		s3UploadContext.setS3BinaryUuid(UUIDUtil.randomUUID());
 		s3UploadContext.setS3ObjectKey(s3ObjectKey);
 		imageManipulator
-				.handleS3Resize(s3Options.getBucket(), s3ObjectKey, fileName, parameters)
+				.handleS3Resize(options.getS3Options().getBucket(), s3ObjectKey, fileName, parameters)
 				.flatMap(file -> {
 					// The image was stored and hashed. Now we need to load the stored file again and check the image properties
 					Single<ImageInfo> info = imageManipulator.readImageInfo(file.getName());

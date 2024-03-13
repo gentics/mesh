@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.16.1_1
+FROM eclipse-temurin:17-alpine
 
 ENV MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks
 ENV MESH_GRAPH_BACKUP_DIRECTORY=/backups
@@ -39,5 +39,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Duser.dir=/mesh", "-jar" , "mesh.jar"]
+CMD [ "java", "-Duser.dir=/mesh", "--add-opens java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
 HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]

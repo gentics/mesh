@@ -22,6 +22,7 @@ import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.FilterQuery;
 import com.gentics.graphqlfilter.filter.operation.LiteralOperand;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -49,6 +50,7 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	public static final String OP_NONE_MATCH = "noneMatch";
 	public static final String OP_ANY_NOT_MATCH = "anyNotMatch";
 
+	private static ListFilter<HibImageVariant, ?> imageVariantsListFilterInstance;
 	private static ListFilter<String, ?> stringListFilterInstance;
 	private static ListFilter<String, ?> htmlListFilterInstance;
 	private static ListFilter<Number, ?> numberListFilterInstance;
@@ -205,11 +207,16 @@ public class ListFilter<T, Q> extends MainFilter<Collection<T>> {
 	}
 	public static final ListFilter<HibBinaryField, ?> binaryListFilter(GraphQLContext context) {
 		if (binaryListFilterInstance == null) {
-			binaryListFilterInstance = new ListFilter<>("BinaryListFilter", "Filters binary lists", BinaryFieldFilter.filter("LIST"), Optional.of("BINARYLIST"), true);
+			binaryListFilterInstance = new ListFilter<>("BinaryListFilter", "Filters binary lists", BinaryFieldFilter.filter("LIST", context), Optional.of("BINARYLIST"), true);
 		}
 		return binaryListFilterInstance;
 	}
-
+	public static final ListFilter<HibImageVariant, ?> imageVariantListFilter(GraphQLContext context, String owner) {
+		if (imageVariantsListFilterInstance == null) {
+			imageVariantsListFilterInstance = new ListFilter<>("ImageVariantListFilter", "Filters image variant lists", ImageVariantFilter.filter(owner), Optional.of("IMAGEVARIANTLIST"), true);
+		}
+		return imageVariantsListFilterInstance;
+	}
 	public static final ListFilter<S3HibBinaryField, ?> s3binaryListFilter(GraphQLContext context) {
 		if (s3binaryListFilterInstance == null) {
 			s3binaryListFilterInstance = new ListFilter<>("S3BinaryListFilter", "Filters S3 binary lists", S3BinaryFieldFilter.filter("LIST"), Optional.of("S3BINARYLIST"), true);

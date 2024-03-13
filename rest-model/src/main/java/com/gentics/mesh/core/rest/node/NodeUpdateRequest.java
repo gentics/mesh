@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
 /**
@@ -13,11 +14,11 @@ import com.gentics.mesh.core.rest.tag.TagReference;
  */
 public class NodeUpdateRequest implements FieldContainer {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 
@@ -40,6 +41,10 @@ public class NodeUpdateRequest implements FieldContainer {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Permissions to be granted to roles on the updated node.")
 	private ObjectPermissionGrantRequest grant;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Image manipulation changes request.")
+	private ImageManipulationRequest manipulation;
 
 	public NodeUpdateRequest() {
 	}
@@ -160,7 +165,7 @@ public class NodeUpdateRequest implements FieldContainer {
 
 	/**
 	 * Automatically assign the requested language to the project, if none was so far.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isAssignLanguage() {
@@ -169,12 +174,32 @@ public class NodeUpdateRequest implements FieldContainer {
 
 	/**
 	 * Set the flag to automatically assign the requested language to the project, if none was so far.
-	 * 
+	 *
 	 * @param assignLanguage
 	 * @return
 	 */
 	public NodeUpdateRequest setAssignLanguage(boolean assignLanguage) {
 		this.assignLanguage = assignLanguage;
+		return this;
+	}
+
+	/**
+	 * Get the image manipulation request.
+	 *
+	 * @return
+	 */
+	public ImageManipulationRequest getManipulation() {
+		return manipulation;
+	}
+
+	/**
+	 * Set the image manipulation.
+	 *
+	 * @param manipulation
+	 * @return
+	 */
+	public NodeUpdateRequest setManipulation(ImageManipulationRequest manipulation) {
+		this.manipulation = manipulation;
 		return this;
 	}
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NO_INDEX_KEY;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -20,7 +22,12 @@ public class MicroschemaComparatorImpl extends AbstractFieldSchemaContainerCompa
 
 	@Override
 	public List<SchemaChangeModel> diff(MicroschemaModel containerA, MicroschemaModel containerB) {
-		return super.diff(containerA, containerB, MicroschemaModel.class);
+		List<SchemaChangeModel> changes = super.diff(containerA, containerB, MicroschemaModel.class);
+
+		// .noIndex
+		compareAndAddSchemaProperty(changes, NO_INDEX_KEY, containerA.getNoIndex(), containerB.getNoIndex(), MicroschemaModel.class);
+
+		return changes;
 	}
 
 }

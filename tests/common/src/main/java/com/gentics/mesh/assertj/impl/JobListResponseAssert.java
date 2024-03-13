@@ -37,7 +37,7 @@ public class JobListResponseAssert extends AbstractAssert<JobListResponseAssert,
 	 * @return Fluent API
 	 */
 	public JobListResponseAssert hasInfos(int count) {
-		assertEquals("The status did not contain the expected amount of infos. Json {\n" + actual.toJson() + "\n}", count,
+		assertEquals("The status did not contain the expected amount of infos. Json {\n" + actual.toJson(false) + "\n}", count,
 				actual.getMetainfo().getTotalCount());
 		return this;
 	}
