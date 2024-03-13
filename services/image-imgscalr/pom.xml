@@ -17,6 +17,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<imgscalr-lib.version>4.2</imgscalr-lib.version>
 		<twelvemonkeys.version>3.3.2</twelvemonkeys.version>
+		<imageio.webp.version>0.1.6</imageio.webp.version>
 	</properties>
 
 	<dependencyManagement>
@@ -62,6 +63,12 @@
 			<artifactId>imageio-icns</artifactId>
 			<version>${twelvemonkeys.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.sejda.imageio</groupId>
+			<artifactId>webp-imageio</artifactId>
+			<version>${imageio.webp.version}</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

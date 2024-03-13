@@ -25,6 +25,7 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import com.luciad.imageio.webp.WebPWriteParam;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -515,14 +516,27 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 			params.setCompressionQuality(options.getJpegQuality());
 			return params;
-		} else {
-			return null;
 		}
+
+		if (isWebP(extension)) {
+			WebPWriteParam params = (WebPWriteParam) ImageIO.getImageWritersByMIMEType("image/webp").next().getDefaultWriteParam();
+
+			params.setCompressionType("Lossy");
+			params.setCompressionQuality(options.getJpegQuality());
+
+			return params;
+		}
+
+		return null;
 	}
 
 	private boolean isJpeg(String extension) {
 		extension = extension.toLowerCase();
 		return extension.endsWith("jpg") || extension.endsWith("jpeg");
+	}
+
+	private boolean isWebP(String extension) {
+		return "webp".equalsIgnoreCase(extension);
 	}
 
 	@Override
