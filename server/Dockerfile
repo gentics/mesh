@@ -39,5 +39,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Duser.dir=/mesh", "--add-opens java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
+CMD [ "java", "-Duser.dir=/mesh", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
 HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]
