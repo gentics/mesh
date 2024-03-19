@@ -2,11 +2,12 @@ package com.gentics.madl.query;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -167,10 +168,14 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 		return false;
 	}
 
+	protected static final String makeParameterName(Object value) {
+		return "p" + Integer.toHexString(Objects.hashCode(value));
+	}
+
 	@SuppressWarnings("unchecked")
-	protected List<Object> manageFilters(final StringBuilder text) {
+	protected Map<String, Object> manageFilters(final StringBuilder text) {
 		boolean firstPredicate = true;
-		List<Object> params = new ArrayList<Object>();
+		Map<String, Object> params = new HashMap<>();
 		for (HasContainer has : hasContainers) {
 			if (!firstPredicate)
 				text.append(QUERY_FILTER_AND);
@@ -189,8 +194,9 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 
 				if (has.value instanceof String) {
 					text.append(OPERATOR_LIKE);
-					text.append("?");
-					params.add(has.value);
+					String paramName = makeParameterName(has.value);
+					text.append(":" + paramName);
+					params.put(paramName, has.value);
 					// generateFilterValue(text, has.value);
 				} else {
 					text.append(OPERATOR_IN);
@@ -202,8 +208,9 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 							text.append(QUERY_SEPARATOR);
 						else
 							firstItem = false;
-						text.append("?");
-						params.add(o);
+						String paramName = makeParameterName(o);
+						text.append(":" + paramName);
+						params.put(paramName, o);
 						// generateFilterValue(text, o);
 					}
 
@@ -254,8 +261,9 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 					}
 					text.append(SPACE);
 					if (appendParam) {
-						text.append("?");
-						params.add(has.value);
+						String paramName = makeParameterName(has.value);
+						text.append(":" + paramName);
+						params.put(paramName, has.value);
 					}
 					// generateFilterValue(text, has.value);
 				}

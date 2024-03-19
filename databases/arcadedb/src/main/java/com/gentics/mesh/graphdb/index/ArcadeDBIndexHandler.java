@@ -4,8 +4,10 @@ import static com.gentics.mesh.graphdb.FieldTypeMapper.toSubType;
 import static com.gentics.mesh.graphdb.FieldTypeMapper.toType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.inject.Inject;
@@ -28,10 +30,8 @@ import com.arcadedb.schema.DocumentType;
 import com.arcadedb.schema.IndexBuilder;
 import com.arcadedb.schema.Schema.INDEX_TYPE;
 import com.arcadedb.schema.Type;
-import com.arcadedb.schema.VectorIndexBuilder;
 import com.gentics.madl.ext.arcadedb.DelegatingFramedArcadeGraph;
 import com.gentics.madl.index.IndexHandler;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.graphdb.ArcadeDBDatabase;
@@ -111,7 +111,7 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
 			}
 			for (String key : fields.keySet()) {
-				if (e.getPropertyIfExists(key) == null) {
+				if (e.getPolymorphicPropertyIfExists(key) == null) {
 					FieldType type = fields.get(key);
 					Type otype = toType(type);
 					Type osubType = toSubType(type);
@@ -122,16 +122,17 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 					}
 				}
 			}
-			String name = "e." + label + "_" + indexPostfix;
-			name = name.toLowerCase();
 			if (fields.size() != 0) {
-				String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-				TypeIndex idx = noTx.getSchema().buildTypeIndex(label, fieldArray).withIndexName(name).withUnique(unique).withNullStrategy(NULL_STRATEGY.SKIP).create();
-				if (idx == null) {
-					new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
-				}
+				try {
+					noTx.getSchema().getIndexByName(label + fields.keySet().stream().collect(Collectors.joining(",", "[", "]")));
+				} catch (SchemaException e1) {
+					String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
+					TypeIndex idx = noTx.getSchema().buildTypeIndex(label, fieldArray).withType(INDEX_TYPE.LSM_TREE).withUnique(unique).withNullStrategy(NULL_STRATEGY.SKIP).create();
+					if (idx == null) {
+						new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
+					}
+				}				
 			}
-
 		}
 	}
 
@@ -144,7 +145,7 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 		final DocumentType edgeType = arcadeBaseGraph.getDatabase().getSchema().getType(edgeLabel);
 		if (edgeType != null) {
 			// Fetch the required index
-			Index index = arcadeBaseGraph.getDatabase().getSchema().getIndexByName("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
+			Index index = arcadeBaseGraph.getDatabase().getSchema().getIndexByName(edgeLabel + indexPostfix);
 			if (index != null) {
 				// Iterate over the sb-tree index entries
 				IndexCursor cursor = index.get(key);
@@ -168,9 +169,10 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't remove index {" + indexName + "}");
 			}
-			Index index = noTx.getSchema().getIndexByName(indexName);
-			if (index != null) {
+			try {
+				Index index = noTx.getSchema().getIndexByName(indexName);
 				noTx.getSchema().dropIndex(index.getName());
+			} catch (SchemaException e) {
 			}
 		}
 	}
@@ -276,7 +278,7 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 
 			if (fields != null) {
 				for (String key : fields.keySet()) {
-					if (e.getPropertyIfExists(key) == null) {
+					if (e.getPolymorphicPropertyIfExists(key) == null) {
 						FieldType type = fields.get(key);
 						Type otype = toType(type);
 						Type osubType = toSubType(type);
@@ -289,65 +291,55 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 				}
 			}
 
-			if ((includeIn || includeInOut) && e.getPropertyIfExists("in") == null) {
-				e.createProperty("in", Type.LINK);
+			if ((includeIn || includeInOut) && e.getPolymorphicPropertyIfExists("@in") == null) {
+				e.createProperty("@in", Type.LINK);
 			}
-			if ((includeOut || includeInOut) && e.getPropertyIfExists("out") == null) {
-				e.createProperty("out", Type.LINK);
+			if ((includeOut || includeInOut) && e.getPolymorphicPropertyIfExists("@out") == null) {
+				e.createProperty("@out", Type.LINK);
 			}
 			for (String key : extraFields) {
-				if (e.getPropertyIfExists(key) == null) {
+				if (e.getPolymorphicPropertyIfExists(key) == null) {
 					e.createProperty(key, Type.STRING);
 				}
 			}
 
 			// 2. Index handling - (in/out/extra)
-			String indexName = "e." + label.toLowerCase();
-			String name = indexName + "_inout";
 			if (includeInOut) {
 				try {
-					noTx.getSchema().getIndexByName(name);
+					noTx.getSchema().getIndexByName(label + "[@in,@out]");
 				} catch (SchemaException ex) {
-					noTx.getSchema().buildTypeIndex(label, new String[] { "in", "out" }).withIndexName(name).withType(INDEX_TYPE.HSNW).withUnique(false).create();
+					noTx.getSchema().buildTypeIndex(label, new String[] { "@in", "@out" }).withType(INDEX_TYPE.LSM_TREE).withUnique(false).create();
 				}
 			}
-			name = indexName + "_out";
 			if (includeOut) {
 				try {
-					noTx.getSchema().getIndexByName(name);
+					noTx.getSchema().getIndexByName(label + "[@out]");
 				} catch (SchemaException ex) {
-					noTx.getSchema().buildTypeIndex(label, new String[] { "out" }).withIndexName(name).withType(INDEX_TYPE.HSNW).withUnique(false).create();
+					noTx.getSchema().buildTypeIndex(label, new String[] { "@out" }).withType(INDEX_TYPE.LSM_TREE).withUnique(false).create();
 				}
 			}
-			name = indexName + "_in";
 			if (includeIn) {
 				try {
-					noTx.getSchema().getIndexByName(name);
+					noTx.getSchema().getIndexByName(label + "[@in]");
 				} catch (SchemaException ex) {
-					noTx.getSchema().buildTypeIndex(label, new String[] { "in" }).withIndexName(name).withType(INDEX_TYPE.HSNW).withUnique(false).create();
+					noTx.getSchema().buildTypeIndex(label, new String[] { "@in" }).withType(INDEX_TYPE.LSM_TREE).withUnique(false).create();
 				}
 			}
-			name = indexName + "_extra";
 			if (extraFields.length != 0) {
 				try {
-					noTx.getSchema().getIndexByName(name);
+					noTx.getSchema().getIndexByName(label + Arrays.stream(extraFields).collect(Collectors.joining(",", "[", "]")));
 				} catch (SchemaException ex) {
-					noTx.getSchema().buildTypeIndex(label, extraFields).withIndexName(name).withType(INDEX_TYPE.HSNW).withUnique(true).create();
+					noTx.getSchema().buildTypeIndex(label, extraFields).withType(INDEX_TYPE.LSM_TREE).withUnique(true).create();
 				}
 			}
 
 			// 3. Index Handling - regular (with/without postfix)
-			name = indexName;
-			if (indexPostfix != null) {
-				name += "_" + indexPostfix;
-			}
-			name = name.toLowerCase();
 			if (fields != null && fields.size() != 0) {
 				try {
-					noTx.getSchema().getIndexByName(name);
+					noTx.getSchema().getIndexByName(label + fields.keySet().stream().collect(Collectors.joining(",", "[", "]")));
 				} catch (SchemaException ex) {
 					String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
-					Index idx = noTx.getSchema().buildTypeIndex(label, fieldArray).withNullStrategy(NULL_STRATEGY.SKIP).withIndexName(name).withType(INDEX_TYPE.HSNW).withUnique(unique).create();
+					Index idx = noTx.getSchema().buildTypeIndex(label, fieldArray).withNullStrategy(NULL_STRATEGY.SKIP).withType(INDEX_TYPE.LSM_TREE).withUnique(unique).create();
 					if (idx == null) {
 						new RuntimeException("Index for {" + label + "/" + indexPostfix + "} was not created.");
 					}
@@ -378,7 +370,7 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 			}
 			if (fields != null) {
 				for (String key : fields.keySet()) {
-					if (v.getPropertyIfExists(key) == null) {
+					if (v.getPolymorphicPropertyIfExists(key) == null) {
 						FieldType fieldType = fields.get(key);
 						Type oType = toType(fieldType);
 						Type subType = toSubType(fieldType);
@@ -390,45 +382,45 @@ public class ArcadeDBIndexHandler implements IndexHandler<String[]> {
 					}
 				}
 			}
-			String typeName = (unique ? "" : "NOT") + "UNIQUE_HASH_INDEX";
-			// Override if requested
-			if (type != null) {
-				typeName = type.toString();
-			}
-			INDEX_TYPE itype;
-			switch (typeName) {
-			case "FULLTEXT":
-			case "DICTIONARY":
-				itype = INDEX_TYPE.FULL_TEXT;
-				break;
-			case "UNIQUE_HASH_INDEX":
-			case "NOTUNIQUE_HASH_INDEX":
-			case "FULLTEXT_HASH_INDEX":
-			case "DICTIONARY_HASH_INDEX":
-				itype = INDEX_TYPE.HSNW;
-				break;
-			default:
-				itype = INDEX_TYPE.LSM_TREE;
-			}
 			if (fields != null && fields.size() != 0) {
 				try {
-					noTx.getSchema().getIndexByName(indexName);
+					noTx.getSchema().getIndexByName(name + fields.keySet().stream().collect(Collectors.joining(",", "[", "]")));
 				} catch (SchemaException ex) {
 					String[] fieldArray = fields.keySet().stream().toArray(String[]::new);
 					IndexBuilder<?> builder;
-					if (fields.size() == 1) {
-						builder = noTx.getSchema().buildVectorIndex().withVertexType(name).withType(itype);
-						if (MeshVertex.UUID_KEY.equals(fieldArray[0])) {
-							builder = ((VectorIndexBuilder) builder).withIdProperty(fieldArray[0]);
-						} else {
-							builder = ((VectorIndexBuilder) builder).withVectorProperty(fieldArray[0], toType(fields.get(fieldArray[0])));
-						}
-					} else {
-						builder = noTx.getSchema().buildTypeIndex(name, fieldArray).withType(INDEX_TYPE.LSM_TREE);
+//					if (fields.size() == 1) {
+//						builder = noTx.getSchema().buildVectorIndex().withVertexType(name).withType(itype);
+//						if (MeshVertex.UUID_KEY.equals(fieldArray[0])) {
+//							builder = ((VectorIndexBuilder) builder).withIdProperty(fieldArray[0]);
+//						} else {
+//							builder = ((VectorIndexBuilder) builder).withVectorProperty(fieldArray[0], toType(fields.get(fieldArray[0])));
+//						}
+//					} else {
+					String typeName = (unique ? "" : "NOT") + "UNIQUE_HASH_INDEX";
+					// Override if requested
+					if (type != null) {
+						typeName = type.toString();
 					}
+					INDEX_TYPE itype;
+					switch (typeName) {
+					case "FULLTEXT":
+					case "DICTIONARY":
+						itype = INDEX_TYPE.FULL_TEXT;
+						break;
+//					case "UNIQUE_HASH_INDEX":
+//					case "NOTUNIQUE_HASH_INDEX":
+//					case "FULLTEXT_HASH_INDEX":
+//					case "DICTIONARY_HASH_INDEX":
+//						itype = INDEX_TYPE.HSNW;
+//						break;
+					default:
+						itype = INDEX_TYPE.LSM_TREE;
+					}
+						builder = noTx.getSchema().buildTypeIndex(name, fieldArray).withType(itype);
+//					}
 					Index idx = builder.withNullStrategy(NULL_STRATEGY.SKIP).withIndexName(indexName).withUnique(unique).create();
 					if (idx == null) {
-						new RuntimeException("Index for {" + name + "} was not created.");
+						new RuntimeException("Index for {" + indexName + "} was not created.");
 					}
 				}
 			}

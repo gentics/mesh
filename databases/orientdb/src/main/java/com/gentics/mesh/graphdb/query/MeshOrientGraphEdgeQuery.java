@@ -2,13 +2,10 @@ package com.gentics.mesh.graphdb.query;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.orientdb.OGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientEdge;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
@@ -59,7 +56,7 @@ public class MeshOrientGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, O
 		text.append(" ");
 
 		// Build the query params
-		final List<Object> queryParams = manageFilters(text);
+		final Map<String, Object> queryParams = manageFilters(text);
 		manageLabels(queryParams.size() > 0, text);
 		
 		// Build the extra query param for the target vertex name, if specified with the 'vertexClass'
@@ -130,7 +127,7 @@ public class MeshOrientGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, O
 		String sqlQuery = text.toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
 		log.debug("EDGE QUERY: {}", sqlQuery);
 
-		return () -> StreamSupport.stream(((OGraph) graph).querySql(sqlQuery, IntStream.range(0, queryParams.size()).mapToObj(i -> Pair.of(i, queryParams.get(i))).collect(Collectors.toMap(Pair::getKey, Pair::getValue))).spliterator(), false)
+		return () -> StreamSupport.stream(((OGraph) graph).querySql(sqlQuery, queryParams).spliterator(), false)
 				.map(oresult -> (Edge) new OrientEdge((OGraph) graph, oresult.getRawResult().toElement()))
 				.iterator();
 	}

@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb.query;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -41,7 +41,7 @@ public class MeshArcadeGraphVertexQuery extends AbstractMeshMadlGraphQuery<Verte
 		text.append(encodeClassName(vertexClass.getSimpleName()));
 
 		// Build the query params, including the labels (including the one provided with vertexClass).
-		final List<Object> queryParams = manageFilters(text);
+		final Map<String, Object> queryParams = manageFilters(text);
 
 		maybeCustomFilter.ifPresent(filter -> {
 			if (text.indexOf(QUERY_WHERE) > 0) {
@@ -86,7 +86,7 @@ public class MeshArcadeGraphVertexQuery extends AbstractMeshMadlGraphQuery<Verte
 
 		log.debug("VERTEX QUERY: {}", sqlQuery);
 
-		return () -> graph.sql(sqlQuery).setParameters(queryParams.toArray()).execute().elementStream()
+		return () -> graph.sql(sqlQuery).setParameters(queryParams).execute().elementStream()
 				.map(oresult -> (Vertex) new MeshArcadeVertex(graph, oresult.asVertex()))
 				.iterator();
 	}

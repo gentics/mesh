@@ -1,13 +1,10 @@
 package com.gentics.mesh.graphdb.query;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tinkerpop.gremlin.orientdb.OGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientVertex;
@@ -46,7 +43,7 @@ public class MeshOrientGraphVertexQuery extends AbstractMeshMadlGraphQuery<Verte
 		text.append(encodeClassName(vertexClass.getSimpleName()));
 
 		// Build the query params, including the labels (including the one provided with vertexClass).
-		final List<Object> queryParams = manageFilters(text);
+		final Map<String, Object> queryParams = manageFilters(text);
 
 		maybeCustomFilter.ifPresent(filter -> {
 			if (text.indexOf(QUERY_WHERE) > 0) {
@@ -91,7 +88,7 @@ public class MeshOrientGraphVertexQuery extends AbstractMeshMadlGraphQuery<Verte
 
 		log.debug("VERTEX QUERY: {}", sqlQuery);
 
-		return () -> StreamSupport.stream(((OGraph) graph).querySql(sqlQuery, IntStream.range(0, queryParams.size()).mapToObj(i -> Pair.of(i, queryParams.get(i))).collect(Collectors.toMap(Pair::getKey, Pair::getValue))).spliterator(), false)
+		return () -> StreamSupport.stream(((OGraph) graph).querySql(sqlQuery, queryParams).spliterator(), false)
 				.map(oresult -> (Vertex) new OrientVertex((OGraph) graph, oresult.getRawResult().toElement()))
 				.iterator();
 	}

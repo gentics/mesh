@@ -2,7 +2,7 @@ package com.gentics.mesh.graphdb.query;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -54,7 +54,7 @@ public class MeshArcadeGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, O
 		text.append(" ");
 
 		// Build the query params
-		final List<Object> queryParams = manageFilters(text);
+		final Map<String, Object> queryParams = manageFilters(text);
 		manageLabels(queryParams.size() > 0, text);
 		
 		// Build the extra query param for the target vertex name, if specified with the 'vertexClass'
@@ -125,7 +125,7 @@ public class MeshArcadeGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, O
 		String sqlQuery = text.toString().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ContainerType.PUBLISHED.getCode() + "']");
 		log.debug("EDGE QUERY: {}", sqlQuery);
 
-		return () -> graph.sql(sqlQuery).setParameters(queryParams.toArray()).execute().elementStream()
+		return () -> graph.sql(sqlQuery).setParameters(queryParams).execute().elementStream()
 				.map(oresult -> (Edge) new MeshArcadeEdge(graph, oresult.asEdge()))
 				.iterator();
 	}

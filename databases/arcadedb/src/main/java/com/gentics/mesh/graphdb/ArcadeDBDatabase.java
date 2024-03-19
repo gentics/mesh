@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
 
 import com.arcadedb.Constants;
 import com.arcadedb.ContextConfiguration;
+import com.arcadedb.GlobalConfiguration;
 import com.arcadedb.database.Database;
 import com.arcadedb.exception.NeedRetryException;
 import com.arcadedb.exception.SchemaException;
@@ -166,7 +167,8 @@ public class ArcadeDBDatabase extends AbstractDatabase {
 		this.options = options;
 
 		if (options != null) {
-			System.setProperty("arcadedb.server.rootPassword", options.getInitialAdminPassword());
+			GlobalConfiguration.SERVER_ROOT_PASSWORD.setValue(options.getInitialAdminPassword());
+			GlobalConfiguration.SERVER_DATABASE_DIRECTORY.setValue(options.getStorageOptions().getDirectory());
 		}
 
 		if (metrics != null) {

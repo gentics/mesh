@@ -222,7 +222,7 @@ public class ArcadeDBTypeHandler implements TypeHandler {
 			}
 			if (fields != null) {
 				for (String key : fields.keySet()) {
-					if (e.getPropertyIfExists(key) == null) {
+					if (e.getPolymorphicPropertyIfExists(key) == null) {
 						FieldType fieldType = fields.get(key);
 						Type type = toType(fieldType);
 						Type subType = toSubType(fieldType);

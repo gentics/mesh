@@ -29,7 +29,7 @@ public class SharedArcadeGraphFactory implements Closeable {
 	private final String databaseName;
 	private final String userName;
 	private final String userPassword;
-	private int maxInstances = 32;
+	private int maxInstances = 4096;
 	private final AtomicInteger totalInstancesCreated = new AtomicInteger(0);
 
 	public class PooledArcadeGraph extends ArcadeGraph {
