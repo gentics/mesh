@@ -67,6 +67,12 @@
 			<artifactId>mesh-graphql</artifactId>
 		</dependency>
 
+		<!-- Plugin dependency -->
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-templ-handlebars</artifactId>
+		</dependency>
+
 		<!-- Common Tools -->
 		<dependency>
 			<groupId>commons-cli</groupId>
