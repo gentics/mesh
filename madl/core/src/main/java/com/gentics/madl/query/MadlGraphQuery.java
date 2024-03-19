@@ -20,7 +20,7 @@ public interface MadlGraphQuery extends GraphQuery {
 	 * @param iSkip Number of items to skip on result set
 	 * @return Current Query Object to allow calls in chain.
 	 */
-	MadlGraphQuery skip(int iSkip);
+	MadlGraphQuery skip(long iSkip);
 
 	/**
 	 * (Blueprints Extension) Sets the order of results by a field in ascending

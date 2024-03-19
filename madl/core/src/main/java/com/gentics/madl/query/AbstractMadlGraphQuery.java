@@ -50,7 +50,7 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 	protected static final String SKIP = " SKIP ";
 	protected static final String LIMIT = " LIMIT ";
 	protected static final String ORDERBY = " ORDER BY ";
-	public int skip = 0;
+	public long skip = 0;
 	public String orderBy = "";
 	public String orderByDir = "desc";
 	protected String fetchPlan;
@@ -90,7 +90,7 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 	 * @return Current Query Object to allow calls in chain.
 	 */
 	@Override
-	public AbstractMadlGraphQuery<G> skip(final int iSkip) {
+	public AbstractMadlGraphQuery<G> skip(final long iSkip) {
 		this.skip = iSkip;
 		return this;
 	}

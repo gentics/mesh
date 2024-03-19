@@ -67,7 +67,7 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
  * startup to handle cluster specific events.
  */
 @Singleton
-public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
+public class OrientDBClusterManagerImpl implements GraphDBClusterManager {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBClusterManagerImpl.class);
 

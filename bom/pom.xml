@@ -28,8 +28,8 @@
 		<orientdb.version>3.2.10</orientdb.version>
 		<arcadedb.version>24.1.1</arcadedb.version>
 		<hazelcast.version>3.12.8</hazelcast.version>
-		<jackson.version>2.13.2</jackson.version>
-		<jackson-databind.version>2.13.2</jackson-databind.version>
+		<jackson.version>2.17.0</jackson.version>
+		<jackson-databind.version>2.17.0</jackson-databind.version>
 		<netty.version>4.1.78.Final</netty.version>
 		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
@@ -151,7 +151,7 @@
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
 				<artifactId>gson</artifactId>
-				<version>2.8.9</version>
+				<version>2.10.1</version>
 			</dependency>
 
 			<!-- Tika -->
@@ -453,6 +453,11 @@
 				<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>mesh-mdm-arcadedb-wrapper</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- Caching -->
 			<dependency>
@@ -671,26 +676,126 @@
 			    <groupId>com.arcadedb</groupId>
 			    <artifactId>arcadedb-server</artifactId>
 			    <version>${arcadedb.version}</version>
+			    <exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory
+					which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+				<exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>slf4j-jdk14</artifactId>
+		        </exclusion>
+		        <exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
 			</dependency>
 			<dependency>
 			    <groupId>com.arcadedb</groupId>
 			    <artifactId>arcadedb-engine</artifactId>
 			    <version>${arcadedb.version}</version>
+			    <exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory
+					which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+				<exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>slf4j-jdk14</artifactId>
+		        </exclusion>
+		        <exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
 			</dependency>
 			<dependency>
 			    <groupId>com.arcadedb</groupId>
 			    <artifactId>arcadedb-gremlin</artifactId>
 			    <version>${arcadedb.version}</version>
+			    <exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory
+					which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+				<exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>slf4j-jdk14</artifactId>
+		        </exclusion>
+		        <exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
 			</dependency>
 			<dependency>
 			    <groupId>com.arcadedb</groupId>
 			    <artifactId>arcadedb-network</artifactId>
 			    <version>${arcadedb.version}</version>
+			    <exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory
+					which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+				<exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>slf4j-jdk14</artifactId>
+		        </exclusion>
+		        <exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
 			</dependency>
 			<dependency>
 			    <groupId>com.arcadedb</groupId>
 			    <artifactId>arcadedb-studio</artifactId>
 			    <version>${arcadedb.version}</version>
+			    <exclusions>
+				<exclusion>
+					<!-- This dependency is shipping an slf4j logger factory
+					which is interfering with the bootstrap process -->
+					<groupId>org.graalvm.tools</groupId>
+					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.tinkerpop</groupId>
+					<artifactId>gremlin-core</artifactId>
+				</exclusion>
+				<exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>slf4j-jdk14</artifactId>
+		        </exclusion>
+		        <exclusion>
+					<groupId>org.yaml</groupId>
+					<artifactId>snakeyaml</artifactId>
+				</exclusion>
+			</exclusions>
 			</dependency>
 
 			<!-- OrientDB -->

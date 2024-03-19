@@ -105,7 +105,15 @@
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP-java7</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.google.code.gson</groupId>
+    				<artifactId>gson</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
 		</dependency>
 
 		<!-- Metrics -->

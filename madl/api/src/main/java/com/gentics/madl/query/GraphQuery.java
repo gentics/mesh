@@ -34,5 +34,5 @@ public interface GraphQuery extends Query {
     public <T extends Comparable<?>> GraphQuery interval(String key, T startValue, T endValue);
 
     @Override
-    public GraphQuery limit(int limit);
+    public GraphQuery limit(long limit);
 }

@@ -20,7 +20,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.GraphDBBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.GroupDAOActions;
@@ -42,7 +42,7 @@ import com.gentics.mesh.core.data.dao.JobDaoWrapper;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
+import com.gentics.mesh.core.data.dao.GraphDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
@@ -103,7 +103,7 @@ public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGr
 	private final BootstrapInitializer boot;
 	private final CommonTxData txData;
 	private final ContextDataRegistry contextDataRegistry;
-	private final OrientDBDaoCollection daos;
+	private final GraphDBDaoCollection daos;
 	/**
 	 * We provide a lazy instance, otherwise we risk prematurely subscribing to the event bus in certain bootstrapping
 	 * scenarios (mesh clustered + init cluster flag set to true)
@@ -116,8 +116,8 @@ public class OrientDBTx extends AbstractTx<OrientGraph, DelegatingFramedOrientGr
 	private Timer commitTimer;
 
 	@Inject
-	public OrientDBTx(GraphDBMeshOptions options, Database db, OrientDBBootstrapInitializer boot,
-					  OrientDBDaoCollection daos, Lazy<CacheCollection> caches, SecurityUtils security, OrientStorage provider,
+	public OrientDBTx(GraphDBMeshOptions options, Database db, GraphDBBootstrapInitializer boot,
+					  GraphDBDaoCollection daos, Lazy<CacheCollection> caches, SecurityUtils security, OrientStorage provider,
 					  TypeResolver typeResolver, MetricsService metrics, PermissionRoots permissionRoots,
 					  ContextDataRegistry contextDataRegistry, S3Binaries s3binaries, Binaries binaries, CommonTxData txData) {
 		this.db = db;

@@ -1,18 +1,18 @@
 package com.gentics.mesh.graphdb.dagger;
 
 import com.gentics.mesh.core.db.GraphDBTx;
-import com.syncleus.ferma.ext.orientdb3.OrientDBTx;
+import com.gentics.mesh.graphdb.ferma.ArcadeDBTx;
 
 import dagger.Binds;
 import dagger.Module;
 
 /**
- * Dagger bind module which binds OrientDB transaction specific types.
+ * Dagger bind module which binds ArcadeDB transaction specific types.
  */
 @Module
 public abstract class TransactionModule {
 
 	@Binds
-	abstract GraphDBTx tx(OrientDBTx tx);
+	abstract GraphDBTx tx(ArcadeDBTx tx);
 
 }

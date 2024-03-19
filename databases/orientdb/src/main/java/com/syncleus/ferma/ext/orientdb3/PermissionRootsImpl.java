@@ -3,7 +3,7 @@ package com.syncleus.ferma.ext.orientdb3;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.GraphDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 
@@ -12,10 +12,10 @@ import com.gentics.mesh.core.data.dao.PermissionRoots;
  */
 @Singleton
 public class PermissionRootsImpl implements PermissionRoots {
-	private final OrientDBBootstrapInitializer boot;
+	private final GraphDBBootstrapInitializer boot;
 
 	@Inject
-	public PermissionRootsImpl(OrientDBBootstrapInitializer boot) {
+	public PermissionRootsImpl(GraphDBBootstrapInitializer boot) {
 		this.boot = boot;
 	}
 

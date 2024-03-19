@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphdb;
 
+import com.arcadedb.schema.Type;
 import com.gentics.mesh.madl.field.FieldType;
-import com.orientechnologies.orient.core.metadata.schema.OType;
 
 /**
  * The field mapper provides the bridge between field types that were defined in MADL and field types of OrientDB.
@@ -14,22 +14,22 @@ public final class FieldTypeMapper {
 	 * @param fieldType
 	 * @return
 	 */
-	public static OType toType(FieldType fieldType) {
+	public static Type toType(FieldType fieldType) {
 		switch (fieldType) {
 		case LINK:
-			return OType.LINK;
+			return Type.LINK;
 		case STRING:
-			return OType.STRING;
+			return Type.STRING;
 		case INTEGER:
-			return OType.INTEGER;
+			return Type.INTEGER;
 		case LONG:
-			return OType.LONG;
+			return Type.LONG;
 		case BOOLEAN:
-			return OType.BOOLEAN;
+			return Type.BOOLEAN;
 		case STRING_SET:
-			return OType.EMBEDDEDSET;
+			return Type.MAP;
 		case STRING_LIST:
-			return OType.EMBEDDEDLIST;
+			return Type.LIST;
 		default:
 			throw new RuntimeException("Unsupported type {" + fieldType + "}");
 		}
@@ -41,12 +41,12 @@ public final class FieldTypeMapper {
 	 * @param fieldType
 	 * @return
 	 */
-	public static OType toSubType(FieldType fieldType) {
+	public static Type toSubType(FieldType fieldType) {
 		switch (fieldType) {
 		case STRING_SET:
-			return OType.STRING;
+			return Type.STRING;
 		case STRING_LIST:
-			return OType.STRING;
+			return Type.STRING;
 		default:
 			return null;
 		}

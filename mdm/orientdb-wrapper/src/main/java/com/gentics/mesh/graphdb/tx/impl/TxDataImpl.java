@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.GraphDBBootstrapInitializer;
 import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
@@ -23,13 +23,13 @@ import io.vertx.core.Vertx;
  */
 public class TxDataImpl implements CommonTxData {
 
-	private final OrientDBBootstrapInitializer boot;
+	private final GraphDBBootstrapInitializer boot;
 	private final GraphDBMeshOptions options;
 	private final PermissionRoots permissionRoots;
 	private Optional<EventQueueBatch> qBatch;
 
 	@Inject
-	public TxDataImpl(GraphDBMeshOptions options, OrientDBBootstrapInitializer boot,
+	public TxDataImpl(GraphDBMeshOptions options, GraphDBBootstrapInitializer boot,
 			PermissionRoots permissionRoots) {
 		this.options = options;
 		this.boot = boot;

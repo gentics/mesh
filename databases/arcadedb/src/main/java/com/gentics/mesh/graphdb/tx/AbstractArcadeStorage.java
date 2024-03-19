@@ -6,19 +6,19 @@ import static com.gentics.mesh.metric.SimpleMetric.TX;
 import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import com.arcadedb.database.Database;
 import com.arcadedb.gremlin.ArcadeGraph;
+import com.arcadedb.integration.backup.Backup;
+import com.arcadedb.integration.restore.Restore;
 import com.gentics.mesh.etc.config.GraphDBMeshOptions;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.StreamUtil;
@@ -83,24 +83,15 @@ public abstract class AbstractArcadeStorage implements ArcadeStorage {
 		if (isMemoryMode) {
 			throw error(SERVICE_UNAVAILABLE, "backup_error_not_supported_in_memory_mode");
 		}
-		ODatabaseSession db = createSession();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			String dateString = formatter.format(new Date());
-			String backupFile = "backup_" + dateString + ".zip";
-			new File(backupDirectory).mkdirs();
-			String absolutePath = new File(backupDirectory, backupFile).getAbsolutePath();
-			try (OutputStream out = new FileOutputStream(absolutePath)) {
-				db.backup(out, null, null, listener, 1, 2048);
-			}
+		String dateString = formatter.format(new Date());
+		String backupFile = "backup_" + dateString + ".zip";
+		new File(backupDirectory).mkdirs();
+		String absolutePath = new File(backupDirectory, backupFile).getAbsolutePath();
+		try (Database db = createSession()) {
+			Backup backup = new Backup(db, absolutePath);
+			backup.setVerboseLevel(computeVerboseLevel());
+			backup.backupDatabase();
 			return absolutePath;
-		} finally {
-			db.close();
 		}
 	}
 
@@ -109,21 +100,14 @@ public abstract class AbstractArcadeStorage implements ArcadeStorage {
 		if (log.isDebugEnabled()) {
 			log.debug("Running restore using {" + backupFile + "} backup file.");
 		}
-		log.debug("Opening database {}", DB_NAME);
-		ODatabaseSession db = createSession();
-		try {
-			OCommandOutputListener listener = new OCommandOutputListener() {
-				@Override
-				public void onMessage(String iText) {
-					System.out.println(iText);
-				}
-			};
-			try (InputStream in = new FileInputStream(backupFile)) {
-				db.restore(in, null, null, listener);
-			}
-		} finally {
-			db.close();
-		}
+		String absolutePath = new File(options.getStorageOptions().getDirectory(), DB_NAME).getAbsolutePath();
+		Restore restore = new Restore(backupFile, absolutePath);
+		restore.setVerboseLevel(computeVerboseLevel());
+		restore.restoreDatabase();
+	}
+
+	protected int computeVerboseLevel() {
+		return (int) Arrays.asList(log.isTraceEnabled(), log.isDebugEnabled(), log.isInfoEnabled(), log.isWarnEnabled()).stream().filter(Boolean::booleanValue).count();
 	}
 
 	/**
@@ -131,6 +115,5 @@ public abstract class AbstractArcadeStorage implements ArcadeStorage {
 	 * 
 	 * @return
 	 */
-	public abstract ODatabaseSession createSession();
-
+	public abstract Database createSession();
 }

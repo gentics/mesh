@@ -86,7 +86,7 @@ public interface Query {
      * @param limit the take number of elements to return
      * @return the modified query object
      */
-    public Query limit(int limit);
+    public Query limit(long limit);
 
     /**
      * Execute the query and return the matching edges.

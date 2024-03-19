@@ -12,7 +12,7 @@ import com.gentics.mesh.madl.index.impl.VertexIndexDefinitionImpl.VertexIndexDef
 /**
  * Handler for graph database indices.
  */
-public interface IndexHandler {
+public interface IndexHandler<K> {
 
 	/**
 	 * Invoke a reindex of the graph database indices.
@@ -54,7 +54,7 @@ public interface IndexHandler {
 	 *            outbound vertex id of the edge to be checked
 	 * @return List of found inbound vertex ids for the found edges
 	 */
-	List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key);
+	List<Object> edgeLookup(String edgeLabel, String indexPostfix, K key);
 
 	/**
 	 * Add edge index for the given fields.
@@ -76,7 +76,7 @@ public interface IndexHandler {
 	 * @param keys
 	 * @return
 	 */
-	Object createComposedIndexKey(Object... keys);
+	K createComposedIndexKey(Object... keys);
 
 	/**
 	 * Check whether the values can be put into the given index for the given element.
@@ -89,7 +89,7 @@ public interface IndexHandler {
 	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
-	<T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, Object key);
+	<T extends ElementFrame> T checkIndexUniqueness(String indexName, T element, K key);
 
 	/**
 	 * Check whether the value can be put into the given index for a new element of given class.
@@ -102,7 +102,7 @@ public interface IndexHandler {
 	 *            index key to check
 	 * @return the conflicting element or null if no conflict exists
 	 */
-	<T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key);
+	<T extends ElementFrame> T checkIndexUniqueness(String indexName, Class<T> classOfT, K key);
 
 	/**
 	 * Find the framed vertex with the given uuid via the index.

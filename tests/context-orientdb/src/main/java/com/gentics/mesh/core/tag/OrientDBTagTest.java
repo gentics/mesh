@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.GraphDBBootstrapInitializer;
 import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Tx;
@@ -18,7 +18,7 @@ public class OrientDBTagTest extends AbstractMeshTest {
 	@Test
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			TagRoot root = ((OrientDBBootstrapInitializer) boot()).meshRoot().getTagRoot();
+			TagRoot root = ((GraphDBBootstrapInitializer) boot()).meshRoot().getTagRoot();
 			assertEquals(tags().size(), root.computeCount());
 			HibTag tag = tag("red");
 			root.removeTag(tag);

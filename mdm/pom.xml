@@ -32,5 +32,6 @@
 		<module>common</module>
 		<module>graphdb-api</module>
 		<module>orientdb-wrapper</module>
+       <module>arcadedb-wrapper</module>
 	</modules>
 </project>

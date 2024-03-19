@@ -49,7 +49,7 @@ import io.vertx.core.logging.LoggerFactory;
  * @see IndexHandler
  */
 @Singleton
-public class OrientDBIndexHandler implements IndexHandler {
+public class OrientDBIndexHandler implements IndexHandler<Object> {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBIndexHandler.class);
 

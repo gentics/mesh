@@ -3,7 +3,6 @@ package com.gentics.mesh.graphdb.tx;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.arcadedb.database.Database;
 import com.arcadedb.gremlin.ArcadeGraph;
 import com.gentics.mesh.graphdb.spi.GraphStorage;
 
@@ -24,7 +23,7 @@ public interface ArcadeStorage extends GraphStorage {
 	 * 
 	 * @return
 	 */
-	Database rawNoTx();
+	ArcadeNoTx rawNoTx();
 
 	/**
 	 * Set the mass insertion intent.

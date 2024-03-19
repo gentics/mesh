@@ -17,7 +17,7 @@ import com.syncleus.ferma.typeresolvers.TypeResolver;
 
 public class ArcadeDBTypeResolver implements TypeResolver {
 
-	private final ElementTypeClassCache<Byte> elementTypeCache;
+	private final ElementTypeClassCache<String> elementTypeCache;
 
 	public ArcadeDBTypeResolver(String... packagePaths) {
 		this.elementTypeCache = new ElementTypeClassCache<>(packagePaths);
@@ -31,19 +31,19 @@ public class ArcadeDBTypeResolver implements TypeResolver {
 		}
 		if (element instanceof ArcadeVertex) {
 			ArcadeVertex arcadeVertex = (ArcadeVertex) element;
-			byte classId = arcadeVertex.getRecord().getRecordType();
+			String classId = arcadeVertex.getBaseElement().getTypeName();
 			return resolve(classId, kind);
 		}
 		if (element instanceof ArcadeEdge) {
 			ArcadeEdge arcadeEdge = (ArcadeEdge) element;
-			byte classId = arcadeEdge.getRecord().getRecordType();
+			String classId = arcadeEdge.getBaseElement().getTypeName();
 			return resolve(classId, kind);
 		}
 		return null;
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Class<? extends T> resolve(byte type, Class<T> kind) {
+	private <T> Class<? extends T> resolve(String type, Class<T> kind) {
 		final Class<T> nodeKind = (Class<T>) this.elementTypeCache.forId(type);
 		if (kind.isAssignableFrom(nodeKind) || kind.equals(VertexFrame.class) || kind.equals(EdgeFrame.class)
 			|| kind.equals(AbstractVertexFrame.class) || kind.equals(AbstractEdgeFrame.class) || kind.equals(Object.class)) {
@@ -57,7 +57,7 @@ public class ArcadeDBTypeResolver implements TypeResolver {
 	public Class<?> resolve(Element element) {
 		if (element instanceof ArcadeElement) {
 			ArcadeElement<?> arcadeVertex = (ArcadeElement<?>) element;
-			return elementTypeCache.forId(arcadeVertex.getRecord().getRecordType());
+			return elementTypeCache.forId(arcadeVertex.getBaseElement().getTypeName());
 		}
 		return null;
 	}

@@ -61,7 +61,7 @@ public class DefaultGraphQuery<G extends Graph> extends DefaultQuery implements 
         return this;
     }
 
-    public GraphQuery limit(final int limit) {
+    public GraphQuery limit(final long limit) {
         super.limit(limit);
         return this;
     }

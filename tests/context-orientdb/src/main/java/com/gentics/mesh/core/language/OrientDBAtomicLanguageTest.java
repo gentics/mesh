@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.GraphDBBootstrapInitializer;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.root.LanguageRoot;
@@ -21,7 +21,7 @@ public class OrientDBAtomicLanguageTest extends AbstractMeshTest {
 	@Test
 	public void testLanguageIndexGraphDB() {
 		try (Tx tx = tx()) {
-			MeshRoot meshRoot = ((OrientDBBootstrapInitializer) boot()).meshRoot();
+			MeshRoot meshRoot = ((GraphDBBootstrapInitializer) boot()).meshRoot();
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 			try (Tx tx2 = tx()) {
 				assertNotNull(languageRoot);

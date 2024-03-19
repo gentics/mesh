@@ -64,7 +64,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
 
 @Singleton
-public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializer implements OrientDBBootstrapInitializer {
+public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializer implements GraphDBBootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(OrientDBBootstrapInitializerImpl.class);
 

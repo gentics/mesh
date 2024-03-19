@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.GraphDBMeshOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.metric.MetricsService;
 
 import io.micrometer.core.instrument.Counter;

@@ -19,7 +19,7 @@ public abstract class DefaultQuery implements Query {
 
     public Direction direction = Direction.BOTH;
     public String[] labels = EMPTY_LABELS;
-    public int limit = Integer.MAX_VALUE;
+    public long limit = Long.MAX_VALUE;
     public List<HasContainer> hasContainers = new ArrayList<HasContainer>();
 
     public Query has(final String key, final Object value) {
@@ -57,7 +57,7 @@ public abstract class DefaultQuery implements Query {
         return this;
     }
 
-    public Query limit(final int count) {
+    public Query limit(final long count) {
         this.limit = count;
         return this;
     }

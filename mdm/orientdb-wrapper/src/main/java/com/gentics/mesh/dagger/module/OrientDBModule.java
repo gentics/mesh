@@ -28,7 +28,7 @@ import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystemImpl;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangesList;
 import com.gentics.mesh.changelog.highlevel.OrientDBHighLevelChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.OrientDBBootstrapInitializer;
+import com.gentics.mesh.cli.GraphDBBootstrapInitializer;
 import com.gentics.mesh.cli.OrientDBBootstrapInitializerImpl;
 import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
@@ -41,6 +41,7 @@ import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
+import com.gentics.mesh.core.data.dao.GraphDBDaoCollection;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDao;
@@ -51,7 +52,6 @@ import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
-import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
@@ -120,10 +120,10 @@ import com.gentics.mesh.core.verticle.handler.OrientDBWriteLockImpl;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.distributed.coordinator.proxy.ClusterEnabledRequestDelegatorImpl;
-import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.GraphDBMeshOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.cluster.OrientDBClusterManager;
+import com.gentics.mesh.graphdb.cluster.GraphDBClusterManager;
 import com.gentics.mesh.graphdb.cluster.OrientDBClusterManagerImpl;
 import com.gentics.mesh.graphdb.dagger.OrientDBCoreModule;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
@@ -156,7 +156,7 @@ public abstract class OrientDBModule {
 	abstract CommonTxData commonTxData(TxDataImpl e);
 
 	@Binds
-	abstract OrientDBClusterManager orientDBClusterManager(OrientDBClusterManagerImpl e);
+	abstract GraphDBClusterManager orientDBClusterManager(OrientDBClusterManagerImpl e);
 
 	@Binds
 	abstract UserProperties userProperties(GraphUserPropertiesImpl e);
@@ -190,7 +190,7 @@ public abstract class OrientDBModule {
 	// DAOs
 
 	@Binds
-	abstract DaoCollection daoCollection(OrientDBDaoCollection daoCollection);
+	abstract DaoCollection daoCollection(GraphDBDaoCollection daoCollection);
 
 	@Binds
 	abstract UserDaoWrapper bindUserDaoWrapper(UserDaoWrapperImpl e);
@@ -333,10 +333,10 @@ public abstract class OrientDBModule {
 	abstract PermissionRoots permissionRoots(PermissionRootsImpl daoCollection);
 
 	@Binds
-	abstract ClusterManager bindClusterManager(OrientDBClusterManager e);
+	abstract ClusterManager bindClusterManager(GraphDBClusterManager e);
 
 	@Binds
-	abstract OrientDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
+	abstract GraphDBBootstrapInitializer orientDBBootstrapInitializer(OrientDBBootstrapInitializerImpl e);
 
 	@Provides
 	public static GraphDBMeshOptions orientDBMeshOptions(MeshOptions meshOptions) {
@@ -355,7 +355,7 @@ public abstract class OrientDBModule {
 	 */
 	@Provides
 	@Singleton
-	public static HazelcastInstance hazelcast(OrientDBClusterManager clusterManager) {
+	public static HazelcastInstance hazelcast(GraphDBClusterManager clusterManager) {
 		return clusterManager.getHazelcast();
 	}
 

@@ -40,7 +40,7 @@ public class DevRunner {
 
 		GraphDBMeshOptions defaultOption = new GraphDBMeshOptions();
 		defaultOption.getSearchOptions().setUrl(null);
-		defaultOption.setInitialAdminPassword("admin");
+		defaultOption.setInitialAdminPassword("adminadmin");
 		defaultOption.setForceInitialAdminPasswordReset(false);
 		defaultOption.getDebugInfoOptions().setLogEnabled(false);
 		GraphDBMeshOptions options = OptionsLoader.createOrloadOptions(GraphDBMeshOptions.class, defaultOption, args);
