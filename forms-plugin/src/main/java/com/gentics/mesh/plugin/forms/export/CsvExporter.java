@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 /**
  * Export form generator data in CSV format.
@@ -226,7 +229,20 @@ public class CsvExporter extends Exporter {
 		}
 
 		if (options.isIncludeCreationTimestamp()) {
-			ret.add(data.getString("created"));
+			String timestampValue = data.getString("created");
+			String timestampFormat = options.timestampFormat();
+			timestampValue = timestampValue.substring(0, timestampValue.length() - 1); // strip the Z in the end
+			if(timestampFormat != "" && timestampFormat != "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"){
+				try {
+					LocalDateTime date = LocalDateTime.parse(timestampValue, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(timestampFormat);
+					timestampValue = formatter.format(date); 
+            	} catch (Throwable e) {
+                	log.warn("Could not parse date", e);
+            	}
+			}
+
+			ret.add(timestampValue);
 		}
 
 		for (String fieldName : fieldNames) {
@@ -241,6 +257,8 @@ public class CsvExporter extends Exporter {
 					baseUrl,
 					data.getString("uuid"),
 					fieldName));
+			} else if (value == null && binaryFields.contains(fieldName)) {
+				ret.add("");
 			}
 
 			ret.add(value == null ? "" : this.normalizeValue(String.valueOf(value)));
