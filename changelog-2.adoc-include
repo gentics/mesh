@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.18]]
+== 2.0.18 (20.03.2024)
+
+icon:check[] GraphQL: A regression of missing common `and`, `or`, `not` top level filters has been fixed.
+
 [[v2.0.17]]
 == 2.0.17 (06.03.2024)
 
