@@ -18,6 +18,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVFormat.Predefined;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.io.output.StringBuilderWriter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -231,15 +232,15 @@ public class CsvExporter extends Exporter {
 		if (options.isIncludeCreationTimestamp()) {
 			String timestampValue = data.getString("created");
 			String timestampFormat = options.timestampFormat();
-			timestampValue = timestampValue.substring(0, timestampValue.length() - 1); // strip the Z in the end
-			if(timestampFormat != "" && timestampFormat != "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"){
+			if (!StringUtils.isBlank(timestampValue) && !StringUtils.isBlank(timestampFormat) && !StringUtils.equals(timestampFormat, ExportOptions.DEFAULT_TIMESTAMP_FORMAT)) {
 				try {
-					LocalDateTime date = LocalDateTime.parse(timestampValue, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+					// strip the Z in the end
+					LocalDateTime date = LocalDateTime.parse(timestampValue.substring(0, timestampValue.length() - 1), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(timestampFormat);
 					timestampValue = formatter.format(date); 
-            	} catch (Throwable e) {
-                	log.warn("Could not parse date", e);
-            	}
+				} catch (Throwable e) {
+					log.warn("Could not parse date", e);
+				}
 			}
 
 			ret.add(timestampValue);
