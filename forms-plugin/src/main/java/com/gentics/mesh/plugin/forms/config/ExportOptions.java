@@ -5,7 +5,7 @@ package com.gentics.mesh.plugin.forms.config;
  */
 public class ExportOptions {
 
-	private final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"; // ISO_INSTANT
+	public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"; // ISO_INSTANT
 	private boolean includeUuid = false;
 	private boolean includeCreationTimestamp = false;
 	private String timestampFormat = DEFAULT_TIMESTAMP_FORMAT; 
