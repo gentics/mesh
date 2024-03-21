@@ -9,6 +9,7 @@ import java.util.stream.StreamSupport;
 import org.apache.tinkerpop.gremlin.orientdb.OGraph;
 import org.apache.tinkerpop.gremlin.orientdb.OrientEdge;
 import org.apache.tinkerpop.gremlin.orientdb.OrientGraph;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import com.gentics.mesh.core.db.query.MeshGraphEdgeQuery;
@@ -130,5 +131,10 @@ public class MeshOrientGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, O
 		return () -> StreamSupport.stream(((OGraph) graph).querySql(sqlQuery, queryParams).spliterator(), false)
 				.map(oresult -> (Edge) new OrientEdge((OGraph) graph, oresult.getRawResult().toElement()))
 				.iterator();
+	}
+
+	@Override
+	public MeshGraphEdgeQuery directionPointsTo(Direction direction, Object id) {
+		return (MeshGraphEdgeQuery) has(direction.name().toLowerCase(), id);
 	}
 }

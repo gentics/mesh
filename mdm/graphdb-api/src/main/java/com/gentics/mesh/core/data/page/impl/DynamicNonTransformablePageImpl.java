@@ -229,7 +229,7 @@ public class DynamicNonTransformablePageImpl<T extends HibCoreElement<?>> extend
 		Stream<? extends Edge> itemEdges;
 		MeshGraphEdgeQuery query = GraphDBTx.getGraphTx().edgeQuery(clazz, rootLabel);
 		query.relationDirection(vertexDirection);
-		query.has(vertexDirection.opposite().name().toLowerCase(), indexKey);
+		query.directionPointsTo(vertexDirection.opposite(), indexKey);
 		List<String> sortParams = sort.entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 		query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
 		itemEdges = StreamUtil.toStream(query.fetch(maybeVariations));

@@ -96,7 +96,7 @@ public class SchemaContainerVersionImpl extends
 						&& DRAFT.getCode().equals(ContainerType.get(e.<String>property(EDGE_TYPE_KEY).orElse(null)))
 				)).map(NodeGraphFieldContainerImpl.class::cast);
 		} else {
-			Iterable<Edge> edges = GraphDBTx.getGraphTx().edgeQuery(NodeGraphFieldContainerImpl.class, HAS_FIELD_CONTAINER).hasAll(new String[] {EDGE_TYPE_KEY, BRANCH_UUID_KEY, "in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY}, new String[] {DRAFT.getCode(), branchUuid, uuid}).fetch(Optional.empty());
+			Iterable<Edge> edges = GraphDBTx.getGraphTx().edgeQuery(NodeGraphFieldContainerImpl.class, HAS_FIELD_CONTAINER).hasAll(new String[] {EDGE_TYPE_KEY, BRANCH_UUID_KEY, "@in." + SCHEMA_CONTAINER_VERSION_KEY_PROPERTY}, new String[] {DRAFT.getCode(), branchUuid, uuid}).fetch(Optional.empty());
 			stream = toStream(edges)
 					.map(Edge::inVertex)
 					.map(NodeGraphFieldContainerImpl.class::cast);

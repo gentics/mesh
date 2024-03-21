@@ -190,7 +190,7 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 					text.append(OPERATOR_NOT);
 					text.append(PARENTHESIS_BEGIN);
 				}
-				text.append('`').append(has.key).append('`');
+				text.append(escapeFieldName(has.key));
 
 				if (has.value instanceof String) {
 					text.append(OPERATOR_LIKE);
@@ -221,7 +221,7 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 					text.append(PARENTHESIS_END);
 			} else {
 				// ANY OTHER OPERATORS
-				text.append('`').append(has.key).append('`');
+				text.append(escapeFieldName(has.key));
 				text.append(SPACE);
 
 				if (has.predicate instanceof Compare) {
@@ -273,6 +273,10 @@ public abstract class AbstractMadlGraphQuery<G extends Graph> extends DefaultGra
 			}
 		}
 		return params;
+	}
+
+	protected Object escapeFieldName(String key) {
+		return "`" + key + "`";
 	}
 
 	protected void generateFilterValue(final StringBuilder text, final Object iValue) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -46,6 +47,10 @@
 			<artifactId>zip4j</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-demo-common</artifactId>
 			<version>${project.version}</version>
@@ -73,7 +78,8 @@
 								<argument>clone</argument>
 								<argument>-b</argument>
 								<argument>demo</argument>
-								<argument>https://github.com/gentics/mesh-angular-example.git</argument>
+								<argument>
+									https://github.com/gentics/mesh-angular-example.git</argument>
 								<argument>target/mesh-angular-demo</argument>
 							</arguments>
 						</configuration>
@@ -89,10 +95,11 @@
 							<executable>${env.JAVA_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
+								<classpath />
 								<argument>-Dstorage.diskCache.bufferSize=512</argument>
 								<argument>-Xmx512m</argument>
-								<argument>com.gentics.mesh.demo.DemoDumpGenerator</argument>
+								<argument>
+									com.gentics.mesh.demo.DemoDumpGenerator</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -112,9 +119,11 @@
 							<attach>false</attach>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
-								<descriptor>../common/src/main/assembly/demo-zip.xml</descriptor>
+								<descriptor>
+									../common/src/main/assembly/demo-zip.xml</descriptor>
 							</descriptors>
-							<outputDirectory>${project.basedir}/src/main/resources</outputDirectory>
+							<outputDirectory>
+								${project.basedir}/src/main/resources</outputDirectory>
 							<finalName>mesh-demo</finalName>
 						</configuration>
 					</execution>
@@ -129,7 +138,8 @@
 							<attach>true</attach>
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
-								<descriptor>../common/src/main/assembly/dump-zip.xml</descriptor>
+								<descriptor>
+									../common/src/main/assembly/dump-zip.xml</descriptor>
 							</descriptors>
 							<outputDirectory>${project.basedir}/target/classes</outputDirectory>
 							<finalName>mesh</finalName>
@@ -171,10 +181,12 @@
 								</filter>
 							</filters>
 							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>com.gentics.mesh.demo.DemoRunner</mainClass>
 								</transformer>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 							</transformers>
 						</configuration>
 					</execution>
@@ -207,7 +219,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -226,7 +238,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>

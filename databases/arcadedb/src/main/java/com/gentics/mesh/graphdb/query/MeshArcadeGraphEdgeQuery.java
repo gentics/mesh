@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import com.arcadedb.gremlin.ArcadeEdge;
@@ -137,5 +138,15 @@ public class MeshArcadeGraphEdgeQuery extends AbstractMeshMadlGraphQuery<Edge, O
 		public MeshArcadeEdge(ArcadeGraph graph, com.arcadedb.graph.Edge baseElement, Object... keyValues) {
 			super(graph, baseElement, keyValues);
 		}	
+	}
+
+	@Override
+	public MeshGraphEdgeQuery directionPointsTo(Direction direction, Object id) {
+		return (MeshGraphEdgeQuery) has("@" + direction.name().toLowerCase(), id);
+	}
+
+	@Override
+	protected Object escapeFieldName(String key) {
+		return key.startsWith("@") ? key : (super.escapeFieldName(key));
 	}
 }

@@ -79,7 +79,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 
 		List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 		query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
-		query.has(Direction.IN.name().toLowerCase(), id());
+		query.inComesFrom(id());
 		query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()"))));
 		if (paging.getPerPage() != null) {
 			query.skip((int) (paging.getActualPage() * paging.getPerPage()));

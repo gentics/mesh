@@ -37,6 +37,10 @@
 			<artifactId>mesh-mdm-arcadedb-wrapper</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.arcadedb</groupId>
+			<artifactId>arcadedb-studio</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-admin-gui</artifactId>
 			<version>${project.version}</version>
@@ -65,7 +69,8 @@
 							<excludeScope>test</excludeScope>
 							<includeScope>runtime</includeScope>
 							<excludeGroupIds>com.gentics.mesh</excludeGroupIds>
-							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
+							<outputDirectory>
+								${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -107,7 +112,8 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.gentics.mesh.server.ServerRunner</mainClass>
+									<mainClass>
+										com.gentics.mesh.server.ServerRunner</mainClass>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />

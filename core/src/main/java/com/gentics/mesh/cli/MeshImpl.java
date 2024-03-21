@@ -102,7 +102,7 @@ public class MeshImpl implements Mesh {
 	@Override
 	public Mesh run(boolean block) throws Exception {
 		shutdown = false;
-		checkSystemRequirements();
+		//checkSystemRequirements();
 
 		setupKeystore(options);
 
