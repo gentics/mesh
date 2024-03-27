@@ -8,9 +8,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.auth.handler.MeshJWTAuthHandler;
-import io.vertx.core.http.Cookie;
-import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,13 +27,14 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.KeyStoreOptions;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 
@@ -299,7 +297,9 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	public void login(InternalActionContext ac, String username, String password, String newPassword) {
 		String token = generateToken(username, password, newPassword);
 		ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
-			.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+				.setHttpOnly(true)
+				.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime())
+				.setPath("/"));
 		ac.send(new TokenResponse(token).toJson());
 	}
 

@@ -140,6 +140,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			.build()).execute();
 		JsonObject responseBody = new JsonObject(response.body().string());
 		assertThat(responseBody.getString("username")).isEqualTo("admin");
+		assertThat(response.header("set-cookie")).contains("HTTPOnly");
 	}
 
 	private String base64(String input) {

@@ -149,9 +149,11 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 				if (!result.isUsingAPIKey()) {
 					String jwtToken = authProvider.generateToken(authenticatedUser);
 					// Remove the original cookie and set the new one
-					context.removeCookie(SharedKeys.TOKEN_COOKIE_KEY);
-					context.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, jwtToken)
-						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+					context.response().removeCookie(SharedKeys.TOKEN_COOKIE_KEY);
+					context.response().addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, jwtToken)
+						.setHttpOnly(true)
+						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime())
+						.setPath("/"));
 				}
 				context.next();
 			} else {
