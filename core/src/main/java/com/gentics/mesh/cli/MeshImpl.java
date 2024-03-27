@@ -15,7 +15,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.vertx.core.http.*;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.Mesh;
@@ -30,6 +29,11 @@ import com.gentics.mesh.util.VersionUtil;
 import io.reactivex.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -102,7 +106,6 @@ public class MeshImpl implements Mesh {
 	@Override
 	public Mesh run(boolean block) throws Exception {
 		shutdown = false;
-		checkSystemRequirements();
 
 		setupKeystore(options);
 
@@ -182,20 +185,6 @@ public class MeshImpl implements Mesh {
 	private boolean isFirstApril() {
 		LocalDate now = LocalDate.now();
 		return now.getDayOfMonth() == 1 && now.getMonth() == Month.APRIL;
-	}
-
-	/**
-	 * Check mesh system requirements.
-	 */
-	private void checkSystemRequirements() {
-		try {
-			// The needed nashorn classfilter was added in JRE 1.8.0 40
-			getClass().getClassLoader().loadClass("jdk.nashorn.api.scripting.ClassFilter");
-		} catch (ClassNotFoundException e) {
-			log.error(
-				"The nashorn classfilter could not be found. You are most likely using an outdated JRE 8. Please update to at least JRE 1.8.0_40");
-			System.exit(10);
-		}
 	}
 
 	/**

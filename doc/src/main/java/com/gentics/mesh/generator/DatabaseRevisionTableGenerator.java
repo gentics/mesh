@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cxf.helpers.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -61,7 +61,7 @@ public class DatabaseRevisionTableGenerator extends AbstractRenderingGenerator {
 			VersionNumber parsedVersion = VersionNumber.parse(version);
 			if (parsedVersion != null && parsedVersion.compareTo(VersionNumber.parse("0.16.1")) >= 0) {
 				URL revisionFileUrl = new URL(BASE_PATH + version + "/" + "mesh-orientdb-" + version + "-revision.txt");
-				String hash = IOUtils.readStringFromStream(revisionFileUrl.openStream());
+				String hash = IOUtils.toString(revisionFileUrl.openStream());
 				System.out.println("Found version {" + version + "} with hash {" + hash + "}");
 				Map<String, String> map = new HashMap<>();
 				map.put("version", version);

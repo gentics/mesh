@@ -3,7 +3,6 @@ package com.gentics.mesh.core.user;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
-import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -129,7 +128,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 		Response response = client.newCall(new Request.Builder()
 			.get()
 			.url(String.format("http://%s:%s/api/v2/auth/login", "localhost", port()))
-			.header(AUTHORIZATION, "Basic " + base64("admin:admin"))
+			.header("Authorization", "Basic " + base64("admin:admin"))
 			.build()).execute();
 
 		assertThat(response.code()).isEqualTo(200);
