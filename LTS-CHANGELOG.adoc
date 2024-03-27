@@ -20,7 +20,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.30]]
 == 1.10.30 (TBD)
 
-icon:check[] Auth: A `HttpOnly` flag is set onto the JWT auth cookie. A `Secure` flag is set onto the JWT auth cookie, if a HTTPS-only server is started in Mesh.
+icon:check[] Auth: A `HttpOnly` flag is set onto the JWT auth cookie.
 
 [[v1.10.29]]
 == 1.10.29 (06.03.2024)

@@ -152,7 +152,6 @@ public class MeshJWTAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthPro
 					context.response().removeCookie(SharedKeys.TOKEN_COOKIE_KEY);
 					context.response().addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, jwtToken)
 						.setHttpOnly(true)
-						.setSecure(meshOptions.getHttpServerOptions().isSsl() && !meshOptions.getHttpServerOptions().isHttp())
 						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime())
 						.setPath("/"));
 				}
