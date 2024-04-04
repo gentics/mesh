@@ -17,11 +17,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import com.gentics.mesh.event.EventBusStore;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.ILoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -65,6 +63,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -443,8 +442,13 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			return;
 		}
 		String logFolder = debugInfoOptions.getLogFolder();
+		ILoggerFactory lf = org.slf4j.LoggerFactory.getILoggerFactory();
 		// This requires that slf4j is actually used.
-		LoggerContext lc = (LoggerContext) org.slf4j.LoggerFactory.getILoggerFactory();
+		if (!(lf instanceof LoggerContext)) {
+			log.warn("No file logging available: {}", lf.getClass().getCanonicalName());
+			return;
+		}
+		LoggerContext lc = (LoggerContext) lf;
 		ch.qos.logback.classic.Logger rootLogger = lc.getLogger(ROOT_LOGGER_NAME);
 
 		RollingFileAppender<ILoggingEvent> appender = new RollingFileAppender<>();

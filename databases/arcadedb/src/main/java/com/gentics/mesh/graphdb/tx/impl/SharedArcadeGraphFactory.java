@@ -12,6 +12,7 @@ import com.arcadedb.database.DatabaseFactory;
 import com.arcadedb.gremlin.ArcadeGraph;
 import com.arcadedb.remote.RemoteDatabase;
 import com.arcadedb.server.ArcadeDBServer;
+import com.arcadedb.server.ServerDatabase;
 
 /**
  * ArcadeDB Gremlin implementation factory class. Utilizes a pool of ArcadeGraph
@@ -51,7 +52,9 @@ public class SharedArcadeGraphFactory implements Closeable {
 		}
 
 		public void dispose() {
-			super.close();
+			if (!(localDatabase instanceof ServerDatabase)) {
+				super.close();
+			}
 		}
 	}
 

@@ -55,7 +55,7 @@ public abstract class AbstractDemoDumper<T extends MeshOptions> extends Abstract
 		T options = getOptions();
 
 		options.getSearchOptions().setUrl(null);
-		options.setInitialAdminPassword("admin");
+		options.setInitialAdminPassword("adminadmin");
 		options.setForceInitialAdminPasswordReset(false);
 
 		setupOptions(options);
