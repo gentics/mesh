@@ -375,7 +375,7 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 	@Override
 	public void testReadPermittedSorted() throws Exception {
 		LanguageListResponse list = call(() -> client().findLanguages(new SortingParametersImpl("name", SortOrder.DESCENDING)));
-		assertEquals("Total data size should be 6", 6, list.getData().size());
+		assertEquals("Total data size should be 11", 11, list.getData().size());
 		assertThat(list.getData()).isSortedAccordingTo((a, b) -> b.getName().compareTo(a.getName()));
 	}
 }
