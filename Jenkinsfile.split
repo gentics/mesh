@@ -82,7 +82,7 @@ stage("Setup Build Environment") {
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 					withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
 					                 usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install -pl '!demo/default,!demo/common'"
+						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
 					}
 				} else {
 					echo "Omitted since we don't execute tests"
@@ -184,9 +184,9 @@ stage("Setup Build Environment") {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
 							}
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-							sh "mvn -B -DskipTests -pl '!demo/default,!doc' clean install"
+							sh "mvn -B -DskipTests -pl '!doc' clean install"
 						} else {
-							sh "mvn -B -DskipTests clean package -pl '!demo/default,!demo/common'"
+							sh "mvn -B -DskipTests clean package"
 						}
 					}
 				} else {
