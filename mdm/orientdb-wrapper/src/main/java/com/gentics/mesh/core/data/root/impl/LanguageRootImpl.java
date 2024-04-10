@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
@@ -40,8 +41,8 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
-		index.createIndex(edgeIndex(HAS_LANGUAGE).withInOut());
-		// TODO add unique index
+		type.createType(edgeType(HAS_LANGUAGE));
+		index.createIndex(edgeIndex(HAS_LANGUAGE).withInOut().withOut());
 	}
 
 	@Override

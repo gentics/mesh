@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
+import java.util.Collection;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -139,6 +140,19 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @return
 	 */
 	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target);
+
+	/**
+	 * Inherit the permissions of the source elment to the collection of target elements.
+	 * 
+	 * @param user
+	 *            User to check the permission from
+	 * @param source
+	 *            Element from which the element should be loaded
+	 * @param targets
+	 *            Elements for which the perms should be applied
+	 * @return
+	 */
+	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, Collection<? extends HibBaseElement> targets);
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set

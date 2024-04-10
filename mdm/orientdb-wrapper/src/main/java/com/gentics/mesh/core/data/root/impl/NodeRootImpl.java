@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
@@ -10,6 +11,8 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +23,7 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
@@ -45,6 +49,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
@@ -209,5 +215,24 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		case "mimeType": return BinaryGraphField.BINARY_CONTENT_TYPE_PROPERTY_KEY;
 		}
 		return super.mapGraphQlFieldNameForSorting(gqlName);
+	}
+
+	@Override
+	public Set<String> findUsedLanguages(Collection<String> languageTags, boolean assignedLanguagesOnly) {
+		Set<String> projectLangs = getProject().getLanguages().stream().map(HibLanguage::getLanguageTag).collect(Collectors.toSet());
+		Set<String> result = new HashSet<>(languageTags.size());
+		getProject().findNodes().stream()
+			.flatMap(node -> toStream(GraphFieldContainerEdgeImpl.filterLanguages((EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>>) node.outE(HAS_FIELD_CONTAINER), languageTags).frameExplicit(GraphFieldContainerEdgeImpl.class)))
+			.takeWhile(edge -> !result.containsAll(languageTags))
+			.filter(edge -> {
+				if (assignedLanguagesOnly) {
+					return projectLangs.contains(edge.getLanguageTag());
+				} else {
+					return true;
+				}
+			})
+			.peek(edge -> result.add(edge.getLanguageTag()))
+			.collect(Collectors.counting());
+		return result;
 	}
 }

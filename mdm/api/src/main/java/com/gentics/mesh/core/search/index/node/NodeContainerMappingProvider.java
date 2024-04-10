@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.search.index.node;
 
+import java.util.Optional;
+
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -22,7 +24,7 @@ public interface NodeContainerMappingProvider extends MappingProvider {
 	 *            The language override to use
 	 * @return An ES-Mapping for the given Schema in the branch
 	 */
-	JsonObject getMapping(SchemaModel schema, HibBranch branch, String language);
+	Optional<JsonObject> getMapping(SchemaModel schema, HibBranch branch, String language);
 
 	/**
 	 * Return the type specific mapping which is constructed using the provided schema.
@@ -31,6 +33,5 @@ public interface NodeContainerMappingProvider extends MappingProvider {
 	 *            Schema from which the mapping should be constructed
 	 * @return An ES-Mapping for the given Schema
 	 */
-	JsonObject getMapping(SchemaModel schema);
-
+	Optional<JsonObject> getMapping(SchemaModel schema);
 }

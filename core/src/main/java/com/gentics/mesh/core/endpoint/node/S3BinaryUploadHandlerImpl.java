@@ -160,7 +160,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 					s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName, checkStatus).runInExistingTx(tx);
 				}
 
-				HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}

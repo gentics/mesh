@@ -34,11 +34,8 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		return "Image manipulation parameters";
 	}
 
-	/**
-	 * * Validate the set parameters and throw an exception when an invalid set of parameters has been detected.
-	 */
 	@Override
-	public void validate() {
+	public void validateManipulation() {
 		Integer width = toInteger(getWidth(), null);
 		if (width != null && width < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_positive", WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
@@ -51,14 +48,16 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 		if (rect != null) {
 			rect.validate();
 		}
-
 		Float fpz = getFocalPointZoom();
 		if (fpz != null && fpz < 1) {
 			throw error(BAD_REQUEST, "image_error_parameter_focal_point_zoom", String.valueOf(fpz));
 		}
-
 		validateFocalPointParameter();
+	}
 
+	@Override
+	public void validate() {
+		validateManipulation();
 	}
 
 	@Override

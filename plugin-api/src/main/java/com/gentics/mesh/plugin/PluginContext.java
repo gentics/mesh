@@ -134,7 +134,7 @@ public class PluginContext implements RoutingContext {
 	 *            Status of the response
 	 */
 	public void send(RestModel restModel, int status) {
-		send(restModel.toJson(), status, HttpConstants.APPLICATION_JSON);
+		send(restModel.toJson(env.options().getHttpServerOptions().isMinifyJson()), status, HttpConstants.APPLICATION_JSON);
 	}
 
 	/**

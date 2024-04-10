@@ -114,6 +114,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				}
 
 				change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldInB.isRequired());
+				change.setProperty(SchemaChangeModel.NO_INDEX_KEY, fieldInB.isNoIndex());
 
 				if (i - 1 >= 0) {
 					FieldSchema fieldBefore = containerB.getFields().get(i - 1);

@@ -138,7 +138,8 @@ public interface HibSchemaVersion extends HibFieldSchemaVersionElement<SchemaRes
 		ServerSchemaStorage serverSchemaStorage = Tx.get().data().serverSchemaStorage();
 		serverSchemaStorage.removeSchema(schema.getName(), schema.getVersion());
 		serverSchemaStorage.addSchema(schema);
-		String json = schema.toJson();
+		// TODO FIXME can we rely on a frontend formatter, to allow de-prettifying the schema JSON?
+		String json = schema.toJson(false);
 		setJson(json);
 		setVersion(schema.getVersion());
 	}

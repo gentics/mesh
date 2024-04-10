@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.endpoint.node;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.util.MimeTypeUtils.DEFAULT_BINARY_MIME_TYPE;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_MODIFIED;
 
 import javax.inject.Inject;
@@ -9,16 +12,21 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
+import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.etc.config.ImageManipulationMode;
+import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.handler.RangeRequestHandler;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.EncodeUtil;
 import com.gentics.mesh.util.MimeTypeUtils;
@@ -36,19 +44,22 @@ import io.vertx.reactivex.core.Vertx;
 public class BinaryFieldResponseHandler {
 
 	private final ImageManipulator imageManipulator;
-
 	private final BinaryStorage storage;
-
 	private final Vertx rxVertx;
-
 	private final RangeRequestHandler rangeRequestHandler;
+	private final ImageManipulatorOptions options;
+	private final PersistingBinaryDao binaryDao;
+	private final PersistingImageVariantDao imageVariantDao;
 
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage, Vertx rxVertx, RangeRequestHandler rangeRequestHandler, MeshOptions options, PersistingBinaryDao binaryDao, PersistingImageVariantDao imageVariantDao) {
 		this.imageManipulator = imageManipulator;
 		this.storage = storage;
 		this.rxVertx = rxVertx;
 		this.rangeRequestHandler = rangeRequestHandler;
+		this.binaryDao = binaryDao;
+		this.imageVariantDao = imageVariantDao;
+		this.options = options.getImageOptions();
 	}
 
 	/**
@@ -90,13 +101,9 @@ public class BinaryFieldResponseHandler {
 		return false;
 	}
 
-	private void respond(RoutingContext rc, HibBinaryField binaryField) {
-		BinaryDao binaryDao = Tx.get().binaryDao();
+	private void respond(RoutingContext rc, HibImageDataElement binary, String fileName, String contentType) {
 		HttpServerResponse response = rc.response();
 
-		HibBinary binary = binaryField.getBinary();
-		String fileName = binaryField.getFileName();
-		String contentType = binaryField.getMimeType();
 		// Try to guess the contenttype via the filename
 		if (contentType == null) {
 			contentType = MimeMapping.getMimeTypeForFilename(fileName);
@@ -121,43 +128,51 @@ public class BinaryFieldResponseHandler {
 			response.putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 			binaryDao.getStream(binary).subscribe(response::write, rc::fail, response::end);
 		}
+	}
 
+	private void respond(RoutingContext rc, HibBinaryField binaryField) {
+		HibBinary binary = binaryField.getBinary();
+		String fileName = binaryField.getFileName();
+		String contentType = binaryField.getMimeType();
+
+		respond(rc, binary, fileName, contentType);
 	}
 
 	private void resizeAndRespond(RoutingContext rc, HibBinaryField binaryField, ImageManipulationParameters imageParams) {
 		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
-		if (!imageParams.hasFocalPoint()) {
-			FocalPoint fp = binaryField.getImageFocalPoint();
-			if (fp != null) {
-				imageParams.setFocalPoint(fp);
-			}
-		}
-		Integer originalHeight = binaryField.getBinary().getImageHeight();
-		Integer originalWidth = binaryField.getBinary().getImageWidth();
-
-		if ("auto".equals(imageParams.getHeight())) {
-			imageParams.setHeight(originalHeight);
-		}
-		if ("auto".equals(imageParams.getWidth())) {
-			imageParams.setWidth(originalWidth);
-		}
 		String fileName = binaryField.getFileName();
-		imageManipulator.handleResize(binaryField.getBinary(), imageParams)
-			.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
-				.doOnSuccess(props -> {
-					response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
-					response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
-					response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
-					response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
-					// Set to IDENTITY to avoid gzip compression
-					response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+		ImageManipulationMode mode = options.getMode();
 
-					addContentDispositionHeader(response, fileName, "inline");
-
-					response.sendFile(cachedFilePath);
-				}))
-			.subscribe(ignore -> {}, rc::fail);
+		switch (mode) {
+		case OFF:
+			throw error(BAD_REQUEST, "image_error_turned_off");
+		case ON_DEMAND:
+			imageManipulator.handleResize(binaryField.getBinary(), ImageManipulator.applyDefaultManipulation(imageParams, binaryField))
+				.flatMap(cachedFilePath -> rxVertx.fileSystem().rxProps(cachedFilePath)
+					.doOnSuccess(props -> {
+						response.putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(props.size()));
+						response.putHeader(HttpHeaders.CONTENT_TYPE, MimeTypeUtils.getMimeTypeForFilename(cachedFilePath).orElse(DEFAULT_BINARY_MIME_TYPE));
+						response.putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
+						response.putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
+						// Set to IDENTITY to avoid gzip compression
+						response.putHeader(HttpHeaders.CONTENT_ENCODING, HttpHeaders.IDENTITY);
+	
+						addContentDispositionHeader(response, fileName, "inline");
+	
+						response.sendFile(cachedFilePath);
+					}))
+				.subscribe(ignore -> {}, rc::fail);
+			break;
+		case MANUAL:
+			HibBinary binary = binaryField.getBinary();
+			HibImageVariant variant = imageVariantDao.getVariant(binary, imageParams, new InternalRoutingActionContextImpl(rc));
+			if (variant == null) {
+				throw error(NOT_FOUND, "node_error_binary_data_not_found");
+			}
+			respond(rc, variant, binaryField.getFileName(), binaryField.getMimeType());
+			break;
+		}
 	}
 
 	private void addContentDispositionHeader(HttpServerResponse response, String fileName, String type) {

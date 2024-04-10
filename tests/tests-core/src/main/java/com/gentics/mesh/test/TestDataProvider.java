@@ -79,6 +79,7 @@ public class TestDataProvider {
 
 	public static final String CONTENT_UUID = "43ee8f9ff71e4016ae8f9ff71e10161c";
 	public static final String NEWS_UUID = "4b1346a2163a4ff89346a2163a9ff883";
+	public static final String NEWS_2015_UUID = "1234567890abcdef1234567890abcdef";
 
 	private static TestDataProvider instance;
 
@@ -92,9 +93,10 @@ public class TestDataProvider {
 
 	// References to dummy data
 
-	private String english = "en";
-
-	private String german = "de";
+	private final String english = "en";
+	private final String german = "de";
+	private final String italian = "it";
+	private final String french = "fr";
 
 	private HibProject project;
 	private String projectUuid;
@@ -265,7 +267,7 @@ public class TestDataProvider {
 			"Kauf zwei und nimm drei mit!");
 
 		addContent(tx, folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
-		addContent(tx, folders.get("2015"), "News_2015", "News!", "Neuigkeiten!");
+		addContent(tx, folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", NEWS_2015_UUID);
 
 		HibNode concorde = addContent(tx, folders.get("products"), "Concorde",
 			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
@@ -395,6 +397,8 @@ public class TestDataProvider {
 		batch.dispatch();
 		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
 			getSchemaContainer("folder").getLatestVersion(), batch);
+		project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
+		project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
 		HibUser jobUser = userInfo.getUser();
 		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
@@ -678,6 +682,14 @@ public class TestDataProvider {
 
 	public String getGerman() {
 		return german;
+	}
+
+	public String getItalian() {
+		return italian;
+	}
+
+	public String getFrench() {
+		return french;
 	}
 
 	public HibProject getProject() {

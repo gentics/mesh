@@ -38,4 +38,8 @@ public class GroupRoleAssignModel extends AbstractMeshEventModel {
 		this.role = role;
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%s, group: %s, role: %s", getEvent(), group, role);
+	}
 }

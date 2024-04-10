@@ -10,8 +10,6 @@ import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 
-import io.reactivex.Completable;
-
 /**
  * Aggregation vertex for jobs.
  */
@@ -76,6 +74,14 @@ public interface JobRoot extends RootVertex<Job> {
 	 * @return
 	 */
 	HibJob enqueueVersionPurge(HibUser user, HibProject project);
+
+	/**
+	 * Enqueue a consistency check job.
+	 * @param user current user
+	 * @param repair
+	 * @return
+	 */
+	HibJob enqueueConsistencyCheck(HibUser user, boolean repair);
 
 	/**
 	 * Delete all the jobs referencing the provided project.

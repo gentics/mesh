@@ -297,4 +297,9 @@ public class NodeDaoWrapperImpl extends AbstractRootDaoWrapper<NodeResponse, Hib
 			return NodeDaoWrapper.super.findAllContent(schemaVersion, ac, languageTags, type, paging, maybeFilter);
 		}
 	}
+
+	@Override
+	public Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly) {
+		return toGraph(project).getNodeRoot().findUsedLanguages(languageTags, assignedLanguagesOnly);
+	}
 }

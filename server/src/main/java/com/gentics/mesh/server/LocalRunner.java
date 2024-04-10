@@ -5,10 +5,7 @@ import java.io.File;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
-import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.router.EndpointRegistry;
-import com.gentics.mesh.verticle.admin.AdminGUIEndpoint;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -49,12 +46,6 @@ public class LocalRunner {
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-
-			// Add admin ui
-			MeshComponent meshInternal = mesh.internal();
-			EndpointRegistry registry = meshInternal.endpointRegistry();
-			registry.register(AdminGUIEndpoint.class);
-
 		});
 
 		try {

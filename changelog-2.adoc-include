@@ -6,6 +6,25 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.0.14]]
+== 2.0.14 (07.02.2024)
+
+icon:check[] REST client: Improves error handling for WebSocket errors.
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] Elasticsearch: A possibility of DDoSing the ES with a bulk request of too many items has been eliminated.
+
+icon:check[] GraphQL: When an inexisting language has been requested for a node, the schema info was not loaded as well. This has been fixed.
+
+[[v2.0.13]]
+== 2.0.13 (24.01.2024)
+
+icon:check[] GraphQL: Fetching of micronode fields has been improved to allow batch loading.
+
 [[v2.0.12]]
 == 2.0.12 (10.01.2024)
 

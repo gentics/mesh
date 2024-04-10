@@ -36,6 +36,10 @@ public class MicroschemaModelImpl implements MicroschemaVersionModel {
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("'Exclude from indexing' flag.")
+	private Boolean noIndex;
+
 	@Override
 	public String getVersion() {
 		return version;
@@ -55,6 +59,17 @@ public class MicroschemaModelImpl implements MicroschemaVersionModel {
 	@Override
 	public MicroschemaVersionModel setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public MicroschemaVersionModel setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 

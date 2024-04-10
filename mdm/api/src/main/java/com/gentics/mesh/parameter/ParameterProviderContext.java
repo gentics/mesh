@@ -2,13 +2,17 @@ package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.impl.BackupParametersImpl;
+import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
+import com.gentics.mesh.parameter.impl.DisplayParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.ImageManipulationRetrievalParametersImpl;
 import com.gentics.mesh.parameter.impl.IndexMaintenanceParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.ProjectLoadParametersImpl;
 import com.gentics.mesh.parameter.impl.ProjectPurgeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -47,6 +51,10 @@ public interface ParameterProviderContext extends ActionContext {
 		return new ProjectPurgeParametersImpl(this);
 	}
 
+	default ProjectLoadParameters getProjectLoadParameters() {
+		return new ProjectLoadParametersImpl(this);
+	}
+
 	default ImageManipulationParameters getImageParameters() {
 		return new ImageManipulationParametersImpl(this);
 	}
@@ -67,6 +75,10 @@ public interface ParameterProviderContext extends ActionContext {
 		return new GenericParametersImpl(this);
 	}
 
+	default ImageManipulationRetrievalParameters getImageManipulationRetrievalParameters() {
+		return new ImageManipulationRetrievalParametersImpl(this);
+	}
+
 	default SearchParameters getSearchParameters() {
 		return new SearchParametersImpl(this);
 	}
@@ -85,5 +97,13 @@ public interface ParameterProviderContext extends ActionContext {
 
 	default SortingParameters getSortingParameters() {
 		return new SortingParametersImpl(this);
+	}
+
+	default DisplayParameters getDisplayParameters() {
+		return new DisplayParametersImpl(this);
+	}
+
+	default ConsistencyCheckParameters getConsistencyCheckParameters() {
+		return new ConsistencyCheckParametersImpl(this);
 	}
 }

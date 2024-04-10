@@ -37,6 +37,7 @@ import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -78,7 +79,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			BinaryDao dao = mockBinaryDao();
 			when(dao.openBlockingStream(any(HibBinary.class))).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(path));
 			Single<byte[]> obs = manipulator
-				.handleResize(hb, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+				.handleResize(hb, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
 				.map(file -> Files.readAllBytes(Paths.get(file)));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(data -> {
@@ -185,13 +186,13 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 	public void testResizeImage() {
 		// Width only
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(200));
+		bi = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200));
 		assertEquals(200, bi.getWidth());
 		assertEquals(400, bi.getHeight());
 
 		// Same width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		BufferedImage outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100));
+		BufferedImage outputImage = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(100));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
@@ -199,13 +200,13 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// Height only
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setHeight(50));
+		bi = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl().setHeight(50));
 		assertEquals(25, bi.getWidth());
 		assertEquals(50, bi.getHeight());
 
 		// Same height
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setHeight(200));
+		outputImage = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl().setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
@@ -213,20 +214,20 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// Height and Width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(200).setHeight(300));
+		bi = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(300));
 		assertEquals(200, bi.getWidth());
 		assertEquals(300, bi.getHeight());
 
 		// No parameters
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl());
+		outputImage = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl());
 		assertEquals(100, outputImage.getWidth());
 		assertEquals(200, outputImage.getHeight());
 		assertEquals("The image should not have been resized since no parameters were set.", bi.hashCode(), outputImage.hashCode());
 
 		// Same height / width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100).setHeight(200));
+		outputImage = manipulator.resizeIfRequested(bi, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(100).setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(), outputImage
@@ -271,17 +272,17 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
 		assertThat(outputImage1).matchesReference("outputImage1-smart-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
 		assertThat(outputImage2).matchesReference("outputImage2-smart-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage3 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
 		assertThat(outputImage3).matchesReference("outputImage3-smart-reference.png");
 
 		// tests with vertical input ...
@@ -289,50 +290,50 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
 		assertThat(outputImage4).matchesReference("outputImage4-smart-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage5 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
 		assertThat(outputImage5).matchesReference("outputImage5-smart-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage6 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
 		assertThat(outputImage6).matchesReference("outputImage6-smart-reference.png");
 
 		// tests with square input ...
 		BufferedImage biS = ImageTestUtil.readImage("testgrid-square_1080x1080.png");
 		// .. to horizontal output
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(300));
 		assertThat(outputImage7).matchesReference("outputImage7-smart-reference.png");
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(300).setHeight(500));
 		assertThat(outputImage8).matchesReference("outputImage8-smart-reference.png");
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500));
 		assertThat(outputImage9).matchesReference("outputImage9-smart-reference.png");
 
 		// test if same input and ouput format omits resampling
 		// 1920x1080
 		BufferedImage outputImage10 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(1920).setHeight(1080));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1920).setHeight(1080));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biH.hashCode(), outputImage10
 			.hashCode());
 
 		// 1080x1920
 		BufferedImage outputImage11 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1920));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1920));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biV.hashCode(), outputImage11
 			.hashCode());
 
 		// 1080x1080
 		BufferedImage outputImage12 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1080));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1080));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biS.hashCode(), outputImage12
 			.hashCode());
 
@@ -349,12 +350,12 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. fit to width
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(400).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(400).setResizeMode(ResizeMode.PROP));
 		assertThat(outputImage1).matchesReference("outputImage1-prop-reference.png");
 
 		// .. fit to height
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(2000).setHeight(500).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(2000).setHeight(500).setResizeMode(ResizeMode.PROP));
 		assertThat(outputImage2).matchesReference("outputImage2-prop-reference.png");
 
 		// tests with vertical input ...
@@ -362,11 +363,11 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. fit to width
 		BufferedImage outputImage3 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(1500).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(1500).setResizeMode(ResizeMode.PROP));
 		assertThat(outputImage3).matchesReference("outputImage3-prop-reference.png");
 		// .. fit to height
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(400).setHeight(500).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(400).setHeight(500).setResizeMode(ResizeMode.PROP));
 		assertThat(outputImage4).matchesReference("outputImage4-prop-reference.png");
 
 		// tests with square input ...
@@ -374,72 +375,72 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. fit to width
 		BufferedImage outputImage5 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(1000).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(1000).setResizeMode(ResizeMode.PROP));
 		assertThat(outputImage5).matchesReference("outputImage5-prop-reference.png");
 
 		// .. fit to height
 		BufferedImage outputImage6 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(1000).setHeight(500).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1000).setHeight(500).setResizeMode(ResizeMode.PROP));
 		assertThat(outputImage6).matchesReference("outputImage6-prop-reference.png");
 
 		// test if certain formats omit resampling
 		// format that is horizontal, has same width as original image, but is higher
 		BufferedImage outputImage7 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(1920).setHeight(1200).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1920).setHeight(1200).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the resulting images dimensions match the source image dimension.", biH.hashCode(),
 			outputImage7
 				.hashCode());
 
 		// format that is horizontal, has same height as original image, but is wider
 		BufferedImage outputImage8 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(2000).setHeight(1080).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(2000).setHeight(1080).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the resulting images dimensions match the source image dimension.", biH.hashCode(),
 			outputImage8
 				.hashCode());
 
 		// ident horizontal format
 		BufferedImage outputImage9 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(1920).setHeight(1080).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1920).setHeight(1080).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biH.hashCode(), outputImage9
 			.hashCode());
 
 		// format that is vertical, has same width as original image, but is higher
 		BufferedImage outputImage10 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(2000).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(2000).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the resulting images dimensions match the source image dimension.", biV.hashCode(),
 			outputImage10
 				.hashCode());
 
 		// format that is vertical, has same height as original image, but is wider
 		BufferedImage outputImage11 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(1200).setHeight(1920).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1200).setHeight(1920).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the resulting images dimensions match the source image dimension.", biV.hashCode(),
 			outputImage11
 				.hashCode());
 
 		// ident vertical format
 		BufferedImage outputImage12 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1920).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1920).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biV.hashCode(), outputImage12
 			.hashCode());
 
 		// format that is square, has same width as original image, but is higher
 		BufferedImage outputImage13 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1200).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1200).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the resulting images dimensions match the source image dimension.", biS.hashCode(),
 			outputImage13
 				.hashCode());
 
 		// format that is vertical, has same height as original image, but is wider
 		BufferedImage outputImage14 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(1200).setHeight(1080).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1200).setHeight(1080).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the resulting images dimensions match the source image dimension.", biS.hashCode(),
 			outputImage14
 				.hashCode());
 
 		// ident square format
 		BufferedImage outputImage15 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1080).setResizeMode(ResizeMode.PROP));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1080).setResizeMode(ResizeMode.PROP));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biS.hashCode(), outputImage15
 			.hashCode());
 
@@ -461,19 +462,19 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));//
 		assertThat(outputImage1).matchesReference("outputImage1-smart-crop-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage2).matchesReference("outputImage2-smart-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage3 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage3).matchesReference("outputImage3-smart-crop-reference.png");
 
@@ -482,19 +483,19 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage4).matchesReference("outputImage4-smart-crop-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage5 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage5).matchesReference("outputImage5-smart-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage6 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage6).matchesReference("outputImage6-smart-crop-reference.png");
 
@@ -503,19 +504,19 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage7).matchesReference("outputImage7-smart-crop-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage8).matchesReference("outputImage8-smart-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.SMART));
 		assertThat(outputImage9).matchesReference("outputImage9-smart-crop-reference.png");
 
@@ -533,17 +534,17 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage1).matchesReference("outputImage1-force-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage2).matchesReference("outputImage2-force-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage3 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage3).matchesReference("outputImage3-force-reference.png");
 
 		// tests with vertical input ...
@@ -551,17 +552,17 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage4).matchesReference("outputImage4-force-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage5 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage5).matchesReference("outputImage5-force-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage6 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage6).matchesReference("outputImage6-force-reference.png");
 
 		// tests with square input ...
@@ -569,34 +570,34 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(300).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(300).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage7).matchesReference("outputImage7-force-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(300).setHeight(500).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(300).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage8).matchesReference("outputImage8-force-reference.png");
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage9).matchesReference("outputImage9-force-reference.png");
 
 		// test if same input and ouput format omits resampling
 		// 1920x1080
 		BufferedImage outputImage10 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(1920).setHeight(1080).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1920).setHeight(1080).setResizeMode(ResizeMode.FORCE));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biH.hashCode(), outputImage10
 			.hashCode());
 
 		// 1080x1920
 		BufferedImage outputImage11 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1920).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1920).setResizeMode(ResizeMode.FORCE));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biV.hashCode(), outputImage11
 			.hashCode());
 
 		// 1080x1080
 		BufferedImage outputImage12 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(1080).setHeight(1080).setResizeMode(ResizeMode.FORCE));
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(1080).setHeight(1080).setResizeMode(ResizeMode.FORCE));
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", biS.hashCode(), outputImage12
 			.hashCode());
 
@@ -611,17 +612,17 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		BufferedImage biH = ImageTestUtil.readImage("testgrid-horizontal-hd_1920x1080.png");
 		// .. to horizontal output
 		BufferedImage outputImage1 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));//
 		assertThat(outputImage1).matchesReference("outputImage1-force-crop-reference.png");
 		// .. to vertical output
 		BufferedImage outputImage2 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage2).matchesReference("outputImage2-force-crop-reference.png");
 		// .. to square output
 		BufferedImage outputImage3 = manipulator.cropAndResize(biH,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 960).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage3).matchesReference("outputImage3-force-crop-reference.png");
 
@@ -629,19 +630,19 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		BufferedImage biV = ImageTestUtil.readImage("testgrid-vertical-hd_1080x1920.png");
 		// .. to horizontal output
 		BufferedImage outputImage4 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage4).matchesReference("outputImage4-force-crop-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage5 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage5).matchesReference("outputImage5-force-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage6 = manipulator.cropAndResize(biV,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 960, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage6).matchesReference("outputImage6-force-crop-reference.png");
 
@@ -650,19 +651,19 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 		// .. to horizontal output
 		BufferedImage outputImage7 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(200).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage7).matchesReference("outputImage7-force-crop-reference.png");
 
 		// .. to vertical output
 		BufferedImage outputImage8 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(200).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage8).matchesReference("outputImage8-force-crop-reference.png");
 
 		// .. to square output
 		BufferedImage outputImage9 = manipulator.cropAndResize(biS,
-			new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
+			(ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(500).setHeight(500).setRect(0, 0, 540, 540).setCropMode(CropMode.RECT)
 				.setResizeMode(ResizeMode.FORCE));
 		assertThat(outputImage9).matchesReference("outputImage9-force-crop-reference.png");
 

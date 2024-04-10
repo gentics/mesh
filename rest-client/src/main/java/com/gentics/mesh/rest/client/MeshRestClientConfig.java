@@ -19,6 +19,7 @@ public class MeshRestClientConfig {
 	private final String basePath;
 	private final int port;
 	private final boolean ssl;
+	private final ProtocolVersion protocolVersion;
 	private final Duration websocketReconnectInterval;
 	private final Duration websocketPingInterval;
 	private final Set<byte[]> trustedCAs;
@@ -27,11 +28,13 @@ public class MeshRestClientConfig {
 	private final boolean hostnameVerification;
 	private final int maxRetries;
 	private final int retryDelayMs;
+	private final boolean minifyJson;
 
 	public MeshRestClientConfig(Builder builder) {
 		this.host = Objects.requireNonNull(builder.host);
 		this.port = builder.port;
 		this.ssl = builder.ssl;
+		this.protocolVersion = builder.protocolVersion;
 		this.websocketReconnectInterval = builder.websocketReconnectInterval;
 		this.websocketPingInterval = builder.websocketPingInterval;
 		this.hostnameVerification = builder.hostnameVerification;
@@ -41,6 +44,7 @@ public class MeshRestClientConfig {
 		this.clientKey = builder.clientKey;
 		this.maxRetries = builder.maxRetries;
 		this.retryDelayMs = builder.retryDelayMs;
+		this.minifyJson = builder.minifyJson;
 	}
 
 	/**
@@ -106,6 +110,14 @@ public class MeshRestClientConfig {
 		return retryDelayMs;
 	}
 
+	public ProtocolVersion getProtocolVersion() {
+		return protocolVersion;
+	}
+
+	public boolean isMinifyJson() {
+		return minifyJson;
+	}
+
 	/**
 	 * Create a fresh config builder.
 	 * 
@@ -123,6 +135,7 @@ public class MeshRestClientConfig {
 		private String basePath = "/api/v1";
 		private int port = 8080;
 		private boolean ssl = false;
+		private ProtocolVersion protocolVersion = ProtocolVersion.DEFAULT;
 		private Duration websocketReconnectInterval = Duration.ofSeconds(5);
 		private Duration websocketPingInterval = Duration.ofSeconds(2);
 		public boolean hostnameVerification = false;
@@ -134,6 +147,7 @@ public class MeshRestClientConfig {
 		// maximum number of retries with the chosen delay fit inside the
 		// max call timeout.
 		private int retryDelayMs = -1;
+		private boolean minifyJson = true;
 
 		public Builder() {
 			trustedCAs = new HashSet<>();
@@ -151,6 +165,7 @@ public class MeshRestClientConfig {
 			setBasePath(config.getBasePath());
 			setPort(config.getPort());
 			setSsl(config.isSsl());
+			setProtocolVersion(config.getProtocolVersion());
 			setWebsocketReconnectInterval(config.getWebsocketReconnectInterval());
 			setWebsocketPingInterval(config.getWebsocketPingInterval());
 			setHostnameVerification(config.isVerifyHostnames());
@@ -172,6 +187,22 @@ public class MeshRestClientConfig {
 		 */
 		public MeshRestClientConfig build() {
 			return new MeshRestClientConfig(this);
+		}
+
+		public Builder setMinifyJson(boolean minify) {
+			this.minifyJson = minify;
+			return this;
+		}
+
+		/**
+		 * Set the connection protocol version.
+		 * 
+		 * @param protocolVersion
+		 * @return
+		 */
+		public Builder setProtocolVersion(ProtocolVersion protocolVersion) {
+			this.protocolVersion = protocolVersion;
+			return this;
 		}
 
 		/**

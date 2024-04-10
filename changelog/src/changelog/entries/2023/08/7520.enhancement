@@ -1,0 +1,1 @@
+Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.

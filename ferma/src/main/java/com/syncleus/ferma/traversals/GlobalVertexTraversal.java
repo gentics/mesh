@@ -163,6 +163,11 @@ public class GlobalVertexTraversal<C, S, M> implements VertexTraversal<C, S, M> 
 	}
 
 	@Override
+	public VertexTraversal<?, ?, M> hasNot(final String key) {
+		return this.delegate().hasNot(key);
+	}
+
+	@Override
 	public VertexTraversal<?, ?, M> has(final String key, final Object value) {
 		if (this.key == null) {
 			this.key = key;

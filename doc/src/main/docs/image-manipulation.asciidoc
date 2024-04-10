@@ -4,8 +4,19 @@ title: Image Manipulation
 
 include::content/docs/variables.adoc-include[]
 
+Mesh contains an in-built capability of manipulating the image data, stored in the binary content fields. 
+
+== Feature control
+
+This capability is controlled by the Mesh options item `image.mode` with the following options:
+* `ON_DEMAND`: Each time a manipulation is requested via <<imagemanipulationparams,image manipulation query parameters>>, the new variant is created automatically in the image cache and served to the user.
+* `MANUAL`: Each image manipulation variant has to be manually created in advance, using link:/docs/api/#project__nodes__nodeUuid__binary__fieldName__variants_post[variants manipulation REST API]. Only the manually created variants are allowed to serve over the requests with <<imagemanipulationparams,image manipulation query parameters>>. Other variant control capabilities are available throught the REST API, including link:/docs/api/#project__nodes__nodeUuid__languages__language__published_post[creation-on-publish] and access over link:/docs/api/#project__webroot__path__post[webroot] and link:/docs/api/#project__webrootfield__fieldName___path__post[webrootfield].
+* `OFF`: No image manipulation possible.
+
+== Manipulation features
+
 Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
-The following image formats are supported: `png`, `jpg`, `bmp` and `gif`
+The following image formats are supported: `png`, `jpg`, `bmp`, `gif` and `webp`.
 
 == Resize
 
@@ -18,7 +29,7 @@ Endpoint: ```{apiLatest}/:projectName/nodes/:uuid/binary/:fieldname?w=220```
 https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=500
 
 .via UUID
-image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"] 
+image::https://demo.getmesh.io{apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?w=300&version=1.0[Example Image,role="img-responsive"]
 
 === Using Path
 
@@ -31,7 +42,7 @@ image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500[
 
 === Resizing Options
 
-When loading an image with resizing parameters you can provide either the desired width by appending `w=:width` or the desired height by appending by appending `h=:height`. 
+When loading an image with resizing parameters you can provide either the desired width by appending `w=:width` or the desired height by appending by appending `h=:height`.
 
 ==== Smart resizing and Cropping
 It also possible to provide both dimensions. Note that in this case Mesh potentially crops your image to fit the desired dimensions. This happens when the aspect ratio of the source image is different from the requested dimensions. In these cases Mesh will crop _either_ pixels at the top and bottom or left and right. Mesh supports the `auto` dimension when manipulating an image.
@@ -54,7 +65,7 @@ image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&
 .When adding the resize parameter `prop` the image gets scaled proportionally to fit the dimensions.
 image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=prop[Image with width and height and forced resize]
 
-.When adding the resize parameter `force` the image gets distorted to fit the dimensions 
+.When adding the resize parameter `force` the image gets distorted to fit the dimensions
 image::https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?w=500&h=200&resize=force[Image with width and height and forced resize]
 
 == Crop
@@ -87,15 +98,15 @@ https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?rect=10,100,8
 Responsive designs often suggest the usage of https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images[srcset images for responsive images].
 Sometimes those designs require image sizes which lead to cropped images. This could result in images which seem chopped off at the worst possible place or images which miss the important part.
 
-You can however use the focal point feature in order to influence how the image should be cropped. 
+You can however use the focal point feature in order to influence how the image should be cropped.
 Gentics Mesh will use the focal point information when cropping the image so that the focused area will remain in the image.
 
 First you need to specify a focal point along with your image.
 You can store the focal point information within the binary field of your image or use the `fpx` and the `fpy` query parameters when loading the image.
 You can also use these parameters to override the stored focal point.
 
-The width and height information via `w` and `h` parameter are also needed when loading the image. 
-Otherwise Gentics Mesh can't tell which area of the image needs to be cropped. 
+The width and height information via `w` and `h` parameter are also needed when loading the image.
+Otherwise Gentics Mesh can't tell which area of the image needs to be cropped.
 
 Finally the `fpdebug` parameter can be used to visualize the focal point. This is useful when testing designs and resize parameters.
 
@@ -109,7 +120,7 @@ In some cases you may want to show just a single area of the image. In this case
 [TIP]
 https://demo.getmesh.io{apiLatest}/demo/webroot/images/ford-gt.jpg?fpx=0.5&fpy=0.35&fpz=3.0&w=800&h=600&crop=fp&fpdebug=true
 
-It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request. 
+It is also possible to store focal point information along with the binary field. This way you can set the focal point once and omit it within the image request.
 In those cases it is not needed to specify the `fpx` and `fpy` parameter. Gentics Mesh will automatically load the missing parameter from the binary field if possible.
 
 .Try the example
@@ -171,8 +182,8 @@ POST {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/ima
 
 == Transform and Update an Image
 
-Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. 
-The image manipulation parameters then are part of the request body. 
+Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step.
+The image manipulation parameters then are part of the request body.
 This will effectively override the currently stored image with the image of the resulting operation.
 
 Endpoint: ```POST {apiLatest}/:projectName/nodes/:uuid/binaryTransform/:fieldname```

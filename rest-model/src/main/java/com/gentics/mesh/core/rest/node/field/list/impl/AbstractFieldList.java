@@ -53,6 +53,6 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 
 	@Override
 	public String toString() {
-		return JsonUtil.toJson(getItems());
+		return JsonUtil.toJson(getItems(), true);
 	}
 }

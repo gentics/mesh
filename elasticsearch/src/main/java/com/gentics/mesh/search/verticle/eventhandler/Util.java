@@ -1,13 +1,5 @@
 package com.gentics.mesh.search.verticle.eventhandler;
 
-import com.gentics.mesh.core.data.search.index.IndexInfo;
-import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
-import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.rest.common.ContainerType;
-import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +12,16 @@ import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.data.search.request.CreateIndexRequest;
+import com.gentics.mesh.core.data.search.request.DropIndexRequest;
+import com.gentics.mesh.core.data.search.request.SearchRequest;
+import com.gentics.mesh.core.rest.common.ContainerType;
+
+import io.reactivex.Flowable;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Various static utility functions
@@ -126,9 +128,11 @@ public final class Util {
 	 * @param map
 	 * @return
 	 */
-	public static Flowable<SearchRequest> toRequests(Map<String, IndexInfo> map) {
-		return Flowable.fromIterable(map.values())
-			.map(CreateIndexRequest::new);
+	public static Flowable<SearchRequest> toRequests(Map<String, Optional<IndexInfo>> map) {
+		return Flowable.fromIterable(map.entrySet())
+			.map(entry -> entry.getValue().map(CreateIndexRequest::new)
+					.map(SearchRequest.class::cast)
+					.orElseGet(() -> new DropIndexRequest(entry.getKey())));
 	}
 
 	/**

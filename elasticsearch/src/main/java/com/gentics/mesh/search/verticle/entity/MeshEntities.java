@@ -200,7 +200,7 @@ public class MeshEntities {
 		return findElementByUuid(Tx.get().projectDao(), event.getProject().getUuid())
 			.flatMap(project -> findElementByUuid(Tx.get().nodeDao(), project, eventModel.getUuid()))
 			.flatMap(node -> warningOptional(
-				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(),
+				"Could not find NodeGraphFieldContainer for event " + eventModel.toJson(true),
 				contentDao.getFieldContainer(node, event.getLanguageTag(), event.getBranchUuid(), event.getType())
 			));
 	}

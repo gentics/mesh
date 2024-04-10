@@ -5,6 +5,7 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.etc.config.HttpServerConfig;
@@ -41,8 +42,8 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, S3BinaryStorage s3BinaryStorage) {
-		return new ImgscalrImageManipulator(vertx, options, s3BinaryStorage);
+	public static ImageManipulator imageProvider(io.vertx.reactivex.core.Vertx vertx, MeshOptions options, BinaryStorage binaryStorage, S3BinaryStorage s3BinaryStorage) {
+		return new ImgscalrImageManipulator(vertx, options, binaryStorage, s3BinaryStorage);
 	}
 
 	/**

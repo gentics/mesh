@@ -136,6 +136,18 @@ public class UserDaoWrapperImpl extends AbstractCoreDaoWrapper<UserResponse, Hib
 	}
 
 	@Override
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, Collection<? extends HibBaseElement> targets) {
+		for (HibBaseElement target : targets) {
+			for (InternalPermission perm : InternalPermission.values()) {
+				String key = perm.propertyKey();
+				toGraph(target).property(key, toGraph(source).property(key));
+			}
+		}
+		Tx.get().permissionCache().clear();
+		return user;
+	}
+
+	@Override
 	public HibUser addGroup(HibUser user, HibGroup group) {
 		User graphUser = toGraph(user);
 		Group graphGroup = toGraph(group);

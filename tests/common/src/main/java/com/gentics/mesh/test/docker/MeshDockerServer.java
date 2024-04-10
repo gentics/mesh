@@ -15,6 +15,8 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.rest.client.MeshRestClientConfig;
+import com.gentics.mesh.rest.client.ProtocolVersion;
 import com.gentics.mesh.test.MeshTestServer;
 
 import io.vertx.core.Vertx;
@@ -40,7 +42,14 @@ public class MeshDockerServer extends GenericContainer<MeshDockerServer> impleme
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Runnable startupAction = () -> {
-		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false);
+		MeshRestClientConfig config = new MeshRestClientConfig.Builder()
+				.setHost(getContainerIpAddress())
+				.setPort(getMappedPort(8080))
+				.setSsl(false)
+				.setProtocolVersion(ProtocolVersion.HTTP_2)
+				.build();
+
+		client = MeshRestClient.create(config);
 		client.setLogin("admin", "admin");
 		client.login().blockingGet();
 	};

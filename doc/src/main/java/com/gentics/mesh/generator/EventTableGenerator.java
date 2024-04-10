@@ -59,7 +59,7 @@ public class EventTableGenerator extends AbstractRenderingGenerator {
 			row.put("description", value.getDescription());
 			MeshEventModel example = value.example();
 			if (example != null) {
-				row.put("example", example.toJson());
+				row.put("example", example.toJson(false));
 			}
 		}
 

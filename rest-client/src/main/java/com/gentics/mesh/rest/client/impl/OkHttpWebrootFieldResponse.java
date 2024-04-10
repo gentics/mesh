@@ -32,9 +32,11 @@ public class OkHttpWebrootFieldResponse implements MeshWebrootFieldResponse {
 
 	private final Supplier<MeshBinaryResponse> binaryResponse;
 	private final Supplier<String> jsonStringResponse;
+	private final boolean minifyJson;
 	
-	public OkHttpWebrootFieldResponse(Response response) {
+	public OkHttpWebrootFieldResponse(Response response, boolean minifyJson) {
 		this.response = response;
+		this.minifyJson = minifyJson;
 		binaryResponse = lazily(() -> new OkHttpBinaryResponse(response));
 		jsonStringResponse = lazily(() -> response.body().string());
 	}
@@ -73,7 +75,7 @@ public class OkHttpWebrootFieldResponse implements MeshWebrootFieldResponse {
 			return null;
 		}
 		if (isPlainText()) {
-			return JsonUtil.toJson(jsonStringResponse.get());
+			return JsonUtil.toJson(jsonStringResponse.get(), minifyJson);
 		}
 		return jsonStringResponse.get();
 	}

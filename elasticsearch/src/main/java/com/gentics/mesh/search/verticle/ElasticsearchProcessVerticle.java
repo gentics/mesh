@@ -269,7 +269,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				log.info("Elasticsearch is available again. Starting sync.");
 				elasticsearchAvailable.onNext(available);
 			});
-		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(new SearchIndexSyncEventModel())));
+		vertx.eventBus().publish(INDEX_SYNC_REQUEST.address, new JsonObject(JsonUtil.toJson(new SearchIndexSyncEventModel(), true)));
 	}
 
 	/**

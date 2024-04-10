@@ -1,12 +1,7 @@
 package com.gentics.mesh.madl.frame;
 
-import java.util.function.Function;
-
-import com.gentics.madl.traversal.RawTraversalResult;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.madl.tp3.mock.GraphTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
-import com.tinkerpop.blueprints.Vertex;
 
 public interface VertexFrame extends ElementFrame, com.syncleus.ferma.VertexFrame {
 

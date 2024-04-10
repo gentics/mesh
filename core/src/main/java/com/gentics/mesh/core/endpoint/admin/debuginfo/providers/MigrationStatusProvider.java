@@ -16,7 +16,6 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
 import com.gentics.mesh.core.endpoint.branch.BranchCrudHandler;
-import com.gentics.mesh.core.rest.common.RestModel;
 
 import io.reactivex.Flowable;
 
@@ -70,13 +69,13 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 
 	private Flowable<String> getSchemastatus(HibBranch branch) {
 		return db.singleTx(() -> branchCrudHandler.getSchemaVersionsInfo(CommonTx.get().branchDao().mergeIntoPersisted(branch.getProject(), branch)))
-			.map(RestModel::toJson)
+			.map(o -> o.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson()))
 			.toFlowable();
 	}
 
 	private Flowable<String> getMicroschemastatus(HibBranch branch) {
 		return db.singleTx(() -> branchCrudHandler.getMicroschemaVersions(CommonTx.get().branchDao().mergeIntoPersisted(branch.getProject(), branch)))
-			.map(RestModel::toJson)
+			.map(o -> o.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson()))
 			.toFlowable();
 	}
 
