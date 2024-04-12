@@ -64,6 +64,7 @@ import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
@@ -92,6 +93,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 */
 	public static void init(TypeHandler type, IndexHandler index, Class<? extends AbstractGraphFieldContainerImpl> cls) {
 		GraphRelationships.addRelation(cls, MicronodeImpl.class, "*-micronode", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
+		GraphRelationships.addRelation(cls, NodeImpl.class, "*-node", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);
 		GraphRelationships.addRelation(cls, BinaryImpl.class, "*-binary", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY, 
 				Optional.of(new String[] { BinaryGraphField.BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY, BinaryGraphField.BINARY_CONTENT_TYPE_PROPERTY_KEY, BinaryGraphField.BINARY_FILENAME_PROPERTY_KEY }), false);
 		GraphRelationships.addRelation(cls, S3BinaryImpl.class, "*-s3binary", HAS_FIELD, GraphField.FIELD_KEY_PROPERTY_KEY, StringUtils.EMPTY);

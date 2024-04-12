@@ -102,8 +102,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			.withType(NOTUNIQUE)
 			.withPostfix("bucket"));
 
-		GraphRelationships.addUnmappedRelation(NodeGraphFieldContainerImpl.class, NodeGraphFieldContainerImpl.class, "node");
-		GraphRelationships.addUnmappedRelation(NodeGraphFieldContainerImpl.class, NodeGraphFieldContainerImpl.class, "fields");
 		AbstractGraphFieldContainerImpl.init(type, index, NodeGraphFieldContainerImpl.class);
 	}
 
