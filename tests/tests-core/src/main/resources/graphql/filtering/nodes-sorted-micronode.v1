@@ -23,7 +23,9 @@
 	  	}
 	  }
 	  ) {
-	    # [$.data.nodes.elements.length()=1]
+	    # [$.data.nodes.elements.length()=2]
+	    # [$.data.nodes.elements[0].fields.micronode.address=Somewhere]
+	    # [$.data.nodes.elements[1].fields.micronode.address=Overthere]
 	    elements {
 	      uuid
 	      schema {
