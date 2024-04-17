@@ -142,6 +142,7 @@ import com.gentics.mesh.search.index.AdminIndexHandler;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Single;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -1254,6 +1255,11 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 				@Override
 				public boolean cancel() {
 					return false;
+				}
+
+				@Override
+				public Future<Void> delete() {
+					return vertx.fileSystem().delete(tmpFile.getAbsolutePath());
 				}
 			});
 

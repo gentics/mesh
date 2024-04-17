@@ -181,7 +181,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 			base = "plugins";
 		}
 		log.trace("Using base dir {" + base + "}");
-		pluginsRoot = Paths.get(base);
+		pluginsRoots.add(Paths.get(base));
 		// Re-create the plugin repo since the root dir might have changed
 		pluginRepository = createPluginRepository();
 		pluginRegistry.start();

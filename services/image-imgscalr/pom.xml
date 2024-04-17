@@ -16,7 +16,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<imgscalr-lib.version>4.2</imgscalr-lib.version>
-		<twelvemonkeys.version>3.3.2</twelvemonkeys.version>
+		<twelvemonkeys.version>3.10.1</twelvemonkeys.version>
 		<imageio.webp.version>0.1.6</imageio.webp.version>
 	</properties>
 
@@ -39,7 +39,15 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers</artifactId>
+			<artifactId>tika-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers-standard-package</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parser-image-module</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.imgscalr</groupId>

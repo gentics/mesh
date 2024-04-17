@@ -274,6 +274,11 @@ public class PluginContext implements RoutingContext {
 	}
 
 	@Override
+	public void cancelAndCleanupFileUploads() {
+		rc.cancelAndCleanupFileUploads();
+	}
+
+	@Override
 	public @Nullable Session session() {
 		return rc.session();
 	}
