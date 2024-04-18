@@ -178,7 +178,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		})).subscribe(response -> {
 			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
-			ac.send(JsonUtil.toJson(response.toString(), ac.isMinify(options.getHttpServerOptions())), OK);
+			ac.send(JsonUtil.toJson(response, ac.isMinify(options.getHttpServerOptions())), OK);
 		}, error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException he = (HttpErrorException) error;
