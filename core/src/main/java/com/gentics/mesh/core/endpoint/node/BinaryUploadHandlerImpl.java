@@ -11,6 +11,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -217,7 +218,10 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 						HibBinaryField binaryField = latestDraftVersion.getBinary(fieldName);
 						if (binaryField != null) {
 							HibBinary binary = binaryField.getBinary();
-							if (binary != null && binaryUuid.equals(binary.getUuid()) && hash.equals(binary.getSHA512Sum())) {
+							if (binary != null 
+									&& binaryUuid.equals(binary.getUuid()) 
+									&& Objects.equals(attributes.get("filename"), binaryField.getFileName())
+									&& hash.equals(binary.getSHA512Sum())) {
 								return Optional.ofNullable(nodeDao.transformToRestSync(nodeDao.findByUuid(project, nodeUuid), ac, 0, languageTag));
 							}
 						}

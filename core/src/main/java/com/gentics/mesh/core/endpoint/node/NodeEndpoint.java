@@ -38,7 +38,6 @@ import com.gentics.mesh.core.endpoint.RolePermissionHandlingProjectEndpoint;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.parameter.ImageManipulationRetrievalParameters;
 import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -223,7 +222,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
 			binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
-		});
+		}, false);
 
 		InternalEndpointRoute imageTransform = createRoute();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
@@ -293,7 +292,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryVariantsHandler.handleDeleteBinaryFieldVariants(wrap(rc), uuid, fieldName);
-		}, false);
+		}, isOrderedBlockingHandlers());
 
 		InternalEndpointRoute fieldPut = createRoute();
 		fieldPut.path("/:nodeUuid/binary/:fieldName/variants");
@@ -311,7 +310,7 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			binaryVariantsHandler.handleUpsertBinaryFieldVariants(wrap(rc), uuid, fieldName);
-		});
+		}, isOrderedBlockingHandlers());
 	}
 
 	private void addS3BinaryHandlers() {
@@ -348,9 +347,8 @@ public class NodeEndpoint extends RolePermissionHandlingProjectEndpoint {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
 			InternalActionContext ac = wrap(rc);
-
 			s3binaryUploadHandler.handleBinaryCheckResult(ac, uuid, fieldName);
-		});
+		}, false);
 
 		InternalEndpointRoute fieldMetadataExtraction = createRoute();
 		fieldMetadataExtraction.path("/:nodeUuid/s3binary/:fieldName/parseMetadata");
