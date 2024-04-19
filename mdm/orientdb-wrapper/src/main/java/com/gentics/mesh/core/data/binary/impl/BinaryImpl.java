@@ -11,6 +11,7 @@ import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
@@ -46,7 +47,9 @@ public class BinaryImpl extends MeshVertexImpl implements Binary {
 
 	@Override
 	public void delete(BulkActionContext bac) {
-		CommonTx.get().imageVariantDao().retainVariants(this, Collections.emptyList(), null, true);
+		if (PersistingImageVariantDao.isImage(this)) {
+			CommonTx.get().imageVariantDao().retainVariants(this, Collections.emptyList(), null, true);
+		}
 		BinaryStorage storage = mesh().binaryStorage();
 		bac.add(storage.delete(getUuid()));
 		getElement().remove();
