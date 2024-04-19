@@ -26,6 +26,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -86,7 +87,7 @@ public class UtilityHandler extends AbstractHandler {
 			SchemaModel schema = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 			SchemaValidationResponse response = new SchemaValidationResponse();
 			response.setStatus(ValidationStatus.VALID);
-			nodeIndexHandler.createIndexSettings(schema).ifPresentOrElse(fullSettings -> {
+			return nodeIndexHandler.createIndexSettings(schema).map(fullSettings -> {
 				response.setElasticsearch(fullSettings);
 				Map<String, JsonObject> languageElasticsearch = schema.findOverriddenSearchLanguages().collect(Collectors.toMap(
 					Function.identity(),
@@ -95,7 +96,7 @@ public class UtilityHandler extends AbstractHandler {
 				if (!languageElasticsearch.isEmpty()) {
 					response.setLanguageElasticsearch(languageElasticsearch);
 				}
-				nodeIndexHandler.validate(schema).onErrorComplete(error -> {
+				return nodeIndexHandler.validate(schema).onErrorComplete(error -> {
 					log.error("Validation of schema {" + schema.getName() + "} failed with error", error);
 					response.setStatus(ValidationStatus.INVALID);
 
@@ -113,11 +114,11 @@ public class UtilityHandler extends AbstractHandler {
 					response.setMessage(msg);
 					return true;
 				});
-			}, () -> {
+			}).orElseGet(() -> {
 				log.info("Validation of schema {" + schema.getName() + "} skipped, as being excluded from indexing");
 				response.setMessage(new GenericMessageResponse(I18NUtil.get(ac, "schema_error_index_disabled", schema.getName()), "schema_error_index_disabled"));
-			});
-			return Single.just(response);
+				return Completable.complete();
+			}).andThen(Single.just(response));
 		}).subscribe(msg -> ac.send(msg, OK), ac::fail);
 	}
 
