@@ -65,6 +65,11 @@
 					<groupId>org.graalvm.tools</groupId>
 					<artifactId>chromeinspector</artifactId>
 				</exclusion>
+				<exclusion>
+					<!-- This dependency is superseded by commons-beanutils:commons-beanutils -->
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils-core</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
