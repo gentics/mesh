@@ -147,7 +147,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			maybeContainerType,
 			maybeFilter
 				.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
-				.or(() -> permissionFilter(user, perm, Optional.empty(), Optional.empty()))
+				.or(() -> permissionFilter(user, perm, Optional.empty(), maybeContainerType))
 		));
 	}
 
