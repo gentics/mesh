@@ -387,6 +387,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
+//TODO with the new language picking logic this will fail on any unknown value, which is a breaking change.
+/*
 		String[] langs = nodeParameters.getLanguages();
 		if (langs != null) {
 			for (String languageTag : langs) {
@@ -396,7 +398,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				}
 			}
 		}
-
+*/
 		List<String> requestedLanguageTags = null;
 		if (languageTags != null && languageTags.length > 0) {
 			requestedLanguageTags = Arrays.asList(languageTags);

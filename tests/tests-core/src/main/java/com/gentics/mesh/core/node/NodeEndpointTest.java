@@ -144,7 +144,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(folderUuid);
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "error_language_not_found", "BOGUS");
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 	}
 
@@ -1598,6 +1598,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	@Ignore("We allow every input in the node read request")
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 		try (Tx tx = tx()) {
 
