@@ -138,16 +138,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			new Object[]{projectUuid},
 			mapSorting(paging),
 			maybeContainerType,
-<<<<<<< Updated upstream
 			maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
-||||||| constructed merge base
-			maybeFilter
-				.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
-				.or(() -> permissionFilter(user, perm, Optional.empty(), maybeContainerType))
-=======
-			maybeFilter
-				.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
->>>>>>> Stashed changes
 		));
 	}
 
