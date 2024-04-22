@@ -354,7 +354,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		expectPlainText("test.pdf", "application/pdf", "Enemenemu");
 		expectPlainText("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 			"Das ist ein Word Dokument für den Johannes");
-		expectPlainText("small.mp4", "application/pdf", "HandBrake 0.9.4 2009112300");
+		expectPlainText("small.mp4", "application/pdf", null);
 	}
 
 	private void expectPlainText(String fileName, String mimeType, String plainText) throws IOException {

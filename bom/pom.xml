@@ -182,6 +182,11 @@
 				<artifactId>tika-parser-microsoft-module</artifactId>
     			<version>${tika.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parser-audiovideo-module</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
 
 			<!-- Spring - bcrypt -->
 			<dependency>

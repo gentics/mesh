@@ -54,6 +54,10 @@
 			<artifactId>tika-parser-microsoft-module</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parser-audiovideo-module</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
 			<version>${imgscalr-lib.version}</version>
