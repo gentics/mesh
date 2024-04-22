@@ -138,6 +138,10 @@
 			<artifactId>tika-parser-image-module</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parser-microsoft-module</artifactId>
+		</dependency>
 
 		<!-- Spring - bcrypt -->
 		<dependency>
