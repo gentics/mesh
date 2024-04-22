@@ -29,6 +29,7 @@ import com.gentics.mesh.core.endpoint.node.TransformationResult;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
@@ -234,7 +235,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			HibBinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
 
 			// graph empty - rest empty
-			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl()));
+			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl().setCheckStatus(BinaryCheckStatus.ACCEPTED)));
 
 			// graph set - rest set - same value - different type
 			fieldA.setFileName("someText");
@@ -246,7 +247,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			// graph set - rest set - same value
 			assertTrue("The binary field filename value should be equal to a rest field with the same value", fieldA.equals(new BinaryFieldImpl()
-				.setFileName("someText")));
+				.setFileName("someText").setCheckStatus(BinaryCheckStatus.ACCEPTED)));
 		}
 	}
 
