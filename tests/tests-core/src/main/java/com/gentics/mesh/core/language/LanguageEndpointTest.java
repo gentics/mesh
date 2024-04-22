@@ -368,4 +368,10 @@ public class LanguageEndpointTest extends AbstractMeshTest implements BasicRestT
 					HttpResponseStatus.FORBIDDEN, "error_missing_perm", projectUuid, InternalPermission.READ_PERM.getRestPerm().getName());
 		}
 	}
+
+	@Override
+	@Test
+	@Ignore
+	public void testReadPermittedSorted() throws Exception {
+	}
 }

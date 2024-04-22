@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.generic;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIST;
 import static com.gentics.mesh.madl.index.VertexIndexDefinition.vertexIndex;
 
 import java.time.Instant;
@@ -51,6 +54,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
@@ -272,10 +276,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 						key = keyParts[0] + "." + keyParts[2] + "-" + field.getType().toLowerCase();
 					}
 					// else process as non-schema content field
-				} else if ("creator".equals(keyParts[0]) || "editor".equals(keyParts[0])) {
-					// pass it
-				} else {
-					throw new IllegalArgumentException("The sort key is currently not supported: " + key + ". Either an entity field (e.g. 'uuid') or node fields (e.g. 'fields.<schema_name>.<field_name>') are implemented.");
 				}
 			}
 			sorting.putSort(key,  entry.getValue());
@@ -294,7 +294,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 		} else {
 			perms = Collections.singletonList(permission);
 		}
-		String roleUuids = StreamUtil.toStream(GraphDBTx.getGraphTx().userDao().getRoles(user)).map(role -> String.format("'%s'", role.getUuid())).collect(Collectors.joining(",", "[", "]"));
+		String roleUuids = StreamUtil.toStream(GraphDBTx.getGraphTx().userDao().getRoles(user)).map(HibRole::getUuid).collect(Collectors.joining("','", "['", "']"));
 		return Optional.of(perms.stream().map(perm -> String.format(" ( %s%s CONTAINSANY %s) ", 
 				maybeOwner.map(owner -> owner + ".").orElse(StringUtils.EMPTY), perm.propertyKey(), roleUuids)).collect(Collectors.joining(" OR ")));
 	}
@@ -371,6 +371,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex, H
 									log.error("Mismatch in requested and found relations for {}.{}: requested {}, found {}", src.getKey(), src.getValue(), dst.getKey(), relation.getRelatedVertexClass());
 									// TODO throw?
 								} else {
+									// ctype may be null for Language, but Language should not reach this point.
 									srcField = relation.getEdgeFieldName().replace("[edgeType='" + ContainerType.INITIAL.getCode() + "']", "[edgeType='" + ctype.getCode() + "']");
 								}
 							}

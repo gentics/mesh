@@ -9,6 +9,8 @@ import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.cache.CacheCollectionImpl;
 import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.cache.PermissionCacheImpl;
+import com.gentics.mesh.cache.TotalsCache;
+import com.gentics.mesh.cache.TotalsCacheImpl;
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.cache.WebrootPathCacheImpl;
 import com.gentics.mesh.context.BulkActionContext;
@@ -179,6 +181,9 @@ public abstract class CommonBindModule {
 
 	@Binds
 	abstract PermissionCache bindPermissionCache(PermissionCacheImpl e);
+
+	@Binds
+	abstract TotalsCache totalsCache(TotalsCacheImpl e);
 
 	@Binds
 	abstract PluginEnvironment bindPluginEnv(PluginEnvironmentImpl e);

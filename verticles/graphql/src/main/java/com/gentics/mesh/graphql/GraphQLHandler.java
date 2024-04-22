@@ -83,7 +83,6 @@ public class GraphQLHandler {
 	 *            GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
-		vertx.rxExecuteBlocking(promise -> {
 			Timer.Sample sample = Timer.start();
 			AtomicReference<String> loggableQuery = new AtomicReference<>();
 			AtomicReference<Map<String, Object>> loggableVariables = new AtomicReference<>();
@@ -152,18 +151,16 @@ public class GraphQLHandler {
 						}
 						boolean minify = gc.isMinify(options.getHttpServerOptions());
 						gc.send(minify ? response.encode() : response.encodePrettily(), OK);
-						promise.complete();
 					} catch (TimeoutException | InterruptedException | ExecutionException e) {
 						// If an error happens while "waiting" for the result, we log the GraphQL query here.
 						log.error("GraphQL query failed after {} ms with {}:\n{}\nvariables: {}",
 								options.getGraphQLOptions().getAsyncWaitTimeout(), e.getClass().getSimpleName(), loggableQuery.get(),
 								loggableVariables.get());
 						gc.fail(e);
-						promise.fail(e);
 					}
 				});
 			} catch (Exception e) {
-				promise.fail(e);
+			gc.fail(e);
 			} finally {
 				long duration = sample.stop(graphQlTimer);
 				Long slowThreshold = options.getGraphQLOptions().getSlowThreshold();
@@ -174,9 +171,6 @@ public class GraphQLHandler {
 					}
 				}
 			}
-		})
-		.doOnError(gc::fail)
-		.subscribe();
 	}
 
 	/**

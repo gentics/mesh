@@ -422,4 +422,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 		}
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " (" + displayName + ")";
+	}
 }

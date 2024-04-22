@@ -64,6 +64,45 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 	}
 
 	/**
+	 * Count all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
+	 * permissions.
+	 *
+	 * @param ac
+	 *            The context of the request
+	 * @param permission
+	 *            Needed permission
+	 */
+	default long countAll(InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+		HibUser user = ac.getUser();
+		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
+		UserDao userDao = GraphDBTx.getGraphTx().userDao();
+
+		if (maybeFilter.isPresent() || PersistingRootDao.shouldSort(paging)) {
+			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
+			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
+
+			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
+			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
+			query.has(Direction.IN.name().toLowerCase(), id());
+			query.filter(maybeFilter
+					.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()")))
+					.or(() -> permissionFilter(user, permission, Optional.empty(), Optional.empty())));
+			if (paging.getPerPage() != null) {
+				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
+				query.limit(paging.getPerPage().intValue());
+			}
+			Optional<? extends Collection<? extends Class<?>>> maybeVariations = getPersistenceClassVariations();
+			return query.count(maybeVariations);
+		} else {
+			String idx = "e." + getRootLabel().toLowerCase() + "_out";
+			return StreamSupport.stream(graph.getEdges(idx.toLowerCase(), id()).spliterator(), false)
+					.map(edge -> edge.getVertex(Direction.IN))
+					.filter(vertex -> userDao.hasPermissionForId(user, vertex.getId(), permission))
+					.count();
+		}
+	}
+
+	/**
 	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item. This also checks
 	 * permissions.
 	 *
@@ -78,14 +117,16 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel>> exten
 		UserDao userDao = GraphDBTx.getGraphTx().userDao();
 
 		Spliterator<Edge> itemEdges;
-		if (maybeFilter.isPresent()) {
+		if (maybeFilter.isPresent() || PersistingRootDao.shouldSort(paging)) {
 			DelegatingFramedOrientGraph ograph = (DelegatingFramedOrientGraph) graph;
 			MeshOrientGraphEdgeQuery query = new MeshOrientGraphEdgeQuery(ograph.getBaseGraph(), getPersistanceClass(), getRootLabel().toUpperCase());
 
 			List<String> sortParams = paging.getSort().entrySet().stream().map(e -> e.getKey() + " " + e.getValue().getValue()).collect(Collectors.toUnmodifiableList());
 			query.setOrderPropsAndDirs(sortParams.toArray(new String[sortParams.size()]));
 			query.has(Direction.IN.name().toLowerCase(), id());
-			query.filter(maybeFilter.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()"))));
+			query.filter(maybeFilter
+					.map(filter -> parseFilter(filter, ContainerType.PUBLISHED, user, permission, Optional.of("inV()")))
+					.or(() -> permissionFilter(user, permission, Optional.empty(), Optional.empty())));
 			if (paging.getPerPage() != null) {
 				query.skip((int) (paging.getActualPage() * paging.getPerPage()));
 				query.limit(paging.getPerPage().intValue());

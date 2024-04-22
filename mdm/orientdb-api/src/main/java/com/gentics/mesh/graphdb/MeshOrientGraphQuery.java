@@ -1,11 +1,13 @@
 package com.gentics.mesh.graphdb;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.relationship.GraphRelationship;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
@@ -35,11 +37,14 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 	protected Optional<String> maybeCustomFilter = Optional.empty();
 	protected String[] orderPropsAndDirs = null;
 	protected Direction relationDirection = Direction.OUT;
-	protected final Class<?> vertexClass;
 
-	public MeshOrientGraphQuery(Graph iGraph, Class<?> vertexClass) {
+	protected final Class<?> vertexClass;
+	protected final Optional<TotalsCache> maybeTotalsCache;
+
+	protected MeshOrientGraphQuery(Graph iGraph, Class<?> vertexClass, Optional<TotalsCache> maybeTotalsCache) {
 		super(iGraph);
 		this.vertexClass = vertexClass;
+		this.maybeTotalsCache = maybeTotalsCache;
 	}
 
 	public MeshOrientGraphQuery<T, P> filter(Optional<String> maybeCustomFilter) {
@@ -80,8 +85,24 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 	 * @return
 	 */
 	public abstract Iterable<T> fetch(P extraParam);
-	
-	
+
+	/**
+	 * Fetch the results of this query.
+	 * 
+	 * @param propsAndDirs 
+	 * @param extraParam
+	 * @return
+	 */
+	public abstract long count(P extraParam);
+
+	/**
+	 * Build core query part, with no pagination and ordering.
+	 * 
+	 * @param text a builder to fill the query.
+	 * @return query params
+	 */
+	protected abstract List<Object> buildCoreQuery(StringBuilder text, P extraParam);
+
 	/**
 	 * Sanitize the 'orderBy' input against
 	 * 1. chars disallowed in the field naming
@@ -112,6 +133,49 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 			sb.append("`");
 		}
 		return sb;
+	}
+
+	protected void buildOrderEntityRequest(StringBuilder text, boolean isEdgeRequest, boolean useEdgeFilters) {
+		if (orderPropsAndDirs != null && orderPropsAndDirs.length > 0) {
+			// format: path.name direction, e.g. 'fields.fullname desc'
+			for (String propAndDir : orderPropsAndDirs) {
+				String[] sortParts = propAndDir.split(" ");
+				Class<?> currentMapping = vertexClass;
+				String sanitizedPart = sanitizeInput(sortParts[0]);
+				String[] pathParts = sanitizedPart.split("\\.");
+				Map<String, GraphRelationship> relation = GraphRelationships.findRelation(currentMapping);
+				for (int i = 0; i < pathParts.length; i++) {
+					String pathPart = pathParts[i];
+					if (relation != null && !sanitizedPart.endsWith(pathPart)
+							&& (relation.containsKey(pathPart) || (relation.containsKey("*")))) {
+						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
+						if (useEdgeFilters && relationMapping != null) {
+							if (MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
+								String partName = pathParts.length > 1 ? pathParts[1] : pathPart;
+								text.append(" LET $");
+								text.append(partName);
+								text.append(relationMapping.getRelatedVertexClass().getSimpleName());
+								text.append(" = ");
+								text.append("(SELECT `");
+								text.append(pathParts.length > 1 ? pathParts[1] : pathPart); // TODO check this
+								text.append("` FROM ");
+								text.append(relationMapping.getRelatedVertexClass().getSimpleName());
+								text.append(" WHERE uuid = $parent.$current.");
+								if (i < 1 && isEdgeRequest) {
+									text.append(relationDirection.name().toLowerCase());
+									text.append("V().");
+								}
+								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
+								text.append(")");
+								// For UUID-based relations we need no more iterations
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		text.append(" ");
 	}
 	
 	/**
@@ -148,17 +212,13 @@ abstract class MeshOrientGraphQuery<T extends Element, P> extends OrientGraphQue
 						GraphRelationship relationMapping = relation.get(pathPart) != null ? relation.get(pathPart) : relation.get("*");
 						if (useEdgeFilters && relationMapping != null) {
 							if (MeshVertex.UUID_KEY.equals(relationMapping.getEdgeName())) {
-								text.append("(SELECT `");
-								text.append(pathParts.length > 1 ? pathParts[1] : pathPart); // TODO check this
-								text.append("` FROM ");
+								String partName = pathParts.length > 1 ? pathParts[1] : pathPart;
+								text.append("$");
+								text.append(partName);
 								text.append(relationMapping.getRelatedVertexClass().getSimpleName());
-								text.append(" WHERE uuid = $parent.$current.");
-								if (i < 1 && isEdgeRequest) {
-									text.append(relationDirection.name().toLowerCase());
-									text.append("V().");
-								}
-								escapeFieldNameIfRequired(text, relationMapping.getEdgeFieldName());
-								text.append(")");
+								text.append(".");
+								text.append(partName);
+								text.append("[0]");
 								// For UUID-based relations we need no more iterations
 								break;
 							} else if (StringUtils.isBlank(relationMapping.getEdgeName())) {

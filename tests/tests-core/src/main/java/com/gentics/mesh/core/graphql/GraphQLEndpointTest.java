@@ -164,6 +164,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("node-tag-query", true, false, "draft"),
 				Arrays.asList("nodes-query", true, false, "draft"),
 				Arrays.asList("nodes-query-by-uuids", true, false, "draft"),
+				Arrays.asList("nodes-query-by-uuids-common-filters", true, false, "draft"),
 				Arrays.asList("node-breadcrumb-query", true, false, "draft"),
 				Arrays.asList("node-breadcrumb-query-with-lang", true, false, "draft"),
 				Arrays.asList("node-language-fallback-query", true, false, "draft"),
@@ -529,12 +530,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
 		//System.out.println(jsonResponse.encodePrettily());
-		if (assertion == null) {
-			assertThat(jsonResponse)
-					.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
-					.compliesToAssertions(queryName, apiVersion);
-		} else {
-			assertion.accept(jsonResponse);
+		try {
+			if (assertion == null) {
+				assertThat(jsonResponse)
+						.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
+						.compliesToAssertions(queryName, apiVersion);
+			} else {
+				assertion.accept(jsonResponse);
+			}
+		} catch (Throwable e) {
+			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, response.toJson());
+			throw e;
 		}
 	}
 

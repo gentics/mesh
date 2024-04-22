@@ -153,6 +153,12 @@ public class MicroschemaDaoWrapperImpl
 	}
 
 	@Override
+	public long countAll(HibProject root, InternalActionContext ac, InternalPermission permission,
+			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return toGraph(root).getMicroschemaContainerRoot().countAll(ac, permission, pagingInfo, maybeFilter);
+	}
+
+	@Override
 	public Page<? extends HibMicroschema> findAll(HibProject root, InternalActionContext ac,
 			PagingParameters pagingInfo, Predicate<HibMicroschema> extraFilter) {
 		return toGraph(root).getMicroschemaContainerRoot().findAll(ac, pagingInfo, e -> extraFilter.test(e));

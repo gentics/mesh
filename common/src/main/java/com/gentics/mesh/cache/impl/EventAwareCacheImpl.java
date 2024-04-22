@@ -12,6 +12,8 @@ import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.gentics.mesh.cache.EventAwareCache;
+import com.gentics.mesh.core.db.CommonTx;
+import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventBusStore;
@@ -188,13 +190,13 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			} else {
 				hitCounter.increment();
 			}
-			return value.orElse(null);
+			return value.map(v -> updatePersistedState(key, v)).orElse(null);
 		} else {
 			@Nullable Optional<V> value = cache.getIfPresent(key);
 			if (value == null) {
 				return null;
 			}
-			return value.orElse(null);
+			return value.map(v -> updatePersistedState(key, v)).orElse(null);
 		}
 	}
 
@@ -218,7 +220,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			} else {
 				missCounter.increment();
 			}
-			return value.orElse(null);
+			return value.map(v -> updatePersistedState(key, v)).orElse(null);
 		} else {
 			@Nullable Optional<V> value = cache.getIfPresent(key);
 			if (value == null) {
@@ -227,8 +229,27 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 					cache.put(key, value);
 				}
 			}
-			return value.orElse(null);
+			return value.map(v -> updatePersistedState(key, v)).orElse(null);
 		}
+	}
+
+	/**
+	 * Try to attach the cached entity to the persistence provider, if available and supported.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	protected V updatePersistedState(K key, V element) {
+		return Tx.maybeGet()
+				.map(Tx::<CommonTx>unwrap)
+				.map(ctx -> ctx.attach(element, false))
+				.map(newElement -> {
+					if (element != newElement) {
+						put(key, newElement);
+					}
+					return newElement;
+				})
+				.orElse(element);
 	}
 
 	/**
