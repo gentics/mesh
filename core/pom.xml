@@ -105,29 +105,13 @@
 		<!-- Attachment parsing -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parsers-standard-package</artifactId>
+			<artifactId>tika-parsers</artifactId>
 			<exclusions>
 				<exclusion>
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP-java7</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parser-image-module</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parser-microsoft-module</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parser-audiovideo-module</artifactId>
 		</dependency>
 
 		<!-- Metrics -->

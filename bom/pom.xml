@@ -32,7 +32,7 @@
 		<jackson.version>2.17.0</jackson.version>
 		<jackson-databind.version>2.17.0</jackson-databind.version>
 		<netty.version>4.1.78.Final</netty.version>
-		<tika.version>2.9.2</tika.version>
+		<tika.version>1.26</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>2.2</snakeyaml.version>
 		<testcontainers.version>1.17.6</testcontainers.version>
@@ -115,11 +115,6 @@
 				<artifactId>commons-codec</artifactId>
 				<version>1.15</version>
 			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-compress</artifactId>
-				<version>1.26.1</version>
-			</dependency>
 
 			<!-- HTTP Client -->
 			<dependency>
@@ -164,27 +159,7 @@
 			<!-- Tika -->
 			<dependency>
 				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-core</artifactId>
-				<version>${tika.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parsers-standard-package</artifactId>
-				<version>${tika.version}</version>
-			</dependency>
-			<dependency>
-    			<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parser-image-module</artifactId>
-    			<version>${tika.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parser-microsoft-module</artifactId>
-    			<version>${tika.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parser-audiovideo-module</artifactId>
+				<artifactId>tika-parsers</artifactId>
 				<version>${tika.version}</version>
 			</dependency>
 
