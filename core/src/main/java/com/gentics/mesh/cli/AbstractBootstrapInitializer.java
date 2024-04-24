@@ -390,6 +390,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Override
 	public void init(Mesh mesh, boolean forceResync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		// since we use xerces, we need to set this to "true"
+		System.setProperty(XmlUtil.SYSTEM_PROPERTY_IGNORE_XXE_PROTECTION_FAILURES, "true");
+
 		this.mesh = (MeshImpl) mesh;
 		PostProcessFlags flags = new PostProcessFlags(forceResync, false);
 
@@ -402,8 +405,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 
 		if (isClustered) {
-			// since we use xerces, we need to set this to "true"
-			System.setProperty(XmlUtil.SYSTEM_PROPERTY_IGNORE_XXE_PROTECTION_FAILURES, "true");
 			initCluster(options, flags, isInitMode);
 		} else {
 			initStandalone(options, flags, isInitMode);
