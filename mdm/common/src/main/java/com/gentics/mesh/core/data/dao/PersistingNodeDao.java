@@ -1467,7 +1467,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (latestDraftVersion == null) {
 			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
 			// and we get the parent node from this create request
-			if (getParentNode(node, branch.getUuid()) == null) {
+			if (!node.isBaseNode() && getParentNode(node, branch.getUuid()) == null) {
 				NodeCreateRequest createRequest = JsonUtil.readValue(ac.getBodyAsString(), NodeCreateRequest.class);
 				if (createRequest.getParentNode() == null || isEmpty(createRequest.getParentNode().getUuid())) {
 					throw error(BAD_REQUEST, "node_missing_parentnode_field");

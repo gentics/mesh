@@ -178,6 +178,11 @@ public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphH
 		public Class<? extends MeshOptionChanger> customOptionChanger() {
 			return delegate.customOptionChanger();
 		}
+
+		@Override
+		public boolean resetBetweenTests() {
+			return delegate.resetBetweenTests();
+		}
 	}
 
 	@Override

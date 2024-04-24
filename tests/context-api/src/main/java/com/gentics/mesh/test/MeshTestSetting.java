@@ -94,5 +94,15 @@ public @interface MeshTestSetting {
 	 */
 	MeshCoreOptionChanger optionChanger() default MeshCoreOptionChanger.NO_CHANGE;
 
+	/**
+	 * Class of the option changer to user
+	 * @return
+	 */
 	Class<? extends MeshOptionChanger> customOptionChanger() default NoOptionChanger.class;
+
+	/**
+	 * Flag which indicates whether the database shall be reset between test runs (default is true)
+	 * @return
+	 */
+	boolean resetBetweenTests() default true;
 }

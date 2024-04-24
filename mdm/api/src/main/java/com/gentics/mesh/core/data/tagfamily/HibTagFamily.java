@@ -14,7 +14,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibNamedBaseElement;
 import com.gentics.mesh.core.data.HibProjectElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -39,7 +39,7 @@ import com.gentics.mesh.handler.VersionUtils;
  * Domain model for tag families.
  */
 public interface HibTagFamily extends HibCoreElement<TagFamilyResponse>, HibReferenceableElement<TagFamilyReference>, 
-		HibProjectElement, HibUserTracking, HibBucketableElement, HibNamedElement {
+		HibProjectElement, HibUserTracking, HibBucketableElement, HibNamedBaseElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.TAGFAMILY, TAG_FAMILY_CREATED, TAG_FAMILY_UPDATED, TAG_FAMILY_DELETED);
 

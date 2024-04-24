@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.HibNamedBaseElement;
 import com.gentics.mesh.core.data.HibReferenceableElement;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ProjectDao;
@@ -35,7 +35,7 @@ import com.gentics.mesh.handler.VersionUtils;
 /**
  * Domain model for project.
  */
-public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenceableElement<ProjectReference>, HibUserTracking, HibBucketableElement, HibNamedElement {
+public interface HibProject extends HibCoreElement<ProjectResponse>, HibReferenceableElement<ProjectReference>, HibUserTracking, HibBucketableElement, HibNamedBaseElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.PROJECT, PROJECT_CREATED, PROJECT_UPDATED, PROJECT_DELETED);
 
