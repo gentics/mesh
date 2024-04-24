@@ -74,6 +74,10 @@
         }
       }
     },
+    "noIndex" : {
+      "type" : "boolean",
+      "description" : "'Exclude from indexing' flag."
+    },
     "fields" : {
       "type" : "array",
       "required" : true,
@@ -91,6 +95,9 @@
             "type" : "string",
             "required" : true,
             "description" : "Type of the field."
+          },
+          "noIndex" : {
+            "type" : "boolean"
           },
           "required" : {
             "type" : "boolean"

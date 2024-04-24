@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.0.18"
+version: "2.1.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -313,7 +313,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 sortBy: 
                     description: Field name to sort the result by.
                     type: string
@@ -325,7 +325,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -967,7 +967,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
                     type: string
@@ -1528,7 +1528,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "c76686f1f77c4945a7e37a52fae80b8b"
+                            "uuid" : "5f7561b81e214b8b99dc0243d711c729"
                           } ]
                         }
             responses: 
@@ -2085,13 +2085,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -2356,7 +2356,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
             responses: 
                 "200": 
                     description: Loaded role.
@@ -3061,7 +3061,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "b205a36a47fc43ef855aaab3b18d2483"
+                            "uuid" : "4baeb02043e3461996ff68e39f433c8c"
                           } ]
                         }
             responses: 
@@ -3563,13 +3563,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
@@ -3813,7 +3813,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 role: 
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
@@ -4367,7 +4367,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "d36bd6fba35044a1a795c51ba420185e"
+                            "uuid" : "f740939a2ab54e359408bc59030428ea"
                           } ]
                         }
             responses: 
@@ -4692,7 +4692,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -5130,7 +5130,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -5782,6 +5782,30 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "languages" : {
+                                      "type" : "array",
+                                      "description" : "Project's languages.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+                                        "properties" : {
+                                          "uuid" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Uuid of the element"
+                                          },
+                                          "name" : {
+                                            "type" : "string"
+                                          },
+                                          "nativeName" : {
+                                            "type" : "string"
+                                          },
+                                          "languageTag" : {
+                                            "type" : "string"
+                                          }
+                                        }
+                                      }
+                                    },
                                     "permissions" : {
                                       "type" : "object",
                                       "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
@@ -5866,7 +5890,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -5999,6 +6023,30 @@ mediaType: application/json
                                                   "uuid" : {
                                                     "type" : "string"
                                                   }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "languages" : {
+                                            "type" : "array",
+                                            "description" : "Project's languages.",
+                                            "items" : {
+                                              "type" : "object",
+                                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+                                              "properties" : {
+                                                "uuid" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Uuid of the element"
+                                                },
+                                                "name" : {
+                                                  "type" : "string"
+                                                },
+                                                "nativeName" : {
+                                                  "type" : "string"
+                                                },
+                                                "languageTag" : {
+                                                  "type" : "string"
                                                 }
                                               }
                                             }
@@ -6264,6 +6312,30 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "languages" : {
+                                      "type" : "array",
+                                      "description" : "Project's languages.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+                                        "properties" : {
+                                          "uuid" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Uuid of the element"
+                                          },
+                                          "name" : {
+                                            "type" : "string"
+                                          },
+                                          "nativeName" : {
+                                            "type" : "string"
+                                          },
+                                          "languageTag" : {
+                                            "type" : "string"
+                                          }
+                                        }
+                                      }
+                                    },
                                     "permissions" : {
                                       "type" : "object",
                                       "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
@@ -6455,6 +6527,30 @@ mediaType: application/json
                                             "uuid" : {
                                               "type" : "string"
                                             }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "languages" : {
+                                      "type" : "array",
+                                      "description" : "Project's languages.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+                                        "properties" : {
+                                          "uuid" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Uuid of the element"
+                                          },
+                                          "name" : {
+                                            "type" : "string"
+                                          },
+                                          "nativeName" : {
+                                            "type" : "string"
+                                          },
+                                          "languageTag" : {
+                                            "type" : "string"
                                           }
                                         }
                                       }
@@ -6780,7 +6876,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "612664b055f14793bb424febeaf7c840"
+                            "uuid" : "24e006662d1e4881b50c669caab1e8ad"
                           } ]
                         }
             responses: 
@@ -7100,13 +7196,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -7256,6 +7352,9 @@ mediaType: application/json
                                                   "required" : true,
                                                   "description" : "Type of the field."
                                                 },
+                                                "noIndex" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -7273,6 +7372,10 @@ mediaType: application/json
                                           "autoPurge" : {
                                             "type" : "boolean",
                                             "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                          },
+                                          "noIndex" : {
+                                            "type" : "boolean",
+                                            "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                           },
                                           "microschema" : {
                                             "type" : "boolean"
@@ -7363,39 +7466,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -7420,39 +7530,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -7545,6 +7662,9 @@ mediaType: application/json
                                     "required" : true,
                                     "description" : "Type of the field."
                                   },
+                                  "noIndex" : {
+                                    "type" : "boolean"
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -7563,6 +7683,10 @@ mediaType: application/json
                               "type" : "boolean",
                               "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
                             },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' flag."
+                            },
                             "microschema" : {
                               "type" : "boolean"
                             }
@@ -7578,6 +7702,7 @@ mediaType: application/json
                           "fields" : [ {
                             "name" : "name",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "string"
                           } ],
                           "microschema" : false
@@ -7703,6 +7828,9 @@ mediaType: application/json
                                             "required" : true,
                                             "description" : "Type of the field."
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean"
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -7720,6 +7848,10 @@ mediaType: application/json
                                     "autoPurge" : {
                                       "type" : "boolean",
                                       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                     },
                                     "microschema" : {
                                       "type" : "boolean"
@@ -7778,39 +7910,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -7842,7 +7981,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
@@ -7983,6 +8122,9 @@ mediaType: application/json
                                             "required" : true,
                                             "description" : "Type of the field."
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean"
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -8000,6 +8142,10 @@ mediaType: application/json
                                     "autoPurge" : {
                                       "type" : "boolean",
                                       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                     },
                                     "microschema" : {
                                       "type" : "boolean"
@@ -8058,39 +8204,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -8113,13 +8266,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 updateBranchNames: 
                     description: List of branch names which should be included in the update process. By default all branches which use the schema will be updated. You can thus use this parameter to only include a subset of branch in the update.
                     type: string
@@ -8200,6 +8353,9 @@ mediaType: application/json
                                     "required" : true,
                                     "description" : "Type of the field."
                                   },
+                                  "noIndex" : {
+                                    "type" : "boolean"
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -8217,6 +8373,10 @@ mediaType: application/json
                             "autoPurge" : {
                               "type" : "boolean",
                               "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
+                            },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' schema flag."
                             },
                             "microschema" : {
                               "type" : "boolean"
@@ -8351,6 +8511,9 @@ mediaType: application/json
                                             "required" : true,
                                             "description" : "Type of the field."
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean"
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -8368,6 +8531,10 @@ mediaType: application/json
                                     "autoPurge" : {
                                       "type" : "boolean",
                                       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                     },
                                     "microschema" : {
                                       "type" : "boolean"
@@ -8426,39 +8593,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -8720,6 +8894,9 @@ mediaType: application/json
                                     "required" : true,
                                     "description" : "Type of the field."
                                   },
+                                  "noIndex" : {
+                                    "type" : "boolean"
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -8737,6 +8914,10 @@ mediaType: application/json
                             "autoPurge" : {
                               "type" : "boolean",
                               "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                            },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                             },
                             "microschema" : {
                               "type" : "boolean"
@@ -8795,39 +8976,46 @@ mediaType: application/json
                             "name" : "name",
                             "label" : "Name",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "string"
                           }, {
                             "name" : "number",
                             "label" : "Number",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "html",
                             "label" : "Teaser",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "html"
                           }, {
                             "name" : "list",
                             "label" : "List of nodes",
                             "required" : false,
+                            "noIndex" : false,
                             "listType" : "node",
                             "type" : "list",
                             "allow" : [ "content", "video" ]
                           }, {
                             "name" : "node",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "node",
                             "allow" : [ "content", "video", "image" ]
                           }, {
                             "name" : "location",
                             "label" : "Location",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "micronode",
                             "allow" : [ "geolocation" ]
                           }, {
                             "name" : "locationlist",
                             "label" : "List of Locations",
                             "required" : false,
+                            "noIndex" : false,
                             "listType" : "micronode",
                             "type" : "list",
                             "allow" : [ "geolocation" ]
@@ -9138,7 +9326,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "e3a114f103754f7abbb1ccfc52beb8fd"
+                            "uuid" : "d8d2ab2da64448c78640c115da79795c"
                           } ]
                         }
             responses: 
@@ -9479,6 +9667,10 @@ mediaType: application/json
                                 }
                               }
                             },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' flag."
+                            },
                             "fields" : {
                               "type" : "array",
                               "description" : "List of microschema fields",
@@ -9495,6 +9687,9 @@ mediaType: application/json
                                     "type" : "string",
                                     "required" : true,
                                     "description" : "Type of the field."
+                                  },
+                                  "noIndex" : {
+                                    "type" : "boolean"
                                   },
                                   "required" : {
                                     "type" : "boolean"
@@ -9523,11 +9718,13 @@ mediaType: application/json
                             "name" : "longitude",
                             "label" : "Longitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "latitude",
                             "label" : "Latitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           } ],
                           "microschema" : true
@@ -9614,6 +9811,10 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "'Exclude from indexing' flag."
+                                    },
                                     "fields" : {
                                       "type" : "array",
                                       "required" : true,
@@ -9631,6 +9832,9 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "Type of the field."
+                                          },
+                                          "noIndex" : {
+                                            "type" : "boolean"
                                           },
                                           "required" : {
                                             "type" : "boolean"
@@ -9701,11 +9905,13 @@ mediaType: application/json
                                     "name" : "longitude",
                                     "label" : "Longitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "latitude",
                                     "label" : "Latitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   } ],
                                   "microschema" : true,
@@ -9732,7 +9938,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -9837,6 +10043,10 @@ mediaType: application/json
                                               }
                                             }
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean",
+                                            "description" : "'Exclude from indexing' flag."
+                                          },
                                           "fields" : {
                                             "type" : "array",
                                             "required" : true,
@@ -9854,6 +10064,9 @@ mediaType: application/json
                                                   "type" : "string",
                                                   "required" : true,
                                                   "description" : "Type of the field."
+                                                },
+                                                "noIndex" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "required" : {
                                                   "type" : "boolean"
@@ -9956,11 +10169,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -9981,11 +10196,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -10112,6 +10329,10 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "'Exclude from indexing' flag."
+                                    },
                                     "fields" : {
                                       "type" : "array",
                                       "required" : true,
@@ -10129,6 +10350,9 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "Type of the field."
+                                          },
+                                          "noIndex" : {
+                                            "type" : "boolean"
                                           },
                                           "required" : {
                                             "type" : "boolean"
@@ -10199,11 +10423,13 @@ mediaType: application/json
                                     "name" : "longitude",
                                     "label" : "Longitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "latitude",
                                     "label" : "Latitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   } ],
                                   "microschema" : true,
@@ -10254,6 +10480,10 @@ mediaType: application/json
                                 }
                               }
                             },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' flag."
+                            },
                             "fields" : {
                               "type" : "array",
                               "description" : "List of microschema fields",
@@ -10270,6 +10500,9 @@ mediaType: application/json
                                     "type" : "string",
                                     "required" : true,
                                     "description" : "Type of the field."
+                                  },
+                                  "noIndex" : {
+                                    "type" : "boolean"
                                   },
                                   "required" : {
                                     "type" : "boolean"
@@ -10492,6 +10725,10 @@ mediaType: application/json
                                 }
                               }
                             },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' flag."
+                            },
                             "fields" : {
                               "type" : "array",
                               "description" : "List of microschema fields",
@@ -10508,6 +10745,9 @@ mediaType: application/json
                                     "type" : "string",
                                     "required" : true,
                                     "description" : "Type of the field."
+                                  },
+                                  "noIndex" : {
+                                    "type" : "boolean"
                                   },
                                   "required" : {
                                     "type" : "boolean"
@@ -10536,11 +10776,13 @@ mediaType: application/json
                             "name" : "longitude",
                             "label" : "Longitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "latitude",
                             "label" : "Latitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           } ],
                           "microschema" : true
@@ -10841,7 +11083,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "4b77acd57f8146919f0d415b414b3dca"
+                            "uuid" : "ec31ca0ee51f4cf4bc9c455a5e0049e4"
                           } ]
                         }
             responses: 
@@ -11459,7 +11701,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "200": 
@@ -11552,7 +11794,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "200": 
@@ -11789,7 +12031,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "200": 
@@ -12999,7 +13241,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -13244,7 +13486,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -13352,6 +13594,10 @@ mediaType: application/json
                                               }
                                             }
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean",
+                                            "description" : "'Exclude from indexing' flag."
+                                          },
                                           "fields" : {
                                             "type" : "array",
                                             "required" : true,
@@ -13369,6 +13615,9 @@ mediaType: application/json
                                                   "type" : "string",
                                                   "required" : true,
                                                   "description" : "Type of the field."
+                                                },
+                                                "noIndex" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "required" : {
                                                   "type" : "boolean"
@@ -13471,11 +13720,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -13496,11 +13747,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -13541,7 +13794,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -14130,7 +14383,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -14257,6 +14510,30 @@ mediaType: application/json
                                                   "uuid" : {
                                                     "type" : "string"
                                                   }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "languages" : {
+                                            "type" : "array",
+                                            "description" : "Project's languages.",
+                                            "items" : {
+                                              "type" : "object",
+                                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+                                              "properties" : {
+                                                "uuid" : {
+                                                  "type" : "string",
+                                                  "required" : true,
+                                                  "description" : "Uuid of the element"
+                                                },
+                                                "name" : {
+                                                  "type" : "string"
+                                                },
+                                                "nativeName" : {
+                                                  "type" : "string"
+                                                },
+                                                "languageTag" : {
+                                                  "type" : "string"
                                                 }
                                               }
                                             }
@@ -14417,7 +14694,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -14677,7 +14954,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -14824,6 +15101,9 @@ mediaType: application/json
                                                   "required" : true,
                                                   "description" : "Type of the field."
                                                 },
+                                                "noIndex" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -14841,6 +15121,10 @@ mediaType: application/json
                                           "autoPurge" : {
                                             "type" : "boolean",
                                             "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                          },
+                                          "noIndex" : {
+                                            "type" : "boolean",
+                                            "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                           },
                                           "microschema" : {
                                             "type" : "boolean"
@@ -14931,39 +15215,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -14988,39 +15279,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -15289,7 +15587,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -15496,7 +15794,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -15753,7 +16051,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -16303,6 +16601,10 @@ mediaType: application/json
                                 }
                               }
                             },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' flag."
+                            },
                             "fields" : {
                               "type" : "array",
                               "description" : "List of microschema fields",
@@ -16319,6 +16621,9 @@ mediaType: application/json
                                     "type" : "string",
                                     "required" : true,
                                     "description" : "Type of the field."
+                                  },
+                                  "noIndex" : {
+                                    "type" : "boolean"
                                   },
                                   "required" : {
                                     "type" : "boolean"
@@ -16347,11 +16652,13 @@ mediaType: application/json
                             "name" : "longitude",
                             "label" : "Longitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "latitude",
                             "label" : "Latitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           } ],
                           "microschema" : true
@@ -16716,6 +17023,9 @@ mediaType: application/json
                                     "required" : true,
                                     "description" : "Type of the field."
                                   },
+                                  "noIndex" : {
+                                    "type" : "boolean"
+                                  },
                                   "required" : {
                                     "type" : "boolean"
                                   },
@@ -16733,6 +17043,10 @@ mediaType: application/json
                             "autoPurge" : {
                               "type" : "boolean",
                               "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
+                            },
+                            "noIndex" : {
+                              "type" : "boolean",
+                              "description" : "'Exclude from indexing' schema flag."
                             },
                             "microschema" : {
                               "type" : "boolean"
@@ -17034,7 +17348,7 @@ mediaType: application/json
     description: Endpoint which contains login and logout methods.
     /login: 
         get: 
-            description: Login via basic authentication.
+            description: Login via basic or bearer authentication.
             responses: 
                 "200": 
                     description: Login was sucessful
@@ -17049,17 +17363,22 @@ mediaType: application/json
                           "properties" : {
                             "username" : {
                               "type" : "string",
-                              "required" : true,
                               "description" : "Username of the user which should be logged in."
                             },
                             "password" : {
                               "type" : "string",
-                              "required" : true,
                               "description" : "Password of the user which should be logged in."
                             },
                             "newPassword" : {
                               "type" : "string",
                               "description" : "New password that will be set after successful login."
+                            },
+                            "apikey" : {
+                              "type" : "string",
+                              "description" : "API key of the user to log in."
+                            },
+                            "apiKey" : {
+                              "type" : "string"
                             }
                           }
                         }
@@ -17325,7 +17644,6 @@ mediaType: application/json
     /: 
         get: 
             description: Endpoint which returns version information
-            displayName: Version Information
             responses: 
                 "200": 
                     description: JSON which contains version information
@@ -17372,18 +17690,17 @@ mediaType: application/json
                                 }
                             example: |
                                 {
-                                  "meshVersion" : "2.0.18",
+                                  "meshVersion" : "2.1.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "4.3.2"
+                                  "vertxVersion" : "4.5.7"
                                 }
     /raml: 
         get: 
             description: Endpoint which provides a RAML document for all registed endpoints.
-            displayName: RAML specification
             responses: 
                 "200": 
                     description: Not yet specified
@@ -17499,6 +17816,30 @@ mediaType: application/json
                                             "uuid" : {
                                               "type" : "string"
                                             }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "languages" : {
+                                      "type" : "array",
+                                      "description" : "Project's languages.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+                                        "properties" : {
+                                          "uuid" : {
+                                            "type" : "string",
+                                            "required" : true,
+                                            "description" : "Uuid of the element"
+                                          },
+                                          "name" : {
+                                            "type" : "string"
+                                          },
+                                          "nativeName" : {
+                                            "type" : "string"
+                                          },
+                                          "languageTag" : {
+                                            "type" : "string"
                                           }
                                         }
                                       }
@@ -17683,6 +18024,10 @@ mediaType: application/json
                               "type" : "boolean",
                               "description" : "Whether the publish the node after creation."
                             },
+                            "assignLanguage" : {
+                              "type" : "boolean",
+                              "description" : "Assign a requested language to the project, if none was so far. Default is 'true'."
+                            },
                             "grant" : {
                               "type" : "object",
                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:ObjectPermissionGrantRequest",
@@ -17781,7 +18126,8 @@ mediaType: application/json
                             "name" : "DeLorean DMC-12",
                             "description" : "The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."
                           },
-                          "publish" : false
+                          "publish" : false,
+                          "assignLanguage" : true
                         }
             responses: 
                 "201": 
@@ -18252,7 +18598,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 sortBy: 
                     description: Field name to sort the result by.
                     type: string
@@ -18264,7 +18610,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -18880,7 +19226,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
                     type: string
@@ -19390,13 +19736,11 @@ mediaType: application/json
                           "properties" : {
                             "language" : {
                               "type" : "string",
-                              "required" : true,
                               "description" : "ISO 639-1 language tag of the node content."
                             },
                             "fields" : {
                               "type" : "object",
                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:FieldMap",
-                              "required" : true,
                               "description" : "Dynamic map with fields of the node content.",
                               "properties" : {
                                 "empty" : {
@@ -19433,6 +19777,10 @@ mediaType: application/json
                             "publish" : {
                               "type" : "boolean",
                               "description" : "Whether the publish the node after updating."
+                            },
+                            "assignLanguage" : {
+                              "type" : "boolean",
+                              "description" : "Assign a requested language to the project, if none was so far."
                             },
                             "grant" : {
                               "type" : "object",
@@ -19516,6 +19864,104 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "manipulation" : {
+                              "type" : "object",
+                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageManipulationRequest",
+                              "description" : "Image manipulation changes request.",
+                              "properties" : {
+                                "variants" : {
+                                  "type" : "array",
+                                  "description" : "This field contains a set of image manipulation variants to be manipulated upon.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantRequest",
+                                    "properties" : {
+                                      "width" : {
+                                        "type" : "string",
+                                        "description" : "Desired image width. Set to 'auto' to compute automatically from the image height and ratio."
+                                      },
+                                      "height" : {
+                                        "type" : "string",
+                                        "description" : "Desired image height. Set to 'auto' to compute automatically from the image width and ratio."
+                                      },
+                                      "rect" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                        "description" : "Desired image crop parameters.",
+                                        "properties" : {
+                                          "startX" : {
+                                            "type" : "integer"
+                                          },
+                                          "startY" : {
+                                            "type" : "integer"
+                                          },
+                                          "width" : {
+                                            "type" : "integer"
+                                          },
+                                          "height" : {
+                                            "type" : "integer"
+                                          }
+                                        }
+                                      },
+                                      "cropMode" : {
+                                        "type" : "string",
+                                        "description" : "The image crop mode.",
+                                        "enum" : [ "RECT", "FOCALPOINT" ]
+                                      },
+                                      "resizeMode" : {
+                                        "type" : "string",
+                                        "description" : "The image resize mode.",
+                                        "enum" : [ "FORCE", "SMART", "PROP" ]
+                                      },
+                                      "focalPoint" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                        "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                        "properties" : {
+                                          "x" : {
+                                            "type" : "number",
+                                            "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                          },
+                                          "y" : {
+                                            "type" : "number",
+                                            "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                          }
+                                        }
+                                      },
+                                      "focalZoom" : {
+                                        "type" : "number",
+                                        "description" : "The image focal point zoom factor."
+                                      },
+                                      "focalPointZoom" : {
+                                        "type" : "number"
+                                      },
+                                      "size" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
+                                        "properties" : {
+                                          "x" : {
+                                            "type" : "integer"
+                                          },
+                                          "y" : {
+                                            "type" : "integer"
+                                          },
+                                          "ratio" : {
+                                            "type" : "number"
+                                          }
+                                        }
+                                      },
+                                      "cacheKey" : {
+                                        "type" : "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "deleteOther" : {
+                                  "type" : "boolean",
+                                  "description" : "This flag states that all the existing variants, except the mentioned in `variants` field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped."
+                                }
+                              }
                             }
                           }
                         }
@@ -19581,7 +20027,8 @@ mediaType: application/json
                             } ]
                           },
                           "version" : "1.0",
-                          "publish" : false
+                          "publish" : false,
+                          "assignLanguage" : true
                         }
             responses: 
                 "404": 
@@ -20012,7 +20459,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "404": 
@@ -20701,6 +21148,520 @@ mediaType: application/json
                                 }
                 "204": 
                     description: ""
+    /{nodeUuid}/binary/{fieldName}/variants: 
+        uriParameters: 
+            fieldName: 
+                displayName: fieldName
+                description: Name of the image field.
+                type: string
+                required: true
+                repeat: false
+                example: image
+            nodeUuid: 
+                displayName: nodeUuid
+                description: Uuid of the node.
+                type: string
+                required: true
+                repeat: false
+                example: adaf48da8c124049af48da8c12a0493e
+        get: 
+            description: Get the list of image manipulation variants of the binary, possessed by a field with the given name.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            responses: 
+                "200": 
+                    description: A list of image variants have been returned.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantsResponse",
+                                  "properties" : {
+                                    "variants" : {
+                                      "type" : "array",
+                                      "description" : "List of image manipulation variants.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantResponse",
+                                        "properties" : {
+                                          "width" : {
+                                            "type" : "integer",
+                                            "description" : "Image width."
+                                          },
+                                          "height" : {
+                                            "type" : "integer",
+                                            "description" : "Image height."
+                                          },
+                                          "rect" : {
+                                            "type" : "object",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                            "description" : "Image crop parameters.",
+                                            "properties" : {
+                                              "startX" : {
+                                                "type" : "integer"
+                                              },
+                                              "startY" : {
+                                                "type" : "integer"
+                                              },
+                                              "width" : {
+                                                "type" : "integer"
+                                              },
+                                              "height" : {
+                                                "type" : "integer"
+                                              }
+                                            }
+                                          },
+                                          "cropMode" : {
+                                            "type" : "string",
+                                            "description" : "The image crop mode.",
+                                            "enum" : [ "RECT", "FOCALPOINT" ]
+                                          },
+                                          "resizeMode" : {
+                                            "type" : "string",
+                                            "description" : "The image resize mode.",
+                                            "enum" : [ "FORCE", "SMART", "PROP" ]
+                                          },
+                                          "focalPoint" : {
+                                            "type" : "object",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                            "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                            "properties" : {
+                                              "x" : {
+                                                "type" : "number",
+                                                "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                              },
+                                              "y" : {
+                                                "type" : "number",
+                                                "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                              }
+                                            }
+                                          },
+                                          "focalZoom" : {
+                                            "type" : "number",
+                                            "description" : "The image focal point zoom factor."
+                                          },
+                                          "fileSize" : {
+                                            "type" : "integer",
+                                            "description" : "The image file size."
+                                          },
+                                          "origin" : {
+                                            "type" : "boolean",
+                                            "description" : "This flag states that this variant is an original image."
+                                          },
+                                          "auto" : {
+                                            "type" : "boolean",
+                                            "description" : "This flag states that this variant is a proportional (aka 'auto') image."
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "variants" : [ {
+                                    "width" : 500,
+                                    "height" : 100,
+                                    "origin" : true,
+                                    "auto" : false
+                                  }, {
+                                    "rect" : {
+                                      "startX" : 10,
+                                      "startY" : 10,
+                                      "width" : 20,
+                                      "height" : 20
+                                    },
+                                    "cropMode" : "RECT",
+                                    "origin" : false,
+                                    "auto" : false
+                                  }, {
+                                    "height" : 50,
+                                    "origin" : false,
+                                    "auto" : false
+                                  } ]
+                                }
+        delete: 
+            description: Delete unused image manipulation variants of the binary, referenced by a field with the given name.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            responses: 
+                "404": 
+                    description: The node could not be found.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+                                  "properties" : {
+                                    "message" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
+                                    },
+                                    "internalMessage" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Internal developer friendly message"
+                                    },
+                                    "properties" : {
+                                      "type" : "object",
+                                      "description" : "Map of i18n properties which were used to construct the provided message",
+                                      "additionalProperties" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:java:lang:Object"
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
+                "204": 
+                    description: Image variants have been deleted.
+        post: 
+            description: Add new image variants to the binary, referenced by a field with the given name.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            body: 
+                application/json: 
+                    schema: |
+                        {
+                          "type" : "object",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageManipulationRequest",
+                          "properties" : {
+                            "variants" : {
+                              "type" : "array",
+                              "description" : "This field contains a set of image manipulation variants to be manipulated upon.",
+                              "items" : {
+                                "type" : "object",
+                                "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantRequest",
+                                "properties" : {
+                                  "width" : {
+                                    "type" : "string",
+                                    "description" : "Desired image width. Set to 'auto' to compute automatically from the image height and ratio."
+                                  },
+                                  "height" : {
+                                    "type" : "string",
+                                    "description" : "Desired image height. Set to 'auto' to compute automatically from the image width and ratio."
+                                  },
+                                  "rect" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                    "description" : "Desired image crop parameters.",
+                                    "properties" : {
+                                      "startX" : {
+                                        "type" : "integer"
+                                      },
+                                      "startY" : {
+                                        "type" : "integer"
+                                      },
+                                      "width" : {
+                                        "type" : "integer"
+                                      },
+                                      "height" : {
+                                        "type" : "integer"
+                                      }
+                                    }
+                                  },
+                                  "cropMode" : {
+                                    "type" : "string",
+                                    "description" : "The image crop mode.",
+                                    "enum" : [ "RECT", "FOCALPOINT" ]
+                                  },
+                                  "resizeMode" : {
+                                    "type" : "string",
+                                    "description" : "The image resize mode.",
+                                    "enum" : [ "FORCE", "SMART", "PROP" ]
+                                  },
+                                  "focalPoint" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                    "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                    "properties" : {
+                                      "x" : {
+                                        "type" : "number",
+                                        "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                      },
+                                      "y" : {
+                                        "type" : "number",
+                                        "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                      }
+                                    }
+                                  },
+                                  "focalZoom" : {
+                                    "type" : "number",
+                                    "description" : "The image focal point zoom factor."
+                                  },
+                                  "focalPointZoom" : {
+                                    "type" : "number"
+                                  },
+                                  "size" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
+                                    "properties" : {
+                                      "x" : {
+                                        "type" : "integer"
+                                      },
+                                      "y" : {
+                                        "type" : "integer"
+                                      },
+                                      "ratio" : {
+                                        "type" : "number"
+                                      }
+                                    }
+                                  },
+                                  "cacheKey" : {
+                                    "type" : "string"
+                                  }
+                                }
+                              }
+                            },
+                            "deleteOther" : {
+                              "type" : "boolean",
+                              "description" : "This flag states that all the existing variants, except the mentioned in `variants` field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped."
+                            }
+                          }
+                        }
+                    example: |
+                        {
+                          "variants" : [ {
+                            "width" : "auto",
+                            "height" : "100",
+                            "resizeMode" : "SMART",
+                            "cacheKey" : "resizeSMARTrwautorh100"
+                          }, {
+                            "resizeMode" : "SMART",
+                            "focalPoint" : {
+                              "x" : 0.3,
+                              "y" : 0.3
+                            },
+                            "focalZoom" : 0.6,
+                            "focalPointZoom" : 0.6,
+                            "cacheKey" : "resizeSMARTfp0.3-0.3fpz0.6"
+                          } ],
+                          "deleteOther" : false
+                        }
+            responses: 
+                "404": 
+                    description: The node or the field could not be found.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:GenericMessageResponse",
+                                  "properties" : {
+                                    "message" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Enduser friendly translated message. Translation depends on the 'Accept-Language' header value"
+                                    },
+                                    "internalMessage" : {
+                                      "type" : "string",
+                                      "required" : true,
+                                      "description" : "Internal developer friendly message"
+                                    },
+                                    "properties" : {
+                                      "type" : "object",
+                                      "description" : "Map of i18n properties which were used to construct the provided message",
+                                      "additionalProperties" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:java:lang:Object"
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
+                "200": 
+                    description: An updated list of variants is returned
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantsResponse",
+                                  "properties" : {
+                                    "variants" : {
+                                      "type" : "array",
+                                      "description" : "List of image manipulation variants.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantResponse",
+                                        "properties" : {
+                                          "width" : {
+                                            "type" : "integer",
+                                            "description" : "Image width."
+                                          },
+                                          "height" : {
+                                            "type" : "integer",
+                                            "description" : "Image height."
+                                          },
+                                          "rect" : {
+                                            "type" : "object",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                            "description" : "Image crop parameters.",
+                                            "properties" : {
+                                              "startX" : {
+                                                "type" : "integer"
+                                              },
+                                              "startY" : {
+                                                "type" : "integer"
+                                              },
+                                              "width" : {
+                                                "type" : "integer"
+                                              },
+                                              "height" : {
+                                                "type" : "integer"
+                                              }
+                                            }
+                                          },
+                                          "cropMode" : {
+                                            "type" : "string",
+                                            "description" : "The image crop mode.",
+                                            "enum" : [ "RECT", "FOCALPOINT" ]
+                                          },
+                                          "resizeMode" : {
+                                            "type" : "string",
+                                            "description" : "The image resize mode.",
+                                            "enum" : [ "FORCE", "SMART", "PROP" ]
+                                          },
+                                          "focalPoint" : {
+                                            "type" : "object",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                            "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                            "properties" : {
+                                              "x" : {
+                                                "type" : "number",
+                                                "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                              },
+                                              "y" : {
+                                                "type" : "number",
+                                                "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                              }
+                                            }
+                                          },
+                                          "focalZoom" : {
+                                            "type" : "number",
+                                            "description" : "The image focal point zoom factor."
+                                          },
+                                          "fileSize" : {
+                                            "type" : "integer",
+                                            "description" : "The image file size."
+                                          },
+                                          "origin" : {
+                                            "type" : "boolean",
+                                            "description" : "This flag states that this variant is an original image."
+                                          },
+                                          "auto" : {
+                                            "type" : "boolean",
+                                            "description" : "This flag states that this variant is a proportional (aka 'auto') image."
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "variants" : [ {
+                                    "width" : 500,
+                                    "height" : 100,
+                                    "origin" : true,
+                                    "auto" : false
+                                  }, {
+                                    "rect" : {
+                                      "startX" : 10,
+                                      "startY" : 10,
+                                      "width" : 20,
+                                      "height" : 20
+                                    },
+                                    "cropMode" : "RECT",
+                                    "origin" : false,
+                                    "auto" : false
+                                  }, {
+                                    "height" : 50,
+                                    "origin" : false,
+                                    "auto" : false
+                                  } ]
+                                }
     /{nodeUuid}/binaryTransform/{fieldName}: 
         uriParameters: 
             fieldName: 
@@ -21315,13 +22276,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -22309,14 +23270,13 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         get: 
             description: Returns a navigation object for the provided node.
-            displayName: Navigation
             queryParameters: 
                 maxDepth: 
                     description: Specifies the maximum depth for the requested navigation tree structure.
                     type: number
                     required: false
                     repeat: false
-                    default: "10"
+                    default: 10
                     example: "5"
                 includeAll: 
                     description: If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
@@ -22820,7 +23780,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "404": 
@@ -22942,7 +23902,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "404": 
@@ -23227,7 +24187,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "f0e98364d9a84ae3b83d55da6388b0e0"
+                            "uuid" : "d56bd8ba7c174b47b17dbacd17322839"
                           } ]
                         }
             responses: 
@@ -24670,7 +25630,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
@@ -25707,7 +26667,6 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         get: 
             description: Returns a list of versions.
-            displayName: Versions
             queryParameters: 
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -25864,7 +26823,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -26691,7 +27650,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "11fbc601d0084e2a8d20e9b274102bb8"
+                            "uuid" : "4fdafdaafbb243d2aeab07cb0ec98cbe"
                           } ]
                         }
             responses: 
@@ -27180,13 +28139,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -27455,7 +28414,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
             responses: 
                 "200": 
                     description: Loaded tag.
@@ -27799,7 +28758,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -28581,7 +29540,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "ff5a2909987a49a58920b82b726cb070"
+                            "uuid" : "5d90f16dfc18417d8ea53c123fbe2f12"
                           } ]
                         }
             responses: 
@@ -28903,7 +29862,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "10"
+                    default: 10
                     example: "5"
                 includeAll: 
                     description: If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
@@ -29635,13 +30594,11 @@ mediaType: application/json
                           "properties" : {
                             "language" : {
                               "type" : "string",
-                              "required" : true,
                               "description" : "ISO 639-1 language tag of the node content."
                             },
                             "fields" : {
                               "type" : "object",
                               "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:FieldMap",
-                              "required" : true,
                               "description" : "Dynamic map with fields of the node content.",
                               "properties" : {
                                 "empty" : {
@@ -29678,6 +30635,10 @@ mediaType: application/json
                             "publish" : {
                               "type" : "boolean",
                               "description" : "Whether the publish the node after updating."
+                            },
+                            "assignLanguage" : {
+                              "type" : "boolean",
+                              "description" : "Assign a requested language to the project, if none was so far."
                             },
                             "grant" : {
                               "type" : "object",
@@ -29761,6 +30722,104 @@ mediaType: application/json
                                   }
                                 }
                               }
+                            },
+                            "manipulation" : {
+                              "type" : "object",
+                              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageManipulationRequest",
+                              "description" : "Image manipulation changes request.",
+                              "properties" : {
+                                "variants" : {
+                                  "type" : "array",
+                                  "description" : "This field contains a set of image manipulation variants to be manipulated upon.",
+                                  "items" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantRequest",
+                                    "properties" : {
+                                      "width" : {
+                                        "type" : "string",
+                                        "description" : "Desired image width. Set to 'auto' to compute automatically from the image height and ratio."
+                                      },
+                                      "height" : {
+                                        "type" : "string",
+                                        "description" : "Desired image height. Set to 'auto' to compute automatically from the image width and ratio."
+                                      },
+                                      "rect" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                        "description" : "Desired image crop parameters.",
+                                        "properties" : {
+                                          "startX" : {
+                                            "type" : "integer"
+                                          },
+                                          "startY" : {
+                                            "type" : "integer"
+                                          },
+                                          "width" : {
+                                            "type" : "integer"
+                                          },
+                                          "height" : {
+                                            "type" : "integer"
+                                          }
+                                        }
+                                      },
+                                      "cropMode" : {
+                                        "type" : "string",
+                                        "description" : "The image crop mode.",
+                                        "enum" : [ "RECT", "FOCALPOINT" ]
+                                      },
+                                      "resizeMode" : {
+                                        "type" : "string",
+                                        "description" : "The image resize mode.",
+                                        "enum" : [ "FORCE", "SMART", "PROP" ]
+                                      },
+                                      "focalPoint" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                        "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                        "properties" : {
+                                          "x" : {
+                                            "type" : "number",
+                                            "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                          },
+                                          "y" : {
+                                            "type" : "number",
+                                            "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                          }
+                                        }
+                                      },
+                                      "focalZoom" : {
+                                        "type" : "number",
+                                        "description" : "The image focal point zoom factor."
+                                      },
+                                      "focalPointZoom" : {
+                                        "type" : "number"
+                                      },
+                                      "size" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
+                                        "properties" : {
+                                          "x" : {
+                                            "type" : "integer"
+                                          },
+                                          "y" : {
+                                            "type" : "integer"
+                                          },
+                                          "ratio" : {
+                                            "type" : "number"
+                                          }
+                                        }
+                                      },
+                                      "cacheKey" : {
+                                        "type" : "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "deleteOther" : {
+                                  "type" : "boolean",
+                                  "description" : "This flag states that all the existing variants, except the mentioned in `variants` field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped."
+                                }
+                              }
                             }
                           }
                         }
@@ -29826,7 +30885,8 @@ mediaType: application/json
                             } ]
                           },
                           "version" : "1.0",
-                          "publish" : false
+                          "publish" : false,
+                          "assignLanguage" : true
                         }
             responses: 
                 "200": 
@@ -30584,11 +31644,11 @@ mediaType: application/json
                 example: /News/2015/Images/flower.jpg
             fieldName: 
                 displayName: fieldName
-                description: Name of the field which should be acquired.
+                description: Name of the field which should be processed.
                 type: string
                 required: true
                 repeat: false
-                example: stringField
+                example: binaryField
         get: 
             description: Download the field with the given name from the given path. You can use image query parameters for crop and resize if the binary data represents an image.
             queryParameters: 
@@ -30670,6 +31730,266 @@ mediaType: application/json
                             required: false
                             repeat: false
                             example: node
+        post: 
+            description: Update the field variants with the given name from the given path.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            body: 
+                application/json: 
+                    schema: |
+                        {
+                          "type" : "object",
+                          "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageManipulationRequest",
+                          "properties" : {
+                            "variants" : {
+                              "type" : "array",
+                              "description" : "This field contains a set of image manipulation variants to be manipulated upon.",
+                              "items" : {
+                                "type" : "object",
+                                "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantRequest",
+                                "properties" : {
+                                  "width" : {
+                                    "type" : "string",
+                                    "description" : "Desired image width. Set to 'auto' to compute automatically from the image height and ratio."
+                                  },
+                                  "height" : {
+                                    "type" : "string",
+                                    "description" : "Desired image height. Set to 'auto' to compute automatically from the image width and ratio."
+                                  },
+                                  "rect" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                    "description" : "Desired image crop parameters.",
+                                    "properties" : {
+                                      "startX" : {
+                                        "type" : "integer"
+                                      },
+                                      "startY" : {
+                                        "type" : "integer"
+                                      },
+                                      "width" : {
+                                        "type" : "integer"
+                                      },
+                                      "height" : {
+                                        "type" : "integer"
+                                      }
+                                    }
+                                  },
+                                  "cropMode" : {
+                                    "type" : "string",
+                                    "description" : "The image crop mode.",
+                                    "enum" : [ "RECT", "FOCALPOINT" ]
+                                  },
+                                  "resizeMode" : {
+                                    "type" : "string",
+                                    "description" : "The image resize mode.",
+                                    "enum" : [ "FORCE", "SMART", "PROP" ]
+                                  },
+                                  "focalPoint" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                    "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                    "properties" : {
+                                      "x" : {
+                                        "type" : "number",
+                                        "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                      },
+                                      "y" : {
+                                        "type" : "number",
+                                        "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                      }
+                                    }
+                                  },
+                                  "focalZoom" : {
+                                    "type" : "number",
+                                    "description" : "The image focal point zoom factor."
+                                  },
+                                  "focalPointZoom" : {
+                                    "type" : "number"
+                                  },
+                                  "size" : {
+                                    "type" : "object",
+                                    "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
+                                    "properties" : {
+                                      "x" : {
+                                        "type" : "integer"
+                                      },
+                                      "y" : {
+                                        "type" : "integer"
+                                      },
+                                      "ratio" : {
+                                        "type" : "number"
+                                      }
+                                    }
+                                  },
+                                  "cacheKey" : {
+                                    "type" : "string"
+                                  }
+                                }
+                              }
+                            },
+                            "deleteOther" : {
+                              "type" : "boolean",
+                              "description" : "This flag states that all the existing variants, except the mentioned in `variants` field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped."
+                            }
+                          }
+                        }
+                    example: |
+                        {
+                          "variants" : [ {
+                            "width" : "auto",
+                            "height" : "100",
+                            "resizeMode" : "SMART",
+                            "cacheKey" : "resizeSMARTrwautorh100"
+                          }, {
+                            "resizeMode" : "SMART",
+                            "focalPoint" : {
+                              "x" : 0.3,
+                              "y" : 0.3
+                            },
+                            "focalZoom" : 0.6,
+                            "focalPointZoom" : 0.6,
+                            "cacheKey" : "resizeSMARTfp0.3-0.3fpz0.6"
+                          } ],
+                          "deleteOther" : false
+                        }
+            responses: 
+                "200": 
+                    description: JSON for a variants of the binary field of the node for the given path.
+                    body: 
+                        application/json: 
+                            schema: |
+                                {
+                                  "type" : "object",
+                                  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantsResponse",
+                                  "properties" : {
+                                    "variants" : {
+                                      "type" : "array",
+                                      "description" : "List of image manipulation variants.",
+                                      "items" : {
+                                        "type" : "object",
+                                        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantResponse",
+                                        "properties" : {
+                                          "width" : {
+                                            "type" : "integer",
+                                            "description" : "Image width."
+                                          },
+                                          "height" : {
+                                            "type" : "integer",
+                                            "description" : "Image height."
+                                          },
+                                          "rect" : {
+                                            "type" : "object",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+                                            "description" : "Image crop parameters.",
+                                            "properties" : {
+                                              "startX" : {
+                                                "type" : "integer"
+                                              },
+                                              "startY" : {
+                                                "type" : "integer"
+                                              },
+                                              "width" : {
+                                                "type" : "integer"
+                                              },
+                                              "height" : {
+                                                "type" : "integer"
+                                              }
+                                            }
+                                          },
+                                          "cropMode" : {
+                                            "type" : "string",
+                                            "description" : "The image crop mode.",
+                                            "enum" : [ "RECT", "FOCALPOINT" ]
+                                          },
+                                          "resizeMode" : {
+                                            "type" : "string",
+                                            "description" : "The image resize mode.",
+                                            "enum" : [ "FORCE", "SMART", "PROP" ]
+                                          },
+                                          "focalPoint" : {
+                                            "type" : "object",
+                                            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+                                            "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+                                            "properties" : {
+                                              "x" : {
+                                                "type" : "number",
+                                                "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+                                              },
+                                              "y" : {
+                                                "type" : "number",
+                                                "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+                                              }
+                                            }
+                                          },
+                                          "focalZoom" : {
+                                            "type" : "number",
+                                            "description" : "The image focal point zoom factor."
+                                          },
+                                          "fileSize" : {
+                                            "type" : "integer",
+                                            "description" : "The image file size."
+                                          },
+                                          "origin" : {
+                                            "type" : "boolean",
+                                            "description" : "This flag states that this variant is an original image."
+                                          },
+                                          "auto" : {
+                                            "type" : "boolean",
+                                            "description" : "This flag states that this variant is a proportional (aka 'auto') image."
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                            example: |
+                                {
+                                  "variants" : [ {
+                                    "width" : 500,
+                                    "height" : 100,
+                                    "origin" : true,
+                                    "auto" : false
+                                  }, {
+                                    "rect" : {
+                                      "startX" : 10,
+                                      "startY" : 10,
+                                      "width" : 20,
+                                      "height" : 20
+                                    },
+                                    "cropMode" : "RECT",
+                                    "origin" : false,
+                                    "auto" : false
+                                  }, {
+                                    "height" : 50,
+                                    "origin" : false,
+                                    "auto" : false
+                                  } ]
+                                }
 /{project}/branches: 
     displayName: /{project}/branches
     description: Provides endpoints which allow the manipulation of branches.
@@ -30934,13 +32254,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -31267,7 +32587,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
             responses: 
                 "200": 
                     description: Loaded branch.
@@ -31909,7 +33229,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -32418,7 +33738,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "79565157084f482daee9c9f7cb891a3a"
+                            "uuid" : "4b499d31cf62469e918c65b2ac1a9dc3"
                           } ]
                         }
             responses: 
@@ -32743,7 +34063,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -34951,6 +36271,9 @@ mediaType: application/json
                                                   "required" : true,
                                                   "description" : "Type of the field."
                                                 },
+                                                "noIndex" : {
+                                                  "type" : "boolean"
+                                                },
                                                 "required" : {
                                                   "type" : "boolean"
                                                 },
@@ -34968,6 +36291,10 @@ mediaType: application/json
                                           "autoPurge" : {
                                             "type" : "boolean",
                                             "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                          },
+                                          "noIndex" : {
+                                            "type" : "boolean",
+                                            "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                           },
                                           "microschema" : {
                                             "type" : "boolean"
@@ -35058,39 +36385,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -35115,39 +36449,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -35301,6 +36642,9 @@ mediaType: application/json
                                             "required" : true,
                                             "description" : "Type of the field."
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean"
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -35318,6 +36662,10 @@ mediaType: application/json
                                     "autoPurge" : {
                                       "type" : "boolean",
                                       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                     },
                                     "microschema" : {
                                       "type" : "boolean"
@@ -35376,39 +36724,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -35546,6 +36901,9 @@ mediaType: application/json
                                             "required" : true,
                                             "description" : "Type of the field."
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean"
+                                          },
                                           "required" : {
                                             "type" : "boolean"
                                           },
@@ -35563,6 +36921,10 @@ mediaType: application/json
                                     "autoPurge" : {
                                       "type" : "boolean",
                                       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update."
+                                    },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "Flag which indicates whether nodes which use this schema should be excluded from the indexing."
                                     },
                                     "microschema" : {
                                       "type" : "boolean"
@@ -35621,39 +36983,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -35769,6 +37138,10 @@ mediaType: application/json
                                               }
                                             }
                                           },
+                                          "noIndex" : {
+                                            "type" : "boolean",
+                                            "description" : "'Exclude from indexing' flag."
+                                          },
                                           "fields" : {
                                             "type" : "array",
                                             "required" : true,
@@ -35786,6 +37159,9 @@ mediaType: application/json
                                                   "type" : "string",
                                                   "required" : true,
                                                   "description" : "Type of the field."
+                                                },
+                                                "noIndex" : {
+                                                  "type" : "boolean"
                                                 },
                                                 "required" : {
                                                   "type" : "boolean"
@@ -35888,11 +37264,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -35913,11 +37291,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -36030,6 +37410,10 @@ mediaType: application/json
                                         }
                                       }
                                     },
+                                    "noIndex" : {
+                                      "type" : "boolean",
+                                      "description" : "'Exclude from indexing' flag."
+                                    },
                                     "fields" : {
                                       "type" : "array",
                                       "required" : true,
@@ -36047,6 +37431,9 @@ mediaType: application/json
                                             "type" : "string",
                                             "required" : true,
                                             "description" : "Type of the field."
+                                          },
+                                          "noIndex" : {
+                                            "type" : "boolean"
                                           },
                                           "required" : {
                                             "type" : "boolean"
@@ -36117,11 +37504,13 @@ mediaType: application/json
                                     "name" : "longitude",
                                     "label" : "Longitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "latitude",
                                     "label" : "Latitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   } ],
                                   "microschema" : true,

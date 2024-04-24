@@ -71,6 +71,9 @@
 | *MESH_S3_CORS_ALLOWED_ORIGINS*
 | Override the configured AWS S3 CORS allowed origins.
 
+| *MESH_HTTP_USE_ALPN*
+| Override the configured ALPN usage flag.
+
 | *MESH_ELASTICSEARCH_SYNC_BATCH_SIZE*
 | Override the search sync batch size
 
@@ -83,11 +86,11 @@
 | *MESH_MIGRATION_TRIGGER_INTERVAL*
 | Override the migration trigger interval
 
-| *MESH_CACHE_PATH_SIZE*
-| Override the path cache size.
-
 | *MESH_GRAPH_EXPORT_DIRECTORY*
 | Override the graph database export directory.
+
+| *MESH_CACHE_PATH_SIZE*
+| Override the path cache size.
 
 | *MESH_VERTX_EVENT_BUS_ERROR_THRESHOLD*
 | Override the Vert.x eventBus error threshold in ms.
@@ -101,14 +104,17 @@
 | *MESH_HTTP_ENABLE*
 | Override the configured http server flag.
 
-| *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
-| Override the max form attribute size
-
 | *MESH_BINARY_UPLOAD_LIMIT*
 | Override the configured binary byte upload limit.
 
+| *MESH_HTTP_SERVER_MAX_FORM_ATTRIBUTE_SIZE*
+| Override the max form attribute size
+
 | *MESH_STORAGE_DISK_QUOTA_WARN_THRESHOLD*
 | Overwrite the disk quota warn threshold.
+
+| *MESH_PLUGIN_USE_HTTP2*
+| Override the HTTP/2 usage flag for plugins.
 
 | *MESH_MONITORING_ENABLED*
 | Override the configured monitoring enabled flag.
@@ -152,11 +158,11 @@
 | *MESH_ELASTICSEARCH_USERNAME*
 | Override the configured Elasticsearch connection username.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
-| Override the cluster topology lock timeout in ms.
-
 | *MESH_GRAPH_BACKUP_DIRECTORY*
 | Override the graph database backup directory.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_TIMEOUT*
+| Override the cluster topology lock timeout in ms.
 
 | *MESH_VERTX_EVENT_BUS_CHECK_INTERVAL*
 | Override the Vert.x eventBus check interval in ms.
@@ -175,6 +181,9 @@
 
 | *MESH_ELASTICSEARCH_CA_PATH*
 | Override the configured common authority certificate path.
+
+| *MESH_IMAGE_MANIPULATION_MODE*
+| Override the image manipulation mode.
 
 | *MESH_ELASTICSEARCH_TIMEOUT*
 | Override the configured elasticsearch server timeout.
@@ -221,11 +230,11 @@
 | *MESH_HTTP_CORS_ENABLE*
 | Override the configured CORS enable flag.
 
-| *MESH_HTTP_SSL_ENABLE*
-| Override the configured https server flag.
-
 | *MESH_GRAPH_STARTSERVER*
 | Override the graph database server flag.
+
+| *MESH_HTTP_SSL_ENABLE*
+| Override the configured https server flag.
 
 | *MESH_HTTP_VERTICLE_AMOUNT*
 | Override the http verticle amount.
@@ -244,6 +253,9 @@
 
 | *MESH_VERTX_WORKER_POOL_SIZE*
 | Override the configured Vert.x worker pool size.
+
+| *MESH_HTTP_MINIFY_JSON*
+| Override the minify JSON flag.
 
 | *MESH_GRAPHQL_ASYNC_WAIT_TIMEOUT*
 | Override the configured graphQl async wait timeout.
@@ -284,11 +296,11 @@
 | *MESH_ELASTICSEARCH_PREFIX*
 | Override the configured elasticsearch prefix.
 
-| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
-| Override the cluster topology lock delay in ms.
-
 | *MESH_BINARY_DOCUMENT_PARSER*
 | Override the document parser enabled flag.
+
+| *MESH_CLUSTER_TOPOLOGY_LOCK_DELAY*
+| Override the cluster topology lock delay in ms.
 
 | *MESH_AUTH_KEYSTORE_PASS*
 | Override the configured keystore password.
@@ -329,11 +341,11 @@
 | *MESH_S3_BINARY_LINK_RESOLVER*
 | Override the configured AWS S3 link resolver.
 
-| *MESH_UPDATECHECK*
-| Override the configured updatecheck flag.
-
 | *MESH_BINARY_DIR*
 | Override the configured binary data directory.
+
+| *MESH_UPDATECHECK*
+| Override the configured updatecheck flag.
 
 | *MESH_AUTH_JWT_ALGO*
 | Override the configured algorithm which is used to sign the JWT.

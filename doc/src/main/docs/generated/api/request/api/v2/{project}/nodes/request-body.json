@@ -10,5 +10,6 @@
     "name" : "DeLorean DMC-12",
     "description" : "The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."
   },
-  "publish" : false
+  "publish" : false,
+  "assignLanguage" : true
 }

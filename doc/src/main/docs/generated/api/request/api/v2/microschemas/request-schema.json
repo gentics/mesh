@@ -28,6 +28,10 @@
         }
       }
     },
+    "noIndex" : {
+      "type" : "boolean",
+      "description" : "'Exclude from indexing' flag."
+    },
     "fields" : {
       "type" : "array",
       "description" : "List of microschema fields",
@@ -44,6 +48,9 @@
             "type" : "string",
             "required" : true,
             "description" : "Type of the field."
+          },
+          "noIndex" : {
+            "type" : "boolean"
           },
           "required" : {
             "type" : "boolean"

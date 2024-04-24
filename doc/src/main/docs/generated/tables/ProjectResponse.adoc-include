@@ -27,6 +27,11 @@
 | object
 | User reference of the editor of the element.
 
+| languages
+| false
+| array
+| Project&#x27;s languages.
+
 | name
 | true
 | string

@@ -7,8 +7,13 @@
 | Description
 
 
+| assignLanguage
+| false
+| boolean
+| Assign a requested language to the project, if none was so far.
+
 | fields
-| true
+| false
 | object
 | Dynamic map with fields of the node content.
 
@@ -18,9 +23,14 @@
 | Permissions to be granted to roles on the updated node.
 
 | language
-| true
+| false
 | string
 | ISO 639-1 language tag of the node content.
+
+| manipulation
+| false
+| object
+| Image manipulation changes request.
 
 | publish
 | false
