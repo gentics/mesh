@@ -196,6 +196,21 @@ stage("Setup Build Environment") {
 
 			stage("Deploy") {
 				if (Boolean.valueOf(params.runDeploy)) {
+					withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						sh 'cd js'
+
+						// Install dependencies
+						sh 'npm ci --no-audit --no-fund'
+
+						// Build all JS packages
+						sh 'npm run nx -- run-many --targets build'
+
+						// TODO: Add publishing of the build packages
+
+						// Go back to the project root
+						sh 'cd ..'
+					}
+
 					if (Boolean.valueOf(params.runDocker)) {
 						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 							sh 'docker login -u $repoUsername -p $repoPassword gtx-docker-releases-staging-mesh.docker.apa-it.at'
