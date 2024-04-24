@@ -1,0 +1,51 @@
+{
+  "name": "@gentics/mesh-js",
+  "version": "2.1.0-SNAPSHOT",
+  "license": "Apache-2.0",
+  "engines": {
+    "npm": "^10.5.0",
+    "node": "^20.12.0"
+  },
+  "scripts": {
+    "prestart": "nvm-guard",
+    "prestest": "nvm-guard",
+    "prepack": "nvm-guard",
+    "nx": "nx",
+    "start": "nx serve",
+    "serve": "nx serve",
+    "build": "nx build",
+    "report:list": "npm list --prod --json > target/dependencies.json",
+    "report:outdated": "npm outdated --json --long > target/outdated.json || true"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "16.2.12",
+    "@angular/compiler": "16.2.12",
+    "@angular/core": "16.2.12",
+    "rxjs": "^6.6.7"
+  },
+  "devDependencies": {
+    "@angular-devkit/architect": "0.1602.14",
+    "@angular-devkit/build-angular": "16.2.14",
+    "@angular-devkit/core": "16.2.14",
+    "@angular-devkit/schematics": "16.2.14",
+    "@nx/angular": "16.10.0",
+    "@nx/devkit": "16.10.0",
+    "@nx/eslint-plugin": "16.10.0",
+    "@nx/jest": "16.10.0",
+    "@nx/js": "16.10.0",
+    "@nx/workspace": "16.10.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.1",
+    "jest": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "ng-packagr": "16.2.3",
+    "nvm-guard": "^1.0.4",
+    "nx": "16.10.0",
+    "postcss-preset-env": "^9.5.9",
+    "ts-jest": "^29.1.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.6"
+  }
+}
+

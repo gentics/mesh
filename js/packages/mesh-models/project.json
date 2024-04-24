@@ -1,0 +1,44 @@
+{
+    "name": "mesh-models",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/mesh-models/src",
+    "projectType": "library",
+    "tags": ["lib", "models"],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "outputPath": "dist/mesh-models",
+                "tsConfig": "packages/mesh-models/tsconfig.lib.json",
+                "packageJson": "packages/mesh-models/package.json",
+                "main": "packages/mesh-models/src/public-api.ts",
+                "assets": ["packages/mesh-models/*.md"]
+            }
+        },
+        "lint": {
+            "executor": "@nx/linter:eslint",
+            "outputs": ["{options.outputFile}"],
+            "options": {
+                "lintFilePatterns": [
+                    "packages/mesh-models/**/*.ts",
+                    "packages/mesh-models/package.json"
+                ]
+            }
+        },
+        "test": {
+            "executor": "@nx/jest:jest",
+            "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+            "options": {
+                "jestConfig": "packages/mesh-models/jest.config.ts",
+                "passWithNoTests": true
+            },
+            "configurations": {
+                "ci": {
+                    "ci": true,
+                    "codeCoverage": true
+                }
+            }
+        }
+    }
+}
