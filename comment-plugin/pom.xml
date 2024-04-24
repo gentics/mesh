@@ -34,7 +34,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jdk8</artifactId>
-			<version>2.9.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>

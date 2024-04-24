@@ -10,7 +10,7 @@
               "name": "Keycloak Server",
               "description": "Version used by automated tests.",
               "current": "8.0.1",
-              "latest": "23.0.7"
+              "latest": "24.0.3"
             }
           ]
         }
