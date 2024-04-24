@@ -74,6 +74,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
+import com.hazelcast.internal.util.XmlUtil;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -401,6 +402,8 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 
 		if (isClustered) {
+			// since we use xerces, we need to set this to "true"
+			System.setProperty(XmlUtil.SYSTEM_PROPERTY_IGNORE_XXE_PROTECTION_FAILURES, "true");
 			initCluster(options, flags, isInitMode);
 		} else {
 			initStandalone(options, flags, isInitMode);
@@ -538,7 +541,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			byte[] ipBytes = InetAddress.getByName(destination).getAddress();
 
 			try (DatagramSocket datagramSocket = new DatagramSocket()) {
-				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 0);
+				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 10002);
 				return datagramSocket.getLocalAddress().getHostAddress();
 			}
 		} catch (Exception e) {

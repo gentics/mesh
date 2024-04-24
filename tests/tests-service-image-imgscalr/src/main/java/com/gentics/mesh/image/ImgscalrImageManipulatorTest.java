@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.image.BufferedImage;
@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.dao.BinaryDao;
+import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
@@ -58,6 +58,8 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulatorTest.class);
 
+	private BinaryStorage mockedBinaryStorage;
+
 	private ImgscalrImageManipulator manipulator;
 
 	@Before
@@ -67,7 +69,8 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		ImageManipulatorOptions options = new ImageManipulatorOptions();
 
 		options.setImageCacheDirectory(cacheDir.getAbsolutePath());
-		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, null);
+		mockedBinaryStorage = mock(BinaryStorage.class);
+		manipulator = new ImgscalrImageManipulator(Vertx.vertx(), options, mockedBinaryStorage, null);
 	}
 
 	@Test
@@ -76,8 +79,11 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			log.debug("Handling " + imageName);
 
 			HibBinary hb = createMockedBinary(path);
-			BinaryDao dao = mockBinaryDao();
-			when(dao.openBlockingStream(any(HibBinary.class))).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(path));
+			try {
+				when(mockedBinaryStorage.openBlockingStream(null)).thenReturn(ImageTestUtil.class.getResourceAsStream(path));
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 			Single<byte[]> obs = manipulator
 				.handleResize(hb, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
 				.map(file -> Files.readAllBytes(Paths.get(file)));

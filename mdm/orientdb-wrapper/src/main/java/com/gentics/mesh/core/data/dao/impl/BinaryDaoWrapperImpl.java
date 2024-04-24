@@ -11,10 +11,7 @@ import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.AbstractDaoWrapper;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
 import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.storage.BinaryStorage;
-import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.result.Result;
-import com.gentics.mesh.graphdb.spi.GraphDatabase;
 
 import dagger.Lazy;
 
@@ -27,7 +24,7 @@ public class BinaryDaoWrapperImpl extends AbstractDaoWrapper<HibBinary> implemen
 	private final Binaries binaries;
 
 	@Inject
-	public BinaryDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Binaries binaries, GraphDatabase database, ImageManipulator imageManipulator, BinaryStorage binaryStorage) {
+	public BinaryDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Binaries binaries) {
 		super(boot);
 		this.binaries = binaries;
 	}

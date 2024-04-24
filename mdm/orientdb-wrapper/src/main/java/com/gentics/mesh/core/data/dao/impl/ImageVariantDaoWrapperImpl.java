@@ -40,11 +40,11 @@ import dagger.Lazy;
 @Singleton
 public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVariant> implements ImageVariantDaoWrapper {
 
-	private final ImageManipulator imageManipulator;
-	private final BinaryStorage binaryStorage;
+	private final Lazy<ImageManipulator> imageManipulator;
+	private final Lazy<BinaryStorage> binaryStorage;
 
 	@Inject
-	public ImageVariantDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, ImageManipulator imageManipulator, BinaryStorage binaryStorage) {
+	public ImageVariantDaoWrapperImpl(Lazy<OrientDBBootstrapInitializer> boot, Lazy<ImageManipulator> imageManipulator, Lazy<BinaryStorage> binaryStorage) {
 		super(boot);
 		this.imageManipulator = imageManipulator;
 		this.binaryStorage = binaryStorage;
@@ -74,7 +74,7 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 		ImageVariant imageVariant = toGraph(variant);
 		toGraph(binary).unlinkOut(imageVariant, GraphRelationships.HAS_VARIANTS);
 		imageVariant.remove();
-		binaryStorage.delete(variantUuid).blockingGet();
+		binaryStorage.get().delete(variantUuid).blockingGet();
 		return true;
 	}
 
@@ -87,10 +87,10 @@ public class ImageVariantDaoWrapperImpl extends AbstractDaoWrapper<HibImageVaria
 		
 		String variantUuid = variant.getUuid();
 		
-		long filesize = imageManipulator.handleResize(binary, request)
+		long filesize = imageManipulator.get().handleResize(binary, request)
 				.flatMap(cachePath -> {
 					long size = new File(cachePath).length();
-					return binaryStorage.moveInPlace(variantUuid, cachePath, false).toSingleDefault(size);
+					return binaryStorage.get().moveInPlace(variantUuid, cachePath, false).toSingleDefault(size);
 				})
 				.blockingGet();
 

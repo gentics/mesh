@@ -142,7 +142,7 @@ public class JsonUtilTest {
 			fail("json parsing should fail");
 		} catch (GenericRestException e) {
 			assertEquals("error_json_malformed", e.getI18nKey());
-			assertThat(e.getI18nParameters()).containsExactly("1", "3",
+			assertThat(e.getI18nParameters()).containsExactly("1", "2",
 				"Unexpected character ('b' (code 98)): was expecting double-quote to start field name");
 		}
 	}

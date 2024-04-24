@@ -75,15 +75,15 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	private S3BinaryStorage s3BinaryStorage;
 
 	public ImgscalrImageManipulator(Vertx vertx, MeshOptions options, BinaryStorage binaryStorage, S3BinaryStorage s3BinaryStorage) {
-		this(vertx, options.getImageOptions(), s3BinaryStorage);
-		this.binaryStorage = binaryStorage;
+		this(vertx, options.getImageOptions(), binaryStorage, s3BinaryStorage);
 	}
 
-	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, S3BinaryStorage s3BinaryStorage) {
+	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options, BinaryStorage binaryStorage, S3BinaryStorage s3BinaryStorage) {
 		super(vertx, options);
 		focalPointModifier = new FocalPointModifier(options);
 		// 10 seconds
 		workerPool = vertx.createSharedWorkerExecutor("resizeWorker", 5, Duration.ofSeconds(10).toNanos());
+		this.binaryStorage = binaryStorage;
 		this.s3BinaryStorage = s3BinaryStorage;
 	}
 

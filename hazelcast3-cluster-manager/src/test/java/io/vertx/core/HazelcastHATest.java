@@ -16,17 +16,16 @@
 
 package io.vertx.core;
 
-import io.vertx.Lifecycle;
-import io.vertx.LoggingTestWatcher;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import org.junit.Rule;
-
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Rule;
+
+import io.vertx.LoggingTestWatcher;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -46,11 +45,6 @@ public class HazelcastHATest extends HATest {
   @Override
   protected ClusterManager getClusterManager() {
     return new HazelcastClusterManager();
-  }
-
-  @Override
-  protected void closeClustered(List<Vertx> clustered) throws Exception {
-    Lifecycle.closeClustered(clustered);
   }
 
   @Override

@@ -16,19 +16,19 @@
 
 package io.vertx.it.litemembers;
 
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import io.vertx.Lifecycle;
-import io.vertx.core.ComplexHATest;
-import io.vertx.core.Vertx;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.hazelcast.ConfigUtil;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+
+import io.vertx.Lifecycle;
+import io.vertx.core.ComplexHATest;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.spi.cluster.hazelcast.ConfigUtil;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * @author Thomas Segismont
@@ -58,10 +58,5 @@ for (int i = 0; i < DATA_NODES; i++) {
   protected void tearDown() throws Exception {
     super.tearDown();
     Lifecycle.closeDataNodes(dataNodes);
-  }
-
-  @Override
-  protected void closeClustered(List<Vertx> clustered) throws Exception {
-    Lifecycle.closeClustered(clustered);
   }
 }

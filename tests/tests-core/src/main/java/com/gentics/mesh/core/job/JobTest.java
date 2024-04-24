@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.cxf.jaxrs.utils.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.JobDao;
