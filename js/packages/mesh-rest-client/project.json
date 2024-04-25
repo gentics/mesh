@@ -40,6 +40,12 @@
                     "codeCoverage": true
                 }
             }
+        },
+        "nx-release-publish": {
+            "executor": "@nx/js:release-publish",
+            "options": {
+                "packageRoot": "{workspaceRoot}/dist/mesh-rest-client"
+            }
         }
     }
 }

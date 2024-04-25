@@ -15,14 +15,14 @@ import {
     MeshProjectAPI,
     MeshRestClient,
     MeshRestClientConfig,
-    MeshRestClientRequest,
+    MeshRestClientRequestData,
     MeshRoleAPI,
     MeshSchemaAPI,
     MeshServerAPI,
     MeshTagFamiliesAPI,
     MeshTagsAPI,
     MeshUserAPI,
-    RequestMethod,
+    RequestMethod
 } from '@gentics/mesh-rest-client';
 import { AngularMeshClientDriver } from './angular-mesh-client-driver';
 
@@ -61,7 +61,7 @@ export class MeshRestClientService {
         path: string,
         queryParams: Record<string, any>,
         requestHeaders: Record<string, string>,
-    ): MeshRestClientRequest {
+    ): MeshRestClientRequestData {
         return this.client.prepareRequest(requestMethod, path, queryParams, requestHeaders);
     }
 

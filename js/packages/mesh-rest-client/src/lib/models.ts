@@ -88,9 +88,9 @@ import {
 
 export interface MeshClientDriver {
     performJsonRequest(
-        request: MeshRestClientRequest,
+        request: MeshRestClientRequestData,
         body?: null | string,
-    ): Promise<Record<string, any>>;
+    ): MeshRestClientResponse<Record<string, any>>;
 }
 
 export interface MeshRestClientConfig {
@@ -108,11 +108,16 @@ export interface MeshRestClientInterceptorData {
     headers: Record<string, string>;
 }
 
-export interface MeshRestClientRequest {
+export interface MeshRestClientRequestData {
     method: RequestMethod;
     url: string;
     params: Record<string, string>;
     headers: Record<string, string>;
+}
+
+export interface MeshRestClientResponse<T> {
+    send: () => Promise<T>;
+    cancel: () => void;
 }
 
 export type MeshRestClientInterceptor = (data: MeshRestClientInterceptorData) => MeshRestClientInterceptorData;
@@ -147,160 +152,160 @@ export enum MeshAPIVersion {
 }
 
 export interface MeshAuthAPI {
-    login(body: LoginRequest): Promise<LoginResponse>;
-    me(): Promise<UserResponse>;
-    logout(): Promise<GenericMessageResponse>;
+    login(body: LoginRequest): MeshRestClientResponse<LoginResponse>;
+    me(): MeshRestClientResponse<UserResponse>;
+    logout(): MeshRestClientResponse<GenericMessageResponse>;
 }
 
 export interface MeshUserAPI {
-    list(params?: UserListOptions): Promise<UserListResponse>;
-    create(body: UserCreateRequest): Promise<UserResponse>;
-    get(uuid: string, params?: UserLoadOptions): Promise<UserResponse>;
-    update(uuid: string, body: UserUpdateRequest): Promise<UserResponse>;
-    delete(uuid: string): Promise<GenericMessageResponse>;
+    list(params?: UserListOptions): MeshRestClientResponse<UserListResponse>;
+    create(body: UserCreateRequest): MeshRestClientResponse<UserResponse>;
+    get(uuid: string, params?: UserLoadOptions): MeshRestClientResponse<UserResponse>;
+    update(uuid: string, body: UserUpdateRequest): MeshRestClientResponse<UserResponse>;
+    delete(uuid: string): MeshRestClientResponse<GenericMessageResponse>;
 
-    createAPIToken(uuid: string): Promise<UserAPITokenResponse>;
+    createAPIToken(uuid: string): MeshRestClientResponse<UserAPITokenResponse>;
 }
 
 export interface MeshRoleAPI {
-    list(params?: RoleListOptions): Promise<RoleListResponse>;
-    create(body: RoleCreateRequest): Promise<RoleResponse>;
-    get(uuid: string, params?: RoleLoadOptions): Promise<RoleResponse>;
-    update(uuid: string, body: RoleUpdateRequest): Promise<RoleResponse>;
-    delete(uuid: string): Promise<GenericMessageResponse>;
+    list(params?: RoleListOptions): MeshRestClientResponse<RoleListResponse>;
+    create(body: RoleCreateRequest): MeshRestClientResponse<RoleResponse>;
+    get(uuid: string, params?: RoleLoadOptions): MeshRestClientResponse<RoleResponse>;
+    update(uuid: string, body: RoleUpdateRequest): MeshRestClientResponse<RoleResponse>;
+    delete(uuid: string): MeshRestClientResponse<GenericMessageResponse>;
 }
 
 export interface MeshGroupAPI {
-    list(params?: GroupListOptions): Promise<GroupListResponse>;
-    create(body: GroupCreateRequest): Promise<GroupResponse>;
-    get(uuid: string, params?: GroupLoadOptions): Promise<GroupResponse>;
-    update(uuid: string, body: GroupUpdateRequest): Promise<GroupResponse>;
-    delete(uuid: string): Promise<GenericMessageResponse>;
+    list(params?: GroupListOptions): MeshRestClientResponse<GroupListResponse>;
+    create(body: GroupCreateRequest): MeshRestClientResponse<GroupResponse>;
+    get(uuid: string, params?: GroupLoadOptions): MeshRestClientResponse<GroupResponse>;
+    update(uuid: string, body: GroupUpdateRequest): MeshRestClientResponse<GroupResponse>;
+    delete(uuid: string): MeshRestClientResponse<GenericMessageResponse>;
 
-    getRoles(uuid: string, params?: RoleListOptions): Promise<RoleListResponse>;
-    assignRole(uuid: string, roleUuid: string): Promise<GroupResponse>;
-    unassignRole(uuid: string, roleUuid: string): Promise<void>;
+    getRoles(uuid: string, params?: RoleListOptions): MeshRestClientResponse<RoleListResponse>;
+    assignRole(uuid: string, roleUuid: string): MeshRestClientResponse<GroupResponse>;
+    unassignRole(uuid: string, roleUuid: string): MeshRestClientResponse<void>;
 
-    getUsers(uuid: string, params?: UserListOptions): Promise<UserListResponse>;
-    assignUser(uuid: string, userUuid: string): Promise<GroupResponse>;
-    unassignUser(uuid: string, userUuid: string): Promise<void>;
+    getUsers(uuid: string, params?: UserListOptions): MeshRestClientResponse<UserListResponse>;
+    assignUser(uuid: string, userUuid: string): MeshRestClientResponse<GroupResponse>;
+    unassignUser(uuid: string, userUuid: string): MeshRestClientResponse<void>;
 }
 
 export interface MeshPermissionAPI {
-    get(roleUuid: string, path: string): Promise<RolePermissionResponse>;
-    set(roleUuid: string, path: string, body: RolePermissionRequest): Promise<GenericMessageResponse>;
+    get(roleUuid: string, path: string): MeshRestClientResponse<RolePermissionResponse>;
+    set(roleUuid: string, path: string, body: RolePermissionRequest): MeshRestClientResponse<GenericMessageResponse>;
 
-    check(userUuid: string, path: string): Promise<RolePermissionResponse>;
+    check(userUuid: string, path: string): MeshRestClientResponse<RolePermissionResponse>;
 }
 
 export interface MeshProjectAPI {
-    list(params?: ProjectListOptions): Promise<ProjectListResponse>;
-    create(body: ProjectCreateRequest): Promise<ProjectResponse>;
-    get(project: string, params?: ProjectLoadOptions): Promise<ProjectResponse>;
-    update(project: string, body: ProjectUpdateRequest): Promise<ProjectResponse>;
-    delete(project: string): Promise<GenericMessageResponse>;
+    list(params?: ProjectListOptions): MeshRestClientResponse<ProjectListResponse>;
+    create(body: ProjectCreateRequest): MeshRestClientResponse<ProjectResponse>;
+    get(project: string, params?: ProjectLoadOptions): MeshRestClientResponse<ProjectResponse>;
+    update(project: string, body: ProjectUpdateRequest): MeshRestClientResponse<ProjectResponse>;
+    delete(project: string): MeshRestClientResponse<GenericMessageResponse>;
 
-    listSchemas(project: string, params?: SchemaListOptions): Promise<SchemaListResponse>;
-    getSchema(project: string, uuid: string): Promise<SchemaResponse>;
-    assignSchema(project: string, uuid: string): Promise<SchemaResponse>;
-    unassignSchema(project: string, uuid: string): Promise<void>;
+    listSchemas(project: string, params?: SchemaListOptions): MeshRestClientResponse<SchemaListResponse>;
+    getSchema(project: string, uuid: string): MeshRestClientResponse<SchemaResponse>;
+    assignSchema(project: string, uuid: string): MeshRestClientResponse<SchemaResponse>;
+    unassignSchema(project: string, uuid: string): MeshRestClientResponse<void>;
 
-    listMicroschemas(project: string, params?: MicroschemaListOptions): Promise<MicroschemaListResponse>;
-    getMicroschema(project: string, uuid: string): Promise<MicroschemaResponse>;
-    assignMicroschema(project: string, uuid: string): Promise<MicroschemaResponse>;
-    unassignMicroschema(project: string, uuid: string): Promise<void>;
+    listMicroschemas(project: string, params?: MicroschemaListOptions): MeshRestClientResponse<MicroschemaListResponse>;
+    getMicroschema(project: string, uuid: string): MeshRestClientResponse<MicroschemaResponse>;
+    assignMicroschema(project: string, uuid: string): MeshRestClientResponse<MicroschemaResponse>;
+    unassignMicroschema(project: string, uuid: string): MeshRestClientResponse<void>;
 }
 
 export interface MeshSchemaAPI {
-    list(params?: SchemaListOptions): Promise<SchemaListResponse>;
-    create(body: SchemaCreateRequest): Promise<SchemaResponse>;
-    get(uuid: string, params?: SchemaLoadOptions): Promise<SchemaResponse>;
-    update(uuid: string, body: SchemaUpdateRequest): Promise<SchemaResponse>;
-    delete(uuid: string): Promise<void>;
+    list(params?: SchemaListOptions): MeshRestClientResponse<SchemaListResponse>;
+    create(body: SchemaCreateRequest): MeshRestClientResponse<SchemaResponse>;
+    get(uuid: string, params?: SchemaLoadOptions): MeshRestClientResponse<SchemaResponse>;
+    update(uuid: string, body: SchemaUpdateRequest): MeshRestClientResponse<SchemaResponse>;
+    delete(uuid: string): MeshRestClientResponse<void>;
 
-    diff(uuid: string, body: SchemaUpdateRequest): Promise<SchemaChanges>;
-    changes(uuid: string, body: SchemaChanges): Promise<GenericMessageResponse>;
+    diff(uuid: string, body: SchemaUpdateRequest): MeshRestClientResponse<SchemaChanges>;
+    changes(uuid: string, body: SchemaChanges): MeshRestClientResponse<GenericMessageResponse>;
 }
 
 export interface MeshMicroschemaAPI {
-    list(params?: MicroschemaListOptions): Promise<MicroschemaListResponse>;
-    create(body: MicroschemaCreateRequest): Promise<MicroschemaResponse>;
-    get(uuid: string, params?: MicroschemaLoadOptions): Promise<MicroschemaResponse>;
-    update(uuid: string, body: MicroschemaUpdateRequest): Promise<MicroschemaResponse>;
-    delete(uuid: string): Promise<void>;
+    list(params?: MicroschemaListOptions): MeshRestClientResponse<MicroschemaListResponse>;
+    create(body: MicroschemaCreateRequest): MeshRestClientResponse<MicroschemaResponse>;
+    get(uuid: string, params?: MicroschemaLoadOptions): MeshRestClientResponse<MicroschemaResponse>;
+    update(uuid: string, body: MicroschemaUpdateRequest): MeshRestClientResponse<MicroschemaResponse>;
+    delete(uuid: string): MeshRestClientResponse<void>;
 
-    diff(uuid: string, body: MicroschemaUpdateRequest): Promise<SchemaChanges>;
-    changes(uuid: string, body: SchemaChanges): Promise<GenericMessageResponse>;
+    diff(uuid: string, body: MicroschemaUpdateRequest): MeshRestClientResponse<SchemaChanges>;
+    changes(uuid: string, body: SchemaChanges): MeshRestClientResponse<GenericMessageResponse>;
 }
 
 export interface MeshNodeAPI {
-    list(project: string, params?: NodeListOptions): Promise<NodeListResponse>;
-    create(project: string, body: NodeCreateRequest): Promise<NodeResponse>;
-    get(project: string, uuid: string, prams?: NodeLoadOptions): Promise<NodeResponse>;
-    update(project: string, uuid: string, body: NodeUpdateRequest): Promise<NodeResponse>;
-    delete(project: string, uuid: string, params?: NodeDeleteOptions): Promise<GenericMessageResponse>;
-    deleteLanguage(project: string, uuid: string, language: string): Promise<GenericMessageResponse>;
-    children(project: string, uuid: string, params?: NodeListOptions): Promise<NodeListResponse>;
-    versions(project: string, uuid: string): Promise<NodeVersionsResponse>;
+    list(project: string, params?: NodeListOptions): MeshRestClientResponse<NodeListResponse>;
+    create(project: string, body: NodeCreateRequest): MeshRestClientResponse<NodeResponse>;
+    get(project: string, uuid: string, prams?: NodeLoadOptions): MeshRestClientResponse<NodeResponse>;
+    update(project: string, uuid: string, body: NodeUpdateRequest): MeshRestClientResponse<NodeResponse>;
+    delete(project: string, uuid: string, params?: NodeDeleteOptions): MeshRestClientResponse<GenericMessageResponse>;
+    deleteLanguage(project: string, uuid: string, language: string): MeshRestClientResponse<GenericMessageResponse>;
+    children(project: string, uuid: string, params?: NodeListOptions): MeshRestClientResponse<NodeListResponse>;
+    versions(project: string, uuid: string): MeshRestClientResponse<NodeVersionsResponse>;
 
-    publishStatus(project: string, uuid: string, language?: string): Promise<PublishStatusResponse>;
-    publish(project: string, uuid: string, language?: string, params?: PublishOptions): Promise<PublishStatusResponse>;
-    unpublish(project: string, uuid: string, language?: string): Promise<GenericMessageResponse>;
+    publishStatus(project: string, uuid: string, language?: string): MeshRestClientResponse<PublishStatusResponse>;
+    publish(project: string, uuid: string, language?: string, params?: PublishOptions): MeshRestClientResponse<PublishStatusResponse>;
+    unpublish(project: string, uuid: string, language?: string): MeshRestClientResponse<GenericMessageResponse>;
 
-    listTags(project: string, uuid: string): Promise<TagListResponse>;
-    setTags(project: string, uuid: string, tags: TagListUpdateRequest): Promise<TagListResponse>;
-    assignTag(project: string, uuid: string, tag: string): Promise<NodeResponse>;
-    removeTag(project: string, uuid: string, tag: string): Promise<GenericMessageResponse>;
+    listTags(project: string, uuid: string): MeshRestClientResponse<TagListResponse>;
+    setTags(project: string, uuid: string, tags: TagListUpdateRequest): MeshRestClientResponse<TagListResponse>;
+    assignTag(project: string, uuid: string, tag: string): MeshRestClientResponse<NodeResponse>;
+    removeTag(project: string, uuid: string, tag: string): MeshRestClientResponse<GenericMessageResponse>;
 }
 
 export interface MeshBranchAPI {
-    list(project: string, params?: BranchListOptions): Promise<BranchListResponse>;
-    create(project: string, body: BranchCreateRequest): Promise<BranchResponse>;
-    get(project: string, uuid: string): Promise<BranchResponse>;
-    update(project: string, uuid: string, body: BranchUpdateRequest): Promise<BranchResponse>;
-    asLatest(project: string, uuid: string): Promise<BranchResponse>;
+    list(project: string, params?: BranchListOptions): MeshRestClientResponse<BranchListResponse>;
+    create(project: string, body: BranchCreateRequest): MeshRestClientResponse<BranchResponse>;
+    get(project: string, uuid: string): MeshRestClientResponse<BranchResponse>;
+    update(project: string, uuid: string, body: BranchUpdateRequest): MeshRestClientResponse<BranchResponse>;
+    asLatest(project: string, uuid: string): MeshRestClientResponse<BranchResponse>;
 }
 
 export interface MeshTagFamiliesAPI {
-    list(project: string, params?: TagFamilyListOptions): Promise<TagFamilyListResponse>;
-    create(project: string, body: TagFamilyCreateRequest): Promise<TagFamilyResponse>;
-    get(project: string, uuid: string, params?: TagFamilyLoadOptions): Promise<TagFamilyResponse>;
-    update(project: string, uuid: string, body: TagFamilyUpdateRequest): Promise<TagFamilyResponse>;
-    delete(project: string, uuid: string): Promise<void>;
+    list(project: string, params?: TagFamilyListOptions): MeshRestClientResponse<TagFamilyListResponse>;
+    create(project: string, body: TagFamilyCreateRequest): MeshRestClientResponse<TagFamilyResponse>;
+    get(project: string, uuid: string, params?: TagFamilyLoadOptions): MeshRestClientResponse<TagFamilyResponse>;
+    update(project: string, uuid: string, body: TagFamilyUpdateRequest): MeshRestClientResponse<TagFamilyResponse>;
+    delete(project: string, uuid: string): MeshRestClientResponse<void>;
 }
 
 export interface MeshTagsAPI {
-    list(project: string, familyUuid: string, params?: TagListOptions): Promise<TagListResponse>;
-    create(project: string, familyUuid: string, body: TagCreateRequest): Promise<TagResponse>;
-    get(project: string, familyUuid: string, uuid: string, params?: TagLoadOptions): Promise<TagResponse>;
-    update(project: string, familyUuid: string, uuid: string, body: TagUpdateRequest): Promise<TagResponse>;
-    delete(project: string, familyUuid: string, uuid: string): Promise<void>;
+    list(project: string, familyUuid: string, params?: TagListOptions): MeshRestClientResponse<TagListResponse>;
+    create(project: string, familyUuid: string, body: TagCreateRequest): MeshRestClientResponse<TagResponse>;
+    get(project: string, familyUuid: string, uuid: string, params?: TagLoadOptions): MeshRestClientResponse<TagResponse>;
+    update(project: string, familyUuid: string, uuid: string, body: TagUpdateRequest): MeshRestClientResponse<TagResponse>;
+    delete(project: string, familyUuid: string, uuid: string): MeshRestClientResponse<void>;
 
-    nodes(project: string, familyUuid: string, uuid: string, params?: TagNodeListOptions): Promise<NodeListResponse>;
+    nodes(project: string, familyUuid: string, uuid: string, params?: TagNodeListOptions): MeshRestClientResponse<NodeListResponse>;
 }
 
 export interface MeshServerAPI {
-    info(): Promise<ServerInfoModel>;
-    config(): Promise<LocalConfigModel>;
-    status(): Promise<StatusResponse>;
+    info(): MeshRestClientResponse<ServerInfoModel>;
+    config(): MeshRestClientResponse<LocalConfigModel>;
+    status(): MeshRestClientResponse<StatusResponse>;
 }
 
 export interface MeshCoordinatorAPI {
-    config(): Promise<CoordinatorConfig>;
-    master(): Promise<CoordinatorMasterResponse>;
+    config(): MeshRestClientResponse<CoordinatorConfig>;
+    master(): MeshRestClientResponse<CoordinatorMasterResponse>;
 }
 
 export interface MeshClusterAPI {
-    config(): Promise<ClusterConfigResponse>;
-    status(): Promise<ClusterStatusResponse>;
+    config(): MeshRestClientResponse<ClusterConfigResponse>;
+    status(): MeshRestClientResponse<ClusterStatusResponse>;
 }
 
 export interface MeshPluginAPI {
-    list(): Promise<PluginListResponse>;
+    list(): MeshRestClientResponse<PluginListResponse>;
 }
 
-export type MeshGraphQLAPI = (project: string, body: GraphQLRequest, params?: GraphQLOptions) => Promise<GraphQLResponse>;
+export type MeshGraphQLAPI = (project: string, body: GraphQLRequest, params?: GraphQLOptions) => MeshRestClientResponse<GraphQLResponse>;
 
 export interface MeshLanguageAPI {
-    list(project: string): Promise<ListResponse<Language>>;
+    list(project: string): MeshRestClientResponse<ListResponse<Language>>;
 }

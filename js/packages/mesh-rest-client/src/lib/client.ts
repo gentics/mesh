@@ -16,7 +16,8 @@ import {
     MeshProjectAPI,
     MeshRestClientConfig,
     MeshRestClientInterceptorData,
-    MeshRestClientRequest,
+    MeshRestClientRequestData,
+    MeshRestClientResponse,
     MeshRoleAPI,
     MeshSchemaAPI,
     MeshServerAPI,
@@ -40,7 +41,7 @@ export class MeshRestClient {
         path: string,
         queryParams: Record<string, any>,
         requestHeaders: Record<string, string>,
-    ): MeshRestClientRequest {
+    ): MeshRestClientRequestData {
         let buildPath = '';
 
         if (this.config.connection.basePath) {
@@ -106,7 +107,7 @@ export class MeshRestClient {
         path: string,
         body?: null | any,
         queryParams?: Record<string, any>,
-    ): Promise<T> {
+    ): MeshRestClientResponse<T> {
         const headers: Record<string, string> = {
             [HTTP_HEADER_CONTENT_TYPE]: CONTENT_TYPE_JSON,
         };
