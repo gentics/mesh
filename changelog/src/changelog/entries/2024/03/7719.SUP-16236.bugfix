@@ -1,0 +1,1 @@
+Forms: Fixes column order in exports containing binary data. Optional binary fields could break the order of columns in the export when a data set did not contain an entry for that file.

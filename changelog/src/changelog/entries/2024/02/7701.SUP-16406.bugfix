@@ -1,0 +1,1 @@
+Search: The schema service was not considering the new Forms plugin schema structure, ending in a registration failure. This has been fixed.

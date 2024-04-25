@@ -10,6 +10,13 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.14]]
+== 1.10.14 (2024-03-20)
+
+icon:check[] Forms: Fixes column order in exports containing binary data. Optional binary fields could break the order of columns in the export when a data set did not contain an entry for that file.
+
+icon:check[] Forms: Add the possibility to change timestamp format in the CSV export.
+
 [[v1.10.13]]
 == 1.10.13 (2024-02-07)
 

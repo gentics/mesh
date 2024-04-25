@@ -5,8 +5,10 @@ package com.gentics.mesh.plugin.forms.config;
  */
 public class ExportOptions {
 
+	public final static String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"; // ISO_INSTANT
 	private boolean includeUuid = false;
 	private boolean includeCreationTimestamp = false;
+	private String timestampFormat = DEFAULT_TIMESTAMP_FORMAT; 
 	private boolean includeNameFirst = true;
 
 	/**
@@ -50,6 +52,34 @@ public class ExportOptions {
 	 */
 	public ExportOptions setIncludeCreationTimestamp(boolean includeCreationTimestamp) {
 		this.includeCreationTimestamp = includeCreationTimestamp;
+
+		return this;
+	}
+
+	/**
+	 * Return the timestamp format.
+	 *
+	 * <p>
+	 *     Default format is ISO_INSTANT ("yyyy-MM-dd'T'HH.mm.ss.SSS'Z'").
+	 * </p>
+	 *
+	 * @return the timestamp
+	 */
+	 public String timestampFormat() {		
+		if (timestampFormat == null || timestampFormat.isEmpty()) {
+			timestampFormat = DEFAULT_TIMESTAMP_FORMAT;
+		}
+
+		return timestampFormat;
+	}
+	/**
+	 * Set the timestamp format
+	 *
+	 * @param timestampFormat 
+	 * @return 
+	 */
+	public ExportOptions setTimestampFormat(String timestampFormat) {
+		this.timestampFormat = timestampFormat;
 
 		return this;
 	}

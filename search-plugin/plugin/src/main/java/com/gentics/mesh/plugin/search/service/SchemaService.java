@@ -14,6 +14,7 @@ import io.reactivex.schedulers.Schedulers;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -250,28 +252,27 @@ public class SchemaService extends AbstractCachingService<SchemaService.CacheKey
 	 */
 	private Function<SchemaListResponse, String> schemaPrefixExtractor(String project) {
 		return schemas -> {
-			List<String> prefixes = schemas.getData().stream()
+			Map<String, List<String>> prefixes = schemas.getData().stream()
 				.map(s -> CR_SCHEMA_PATTERN.matcher(s.getName()))
 				.filter(Matcher::matches)
-				.map(m -> m.group(1))
-				.collect(Collectors.toList());
+				.map(m -> Pair.of(m.group(1), m.group()))
+				.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 
 			if (log.isTraceEnabled()) {
 				log.trace("Schemas for project {}:\n{}", project, schemas.toJson());
 			}
 
-			if (prefixes.size() == 3 && prefixes.stream().distinct().count() == 1) {
-				String prefix = prefixes.get(0);
+			for (Entry<String, List<String>> entry: prefixes.entrySet()) {
+				if (entry.getValue().size() == 3) {
+					log.debug("Selected schema prefix: {}", entry.getKey());
 
-				log.debug("Selected schema prefix: {}", prefix);
-
-				return prefix;
+					return entry.getKey();
+				}
 			}
-
 			String error = String.format(
 				"Could not determine schema prefix for project %s: [%s]",
 				project,
-				String.join(", ", new HashSet<>(prefixes)));
+				String.join(", ", prefixes.keySet()));
 
 			log.error(error);
 

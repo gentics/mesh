@@ -2,23 +2,23 @@ package com.gentics.mesh.plugin.keycloak;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.testcontainers.containers.wait.strategy.Wait;
 
 import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.auth.util.KeycloakUtils;
+import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
 import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
@@ -33,18 +33,16 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
+public abstract class AbstractKeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 
-	@ClassRule
-	public static final KeycloakContainer keycloak = new KeycloakContainer("/keycloak/realm.json", "8.0.1")
-		.waitingFor(Wait.forHttp("/auth/realms/master-test"));
+	public static KeycloakContainer keycloak = null;
+	protected static String realmUrlPrefix = KeycloakUtils.DEFAULT_REALM_URL_PREFIX;
 
-	@BeforeClass
-	public static void configurePlugin() {
-		KeycloakTestPlugin.config = new KeycloakPluginConfig()
-			.setRealmName("master-test")
-			.setUrl("http://" + keycloak.getContainerIpAddress() + ":" + keycloak.getFirstMappedPort())
-			.setLoadPublicKeys(true);
+	@AfterClass
+	public static void cleanup() {
+		if (keycloak != null) {
+			keycloak.close();
+		}
 	}
 
 	@Rule
@@ -84,8 +82,7 @@ public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 		System.out.println(me2.toJson());
 
 		assertEquals("The uuid should not change. The previously created user should be returned.", uuid, me2.getUuid());
-		assertEquals("group1", me2.getGroups().get(0).getName());
-		assertEquals("group2", me2.getGroups().get(1).getName());
+		assertThat(me.getGroups().stream().map(GroupReference::getName)).contains("group1", "group2", "group3");
 
 		// Invoke request without token
 		JsonObject meJson = new JsonObject(get(MeshVersion.CURRENT_API_BASE_PATH + "/auth/me"));
@@ -151,7 +148,7 @@ public class KeycloakPluginTest extends AbstractPluginLocalIntegrationTest {
 		RequestBody body = RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content.toString());
 		Request request = new Request.Builder()
 			.post(body)
-			.url("http://localhost:" + port + "/auth/realms/master-test/protocol/openid-connect/token")
+			.url(String.format("%s://%s:%d%s/realms/%s", "http", "localhost", port, realmUrlPrefix, "master-test") + "/protocol/openid-connect/token")
 			.build();
 
 		Response response = httpClient().newCall(request).execute();
