@@ -1,15 +1,61 @@
 import { GenericErrorResponse } from '@gentics/mesh-models';
-import { RequestFailedError } from '../errors';
-import { MeshClientDriver, MeshRestClientRequest } from '../models';
+import { MeshRestClientRequestError } from '../errors';
+import { MeshClientDriver, MeshRestClientRequestData, MeshRestClientResponse } from '../models';
+
+async function parseErrorFromAPI<T>(request: MeshRestClientRequestData, res: Response): Promise<T> {
+    let raw: string;
+    let parsed: GenericErrorResponse;
+    let bodyError: Error;
+
+    try {
+        raw = await res.text();
+        try {
+            parsed = JSON.parse(raw);
+        } catch (err) {
+            bodyError = err;
+        }
+    } catch (err) {
+        bodyError = err;
+    }
+
+    throw new MeshRestClientRequestError(
+        `Request "${request.method} ${request.url}" responded with error code ${res.status}: "${res.statusText}"`,
+        request,
+        res.status,
+        raw,
+        parsed,
+        bodyError,
+    );
+}
 
 export class MeshFetchDriver implements MeshClientDriver {
 
-    constructor() {}
+    constructor() { }
 
-    async performJsonRequest(
-        request: MeshRestClientRequest,
+    performJsonRequest(
+        request: MeshRestClientRequestData,
         body?: null | string,
-    ): Promise<Record<string, any>> {
+    ): MeshRestClientResponse<Record<string, any>> {
+        return this.prepareRequest(request, (fullUrl) => {
+            return {
+                method: request.method,
+                url: fullUrl,
+                headers: request.headers,
+                body: body,
+            } as any;
+        }, (res) => {
+            if (res.ok) {
+                return res.json();
+            }
+            return parseErrorFromAPI(request, res);
+        });
+    }
+
+    private prepareRequest<T>(
+        request: MeshRestClientRequestData,
+        fn: (fullUrl: string) => RequestInfo,
+        handler: (res: Response) => Promise<T>,
+    ): MeshRestClientResponse<T> {
         let fullUrl = request.url;
         if (request.params) {
             const params = new URLSearchParams(request.params).toString();
@@ -18,40 +64,21 @@ export class MeshFetchDriver implements MeshClientDriver {
             }
         }
 
-        const res = await fetch({
-            method: request.method,
-            url: fullUrl,
-            headers: request.headers,
-            body: body,
-        } as any);
+        const abortController = new AbortController();
 
-        if (res.ok) {
-            return res.json();
-        }
-
-        let raw: string;
-        let parsed: GenericErrorResponse;
-        let bodyError: Error;
-
-        try {
-            raw = await res.text();
-            try {
-                parsed = JSON.parse(raw);
-            } catch (err) {
-                bodyError = err;
+        function sendRequest() {
+            const options: RequestInfo = {
+                ...fn(fullUrl) as any,
+                signal: abortController.signal,
             }
-        } catch (err) {
-            bodyError = err;
+            return fetch(options)
+                .then(res => handler(res));
         }
 
-        throw new RequestFailedError(
-            `Request "${request.method} ${request.url}" responded with error code ${res.status}: "${res.statusText}"`,
-            request,
-            res.status,
-            raw,
-            parsed,
-            bodyError,
-        );
+        return {
+            cancel: () => abortController.abort(),
+            send: () => sendRequest(),
+        };
     }
 
 }
