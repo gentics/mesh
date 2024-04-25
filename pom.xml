@@ -94,6 +94,11 @@
 				<artifactId>jackson-datatype-jsr310</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.openjdk.nashorn</groupId>
+				<artifactId>nashorn-core</artifactId>
+				<version>15.4</version>
+			</dependency>
 
 			<!-- This is necessary, since some transitive (test) dependencies would add a dependency to another version of netty-codec, which lets the test fail -->
 			<dependency>

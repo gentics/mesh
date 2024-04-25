@@ -5,6 +5,8 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
@@ -130,7 +132,7 @@ public class ValueListElement extends FormElement {
 			RC_VALUE_LABELS,
 			getOptions().stream().sequential().collect(OPTIONS_MAP_COLLECTOR));
 
-		JsonObject values = results.getJsonObject("values");
+		JsonObject values = results.getJsonObject(FormDataService.POLL_VALUES_NAME);
 
 		if (values.isEmpty()) {
 			// Prepare the values, to enforce element order, as they are defined

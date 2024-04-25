@@ -14,6 +14,8 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -415,8 +417,8 @@ public abstract class FormElement implements RestModel {
 			results.put("element", new JsonObject(toJson()));
 		}
 
-		if (!results.containsKey("values")) {
-			results.put("values", new JsonObject(new LinkedHashMap<>()));
+		if (!results.containsKey(FormDataService.POLL_VALUES_NAME)) {
+			results.put(FormDataService.POLL_VALUES_NAME, new JsonObject(new LinkedHashMap<>()));
 		}
 
 		results.put("total", results.getInteger("total", 0) + 1);

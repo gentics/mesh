@@ -3,8 +3,8 @@
 	type: {{type}}
 	total: {{total}}
 	element.properties.customProperty: {{element.properties.customProperty}}
-	values:
-{{~#each values}}
+	pollValues:
+{{~#each pollValues}}
 		{{getValueLabel @key}} ({{@key}}): {{@value~}}
 {{/each}}
 	valueLabels:

@@ -114,6 +114,8 @@ public class FormDataService {
 
 	public final static String PARAM_PUBLISHED_ONLY = "publishedOnly";
 
+	public final static String POLL_VALUES_NAME = "pollValues";
+
 	public final static int TEST_DELAY_MS = 5_000;
 
 	private static final Logger log = LoggerFactory.getLogger(FormDataService.class);
