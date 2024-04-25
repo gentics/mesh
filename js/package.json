@@ -1,6 +1,6 @@
 {
   "name": "@gentics/mesh-js",
-  "version": "2.1.0-SNAPSHOT",
+  "version": "2.2.0-SNAPSHOT",
   "license": "Apache-2.0",
   "engines": {
     "npm": "^10.5.0",
