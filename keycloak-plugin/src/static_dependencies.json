@@ -9,7 +9,7 @@
             {
               "name": "Keycloak Server",
               "description": "Version used by automated tests.",
-              "current": "8.0.1",
+              "current": "22.0.5",
               "latest": "24.0.3"
             }
           ]
