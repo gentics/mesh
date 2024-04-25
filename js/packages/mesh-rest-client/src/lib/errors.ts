@@ -1,11 +1,11 @@
 import { GenericErrorResponse } from '@gentics/mesh-models';
-import { MeshRestClientRequest } from './models';
+import { MeshRestClientRequestData } from './models';
 
-export class RequestFailedError extends Error {
+export class MeshRestClientRequestError extends Error {
 
     constructor(
         message: string,
-        public request: MeshRestClientRequest,
+        public request: MeshRestClientRequestData,
         public responseCode: number,
         public rawBody?: string,
         public data?: GenericErrorResponse,
