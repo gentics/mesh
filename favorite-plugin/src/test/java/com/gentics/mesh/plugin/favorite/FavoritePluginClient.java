@@ -58,6 +58,11 @@ public class FavoritePluginClient {
 			public String toJson() {
 				return obj.toString();
 			}
+
+			@Override
+			public String toJson(boolean minify) {
+				return obj.toString();
+			}
 		};
 	}
 
