@@ -14,5 +14,5 @@ Some dependencies have been updated:
 * JSON Path: 2.9.0
 * JSoup: 1.17.2
 * Jettison: 1.5.4
-* Netty Buffer: 4.1.109.Final
+* Netty: 4.1.108.Final
 * Image IO: 3.10.1
