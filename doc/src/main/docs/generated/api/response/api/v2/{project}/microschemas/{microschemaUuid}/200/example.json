@@ -7,11 +7,13 @@
     "name" : "longitude",
     "label" : "Longitude",
     "required" : true,
+    "noIndex" : false,
     "type" : "number"
   }, {
     "name" : "latitude",
     "label" : "Latitude",
     "required" : true,
+    "noIndex" : false,
     "type" : "number"
   } ],
   "microschema" : true,

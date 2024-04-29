@@ -42,6 +42,11 @@
 | string
 | Name of the schema
 
+| noIndex
+| false
+| boolean
+| &#x27;Exclude from indexing&#x27; flag.
+
 | segmentField
 | false
 | string

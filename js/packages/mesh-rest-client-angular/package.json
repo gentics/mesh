@@ -1,0 +1,14 @@
+{
+  "name": "@gentics/mesh-rest-client-angular",
+  "version": "2.2.0-SNAPSHOT",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@gentics/mesh-models": "^2.2.0-SNAPSHOT",
+    "@gentics/mesh-rest-client": "^2.2.0-SNAPSHOT"
+  },
+  "peerDependencies": {
+    "@angular/common": "^16.0.0",
+    "@angular/core": "^16.0.0",
+    "rxjs": "^6.6.0"
+  }
+}

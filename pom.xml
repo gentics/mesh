@@ -6,7 +6,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+	<version>2.2.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Gentics Mesh</name>
@@ -15,6 +15,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}</projectRoot>
 
+		<vertx.version>4.5.7</vertx.version>
 		<dagger.version>2.24</dagger.version>
 		<compiler.plugin.version>3.11.0</compiler.plugin.version>
 		<!-- Tests -->
@@ -46,9 +47,9 @@
 	</scm>
 
 	<parent>
-		<groupId>com.gentics.vertx</groupId>
-		<artifactId>maven-vertx-parent</artifactId>
-		<version>4.3.2.1</version>
+		<groupId>com.gentics</groupId>
+		<artifactId>maven-parent</artifactId>
+		<version>5.1.0</version>
 	</parent>
 
 	<developers>

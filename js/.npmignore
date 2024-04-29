@@ -1,0 +1,5 @@
+tsconfig.spec.json
+jest.config.ts
+pom.xml
+.eslintrc.js
+.editorconfig

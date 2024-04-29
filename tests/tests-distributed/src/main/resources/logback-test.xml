@@ -26,14 +26,14 @@
 	<!-- <logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/> <logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/> <logger name="com.gentics.mesh.core.verticle.node.NodeMigrationVerticle" 
 		level="ERROR" /> <logger name="com.gentics.mesh.core.data.node.handler.NodeMigrationHandler" level="ERROR" /> -->
 
-	<logger name="com.gentics.mesh.core.data.generic" level="DEBUG" />
-	<logger name="com.gentics.mesh.distributed" level="DEBUG" />
-	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
-	<logger name="io.netty" level="ERROR"/>
-	<logger name="com.github.dockerjava" level="ERROR"/>
+	<!-- <logger name="com.gentics.mesh.core.data.generic" level="DEBUG" /> -->
+	<!-- <logger name="com.gentics.mesh.distributed" level="DEBUG" /> -->
+	<!-- <logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/> -->
+	<!-- <logger name="io.netty" level="ERROR"/> -->
+	<!-- <logger name="com.github.dockerjava" level="ERROR"/> -->
 	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
 
-	<root level="DEBUG">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

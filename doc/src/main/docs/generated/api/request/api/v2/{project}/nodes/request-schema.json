@@ -38,14 +38,14 @@
             "versionUuid" : {
               "type" : "string"
             },
+            "uuid" : {
+              "type" : "string"
+            },
             "name" : {
               "type" : "string"
             },
             "set" : {
               "type" : "boolean"
-            },
-            "uuid" : {
-              "type" : "string"
             }
           }
         }
@@ -98,6 +98,10 @@
     "publish" : {
       "type" : "boolean",
       "description" : "Whether the publish the node after creation."
+    },
+    "assignLanguage" : {
+      "type" : "boolean",
+      "description" : "Assign a requested language to the project, if none was so far. Default is 'true'."
     },
     "grant" : {
       "type" : "object",

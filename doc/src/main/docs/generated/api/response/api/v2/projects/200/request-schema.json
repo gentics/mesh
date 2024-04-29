@@ -92,15 +92,39 @@
                   "versionUuid" : {
                     "type" : "string"
                   },
+                  "uuid" : {
+                    "type" : "string"
+                  },
                   "name" : {
                     "type" : "string"
                   },
                   "set" : {
                     "type" : "boolean"
-                  },
-                  "uuid" : {
-                    "type" : "string"
                   }
+                }
+              }
+            }
+          },
+          "languages" : {
+            "type" : "array",
+            "description" : "Project's languages.",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:lang:LanguageResponse",
+              "properties" : {
+                "uuid" : {
+                  "type" : "string",
+                  "required" : true,
+                  "description" : "Uuid of the element"
+                },
+                "name" : {
+                  "type" : "string"
+                },
+                "nativeName" : {
+                  "type" : "string"
+                },
+                "languageTag" : {
+                  "type" : "string"
                 }
               }
             }

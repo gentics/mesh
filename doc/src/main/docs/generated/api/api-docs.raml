@@ -1,6 +1,6 @@
 #%RAML 0.8
 title: Gentics Mesh REST API
-version: "2.0.18"
+version: "2.1.0"
 baseUri: "http://localhost:8080/api/v2"
 protocols: [HTTP, HTTPS]
 mediaType: application/json
@@ -145,7 +145,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 sortBy: 
                     description: Field name to sort the result by.
                     type: string
@@ -157,7 +157,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -445,7 +445,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
                     type: string
@@ -706,7 +706,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "bc4f47a330bb45dea33c7d3208518fe0"
+                            "uuid" : "1d682164824f4bcfaf7c081d58fae803"
                           } ]
                         }
             responses: 
@@ -945,13 +945,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -1069,7 +1069,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
             responses: 
                 "200": 
                     description: Loaded role.
@@ -1354,7 +1354,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "146d1727fb1547d291937986210e2e9e"
+                            "uuid" : "945ed6376f8d40a58ca6c5026d7f5c17"
                           } ]
                         }
             responses: 
@@ -1569,13 +1569,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
@@ -1672,7 +1672,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 role: 
                     description: |
                         The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.
@@ -1893,7 +1893,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6c6eacead1bf42e096dd8f78c6a7af5e"
+                            "uuid" : "0f756401428a457083e2eef890386c8c"
                           } ]
                         }
             responses: 
@@ -2035,7 +2035,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -2230,7 +2230,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -2466,6 +2466,7 @@ mediaType: application/json
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
+                                | languages | false | array | Project&#x27;s languages. |
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
@@ -2518,7 +2519,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -2647,6 +2648,7 @@ mediaType: application/json
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
+                                | languages | false | array | Project&#x27;s languages. |
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
@@ -2709,6 +2711,7 @@ mediaType: application/json
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
+                                | languages | false | array | Project&#x27;s languages. |
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
@@ -2865,7 +2868,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "de9791a7f78641d5b20b4dfd61b56a98"
+                            "uuid" : "cf563c3da0a741a1a8376db0441acccd"
                           } ]
                         }
             responses: 
@@ -3002,13 +3005,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -3052,39 +3055,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -3109,39 +3119,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -3177,6 +3194,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | false | array | List of schema fields |
                         | name | true | string | Name of the schema |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                         | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
                         | urlFields | false | array | Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it&#x27;s segment field and via the specified url fields. |
                     example: |
@@ -3189,6 +3207,7 @@ mediaType: application/json
                           "fields" : [ {
                             "name" : "name",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "string"
                           } ],
                           "microschema" : false
@@ -3212,6 +3231,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of schema fields |
                                 | name | true | string | Name of the schema. |
+                                | noIndex | false | boolean | Flag which indicates whether nodes which use this schema should be excluded from the indexing. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -3235,39 +3255,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -3299,7 +3326,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
@@ -3338,6 +3365,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of schema fields |
                                 | name | true | string | Name of the schema. |
+                                | noIndex | false | boolean | Flag which indicates whether nodes which use this schema should be excluded from the indexing. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -3361,39 +3389,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -3416,13 +3451,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                 updateAssignedBranches: 
                     description: Update the schema version for all branches which already utilize the schema.
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 updateBranchNames: 
                     description: List of branch names which should be included in the update process. By default all branches which use the schema will be updated. You can thus use this parameter to only include a subset of branch in the update.
                     type: string
@@ -3441,6 +3476,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | true | array | List of schema fields |
                         | name | true | string | Name of the schema. |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; schema flag. |
                         | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
                         | urlFields | false | array | Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it&#x27;s segment field and via the specified url fields. |
                         | version | false | string | Version of the schema. |
@@ -3470,6 +3506,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of schema fields |
                                 | name | true | string | Name of the schema. |
+                                | noIndex | false | boolean | Flag which indicates whether nodes which use this schema should be excluded from the indexing. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -3493,39 +3530,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -3639,6 +3683,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | true | array | List of schema fields |
                         | name | true | string | Name of the schema. |
+                        | noIndex | false | boolean | Flag which indicates whether nodes which use this schema should be excluded from the indexing. |
                         | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                         | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                         | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -3662,39 +3707,46 @@ mediaType: application/json
                             "name" : "name",
                             "label" : "Name",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "string"
                           }, {
                             "name" : "number",
                             "label" : "Number",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "html",
                             "label" : "Teaser",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "html"
                           }, {
                             "name" : "list",
                             "label" : "List of nodes",
                             "required" : false,
+                            "noIndex" : false,
                             "listType" : "node",
                             "type" : "list",
                             "allow" : [ "content", "video" ]
                           }, {
                             "name" : "node",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "node",
                             "allow" : [ "content", "video", "image" ]
                           }, {
                             "name" : "location",
                             "label" : "Location",
                             "required" : false,
+                            "noIndex" : false,
                             "type" : "micronode",
                             "allow" : [ "geolocation" ]
                           }, {
                             "name" : "locationlist",
                             "label" : "List of Locations",
                             "required" : false,
+                            "noIndex" : false,
                             "listType" : "micronode",
                             "type" : "list",
                             "allow" : [ "geolocation" ]
@@ -3845,7 +3897,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "baf5445a1a6b4451b89f81250fa7e039"
+                            "uuid" : "eb0ee735ab9342e48fa3f51174c27e78"
                           } ]
                         }
             responses: 
@@ -3979,6 +4031,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | false | array | List of microschema fields |
                         | name | true | string | Name of the microschema |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                     example: |
                         {
                           "description" : "Microschema for Geolocations",
@@ -3987,11 +4040,13 @@ mediaType: application/json
                             "name" : "longitude",
                             "label" : "Longitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "latitude",
                             "label" : "Latitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           } ],
                           "microschema" : true
@@ -4012,6 +4067,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of microschema fields |
                                 | name | true | string | Name of the microschema |
+                                | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -4031,11 +4087,13 @@ mediaType: application/json
                                     "name" : "longitude",
                                     "label" : "Longitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "latitude",
                                     "label" : "Latitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   } ],
                                   "microschema" : true,
@@ -4062,7 +4120,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -4098,11 +4156,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -4123,11 +4183,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -4188,6 +4250,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of microschema fields |
                                 | name | true | string | Name of the microschema |
+                                | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -4207,11 +4270,13 @@ mediaType: application/json
                                     "name" : "longitude",
                                     "label" : "Longitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "latitude",
                                     "label" : "Latitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   } ],
                                   "microschema" : true,
@@ -4235,6 +4300,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | false | array | List of microschema fields |
                         | name | false | string | Name of the microschema |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                         | version | false | string | Version of the microschema |
                     example: |
                         {
@@ -4349,6 +4415,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | false | array | List of microschema fields |
                         | name | true | string | Name of the microschema |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                     example: |
                         {
                           "description" : "Microschema for Geolocations",
@@ -4357,11 +4424,13 @@ mediaType: application/json
                             "name" : "longitude",
                             "label" : "Longitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "latitude",
                             "label" : "Latitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           } ],
                           "microschema" : true
@@ -4502,7 +4571,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "39d73d972cd34fe8ac2fb27edc8fc62f"
+                            "uuid" : "13de9face5834b9d999c35324e23cdff"
                           } ]
                         }
             responses: 
@@ -4789,7 +4858,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "200": 
@@ -4825,7 +4894,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "200": 
@@ -4949,7 +5018,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "200": 
@@ -5480,7 +5549,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -5578,7 +5647,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -5617,11 +5686,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -5642,11 +5713,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -5687,7 +5760,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -5957,7 +6030,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -6068,7 +6141,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -6181,7 +6254,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -6222,39 +6295,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -6279,39 +6359,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -6524,7 +6611,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -6605,7 +6692,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -6718,7 +6805,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -7056,6 +7143,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | false | array | List of microschema fields |
                         | name | true | string | Name of the microschema |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                     example: |
                         {
                           "description" : "Microschema for Geolocations",
@@ -7064,11 +7152,13 @@ mediaType: application/json
                             "name" : "longitude",
                             "label" : "Longitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           }, {
                             "name" : "latitude",
                             "label" : "Latitude",
                             "required" : true,
+                            "noIndex" : false,
                             "type" : "number"
                           } ],
                           "microschema" : true
@@ -7314,6 +7404,7 @@ mediaType: application/json
                         | elasticsearch | false | object | Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters. |
                         | fields | true | array | List of schema fields |
                         | name | true | string | Name of the schema. |
+                        | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; schema flag. |
                         | segmentField | false | string | Name of the segment field. This field is used to construct the webroot path to the node. |
                         | urlFields | false | array | Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it&#x27;s segment field and via the specified url fields. |
                         | version | false | string | Version of the schema. |
@@ -7555,7 +7646,7 @@ mediaType: application/json
     description: Endpoint which contains login and logout methods.
     /login: 
         get: 
-            description: Login via basic authentication.
+            description: Login via basic or bearer authentication.
             responses: 
                 "200": 
                     description: Login was sucessful
@@ -7566,9 +7657,10 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | apikey | false | string | API key of the user to log in. |
                         | newPassword | false | string | New password that will be set after successful login. |
-                        | password | true | string | Password of the user which should be logged in. |
-                        | username | true | string | Username of the user which should be logged in. |
+                        | password | false | string | Password of the user which should be logged in. |
+                        | username | false | string | Username of the user which should be logged in. |
                     example: |
                         {
                           "username" : "admin",
@@ -7683,7 +7775,6 @@ mediaType: application/json
     /: 
         get: 
             description: Endpoint which returns version information
-            displayName: Version Information
             responses: 
                 "200": 
                     description: JSON which contains version information
@@ -7702,18 +7793,17 @@ mediaType: application/json
                                 | vertxVersion | false | string | Used Vert.x version. |
                             example: |
                                 {
-                                  "meshVersion" : "2.0.18",
+                                  "meshVersion" : "2.1.0",
                                   "meshNodeName" : "Reminiscent Tirtouga",
                                   "databaseVendor" : "orientdb",
                                   "databaseVersion" : "2.2.16",
                                   "searchVendor" : "elasticsearch",
                                   "searchVersion" : "2.4.3",
-                                  "vertxVersion" : "4.3.2"
+                                  "vertxVersion" : "4.5.7"
                                 }
     /raml: 
         get: 
             description: Endpoint which provides a RAML document for all registed endpoints.
-            displayName: RAML specification
             responses: 
                 "200": 
                     description: Not yet specified
@@ -7740,6 +7830,7 @@ mediaType: application/json
                                 | creator | true | object | User reference of the creator of the element. |
                                 | edited | true | string | ISO8601 formatted edited date string. |
                                 | editor | false | object | User reference of the editor of the element. |
+                                | languages | false | array | Project&#x27;s languages. |
                                 | name | true | string | The name of the project. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
@@ -7789,6 +7880,7 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
+                        | assignLanguage | false | boolean | Assign a requested language to the project, if none was so far. Default is &#x27;true&#x27;. |
                         | fields | true | object | Dynamic map with fields of the node content. |
                         | grant | false | object | Permissions to be granted to roles on the created node. |
                         | language | true | string | ISO 639-1 language tag of the node content. |
@@ -7809,7 +7901,8 @@ mediaType: application/json
                             "name" : "DeLorean DMC-12",
                             "description" : "The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."
                           },
-                          "publish" : false
+                          "publish" : false,
+                          "assignLanguage" : true
                         }
             responses: 
                 "201": 
@@ -8025,7 +8118,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 sortBy: 
                     description: Field name to sort the result by.
                     type: string
@@ -8037,7 +8130,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -8334,7 +8427,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
                     type: string
@@ -8566,9 +8659,11 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | fields | true | object | Dynamic map with fields of the node content. |
+                        | assignLanguage | false | boolean | Assign a requested language to the project, if none was so far. |
+                        | fields | false | object | Dynamic map with fields of the node content. |
                         | grant | false | object | Permissions to be granted to roles on the updated node. |
-                        | language | true | string | ISO 639-1 language tag of the node content. |
+                        | language | false | string | ISO 639-1 language tag of the node content. |
+                        | manipulation | false | object | Image manipulation changes request. |
                         | publish | false | boolean | Whether the publish the node after updating. |
                         | tags | false | array | List of tags that should be used to tag the node. |
                         | version | false | string | Version number which can be provided in order to handle and detect concurrent changes to the node content. |
@@ -8634,7 +8729,8 @@ mediaType: application/json
                             } ]
                           },
                           "version" : "1.0",
-                          "publish" : false
+                          "publish" : false,
+                          "assignLanguage" : true
                         }
             responses: 
                 "404": 
@@ -8772,7 +8868,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "404": 
@@ -9149,6 +9245,227 @@ mediaType: application/json
                                 }
                 "204": 
                     description: ""
+    /{nodeUuid}/binary/{fieldName}/variants: 
+        uriParameters: 
+            fieldName: 
+                displayName: fieldName
+                description: Name of the image field.
+                type: string
+                required: true
+                repeat: false
+                example: image
+            nodeUuid: 
+                displayName: nodeUuid
+                description: Uuid of the node.
+                type: string
+                required: true
+                repeat: false
+                example: adaf48da8c124049af48da8c12a0493e
+        get: 
+            description: Get the list of image manipulation variants of the binary, possessed by a field with the given name.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            responses: 
+                "200": 
+                    description: A list of image variants have been returned.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | variants | false | array | List of image manipulation variants. |
+                            example: |
+                                {
+                                  "variants" : [ {
+                                    "width" : 500,
+                                    "height" : 100,
+                                    "origin" : true,
+                                    "auto" : false
+                                  }, {
+                                    "rect" : {
+                                      "startX" : 10,
+                                      "startY" : 10,
+                                      "width" : 20,
+                                      "height" : 20
+                                    },
+                                    "cropMode" : "RECT",
+                                    "origin" : false,
+                                    "auto" : false
+                                  }, {
+                                    "height" : 50,
+                                    "origin" : false,
+                                    "auto" : false
+                                  } ]
+                                }
+        delete: 
+            description: Delete unused image manipulation variants of the binary, referenced by a field with the given name.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            responses: 
+                "404": 
+                    description: The node could not be found.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | internalMessage | true | string | Internal developer friendly message |
+                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
+                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
+                "204": 
+                    description: Image variants have been deleted.
+        post: 
+            description: Add new image variants to the binary, referenced by a field with the given name.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | deleteOther | false | boolean | This flag states that all the existing variants, except the mentioned in &#x60;variants&#x60; field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped. |
+                        | variants | false | array | This field contains a set of image manipulation variants to be manipulated upon. |
+                    example: |
+                        {
+                          "variants" : [ {
+                            "width" : "auto",
+                            "height" : "100",
+                            "resizeMode" : "SMART",
+                            "cacheKey" : "resizeSMARTrwautorh100"
+                          }, {
+                            "resizeMode" : "SMART",
+                            "focalPoint" : {
+                              "x" : 0.3,
+                              "y" : 0.3
+                            },
+                            "focalZoom" : 0.6,
+                            "focalPointZoom" : 0.6,
+                            "cacheKey" : "resizeSMARTfp0.3-0.3fpz0.6"
+                          } ],
+                          "deleteOther" : false
+                        }
+            responses: 
+                "404": 
+                    description: The node or the field could not be found.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | internalMessage | true | string | Internal developer friendly message |
+                                | message | true | string | Enduser friendly translated message. Translation depends on the &#x27;Accept-Language&#x27; header value |
+                                | properties | false | object | Map of i18n properties which were used to construct the provided message |
+                            example: |
+                                {
+                                  "message" : "I18n message"
+                                }
+                "200": 
+                    description: An updated list of variants is returned
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | variants | false | array | List of image manipulation variants. |
+                            example: |
+                                {
+                                  "variants" : [ {
+                                    "width" : 500,
+                                    "height" : 100,
+                                    "origin" : true,
+                                    "auto" : false
+                                  }, {
+                                    "rect" : {
+                                      "startX" : 10,
+                                      "startY" : 10,
+                                      "width" : 20,
+                                      "height" : 20
+                                    },
+                                    "cropMode" : "RECT",
+                                    "origin" : false,
+                                    "auto" : false
+                                  }, {
+                                    "height" : 50,
+                                    "origin" : false,
+                                    "auto" : false
+                                  } ]
+                                }
     /{nodeUuid}/binaryTransform/{fieldName}: 
         uriParameters: 
             fieldName: 
@@ -9431,13 +9748,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -9924,14 +10241,13 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         get: 
             description: Returns a navigation object for the provided node.
-            displayName: Navigation
             queryParameters: 
                 maxDepth: 
                     description: Specifies the maximum depth for the requested navigation tree structure.
                     type: number
                     required: false
                     repeat: false
-                    default: "10"
+                    default: 10
                     example: "5"
                 includeAll: 
                     description: If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
@@ -10033,7 +10349,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "404": 
@@ -10089,7 +10405,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "false"
+                    default: false
                     example: "true"
             responses: 
                 "404": 
@@ -10222,7 +10538,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "8773a1a576cd425986da1bd2d4cffc18"
+                            "uuid" : "d104ffdadd9944d9b05ec638f60ecbf9"
                           } ]
                         }
             responses: 
@@ -10915,7 +11231,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 fields: 
                     description: Limit the output to certain fields. This is useful in order to reduce the response JSON overhead.
                     type: string
@@ -11307,7 +11623,6 @@ mediaType: application/json
                 example: adaf48da8c124049af48da8c12a0493e
         get: 
             description: Returns a list of versions.
-            displayName: Versions
             queryParameters: 
                 lang: 
                     description: ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.
@@ -11408,7 +11723,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -11732,7 +12047,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "7c3d6f123a054acabca49915c949671e"
+                            "uuid" : "9f9f816d507d49a5ac13674055eb19a0"
                           } ]
                         }
             responses: 
@@ -11937,13 +12252,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -12068,7 +12383,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
             responses: 
                 "200": 
                     description: Loaded tag.
@@ -12218,7 +12533,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -12548,7 +12863,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "6549ee63e49247779d7da3d84e7f3af2"
+                            "uuid" : "2c9e9cdcf61846fb97a4960bf03ce352"
                           } ]
                         }
             responses: 
@@ -12687,7 +13002,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "10"
+                    default: 10
                     example: "5"
                 includeAll: 
                     description: If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
@@ -13098,9 +13413,11 @@ mediaType: application/json
                     schema: |
                         | Property | Mandatory | Type | Description |
                         |----------|-----------|------|-------------|
-                        | fields | true | object | Dynamic map with fields of the node content. |
+                        | assignLanguage | false | boolean | Assign a requested language to the project, if none was so far. |
+                        | fields | false | object | Dynamic map with fields of the node content. |
                         | grant | false | object | Permissions to be granted to roles on the updated node. |
-                        | language | true | string | ISO 639-1 language tag of the node content. |
+                        | language | false | string | ISO 639-1 language tag of the node content. |
+                        | manipulation | false | object | Image manipulation changes request. |
                         | publish | false | boolean | Whether the publish the node after updating. |
                         | tags | false | array | List of tags that should be used to tag the node. |
                         | version | false | string | Version number which can be provided in order to handle and detect concurrent changes to the node content. |
@@ -13166,7 +13483,8 @@ mediaType: application/json
                             } ]
                           },
                           "version" : "1.0",
-                          "publish" : false
+                          "publish" : false,
+                          "assignLanguage" : true
                         }
             responses: 
                 "200": 
@@ -13395,11 +13713,11 @@ mediaType: application/json
                 example: /News/2015/Images/flower.jpg
             fieldName: 
                 displayName: fieldName
-                description: Name of the field which should be acquired.
+                description: Name of the field which should be processed.
                 type: string
                 required: true
                 repeat: false
-                example: stringField
+                example: binaryField
         get: 
             description: Download the field with the given name from the given path. You can use image query parameters for crop and resize if the binary data represents an image.
             queryParameters: 
@@ -13481,6 +13799,92 @@ mediaType: application/json
                             required: false
                             repeat: false
                             example: node
+        post: 
+            description: Update the field variants with the given name from the given path.
+            queryParameters: 
+                original: 
+                    description: Specifies a need to retrieve original image along with its manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                filesize: 
+                    description: Specifies a need to retrieve filesizes for the returned image manipulation variants.
+                    type: boolean
+                    required: false
+                    repeat: false
+                    example: "true"
+                branch: 
+                    description: Specifies the branch to be used for loading data. The latest project branch will be used if this parameter is omitted.
+                    type: string
+                    required: false
+                    repeat: false
+                    example: "24cf92691c7641158f92691c76c115ef"
+                version: 
+                    description: "Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_."
+                    type: string
+                    required: false
+                    repeat: false
+                    default: draft
+                    example: "1.1"
+            body: 
+                application/json: 
+                    schema: |
+                        | Property | Mandatory | Type | Description |
+                        |----------|-----------|------|-------------|
+                        | deleteOther | false | boolean | This flag states that all the existing variants, except the mentioned in &#x60;variants&#x60; field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped. |
+                        | variants | false | array | This field contains a set of image manipulation variants to be manipulated upon. |
+                    example: |
+                        {
+                          "variants" : [ {
+                            "width" : "auto",
+                            "height" : "100",
+                            "resizeMode" : "SMART",
+                            "cacheKey" : "resizeSMARTrwautorh100"
+                          }, {
+                            "resizeMode" : "SMART",
+                            "focalPoint" : {
+                              "x" : 0.3,
+                              "y" : 0.3
+                            },
+                            "focalZoom" : 0.6,
+                            "focalPointZoom" : 0.6,
+                            "cacheKey" : "resizeSMARTfp0.3-0.3fpz0.6"
+                          } ],
+                          "deleteOther" : false
+                        }
+            responses: 
+                "200": 
+                    description: JSON for a variants of the binary field of the node for the given path.
+                    body: 
+                        application/json: 
+                            schema: |
+                                | Property | Mandatory | Type | Description |
+                                |----------|-----------|------|-------------|
+                                | variants | false | array | List of image manipulation variants. |
+                            example: |
+                                {
+                                  "variants" : [ {
+                                    "width" : 500,
+                                    "height" : 100,
+                                    "origin" : true,
+                                    "auto" : false
+                                  }, {
+                                    "rect" : {
+                                      "startX" : 10,
+                                      "startY" : 10,
+                                      "width" : 20,
+                                      "height" : 20
+                                    },
+                                    "cropMode" : "RECT",
+                                    "origin" : false,
+                                    "auto" : false
+                                  }, {
+                                    "height" : 50,
+                                    "origin" : false,
+                                    "auto" : false
+                                  } ]
+                                }
 /{project}/branches: 
     displayName: /{project}/branches
     description: Provides endpoints which allow the manipulation of branches.
@@ -13593,13 +13997,13 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
                 page: 
                     description: Number of page to be loaded.
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -13753,7 +14157,7 @@ mediaType: application/json
                     type: boolean
                     required: false
                     repeat: false
-                    default: "true"
+                    default: true
             responses: 
                 "200": 
                     description: Loaded branch.
@@ -14027,7 +14431,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -14248,7 +14652,7 @@ mediaType: application/json
                           "exclusive" : true,
                           "ignore" : [ {
                             "name" : "admin",
-                            "uuid" : "804bb3ba1da64a7aa722bfc2aa3d1d5f"
+                            "uuid" : "0fd4482eb5c64ed59f0660db5d6fa0aa"
                           } ]
                         }
             responses: 
@@ -14390,7 +14794,7 @@ mediaType: application/json
                     type: number
                     required: false
                     repeat: false
-                    default: "1"
+                    default: 1
                     example: "42"
                 perPage: 
                     description: Number of elements per page.
@@ -15255,39 +15659,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -15312,39 +15723,46 @@ mediaType: application/json
                                       "name" : "name",
                                       "label" : "Name",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "string"
                                     }, {
                                       "name" : "number",
                                       "label" : "Number",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "html",
                                       "label" : "Teaser",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "html"
                                     }, {
                                       "name" : "list",
                                       "label" : "List of nodes",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "node",
                                       "type" : "list",
                                       "allow" : [ "content", "video" ]
                                     }, {
                                       "name" : "node",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "node",
                                       "allow" : [ "content", "video", "image" ]
                                     }, {
                                       "name" : "location",
                                       "label" : "Location",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "type" : "micronode",
                                       "allow" : [ "geolocation" ]
                                     }, {
                                       "name" : "locationlist",
                                       "label" : "List of Locations",
                                       "required" : false,
+                                      "noIndex" : false,
                                       "listType" : "micronode",
                                       "type" : "list",
                                       "allow" : [ "geolocation" ]
@@ -15396,6 +15814,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of schema fields |
                                 | name | true | string | Name of the schema. |
+                                | noIndex | false | boolean | Flag which indicates whether nodes which use this schema should be excluded from the indexing. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -15419,39 +15838,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -15487,6 +15913,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of schema fields |
                                 | name | true | string | Name of the schema. |
+                                | noIndex | false | boolean | Flag which indicates whether nodes which use this schema should be excluded from the indexing. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -15510,39 +15937,46 @@ mediaType: application/json
                                     "name" : "name",
                                     "label" : "Name",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "string"
                                   }, {
                                     "name" : "number",
                                     "label" : "Number",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "html",
                                     "label" : "Teaser",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "html"
                                   }, {
                                     "name" : "list",
                                     "label" : "List of nodes",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "node",
                                     "type" : "list",
                                     "allow" : [ "content", "video" ]
                                   }, {
                                     "name" : "node",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "node",
                                     "allow" : [ "content", "video", "image" ]
                                   }, {
                                     "name" : "location",
                                     "label" : "Location",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "type" : "micronode",
                                     "allow" : [ "geolocation" ]
                                   }, {
                                     "name" : "locationlist",
                                     "label" : "List of Locations",
                                     "required" : false,
+                                    "noIndex" : false,
                                     "listType" : "micronode",
                                     "type" : "list",
                                     "allow" : [ "geolocation" ]
@@ -15589,11 +16023,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -15614,11 +16050,13 @@ mediaType: application/json
                                       "name" : "longitude",
                                       "label" : "Longitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     }, {
                                       "name" : "latitude",
                                       "label" : "Latitude",
                                       "required" : true,
+                                      "noIndex" : false,
                                       "type" : "number"
                                     } ],
                                     "microschema" : true,
@@ -15665,6 +16103,7 @@ mediaType: application/json
                                 | elasticsearch | false | object | Additional search index configuration. This can be used to setup custom analyzers and filters. |
                                 | fields | true | array | List of microschema fields |
                                 | name | true | string | Name of the microschema |
+                                | noIndex | false | boolean | &#x27;Exclude from indexing&#x27; flag. |
                                 | permissions.create | true | boolean | Flag which indicates whether the create permission is granted. |
                                 | permissions.delete | true | boolean | Flag which indicates whether the delete permission is granted. |
                                 | permissions.publish | false | boolean | Flag which indicates whether the publish permission is granted. |
@@ -15684,11 +16123,13 @@ mediaType: application/json
                                     "name" : "longitude",
                                     "label" : "Longitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   }, {
                                     "name" : "latitude",
                                     "label" : "Latitude",
                                     "required" : true,
+                                    "noIndex" : false,
                                     "type" : "number"
                                   } ],
                                   "microschema" : true,

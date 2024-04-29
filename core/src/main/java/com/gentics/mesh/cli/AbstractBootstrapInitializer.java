@@ -74,6 +74,7 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import com.gentics.mesh.util.MavenVersionNumber;
+import com.hazelcast.internal.util.XmlUtil;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -389,6 +390,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	@Override
 	public void init(Mesh mesh, boolean forceResync, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		// since we use xerces, we need to set this to "true"
+		System.setProperty(XmlUtil.SYSTEM_PROPERTY_IGNORE_XXE_PROTECTION_FAILURES, "true");
+
 		this.mesh = (MeshImpl) mesh;
 		PostProcessFlags flags = new PostProcessFlags(forceResync, false);
 
@@ -538,7 +542,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			byte[] ipBytes = InetAddress.getByName(destination).getAddress();
 
 			try (DatagramSocket datagramSocket = new DatagramSocket()) {
-				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 0);
+				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 10002);
 				return datagramSocket.getLocalAddress().getHostAddress();
 			}
 		} catch (Exception e) {

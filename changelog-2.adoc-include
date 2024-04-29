@@ -6,6 +6,61 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.0]]
+== 2.1.0 (26.04.2024)
+
+icon:plus[] Core: Usage of application level protocol negotiation (aka ALPN) can be now configured via Mesh Options.
+
+
+icon:plus[] Java Rest client: REST client can now choose the HTTP protocol version to use for the Mesh connection. Possible values: DEFAULT (current default support of the carrier HTTP client library, default value), HTTP_1_1, HTTP_2.
+
+
+icon:plus[] Plugins: An option for connection over HTTP/2 for the Mesh plugins have been added.
+
+
+icon:plus[] Image manipulation: Adds support for WebP images.
+
+icon:plus[] The endpoint `GET /auth/login` now also supports login via the Authentication Bearer request header (using an API token).
+
+
+icon:plus[] Core: The on-demand image manipulation feature has been refactored for DDoS protection. The new image manipulator option, `mode`, has been added with the following values: 
+`ON_DEMAND` keeps already existing behaviour with creating/reusing the image variant automatically on each request, 
+`MANUAL` requires an extra step of calling the image variant creation REST API prior to the variant serve, `OFF` disables the feature completely. A set of REST API calls has been added for the image variants manipulation. 
+The GraphQL `nodes` call has been extended to filter/serve over the image variants of a selected binary field, if applicable.
+
+icon:plus[] Search: Several enhancements have been applied to the content, sent to the search engine for the indexing. Each (micro)schema is presented a `noIndex` flag, marking the content of the (micro)schema as excluded from the indexing. Each (micro)schema field is presented a similar `noIndex` flag. 
+By default no flag is set, meaning the content to be indexable. This feature serves security purposes, preventing the sensible information from leaking through the search engine. 
+
+icon:plus[] REST: A new HttpServer option, `minifyJson`, has been added to control over the REST API payloads being pretty printed for readability, or minified for resource save. An analogous setting has been added to the Java `MeshRestClient`. 
+Default value is `true`, so the payload minification is turned on, which is a @breaking@S change, if one expects the pretty-formatted output.
+
+icon:plus[] Now it's possible to use generated Mesh API key for the login request, with `apikey` string body parameter.
+
+icon:plus[] REST: A new 'languages' endpoint has been added, providing the list of the installed languages, as well as the lookup over UUID or 2-character language tag.
+
+icon:plus[] Some dependencies have been updated:
+* VertX: 4.5.7
+* GraphQL: 21.5
+* GraphQL Dataloader: 3.2.2
+* PF4j: 3.11.0
+* Hazelcast: 3.12.13
+* Jackson: 2.17.0
+* SnakeYAML: 2.2
+* Log4j: 2.23.1
+* SLF4j: 2.0.13
+* Logback: 1.5.5
+* Commons IO: 2.16.1
+* RAML Parser: 0.8.40
+* JSON Path: 2.9.0
+* JSoup: 1.17.2
+* Jettison: 1.5.4
+* Netty: 4.1.108.Final
+* Image IO: 3.10.1
+
+
+icon:plus[] Mesh has been updated to Java 17 (LTS version).
+
+
 [[v2.0.18]]
 == 2.0.18 (20.03.2024)
 
