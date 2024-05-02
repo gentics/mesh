@@ -52,6 +52,7 @@ import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
+import com.sksamuel.scrimage.ImageParseException;
 import com.sksamuel.scrimage.ImmutableImage;
 import com.sksamuel.scrimage.webp.WebpImageReader;
 import com.sksamuel.scrimage.webp.WebpWriter;
@@ -573,6 +574,9 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 
 			// No reader available for this image type.
+			log.error("No suitable image reader found for input image");
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		} catch (ImageParseException e) {
 			log.error("No suitable image reader found for input image");
 			throw error(BAD_REQUEST, "image_error_reading_failed");
 		}

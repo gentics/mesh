@@ -44,7 +44,6 @@ import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.util.ImageTestUtil;
 import com.gentics.mesh.util.RxUtil;
-import com.sksamuel.scrimage.ImmutableImage;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -94,7 +93,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 			obs.subscribe(data -> {
 				assertNotNull(data);
 				try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
-					BufferedImage resizedImage = readBufferedImage(bis);
+					BufferedImage resizedImage = ImageTestUtil.read(bis);
 					String referenceFilename = "outputImage-" + imageName.replace(".", "_") + "-resize-reference.png";
 					// when you want to update the referenceImage, execute the code below
 					// and copy the files to src/test/resources/references/
@@ -691,23 +690,5 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		for (String key : metadata.keySet()) {
 			System.out.println(key + "=" + metadata.get(key));
 		}
-	}
-
-	/**
-	 * Read the given input stream into a buffered image
-	 * @param is input stream
-	 * @return buffered image
-	 * @throws IOException
-	 */
-	protected BufferedImage readBufferedImage(InputStream is) throws IOException {
-		BufferedImage bufferedImage = ImageIO.read(is);
-		if (bufferedImage == null) {
-			is.reset();
-			ImmutableImage immutableImage = ImmutableImage.loader().fromStream(is);
-			if (immutableImage != null) {
-				bufferedImage = immutableImage.awt();
-			}
-		}
-		return bufferedImage;
 	}
 }

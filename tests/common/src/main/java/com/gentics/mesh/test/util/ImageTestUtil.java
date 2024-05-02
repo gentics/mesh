@@ -10,14 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -92,7 +89,42 @@ public final class ImageTestUtil {
 
 		return image;
 	}
-	
+
+	/**
+	 * Read the given input stream into a buffered image
+	 * @param is input stream
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	public static BufferedImage read(InputStream is) throws IOException {
+		BufferedImage bufferedImage = ImageIO.read(is);
+		if (bufferedImage == null) {
+			is.reset();
+			ImmutableImage immutableImage = ImmutableImage.loader().fromStream(is);
+			if (immutableImage != null) {
+				bufferedImage = immutableImage.awt();
+			}
+		}
+		return bufferedImage;
+	}
+
+	/**
+	 * Read the given file into a buffered image
+	 * @param imageFile image file
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	public static BufferedImage read(File imageFile) throws IOException {
+		BufferedImage bufferedImage = ImageIO.read(imageFile);
+		if (bufferedImage == null) {
+			ImmutableImage immutableImage = ImmutableImage.loader().fromFile(imageFile);
+			if (immutableImage != null) {
+				bufferedImage = immutableImage.awt();
+			}
+		}
+		return bufferedImage;
+	}
+
 	public static void writePngImage(BufferedImage output, File target) throws IOException {
 		try(ImageOutputStream out = new FileImageOutputStream(target)) {
 			ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("png").next();
