@@ -72,6 +72,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.dataloader.DataLoaderKey;
 import com.gentics.mesh.graphql.dataloader.NodeDataLoader;
 import com.gentics.mesh.graphql.filter.NodeFilter;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
@@ -874,8 +875,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 
 						NodeDataLoader.Context context = new NodeDataLoader.Context(type, languageTags, Optional.empty(), getPagingInfo(env));
-						DataLoader<HibNode, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
-						return contentLoader.load(node, context).thenApply((containers) -> {
+						DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
+						return contentLoader.load(new DataLoaderKey<>(env, node), context).thenApply((containers) -> {
 							HibNodeFieldContainer container = NodeTypeProvider.getContainerWithFallback(languageTags, containers);
 							return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 						});

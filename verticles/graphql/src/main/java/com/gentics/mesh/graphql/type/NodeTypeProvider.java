@@ -421,8 +421,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					List<String> languageTags = getLanguageArgument(env, content);
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<ParentNodeLoaderKey, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
-					return parentLoader.load(new ParentNodeLoaderKey(node, type, languageTags, getPagingInfo(env))).thenApply(c -> c.getResult(env));
+					DataLoader<DataLoaderKey<ParentNodeLoaderKey>, NodeContentWithOptionalRuntimeException> parentLoader = env.getDataLoader(NodeDataLoader.PARENT_LOADER_KEY);
+					return parentLoader.load(new DataLoaderKey<>(env, new ParentNodeLoaderKey(node, type, languageTags, getPagingInfo(env)))).thenApply(c -> c.getResult(env));
 				})
 				.build(),
 
@@ -474,8 +474,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					}
 					ContainerType type = getNodeVersion(env);
 
-					DataLoader<NodeContent, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
-					return byRefLoader.load(new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type)).thenApply(c -> {
+					DataLoader<DataLoaderKey<NodeContent>, Collection<NodeReferenceIn>> byRefLoader = env.getDataLoader(NodeDataLoader.REFERENCED_BY_LOADER_KEY);
+					return byRefLoader.load(new DataLoaderKey<>(env, new NodeContent(content.getNode(), content.getContainer(), content.getLanguageFallback(), type))).thenApply(c -> {
 						Stream<NodeReferenceIn> stream = c.stream();
 						Map<String, ?> filterInput = env.getArgument("filter");
 						if (filterInput != null) {
