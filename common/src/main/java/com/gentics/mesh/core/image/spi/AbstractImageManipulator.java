@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
@@ -111,7 +112,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 					return;
 				}
-				BufferedImage image = ImageIO.read(file);
+				BufferedImage image = readFromFile(file);
 				if (image == null) {
 					bh.fail(error(BAD_REQUEST, "image_error_reading_failed"));
 				} else {
@@ -124,6 +125,14 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		}, false);
 		return result.toSingle();
 	}
+
+	/**
+	 * Read the image from the given file into a {@link BufferedImage}
+	 * @param imageFile image file
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	abstract protected BufferedImage readFromFile(File imageFile) throws IOException;
 
 	/**
 	 * Extract the image information from the given buffered image.

@@ -36,6 +36,7 @@
 { "name": "testimg.bmp", "w": 285, "h": 350, "dominantColor": "#232024" },
 { "name": "transparent.gif", "w": 150, "h": 110, "dominantColor": "#8c8422" },
 { "name": "transparent_spider.png", "w": 250, "h": 188, "dominantColor": "#000" },
-{ "name": "uniqa.jpg", "w": 604, "h": 604, "dominantColor": "#1969b0" }
+{ "name": "uniqa.jpg", "w": 604, "h": 604, "dominantColor": "#1969b0" },
+{ "name": "blog-mtgm.webp", "w": 1792, "h": 1024, "dominantColor": "#2d4d60" }
 ]
 }
