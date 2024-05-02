@@ -146,7 +146,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param keyContexts map of keys to contexts
 	 * @param consumer consumer
 	 */
-	private static void partitioningByLinkTypeAndText(List<DataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, Set<String>> consumer) {
+	private static void partitioningByLinkTypeAndText(List<FieldDefinitionDataLoaderKey> keys, BiConsumer<Pair<LinkType, String>, Set<String>> consumer) {
 		Map<Pair<LinkType, String>, Set<String>> partitionedKeys = keys.stream()
 			.map(key -> Pair.of(Pair.of(key.linkType, key.languageTag), key.content))
 			.collect(Collectors.groupingBy(Pair::getLeft, Collectors.mapping(Pair::getRight, Collectors.toSet())));
@@ -157,7 +157,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * DataLoader implementation that replaces links in contents
 	 */
-	public BatchLoaderWithContext<DataLoaderKey, String> LINK_REPLACER_LOADER;
+	public BatchLoaderWithContext<FieldDefinitionDataLoaderKey, String> LINK_REPLACER_LOADER;
 
 	/**
 	 * Generic list field data loader
@@ -256,7 +256,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 			String branchUuid = Tx.get().getBranch(gc).getUuid();
 			String projectName = Tx.get().getProject(gc).getName();
 
-			Map<DataLoaderKey, String> resolvedByContent = new HashMap<>();
+			Map<FieldDefinitionDataLoaderKey, String> resolvedByContent = new HashMap<>();
 
 			partitioningByLinkTypeAndText(keys, (pair, contents) -> {
 				LinkType type = pair.getLeft();
@@ -267,7 +267,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					String content = entry.getKey();
 					String replaced = entry.getValue();
 
-					DataLoaderKey key = new DataLoaderKey(content, type, languageTag);
+					FieldDefinitionDataLoaderKey key = new FieldDefinitionDataLoaderKey(content, type, languageTag);
 					resolvedByContent.put(key, replaced);
 				}
 			});
@@ -562,8 +562,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					String content = htmlField.getHTML();
 
 					if (type != null && type != LinkType.OFF) {
-						DataLoader<DataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
-						return linkedContentLoader.load(new DataLoaderKey(content, type, container.getLanguageTag()));
+						DataLoader<FieldDefinitionDataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
+						return linkedContentLoader.load(new FieldDefinitionDataLoaderKey(content, type, container.getLanguageTag()));
 					} else {
 						return content;
 					}
@@ -584,8 +584,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					String content = field.getString();
 
 					if (type != null && type != LinkType.OFF) {
-						DataLoader<DataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
-						return linkedContentLoader.load(new DataLoaderKey(content, type, container.getLanguageTag()));
+						DataLoader<FieldDefinitionDataLoaderKey, String> linkedContentLoader = env.getDataLoader(FieldDefinitionProvider.LINK_REPLACER_DATA_LOADER_KEY);
+						return linkedContentLoader.load(new FieldDefinitionDataLoaderKey(content, type, container.getLanguageTag()));
 					} else {
 						return content;
 					}
@@ -888,7 +888,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	/**
 	 * Keys for the DataLoader (containing content, link type and language)
 	 */
-	public static class DataLoaderKey {
+	public static class FieldDefinitionDataLoaderKey {
 		/**
 		 * Content
 		 */
@@ -910,7 +910,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		 * @param linkType link type
 		 * @param languageTag language
 		 */
-		public DataLoaderKey(String content, LinkType linkType, String languageTag) {
+		public FieldDefinitionDataLoaderKey(String content, LinkType linkType, String languageTag) {
 			this.content = content;
 			this.linkType = linkType;
 			this.languageTag = languageTag;
@@ -918,8 +918,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (obj instanceof DataLoaderKey) {
-				DataLoaderKey other = (DataLoaderKey) obj;
+			if (obj instanceof FieldDefinitionDataLoaderKey) {
+				FieldDefinitionDataLoaderKey other = (FieldDefinitionDataLoaderKey) obj;
 				return other.linkType == linkType && StringUtils.equals(other.languageTag, languageTag) && StringUtils.equals(other.content, content);
 			} else {
 				return false;
