@@ -2,10 +2,10 @@ package com.gentics.mesh.image;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.util.ImageTestUtil.createMockedBinary;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.imageio.ImageIO;
 
@@ -43,6 +44,7 @@ import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.util.ImageTestUtil;
 import com.gentics.mesh.util.RxUtil;
+import com.sksamuel.scrimage.ImmutableImage;
 
 import io.reactivex.Flowable;
 import io.reactivex.Single;
@@ -80,7 +82,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 
 			HibBinary hb = createMockedBinary(path);
 			try {
-				when(mockedBinaryStorage.openBlockingStream(null)).thenReturn(ImageTestUtil.class.getResourceAsStream(path));
+				when(mockedBinaryStorage.openBlockingStream(null)).then(uuid -> ImageTestUtil.class.getResourceAsStream(path));
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -88,30 +90,33 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 				.handleResize(hb, (ImageManipulationParameters) new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
 				.map(file -> Files.readAllBytes(Paths.get(file)));
 			CountDownLatch latch = new CountDownLatch(1);
+			AtomicReference<Throwable> error = new AtomicReference<>();
 			obs.subscribe(data -> {
-				try {
-					assertNotNull(data);
-					try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
-						BufferedImage resizedImage = ImageIO.read(bis);
-						String referenceFilename = "outputImage-" + imageName.replace(".", "_") + "-resize-reference.png";
-						// when you want to update the referenceImage, execute the code below
-						// and copy the files to src/test/resources/references/
-						// ImageTestUtil.writePngImage(resizedImage, new File("target/" + referenceFilename));
-						// ImageTestUtil.displayImage(resizedImage);
-						assertThat(resizedImage).as(imageName).hasSize(150, 180).matchesReference(referenceFilename);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					fail("Error occured");
+				assertNotNull(data);
+				try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
+					BufferedImage resizedImage = readBufferedImage(bis);
+					String referenceFilename = "outputImage-" + imageName.replace(".", "_") + "-resize-reference.png";
+					// when you want to update the referenceImage, execute the code below
+					// and copy the files to src/test/resources/references/
+					// ImageTestUtil.writePngImage(resizedImage, new File("target/" + referenceFilename));
+					// ImageTestUtil.displayImage(resizedImage);
+					assertThat(resizedImage).as(imageName).hasSize(150, 180).matchesReference(referenceFilename);
 				}
 				latch.countDown();
+			}, e -> {
+				error.set(e);
+				latch.countDown();
 			});
+
 			try {
 				if (!latch.await(20, TimeUnit.SECONDS)) {
-					fail("Timeout reached");
+					fail("Timeout reached while resizing " + imageName);
+				}
+				if (error.get() != null) {
+					fail("Resizing " + imageName + " failed", error.get());
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				fail("Resizing " + imageName + " failed", e);
 			}
 		});
 
@@ -686,5 +691,23 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		for (String key : metadata.keySet()) {
 			System.out.println(key + "=" + metadata.get(key));
 		}
+	}
+
+	/**
+	 * Read the given input stream into a buffered image
+	 * @param is input stream
+	 * @return buffered image
+	 * @throws IOException
+	 */
+	protected BufferedImage readBufferedImage(InputStream is) throws IOException {
+		BufferedImage bufferedImage = ImageIO.read(is);
+		if (bufferedImage == null) {
+			is.reset();
+			ImmutableImage immutableImage = ImmutableImage.loader().fromStream(is);
+			if (immutableImage != null) {
+				bufferedImage = immutableImage.awt();
+			}
+		}
+		return bufferedImage;
 	}
 }

@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -24,6 +25,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.webp.WebpImageReader;
 
 public final class ImageTestUtil {
 	private ImageTestUtil() {
@@ -73,12 +76,21 @@ public final class ImageTestUtil {
 	}
 
 	public static BufferedImage readImage(String imageName, String fromResourcePath) throws IOException {
-		InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName);
-		ImageInputStream ins = ImageIO.createImageInputStream(is);
-		Iterator<ImageReader> it = ImageIO.getImageReaders(ins);
-		ImageReader reader = it.next();
-		reader.setInput(ins, true);
-		return reader.read(0);
+		BufferedImage image = null;
+		try (InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName)) {
+			image = ImageIO.read(is);
+		}
+
+		if (image == null) {
+			try (InputStream is = ImageTestUtil.class.getResourceAsStream(fromResourcePath + "/" + imageName)) {
+				ImmutableImage immutableImage = ImmutableImage.loader().withImageReaders(Arrays.asList(new WebpImageReader())).fromStream(is);
+				if (immutableImage != null) {
+					image = immutableImage.awt();
+				}
+			}
+		}
+
+		return image;
 	}
 	
 	public static void writePngImage(BufferedImage output, File target) throws IOException {
