@@ -126,6 +126,12 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 		return result.toSingle();
 	}
 
+	/**
+	 * Read the image from the given file into a {@link BufferedImage}
+	 * @param imageFile image file
+	 * @return buffered image
+	 * @throws IOException
+	 */
 	abstract protected BufferedImage readFromFile(File imageFile) throws IOException;
 
 	/**
