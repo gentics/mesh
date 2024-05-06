@@ -11,9 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -25,7 +28,6 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
-import com.luciad.imageio.webp.WebPWriteParam;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -50,6 +52,10 @@ import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
 import com.gentics.mesh.util.NumberUtils;
+import com.sksamuel.scrimage.ImageParseException;
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.webp.WebpImageReader;
+import com.sksamuel.scrimage.webp.WebpWriter;
 import com.twelvemonkeys.image.ResampleOp;
 
 import io.reactivex.Completable;
@@ -212,26 +218,23 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	/**
-	 * Create an image reader for the given input.
+	 * Create an optional image reader for the given input. If ImageIO is not capable of reading the image, an empty optional is returned
 	 *
 	 * @param input The input stream to read the original image from.
 	 * @return An image reader reading from the given input stream
 	 */
-	private ImageReader getImageReader(ImageInputStream input) {
+	private Optional<ImageReader> getImageReader(ImageInputStream input) {
 		Iterator<ImageReader> it = ImageIO.getImageReaders(input);
 
 		if (!it.hasNext()) {
-			// No reader available for this image type.
-			log.error("No suitable image reader found for input image");
-
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+			return Optional.empty();
 		}
 
 		ImageReader reader = it.next();
 
 		reader.setInput(input, true);
 
-		return reader;
+		return Optional.of(reader);
 	}
 
 	/**
@@ -342,39 +345,8 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				return workerPool.<String>rxExecuteBlocking(bh -> {
 					Supplier<InputStream> stream = () -> binaryStorage.openBlockingStream(binaryUuid);
 
-					try (InputStream is = stream.get(); ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-						BufferedImage image;
-						ImageReader reader = getImageReader(ins);
-
-						try {
-							image = reader.read(0);
-						} catch (IOException e) {
-							log.error("Could not read input image", e);
-
-							throw error(BAD_REQUEST, "image_error_reading_failed");
-						}
-
-						if (log.isDebugEnabled()) {
-							log.debug("Read image from stream " + ins.hashCode() + " with reader "
-									+ reader.getClass().getName());
-						}
-
-						image = cropAndResize(image, parameters);
-
-						String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-						String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-						String cacheFilePath = cacheFileInfo.path + "." + extension;
-						File outCacheFile = new File(cacheFilePath);
-
-						// Write image
-						try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-							ImageWriteParam params = getImageWriteparams(extension);
-
-							// same as write(image), but with image parameters
-							getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-						} catch (Exception e) {
-							throw error(BAD_REQUEST, "image_error_writing_failed");
-						}
+					try {
+						String cacheFilePath = resize(stream, parameters, extension -> cacheFileInfo.path + "." + extension);
 
 						// Return buffer to written cache file
 						bh.complete(cacheFilePath);
@@ -395,39 +367,11 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		return s3BinaryStorage.read(bucketName, s3ObjectKey)
 				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
-					try (InputStream is = new ByteArrayInputStream(originalFile.getBytes());
-							ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-						BufferedImage image;
-						ImageReader reader = getImageReader(ins);
-
-						try {
-							image = reader.read(0);
-						} catch (IOException e) {
-							log.error("Could not read input image", e);
-							throw error(BAD_REQUEST, "image_error_reading_failed");
-						}
-
-						if (log.isDebugEnabled()) {
-							log.debug("Read image from stream " + ins.hashCode() + " with reader "
-									+ reader.getClass().getName());
-						}
-
-						image = cropAndResize(image, parameters);
-
-						String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-						String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-						String cacheFilePath = options.getImageCacheDirectory()  + File.pathSeparator + filename;
+					Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
+					try {
+						String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
 						File outCacheFile = new File(cacheFilePath);
 
-						// Write image
-						try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-							ImageWriteParam params = getImageWriteparams(extension);
-
-							// same as write(image), but with image parameters
-							getImageWriter(reader, out).write(null, new IIOImage(image, null, null), params);
-						} catch (Exception e) {
-							throw error(BAD_REQUEST, "image_error_writing_failed");
-						}
 						// Return buffer to written cache file
 						bh.complete(outCacheFile);
 					} catch (Exception e) {
@@ -464,40 +408,11 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 					else {
 						return s3BinaryStorage.read(bucketName, s3ObjectKey)
 								.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
-									try (InputStream is = new ByteArrayInputStream(originalFile.getBytes());
-											ImageInputStream ins = ImageIO.createImageInputStream(is)) {
-										BufferedImage image;
-										ImageReader reader = getImageReader(ins);
-
-										try {
-											image = reader.read(0);
-										} catch (IOException e) {
-											log.error("Could not read input image", e);
-											throw error(BAD_REQUEST, "image_error_reading_failed");
-										}
-
-										if (log.isDebugEnabled()) {
-											log.debug("Read image from stream " + ins.hashCode() + " with reader "
-													+ reader.getClass().getName());
-										}
-
-										image = cropAndResize(image, parameters);
-
-										String[] extensions = reader.getOriginatingProvider().getFileSuffixes();
-										String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
-										String cacheFilePath = options.getImageCacheDirectory()  + File.pathSeparator + filename;
+									Supplier<InputStream> stream = () -> new ByteArrayInputStream(originalFile.getBytes());
+									try {
+										String cacheFilePath = resize(stream, parameters, extension -> options.getImageCacheDirectory()  + File.pathSeparator + filename);
 										File outCacheFile = new File(cacheFilePath);
 
-										// Write image
-										try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
-											ImageWriteParam params = getImageWriteparams(extension);
-
-											// same as write(image), but with image parameters
-											getImageWriter(reader, out).write(null, new IIOImage(image, null, null),
-													params);
-										} catch (Exception e) {
-											throw error(BAD_REQUEST, "image_error_writing_failed");
-										}
 										// Return buffer to written cache file
 										bh.complete(outCacheFile);
 									} catch (Exception e) {
@@ -515,15 +430,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			JPEGImageWriteParam params = new JPEGImageWriteParam(null);
 			params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 			params.setCompressionQuality(options.getJpegQuality());
-			return params;
-		}
-
-		if (isWebP(extension)) {
-			WebPWriteParam params = (WebPWriteParam) ImageIO.getImageWritersByMIMEType("image/webp").next().getDefaultWriteParam();
-
-			params.setCompressionType("Lossy");
-			params.setCompressionQuality(options.getJpegQuality());
-
 			return params;
 		}
 
@@ -572,4 +478,107 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		});
 	}
 
+	@Override
+	protected BufferedImage readFromFile(File imageFile) throws IOException {
+		BufferedImage bufferedImage = ImageIO.read(imageFile);
+		if (bufferedImage == null) {
+			ImmutableImage immutableImage = ImmutableImage.loader().fromFile(imageFile);
+			if (immutableImage != null) {
+				bufferedImage = immutableImage.awt();
+			}
+		}
+		return bufferedImage;
+	}
+
+	/**
+	 * Resize the image supplied by the given stream supplier. If reading the image
+	 * with ImageIO is not possible (e.g. for webp images), this will fall back to
+	 * resizing by calling
+	 * {@link #resizeUsingScrimage(Supplier, ImageManipulation, Function)}
+	 * 
+	 * @param streamSupplier stream supplier
+	 * @param parameters image manipulation parameters
+	 * @param cacheFilePathGenerator function to create the cache file path (from the extension)
+	 * @return path to the resized file
+	 * @throws Exception
+	 */
+	protected String resize(Supplier<InputStream> streamSupplier, ImageManipulation parameters, Function<String, String> cacheFilePathGenerator) throws Exception {
+		Optional<ImageReader> reader;
+		try (InputStream is = streamSupplier.get(); ImageInputStream ins = ImageIO.createImageInputStream(is)) {
+			reader = getImageReader(ins);
+
+			if (reader.isPresent()) {
+				BufferedImage image = null;
+				try {
+					image = reader.get().read(0);
+				} catch (IOException e) {
+					log.error("Could not read input image", e);
+
+					throw error(BAD_REQUEST, "image_error_reading_failed");
+				}
+
+				if (log.isDebugEnabled()) {
+					log.debug("Read image from stream with reader "
+							+ reader.get().getClass().getName());
+				}
+
+				image = cropAndResize(image, parameters);
+
+				String[] extensions = reader.get().getOriginatingProvider().getFileSuffixes();
+				String extension = ArrayUtils.isEmpty(extensions) ? "" : extensions[0];
+				String cacheFilePath = cacheFilePathGenerator.apply(extension);
+				File outCacheFile = new File(cacheFilePath);
+
+				// Write image
+				try (ImageOutputStream out = new FileImageOutputStream(outCacheFile)) {
+					ImageWriteParam params = getImageWriteparams(extension);
+
+					// same as write(image), but with image parameters
+					getImageWriter(reader.get(), out).write(null, new IIOImage(image, null, null), params);
+				} catch (Exception e) {
+					throw error(BAD_REQUEST, "image_error_writing_failed");
+				}
+
+				return cacheFilePath;
+			}
+		}
+
+		return resizeUsingScrimage(streamSupplier, parameters, cacheFilePathGenerator);
+	}
+
+	/**
+	 * Fallback for resizing using Scrimage (for webp images)
+	 * @param streamSupplier stream supplier
+	 * @param parameters image resize parameters
+	 * @param cacheFilePathGenerator function to create the cache file path (from the extension)
+	 * @return path to the resized file
+	 * @throws Exception
+	 */
+	protected String resizeUsingScrimage(Supplier<InputStream> streamSupplier, ImageManipulation parameters, Function<String, String> cacheFilePathGenerator) throws Exception {
+		try (InputStream is = streamSupplier.get()) {
+			ImmutableImage immutableImage = ImmutableImage.loader().withImageReaders(Arrays.asList(new WebpImageReader())).fromStream(is);
+
+			if (immutableImage != null) {
+				BufferedImage image = immutableImage.awt();
+				image = cropAndResize(image, parameters);
+
+				String extension = "webp";
+				String cacheFilePath = cacheFilePathGenerator.apply(extension);
+				File outCacheFile = new File(cacheFilePath);
+
+				// Write image
+				ImmutableImage resized = ImmutableImage.fromAwt(image);
+				resized.forWriter(WebpWriter.DEFAULT).write(outCacheFile);
+
+				return cacheFilePath;
+			}
+
+			// No reader available for this image type.
+			log.error("No suitable image reader found for input image");
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		} catch (ImageParseException e) {
+			log.error("No suitable image reader found for input image");
+			throw error(BAD_REQUEST, "image_error_reading_failed");
+		}
+	}
 }
