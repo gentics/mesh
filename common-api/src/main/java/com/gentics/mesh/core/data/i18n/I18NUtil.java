@@ -89,10 +89,7 @@ public class I18NUtil {
 		String i18nMessage = "";
 		try {
 			ResourceBundle labels = ResourceBundle.getBundle("i18n." + bundleName, locale, new UTF8Control());
-			MessageFormat formatter = new MessageFormat("");
-			formatter.setLocale(locale);
-			formatter.applyPattern(labels.getString(key));
-			i18nMessage = formatter.format(parameters);
+			i18nMessage = MessageFormat.format(labels.getString(key), parameters);
 		} catch (Exception e) {
 			log.error("Could not format i18n message for key {" + key + "}", e);
 			i18nMessage = key;
