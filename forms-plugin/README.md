@@ -30,6 +30,7 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 | `userMailTemplate`            | string               | Path to the default template for user mails, relative to `templatesPath`. Template name must be set **without** extension `.hbs`.      |                           |
 | `userMailSubject`             | string               | Subject for user mails. Placeholder [[FORMNAME]] will be replaced with the name of the form                                            |                           |
 | `defaultExportFormat`         | string               | Default export format. Currently, only `CSV` is supported                                                                              | CSV                       |
+| `export`         | object               | Export settings                                                                              |                        |
 | `reCaptcha`                   | object               | Recaptcha settings                                                                                                                     |                           |
 | `friendlyCaptcha`             | object               | FriendlyRecaptcha settings                                                                                                             |                           |
 | `eyepin`                      | object               | Eyepin settings                                                                                                                        |                           |
@@ -780,6 +781,20 @@ Where
 
 Handlebars example for rendering a form:
 * [form.hbs](src/main/resources/templates/form.hbs)
+
+# Export
+
+Options related to the form results export are: `includeCreationTimestamp`, `includeUuid`, `timestampFormat` and `includeNameFirst`. There is also `defaultExportFormat` (CSV) not included in the export object. Options mostly controll the look of the exported file.
+
+## Configuration Options
+These are the options available for the Form Export
+
+| Key                   | Type     | Description                                                                                                                             | Default value |
+|-----------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------|---|
+| `includeCreationTimestamp`             | boolean   | Should the fields in the export contain the timestamp of when the form is submitted |false 
+| `includeUuid`           | boolean   | Should the fields in the export contain the uuid | false 
+| `timestampFormat`         | string   | The timestamp format in the export. | "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"
+| `includeNameFirst`         | boolean   | Should the export contain the name of the field before the label | false
 
 # Extending
 
