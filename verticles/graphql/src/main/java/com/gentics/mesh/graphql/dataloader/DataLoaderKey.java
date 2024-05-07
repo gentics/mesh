@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.dataloader;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoader;
 
 import graphql.execution.ResultPath;
@@ -14,19 +15,23 @@ import graphql.schema.DataFetchingEnvironment;
  */
 public final class DataLoaderKey<T> {
 
-	private final ResultPath path;
+	private final String path;
 	private final T value;
 
-	public DataLoaderKey(ResultPath path, T value) {
+	public DataLoaderKey(String path, T value) {
 		this.path = path;
 		this.value = value;
+	}
+
+	public DataLoaderKey(ResultPath path, T value) {
+		this(path.toString().replaceAll("\\[[\\d+]\\]", StringUtils.EMPTY), value);
 	}
 
 	public DataLoaderKey(DataFetchingEnvironment env, T value) {
 		this(env.getExecutionStepInfo().getPath(), value);
 	}
 
-	public ResultPath getPath() {
+	public String getPath() {
 		return path;
 	}
 

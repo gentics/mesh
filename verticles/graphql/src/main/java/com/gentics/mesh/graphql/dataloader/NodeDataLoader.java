@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.dataloader.BatchLoaderWithContext;
 
@@ -42,7 +43,6 @@ import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.NodeTypeProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import graphql.execution.ResultPath;
 import io.vertx.core.Promise;
 
 /**
@@ -70,7 +70,7 @@ public class NodeDataLoader {
 		// query for all types provided
 		partitioningByContainerType(environment.getKeyContexts(), (Pair<ContainerType, List<DataLoaderKey<HibNode>>> keysByContainerType) -> {
 			ContainerType type = keysByContainerType.getKey();
-			Map<ResultPath, Set<HibNode>> nodesByPath = keysByContainerType.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+			Map<String, Set<HibNode>> nodesByPath = keysByContainerType.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
 			nodesByPath.entrySet().stream().forEach(entry -> {
 				Map<HibNode, List<HibNodeFieldContainer>> containerByType = tx.contentDao().getFieldsContainers(entry.getValue(), branchUuid, type);
 				fieldsContainers.putAll(containerByType.entrySet()
@@ -105,7 +105,7 @@ public class NodeDataLoader {
 			ContainerType type = keysByContext.getKey().getType();
 			PagingParameters paging = keysByContext.getKey().getPaging();
 			Optional<FilterOperation<?>> maybeNativeFilter = keysByContext.getKey().getMaybeNativeFilter();
-			Map<ResultPath, Set<HibNode>> nodesByPath = keysByContext.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+			Map<String, Set<HibNode>> nodesByPath = keysByContext.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
 			nodesByPath.entrySet().stream().forEach(entry -> {
 				childrenByNode.putAll(tx.nodeDao()
 						.getChildren(entry.getValue(), context, branchUuid, languageTags, type, paging, maybeNativeFilter)
@@ -131,7 +131,7 @@ public class NodeDataLoader {
 	 */
 	public static BatchLoaderWithContext<DataLoaderKey<NodeContent>, Collection<NodeReferenceIn>> REFERENCED_BY_LOADER = (keys, environment) -> {
 		GraphQLContext context = environment.getContext();
-		Map<ResultPath, Set<NodeContent>> contentByPath = keys.stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
+		Map<String, Set<NodeContent>> contentByPath = keys.stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toSet())));
 		Map<DataLoaderKey<NodeContent>, List<NodeReferenceIn>> resultByKey = new HashMap<>();
 		contentByPath.entrySet().stream().forEach(entry -> {
 			// we will collect the results by keys here
@@ -190,7 +190,7 @@ public class NodeDataLoader {
 		HibUser user = context.getUser();
 		String branchUuid = tx.getBranch(context).getUuid();
 		PersistingUserDao userDao = CommonTx.get().userDao();
-		Map<ResultPath, List<ParentNodeLoaderKey>> parentNodeKeysByPath = keys.stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toList())));
+		Map<String, List<ParentNodeLoaderKey>> parentNodeKeysByPath = keys.stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toList())));
 
 		// we will collect the results by keys here
 		Map<DataLoaderKey<ParentNodeLoaderKey>, NodeContentWithOptionalRuntimeException> resultByKey = new HashMap<>();
@@ -277,7 +277,7 @@ public class NodeDataLoader {
 
 		Map<DataLoaderKey<HibNode>, List<NodeContent>> nodeContentMap = new HashMap<>();
 		partitioningByContext(environment.getKeyContexts(), (Pair<Context, List<DataLoaderKey<HibNode>>> keysByContext) -> {
-			Map<ResultPath, List<HibNode>> keysForPartitionByPath = keysByContext.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toList())));
+			Map<String, List<HibNode>> keysForPartitionByPath = keysByContext.getValue().stream().collect(Collectors.groupingBy(DataLoaderKey::getPath, Collectors.mapping(DataLoaderKey::getValue, Collectors.toList())));
 			List<String> languageTags = keysByContext.getKey().getLanguageTags();
 			ContainerType type = keysByContext.getKey().getType();
 			keysForPartitionByPath.entrySet().stream().forEach(entry -> {
@@ -373,12 +373,17 @@ public class NodeDataLoader {
 			if (this == o) return true;
 			if (!(o instanceof Context)) return false;
 			Context context = (Context) o;
-			return type == context.type && Objects.equals(languageTags, context.languageTags) && Objects.equals(paging, context.paging) && Objects.equals(maybeNativeFilter, context.maybeNativeFilter);
+			return type == context.type 
+					&& Objects.equals(languageTags, context.languageTags) 
+					&& Objects.equals(paging.toString(), context.paging.toString()) 
+					&& Objects.equals(
+							maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY), 
+							context.maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(type, languageTags, paging, maybeNativeFilter);
+			return Objects.hash(type, languageTags, paging.toString(), maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
 		}
 
 		public Optional<FilterOperation<?>> getMaybeNativeFilter() {
