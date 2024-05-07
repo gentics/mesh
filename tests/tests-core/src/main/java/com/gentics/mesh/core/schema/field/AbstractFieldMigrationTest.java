@@ -601,6 +601,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		});
 
 		NodeMigrationActionContextImpl context = new NodeMigrationActionContextImpl();
+		context.setHttpServerConfig(tx(tx -> { return tx.data().options().getHttpServerOptions();}));
 		context.setProject(tx(() -> project()));
 		context.setBranch(tx(() -> project().getLatestBranch()));
 		context.setFromVersion(tx(tx -> {

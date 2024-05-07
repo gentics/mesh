@@ -84,6 +84,14 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse> impleme
 		return out(HAS_LANGUAGE, LanguageImpl.class);
 	}
 
+	@SuppressWarnings("deprecation")
+	@Override
+	public Language findLanguageByTag(String languageTag) {
+		return out(HAS_LANGUAGE)
+				.filter(item -> item.getProperty(LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY, String.class).equals(languageTag))
+				.nextOrDefaultExplicit(LanguageImpl.class, null);
+	}
+
 	@Override
 	public void removeLanguage(HibLanguage language) {
 		unlinkOut(toGraph(language), HAS_LANGUAGE);

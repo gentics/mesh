@@ -57,6 +57,10 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@JsonPropertyDescription("Auto purge flag of the schema. Controls whether contents of this schema should be automatically purged on update.")
 	private Boolean autoPurge;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema should be excluded from the indexing.")
+	private Boolean noIndex;
+
 	@Override
 	public String getName() {
 		return name;
@@ -65,6 +69,17 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@Override
 	public SchemaResponse setName(String name) {
 		this.name = name;
+		return this;
+	}
+
+	@Override
+	public Boolean getNoIndex() {
+		return noIndex;
+	}
+
+	@Override
+	public SchemaResponse setNoIndex(Boolean noIndex) {
+		this.noIndex = noIndex;
 		return this;
 	}
 
@@ -174,6 +189,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		updateRequest.setDescription(getDescription());
 		updateRequest.setElasticsearch(getElasticsearch());
 		updateRequest.setUrlFields(getUrlFields());
+		updateRequest.setNoIndex(getNoIndex());
 		return updateRequest;
 	}
 

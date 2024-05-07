@@ -7,25 +7,6 @@ import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static java.util.Objects.hash;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
@@ -96,12 +77,28 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
@@ -122,6 +119,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	protected final Consumer<JsonObject> assertion;
 	protected MeshRestClient client;
+
+	private static final List<String> DATES = List.of(
+			"2012-07-11 08:55:21",
+			"2014-07-11 10:55:30",
+			"2000-07-11 10:55:00"
+	);
 
 	/**
 	 * Default constructor.
@@ -161,6 +164,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				Arrays.asList("node-tag-query", true, false, "draft"),
 				Arrays.asList("nodes-query", true, false, "draft"),
 				Arrays.asList("nodes-query-by-uuids", true, false, "draft"),
+				Arrays.asList("nodes-query-by-uuids-common-filters", true, false, "draft"),
 				Arrays.asList("node-breadcrumb-query", true, false, "draft"),
 				Arrays.asList("node-breadcrumb-query-with-lang", true, false, "draft"),
 				Arrays.asList("node-language-fallback-query", true, false, "draft"),
@@ -380,7 +384,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createNumber("number").setNumber(42.1);
 
 			// date
-			long milisec = dateToMilis("2012-07-11 10:55:21");
+			long milisec = dateToMilis(DATES.get(0));
 			container.createDate("date").setDate(milisec);
 
 			// html
@@ -430,9 +434,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// dateList
 			HibDateFieldList dateList = container.createDateList("dateList");
-			dateList.createDate(dateToMilis("2012-07-11 10:55:21"));
-			dateList.createDate(dateToMilis("2014-07-11 10:55:30"));
-			dateList.createDate(dateToMilis("2000-07-11 10:55:00"));
+			dateList.createDate(dateToMilis(DATES.get(0)));
+			dateList.createDate(dateToMilis(DATES.get(1)));
+			dateList.createDate(dateToMilis(DATES.get(2)));
 
 			// numberList
 			HibNumberFieldList numberList = container.createNumberList("numberList");
@@ -526,17 +530,26 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
 		//System.out.println(jsonResponse.encodePrettily());
-		if (assertion == null) {
-			assertThat(jsonResponse)
-					.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
-					.compliesToAssertions(queryName, apiVersion);
-		} else {
-			assertion.accept(jsonResponse);
+		try {
+			if (assertion == null) {
+				assertThat(jsonResponse)
+						.replacingPlaceholderVariable(SCHEMA_UUID, schemaContainer("folder").getUuid())
+						.compliesToAssertions(queryName, apiVersion);
+			} else {
+				assertion.accept(jsonResponse);
+			}
+		} catch (Throwable e) {
+			getTestContext().LOG.error("Assertion failed for: \n{}\nPayload:\n{}", query, response.toJson());
+			throw e;
 		}
 	}
 
-	protected long dateToMilis(String date) throws ParseException {
-		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date).getTime();
+	protected long dateToMilis(String date)  {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
+		var parsedDateTime = dateTime.atOffset(ZoneOffset.UTC);
+
+		return parsedDateTime.toInstant().toEpochMilli();
 	}
 
 	protected Completable createLanguageLinkResolvingNode(String nodeUuid, String parentUuid, String referencedUuid) throws Exception {

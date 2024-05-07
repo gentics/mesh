@@ -40,8 +40,8 @@ public class RootRouterImpl implements RootRouter {
 		// APPLICATION_JSON requirements. This may not be true for other
 		// routes (eg. custom
 		// routes)
-		router.route().last().handler(DefaultNotFoundHandler.create());
-		router.route().failureHandler(FailureHandler.create(livenessBean));
+		router.route().last().handler(DefaultNotFoundHandler.create(options.getHttpServerOptions()));
+		router.route().failureHandler(FailureHandler.create(livenessBean, options.getHttpServerOptions()));
 		if (options.getHttpServerOptions().isServerTokens()) {
 			router.route().handler(PoweredByHandler.create());
 		}

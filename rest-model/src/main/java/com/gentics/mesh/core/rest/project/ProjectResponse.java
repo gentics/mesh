@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.rest.project;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
 /**
@@ -17,6 +20,10 @@ public class ProjectResponse extends AbstractGenericRestResponse {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The project root node. All futher nodes are children of this node.")
 	private NodeReference rootNode;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Project's languages.")
+	private List<LanguageResponse> languages;
 
 	public ProjectResponse() {
 	}
@@ -55,6 +62,23 @@ public class ProjectResponse extends AbstractGenericRestResponse {
 	 */
 	public void setRootNode(NodeReference rootNode) {
 		this.rootNode = rootNode;
+	}
+
+	/**
+	 * Get project languages.
+	 * 
+	 * @return
+	 */
+	public List<LanguageResponse> getLanguages() {
+		return languages;
+	}
+
+	/**
+	 * Set project languages.
+	 * @param languages
+	 */
+	public void setLanguages(List<LanguageResponse> languages) {
+		this.languages = languages;
 	}
 
 }

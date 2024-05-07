@@ -816,3 +816,9 @@ Example:
   ]
 }
 ----
+
+=== Exclude distinct Schemas/Microschemas/Fields from indexing.
+
+By default all the (micro)schemas in Mesh are subject to the indexing. This may be an unwanted behavior in the cases of storing the sensitive data, that should not in any case leave Mesh. For this case every Schema, Microschema and each field definition of those are equipped with the `noIndex` flag, allowing the exclusion of the target from the indexing process, as well as removing the already existing indices. Simply use Mesh REST API or Java client for the management of `noIndex` over schemas, microschemas and fields.
+
+

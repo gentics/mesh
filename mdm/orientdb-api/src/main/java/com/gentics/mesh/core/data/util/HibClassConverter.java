@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.branch.BranchVersionEdge;
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
@@ -367,6 +369,16 @@ public final class HibClassConverter {
 	 */
 	public static Binary toGraph(HibBinary binary) {
 		return checkAndCast(binary, Binary.class);
+	}
+
+	/**
+	 * Convert the image variant to a graph element.
+	 * 
+	 * @param binary
+	 * @return
+	 */
+	public static ImageVariant toGraph(HibImageVariant binary) {
+		return checkAndCast(binary, ImageVariant.class);
 	}
 
 	/**

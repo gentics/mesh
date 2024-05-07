@@ -4,17 +4,22 @@
   "properties" : {
     "username" : {
       "type" : "string",
-      "required" : true,
       "description" : "Username of the user which should be logged in."
     },
     "password" : {
       "type" : "string",
-      "required" : true,
       "description" : "Password of the user which should be logged in."
     },
     "newPassword" : {
       "type" : "string",
       "description" : "New password that will be set after successful login."
+    },
+    "apikey" : {
+      "type" : "string",
+      "description" : "API key of the user to log in."
+    },
+    "apiKey" : {
+      "type" : "string"
     }
   }
 }

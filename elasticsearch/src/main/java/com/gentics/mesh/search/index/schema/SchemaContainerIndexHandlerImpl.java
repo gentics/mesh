@@ -91,10 +91,10 @@ public class SchemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibSch
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		String indexName = HibSchema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "schema");
-		return Collections.singletonMap(indexName, info);
+		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 	@Override

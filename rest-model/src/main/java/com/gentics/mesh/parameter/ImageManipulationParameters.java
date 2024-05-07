@@ -4,17 +4,15 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
-import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.image.CropMode;
+import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
-import com.gentics.mesh.util.NumberUtils;
 
 /**
  * Interface for image manipulation query parameters. Crop and resize parameters for image manipulation.
  */
-public interface ImageManipulationParameters extends ParameterProvider {
+public interface ImageManipulationParameters extends ImageManipulation, ParameterProvider {
 
 	public static final String WIDTH_QUERY_PARAM_KEY = "w";
 
@@ -36,136 +34,47 @@ public interface ImageManipulationParameters extends ParameterProvider {
 
 	public static final String AUTO = "auto";
 
-	/**
-	 * Return the image width.
-	 *
-	 * @return
-	 */
+	@Override
 	default String getWidth() {
 		return getParameter(WIDTH_QUERY_PARAM_KEY);
 	}
 
-	/**
-	 * Set the image width.
-	 *
-	 * @param width
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setWidth(String width) {
 		setParameter(WIDTH_QUERY_PARAM_KEY, width);
 		return this;
 	}
 
-	/**
-	 * Set the image width.
-	 *
-	 * @param width
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setWidth(Integer width) {
 		setParameter(WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		return this;
 	}
 
-	/**
-	 * Return the image height.
-	 *
-	 * @return
-	 */
+	@Override
 	default String getHeight() {
 		return getParameter(HEIGHT_QUERY_PARAM_KEY);
 	}
 
-	/**
-	 * Set the image height.
-	 *
-	 * @param height
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setHeight(String height) {
 		setParameter(HEIGHT_QUERY_PARAM_KEY, height);
 		return this;
 	}
 
-	/**
-	 * Set the image height.
-	 *
-	 * @param height
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setHeight(Integer height) {
 		setParameter(HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		return this;
 	}
 
-	/**
-	 * Set the target size of the image.
-	 *
-	 * @param width
-	 * @param height
-	 * @return Fluent API
-	 */
-	default ImageManipulationParameters setSize(int width, int height) {
-		setWidth(String.valueOf(width));
-		setHeight(String.valueOf(height));
-		return this;
-	}
-
-	/**
-	 * Set the target size of the image.
-	 *
-	 * @param size
-	 * @return Fluent API
-	 */
-	default ImageManipulationParameters setSize(Point size) {
-		return setSize(size.getX(), size.getY());
-	}
-
-	/**
-	 * Return the image size.
-	 *
-	 * @return Image size or null when width or height are missing
-	 */
-	default Point getSize() {
-		Integer w = NumberUtils.toInteger(getWidth(), null);
-		Integer h = NumberUtils.toInteger(getHeight(), null);
-		if (w == null || h == null) {
-			return null;
-		}
-		return new Point(w, h);
-	}
-
-	/**
-	 * Returns the rect crop area parameter value.
-	 *
-	 * @return Configured image crop area rectangle
-	 */
+	@Override
 	default ImageRect getRect() {
 		String rect = getParameter(RECT_QUERY_PARAM_KEY);
 		return rect == null ? null : new ImageRect(rect);
 	}
 
-	/**
-	 * Set the crop area.
-	 *
-	 * @param startX
-	 * @param startY
-	 * @param height
-	 * @param width
-	 * @return Fluent API
-	 */
-	default ImageManipulationParameters setRect(int startX, int startY, int height, int width) {
-		ImageRect rect = new ImageRect(startX, startY, height, width);
-		setRect(rect);
-		return this;
-	}
-
-	/**
-	 * Set the crop area.
-	 *
-	 * @param rect
-	 * @return
-	 */
+	@Override
 	default ImageRect setRect(ImageRect rect) {
 		if (rect == null) {
 			setParameter(RECT_QUERY_PARAM_KEY, null);
@@ -175,22 +84,13 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return rect;
 	}
 
-	/**
-	 * Return the crop mode parameter value.
-	 *
-	 * @return
-	 */
+	@Override
 	default CropMode getCropMode() {
 		String mode = getParameter(CROP_MODE_QUERY_PARAM_KEY);
 		return CropMode.get(mode);
 	}
 
-	/**
-	 * Set the crop mode parameter.
-	 *
-	 * @param mode
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setCropMode(String mode) {
 		CropMode cropMode = CropMode.get(mode);
 		if (cropMode == null) {
@@ -199,12 +99,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return setCropMode(cropMode);
 	}
 
-	/**
-	 * Set the crop mode parameter.
-	 *
-	 * @param mode
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setCropMode(CropMode mode) {
 		if (mode != null) {
 			setParameter(CROP_MODE_QUERY_PARAM_KEY, mode.getKey());
@@ -212,22 +107,13 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return this;
 	}
 
-	/**
-	 * Return the resize mode parameter value.
-	 *
-	 * @return
-	 */
+	@Override
 	default ResizeMode getResizeMode() {
 		String mode = getParameter(RESIZE_MODE_QUERY_PARAM_KEY);
 		return ResizeMode.get(mode) == null ? ResizeMode.SMART : ResizeMode.get(mode);
 	}
 
-	/**
-	 * Set the resize mode parameter.
-	 *
-	 * @param mode
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setResizeMode(String mode) {
 		ResizeMode resizeMode = ResizeMode.get(mode);
 		if (resizeMode == null) {
@@ -236,12 +122,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return setResizeMode(resizeMode);
 	}
 
-	/**
-	 * Set the resize mode parameter.
-	 *
-	 * @param mode
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setResizeMode(ResizeMode mode) {
 		if (mode != null) {
 			setParameter(RESIZE_MODE_QUERY_PARAM_KEY, mode.getKey());
@@ -249,22 +130,14 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return this;
 	}
 
-	/**
-	 * Check whether focal point parameters have been set.
-	 *
-	 * @return
-	 */
+	@Override
 	default boolean hasFocalPoint() {
 		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
 		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
 		return x != null && y != null;
 	}
 
-	/**
-	 * Get the focal point that has been set in the image parameter.
-	 *
-	 * @return
-	 */
+	@Override
 	default FocalPoint getFocalPoint() {
 		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
 		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
@@ -274,11 +147,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return new FocalPoint(fpx, fpy);
 	}
 
-	/**
-	 * Get the focal point zoom factor.
-	 *
-	 * @return
-	 */
+	@Override
 	default Float getFocalPointZoom() {
 		String z = getParameter(FOCAL_POINT_Z_QUERY_PARAM_KEY);
 		if (z == null) {
@@ -288,12 +157,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		}
 	}
 
-	/**
-	 * Set the focal point.
-	 *
-	 * @param point
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setFocalPoint(FocalPoint point) {
 		if (point == null) {
 			setParameter(FOCAL_POINT_X_QUERY_PARAM_KEY, null);
@@ -305,23 +169,12 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return this;
 	}
 
-	/**
-	 * Set the focal point.
-	 *
-	 * @param x
-	 * @param y
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setFocalPoint(float x, float y) {
 		return setFocalPoint(new FocalPoint(x, y));
 	}
 
-	/**
-	 * Set the focal point zoom factor.
-	 *
-	 * @param factor
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters setFocalPointZoom(Float factor) {
 		if (factor == null) {
 			setParameter(FOCAL_POINT_Z_QUERY_PARAM_KEY, null);
@@ -356,11 +209,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return Boolean.valueOf(flag);
 	}
 
-	/**
-	 * Validates whether the focal point was fully specified.
-	 *
-	 * @return Fluent API
-	 */
+	@Override
 	default ImageManipulationParameters validateFocalPointParameter() {
 		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
 		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
@@ -372,29 +221,7 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		return this;
 	}
 
-	/**
-	 * Check whether all required crop parameters have been set.
-	 *
-	 * @param options
-	 * @return Fluent API
-	 */
-	default ImageManipulationParameters validateLimits(ImageManipulatorOptions options) {
-		int width = NumberUtils.toInt(getWidth(), 0);
-		int height = NumberUtils.toInt(getHeight(), 0);
-		if (getWidth() != null && options.getMaxWidth() != null && options.getMaxWidth() > 0 && width > options.getMaxWidth()) {
-			throw error(BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(getWidth()));
-		}
-		if (getHeight() != null && options.getMaxHeight() != null && options.getMaxHeight() > 0 && height > options.getMaxHeight()) {
-			throw error(BAD_REQUEST, "image_error_height_limit_exceeded", String.valueOf(options.getMaxHeight()), String.valueOf(getHeight()));
-		}
-		return this;
-	}
-
-	/**
-	 * Generate cache key.
-	 *
-	 * @return
-	 */
+	@Override
 	default String getCacheKey() {
 		StringBuilder builder = new StringBuilder();
 
@@ -419,11 +246,9 @@ public interface ImageManipulationParameters extends ParameterProvider {
 		if (getFocalPointDebug()) {
 			builder.append("fpdebug");
 		}
-
 		if (getFocalPointZoom() != null) {
 			builder.append("fpz" + getFocalPointZoom());
 		}
-
 		return builder.toString();
 	}
 

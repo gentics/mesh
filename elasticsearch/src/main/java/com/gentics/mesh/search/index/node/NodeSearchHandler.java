@@ -152,7 +152,7 @@ public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeRespon
 
 				// batch-load the nodes and contents for each language and collect results in contentMap
 				langUuids.entrySet().stream().forEach(entry -> {
-					HibLanguage language = tx.languageDao().findByLanguageTag(entry.getKey());
+					HibLanguage language = tx.languageDao().findByLanguageTag(tx.getProject(ac), entry.getKey());
 					if (language == null) {
 						log.warn("Could not find language {" + entry.getKey() + "}");
 						return;

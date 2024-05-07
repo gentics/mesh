@@ -99,6 +99,10 @@
       "type" : "boolean",
       "description" : "Whether the publish the node after creation."
     },
+    "assignLanguage" : {
+      "type" : "boolean",
+      "description" : "Assign a requested language to the project, if none was so far. Default is 'true'."
+    },
     "grant" : {
       "type" : "object",
       "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:ObjectPermissionGrantRequest",

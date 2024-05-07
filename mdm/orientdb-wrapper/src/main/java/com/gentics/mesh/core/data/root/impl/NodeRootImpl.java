@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.PROJECT_KEY_PROPERTY;
@@ -10,6 +11,8 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static com.gentics.mesh.util.StreamUtil.toStream;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,8 +23,10 @@ import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
@@ -30,6 +35,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -42,6 +48,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedTransactionalGraph;
+import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.logging.Logger;
@@ -78,7 +86,13 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		return new DynamicTransformableStreamPageImpl<>(findAllStream(ac, type, pagingInfo), pagingInfo);
+		Stream<? extends Node> stream = findAllStream(ac, type, pagingInfo);
+		if (PersistingRootDao.shouldSort(pagingInfo) && PersistingRootDao.shouldPage(pagingInfo)) {
+			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, 
+					db().countVertices(getPersistanceClass(), new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getProject().getUuid() }, Optional.empty(), Optional.of(type)));
+		} else {
+			return new DynamicTransformableStreamPageImpl<>(stream, pagingInfo);
+		}
 	}
 
 	@Override
@@ -107,14 +121,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				.map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
-	/**
-	 * Finds all nodes of a project.
-	 * 
-	 * @param projectUuid
-	 * @return
-	 */
-	private Stream<Vertex> findAll(HibUser user, InternalPermission perm, String projectUuid) {
-		return findAll(user, perm, projectUuid, null, Optional.empty(), Optional.empty());
+	@Override
+	public long countAll(InternalActionContext ac, InternalPermission perm, Optional<ContainerType> maybeContainerType,
+			Optional<FilterOperation<?>> maybeFilter) {
+		return db().countVertices(NodeImpl.class, new String[] { PROJECT_KEY_PROPERTY }, new Object[] { getProject().getUuid() }, 
+				maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), ac.getUser(), perm, Optional.empty()))
+					.or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.empty())), maybeContainerType);
 	}
 
 	/**
@@ -129,10 +141,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		return toStream(db().getVertices(
 			NodeImpl.class,
 			new String[] { PROJECT_KEY_PROPERTY },
-			new Object[]{projectUuid},
+			new Object[]{ projectUuid },
 			mapSorting(paging),
 			maybeContainerType,
-			maybeFilter.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
+			maybeFilter
+				.map(f -> parseFilter(f, maybeContainerType.orElse(PUBLISHED), user, perm, Optional.empty()))
 		));
 	}
 
@@ -144,22 +157,23 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		String branchUuid = branch.getUuid();
 		UserDao userDao = Tx.get().userDao();
 
-		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, Tx.get().getProject(ac).getUuid(), pagingInfo, Optional.ofNullable(type), Optional.empty()).filter(item -> {
-			// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
-			return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
-		}).filter(item -> {
-			boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
-			if (hasRead) {
-				return true;
-			} else if (type == PUBLISHED) {
-				// Check whether the node is published. In this case we need to check the read publish perm.
-				boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
-				if (isPublishedForBranch) {
-					return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
-				}
-			}
-			return false;
-		}).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
+		return findAll(user, type == PUBLISHED ? InternalPermission.READ_PUBLISHED_PERM : InternalPermission.READ_PERM, getProject().getUuid(), pagingInfo, Optional.ofNullable(type), Optional.empty())
+				.filter(item -> {
+					// Check whether the node has at least one content of the type in the selected branch - Otherwise the node should be skipped
+					return GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, type);
+				}).filter(item -> {
+					boolean hasRead = userDao.hasPermissionForId(user, item.getId(), READ_PERM);
+					if (hasRead) {
+						return true;
+					} else if (type == PUBLISHED) {
+						// Check whether the node is published. In this case we need to check the read publish perm.
+						boolean isPublishedForBranch = GraphFieldContainerEdgeImpl.matchesBranchAndType(item.getId(), branchUuid, PUBLISHED);
+						if (isPublishedForBranch) {
+							return userDao.hasPermissionForId(user, item.getId(), READ_PUBLISHED_PERM);
+						}
+					}
+					return false;
+				}).map(vertex -> graph.frameElementExplicit(vertex, getPersistanceClass()));
 	}
 
 	@Override
@@ -196,5 +210,24 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		case "editor": return "fields.editor";
 		}
 		return super.mapGraphQlFieldNameForSorting(gqlName);
+	}
+
+	@Override
+	public Set<String> findUsedLanguages(Collection<String> languageTags, boolean assignedLanguagesOnly) {
+		Set<String> projectLangs = getProject().getLanguages().stream().map(HibLanguage::getLanguageTag).collect(Collectors.toSet());
+		Set<String> result = new HashSet<>(languageTags.size());
+		getProject().findNodes().stream()
+			.flatMap(node -> toStream(GraphFieldContainerEdgeImpl.filterLanguages((EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>>) node.outE(HAS_FIELD_CONTAINER), languageTags).frameExplicit(GraphFieldContainerEdgeImpl.class)))
+			.takeWhile(edge -> !result.containsAll(languageTags))
+			.filter(edge -> {
+				if (assignedLanguagesOnly) {
+					return projectLangs.contains(edge.getLanguageTag());
+				} else {
+					return true;
+				}
+			})
+			.peek(edge -> result.add(edge.getLanguageTag()))
+			.collect(Collectors.counting());
+		return result;
 	}
 }

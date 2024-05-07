@@ -51,12 +51,12 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	}
 
 	@Override
-	public Completable moveInPlace(String uuid, String temporaryId) {
+	public Completable moveInPlace(String uuid, String path, boolean isTempId) {
 		return Completable.defer(() -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, temporaryId);
+				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, path);
 			}
-			String source = getTemporaryFilePath(temporaryId);
+			String source = isTempId ? getTemporaryFilePath(path) : path;
 			String target = getFilePath(uuid);
 			if (log.isDebugEnabled()) {
 				log.debug("Moving '{}' to '{}'", source, target);

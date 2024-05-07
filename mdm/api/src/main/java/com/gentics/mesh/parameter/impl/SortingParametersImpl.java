@@ -1,8 +1,12 @@
 package com.gentics.mesh.parameter.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,6 +75,8 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 	public SortingParameters putSort(String sortBy, SortOrder order) {
 		if (StringUtils.isNotBlank(sortBy) && order != null) {
 			sort.put(sortBy, order);
+			setParameter(SORT_BY_PARAMETER_KEY, sortBy);
+			setParameter(SORT_ORDER_PARAMETER_KEY, order.getValue());
 		}
 		return this;
 	}
@@ -91,5 +97,14 @@ public class SortingParametersImpl extends AbstractParameters implements Sorting
 	public SortingParameters clearSort() {
 		sort.clear();
 		return SortingParameters.super.clearSort();
+	}
+
+	@Override
+	public void validate() {
+		String sortParam = getParameter(SORT_BY_PARAMETER_KEY);
+		if (Optional.ofNullable(sortParam).filter(sort -> sort.matches("[\\s\\;\\r\\n]")).isPresent()) {
+			throw error(BAD_REQUEST, "error_invalid_parameter", SORT_BY_PARAMETER_KEY, sortParam);
+		}
+		super.validate();
 	}
 }

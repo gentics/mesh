@@ -128,9 +128,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		return db.tx(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
 			for (HibProject project : tx.projectDao().findAll()) {
@@ -151,9 +151,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param branch
 	 * @return
 	 */
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch) {
+	public Transactional<Map<String, Optional<IndexInfo>>> getIndices(HibProject project, HibBranch branch) {
 		return db.transactional(tx -> {
-			Map<String, IndexInfo> indexInfo = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
 			// Each branch specific index has also document type specific mappings
 			for (HibSchemaVersion containerVersion : branch.findActiveSchemaVersions()) {
 				indexInfo.putAll(getIndices(project, branch, containerVersion).runInExistingTx(tx));
@@ -170,7 +170,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param containerVersion
 	 * @return
 	 */
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
+	public Transactional<Map<String, Optional<IndexInfo>>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion) {
 		return getIndices(project, branch, containerVersion, Collections.emptyMap());
 	}
 
@@ -184,9 +184,9 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param replacementMap map of microschema names to microschema version uuids (may be empty, but not null)
 	 * @return transactional
 	 */
-	public Transactional<Map<String, IndexInfo>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion, Map<String, String> replacementMap) {
+	public Transactional<Map<String, Optional<IndexInfo>>> getIndices(HibProject project, HibBranch branch, HibSchemaVersion containerVersion, Map<String, String> replacementMap) {
 		return db.transactional(tx -> {
-			Map<String, IndexInfo> indexInfos = new HashMap<>();
+			Map<String, Optional<IndexInfo>> indexInfos = new HashMap<>();
 			SchemaVersionModel schema = containerVersion.getSchema();
 
 			// Add all language specific indices (might be none)
@@ -194,7 +194,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version, language, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
-				// Load the index mapping information for the index
+				// Load the index mapping information for the index, if applicable
 				indexInfos.put(indexName, createIndexInfo(branch, schema, language, indexName, schema.getName() + "@" + schema.getVersion()));
 			}));
 
@@ -203,7 +203,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 				String indexName = ContentDao.composeIndexName(project.getUuid(), branch.getUuid(), containerVersion
 					.getUuid(), version, null, containerVersion.getMicroschemaVersionHash(branch, replacementMap));
 				log.debug("Adding index to map of known indices {" + indexName + "}");
-				// Load the index mapping information for the index
+				// Load the index mapping information for the index, if applicable
 				indexInfos.put(indexName, createIndexInfo(branch, schema, null, indexName, schema.getName() + "@" + schema.getVersion()));
 			});
 			return indexInfos;
@@ -280,12 +280,14 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 *            Human readable name of the source of the index settings (often used for debug information)
 	 * @return
 	 */
-	public IndexInfo createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
-		JsonObject mapping = getMappingProvider().getMapping(schema, branch, language);
-		JsonObject settings = language == null
-			? getDefaultSetting(schema.getElasticsearch())
-			: getLanguageOverride(schema.getElasticsearch(), language);
-		return new IndexInfo(indexName, settings, mapping, sourceInfo);
+	public Optional<IndexInfo> createIndexInfo(HibBranch branch, SchemaModel schema, String language, String indexName, String sourceInfo) {
+		Optional<JsonObject> maybeMapping = getMappingProvider().getMapping(schema, branch, language);
+		return maybeMapping.map(mapping -> {
+			JsonObject settings = language == null
+					? getDefaultSetting(schema.getElasticsearch())
+					: getLanguageOverride(schema.getElasticsearch(), language);
+			return new IndexInfo(indexName, settings, mapping, sourceInfo);
+		});
 	}
 
 	@Override
@@ -572,7 +574,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 			return Flowable.fromIterable(schema.findOverriddenSearchLanguages()::iterator);
 		}).map(language -> createDummyIndexInfo(schema, language))
 			.startWith(createDummyIndexInfo(schema, null))
-			.flatMapCompletable(searchProvider::validateCreateViaTemplate);
+			.flatMapCompletable(ii -> ii.map(searchProvider::validateCreateViaTemplate).orElse(Completable.complete()));
 	}
 
 	/**
@@ -581,7 +583,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param schema
 	 * @return
 	 */
-	public JsonObject createIndexSettings(SchemaModel schema) {
+	public Optional<JsonObject> createIndexSettings(SchemaModel schema) {
 		return createIndexSettings(schema, null);
 	}
 
@@ -591,11 +593,11 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 	 * @param schema
 	 * @return
 	 */
-	public JsonObject createIndexSettings(SchemaModel schema, String language) {
-		return searchProvider.createIndexSettings(createDummyIndexInfo(schema, language));
+	public Optional<JsonObject> createIndexSettings(SchemaModel schema, String language) {
+		return createDummyIndexInfo(schema, language).map(searchProvider::createIndexSettings);
 	}
 
-	private IndexInfo createDummyIndexInfo(SchemaModel schema, String language) {
+	private Optional<IndexInfo> createDummyIndexInfo(SchemaModel schema, String language) {
 		String indexName = language != null
 			? "validationDummy-" + language
 			: "validationDummy";

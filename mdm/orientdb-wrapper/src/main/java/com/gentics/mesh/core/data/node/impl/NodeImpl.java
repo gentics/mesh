@@ -140,6 +140,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			.withField(BRANCH_PARENTS_KEY_PROPERTY, STRING_SET));
 
 		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "fields", HAS_FIELD_CONTAINER, "edgeType", ContainerType.INITIAL.getCode());
+		GraphRelationships.addRelation(NodeImpl.class, SchemaContainerImpl.class, "schema");
 		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "creator");
 		GraphRelationships.addRelation(NodeImpl.class, UserImpl.class, "editor", MeshVertex.UUID_KEY, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.INITIAL.getCode() + "'].inv()[0].editor", null);
 		GraphRelationships.addRelation(NodeImpl.class, NodeGraphFieldContainerImpl.class, "edited", null, "outE('" + HAS_FIELD_CONTAINER + "')[edgeType='" + ContainerType.INITIAL.getCode() + "'].inV()[0].last_edited_timestamp", null);
@@ -247,9 +248,16 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Result<HibNode> getChildren(String branchUuid, ContainerType containerType, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter, Optional<HibUser> maybeUser) {
-		return new TraversalResult<>(graph.frameExplicit(getUnframedChildren(branchUuid, sorting, maybeFilter.map(f -> maybeUser
-				.map(user -> parseFilter(f, containerType, user, containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, Optional.empty()))
-				.orElseGet(() -> parseFilter(f, containerType)))), NodeImpl.class));
+		InternalPermission perm = containerType == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+		Tx tx = GraphDBTx.getGraphTx();
+		UserDao userDao = tx.userDao();
+		return new TraversalResult<>(
+				toStream(getUnframedChildren(branchUuid, sorting, maybeFilter
+						.map(f -> maybeUser
+								.map(user -> parseFilter(f, containerType, user, perm, Optional.empty()))
+								.orElseGet(() -> parseFilter(f, containerType)))))
+					.filter(node -> maybeUser.map(user -> userDao.hasPermissionForId(user, node.getId(), perm)).orElse(true))
+					.map(node -> graph.frameElementExplicit(node, NodeImpl.class)));
 	}
 
 	private Iterator<Vertex> getUnframedChildren(String branchUuid, PagingParameters sorting, Optional<String> maybeFilter) {

@@ -3,13 +3,16 @@ package com.gentics.mesh.core.data.root.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
+import static com.gentics.mesh.madl.type.EdgeTypeDefinition.edgeType;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.madl.index.IndexHandler;
 import com.gentics.madl.type.TypeHandler;
 import com.gentics.mesh.context.BulkActionContext;
@@ -17,8 +20,11 @@ import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
+import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.GraphDBTx;
+import com.gentics.mesh.core.rest.common.ContainerType;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -35,8 +41,8 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	 */
 	public static void init(TypeHandler type, IndexHandler index) {
 		type.createVertexType(LanguageRootImpl.class, MeshVertexImpl.class);
-		index.createIndex(edgeIndex(HAS_LANGUAGE).withInOut());
-		// TODO add unique index
+		type.createType(edgeType(HAS_LANGUAGE));
+		index.createIndex(edgeIndex(HAS_LANGUAGE).withInOut().withOut());
 	}
 
 	@Override
@@ -84,4 +90,13 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		throw new NotImplementedException("The language root should never be deleted.");
 	}
 
+	@Override
+	public String parseFilter(FilterOperation<?> filter, ContainerType ctype, HibUser user,	InternalPermission permission, Optional<String> maybeOwner) {
+		return parseFilter(filter, ctype);
+	}
+
+	@Override
+	public Optional<String> permissionFilter(HibUser user, InternalPermission permission, Optional<String> maybeOwner, Optional<ContainerType> containerType) {
+		return Optional.empty();
+	}
 }

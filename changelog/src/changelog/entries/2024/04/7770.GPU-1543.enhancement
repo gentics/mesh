@@ -1,0 +1,18 @@
+Some dependencies have been updated:
+* VertX: 4.5.7
+* GraphQL: 21.5
+* GraphQL Dataloader: 3.2.2
+* PF4j: 3.11.0
+* Hazelcast: 3.12.13
+* Jackson: 2.17.0
+* SnakeYAML: 2.2
+* Log4j: 2.23.1
+* SLF4j: 2.0.13
+* Logback: 1.5.5
+* Commons IO: 2.16.1
+* RAML Parser: 0.8.40
+* JSON Path: 2.9.0
+* JSoup: 1.17.2
+* Jettison: 1.5.4
+* Netty: 4.1.108.Final
+* Image IO: 3.10.1

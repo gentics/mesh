@@ -75,10 +75,10 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		String indexName = HibGroup.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "group");
-		return Collections.singletonMap(indexName, info);
+		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 	@Override

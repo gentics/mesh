@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -49,7 +48,6 @@ public class UploadNoParserTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Ignore
 	public void testUploadExif() throws IOException {
 		String parentNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		Buffer buffer = getBuffer("/pictures/android-gps.jpg");
@@ -66,7 +64,7 @@ public class UploadNoParserTest extends AbstractMeshTest {
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
 		BinaryField field = nodeUpdateRequest.getFields().getBinaryField("binary");
 		field.getMetadata().clear();
-		field.getMetadata().add("dummy", "value");
+		//field.getMetadata().add("dummy", "value");
 		nodeUpdateRequest.getFields().put("binary", field);
 		NodeResponse node3 = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest));
 
@@ -79,7 +77,5 @@ public class UploadNoParserTest extends AbstractMeshTest {
 				new ByteArrayInputStream(buffer.getBytes()), buffer.length(), "test.jpg", "image/jpeg"));
 		BinaryMetadata metadata4 = node4.getFields().getBinaryField("binary").getMetadata();
 		assertTrue("No metadata should be extracted", metadata4.getMap().isEmpty());
-
 	}
-
 }

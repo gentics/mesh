@@ -108,9 +108,9 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	public Map<String, IndexInfo> getIndices() {
+	public Map<String, Optional<IndexInfo>> getIndices() {
 		String indexName = HibUser.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "user");
-		return Collections.singletonMap(indexName, info);
+		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 }

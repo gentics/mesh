@@ -35,6 +35,7 @@ import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -44,6 +45,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.search.ComplianceMode;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.DevNullSearchProvider;
@@ -111,17 +113,19 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		try {
 			JsonObject userJson = new JsonObject(searchQuery);
 
-			JsonArray roleUuids = db.tx(tx -> {
-				JsonArray json = new JsonArray();
-				for (HibRole role : tx.userDao().getRoles(ac.getUser())) {
-					json.add(role.getUuid());
+			JsonArray filter = new JsonArray();
+			db.tx(tx -> {
+				HibUser user = ac.getUser();
+				if (!user.isAdmin()) {
+					JsonArray roleUuids = new JsonArray();
+					for (HibRole role : tx.userDao().getRoles(ac.getUser())) {
+						roleUuids.add(role.getUuid());
+					}
+					filter.add(new JsonObject().put("terms", new JsonObject().put("_roleUuids", roleUuids)));
 				}
-				return json;
 			});
 
-			JsonObject newQuery = new JsonObject().put("bool",
-				new JsonObject().put("filter", new JsonArray().add(new JsonObject().put("terms", new JsonObject().put(
-					"_roleUuids", roleUuids)))));
+			JsonObject newQuery = new JsonObject().put("bool", new JsonObject().put("filter", filter));
 
 			// Wrap the original query in a nested bool query in order check the role perms
 			JsonObject originalQuery = userJson.getJsonObject("query");
@@ -177,7 +181,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		})).subscribe(response -> {
 			// JsonObject firstResponse = response.getJsonArray("responses").getJsonObject(0);
 			// Directly relay the response to the requester without converting it.
-			ac.send(response.toString(), OK);
+			ac.send(JsonUtil.toJson(response, ac.isMinify(options.getHttpServerOptions())), OK);
 		}, error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException he = (HttpErrorException) error;
@@ -301,7 +305,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		}).collect(() -> listResponse.getData(), (x, y) -> {
 			x.add(y);
 		}).subscribe(list -> {
-			ac.send(listResponse.toJson(), OK);
+			ac.send(listResponse.toJson(ac.isMinify(options.getHttpServerOptions())), OK);
 		}, error -> {
 			log.error("Error while processing search response items", error);
 			ac.fail(error);

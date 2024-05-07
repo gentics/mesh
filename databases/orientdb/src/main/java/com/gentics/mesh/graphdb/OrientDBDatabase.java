@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cache.TotalsCache;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.HibBaseElement;
@@ -133,6 +134,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private final TransactionComponent.Factory txFactory;
 
+	private final TotalsCache totalsCache;
+
 	/**
 	 * Executor service for running the disk quota check
 	 */
@@ -170,7 +173,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			OrientDBTypeHandler typeHandler, OrientDBIndexHandler indexHandler,
 			OrientDBClusterManagerImpl clusterManager, TxCleanupTask txCleanupTask,
 			Lazy<PermissionRoots> permissionRoots, WriteLock writeLock,
-			TransactionComponent.Factory txFactory, Mesh mesh
+			TransactionComponent.Factory txFactory, Mesh mesh, TotalsCache totalsCache
 	) {
 		super(vertx, mesh, metrics);
 		this.options = options;
@@ -184,6 +187,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		this.txCleanUpTask = txCleanupTask;
 		this.writeLock = writeLock;
 		this.txFactory = txFactory;
+		this.totalsCache = totalsCache;
 	}
 
 	@Override
@@ -322,6 +326,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void shutdown() {
 		stopDiskQuotaChecker();
 		Orient.instance().shutdown();
+	}
+
+	@Override
+	public long countVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues, Optional<String> maybeFilter, Optional<ContainerType> maybeContainerType) {
+		MeshOrientGraphVertexQuery query = new MeshOrientGraphVertexQuery(unwrapCurrentGraph(), classOfVertex, Optional.of(totalsCache));
+		query.relationDirection(Direction.OUT);
+		query.hasAll(fieldNames, fieldValues);
+		query.filter(maybeFilter);
+		query.setOrderPropsAndDirs(new String[0]);
+		return query.count(maybeContainerType);
 	}
 
 	@Override

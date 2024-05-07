@@ -156,7 +156,6 @@ public class RAMLGenerator extends AbstractGenerator {
 			}
 			Action action = new Action();
 			action.setIs(Arrays.asList(endpoint.getTraits()));
-			action.setDisplayName(endpoint.getDisplayName());
 			action.setDescription(endpoint.getDescription());
 			action.setQueryParameters(endpoint.getQueryParameters());
 

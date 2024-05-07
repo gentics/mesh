@@ -7,6 +7,8 @@ import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO2_UUID;
 import static com.gentics.mesh.example.ExampleUuids.PROJECT_DEMO_UUID;
 import static com.gentics.mesh.example.ExampleUuids.SCHEMA_FOLDER_UUID;
 
+import java.util.List;
+
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -25,6 +27,13 @@ public class ProjectExamples extends AbstractExamples {
 		project.setEditor(createUserReference());
 		project.setPermissions(READ, DELETE, CREATE);
 		project.setRootNode(createNodeReference());
+		return project;
+	}
+
+	public ProjectResponse getProjectResponseWithLanguages(String name) {
+		ProjectResponse project = getProjectResponse(name);
+		LanguageExamples languages = new LanguageExamples();
+		project.setLanguages(List.of(languages.getGermanLanguageResponse(), languages.getJapaneseLanguageResponse()));
 		return project;
 	}
 

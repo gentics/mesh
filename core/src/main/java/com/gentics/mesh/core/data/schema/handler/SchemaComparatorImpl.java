@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AU
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.NO_INDEX_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
 
@@ -44,6 +45,9 @@ public class SchemaComparatorImpl extends AbstractFieldSchemaContainerComparator
 
 		// .autoPurge
 		compareAndAddSchemaProperty(changes, AUTO_PURGE_FLAG_KEY, schemaA.getAutoPurge(), schemaB.getAutoPurge(), SchemaModel.class);
+
+		// .noIndex
+		compareAndAddSchemaProperty(changes, NO_INDEX_KEY, schemaA.getNoIndex(), schemaB.getNoIndex(), SchemaModel.class);
 
 		// .container
 		// Only diff the flag if a value has been set in the schemaB

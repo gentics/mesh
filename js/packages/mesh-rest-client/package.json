@@ -1,0 +1,8 @@
+{
+  "name": "@gentics/mesh-rest-client",
+  "version": "2.1.0-SNAPSHOT",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@gentics/mesh-models": "^2.1.0-SNAPSHOT"
+  }
+}

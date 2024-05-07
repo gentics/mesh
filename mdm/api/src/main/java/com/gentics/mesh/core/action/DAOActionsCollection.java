@@ -8,6 +8,9 @@ import com.gentics.mesh.annotation.Getter;
 public interface DAOActionsCollection {
 
 	@Getter
+	LanguageDAOActions languageActions();
+
+	@Getter
 	UserDAOActions userActions();
 
 	@Getter

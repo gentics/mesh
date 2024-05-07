@@ -1,68 +1,97 @@
 {
   "type" : "object",
-  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:BinaryFieldTransformRequest",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageManipulationRequest",
   "properties" : {
-    "version" : {
-      "type" : "string",
-      "required" : true,
-      "description" : "Version number which must be provided in order to handle and detect concurrent changes to the node content."
-    },
-    "language" : {
-      "type" : "string",
-      "required" : true,
-      "description" : "ISO 639-1 language tag of the node which provides the image which should be transformed."
-    },
-    "width" : {
-      "type" : "string",
-      "description" : "New width of the image."
-    },
-    "height" : {
-      "type" : "string",
-      "description" : "New height of the image."
-    },
-    "cropRect" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
-      "description" : "Crop area.",
-      "properties" : {
-        "startX" : {
-          "type" : "integer"
-        },
-        "startY" : {
-          "type" : "integer"
-        },
-        "width" : {
-          "type" : "integer"
-        },
-        "height" : {
-          "type" : "integer"
+    "variants" : {
+      "type" : "array",
+      "description" : "This field contains a set of image manipulation variants to be manipulated upon.",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:ImageVariantRequest",
+        "properties" : {
+          "width" : {
+            "type" : "string",
+            "description" : "Desired image width. Set to 'auto' to compute automatically from the image height and ratio."
+          },
+          "height" : {
+            "type" : "string",
+            "description" : "Desired image height. Set to 'auto' to compute automatically from the image width and ratio."
+          },
+          "rect" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:parameter:image:ImageRect",
+            "description" : "Desired image crop parameters.",
+            "properties" : {
+              "startX" : {
+                "type" : "integer"
+              },
+              "startY" : {
+                "type" : "integer"
+              },
+              "width" : {
+                "type" : "integer"
+              },
+              "height" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "cropMode" : {
+            "type" : "string",
+            "description" : "The image crop mode.",
+            "enum" : [ "RECT", "FOCALPOINT" ]
+          },
+          "resizeMode" : {
+            "type" : "string",
+            "description" : "The image resize mode.",
+            "enum" : [ "FORCE", "SMART", "PROP" ]
+          },
+          "focalPoint" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+            "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
+            "properties" : {
+              "x" : {
+                "type" : "number",
+                "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
+              },
+              "y" : {
+                "type" : "number",
+                "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
+              }
+            }
+          },
+          "focalZoom" : {
+            "type" : "number",
+            "description" : "The image focal point zoom factor."
+          },
+          "focalPointZoom" : {
+            "type" : "number"
+          },
+          "size" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:Point",
+            "properties" : {
+              "x" : {
+                "type" : "integer"
+              },
+              "y" : {
+                "type" : "integer"
+              },
+              "ratio" : {
+                "type" : "number"
+              }
+            }
+          },
+          "cacheKey" : {
+            "type" : "string"
+          }
         }
       }
     },
-    "cropMode" : {
-      "type" : "string",
-      "description" : "Crop mode. To be used in conjunction with cropRect",
-      "enum" : [ "RECT", "FOCALPOINT" ]
-    },
-    "resizeMode" : {
-      "type" : "string",
-      "description" : "Resize mode.",
-      "enum" : [ "FORCE", "SMART", "PROP" ]
-    },
-    "focalPoint" : {
-      "type" : "object",
-      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
-      "description" : "Optional new focal point for the transformed image.",
-      "properties" : {
-        "x" : {
-          "type" : "number",
-          "description" : "The horizontal position of the focal point. The value is a factor of the image width. The value 0.5 is the center of the image."
-        },
-        "y" : {
-          "type" : "number",
-          "description" : "The vertical position of the focal point. The value is a factor of the image height. The value 0.5 is the center of the image."
-        }
-      }
+    "deleteOther" : {
+      "type" : "boolean",
+      "description" : "This flag states that all the existing variants, except the mentioned in `variants` field, should be dropped.If no variants are provided along with the flag, all the image manipulation variants are to be dropped."
     }
   }
 }

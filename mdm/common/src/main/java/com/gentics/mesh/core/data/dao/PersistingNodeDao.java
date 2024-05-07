@@ -42,7 +42,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -388,16 +387,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 
+//TODO with the new language picking logic this will fail on any unknown value, which is a breaking change.
+/*
 		String[] langs = nodeParameters.getLanguages();
 		if (langs != null) {
 			for (String languageTag : langs) {
-				HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
+				HibLanguage language = Tx.get().languageDao().findByLanguageTag(node.getProject(), languageTag);
 				if (language == null) {
 					throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 				}
 			}
 		}
-
+*/
 		List<String> requestedLanguageTags = null;
 		if (languageTags != null && languageTags.length > 0) {
 			requestedLanguageTags = Arrays.asList(languageTags);
@@ -912,6 +913,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		UserDao userDao = tx.userDao();
 		SchemaDao schemaDao = tx.schemaDao();
 
+		if (!userDao.hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
+			throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
+		}
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
@@ -1000,9 +1004,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
-		HibLanguage language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
+		HibLanguage language = Tx.get().languageDao().findByLanguageTag(project, requestModel.getLanguage());
 		if (language == null) {
-			throw error(BAD_REQUEST, "language_not_found", requestModel.getLanguage());
+			if (requestModel.isAssignLanguage()) {
+				language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
+				if (language == null) {
+					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+				}
+				project.addLanguage(language);
+				log.info("Assigning language [{}] to the project [{}] per node request", requestModel.getLanguage(), project.getName());
+			} else {
+				throw error(BAD_REQUEST, "error_language_not_assigned", requestModel.getLanguage(), project.getName());
+			}
 		}
 		ContentDao contentDao = Tx.get().contentDao();
 		HibNodeFieldContainer container = contentDao.createFirstFieldContainerForNode(node, language.getLanguageTag(), branch, requestUser);
@@ -1404,8 +1417,20 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (!project.getUuid().equals(node.getProject().getUuid())) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", node.getUuid());
 		}
+		CommonTx tx = CommonTx.get();
 
 		NodeUpdateRequest requestModel = ac.fromJson(NodeUpdateRequest.class);
+		String languageTag = requestModel.getLanguage();
+
+		// Image variants update case
+		if (requestModel.getManipulation() != null) {
+			ContentDao contentDao = tx.contentDao();
+			HibBranch branch = tx.getBranch(ac, node.getProject());
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
+			HibSchemaVersion schema = latestDraftVersion.getSchemaContainerVersion();
+			String fieldKey = schema.getSchema().getSegmentField();
+			return tx.imageVariantDao().createVariants(latestDraftVersion.getBinary(fieldKey), requestModel.getManipulation().getVariants(), ac, requestModel.getManipulation().isDeleteOther()).stream().findAny().isPresent();
+		}
 		if (isEmpty(requestModel.getLanguage())) {
 			throw error(BAD_REQUEST, "error_language_not_set");
 		}
@@ -1417,14 +1442,21 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// Set the language tag parameter here in order to return the updated language in the response
-		String languageTag = requestModel.getLanguage();
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		Tx tx = Tx.get();
-		HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+		HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 		if (language == null) {
-			throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+			if (requestModel.isAssignLanguage()) {
+				language = tx.languageDao().findByLanguageTag(languageTag);
+				if (language == null) {
+					throw error(BAD_REQUEST, "error_language_not_found", requestModel.getLanguage());
+				}
+				project.addLanguage(language);
+				log.info("Assigning language [{}] to the project [{}] per node request", languageTag, project.getName());
+			} else {
+				throw error(BAD_REQUEST, "error_language_not_assigned", requestModel.getLanguage(), project.getName());
+			}
 		}
 		ContentDao contentDao = tx.contentDao();
 		HibBranch branch = tx.getBranch(ac, node.getProject());
@@ -1435,7 +1467,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (latestDraftVersion == null) {
 			// Check whether the node has a parent node in this branch, if not, the request is supposed to be a create request
 			// and we get the parent node from this create request
-			if (getParentNode(node, branch.getUuid()) == null) {
+			if (!node.isBaseNode() && getParentNode(node, branch.getUuid()) == null) {
 				NodeCreateRequest createRequest = JsonUtil.readValue(ac.getBodyAsString(), NodeCreateRequest.class);
 				if (createRequest.getParentNode() == null || isEmpty(createRequest.getParentNode().getUuid())) {
 					throw error(BAD_REQUEST, "node_missing_parentnode_field");
@@ -2067,6 +2099,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	/**
+	 * Check if the requested languages being used by any node in the given project.
+	 *
+	 * @param project
+	 * @param languageTags
+	 * @return
+	 */
+	Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly);
+
+	/**
 	 * Get the edges for the given node, that satisfy the webroot lookup data.
 	 * 
 	 * @param node
@@ -2116,6 +2157,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	@Override
 	default Stream<? extends HibNode> findAllStream(HibProject root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		return findAllStream(root, ac, permission, paging, Optional.empty(), maybeFilter);
+	}
+
+	@Override
+	default long countAll(HibProject root, InternalActionContext ac, InternalPermission permission,
+			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
+		return countAllContent(root, ac, ac.getNodeParameters().getLanguageList(Tx.get().data().options()), permission == READ_PUBLISHED_PERM ? PUBLISHED : DRAFT, maybeFilter);
 	}
 
 	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {

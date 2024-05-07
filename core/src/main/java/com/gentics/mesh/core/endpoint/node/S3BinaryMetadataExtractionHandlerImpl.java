@@ -51,6 +51,7 @@ import com.gentics.mesh.util.NodeUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.vertx.core.Future;
 import io.vertx.core.http.impl.MimeMapping;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -169,6 +170,12 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 										public boolean cancel() {
 											return false;
 										}
+
+										@Override
+										public Future<Void> delete() {
+											return vertx.getDelegate().fileSystem().delete(tmpFile.getAbsolutePath());
+										}
+
 									};
 									ctx.setFileUpload(fileUpload);
 									ctx.setS3ObjectKey(nodeUuid + "/" + fieldName);
@@ -206,7 +213,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			if (s3binary == null) {
 				s3binary = s3binaries.create(nodeUuid, s3ObjectKey, fileName).runInExistingTx(tx);
 			}
-			HibLanguage language = tx.languageDao().findByLanguageTag(languageTag);
+			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}

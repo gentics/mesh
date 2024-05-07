@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.PermissionException;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.ExceptionWhileDataFetching;
@@ -27,8 +28,8 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class GraphQLContextImpl extends InternalRoutingActionContextImpl implements GraphQLContext {
 
-	public GraphQLContextImpl(RoutingContext rc) {
-		super(rc);
+	public GraphQLContextImpl(RoutingContext rc, HttpServerConfig config) {
+		super(rc, config);
 	}
 
 	@Override

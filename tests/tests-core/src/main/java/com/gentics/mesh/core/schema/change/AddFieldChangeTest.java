@@ -241,6 +241,59 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	}
 
 	@Test
+	public void testApplyNoIndexTrue() {
+		try (Tx tx = tx()) {
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaModelImpl schema = new SchemaModelImpl();
+			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			
+			change.setFieldName("noIndexField");
+			change.setType("string");
+			change.setRestProperty(SchemaChangeModel.NO_INDEX_KEY, true);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("noIndexField");
+			assertThat(updatedSchema.getField("noIndexField").isNoIndex()).as("No Index flag").isTrue();
+		}
+	}
+
+	@Test
+	public void testApplyNoIndexFalse() {
+		try (Tx tx = tx()) {
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaModelImpl schema = new SchemaModelImpl();
+			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			
+			change.setFieldName("indexedField");
+			change.setType("string");
+			change.setRestProperty(SchemaChangeModel.NO_INDEX_KEY, false);
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("indexedField");
+			assertThat(updatedSchema.getField("indexedField").isNoIndex()).as("No Index flag").isFalse();
+		}
+	}
+
+	@Test
+	public void testApplyNoIndexNull() {
+		try (Tx tx = tx()) {
+			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaModelImpl schema = new SchemaModelImpl();
+			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			
+			change.setFieldName("defaultIndexedField");
+			change.setType("string");
+			version.setSchema(schema);
+			version.setNextChange(change);
+			FieldSchemaContainer updatedSchema = mutator.apply(version);
+			assertThat(updatedSchema).hasField("defaultIndexedField");
+			assertThat(updatedSchema.getField("defaultIndexedField").isRequired()).as("No Index flag").isFalse();
+		}
+	}
+
+	@Test
 	public void testApplyRequiredTrue() {
 		try (Tx tx = tx()) {
 			HibSchemaVersion version = createVersion(schemaDao(tx));

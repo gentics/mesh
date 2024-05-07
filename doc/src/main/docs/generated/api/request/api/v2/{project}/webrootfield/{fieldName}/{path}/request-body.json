@@ -1,16 +1,18 @@
 {
-  "version" : "1.0",
-  "language" : "en",
-  "width" : "100",
-  "height" : "200",
-  "cropRect" : {
-    "startX" : 50,
-    "startY" : 20,
-    "width" : 170,
-    "height" : 150
-  },
-  "focalPoint" : {
-    "x" : 0.3,
-    "y" : 0.6
-  }
+  "variants" : [ {
+    "width" : "auto",
+    "height" : "100",
+    "resizeMode" : "SMART",
+    "cacheKey" : "resizeSMARTrwautorh100"
+  }, {
+    "resizeMode" : "SMART",
+    "focalPoint" : {
+      "x" : 0.3,
+      "y" : 0.3
+    },
+    "focalZoom" : 0.6,
+    "focalPointZoom" : 0.6,
+    "cacheKey" : "resizeSMARTfp0.3-0.3fpz0.6"
+  } ],
+  "deleteOther" : false
 }

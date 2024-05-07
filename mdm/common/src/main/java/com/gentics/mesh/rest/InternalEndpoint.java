@@ -7,6 +7,7 @@ import com.gentics.mesh.example.BranchExamples;
 import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.example.GroupExamples;
 import com.gentics.mesh.example.JobExamples;
+import com.gentics.mesh.example.LanguageExamples;
 import com.gentics.mesh.example.LocalConfigExamples;
 import com.gentics.mesh.example.MicroschemaExamples;
 import com.gentics.mesh.example.MiscExamples;
@@ -46,6 +47,7 @@ public interface InternalEndpoint {
 	static BranchExamples branchExamples = new BranchExamples();
 	static UtilityExamples utilityExamples = new UtilityExamples();
 	static LocalConfigExamples localConfig = new LocalConfigExamples();
+	static LanguageExamples languageExamples = new LanguageExamples();
 
 	/**
 	 * Create a new endpoint. Internally a new route will be wrapped.

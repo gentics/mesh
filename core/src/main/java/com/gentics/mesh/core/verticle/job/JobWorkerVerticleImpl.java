@@ -14,7 +14,10 @@ import com.gentics.mesh.verticle.AbstractJobVerticle;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.shareddata.Lock;
 
 /**
  * Dedicated verticle which will process jobs.
@@ -85,6 +88,11 @@ public class JobWorkerVerticleImpl extends AbstractJobVerticle implements JobWor
 	@Override
 	public Completable executeJob(Message<Object> message) {
 		return Completable.defer(() -> jobProcessor.process());
+	}
+
+	@Override
+	public void doWithLock(long timeout, Handler<AsyncResult<Lock>> resultHandler) {
+		vertx.sharedData().getLockWithTimeout(getLockName(), timeout, resultHandler);
 	}
 
 	/**

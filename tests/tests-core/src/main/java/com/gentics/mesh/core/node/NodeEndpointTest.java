@@ -57,9 +57,11 @@ import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
@@ -67,13 +69,18 @@ import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
+import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectReference;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -90,6 +97,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SortingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshWebrootResponse;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -144,7 +152,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(folderUuid);
 
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
-		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "error_language_not_found", "BOGUS");
 		assertThat(trackingSearchProvider()).recordedStoreEvents(0);
 	}
 
@@ -215,6 +223,55 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				MeshTestContext.LOG.info("Duration:" + i + " " + (duration / i));
 			}
 		}
+	}
+
+	@Test
+	@Override
+	public void testReadPermittedSorted() throws Exception {
+		HibNode parentNode = folder("news");
+		String uuid = tx(() -> parentNode.getUuid());
+		HibSchema schema = schemaContainer("content");
+		String schemaUuid = tx(() -> schema.getUuid());
+		for (int i = 1; i < 100; i++) {
+			trackingSearchProvider().reset();
+			NodeCreateRequest request = new NodeCreateRequest();
+			request.setSchema(new SchemaReferenceImpl().setName("content").setUuid(schemaUuid));
+			request.setLanguage("en");
+			request.getFields().put("title", createStringField("some title " + i));
+			request.getFields().put("teaser", createStringField("some teaser " + i));
+			request.getFields().put("slug", createStringField("new-page_" + i + ".html"));
+			request.getFields().put("content", createStringField("Blessed mealtime again!"));
+			request.setParentNodeUuid(uuid);
+
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+			if ((i % 2) == 0) {
+				tx(tx -> {
+					tx.roleDao().revokePermissions(role(), tx.nodeDao().findByUuidGlobal(response.getUuid()), READ_PERM);
+				});
+			}
+		}
+
+		NodeListResponse list = call(() -> client().findNodes(PROJECT_NAME, new SortingParametersImpl("fields.content.title", SortOrder.DESCENDING),
+				new VersioningParametersImpl().draft()));
+		assertEquals("Total data size should be 66", 66, list.getData().size());
+		assertThat(list.getData()).isSortedAccordingTo((a, b) -> {
+			if (a == b) {
+				return 0;
+			}
+			StringFieldImpl fb = b.getFields().getStringField("title");
+			StringFieldImpl fa = a.getFields().getStringField("title");
+			if (fa == fb) {
+				return 0;
+			}
+			// TODO FIXME we ignore null order for now, since each DBMS has an own null order
+			if (fb == null) {
+				return 0;// -1;
+			}
+			if (fa == null) {
+				return 0;// 1;
+			}
+			return fb.getString().compareTo(fa.getString());
+		});
 	}
 
 	@Test
@@ -1563,6 +1620,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			HibProject project = tx.projectDao().findByUuid(project().getUuid());
 			HibNode parentNode = nodeDao.findByUuid(project, folder("products").getUuid());
 			HibLanguage languageNl = tx.languageDao().findByLanguageTag("nl");
+			project.addLanguage(languageNl);
 			HibSchemaVersion version = tx.schemaDao().findByUuid(schemaContainer("content").getUuid()).getLatestVersion();
 			HibUser user = tx.userDao().findByUuid(user().getUuid());
 			node = nodeDao.create(parentNode, user, version, project);
@@ -1597,6 +1655,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	@Ignore("We allow every input in the node read request")
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
 		try (Tx tx = tx()) {
 
@@ -2325,6 +2384,66 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		ObjectPermissionResponse rolePermissions = call(
 				() -> client().getNodeRolePermissions(PROJECT_NAME, created.getUuid()));
 		assertThat(rolePermissions.getReadPublished()).as("roles with permission").containsOnly(anonymous);
+	}
+
+	/**
+	 * Test creating a language variant of the project root node
+	 */
+	@Test
+	public void testTranslateProjectRootNode() {
+		String projectName = "testproject";
+		String rootNodeSchemaName = "folder";
+		ProjectResponse project = call(() -> client()
+				.createProject(new ProjectCreateRequest().setName(projectName).setSchemaRef(rootNodeSchemaName)));
+
+		// update english version of root node
+		FieldMap fields = new FieldMapImpl();
+		fields.put("name", FieldUtil.createStringField("Name in English"));
+		fields.put("slug", FieldUtil.createStringField("english_root_node"));
+		NodeResponse updated = call(() -> client().updateNode(project.getName(), project.getRootNode().getUuid(),
+				new NodeUpdateRequest().setVersion("draft").setLanguage("en").setFields(fields)));
+		assertThat(updated).as("Updated root node in english")
+			.hasStringField("name", "Name in English")
+			.hasStringField("slug", "english_root_node");
+
+		// update german version of root node
+		fields.put("name", FieldUtil.createStringField("Name auf Deutsch"));
+		fields.put("slug", FieldUtil.createStringField("german_root_node"));
+		updated = call(() -> client().updateNode(project.getName(), project.getRootNode().getUuid(),
+				new NodeUpdateRequest().setVersion("draft").setLanguage("de").setFields(fields)));
+		assertThat(updated).as("Updated root node in german")
+			.hasStringField("name", "Name auf Deutsch")
+			.hasStringField("slug", "german_root_node");
+	}
+
+	/**
+	 * Test creating a language variant of a "normal" node (not the root node)
+	 */
+	@Test
+	public void testTranslatNonRootNode() {
+		String projectName = "testproject";
+		String rootNodeSchemaName = "folder";
+		ProjectResponse project = call(() -> client()
+				.createProject(new ProjectCreateRequest().setName(projectName).setSchemaRef(rootNodeSchemaName)));
+
+		FieldMap fields = new FieldMapImpl();
+		fields.put("name", FieldUtil.createStringField("Name in English"));
+		fields.put("slug", FieldUtil.createStringField("english_root_node"));
+		NodeResponse created = call(() -> client().createNode(project.getName(),
+				new NodeCreateRequest().setParentNodeUuid(project.getRootNode().getUuid()).setSchemaName(rootNodeSchemaName).setLanguage("en").setFields(fields)));
+		assertThat(created).as("Created node in english")
+			.hasStringField("name", "Name in English")
+			.hasStringField("slug", "english_root_node");
+
+		// update german version of root node
+		fields.put("name", FieldUtil.createStringField("Name auf Deutsch"));
+		fields.put("slug", FieldUtil.createStringField("german_root_node"));
+		NodeResponse updated = call(() -> client().updateNode(project.getName(), created.getUuid(),
+				new NodeUpdateRequest().setVersion("draft").setLanguage("de").setFields(fields)));
+		assertThat(updated).as("Updated root node in german")
+			.hasStringField("name", "Name auf Deutsch")
+			.hasStringField("slug", "german_root_node");
+
 	}
 
 	/**

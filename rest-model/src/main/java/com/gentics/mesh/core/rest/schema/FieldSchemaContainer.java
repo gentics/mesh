@@ -58,6 +58,21 @@ public interface FieldSchemaContainer extends RestModel {
 	FieldSchemaContainer setDescription(String description);
 
 	/**
+	 * Return the 'exclude from indexing' flag.
+	 * 
+	 * @return flag
+	 */
+	Boolean getNoIndex();
+
+	/**
+	 * Set the 'exclude from indexing' flag.
+	 * 
+	 * @param flag
+	 * @return self
+	 */
+	FieldSchemaContainer setNoIndex(Boolean noIndex);
+
+	/**
 	 * Return the field with the given name.
 	 * 
 	 * @param fieldName

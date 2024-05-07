@@ -110,6 +110,9 @@ public class GraphRelationships {
 		// Changelog
 		type.createType(edgeType(HAS_CHANGELOG_ROOT));
 
+		// Image variants
+		type.createType(edgeType(HAS_VARIANTS));
+		type.createType(edgeType(HAS_FIELD_VARIANTS));
 	}
 
 	// Project
@@ -192,6 +195,8 @@ public class GraphRelationships {
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
 	public static final String HAS_LIST = "HAS_LIST";
+	public static final String HAS_VARIANTS = "HAS_VARIANTS";
+	public static final String HAS_FIELD_VARIANTS = "HAS_FIELD_VARIANTS";
 
 	// Versioning
 	public static final String HAS_VERSION = "HAS_VERSION";

@@ -52,7 +52,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 	protected final Database db;
 	protected final HandlerUtilities utils;
 	protected final WriteLock writeLock;
-	private final DAOActions<T, RM> actions;
+	protected final DAOActions<T, RM> actions;
 
 	public AbstractCrudHandler(Database db, HandlerUtilities utils, WriteLock writeLock, DAOActions<T, RM> actions) {
 		this.db = db;

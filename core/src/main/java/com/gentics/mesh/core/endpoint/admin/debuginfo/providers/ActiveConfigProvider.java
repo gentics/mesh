@@ -31,6 +31,6 @@ public class ActiveConfigProvider implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		return Flowable.just(DebugInfoBufferEntry.fromString("activeConfig.json", JsonUtil.toJson(meshOptions)));
+		return Flowable.just(DebugInfoBufferEntry.fromString("activeConfig.json", JsonUtil.toJson(meshOptions, false)));
 	}
 }

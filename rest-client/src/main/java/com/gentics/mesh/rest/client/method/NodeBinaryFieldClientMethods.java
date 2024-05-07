@@ -1,13 +1,16 @@
 package com.gentics.mesh.rest.client.method;
 
+import java.io.InputStream;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
+import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
+import com.gentics.mesh.core.rest.node.field.image.ImageVariantsResponse;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
-
-import java.io.InputStream;
+import com.gentics.mesh.rest.client.impl.EmptyResponse;
 
 /**
  * Interface for Node Binary Field specific REST API methods.
@@ -141,4 +144,35 @@ public interface NodeBinaryFieldClientMethods {
 	 */
 	MeshRequest<NodeResponse> updateNodeBinaryFieldCheckStatus(String projectName, String nodeUuid, String languageTag, String nodeVersion,
 		String fieldKey, String secret, String branchUuid, BinaryCheckStatus status, String reason);
+
+	/**
+	 * Update/insert the set of image variants of the binary behind the specified binary field.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param fieldKey
+	 * @param request
+	 * @return
+	 */
+	MeshRequest<ImageVariantsResponse> upsertNodeBinaryFieldImageVariants(String projectName, String nodeUuid, String fieldKey, ImageManipulationRequest request, ParameterProvider... parameters);
+
+	/**
+	 * Detach/delete all the image variants of the binary behind the specified binary field.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param fieldKey
+	 * @return
+	 */
+	MeshRequest<EmptyResponse> clearNodeBinaryFieldImageVariants(String projectName, String nodeUuid, String fieldKey, ParameterProvider... parameters);
+
+	/**
+	 * Retrieve all the image variants of the binary behind the specified binary field.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param fieldKey
+	 * @return
+	 */
+	MeshRequest<ImageVariantsResponse> getNodeBinaryFieldImageVariants(String projectName, String nodeUuid, String fieldKey, ParameterProvider... parameters);
 }

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -73,7 +74,8 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 
 	@Override
 	public Boolean hasPermission(Object userId, InternalPermission permission, Object elementId) {
-		EnumSet<InternalPermission> cachedPermissions = get(userId, elementId);
+		// note: we access the cache instance directly here to avoid cloning of the returned entry (which we will not mutate)
+		EnumSet<InternalPermission> cachedPermissions = cache.get(createCacheKey(userId, elementId));
 		if (cachedPermissions != null) {
 			return cachedPermissions.contains(permission);
 		} else {
@@ -121,6 +123,28 @@ public class PermissionCacheImpl extends AbstractMeshCache<String, EnumSet<Inter
 	@Override
 	public EnumSet<InternalPermission> get(Object userId, Object elementId) {
 		return get(createCacheKey(userId, elementId));
+	}
+
+	@Override
+	public EnumSet<InternalPermission> get(String key) {
+		EnumSet<InternalPermission> cached = super.get(key);
+		if (cached != null) {
+			// since the EnumSet is mutable, we return a clone of the instance
+			return EnumSet.copyOf(cached);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public EnumSet<InternalPermission> get(String key, Function<String, EnumSet<InternalPermission>> mappingFunction) {
+		EnumSet<InternalPermission> cached = super.get(key, mappingFunction);
+		if (cached != null) {
+			// since the EnumSet is mutable, we return a clone of the instance
+			return EnumSet.copyOf(cached);
+		} else {
+			return null;
+		}
 	}
 
 	@Override

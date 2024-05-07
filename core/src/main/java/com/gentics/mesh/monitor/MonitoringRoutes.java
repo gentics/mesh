@@ -65,8 +65,8 @@ public class MonitoringRoutes {
 	 */
 	public void init() {
 		router.route().handler(LoggerHandler.create());
-		router.route().last().handler(DefaultNotFoundHandler.create());
-		router.route().failureHandler(FailureHandler.create(liveness));
+		router.route().last().handler(DefaultNotFoundHandler.create(options.getHttpServerOptions()));
+		router.route().failureHandler(FailureHandler.create(liveness, options.getHttpServerOptions()));
 
 		addMetrics();
 		addLive();

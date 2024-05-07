@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.node.field.image;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -40,16 +42,6 @@ public class FocalPoint implements RestModel {
 		return y;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof FocalPoint) {
-			FocalPoint point = (FocalPoint) obj;
-			return point.x == x && point.y == y;
-		} else {
-			return super.equals(obj);
-		}
-	}
-
 	/**
 	 * Convert the relative focal point values ({@link #getX()}, {@link #getY()} to an absolute pixel position using the provided image size.
 	 * 
@@ -75,6 +67,25 @@ public class FocalPoint implements RestModel {
 	@Override
 	public String toString() {
 		return x + "-" + y;
+	}
+
+	@Override
+	@JsonIgnore
+	public int hashCode() {
+		return Objects.hash(x, y);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		FocalPoint other = (FocalPoint) obj;
+		return Float.floatToIntBits(x) == Float.floatToIntBits(other.x)
+				&& Float.floatToIntBits(y) == Float.floatToIntBits(other.y);
 	}
 
 }

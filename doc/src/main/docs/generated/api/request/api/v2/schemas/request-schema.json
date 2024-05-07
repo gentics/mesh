@@ -64,6 +64,9 @@
             "required" : true,
             "description" : "Type of the field."
           },
+          "noIndex" : {
+            "type" : "boolean"
+          },
           "required" : {
             "type" : "boolean"
           },
@@ -81,6 +84,10 @@
     "autoPurge" : {
       "type" : "boolean",
       "description" : "Auto purge flag of the schema. Controls whether contents of this schema should create new versions."
+    },
+    "noIndex" : {
+      "type" : "boolean",
+      "description" : "'Exclude from indexing' flag."
     },
     "microschema" : {
       "type" : "boolean"

@@ -139,6 +139,10 @@ NOTE: Plugins will not be automatically undeployed or unregistered once the writ
 
 TIP: Plugins which use event handling should be aware that every plugin instance in the cluster will process the event. If this is not desireable a locking or negotiation mechansim should be used to prevent concurrent event handling.
 
+== HTTP/2
+
+Plugins can use HTTP/2 protocol for the connectivity by setting the boolean environment variable `MESH_PLUGIN_USE_HTTP2`, or Java API `MeshOptions.setPluginUseHttp2()`.
+
 == Plugin Development
 
 See link:{{< relref "plugin-development" >}}[Plugin Development]

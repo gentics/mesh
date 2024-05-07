@@ -1,0 +1,3 @@
+Cache: A mechanism of reattaching the cached entity to the persistence context has been introduced, allowing implementations of smarter cache policies.
+
+Cache: Because of a flawed cache invalidation strategy, the project stayed on an old 'latest' branch, even if a new one has been assigned, until the caches are invalidated, or a restart is triggered. This has been fixed.

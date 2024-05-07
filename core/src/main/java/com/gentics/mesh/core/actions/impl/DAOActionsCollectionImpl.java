@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.DAOActionsCollection;
 import com.gentics.mesh.core.action.GroupDAOActions;
+import com.gentics.mesh.core.action.LanguageDAOActions;
 import com.gentics.mesh.core.action.MicroschemaDAOActions;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.action.ProjectDAOActions;
@@ -32,6 +33,7 @@ public class DAOActionsCollectionImpl implements DAOActionsCollection {
 	private final NodeDAOActions nodeActions;
 	private final MicroschemaDAOActions microschemaActions;
 	private final SchemaDAOActions schemaActions;
+	private final LanguageDAOActions languageActions;
 
 	@Inject
 	public DAOActionsCollectionImpl(
@@ -44,7 +46,8 @@ public class DAOActionsCollectionImpl implements DAOActionsCollection {
 		ProjectDAOActions projectActions,
 		NodeDAOActions nodeActions,
 		MicroschemaDAOActions microschemaActions,
-		SchemaDAOActions schemaActions) {
+		SchemaDAOActions schemaActions,
+		LanguageDAOActions languageActions) {
 
 		this.userActions = userActions;
 		this.groupActions = groupActions;
@@ -56,6 +59,7 @@ public class DAOActionsCollectionImpl implements DAOActionsCollection {
 		this.branchActions = branchActions;
 		this.projectActions = projectActions;
 		this.nodeActions = nodeActions;
+		this.languageActions = languageActions;
 
 		this.microschemaActions = microschemaActions;
 		this.schemaActions = schemaActions;
@@ -111,4 +115,8 @@ public class DAOActionsCollectionImpl implements DAOActionsCollection {
 		return schemaActions;
 	}
 
+	@Override
+	public LanguageDAOActions languageActions() {
+		return languageActions;
+	}
 }

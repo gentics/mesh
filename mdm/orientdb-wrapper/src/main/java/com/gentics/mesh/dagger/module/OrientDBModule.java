@@ -34,43 +34,46 @@ import com.gentics.mesh.core.data.PersistenceClassMap;
 import com.gentics.mesh.core.data.PersistenceClassMapImpl;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.binary.impl.BinariesImpl;
-import com.gentics.mesh.core.data.dao.BinaryDao;
 import com.gentics.mesh.core.data.dao.BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.BranchDaoWrapper;
-import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.ContentDaoWrapper;
 import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.GroupDaoWrapper;
-import com.gentics.mesh.core.data.dao.JobDao;
+import com.gentics.mesh.core.data.dao.ImageVariantDaoWrapper;
 import com.gentics.mesh.core.data.dao.JobDaoWrapper;
-import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.LanguageDaoWrapper;
-import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.NodeDaoWrapper;
 import com.gentics.mesh.core.data.dao.OrientDBDaoCollection;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.dao.ProjectDao;
+import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingBranchDao;
+import com.gentics.mesh.core.data.dao.PersistingContentDao;
+import com.gentics.mesh.core.data.dao.PersistingGroupDao;
+import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
+import com.gentics.mesh.core.data.dao.PersistingJobDao;
+import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
+import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
+import com.gentics.mesh.core.data.dao.PersistingNodeDao;
+import com.gentics.mesh.core.data.dao.PersistingProjectDao;
+import com.gentics.mesh.core.data.dao.PersistingRoleDao;
+import com.gentics.mesh.core.data.dao.PersistingS3BinaryDao;
+import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
+import com.gentics.mesh.core.data.dao.PersistingTagDao;
+import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
+import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.ProjectDaoWrapper;
-import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.RoleDaoWrapper;
-import com.gentics.mesh.core.data.dao.S3BinaryDao;
 import com.gentics.mesh.core.data.dao.S3BinaryDaoWrapper;
-import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagDaoWrapper;
-import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDaoWrapper;
-import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.dao.UserDaoWrapper;
 import com.gentics.mesh.core.data.dao.impl.BinaryDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.BranchDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.ContentDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.GroupDaoWrapperImpl;
+import com.gentics.mesh.core.data.dao.impl.ImageVariantDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.JobDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.LanguageDaoWrapperImpl;
 import com.gentics.mesh.core.data.dao.impl.MicroschemaDaoWrapperImpl;
@@ -238,49 +241,55 @@ public abstract class OrientDBModule {
 	abstract LanguageDaoWrapper bindLanguageDaoWrapper(LanguageDaoWrapperImpl e);
 
 	@Binds
-	abstract UserDao bindUserDao(UserDaoWrapper e);
+	abstract ImageVariantDaoWrapper bindImageVariantDaoWrapper(ImageVariantDaoWrapperImpl e);
 
 	@Binds
-	abstract RoleDao bindRoleDao(RoleDaoWrapper e);
+	abstract PersistingImageVariantDao bindImageVariantDao(ImageVariantDaoWrapper e);
 
 	@Binds
-	abstract GroupDao bindGroupDao(GroupDaoWrapper e);
+	abstract PersistingUserDao bindUserDao(UserDaoWrapper e);
 
 	@Binds
-	abstract ProjectDao bindProjectDao(ProjectDaoWrapper e);
+	abstract PersistingRoleDao bindRoleDao(RoleDaoWrapper e);
 
 	@Binds
-	abstract NodeDao bindNodeDao(NodeDaoWrapper e);
+	abstract PersistingGroupDao bindGroupDao(GroupDaoWrapper e);
 
 	@Binds
-	abstract ContentDao bindContentDao(ContentDaoWrapper e);
+	abstract PersistingProjectDao bindProjectDao(ProjectDaoWrapper e);
 
 	@Binds
-	abstract JobDao bindJobDao(JobDaoWrapper e);
+	abstract PersistingNodeDao bindNodeDao(NodeDaoWrapper e);
 
 	@Binds
-	abstract TagDao bindTagDao(TagDaoWrapper e);
+	abstract PersistingContentDao bindContentDao(ContentDaoWrapper e);
 
 	@Binds
-	abstract TagFamilyDao bindTagFamilyDao(TagFamilyDaoWrapper e);
+	abstract PersistingJobDao bindJobDao(JobDaoWrapper e);
 
 	@Binds
-	abstract BinaryDao bindBinaryDao(BinaryDaoWrapper e);
+	abstract PersistingTagDao bindTagDao(TagDaoWrapper e);
 
 	@Binds
-	abstract S3BinaryDao s3BinaryDao(S3BinaryDaoWrapper e);
+	abstract PersistingTagFamilyDao bindTagFamilyDao(TagFamilyDaoWrapper e);
 
 	@Binds
-	abstract BranchDao bindBranchDao(BranchDaoWrapper e);
+	abstract PersistingBinaryDao bindBinaryDao(BinaryDaoWrapper e);
 
 	@Binds
-	abstract SchemaDao bindSchemaDao(SchemaDaoWrapper e);
+	abstract PersistingS3BinaryDao s3BinaryDao(S3BinaryDaoWrapper e);
 
 	@Binds
-	abstract MicroschemaDao bindMicroschemaDao(MicroschemaDaoWrapper e);
+	abstract PersistingBranchDao bindBranchDao(BranchDaoWrapper e);
 
 	@Binds
-	abstract LanguageDao bindLanguageDao(LanguageDaoWrapper e);
+	abstract PersistingSchemaDao bindSchemaDao(SchemaDaoWrapper e);
+
+	@Binds
+	abstract PersistingMicroschemaDao bindMicroschemaDao(MicroschemaDaoWrapper e);
+
+	@Binds
+	abstract PersistingLanguageDao bindLanguageDao(LanguageDaoWrapper e);
 
 	@Binds
 	abstract AdminHandler adminHandler(OrientDBAdminHandler e);

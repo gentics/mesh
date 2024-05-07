@@ -102,7 +102,7 @@ public class FieldFilter extends MainFilter<HibFieldContainer> {
 			return new FieldMappedFilter<>(type, name, description, listReferenceMap.getLeft(), 
 					listReferenceMap.getRight(), schema, fieldSchema.maybeGetListField().map(ListFieldSchema::getListType).map(FieldTypes::valueByName));
 		case BINARY:
-			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter("BINARYFIELD"), 
+			return new FieldMappedFilter<>(type, name, description, BinaryFieldFilter.filter("BINARYFIELD", context), 
 					node -> node == null ? null : getOrNull(node.getBinary(name), Function.identity()), schema);
 		case S3BINARY:
 			return new FieldMappedFilter<>(type, name, description, S3BinaryFieldFilter.filter("S3BINARYFIELD"), 

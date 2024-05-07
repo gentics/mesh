@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>madl</artifactId>
-		<version>2.0.15-SNAPSHOT</version>
+		<version>2.1.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>madl-orientdb</artifactId>
@@ -64,6 +64,11 @@
 					<!-- This dependency is shipping an slf4j logger factory which is interfering with the bootstrap process -->
 					<groupId>org.graalvm.tools</groupId>
 					<artifactId>chromeinspector</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- This dependency is superseded by commons-beanutils:commons-beanutils -->
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils-core</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

@@ -27,4 +27,9 @@
 | string
 | Name of the microschema
 
+| noIndex
+| false
+| boolean
+| &#x27;Exclude from indexing&#x27; flag.
+
 |======
