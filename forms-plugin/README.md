@@ -794,7 +794,7 @@ These are the options available for the Form Export
 | `includeCreationTimestamp`             | boolean   | Should the fields in the export contain the timestamp of when the form is submitted |false 
 | `includeUuid`           | boolean   | Should the fields in the export contain the uuid | false 
 | `timestampFormat`         | string   | The timestamp format in the export. | "yyyy-MM-dd'T'HH.mm.ss.SSS'Z'"
-| `includeNameFirst`         | boolean   | Should the export contain the name of the field before the label | false
+| `includeNameFirst`         | boolean   | Should the export contain the name of the field before the label | true
 
 # Extending
 
