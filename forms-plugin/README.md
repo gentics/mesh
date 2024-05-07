@@ -784,7 +784,7 @@ Handlebars example for rendering a form:
 
 # Export
 
-Options related to the form results export are: `includeCreationTimestamp`, `includeUuid`, `timestampFormat` and `includeNameFirst`. There is also `defaultExportFormat` (CSV) not included in the export object. Options mostly controll the look of the exported file.
+Options related to the form results export are: `includeCreationTimestamp`, `includeUuid`, `timestampFormat` and `includeNameFirst`. Options mostly control the look of the exported file.
 
 ## Configuration Options
 These are the options available for the Form Export
