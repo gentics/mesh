@@ -30,6 +30,8 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.assertj.MeshCoreAssertion;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.util.ImageTestUtil;
+
 import io.vertx.core.buffer.Buffer;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -568,7 +570,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		});
 		failingLatch(latch);
 		assertThat(targetFile).exists();
-		BufferedImage img = ImageIO.read(targetFile);
+		BufferedImage img = ImageTestUtil.read(targetFile);
 		//ImageTestUtil.displayImage(img);
 		assertEquals(expectedWidth, img.getWidth());
 		assertEquals(expectedHeight, img.getHeight());
