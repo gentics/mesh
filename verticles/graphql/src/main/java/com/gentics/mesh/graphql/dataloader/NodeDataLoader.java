@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -336,17 +337,14 @@ public class NodeDataLoader {
 	 * The context of the loader for a specific key
 	 */
 	public static class Context {
-		private ContainerType type;
+		private final ContainerType type;
 		
-		private String languageTags = "";
+		private final String languageTags;
 
-		private Optional<FilterOperation<?>> maybeNativeFilter = Optional.empty();
+		private final Optional<FilterOperation<?>> maybeNativeFilter;
 
-		private PagingParameters paging;
-
-		public Context(ContainerType type) {
-			this.type = type;
-		}
+		private final PagingParameters paging;
+		private final int pagingId;
 
 		public Context(ContainerType type, List<String> languageTags, Optional<FilterOperation<?>> maybeNativeFilter, PagingParameters pagingInfo) {
 			this.type = type;
@@ -354,6 +352,7 @@ public class NodeDataLoader {
 			this.languageTags = String.join(",", new LinkedHashSet<>(languageTags));
 			this.maybeNativeFilter = maybeNativeFilter;
 			this.paging = pagingInfo;
+			this.pagingId = Objects.hash(paging.getPage(), paging.getPerPage(), paging.getSort().entrySet().stream().map(entry -> entry.getKey() + entry.getValue().name()).sorted(Comparator.naturalOrder()).collect(Collectors.joining()));
 		}
 
 		public ContainerType getType() {
@@ -374,8 +373,8 @@ public class NodeDataLoader {
 			if (!(o instanceof Context)) return false;
 			Context context = (Context) o;
 			return type == context.type 
-					&& Objects.equals(languageTags, context.languageTags) 
-					&& Objects.equals(paging.toString(), context.paging.toString()) 
+					&& pagingId == context.pagingId
+					&& Objects.equals(languageTags, context.languageTags)
 					&& Objects.equals(
 							maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY), 
 							context.maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
@@ -383,7 +382,7 @@ public class NodeDataLoader {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(type, languageTags, paging.toString(), maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
+			return Objects.hash(type, languageTags, pagingId, maybeNativeFilter.map(Objects::toString).orElse(StringUtils.EMPTY));
 		}
 
 		public Optional<FilterOperation<?>> getMaybeNativeFilter() {

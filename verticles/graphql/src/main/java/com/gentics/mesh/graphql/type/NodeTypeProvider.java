@@ -75,6 +75,7 @@ import com.gentics.mesh.graphql.model.NodeReferenceIn;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.handler.Versioned;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.path.impl.PathImpl;
@@ -230,7 +231,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		ContainerType type = getNodeVersion(env);
 
-		NodeDataLoader.Context context = new NodeDataLoader.Context(type);
+		NodeDataLoader.Context context = new NodeDataLoader.Context(type, Collections.emptyList(), Optional.empty(), new PagingParametersImpl());
 		DataLoader<DataLoaderKey<HibNode>, List<HibNodeFieldContainer>> contentLoader = env.getDataLoader(NodeDataLoader.CONTENT_LOADER_KEY);
 		return contentLoader.load(new DataLoaderKey<HibNode>(env, node), context).thenApply(l -> l.stream()
 				.filter(c -> gc.hasReadPerm(c, type))
