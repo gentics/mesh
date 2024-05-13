@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.2]]
+== 2.1.2 (13.05.2024)
+
+icon:check[] GraphQL: A combination of similar queries with different names and filter parameters, running over native filtering, that produces incorrect results, has been fixed. 
+
 [[v2.1.1]]
 == 2.1.1 (02.05.2024)
 
