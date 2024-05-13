@@ -18,7 +18,7 @@ The LTS changelog lists releases which are only accessible via a commercial subs
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
 [[v1.10.30]]
-== 1.10.30 (TBD)
+== 1.10.30 (13.05.2024)
 
 icon:check[] Core: Improvement of an error message of the webroot field URL conflict, now containing correct UUID, language and webroot URLS of a conflicting content.
 
