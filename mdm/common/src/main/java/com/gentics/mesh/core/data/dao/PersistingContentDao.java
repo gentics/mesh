@@ -744,7 +744,7 @@ public interface PersistingContentDao extends ContentDao {
 
 					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguageTag(),
 							"node_conflicting_urlfield_update", paths, conflictingContainer.getNode().getUuid(),
-							conflictingContainer.getLanguageTag());
+							conflictingContainer.getLanguageTag(), fromConflictingContainer.stream().collect(Collectors.joining(", ")));
 				}
 			}
 			edge.setUrlFieldInfo(urlFieldValues);
