@@ -37,5 +37,41 @@
 			}
 		}
 	}
+
+	rootMerged: node(path:"/") {
+		contentChildren: children(filter: {
+			schema: {is: content}
+		}) {
+			# [$.data.rootMerged.contentChildren.elements.length()=1]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				... on content {
+					fields {
+						title
+						content
+					}
+				}
+			}
+		}
+		folderChildren: children(filter: {
+			schema: {is: folder}
+		}) {
+			# [$.data.rootMerged.folderChildren.elements.length()=4]
+			elements {
+				uuid
+				schema {
+					name
+				}
+				... on folder {
+					fields {
+						name
+					}
+				}
+			}
+		}
+	}
 }
 # [$.errors=<is-undefined>]
