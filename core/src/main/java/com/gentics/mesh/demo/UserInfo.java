@@ -1,5 +1,9 @@
 package com.gentics.mesh.demo;
 
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.user.HibUser;
@@ -45,10 +49,7 @@ public class UserInfo {
 	}
 
 	public HibGroup getGroup() {
-		Tx.maybeGet().ifPresent(tx -> {
-			group = tx.<CommonTx>unwrap().load(group.getId(), tx.<CommonTx>unwrap().groupDao().getPersistenceClass());
-		});
-		return group;
+		return getBaseElement(() -> group, a -> group = a);
 	}
 
 	public String getGroupUuid() {
@@ -56,10 +57,7 @@ public class UserInfo {
 	}
 
 	public HibRole getRole() {
-		Tx.maybeGet().ifPresent(tx -> {
-			role = tx.<CommonTx>unwrap().load(role.getId(), tx.<CommonTx>unwrap().roleDao().getPersistenceClass());
-		});
-		return role;
+		return getBaseElement(() -> role, a -> role = a);
 	}
 
 	public String getRoleUuid() {
@@ -67,10 +65,17 @@ public class UserInfo {
 	}
 
 	public HibUser getUser() {
+		return getBaseElement(() -> user, a -> user = a);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends HibBaseElement> T getBaseElement(Supplier<T> getter, Consumer<T> setter) {
 		Tx.maybeGet().ifPresent(tx -> {
-			user = tx.<CommonTx>unwrap().load(user.getId(), tx.<CommonTx>unwrap().userDao().getPersistenceClass());
+			T original = getter.get();
+			CommonTx ctx = tx.unwrap();
+			setter.accept((T) ctx.load(original.getId(), (Class<T>) ctx.entityClassOf(original)));
 		});
-		return user;
+		return getter.get();
 	}
 
 	public String getUserUuid() {
@@ -80,5 +85,4 @@ public class UserInfo {
 	public String getPassword() {
 		return password;
 	}
-
 }

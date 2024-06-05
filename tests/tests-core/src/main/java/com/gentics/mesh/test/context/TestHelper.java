@@ -121,6 +121,10 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return data().role();
 	}
 
+	default HibRole role(String name) {
+		return data().getRole(name);
+	}
+
 	default HibUser getRequestUser() {
 		return data().getUserInfo().getUser();
 	}

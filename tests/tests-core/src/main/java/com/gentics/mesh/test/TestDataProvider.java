@@ -705,62 +705,48 @@ public class TestDataProvider {
 
 	@Getter
 	public HibNode getFolder(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibNode folder = folders.get(name);
-			folder = tx.<CommonTx>unwrap().load(folder.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(folder.getProject()));
-			folders.put(name, folder);
-		});
-		return folders.get(name);
+		return getBaseElement(name, folders);
 	}
 
 	@Getter
 	public HibTagFamily getTagFamily(String key) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibTagFamily tf = tagFamilies.get(key);
-			tf = tx.<CommonTx>unwrap().load(tf.getId(), tx.<CommonTx>unwrap().tagFamilyDao().getPersistenceClass(tf.getProject()));
-			tagFamilies.put(key, tf);
-		});
-		return tagFamilies.get(key);
+		return getBaseElement(key, tagFamilies);
 	}
 
 	@Getter
 	public HibNode getContent(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibNode content = contents.get(name);
-			content = tx.<CommonTx>unwrap().load(content.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(content.getProject()));
-			contents.put(name, content);
-		});
-		return contents.get(name);
+		return getBaseElement(name, contents);
 	}
 
 	@Getter
 	public HibTag getTag(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibTag tag = tags.get(name);
-			tag = tx.<CommonTx>unwrap().load(tag.getId(), tx.<CommonTx>unwrap().tagDao().getPersistenceClass());
-			tags.put(name, tag);
-		});
-		return tags.get(name);
+		return getBaseElement(name, tags);
 	}
 
 	@Getter
 	public HibSchema getSchemaContainer(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibSchema schema = schemaContainers.get(name);
-			schema = tx.<CommonTx>unwrap().load(schema.getId(), tx.<CommonTx>unwrap().schemaDao().getPersistenceClass());
-			schemaContainers.put(name, schema);
-		});
-		return schemaContainers.get(name);
+		return getBaseElement(name, schemaContainers);
 	}
 
 	@Getter
 	public HibMicroschema getMicroschemaContainer(String name) {
+		return getBaseElement(name, microschemaContainers);
+	}
+
+	@Getter
+	public HibRole getRole(String name) {
+		return getBaseElement(name, roles);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends HibBaseElement> T getBaseElement(String name, Map<String, T> cache) {
 		Tx.maybeGet().ifPresent(tx -> {
-			HibMicroschema microschema = microschemaContainers.get(name);
-			microschema = tx.<CommonTx>unwrap().load(microschema.getId(), tx.<CommonTx>unwrap().microschemaDao().getPersistenceClass());
-			microschemaContainers.put(name, microschema);
+			T element = cache.get(name);
+			CommonTx ctx = tx.unwrap();
+			element = (T) ctx.load(element.getId(), (Class<T>) ctx.entityClassOf(element));
+			cache.put(name, element);
 		});
-		return microschemaContainers.get(name);
+		return cache.get(name);
 	}
 
 	public Map<String, HibTag> getTags() {
@@ -824,7 +810,7 @@ public class TestDataProvider {
 	}
 
 	public HibRole getAnonymousRole() {
-		return roles.get("anonymous");
+		return getRole("anonymous");
 	}
 
 	@Getter

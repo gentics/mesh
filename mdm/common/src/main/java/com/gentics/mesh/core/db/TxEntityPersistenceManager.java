@@ -114,4 +114,16 @@ public interface TxEntityPersistenceManager {
 	default <T> T detach(T element) {
 		return element;
 	}
+
+	/**
+	 * Return the persistence entity class of a given element.
+	 * 
+	 * @param <T>
+	 * @param element
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	default <T> Class<? super T> entityClassOf(T element) {
+		return (Class<? super T>) element.getClass();
+	}
 }

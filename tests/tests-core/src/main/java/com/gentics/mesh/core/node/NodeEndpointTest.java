@@ -2291,7 +2291,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testCreateNodeAndSetRolePermissions() {
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		NodeResponse created = create(false, anonymous.getName());
 
 		ObjectPermissionResponse rolePermissions = call(
@@ -2319,7 +2319,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testUpsertNodeAndSetRolePermissions() {
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		String uuid = UUIDUtil.randomUUID();
 		upsert(uuid, "Created", false);
 		NodeResponse updated = upsert(uuid, "Updated", false, anonymous.getName());
@@ -2334,7 +2334,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testEmptyUpsertNodeAndSetRolePermissions() {
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		String uuid = UUIDUtil.randomUUID();
 		upsert(uuid, "Created", false);
 		NodeResponse updated = upsert(uuid, null, false, anonymous.getName());
@@ -2363,7 +2363,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testUpdateNodeAndSetRolePermissions() {
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		NodeResponse created = create(false);
 		update(created, "some new title", false, anonymous.getName());
 
@@ -2377,7 +2377,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testEmptyUpdateNodeAndSetRolePermissions() {
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		NodeResponse created = create(false);
 		update(created, null, false, anonymous.getName());
 

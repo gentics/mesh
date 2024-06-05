@@ -18,7 +18,7 @@ public class RoleRolePermissionsEndpointTest extends AbstractRolePermissionEndpo
 
 	@Override
 	protected HibBaseElement getTestedElement() {
-		return roles().get("anonymous");
+		return anonymousRole();
 	}
 
 	@Override
