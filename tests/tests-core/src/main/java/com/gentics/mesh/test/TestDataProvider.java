@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Provider;
 
@@ -64,6 +65,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
+import com.github.jknack.handlebars.internal.lang3.tuple.Pair;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -749,36 +751,44 @@ public class TestDataProvider {
 		return cache.get(name);
 	}
 
+	private <T extends HibBaseElement> Map<String, T> getBaseElements(Map<String, T> cache) {
+		return cache.keySet().stream().map(key -> Pair.of(key, getBaseElement(key, cache))).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+	}
+
 	public Map<String, HibTag> getTags() {
-		return tags;
+		return getBaseElements(tags);
 	}
 
 	public Map<String, HibNode> getContents() {
-		return contents;
+		return getBaseElements(contents);
 	}
 
 	public Map<String, HibNode> getFolders() {
-		return folders;
+		return getBaseElements(folders);
 	}
 
 	public Map<String, HibUser> getUsers() {
-		return users;
+		return getBaseElements(users);
 	}
 
 	public Map<String, HibGroup> getGroups() {
-		return groups;
+		return getBaseElements(groups);
 	}
 
 	public Map<String, HibRole> getRoles() {
-		return roles;
+		return getBaseElements(roles);
 	}
 
 	public Map<String, HibSchema> getSchemaContainers() {
-		return schemaContainers;
+		return getBaseElements(schemaContainers);
 	}
 
 	public Map<String, HibMicroschema> getMicroschemaContainers() {
-		return microschemaContainers;
+		return getBaseElements(microschemaContainers);
+	}
+
+	public Map<String, HibTagFamily> getTagFamilies() {
+		return getBaseElements(tagFamilies);
 	}
 
 	public BootstrapInitializer getMeshBoot() {
@@ -788,10 +798,6 @@ public class TestDataProvider {
 	public int getNodeCount() {
 		// folders, contents + basenode
 		return folders.size() + contents.size() + 1;
-	}
-
-	public Map<String, HibTagFamily> getTagFamilies() {
-		return tagFamilies;
 	}
 
 	@Getter
