@@ -39,7 +39,9 @@ stage("Setup Build Environment") {
 		githubBuildStarted()
 		try {
 			stage("Checkout") {
-				checkout scm
+				scm_variables = checkout scm
+				env.GIT_COMMIT = scm_variables.get('GIT_COMMIT')
+				env.GIT_PREVIOUS_SUCCESSFUL_COMMIT = scm_variables.get('GIT_PREVIOUS_SUCCESSFUL_COMMIT')
 			}
 
 			def branchName = GitHelper.fetchCurrentBranchName()
