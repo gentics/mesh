@@ -48,9 +48,15 @@ stage("Setup Build Environment") {
 			def version = MavenHelper.getVersion()
 
 			stage('Check git commit') {
-				if ( Boolean.valueOf(params.checkGitCommit) && env.GIT_COMMIT == env.GIT_PREVIOUS_SUCCESSFUL_COMMIT ) {
-					echo "env.GIT_COMMIT (" + env.GIT_COMMIT + ") = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT (" + env.GIT_PREVIOUS_SUCCESSFUL_COMMIT + "). Skip building."
-					env.BUILD_SKIPPED = "true"
+				if ( Boolean.valueOf(params.checkGitCommit) ) {
+					if ( env.GIT_COMMIT == env.GIT_PREVIOUS_SUCCESSFUL_COMMIT ) {
+						echo "env.GIT_COMMIT (" + env.GIT_COMMIT + ") = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT (" + env.GIT_PREVIOUS_SUCCESSFUL_COMMIT + "). Skip building."
+						env.BUILD_SKIPPED = "true"
+					} else {
+						echo "env.GIT_COMMIT (" + env.GIT_COMMIT + ") != env.GIT_PREVIOUS_SUCCESSFUL_COMMIT (" + env.GIT_PREVIOUS_SUCCESSFUL_COMMIT + "). Need to rebuild."
+					}
+				} else {
+					echo "Not checking git commit"
 				}
 			}
 
