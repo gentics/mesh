@@ -397,10 +397,17 @@ public class TestDataProvider {
 		tx.commit();
 		tx.<CommonTx>unwrap().data().setEventQueueBatch(batch);
 		batch.dispatch();
-		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
-			getSchemaContainer("folder").getLatestVersion(), batch);
-		project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
-		project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
+		project = projectDao.findByName(PROJECT_NAME);
+		if (project == null) {
+			project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
+					getSchemaContainer("folder").getLatestVersion(), batch);
+		}
+		if (project.findLanguageByTag(getEnglish()) == null) {
+			project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
+		}
+		if (project.findLanguageByTag(getGerman()) == null) {
+			project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
+		}		
 		HibUser jobUser = userInfo.getUser();
 		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
@@ -410,25 +417,40 @@ public class TestDataProvider {
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
-			HibGroup guestGroup = groupDao.create("guests", userInfo.getUser());
+			HibGroup guestGroup = groupDao.findByName("guests");
+			if (guestGroup == null) {
+				guestGroup = groupDao.create("guests", userInfo.getUser());
+			}
 			groups.put("guests", guestGroup);
 
-			HibRole guestRole = roleDao.create("guest_role", userInfo.getUser());
+			HibRole guestRole = roleDao.findByName("guest_role");
+			if (guestRole == null) {
+				guestRole = roleDao.create("guest_role", userInfo.getUser());				
+			}
 			groupDao.addRole(guestGroup, guestRole);
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
-			HibUser user = userDao.create("guest", userInfo.getUser());
-			userDao.addGroup(user, guestGroup);
-			user.setFirstname("Guest Firstname");
-			user.setLastname("Guest Lastname");
-			user.setEmailAddress("guest@spam.gentics.com");
+			HibUser user = userDao.findByName("guest");
+			if (user == null) {
+				user = userDao.create("guest", userInfo.getUser());
+				userDao.addGroup(user, guestGroup);
+				user.setFirstname("Guest Firstname");
+				user.setLastname("Guest Lastname");
+				user.setEmailAddress("guest@spam.gentics.com");
+			}
 			users.put(user.getUsername(), user);
 
-			HibGroup group = groupDao.create("extra_group", userInfo.getUser());
+			HibGroup group = groupDao.findByName("extra_group");
+			if (group == null) {
+				group = groupDao.create("extra_group", userInfo.getUser());
+			}
 			groups.put(group.getName(), group);
 
-			HibRole role = roleDao.create("extra_role", userInfo.getUser());
+			HibRole role = roleDao.findByName("extra_role");
+			if (role == null) {
+				role = roleDao.create("extra_role", userInfo.getUser());
+			}
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
@@ -436,7 +458,6 @@ public class TestDataProvider {
 		tx.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
 			getUserInfo().getUser());
 		contentCount++;
-
 	}
 
 	public void addTagFamilies() {
@@ -489,38 +510,40 @@ public class TestDataProvider {
 	private void addVCardMicroschema() throws MeshJsonException {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
-		vcardMicroschema.setName("vcard");
-		vcardMicroschema.setDescription("Microschema for a vcard");
+		HibMicroschema vcardMicroschemaContainer = microschemaDao.findByName("vcard");
+		if (vcardMicroschemaContainer == null) {
 
-		// firstname field
-		StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
-		firstNameFieldSchema.setName("firstName");
-		firstNameFieldSchema.setLabel("First Name");
-		firstNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(firstNameFieldSchema);
+			MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
+			vcardMicroschema.setName("vcard");
+			vcardMicroschema.setDescription("Microschema for a vcard");
 
-		// lastname field
-		StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
-		lastNameFieldSchema.setName("lastName");
-		lastNameFieldSchema.setLabel("Last Name");
-		lastNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(lastNameFieldSchema);
+			// firstname field
+			StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
+			firstNameFieldSchema.setName("firstName");
+			firstNameFieldSchema.setLabel("First Name");
+			firstNameFieldSchema.setRequired(true);
+			vcardMicroschema.addField(firstNameFieldSchema);
 
-		// address field
-		StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
-		addressFieldSchema.setName("address");
-		addressFieldSchema.setLabel("Address");
-		vcardMicroschema.addField(addressFieldSchema);
+			// lastname field
+			StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
+			lastNameFieldSchema.setName("lastName");
+			lastNameFieldSchema.setLabel("Last Name");
+			lastNameFieldSchema.setRequired(true);
+			vcardMicroschema.addField(lastNameFieldSchema);
 
-		// postcode field
-		StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
-		postcodeFieldSchema.setName("postcode");
-		postcodeFieldSchema.setLabel("Post Code");
-		vcardMicroschema.addField(postcodeFieldSchema);
+			// address field
+			StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
+			addressFieldSchema.setName("address");
+			addressFieldSchema.setLabel("Address");
+			vcardMicroschema.addField(addressFieldSchema);
 
-		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(),
-			createBatch());
+			// postcode field
+			StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
+			postcodeFieldSchema.setName("postcode");
+			postcodeFieldSchema.setLabel("Post Code");
+			vcardMicroschema.addField(postcodeFieldSchema);
+			vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
+		}
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		microschemaDao.assign(vcardMicroschemaContainer, project, user(), createBatch());
 	}
@@ -533,26 +556,27 @@ public class TestDataProvider {
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
-		captionedImageMicroschema.setName("captionedImage");
-		captionedImageMicroschema.setDescription("Microschema for a captioned image");
+		HibMicroschema microschema = microschemaDao.findByName("captionedImage");
+		if (microschema == null) {
+			MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
+			captionedImageMicroschema.setName("captionedImage");
+			captionedImageMicroschema.setDescription("Microschema for a captioned image");
 
-		// image field
-		NodeFieldSchema imageFieldSchema = new NodeFieldSchemaImpl();
-		imageFieldSchema.setName("image");
-		imageFieldSchema.setLabel("Image");
-		imageFieldSchema.setAllowedSchemas("image");
-		captionedImageMicroschema.addField(imageFieldSchema);
+			// image field
+			NodeFieldSchema imageFieldSchema = new NodeFieldSchemaImpl();
+			imageFieldSchema.setName("image");
+			imageFieldSchema.setLabel("Image");
+			imageFieldSchema.setAllowedSchemas("image");
+			captionedImageMicroschema.addField(imageFieldSchema);
 
-		// caption field
-		StringFieldSchema captionFieldSchema = new StringFieldSchemaImpl();
-		captionFieldSchema.setName("caption");
-		captionFieldSchema.setLabel("Caption");
-		captionedImageMicroschema.addField(captionFieldSchema);
-
-		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(),
-			createBatch());
-		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
+			// caption field
+			StringFieldSchema captionFieldSchema = new StringFieldSchemaImpl();
+			captionFieldSchema.setName("caption");
+			captionFieldSchema.setLabel("Caption");
+			captionedImageMicroschema.addField(captionFieldSchema);
+			microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
+		}
+		microschemaContainers.put(microschema.getName(), microschema);
 		microschemaDao.assign(microschema, project, user(), createBatch());
 	}
 

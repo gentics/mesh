@@ -72,7 +72,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	private void setSchema(boolean isRequired) throws IOException {
-		try (Tx tx = tx()) {
+		tx(tx -> {
 			// add non restricted string field
 			BinaryFieldSchema binaryFieldSchema = new BinaryFieldSchemaImpl();
 			binaryFieldSchema.setName(FIELD_NAME);
@@ -80,8 +80,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			binaryFieldSchema.setRequired(isRequired);
 			prepareTypedSchema(schemaContainer("folder"), List.of(binaryFieldSchema), Optional.empty());
 			prepareTypedSchema(folder("2015"), binaryFieldSchema, true);
-			tx.success();
-		}
+		});
 	}
 
 	@Override
