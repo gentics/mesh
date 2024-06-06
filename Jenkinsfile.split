@@ -7,6 +7,7 @@ JobContext.set(this)
 
 properties([
 	parameters([
+		booleanParam(name: 'checkGitCommit',      defaultValue: false, description: 'If set to true, the current git revision is compared with the git revision of the last successful build. If they are equal, the build is skipped and env.BUILD_SKIPPED is set to true'),
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
 		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests or not"),
 		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
@@ -44,7 +45,29 @@ stage("Setup Build Environment") {
 			def branchName = GitHelper.fetchCurrentBranchName()
 			def version = MavenHelper.getVersion()
 
+			stage('Check git commit') {
+				when {
+					expression {
+						return Boolean.valueOf(params.checkGitCommit)
+					}
+				}
+
+				steps {
+					script {
+						if ( env.GIT_COMMIT == env.GIT_PREVIOUS_SUCCESSFUL_COMMIT ) {
+							echo "env.GIT_COMMIT (" + env.GIT_COMMIT + ") = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT (" + env.GIT_PREVIOUS_SUCCESSFUL_COMMIT + "). Skip building."
+							env.BUILD_SKIPPED = "true"
+						}
+					}
+				}
+			}
+
 			stage("Set Version") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runDeploy)) {
 					if (version) {
 						echo "Building version " + version
@@ -71,6 +94,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Prebuild") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests)) {
 					def extraFlags = ""
 					if (Boolean.valueOf(params.runSonar)) {
@@ -90,6 +118,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Test") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runTests)) {
 					if (Boolean.valueOf(params.splitTests)) {
 						if (Boolean.valueOf(params.skipSearchTests)) {
@@ -154,6 +187,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Unstable Tests") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runUnstableTests)) {
 					sshagent(["git"]) {
 						try {
@@ -170,6 +208,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Maven Build") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
@@ -195,6 +238,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage ("Sonar") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runTests) && Boolean.valueOf(params.runSonar)) {
 					if (Boolean.valueOf(params.splitTests)) {
 						for (int i = 0; i < runs; i++) {
@@ -213,6 +261,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Cluster Tests") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runClusterTests)) {
 					stash includes: '**', name: 'project'
 					node("mesh-cluster-worker-17") {
@@ -231,6 +284,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Docker Build") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runDocker)) {
 					if (Boolean.valueOf(params.runDeployTesting)) {
 						version = branchName;
@@ -247,6 +305,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Performance Tests") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runPerformanceTests)) {
 					stash includes: '**', name: 'project'
 					node("mesh-performance-worker-17") {
@@ -264,6 +327,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Integration Tests") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runIntegrationTests)) {
 					withEnv(["MESH_VERSION=" + version]) {
 						sh "integration-tests/test.sh"
@@ -274,6 +342,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Deploy") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeployTesting)) {
 					if (Boolean.valueOf(params.runDocker)) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
@@ -296,6 +369,11 @@ stage("Setup Build Environment") {
 			}
 
 			stage("Git push") {
+				when {
+					expression {
+						return env.BUILD_SKIPPED != "true"
+					}
+				}
 				if (Boolean.valueOf(params.runDeploy)) {
 					sshagent(["git"]) {
 						def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
@@ -309,8 +387,6 @@ stage("Setup Build Environment") {
 				}
 			}
 		} catch (Exception e) {
-			// Temporary
-			sh 'cat /home/jenkins/agent/workspace/mesh_ci-dev-test1/tests/tests-core/target/test-plugins/test-plugins/build.log'
 			if (currentBuild.result == null || currentBuild.currentResult == "STABLE") {
 				currentBuild.result = 'FAILURE'
 				currentBuild.currentResult = 'FAILURE'
