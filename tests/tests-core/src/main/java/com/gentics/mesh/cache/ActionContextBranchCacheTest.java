@@ -1,5 +1,6 @@
 package com.gentics.mesh.cache;
 
+import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +25,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.helper.ExpectedEvent;
+import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class ActionContextBranchCacheTest extends AbstractMeshTest {
@@ -38,12 +40,15 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testBranchCacheResetOnNewLatest() {
-		BranchResponse branch = call(() -> client().createBranch(projectName(), new BranchCreateRequest().setName("new").setLatest(false)));
-		assertNotNull(branch.getUuid());
-		assertEquals(branch.getName(), "new");
-		assertFalse(branch.getLatest());
-		String branchUuid = branch.getUuid();
+	public void testBranchCacheResetOnNewLatest() throws InterruptedException {
+		String branchUuid = UUIDUtil.randomUUID();
+		waitForJobs(() -> {
+			BranchResponse branch = call(() -> client().createBranch(projectName(), branchUuid, new BranchCreateRequest().setName("new").setLatest(false)));
+			assertNotNull(branch.getUuid());
+			assertEquals(branch.getName(), "new");
+			assertFalse(branch.getLatest());
+			assertEquals(branchUuid, branch.getUuid());
+		}, COMPLETED, 1);
 
 		NodeResponse node = call(() -> client().createNode(projectName(), new NodeCreateRequest().setSchemaName("folder").setLanguage(english()).setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()))));
 
@@ -52,7 +57,7 @@ public class ActionContextBranchCacheTest extends AbstractMeshTest {
 		assertThat(branchNodes.getData()).usingElementComparator((a, b) -> a.getUuid().compareTo(b.getUuid())).contains(node);
 
 		// New latest branch
-		branch = call(() -> client().setLatestBranch(projectName(), branchUuid));
+		call(() -> client().setLatestBranch(projectName(), branchUuid));
 
 		// It should have no old node
 		branchNodes = call(() -> client().findNodeChildren(projectName(), tx(() -> project().getBaseNode().getUuid())));
