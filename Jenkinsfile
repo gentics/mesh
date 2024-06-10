@@ -202,10 +202,14 @@ stage("Setup Build Environment") {
 						// Install dependencies
 						sh 'npm ci --no-audit --no-fund'
 
+						// Set the version for the packages
+						sh "npm run nx -- relase version ${version}"
+
 						// Build all JS packages
 						sh 'npm run nx -- run-many --targets build'
 
-						// TODO: Add publishing of the build packages
+						// Publish the pacakges to artifactory
+						sh 'npm run nx -- release publish'
 
 						// Go back to the project root
 						sh 'cd ..'
