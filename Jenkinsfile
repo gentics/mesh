@@ -203,7 +203,7 @@ stage("Setup Build Environment") {
 						sh 'npm ci --no-audit --no-fund'
 
 						// Set the version for the packages
-						sh "npm run nx -- relase version ${version}"
+						sh "npm run nx -- release version ${version}"
 
 						// Build all JS packages
 						sh 'npm run nx -- run-many --targets build'
