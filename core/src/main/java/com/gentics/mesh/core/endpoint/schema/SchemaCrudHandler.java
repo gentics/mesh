@@ -24,6 +24,9 @@ import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.PageTransformer;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibMicroschema;
@@ -34,18 +37,22 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
+import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.ValidationUtil;
 
 import dagger.Lazy;
 
@@ -62,15 +69,18 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	private final ProjectSchemaLoadAllActionImpl projectSchemaDAOActions;
 
+	private final PageTransformer pageTransformer;
+
 	@Inject
 	public SchemaCrudHandler(Database db, SchemaComparatorImpl comparator, Lazy<BootstrapInitializer> boot,
 		HandlerUtilities utils, NodeIndexHandlerImpl nodeIndexHandler, WriteLock writeLock, ProjectSchemaLoadAllActionImpl projectSchemaDAOActions,
-		SchemaDAOActions schemaActions) {
+		SchemaDAOActions schemaActions, PageTransformer pageTransformer) {
 		super(db, utils, writeLock, schemaActions);
 		this.comparator = comparator;
 		this.boot = boot;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.projectSchemaDAOActions = projectSchemaDAOActions;
+		this.pageTransformer = pageTransformer;
 	}
 
 	/**
@@ -329,4 +339,35 @@ public class SchemaCrudHandler extends AbstractCrudHandler<HibSchema, SchemaResp
 
 	}
 
+	/**
+	 * Handle the request for the project, linked to the schema with the given UUID.
+	 * 
+	 * @param ac
+	 * @param schemaUuid
+	 */
+	public void handleGetLinkedProjects(InternalActionContext ac, String schemaUuid) {
+		validateParameter(schemaUuid, "schemaUuid");
+
+		PagingParameters pagingInfo = ac.getPagingParameters();
+		ValidationUtil.validate(pagingInfo);
+
+		utils.syncTx(ac, tx -> {
+			SchemaDao schemaDao = tx.schemaDao();
+			UserDao userDao = tx.userDao();
+			HibSchema schema = schemaDao.loadObjectByUuid(ac, schemaUuid, READ_PERM);
+
+			Result<HibProject> result = schemaDao.findLinkedProjects(schema);
+			Page<? extends HibProject> page = new DynamicStreamPageImpl<>(result.stream().filter(p -> userDao.hasPermission(ac.getUser(), p, READ_PERM)), pagingInfo);
+
+			// Handle etag
+			if (ac.getGenericParameters().getETag()) {
+				String etag = pageTransformer.getETag(page, ac);
+				ac.setEtag(etag, true);
+				if (ac.matches(etag, true)) {
+					throw new NotModifiedException();
+				}
+			}
+			return pageTransformer.transformToRestSync(page, ac, 0);
+		}, m -> ac.send(m, OK));
+	}
 }

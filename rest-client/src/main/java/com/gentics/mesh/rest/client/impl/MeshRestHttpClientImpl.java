@@ -402,6 +402,18 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
+	public MeshRequest<ProjectListResponse> findSchemaProjects(String schemaUuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
+		return prepareRequest(GET, "/schemas/" + schemaUuid + "/projects" + getQuery(parameters), ProjectListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ProjectListResponse> findMicroschemaProjects(String microschemaUuid, ParameterProvider... parameters) {
+		Objects.requireNonNull(microschemaUuid, "microschemaUuid must not be null");
+		return prepareRequest(GET, "/microschemas/" + microschemaUuid + "/projects" + getQuery(parameters), ProjectListResponse.class);
+	}
+
+	@Override
 	public MeshRequest<MicroschemaResponse> assignMicroschemaToProject(String projectName, String microschemaUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(microschemaUuid, "microschemaUuid must not be null");

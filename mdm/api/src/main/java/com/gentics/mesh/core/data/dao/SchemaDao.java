@@ -104,14 +104,6 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	Result<? extends HibNode> getNodes(HibSchema schema);
 
 	/**
-	 * Find all projects which reference the schema.
-	 * 
-	 * @param schema
-	 * @return
-	 */
-	Result<HibProject> findLinkedProjects(HibSchema schema);
-
-	/**
 	 * Load all nodes, accessible in the given branch with Read Published permission.
 	 * 
 	 * @param version schema version
