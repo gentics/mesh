@@ -7,6 +7,24 @@ import static com.gentics.mesh.test.TestDataProvider.CONTENT_UUID;
 import static com.gentics.mesh.test.TestDataProvider.NEWS_UUID;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static java.util.Objects.hash;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
@@ -77,28 +95,12 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
+
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 @MeshTestSetting(testSize = TestSize.FULL, startServer = true)
@@ -121,9 +123,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	protected MeshRestClient client;
 
 	private static final List<String> DATES = List.of(
-			"2012-07-11 08:55:21",
-			"2014-07-11 10:55:30",
-			"2000-07-11 10:55:00"
+			"2012-07-11T08:55:21Z",
+			"2014-07-11T10:55:30Z",
+			"2000-07-11T10:55:00Z"
 	);
 
 	/**
@@ -525,11 +527,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		// Now execute the query and assert it
 		String query = getGraphQLQuery(queryName, apiVersion).replace("%" + SCHEMA_UUID + "%", schemaContainer("folder").getUuid());
-		//System.out.println(query);
 		GraphQLResponse response = call(
 			() -> client.graphqlQuery(PROJECT_NAME, query, new VersioningParametersImpl().setVersion(version)));
 		JsonObject jsonResponse = new JsonObject(response.toJson());
-		//System.out.println(jsonResponse.encodePrettily());
 		try {
 			if (assertion == null) {
 				assertThat(jsonResponse)
@@ -544,12 +544,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 	}
 
-	protected long dateToMilis(String date)  {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		LocalDateTime dateTime = LocalDateTime.parse(date, formatter);
-		var parsedDateTime = dateTime.atOffset(ZoneOffset.UTC);
-
-		return parsedDateTime.toInstant().toEpochMilli();
+	protected long dateToMilis(String date) {
+		return Instant.parse(date).toEpochMilli();
 	}
 
 	protected Completable createLanguageLinkResolvingNode(String nodeUuid, String parentUuid, String referencedUuid) throws Exception {

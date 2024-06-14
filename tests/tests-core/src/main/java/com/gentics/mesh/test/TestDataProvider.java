@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Provider;
 
@@ -64,6 +65,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
+import com.github.jknack.handlebars.internal.lang3.tuple.Pair;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -395,10 +397,17 @@ public class TestDataProvider {
 		tx.commit();
 		tx.<CommonTx>unwrap().data().setEventQueueBatch(batch);
 		batch.dispatch();
-		project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
-			getSchemaContainer("folder").getLatestVersion(), batch);
-		project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
-		project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
+		project = projectDao.findByName(PROJECT_NAME);
+		if (project == null) {
+			project = projectDao.create(PROJECT_NAME, null, null, null, userInfo.getUser(),
+					getSchemaContainer("folder").getLatestVersion(), batch);
+		}
+		if (project.findLanguageByTag(getEnglish()) == null) {
+			project.addLanguage(tx.languageDao().findByLanguageTag(getEnglish()));
+		}
+		if (project.findLanguageByTag(getGerman()) == null) {
+			project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
+		}		
 		HibUser jobUser = userInfo.getUser();
 		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
@@ -408,25 +417,40 @@ public class TestDataProvider {
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
-			HibGroup guestGroup = groupDao.create("guests", userInfo.getUser());
+			HibGroup guestGroup = groupDao.findByName("guests");
+			if (guestGroup == null) {
+				guestGroup = groupDao.create("guests", userInfo.getUser());
+			}
 			groups.put("guests", guestGroup);
 
-			HibRole guestRole = roleDao.create("guest_role", userInfo.getUser());
+			HibRole guestRole = roleDao.findByName("guest_role");
+			if (guestRole == null) {
+				guestRole = roleDao.create("guest_role", userInfo.getUser());				
+			}
 			groupDao.addRole(guestGroup, guestRole);
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
-			HibUser user = userDao.create("guest", userInfo.getUser());
-			userDao.addGroup(user, guestGroup);
-			user.setFirstname("Guest Firstname");
-			user.setLastname("Guest Lastname");
-			user.setEmailAddress("guest@spam.gentics.com");
+			HibUser user = userDao.findByName("guest");
+			if (user == null) {
+				user = userDao.create("guest", userInfo.getUser());
+				userDao.addGroup(user, guestGroup);
+				user.setFirstname("Guest Firstname");
+				user.setLastname("Guest Lastname");
+				user.setEmailAddress("guest@spam.gentics.com");
+			}
 			users.put(user.getUsername(), user);
 
-			HibGroup group = groupDao.create("extra_group", userInfo.getUser());
+			HibGroup group = groupDao.findByName("extra_group");
+			if (group == null) {
+				group = groupDao.create("extra_group", userInfo.getUser());
+			}
 			groups.put(group.getName(), group);
 
-			HibRole role = roleDao.create("extra_role", userInfo.getUser());
+			HibRole role = roleDao.findByName("extra_role");
+			if (role == null) {
+				role = roleDao.create("extra_role", userInfo.getUser());
+			}
 			roles.put(role.getName(), role);
 		}
 		// Publish the project basenode
@@ -434,7 +458,6 @@ public class TestDataProvider {
 		tx.contentDao().publish(project.getBaseNode(), ac, getEnglish(), getProject().getLatestBranch(),
 			getUserInfo().getUser());
 		contentCount++;
-
 	}
 
 	public void addTagFamilies() {
@@ -487,38 +510,40 @@ public class TestDataProvider {
 	private void addVCardMicroschema() throws MeshJsonException {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
-		vcardMicroschema.setName("vcard");
-		vcardMicroschema.setDescription("Microschema for a vcard");
+		HibMicroschema vcardMicroschemaContainer = microschemaDao.findByName("vcard");
+		if (vcardMicroschemaContainer == null) {
 
-		// firstname field
-		StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
-		firstNameFieldSchema.setName("firstName");
-		firstNameFieldSchema.setLabel("First Name");
-		firstNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(firstNameFieldSchema);
+			MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
+			vcardMicroschema.setName("vcard");
+			vcardMicroschema.setDescription("Microschema for a vcard");
 
-		// lastname field
-		StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
-		lastNameFieldSchema.setName("lastName");
-		lastNameFieldSchema.setLabel("Last Name");
-		lastNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(lastNameFieldSchema);
+			// firstname field
+			StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
+			firstNameFieldSchema.setName("firstName");
+			firstNameFieldSchema.setLabel("First Name");
+			firstNameFieldSchema.setRequired(true);
+			vcardMicroschema.addField(firstNameFieldSchema);
 
-		// address field
-		StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
-		addressFieldSchema.setName("address");
-		addressFieldSchema.setLabel("Address");
-		vcardMicroschema.addField(addressFieldSchema);
+			// lastname field
+			StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
+			lastNameFieldSchema.setName("lastName");
+			lastNameFieldSchema.setLabel("Last Name");
+			lastNameFieldSchema.setRequired(true);
+			vcardMicroschema.addField(lastNameFieldSchema);
 
-		// postcode field
-		StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
-		postcodeFieldSchema.setName("postcode");
-		postcodeFieldSchema.setLabel("Post Code");
-		vcardMicroschema.addField(postcodeFieldSchema);
+			// address field
+			StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
+			addressFieldSchema.setName("address");
+			addressFieldSchema.setLabel("Address");
+			vcardMicroschema.addField(addressFieldSchema);
 
-		HibMicroschema vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(),
-			createBatch());
+			// postcode field
+			StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
+			postcodeFieldSchema.setName("postcode");
+			postcodeFieldSchema.setLabel("Post Code");
+			vcardMicroschema.addField(postcodeFieldSchema);
+			vcardMicroschemaContainer = microschemaDao.create(vcardMicroschema, userInfo.getUser(), createBatch());
+		}
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		microschemaDao.assign(vcardMicroschemaContainer, project, user(), createBatch());
 	}
@@ -531,26 +556,27 @@ public class TestDataProvider {
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
-		captionedImageMicroschema.setName("captionedImage");
-		captionedImageMicroschema.setDescription("Microschema for a captioned image");
+		HibMicroschema microschema = microschemaDao.findByName("captionedImage");
+		if (microschema == null) {
+			MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
+			captionedImageMicroschema.setName("captionedImage");
+			captionedImageMicroschema.setDescription("Microschema for a captioned image");
 
-		// image field
-		NodeFieldSchema imageFieldSchema = new NodeFieldSchemaImpl();
-		imageFieldSchema.setName("image");
-		imageFieldSchema.setLabel("Image");
-		imageFieldSchema.setAllowedSchemas("image");
-		captionedImageMicroschema.addField(imageFieldSchema);
+			// image field
+			NodeFieldSchema imageFieldSchema = new NodeFieldSchemaImpl();
+			imageFieldSchema.setName("image");
+			imageFieldSchema.setLabel("Image");
+			imageFieldSchema.setAllowedSchemas("image");
+			captionedImageMicroschema.addField(imageFieldSchema);
 
-		// caption field
-		StringFieldSchema captionFieldSchema = new StringFieldSchemaImpl();
-		captionFieldSchema.setName("caption");
-		captionFieldSchema.setLabel("Caption");
-		captionedImageMicroschema.addField(captionFieldSchema);
-
-		HibMicroschema microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(),
-			createBatch());
-		microschemaContainers.put(captionedImageMicroschema.getName(), microschema);
+			// caption field
+			StringFieldSchema captionFieldSchema = new StringFieldSchemaImpl();
+			captionFieldSchema.setName("caption");
+			captionFieldSchema.setLabel("Caption");
+			captionedImageMicroschema.addField(captionFieldSchema);
+			microschema = microschemaDao.create(captionedImageMicroschema, userInfo.getUser(), createBatch());
+		}
+		microschemaContainers.put(microschema.getName(), microschema);
 		microschemaDao.assign(microschema, project, user(), createBatch());
 	}
 
@@ -705,94 +731,88 @@ public class TestDataProvider {
 
 	@Getter
 	public HibNode getFolder(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibNode folder = folders.get(name);
-			folder = tx.<CommonTx>unwrap().load(folder.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(folder.getProject()));
-			folders.put(name, folder);
-		});
-		return folders.get(name);
+		return getBaseElement(name, folders);
 	}
 
 	@Getter
 	public HibTagFamily getTagFamily(String key) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibTagFamily tf = tagFamilies.get(key);
-			tf = tx.<CommonTx>unwrap().load(tf.getId(), tx.<CommonTx>unwrap().tagFamilyDao().getPersistenceClass(tf.getProject()));
-			tagFamilies.put(key, tf);
-		});
-		return tagFamilies.get(key);
+		return getBaseElement(key, tagFamilies);
 	}
 
 	@Getter
 	public HibNode getContent(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibNode content = contents.get(name);
-			content = tx.<CommonTx>unwrap().load(content.getId(), tx.<CommonTx>unwrap().nodeDao().getPersistenceClass(content.getProject()));
-			contents.put(name, content);
-		});
-		return contents.get(name);
+		return getBaseElement(name, contents);
 	}
 
 	@Getter
 	public HibTag getTag(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibTag tag = tags.get(name);
-			tag = tx.<CommonTx>unwrap().load(tag.getId(), tx.<CommonTx>unwrap().tagDao().getPersistenceClass());
-			tags.put(name, tag);
-		});
-		return tags.get(name);
+		return getBaseElement(name, tags);
 	}
 
 	@Getter
 	public HibSchema getSchemaContainer(String name) {
-		Tx.maybeGet().ifPresent(tx -> {
-			HibSchema schema = schemaContainers.get(name);
-			schema = tx.<CommonTx>unwrap().load(schema.getId(), tx.<CommonTx>unwrap().schemaDao().getPersistenceClass());
-			schemaContainers.put(name, schema);
-		});
-		return schemaContainers.get(name);
+		return getBaseElement(name, schemaContainers);
 	}
 
 	@Getter
 	public HibMicroschema getMicroschemaContainer(String name) {
+		return getBaseElement(name, microschemaContainers);
+	}
+
+	@Getter
+	public HibRole getRole(String name) {
+		return getBaseElement(name, roles);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends HibBaseElement> T getBaseElement(String name, Map<String, T> cache) {
 		Tx.maybeGet().ifPresent(tx -> {
-			HibMicroschema microschema = microschemaContainers.get(name);
-			microschema = tx.<CommonTx>unwrap().load(microschema.getId(), tx.<CommonTx>unwrap().microschemaDao().getPersistenceClass());
-			microschemaContainers.put(name, microschema);
+			T element = cache.get(name);
+			CommonTx ctx = tx.unwrap();
+			element = (T) ctx.load(element.getId(), (Class<T>) ctx.entityClassOf(element));
+			cache.put(name, element);
 		});
-		return microschemaContainers.get(name);
+		return cache.get(name);
+	}
+
+	private <T extends HibBaseElement> Map<String, T> getBaseElements(Map<String, T> cache) {
+		return cache.keySet().stream().map(key -> Pair.of(key, getBaseElement(key, cache))).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
 	public Map<String, HibTag> getTags() {
-		return tags;
+		return getBaseElements(tags);
 	}
 
 	public Map<String, HibNode> getContents() {
-		return contents;
+		return getBaseElements(contents);
 	}
 
 	public Map<String, HibNode> getFolders() {
-		return folders;
+		return getBaseElements(folders);
 	}
 
 	public Map<String, HibUser> getUsers() {
-		return users;
+		return getBaseElements(users);
 	}
 
 	public Map<String, HibGroup> getGroups() {
-		return groups;
+		return getBaseElements(groups);
 	}
 
 	public Map<String, HibRole> getRoles() {
-		return roles;
+		return getBaseElements(roles);
 	}
 
 	public Map<String, HibSchema> getSchemaContainers() {
-		return schemaContainers;
+		return getBaseElements(schemaContainers);
 	}
 
 	public Map<String, HibMicroschema> getMicroschemaContainers() {
-		return microschemaContainers;
+		return getBaseElements(microschemaContainers);
+	}
+
+	public Map<String, HibTagFamily> getTagFamilies() {
+		return getBaseElements(tagFamilies);
 	}
 
 	public BootstrapInitializer getMeshBoot() {
@@ -802,10 +822,6 @@ public class TestDataProvider {
 	public int getNodeCount() {
 		// folders, contents + basenode
 		return folders.size() + contents.size() + 1;
-	}
-
-	public Map<String, HibTagFamily> getTagFamilies() {
-		return tagFamilies;
 	}
 
 	@Getter
@@ -824,7 +840,7 @@ public class TestDataProvider {
 	}
 
 	public HibRole getAnonymousRole() {
-		return roles.get("anonymous");
+		return getRole("anonymous");
 	}
 
 	@Getter

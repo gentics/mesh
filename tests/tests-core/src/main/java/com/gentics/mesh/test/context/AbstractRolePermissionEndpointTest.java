@@ -88,8 +88,8 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	 */
 	@Test
 	public void testGrantRolePermissionsByUuid() {
-		String anonymousUuid = tx(() -> roles().get("anonymous").getUuid());
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		String anonymousUuid = tx(() -> anonymousRole().getUuid());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
@@ -105,7 +105,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	 */
 	@Test
 	public void testGrantRolePermissionsByName() {
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		ObjectPermissionGrantRequest request = new ObjectPermissionGrantRequest();
@@ -152,12 +152,12 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	 */
 	@Test
 	public void testGrantRolePermissionsExclusive() {
-		String anonymousUuid = tx(() -> roles().get("anonymous").getUuid());
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		String anonymousUuid = tx(() -> anonymousRole().getUuid());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		tx(tx -> {
-			HibRole adminObj = roles().get("admin");
+			HibRole adminObj = role("admin");
 			HibRole testRoleObj = role();
 
 			// revoke the permission on the admin role
@@ -180,7 +180,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 		// check that admin permissions were not changed
 		Set<InternalPermission> adminPermissions = tx(tx -> {
-			return tx.roleDao().getPermissions(roles().get("admin"), getTestedElement());
+			return tx.roleDao().getPermissions(role("admin"), getTestedElement());
 		});
 		assertThat(adminPermissions).as("Permissions for role admin").isNotNull().containsOnly(UPDATE_PERM, CREATE_PERM, READ_PERM);
 	}
@@ -190,12 +190,12 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	 */
 	@Test
 	public void testGrantRolePermissionsExclusiveWithIgnore() {
-		String anonymousUuid = tx(() -> roles().get("anonymous").getUuid());
-		RoleReference anonymous = tx(() -> roles().get("anonymous").transformToReference());
+		String anonymousUuid = tx(() -> anonymousRole().getUuid());
+		RoleReference anonymous = tx(() -> anonymousRole().transformToReference());
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		tx(tx -> {
-			HibRole adminObj = roles().get("admin");
+			HibRole adminObj = role("admin");
 			HibRole testRoleObj = role();
 
 			// revoke the permission on the admin role
@@ -219,7 +219,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 
 		// check that admin permissions were not changed
 		Set<InternalPermission> adminPermissions = tx(tx -> {
-			return tx.roleDao().getPermissions(roles().get("admin"), getTestedElement());
+			return tx.roleDao().getPermissions(role("admin"), getTestedElement());
 		});
 		assertThat(adminPermissions).as("Permissions for role admin").isNotNull().containsOnly(UPDATE_PERM, CREATE_PERM, READ_PERM);
 	}
