@@ -192,7 +192,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 		PagingParameters sorting = mapSorting(pagingInfo);
 		Optional<String> maybeParsedFilter = maybeExtraFilter
 				.map(extraFilter -> parseFilter(extraFilter, ctype, ac.getUser(), perm, Optional.empty()))
-				.or(() -> permissionFilter(ac.getUser(), perm, Optional.empty(), Optional.of(ctype)));
+				.or(() -> permissionFilterIfRequired(pagingInfo, ac.getUser(), perm, Optional.empty(), Optional.of(ctype)));
 		Stream<? extends T> stream = toStream(db().getVertices(
 				getPersistanceClass(),
 				new String[] {},

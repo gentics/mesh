@@ -66,7 +66,7 @@
 	      }
 	    }
 	  }) {
-	    # [$.data.noneMatch.elements.length()=0]
+	    # [$.data.noneMatch.elements.length()=1]
 	    elements {
 	      uuid
 	      schema {
@@ -91,7 +91,7 @@
 	      }
 	    }
 	  }) {
-	    # [$.data.anyNotMatch.elements.length()=1]
+	    # [$.data.anyNotMatch.elements.length()=2]
 	    elements {
 	      uuid
 	      schema {
