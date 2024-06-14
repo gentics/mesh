@@ -205,6 +205,7 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private Single<Response> getOkResponse() {
 		Single<Response> response =  Single.create(sub -> {
 			Call call = client.newCall(createRequest());
+			sub.setCancellable(call::cancel);
 			call.enqueue(new Callback() {
 				@Override
 				public void onFailure(Call call, IOException e) {

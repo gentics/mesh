@@ -9,7 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Optional;
 
+import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,6 +42,9 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	private static HttpServer server;
 	private static WebClient realClient;
 	private static boolean timeout = false;
+	private static Optional<Integer> maybeCustomStatus = Optional.empty();
+
+	private static final long TIMEOUT = Duration.ofSeconds(16).toMillis();
 
 	/**
 	 * Use the vert.x server which answers requests after 16s instead.
@@ -58,25 +63,29 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		server.requestHandler(rh -> {
 			try {
 				if (timeout) {
-					Thread.sleep(Duration.ofSeconds(16).toMillis());
+					Thread.sleep(TIMEOUT);
 				}
-				HttpRequest<Buffer> realRequest = realClient.request(
-						rh.method(), 
-						testContext.elasticsearchContainer().getMappedPort(9200), 
-						testContext.elasticsearchContainer().getHost(), 
-						rh.uri()
-					).putHeaders(rh.headers());
-				realRequest.queryParams().addAll(rh.params());
-				if (HttpMethod.POST == rh.method() || HttpMethod.PUT == rh.method()) {
-					rh.bodyHandler(body -> realRequest.sendBuffer(body, rs -> {
-						log.info(rh.toString() + " body sent");
-						rh.response().end(rs.result().body());
-					}));
+				if (maybeCustomStatus.isPresent()) {
+					rh.response().setStatusCode(maybeCustomStatus.get()).setStatusMessage("Gateway Timeout!!").end();
 				} else {
-					realRequest.send(rs -> {
-						log.info(rh.toString() + " sent");
-						rh.response().end(rs.result().body());
-					});
+					HttpRequest<Buffer> realRequest = realClient.request(
+							rh.method(), 
+							testContext.elasticsearchContainer().getMappedPort(9200), 
+							testContext.elasticsearchContainer().getHost(), 
+							rh.uri()
+						).putHeaders(rh.headers());
+					realRequest.queryParams().addAll(rh.params());
+					if (HttpMethod.POST == rh.method() || HttpMethod.PUT == rh.method()) {
+						rh.bodyHandler(body -> realRequest.sendBuffer(body, rs -> {
+							log.info(rh.toString() + " body sent");
+							rh.response().end(rs.result().body());
+						}));
+					} else {
+						realRequest.send(rs -> {
+							log.info(rh.toString() + " sent");
+							rh.response().end(rs.result().body());
+						});
+					}
 				}
 			} catch (InterruptedException e) {
 			}
@@ -113,17 +122,30 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	@Test
 	public void testSearchQuery() throws IOException {
 		String json = getESText("userWildcard.es");
-		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error_timeout");
+		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error");
 	}
 
 	@Test
 	public void testResumeQueriesAfterBlackout() throws IOException, InterruptedException {
 		// black out!
 		String json = getESText("userWildcard.es");
-		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error_timeout");
+		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error");
 		// reset
 		timeout = false;
-		Thread.sleep(Duration.ofSeconds(16).toMillis());
+		Thread.sleep(TIMEOUT);
+		UserListResponse response = call(() -> client().searchUsers(json));
+		assertThat(response.getData()).isNotNull();
+	}
+
+	@Test
+	public void testResumeQueriesAfterGatewayTimeout() throws IOException, InterruptedException {
+		timeout = false;
+		maybeCustomStatus = Optional.of(HttpStatus.SC_GATEWAY_TIMEOUT);
+		String json = getESText("userWildcard.es");
+		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
+		// reset
+		maybeCustomStatus = Optional.empty();
+		Thread.sleep(TIMEOUT);
 		UserListResponse response = call(() -> client().searchUsers(json));
 		assertThat(response.getData()).isNotNull();
 	}
