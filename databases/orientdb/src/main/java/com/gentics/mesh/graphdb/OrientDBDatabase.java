@@ -101,8 +101,8 @@ import com.tinkerpop.pipes.util.FastNoSuchElementException;
 import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OrientDB specific mesh graph database implementation.
@@ -545,7 +545,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerFinished = false;
 				handlerResult = null;
 			} catch (ORecordDuplicatedException e) {
-				log.error(e);
+				log.error("Internal OrientDB error", e);
 				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			} catch (GenericRestException e) {
 				// Don't log. Just throw it along so that others can handle it

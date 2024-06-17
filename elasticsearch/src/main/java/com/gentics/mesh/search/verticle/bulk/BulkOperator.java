@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.FlowableOperator;
 import io.reactivex.internal.util.BackpressureHelper;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An operator for Observables that bulks elastic search requests together.

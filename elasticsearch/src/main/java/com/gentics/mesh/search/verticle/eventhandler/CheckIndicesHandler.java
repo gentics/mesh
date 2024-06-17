@@ -18,8 +18,8 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 import dagger.Lazy;
 import io.reactivex.Flowable;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Event handler, that will check the currently existing indices (for existence and correctness of the mapping)

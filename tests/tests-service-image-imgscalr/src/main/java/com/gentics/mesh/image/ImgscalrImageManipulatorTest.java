@@ -48,8 +48,8 @@ import com.gentics.mesh.util.RxUtil;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**

@@ -24,8 +24,8 @@ import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @MeshTestSetting(elasticsearch = CONTAINER_ES6, testSize = FULL, startServer = true)
 public class NodeSearchPerformanceTest extends AbstractMeshTest {
 

@@ -33,8 +33,8 @@ import com.gentics.mesh.util.VersionNumber;
 import com.google.common.collect.Iterables;
 import com.syncleus.ferma.EdgeFrame;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fixes the order of node versions and removes duplicate versions. This was caused by a bug described in these issues:

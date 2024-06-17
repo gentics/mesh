@@ -74,8 +74,8 @@ import com.gentics.mesh.util.ETag;
 import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Transformer which can be used to transform a {@link HibNodeFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be

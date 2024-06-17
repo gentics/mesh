@@ -32,8 +32,8 @@ import com.gentics.mesh.search.index.node.NodeIndexHandlerImpl;
 import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Event handler that will catch schema migration events (assign, unassign, migration finished). The handler will for example drop old content indices when a

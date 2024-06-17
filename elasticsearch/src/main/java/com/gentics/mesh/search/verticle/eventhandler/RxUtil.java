@@ -11,8 +11,8 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RxJava related search code.

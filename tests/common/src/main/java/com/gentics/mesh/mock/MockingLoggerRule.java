@@ -9,7 +9,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
 
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.core.spi.logging.LogDelegateFactory;
 
@@ -22,14 +21,6 @@ public class MockingLoggerRule extends TestWatcher implements LogDelegateFactory
 	 * Static map of all mocks, which were created
 	 */
 	protected static Map<String, LogDelegate> mocks = new HashMap<>();
-
-	/**
-	 * When a test is starting, register as logger delegate factory
-	 */
-	@Override
-	protected void starting(Description description) {
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, MockingLoggerRule.class.getName());
-	}
 
 	/**
 	 * When a test finished, reset all mocks

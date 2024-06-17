@@ -28,8 +28,8 @@ import com.hazelcast.core.MessageListener;
 import com.hazelcast.util.function.Consumer;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class which manages the election of the coordination master instance.

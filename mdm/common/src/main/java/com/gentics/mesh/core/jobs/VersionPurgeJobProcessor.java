@@ -21,8 +21,8 @@ import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.job.ProjectVersionPurgeEventModel;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for starting a version purge from a job

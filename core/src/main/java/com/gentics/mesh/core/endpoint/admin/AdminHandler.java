@@ -38,8 +38,8 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for admin request methods.

@@ -40,8 +40,8 @@ import com.gentics.mesh.metric.MetricsService;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see BranchMigration

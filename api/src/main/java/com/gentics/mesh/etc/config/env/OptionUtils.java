@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility to handle environment variable parsing and options overloading.

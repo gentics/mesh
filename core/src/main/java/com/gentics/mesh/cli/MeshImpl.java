@@ -15,8 +15,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.vertx.core.http.*;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
@@ -30,11 +31,13 @@ import com.gentics.mesh.util.VersionUtil;
 import io.reactivex.Completable;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 /**
  * @see Mesh
@@ -43,7 +46,7 @@ public class MeshImpl implements Mesh {
 
 	private static AtomicLong instanceCounter = new AtomicLong(0);
 
-	private static final Logger log;
+	private static final Logger log = LoggerFactory.getLogger(MeshImpl.class);
 	private final MeshComponent.Builder builder;
 
 	private MeshCustomLoader<Vertx> verticleLoader;
@@ -57,12 +60,6 @@ public class MeshImpl implements Mesh {
 	private MeshComponent meshInternal;
 
 	boolean shutdown = false;
-
-	static {
-		// Use slf4j instead of jul
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		log = LoggerFactory.getLogger(MeshImpl.class);
-	}
 
 	public MeshImpl(MeshOptions options, MeshComponent.Builder builder) {
 		this.builder = builder;
@@ -136,7 +133,7 @@ public class MeshImpl implements Mesh {
 		try {
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 		} catch (Throwable e1) {
-			log.fatal("Fatal error on Mesh init", e1);
+			log.error("Fatal error on Mesh init", e1);
 			shutdown();
 			return this;
 		}
@@ -335,7 +332,7 @@ public class MeshImpl implements Mesh {
 			log.info("///");
 			log.info("###############################################################");
 		} catch (Exception e) {
-			log.error(e);
+			log.error("April fool joke error :(", e);
 		}
 	}
 
@@ -507,6 +504,7 @@ public class MeshImpl implements Mesh {
 		return meshInternal.pluginManager().getPluginIds();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T internal() {
 		return (T) meshInternal;

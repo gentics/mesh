@@ -116,8 +116,8 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);

@@ -27,6 +27,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -52,8 +54,6 @@ import io.reactivex.functions.Function;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -506,8 +506,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (error instanceof TimeoutException) {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
-						log.error("Request failed {" + msg + "}", error.toString());
-						log.error(error);
+						log.error("Request failed {" + msg + "}", error);
 					}
 				});
 			return ignoreError ? t.onErrorComplete() : t;

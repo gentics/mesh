@@ -36,8 +36,8 @@ import com.gentics.mesh.search.verticle.MessageEvent;
 
 import io.reactivex.Flowable;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Event handler for microschema migrations.

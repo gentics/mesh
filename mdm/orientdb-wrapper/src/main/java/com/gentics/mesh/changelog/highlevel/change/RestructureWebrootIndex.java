@@ -23,8 +23,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Change which will get rid of the old {@link NodeGraphFieldContainer} webroot properties and instead add those props to the HAS_FIELD_CONTAINER edge.

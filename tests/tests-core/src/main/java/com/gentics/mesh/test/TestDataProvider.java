@@ -67,8 +67,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.MeshJsonException;
 import com.github.jknack.handlebars.internal.lang3.tuple.Pair;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestDataProvider {
 

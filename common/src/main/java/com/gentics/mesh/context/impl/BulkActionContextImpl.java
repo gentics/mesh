@@ -13,8 +13,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Context which tracks recursive and bulk actions.

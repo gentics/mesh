@@ -6,7 +6,8 @@ import static com.google.common.net.HttpHeaders.X_FORWARDED_FOR;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import io.vertx.core.logging.Logger;
+import org.slf4j.Logger;
+
 import io.vertx.core.spi.logging.LogDelegate;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
@@ -70,12 +71,12 @@ public class SecurityLogger implements LogDelegate {
 
 	@Override
 	public void fatal(Object message) {
-		delegate.fatal(withUserInfo(message));
+		delegate.error("FATAL" + withUserInfo(message));
 	}
 
 	@Override
 	public void fatal(Object message, Throwable t) {
-		delegate.fatal(withUserInfo(message), t);
+		delegate.error("FATAL" + withUserInfo(message), t);
 	}
 
 	@Override
@@ -176,9 +177,5 @@ public class SecurityLogger implements LogDelegate {
 	@Override
 	public void trace(Object message, Throwable t, Object... objects) {
 		delegate.trace(withUserInfo(message), t, objects);
-	}
-
-	public LogDelegate getDelegate() {
-		return delegate.getDelegate();
 	}
 }

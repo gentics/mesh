@@ -24,8 +24,8 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class that is used to create and load mesh options.

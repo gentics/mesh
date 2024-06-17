@@ -41,8 +41,8 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for index handlers.
@@ -262,7 +262,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 				}
 			} catch (HttpErrorException e) {
 				log.error("Error while loading version information from index {" + indexName + "}", e.toString());
-				log.error(e);
+				log.error("Could not load index versions", e);
 				throw e;
 			}
 

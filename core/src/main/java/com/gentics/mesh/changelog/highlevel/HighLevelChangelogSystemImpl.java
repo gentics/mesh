@@ -14,8 +14,8 @@ import com.gentics.mesh.core.data.dao.ChangelogDao;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manager class for the high level changelog system.

@@ -9,8 +9,8 @@ import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A webroot path consists of multiple segments. This class provides a useful container which can be used when resolving webroot paths.

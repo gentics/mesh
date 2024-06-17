@@ -11,8 +11,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for the shutdown endpoint.

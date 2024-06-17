@@ -30,8 +30,8 @@ import com.gentics.mesh.search.verticle.eventhandler.project.ProjectUpdateEventH
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Maps events from mesh to elastic search requests.

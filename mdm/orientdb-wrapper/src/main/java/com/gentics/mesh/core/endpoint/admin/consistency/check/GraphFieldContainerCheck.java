@@ -40,8 +40,8 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.FramedGraph;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Consistency check for node contents.
