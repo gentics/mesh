@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -26,6 +27,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
@@ -66,7 +68,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 					Thread.sleep(TIMEOUT);
 				}
 				if (maybeCustomStatus.isPresent()) {
-					rh.response().setStatusCode(maybeCustomStatus.get()).setStatusMessage("Gateway Timeout!!").end();
+					rh.response().setStatusCode(maybeCustomStatus.get()).setStatusMessage("HTTP " + maybeCustomStatus.get()).end(new JsonObject().put("error", "HTTP error " + maybeCustomStatus.get() + " occurred!!!").toString());
 				} else {
 					HttpRequest<Buffer> realRequest = realClient.request(
 							rh.method(), 
@@ -143,6 +145,26 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		maybeCustomStatus = Optional.of(HttpStatus.SC_GATEWAY_TIMEOUT);
 		String json = getESText("userWildcard.es");
 		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
+		// reset
+		maybeCustomStatus = Optional.empty();
+		Thread.sleep(TIMEOUT);
+		UserListResponse response = call(() -> client().searchUsers(json));
+		assertThat(response.getData()).isNotNull();
+	}
+
+	@Test
+	public void testResumeQueriesAfterDDOS() throws IOException, InterruptedException {
+		timeout = false;
+		maybeCustomStatus = Optional.of(HttpStatus.SC_BAD_GATEWAY);
+		String json = getESText("userWildcard.es");
+		IntStream.range(0, 1000).forEach(unused -> {
+			call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
 		// reset
 		maybeCustomStatus = Optional.empty();
 		Thread.sleep(TIMEOUT);
