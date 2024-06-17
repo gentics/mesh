@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.gentics.mesh.core.data.util.HibClassConverter;
 import com.gentics.mesh.core.db.Database;
@@ -13,8 +14,6 @@ import com.gentics.mesh.core.db.GraphDBTx;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.mock.MockingLoggerRule;
 import com.tinkerpop.blueprints.Vertex;
-
-import io.vertx.core.spi.logging.LogDelegate;
 
 @Ignore
 public class NestedTransactionTest extends AbstractOrientDBTest {
@@ -24,7 +23,7 @@ public class NestedTransactionTest extends AbstractOrientDBTest {
 	@Rule
 	public MockingLoggerRule rule = new MockingLoggerRule();
 
-	protected LogDelegate logger = rule.get(NestedTransactionTest.class.getName());
+	protected Logger logger = rule.getLogger(NestedTransactionTest.class.getName());
 
 	@Before
 	public void setup() throws Exception {
