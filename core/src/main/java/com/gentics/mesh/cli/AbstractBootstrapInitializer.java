@@ -87,9 +87,12 @@ import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.btc.BlockedThreadEvent;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
@@ -206,9 +209,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 *
 	 * @param flags
 	 * @param configuration
-	 *            Mesh configuration
+	 *			Mesh configuration
 	 * @param isJoiningCluster
-	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
+	 *			Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
 	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
@@ -534,7 +537,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * the IP of the local network adapter that is routed into the Internet.
 	 *
 	 * @param destination
-	 *            The remote host name or IP
+	 *			The remote host name or IP
 	 * @return An IP of a local network adapter
 	 */
 	protected String getLocalIpForRoutedRemoteIP(String destination) {
@@ -586,6 +589,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 		this.vertx = vertx;
 		this.eventBusStore.setEventBus(vertx.eventBus());
+		if (this.vertx instanceof VertxInternal) {
+			((VertxInternal) this.vertx).blockedThreadChecker().setThreadBlockedHandler(this::blockedThreadLogger);
+		}
 	}
 
 	/**
@@ -907,9 +913,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * Create languages in the set, which do not exist yet
 	 *
 	 * @param root
-	 *            language root
+	 *			language root
 	 * @param languageSet
-	 *            language set
+	 *			language set
 	 */
 	protected void initLanguageSet(LanguageDao root, LanguageSet languageSet) {
 		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
@@ -978,9 +984,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * Create a clustered vert.x instance and block until the instance has been created.
 	 *
 	 * @param options
-	 *            Mesh options
+	 *			Mesh options
 	 * @param vertxOptions
-	 *            Vert.x options
+	 *			Vert.x options
 	 */
 	protected Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
 		clusterManager = db.clusterManager().getVertxClusterManager();
@@ -1017,6 +1023,23 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			return fut.get(getClusteredVertxInitializationTimeoutInSeconds(), SECONDS);
 		} catch (Exception e) {
 			throw new RuntimeException("Error while creating clusterd Vert.x instance", e);
+		}
+	}
+
+	/**
+	 * Tone the thread blocked warning down a bit.
+	 * 
+	 * @param bte
+	 */
+	protected void blockedThreadLogger(BlockedThreadEvent bte) {
+		Thread thread = bte.thread();
+		final String message = "Thread Thread[" + thread.getName() + "," + thread.getPriority() + "," + thread.getThreadGroup().getName() + "] has been blocked for " + (bte.duration() / 1_000_000) + " ms, time limit is " + (bte.maxExecTime() / 1_000_000) + " ms";
+		if (bte.duration() <= bte.warningExceptionTime() || !log.isDebugEnabled()) {
+			log.info(message);
+		} else {
+			VertxException stackTrace = new VertxException("Thread blocked");
+			stackTrace.setStackTrace(thread.getStackTrace());
+			log.debug(message, stackTrace);
 		}
 	}
 
