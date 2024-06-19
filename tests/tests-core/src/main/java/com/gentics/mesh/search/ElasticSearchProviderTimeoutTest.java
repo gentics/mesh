@@ -178,12 +178,11 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	}
 
 	@Test
-	@Ignore("Too slow for CI")
 	public void testResumeQueriesAfterBeingBlocked() throws IOException, InterruptedException {
 		timeout = false;
 		block = true;
 		String json = getESText("userWildcard.es");
-		IntStream.range(0, 100).forEach(unused -> {
+		IntStream.range(0, 10).forEach(unused -> {
 			call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
 			try {
 				Thread.sleep(100);
