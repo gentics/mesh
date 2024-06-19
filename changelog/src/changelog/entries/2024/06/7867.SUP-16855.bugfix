@@ -1,1 +1,0 @@
-Forms Plugin: When attempting to delete a non-existing form, a 204 ist returned instead of a 404 response.
