@@ -1,5 +1,7 @@
 package com.gentics.mesh.plugin.forms.handler.form;
 
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -27,6 +29,11 @@ public class DeleteFormHandler extends AbstractFormsHandler {
 		return formService.delete(context.project().getString("name"), uuid).doOnEvent((response, t) -> {
 			if (t == null) {
 				context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8).setStatusCode(204).end();
+			}
+			else if (t instanceof MeshRestClientMessageException restClientMessageException) {
+				if(restClientMessageException.getStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
+					context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8).setStatusCode(204).end();
+				}
 			}
 		}).ignoreElement();
 	}
