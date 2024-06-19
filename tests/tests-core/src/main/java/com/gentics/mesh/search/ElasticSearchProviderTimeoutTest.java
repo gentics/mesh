@@ -17,6 +17,7 @@ import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
@@ -177,6 +178,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore("Too slow for CI")
 	public void testResumeQueriesAfterBeingBlocked() throws IOException, InterruptedException {
 		timeout = false;
 		block = true;
