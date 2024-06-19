@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.15]]
+== 1.10.14 (2024-06-19)
+
+icon:check[] Forms: When attempting to delete a non-existing form, a 204 ist returned instead of a 404 response.
+
 [[v1.10.14]]
 == 1.10.14 (2024-03-20)
 
