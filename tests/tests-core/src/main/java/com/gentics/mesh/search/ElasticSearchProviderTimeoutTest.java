@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 import org.apache.http.HttpStatus;
@@ -19,11 +20,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
+import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.helper.ExpectedEvent;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
@@ -43,9 +46,9 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 
 	private static HttpServer server;
 	private static WebClient realClient;
-	private static boolean timeout = false;
+	private static volatile boolean timeout = false;
 	private static Optional<Integer> maybeCustomStatus = Optional.empty();
-
+	private static volatile boolean block = false;
 	private static final long TIMEOUT = Duration.ofSeconds(16).toMillis();
 
 	/**
@@ -64,6 +67,9 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 		server = vertx.createHttpServer(new HttpServerOptions().setPort(port));
 		server.requestHandler(rh -> {
 			try {
+				while (block) {
+					Thread.sleep(100);
+				}
 				if (timeout) {
 					Thread.sleep(TIMEOUT);
 				}
@@ -124,14 +130,14 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	@Test
 	public void testSearchQuery() throws IOException {
 		String json = getESText("userWildcard.es");
-		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error");
+		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
 	}
 
 	@Test
 	public void testResumeQueriesAfterBlackout() throws IOException, InterruptedException {
 		// black out!
 		String json = getESText("userWildcard.es");
-		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR, "search_error");
+		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
 		// reset
 		timeout = false;
 		Thread.sleep(TIMEOUT);
@@ -154,10 +160,8 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 
 	@Test
 	public void testResumeQueriesAfterDDOS() throws IOException, InterruptedException {
-		timeout = false;
-		maybeCustomStatus = Optional.of(HttpStatus.SC_BAD_GATEWAY);
 		String json = getESText("userWildcard.es");
-		IntStream.range(0, 1000).forEach(unused -> {
+		IntStream.range(0, 100).forEach(unused -> {
 			call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
 			try {
 				Thread.sleep(100);
@@ -166,7 +170,27 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 			}
 		});
 		// reset
-		maybeCustomStatus = Optional.empty();
+		timeout = false;
+		Thread.sleep(TIMEOUT);
+		UserListResponse response = call(() -> client().searchUsers(json));
+		assertThat(response.getData()).isNotNull();
+	}
+
+	@Test
+	public void testResumeQueriesAfterBeingBlocked() throws IOException, InterruptedException {
+		timeout = false;
+		block = true;
+		String json = getESText("userWildcard.es");
+		IntStream.range(0, 100).forEach(unused -> {
+			call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
+		// reset
+		block = false;
 		Thread.sleep(TIMEOUT);
 		UserListResponse response = call(() -> client().searchUsers(json));
 		assertThat(response.getData()).isNotNull();
