@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.gentics.mesh.util.UUIDUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -209,6 +210,26 @@ public class FormCRUDTest extends AbstractFormsPluginIntegrationTest {
 		} else {
 			assertForbidden(response);
 		}
+	}
+
+	/**
+	 * Test deleting a form
+	 * @throws IOException
+	 */
+	@Test
+	public void givenDeleteNotExistingForm_shouldNotReturn404() throws IOException {
+		String uuid = UUIDUtil.randomUUID();
+
+		Request deleteRequest = new Request.Builder()
+				.url(projectUrl("/forms/" + uuid))
+				.headers(auth(permission))
+				.delete()
+				.build();
+		Response response = client().newCall(deleteRequest).execute();
+
+		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		assertThat(loadNode(uuid)).as("Form Node").isEmpty();
+		assertThat(loadSchema(SchemaService.getSchemaName(uuid))).as("Form Schema").isEmpty();
 	}
 
 	private void assertCreatedForm(String inputFilename, JsonObject expectedJson) throws IOException {
