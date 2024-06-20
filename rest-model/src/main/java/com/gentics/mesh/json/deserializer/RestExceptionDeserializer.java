@@ -13,15 +13,10 @@ import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.json.MeshJsonException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Custom deserializer for REST exceptions.
  */
 public class RestExceptionDeserializer extends JsonDeserializer<AbstractRestException> {
-
-	private static final Logger log = LoggerFactory.getLogger(RestExceptionDeserializer.class);
 
 	@Override
 	public AbstractRestException deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
@@ -33,7 +28,6 @@ public class RestExceptionDeserializer extends JsonDeserializer<AbstractRestExce
 					.textValue();
 			Errors et = Errors.valueByName(type);
 			if (et == null) {
-				log.error("Could not find matching error type for type id {" + type + "}");
 				throw new MeshJsonException("Invalid error type {" + type + "}");
 			}
 			return (AbstractRestException) mapper.convertValue(node, et.getClazz());

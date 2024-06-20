@@ -144,6 +144,7 @@ public final class Util {
 	public static void logElasticSearchError(Throwable error, Runnable otherwise) {
 		if (error instanceof ConnectException) {
 			log.error("Could not connect to Elasticsearch. Maybe it is still starting?");
+			log.debug("ES connection error", error);
 		} else {
 			otherwise.run();
 		}

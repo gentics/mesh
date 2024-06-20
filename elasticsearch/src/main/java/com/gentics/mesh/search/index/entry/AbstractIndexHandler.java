@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -41,8 +43,6 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for index handlers.
@@ -104,16 +104,16 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Optional<Pattern> indexPattern) {
 		if (indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()) {
-		// Sync each bucket individually
-		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
-		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {" + bucket + "}");
-			return diffAndSync(indexName, projectUuid, bucket);
-		}, 1);
+			// Sync each bucket individually
+			Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
+			log.debug("Handling index sync on handler: {}", getClass().getName());
+			return buckets.flatMap(bucket -> {
+				log.info("Handling sync of {" + bucket + "}");
+				return diffAndSync(indexName, projectUuid, bucket);
+			}, 1);
 		} else {
 			return Flowable.empty();
-	}
+		}
 	}
 
 	/**
@@ -154,7 +154,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					return db.tx(() -> {
 						T element = getElement(uuid);
 						if (element == null) {
-							log.error("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
+							log.warn("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
 							return Optional.empty();
 						} else {
 							return Optional.of(getTransformer().toDocument(element));
@@ -261,11 +261,9 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					}
 				}
 			} catch (HttpErrorException e) {
-				log.error("Error while loading version information from index {" + indexName + "}", e.toString());
-				log.error("Could not load index versions", e);
+				log.error("Could not load versions of index " + indexName);
 				throw e;
 			}
-
 			return versions;
 		});
 	}

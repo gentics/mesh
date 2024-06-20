@@ -131,11 +131,7 @@ public final class OptionsLoader {
 				options.getHttpServerOptions().setPort(Integer.valueOf(httpPort));
 			}
 		} catch (ParseException e) {
-			log.error("Error while parsing arguments {" + e.getMessage() + "}");
-			if (log.isDebugEnabled()) {
-				log.debug("Error while parsing argument", e);
-			}
-			throw new RuntimeException("Error while parsing arguments {" + e.getMessage() + "}");
+			throw new RuntimeException("Error while parsing arguments", e);
 		}
 	}
 

@@ -126,7 +126,6 @@ public abstract class AdminHandler extends AbstractHandler {
 				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false, false).runInExistingTx(tx);
 				if (result.getResult() == INCONSISTENT) {
 					long count = result.getInconsistencies().size();
-					log.error("Backup aborted due to found inconsistencies: " + count);
 					throw error(INTERNAL_SERVER_ERROR, "backup_consistency_check_failed", String.valueOf(count));
 				}
 			}

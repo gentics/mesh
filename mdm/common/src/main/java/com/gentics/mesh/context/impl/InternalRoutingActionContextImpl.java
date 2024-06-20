@@ -25,8 +25,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
@@ -35,8 +33,6 @@ import io.vertx.ext.web.Session;
  * Vert.x specific routing context based action context implementation.
  */
 public class InternalRoutingActionContextImpl extends AbstractInternalActionContext {
-
-	private static final Logger log = LoggerFactory.getLogger(InternalRoutingActionContextImpl.class);
 
 	private RoutingContext rc;
 
@@ -206,8 +202,6 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 			if (rc.user() instanceof MeshAuthUser) {
 				user = (MeshAuthUser) rc.user();
 			} else {
-				log.error("Could not load user from routing context.");
-				// TODO i18n
 				throw new GenericRestException(INTERNAL_SERVER_ERROR, "Could not load request user");
 			}
 		}

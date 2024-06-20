@@ -223,7 +223,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				// To make sure the subscription stays alive
 				.onErrorResumeNext(Flowable.empty()), 1)
 			// To make sure the subscription stays alive
-			.doOnError(err -> log.info("Error at end of ES process chain", err))
+			.doOnError(err -> log.error("Error at end of ES process chain", err))
 			.retry()
 			.subscribe();
 	}
@@ -293,8 +293,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				})
 				.doOnComplete(() -> log.trace("Request completed: {}", request))
 				.doOnError(err -> logElasticSearchError(err, () -> {
-					log.error("Error for request: {}", request);
-					log.error("Error after sending request to Elasticsearch", err);
+					log.error("Error for request: " + request.toString() + "\n\t", err);
 				}))
 				.andThen(Flowable.just(request))
 				.onErrorResumeNext(ignoreDeleteOnMissingIndexError(request))
@@ -304,7 +303,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					Duration.ofMillis(options.getRetryInterval()),
 					options.getRetryLimit()))
 				.doFinally(() -> {
-					log.trace("Request-{}", request);
+					log.debug("Request: {}", request);
 					idleChecker.addAndGetRequests(-request.requestCount());
 				});
 	}
@@ -326,7 +325,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 					// If there are other errors left, throw
 					.map(ignore -> Flowable.<SearchRequest>error(error))
 					.orElseGet(() -> {
-						log.info("Tried to delete document on missing index. This error will be ignored.");
+						log.debug("Tried to delete document on missing index. This error will be ignored.");
 						return Flowable.just(request);
 					});
 			} else {
@@ -367,7 +366,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 	private io.reactivex.functions.Function<Throwable, Flowable<SearchRequest>> ignoreElasticsearchErrors(SearchRequest request) {
 		return error -> {
 			if (error instanceof ElasticsearchResponseErrorStreamable) {
-				log.error("Not retrying because it is an error inside elasticsearch.");
+				log.error("Not retrying because it is an error inside elasticsearch.", error);
 				return Flowable.just(request);
 			} else {
 				return Flowable.error(error);

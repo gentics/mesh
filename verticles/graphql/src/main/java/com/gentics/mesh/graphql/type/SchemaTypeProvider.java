@@ -179,7 +179,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		log.error("Invalid type {" + source + "}.");
+		log.error("Invalid type {" + source + "} for schema model loading.");
 		return null;
 	}
 }

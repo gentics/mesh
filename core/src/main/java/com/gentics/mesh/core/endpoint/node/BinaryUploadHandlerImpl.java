@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -42,7 +44,6 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
@@ -66,8 +67,6 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.file.OpenOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
@@ -235,10 +234,10 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			if (ctx.isInvokeStore()) {
 				String tmpId = ctx.getTemporaryId();
 				if (log.isDebugEnabled()) {
-					log.debug("Error detected. Purging previously stored upload for tempId {}", tmpId, e);
+					log.debug("Error detected. Purging previously stored upload for tempId " + tmpId, e);
 				}
 				return binaryStorage.purgeTemporaryUpload(tmpId).doOnError(e1 -> {
-					log.error("Error while purging temporary upload for tempId {}", tmpId, e1);
+					log.error("Error while purging temporary upload for tempId " + tmpId, e1);
 				}).onErrorComplete().andThen(Single.error(e));
 			} else {
 				return Single.error(e);
@@ -285,7 +284,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 		return fs.rxOpen(uploadFilePath, new OpenOptions())
 			.flatMapPublisher(RxUtil::toBufferFlow)
 			.to(FileUtils::hash).doOnError(e -> {
-				log.error("Error while hashing upload {}", uploadFilePath, e);
+				log.error("Error while hashing upload " + uploadFilePath, e);
 			});
 	}
 
@@ -441,14 +440,10 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 
 		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(ctx)
 			.doOnSuccess(s -> {
-				log.info(
-					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
-						+ "} succeeded.");
+				log.info("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} succeeded.");
 			})
 			.doOnComplete(() -> {
-				log.warn(
-					"Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass()
-						+ "} completed.");
+				log.warn("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} completed.");
 			}));
 	}
 

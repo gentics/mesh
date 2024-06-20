@@ -466,9 +466,7 @@ public class RestUpdaters {
 		// check whether microschema is allowed
 		if (!ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
 				&& !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaVersion.getName())) {
-			log.error("Node update not allowed since the microschema {" + microschemaVersion.getName()
-					+ "} is now allowed. Allowed microschemas {" + Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()) + "}");
-			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaVersion.getName());
+			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaVersion.getName(), Arrays.toString(microschemaFieldSchema.getAllowedMicroSchemas()));
 		}
 
 		// Always create a new micronode field since each update must create a new field instance. The old field must be detached from the given container.
@@ -561,9 +559,7 @@ public class RestUpdaters {
 
 			if (!org.apache.commons.lang.ArrayUtils.isEmpty(nodeFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(nodeFieldSchema.getAllowedSchemas()).contains(schemaName)) {
-				log.error("Node update not allowed since the schema {" + schemaName
-						+ "} is not allowed. Allowed schemas {" + Arrays.toString(nodeFieldSchema.getAllowedSchemas()) + "}");
-				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName, Arrays.toString(nodeFieldSchema.getAllowedSchemas()));
 			}
 
 			// The old node edge is deleted on a new edge creation.
@@ -621,9 +617,7 @@ public class RestUpdaters {
 
 			if (!org.apache.commons.lang.ArrayUtils.isEmpty(listFieldSchema.getAllowedSchemas())
 					&& !Arrays.asList(listFieldSchema.getAllowedSchemas()).contains(schemaName)) {
-				log.error("Node update not allowed since the schema {" + schemaName
-						+ "} is not allowed. Allowed schemas {" + Arrays.toString(listFieldSchema.getAllowedSchemas()) + "}");
-				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName);
+				throw error(BAD_REQUEST, "node_error_invalid_schema_field_value", fieldKey, schemaName, Arrays.toString(listFieldSchema.getAllowedSchemas()));
 			}
 			int pos = integer.getAndIncrement();
 			if (log.isDebugEnabled()) {

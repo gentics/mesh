@@ -738,10 +738,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				}
 			}
 			if (isSnapshotUpgrade && !ignoreSnapshotUpgrade) {
-				log.error("You are currently trying to run release version {" + currentVersion
-					+ "} but your instance was last run using a snapshot version. {" + graphVersion
-					+ "}. Running this version could cause unforseen errors.");
-				throw new RuntimeException("Downgrade not allowed");
+				throw new RuntimeException("You are currently trying to run release version {" + currentVersion
+						+ "} but your instance was last run using a snapshot version. {" + graphVersion
+						+ "}. Running this version could cause unforseen errors.");
 			}
 
 			boolean isVersionDowngrade = diff >= 1;
@@ -1033,7 +1032,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 */
 	protected void blockedThreadLogger(BlockedThreadEvent bte) {
 		Thread thread = bte.thread();
-		final String message = "Thread Thread[" + thread.getName() + "," + thread.getPriority() + "," + thread.getThreadGroup().getName() + "] has been blocked for " + (bte.duration() / 1_000_000) + " ms, time limit is " + (bte.maxExecTime() / 1_000_000) + " ms";
+		final String message = "Thread [" + thread.getName() + "," + thread.getPriority() + "," + thread.getThreadGroup().getName() + "] has been blocked for " + (bte.duration() / 1_000_000) + " ms, time limit is " + (bte.maxExecTime() / 1_000_000) + " ms";
 		if (bte.duration() <= bte.warningExceptionTime() || !log.isDebugEnabled()) {
 			log.info(message);
 		} else {

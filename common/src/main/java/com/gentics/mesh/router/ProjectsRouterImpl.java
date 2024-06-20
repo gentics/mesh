@@ -74,7 +74,7 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 					return tx.projectDao().findByName(name);
 				});
 				if (project == null) {
-					log.warn("Project for name {" + name + "} could not be found.");
+					log.error("Project for name {" + name + "} could not be found.");
 					ctx.fail(error(NOT_FOUND, "project_not_found", name));
 					return;
 				}

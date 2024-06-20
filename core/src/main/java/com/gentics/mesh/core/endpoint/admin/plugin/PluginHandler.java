@@ -91,7 +91,6 @@ public class PluginHandler extends AbstractHandler {
 				log.debug("Deployed plugin with deployment name {" + path + "} - Id {" + pluginId + "}");
 				PluginWrapper pluginWrapper = manager.getPlugin(pluginId);
 				if (pluginWrapper == null) {
-					log.error("The plugin was deployed but it could not be found by the manager. It seems that the plugin registration failed.");
 					throw error(NOT_FOUND, "admin_plugin_error_plugin_not_found", pluginId);
 				}
 				Plugin plugin = pluginWrapper.getPlugin();

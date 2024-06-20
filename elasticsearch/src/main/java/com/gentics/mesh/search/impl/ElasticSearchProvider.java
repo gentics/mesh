@@ -326,7 +326,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			.flatMap(response -> {
 				boolean errors = response.getBoolean("errors");
 				if (errors) {
-					log.trace("Error after processing bulk:\n{}", response);
+					log.debug("Error after processing bulk:\n{}", response);
 					JsonArray items = response.getJsonArray("items");
 					for (int i = 0; i < items.size(); i++) {
 						JsonObject item = items.getJsonObject(i).getJsonObject("index");
@@ -336,7 +336,7 @@ public class ElasticSearchProvider implements SearchProvider {
 							String reason = error.getString("reason");
 							String id = item.getString("_id");
 							String index = item.getString("_index");
-							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
+							log.error("Could not store document {" + index + ":" + id + "} - " + type + " :\n\t " + reason);
 						}
 					}
 					return Single.error(new ElasticsearchBulkResponseError(response));

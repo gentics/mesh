@@ -250,7 +250,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		try {
 			CommonTx.get().data().mesh().routerStorageRegistry().addProject(project.getName());
 		} catch (InvalidNameException e) {
-			log.error("Failed to register project {" + project.getName() + "}");
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", project.getName());
 		}
 

@@ -165,36 +165,36 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		String resourcePath = "/config/" + ORIENTDB_SECURITY_SERVER_CONFIG;
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
 		if (configIns == null) {
-			log.error("Could not find default orientdb server security configuration file {" + resourcePath + "} within classpath.");
+			log.warn("Could not find default orientdb server security configuration file {" + resourcePath + "} within classpath.");
 		}
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		FileUtils.writeStringToFile(securityConfigFile, configString);
+		FileUtils.writeStringToFile(securityConfigFile, configString, StandardCharsets.UTF_8);
 	}
 
 	private void writeHazelcastConfig(File hazelcastConfigFile) throws IOException {
 		String resourcePath = "/config/" + ORIENTDB_HAZELCAST_CONFIG;
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
 		if (configIns == null) {
-			log.error("Could not find default hazelcast configuration file {" + resourcePath + "} within classpath.");
+			log.warn("Could not find default hazelcast configuration file {" + resourcePath + "} within classpath.");
 		}
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		FileUtils.writeStringToFile(hazelcastConfigFile, configString);
+		FileUtils.writeStringToFile(hazelcastConfigFile, configString, StandardCharsets.UTF_8);
 	}
 
 	private void writeDistributedConfig(File distributedConfigFile) throws IOException {
 		String resourcePath = "/config/" + ORIENTDB_DISTRIBUTED_CONFIG;
 		InputStream configIns = getClass().getResourceAsStream(resourcePath);
 		if (configIns == null) {
-			log.error("Could not find default distributed configuration file {" + resourcePath + "} within classpath.");
+			log.warn("Could not find default distributed configuration file {" + resourcePath + "} within classpath.");
 		}
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		FileUtils.writeStringToFile(distributedConfigFile, configString);
+		FileUtils.writeStringToFile(distributedConfigFile, configString, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -220,7 +220,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 
 	private String getOrientServerConfig() throws Exception {
 		File configFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
-		String configString = FileUtils.readFileToString(configFile);
+		String configString = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
 
 		// Now replace the parameters within the configuration
 		String pluginDir = Matcher.quoteReplacement(new File(ORIENTDB_PLUGIN_FOLDERNAME).getAbsolutePath());
@@ -280,7 +280,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		FileUtils.writeStringToFile(configFile, configString);
+		FileUtils.writeStringToFile(configFile, configString, StandardCharsets.UTF_8);
 	}
 
 	private void writeOrientServerConfig(File configFile) throws IOException {
@@ -292,7 +292,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		FileUtils.writeStringToFile(configFile, configString);
+		FileUtils.writeStringToFile(configFile, configString, StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -318,7 +318,7 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 					}
 					if (filename.startsWith("orientdb-studio-")) {
 						if (!plugin.delete()) {
-							log.error("Could not delete old plugin {" + plugin + "}");
+							log.error("Could not delete old OrientDB Studio plugin {" + plugin + "}");
 						}
 					}
 				}
@@ -370,9 +370,9 @@ public class OrientDBClusterManagerImpl implements OrientDBClusterManager {
 					instanceInfo.setStartDate(DateUtils.toISO8601(date.getTime()));
 
 					String address = null;
-					Collection<Map> listeners = m.field("listeners");
+					Collection<Map<?,?>> listeners = m.field("listeners");
 					if (listeners != null) {
-						for (Map l : listeners) {
+						for (Map<?,?> l : listeners) {
 							String protocol = (String) l.get("protocol");
 							if (protocol.equals("ONetworkProtocolBinary")) {
 								address = (String) l.get("listen");

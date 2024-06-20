@@ -67,7 +67,7 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 						jobDao.mergeIntoPersisted(purgeJob);
 					});
 					db.tx(tx -> {
-						log.info("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
+						log.error("Version purge job {" + purgeJob.getUuid() + "} for project {" + project.getName() + "} failed.", error);
 						tx.createBatch().add(createEvent(PROJECT_VERSION_PURGE_FINISHED, FAILED, project.getName(), project.getUuid()))
 								.dispatch();
 					});

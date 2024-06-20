@@ -91,8 +91,7 @@ public class FixNodeVersionOrder extends AbstractHighLevelChange {
 				nodeCount.incrementAndGet();
 			});
 		log.info("Checked {} nodes. Found and fixed {} broken nodes", nodeCount.get(), fixedNodes.get());
-		context.getConflicts()
-			.forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
+		context.getConflicts().forEach(conflict -> log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved."));
 	}
 
 	@Override

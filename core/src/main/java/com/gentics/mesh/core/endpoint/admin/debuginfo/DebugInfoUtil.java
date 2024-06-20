@@ -51,8 +51,11 @@ public class DebugInfoUtil {
 			.map(io.vertx.reactivex.core.buffer.Buffer::getDelegate)
 			.toFlowable()
 			.onErrorResumeNext(err -> {
-				log.debug(String.format("Could not read file {%s}", path), err);
-				log.info(String.format("Could not read file {%s}", path));
+				if (log.isDebugEnabled()) {
+					log.debug(String.format("Could not read file {%s}", path), err);
+				} else {
+					log.info(String.format("Could not read file {%s}", path));
+				}
 				return Flowable.empty();
 			});
 	}

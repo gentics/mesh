@@ -8,7 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import javax.imageio.ImageIO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.image.CacheFileInfo;
 import com.gentics.mesh.core.image.ImageInfo;
@@ -19,8 +20,6 @@ import com.gentics.mesh.parameter.image.ImageManipulation;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileSystem;
 
@@ -119,7 +118,6 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 					bh.complete(toImageInfo(image));
 				}
 			} catch (Exception e) {
-				log.error("Reading image information failed", e);
 				bh.fail(e);
 			}
 		}, false);

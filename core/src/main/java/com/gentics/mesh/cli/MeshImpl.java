@@ -159,7 +159,7 @@ public class MeshImpl implements Mesh {
 		File keystoreFile = new File(keyStorePath);
 		// Copy the demo keystore file to the destination
 		if (!keystoreFile.exists()) {
-			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
+			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you...");
 			if (keystoreFile.getParentFile() == null) {
 				log.debug("No parent directory for keystore found. Trying to create the keystore in the mesh root directory.");
 			} else {
@@ -245,13 +245,11 @@ public class MeshImpl implements Mesh {
 									});
 								}
 							} else {
-								log.info("Failed to check for updates.");
-								log.debug("Reason for failed update check", ar2.cause());
+								log.warn("Failed to check for updates, caused by: ", ar2.cause());
 							}
 						});
 					} else {
-						log.info("Failed to check for updates.");
-						log.debug("Reason for failed update check", ar.cause());
+						log.warn("Failed to check for updates, caused by:", ar.cause());
 					}
 				});
 	}

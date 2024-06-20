@@ -125,7 +125,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 			MicroschemaModelImpl model = JsonUtil.readValue(schema.getJson(), MicroschemaModelImpl.class);
 			return model;
 		}
-		log.error("Invalid type {" + source + "}.");
+		log.error("Invalid type {" + source + "} for microschema model loading.");
 		return null;
 	}
 }

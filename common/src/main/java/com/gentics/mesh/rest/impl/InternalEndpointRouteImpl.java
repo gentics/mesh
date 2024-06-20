@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.vertx.ext.web.handler.PlatformHandler;
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
@@ -29,6 +28,8 @@ import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.Header;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -42,11 +43,10 @@ import com.google.common.collect.ImmutableSet;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.PlatformHandler;
 
 /**
  * @see InternalEndpointRoute
@@ -178,16 +178,13 @@ public class InternalEndpointRouteImpl implements InternalEndpointRoute {
 	@Override
 	public InternalEndpointRoute validate() {
 		if (!produces.isEmpty() && produces.contains(APPLICATION_JSON) && exampleResponses.isEmpty()) {
-			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
 		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequestMap == null) {
-			log.error("Endpoint {" + getPath() + "} has no example request.");
-			throw new RuntimeException("Endpoint has no example request.");
+			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example request.");
 		}
 		if (isEmpty(description)) {
-			log.error("Endpoint {" + getPath() + "} has no description.");
-			throw new RuntimeException("No description was set");
+			throw new RuntimeException("Endpoint {" + getPath() + "} has no description.");
 		}
 
 		// Check whether all segments have a description.

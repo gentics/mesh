@@ -40,7 +40,7 @@ public final class Auth0Utils {
 
 		try (Response response = httpClient().newCall(request).execute()) {
 			if (!response.isSuccessful()) {
-				log.error(response.body().toString());
+				log.error("Error while loading certs.\n\t" + response.body().toString());
 				throw new RuntimeException("Error while loading certs. Got code {" + response.code() + "}");
 			}
 			JsonObject json = new JsonObject(response.body().string());

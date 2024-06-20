@@ -69,7 +69,6 @@ public class MeshNameProvider {
 
 		final InputStream ins = MeshNameProvider.class.getResourceAsStream("/json/" + filename);
 		if (ins == null) {
-			log.error("Json could not be loaded from classpath file {" + filename + "}");
 			throw new FileNotFoundException("Could not find json file {" + filename + "}");
 		} else {
 			StringWriter writer = new StringWriter();
@@ -78,7 +77,7 @@ public class MeshNameProvider {
 				JSONObject object = new JSONObject(writer.toString());
 				return object;
 			} catch (Exception e) {
-				log.error("Error while parsing json file {" + filename + "}", e);
+				log.error("Error while parsing json file {" + filename + "}");
 				throw e;
 			}
 		}

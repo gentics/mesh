@@ -52,7 +52,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 				promise.fail(rh.cause());
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("Started monitoring http server.. Port: " + options.getPort());
+					log.info("Started monitoring http server. Port: " + options.getPort());
 				}
 				promise.complete();
 			}

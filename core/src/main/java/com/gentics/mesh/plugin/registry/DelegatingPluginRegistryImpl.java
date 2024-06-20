@@ -130,8 +130,7 @@ public class DelegatingPluginRegistryImpl implements DelegatingPluginRegistry {
 			eb.publish(MeshEvent.PLUGIN_DEPLOYED.getAddress(), payload);
 		}, err -> {
 			if (err instanceof TimeoutException) {
-				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout
-					+ "} seconds. Unloading plugin.");
+				log.error("The registration of plugin {" + id + "} did not complete within {" + timeout	+ "} seconds. Unloading plugin.");
 			} else {
 				log.error("Plugin init and register failed for plugin {" + id + "}", err);
 			}

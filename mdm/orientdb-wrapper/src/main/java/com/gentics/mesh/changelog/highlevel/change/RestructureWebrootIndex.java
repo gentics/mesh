@@ -60,8 +60,6 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 	public void apply() {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
-
-		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class);
@@ -113,7 +111,6 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 			container.getElement().removeProperty("publishedWebrootPathInfo");
 			container.getElement().removeProperty("webrootPathInfo");
 		}
-
 	}
 
 	@Override

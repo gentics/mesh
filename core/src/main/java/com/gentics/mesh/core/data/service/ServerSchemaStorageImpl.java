@@ -123,7 +123,7 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 	public void addSchema(SchemaVersionModel schema) {
 		Map<String, SchemaVersionModel> schemaMap = schemas.computeIfAbsent(schema.getName(), k -> new HashMap<>());
 		if (schemaMap.containsKey(schema.getVersion())) {
-			log.error("Schema " + schema.getName() + ", version " + schema.getVersion() + " is already stored.");
+			log.warn("Schema " + schema.getName() + ", version " + schema.getVersion() + " is already stored.");
 			return;
 		} else {
 			schemaMap.put(schema.getVersion(), schema);
@@ -162,7 +162,7 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 	public void addMicroschema(MicroschemaVersionModel microschema) {
 		Map<String, MicroschemaVersionModel> microschemaMap = microschemas.computeIfAbsent(microschema.getName(), k -> new HashMap<>());
 		if (microschemaMap.containsKey(microschema.getVersion())) {
-			log.error("Microschema " + microschema.getName() + ", version " + microschema.getVersion() + " is already stored.");
+			log.warn("Microschema " + microschema.getName() + ", version " + microschema.getVersion() + " is already stored.");
 			return;
 		} else {
 			microschemaMap.put(microschema.getVersion(), microschema);

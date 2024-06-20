@@ -194,7 +194,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			case BACKUP:
 			case SYNCHRONIZING:
 				if (doLog && log.isInfoEnabled()) {
-					log.info("Current database stati: {}", getDatabaseStati());
+					log.info("Current database status: {}", getDatabaseStati());
 					log.info("Locking since " + entry.getKey() + " is in status " + entry.getValue());
 				}
 				return true;

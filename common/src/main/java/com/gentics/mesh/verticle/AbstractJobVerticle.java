@@ -118,7 +118,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
 				} else if (stopped) {
-					log.error("Not executing locked action, because processing was stopped");
+					log.warn("Not executing locked action, because processing was stopped");
 					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
@@ -128,13 +128,13 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 						message.reply(new JsonObject().put("status", STATUS_ACCEPTED));
 					}
 					action.doOnDispose(() -> {
-						log.debug("Releasing lock {" + lockName + "}");
+						log.trace("Releasing lock {" + lockName + "}");
 						lock.release();
 					}).doFinally(() -> {
-						log.debug("Releasing lock {" + lockName + "}");
+						log.trace("Releasing lock {" + lockName + "}");
 						lock.release();
 					}).subscribeOn(RxHelper.blockingScheduler(vertx)).subscribe(() -> {
-						log.debug("Action completed");
+						log.trace("Action completed");
 					}, error -> {
 						log.error("Error while executing locked action", error);
 					});

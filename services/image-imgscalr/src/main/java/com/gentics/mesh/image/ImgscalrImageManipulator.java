@@ -400,9 +400,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 									if (nonNull(cacheFileInfo) || cacheFileInfo.getBytes().length > 0) {
 										return Completable.complete();
 									} else {
-										log.error("Could not read input image");
-										return Completable
-												.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
+										return Completable.error(error(INTERNAL_SERVER_ERROR, "image_error_reading_failed"));
 									}
 								});
 					else {
@@ -572,13 +570,9 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 				return cacheFilePath;
 			}
-
-			// No reader available for this image type.
-			log.error("No suitable image reader found for input image");
-			throw error(BAD_REQUEST, "image_error_reading_failed");
 		} catch (ImageParseException e) {
-			log.error("No suitable image reader found for input image");
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+			log.error("Image parsing failed", e);
 		}
+		throw error(BAD_REQUEST, "image_error_reading_failed");
 	}
 }

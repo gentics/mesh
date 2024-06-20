@@ -8,6 +8,9 @@ import java.util.regex.PatternSyntaxException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
@@ -28,8 +31,6 @@ import com.hazelcast.core.MessageListener;
 import com.hazelcast.util.function.Consumer;
 
 import dagger.Lazy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class which manages the election of the coordination master instance.
@@ -140,7 +141,6 @@ public class MasterElector {
 	private void electMaster() {
 		Cluster cluster = hazelcast.get().getCluster();
 
-		log.info("Locking for master election");
 		masterLock.lock();
 		try {
 			log.info("Locked for master election");
@@ -212,7 +212,7 @@ public class MasterElector {
 
 			@Override
 			public void memberRemoved(MembershipEvent membershipEvent) {
-				log.info(String.format("Removed %s", membershipEvent.getMember().getUuid()));
+				log.info("Removed member {}", membershipEvent.getMember().getUuid());
 				if (isMaster(membershipEvent.getMember())) {
 					electMaster();
 				}
@@ -228,13 +228,13 @@ public class MasterElector {
 
 			@Override
 			public void memberAdded(MembershipEvent membershipEvent) {
-				log.info(String.format("Added %s", membershipEvent.getMember().getUuid()));
+				log.info("Added member: {}", membershipEvent.getMember().getUuid());
 				findCurrentMaster();
 			}
 		});
 
 		hazelcast.get().getLifecycleService().addLifecycleListener(event -> {
-			log.info(String.format("Lifecycle state changed to %s", event.getState()));
+			log.info("Lifecycle state changed to {}", event.getState());
 			switch (event.getState()) {
 				case MERGING:
 					merging = true;

@@ -117,7 +117,7 @@ public interface HibCoreElement<T extends RestModel> extends HibTransformableEle
 				if (editor != null) {
 					model.setEditor(editor.transformToReference());
 				} else {
-					log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
+					log.warn("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
 				}
 			}
 

@@ -158,7 +158,7 @@ public class MainEventHandler implements EventHandler {
 			.flatMap(handler -> handler.handle(messageEvent), 1)
 			.doOnError(err -> {
 				String body = messageEvent.message == null ? null : messageEvent.message.toJson(false);
-				logElasticSearchError(err, () -> log.error("Error while handling event {} with body {}", messageEvent.event, body, err));
+				logElasticSearchError(err, () -> log.error("Error while handling event " + messageEvent.event + " with body " + body, err));
 			});
 	}
 

@@ -419,7 +419,7 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 		// Sync each bucket individually
 		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
 		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {} for project {}, branch {}, version {} of schema {}, type {}", bucket,
+			log.debug("Handling sync of {} for project {}, branch {}, version {} of schema {}, type {}", bucket,
 					projectName, branchName, versionNumber, schemaName, typeName);
 			return diffAndSync(project, branch, version, type, bucket, indexPattern);
 		}, 1);

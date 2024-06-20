@@ -53,18 +53,15 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	@Override
 	public Completable moveInPlace(String uuid, String path, boolean isTempId) {
 		return Completable.defer(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, path);
-			}
+			log.debug("Move temporary upload for uuid '{}' into place using temporaryId '{}'", uuid, path);
 			String source = isTempId ? getTemporaryFilePath(path) : path;
 			String target = getFilePath(uuid);
-			if (log.isDebugEnabled()) {
-				log.debug("Moving '{}' to '{}'", source, target);
-			}
+
+			log.debug("Moving '{}' to '{}'", source, target);
 			File uploadFolder = new File(options.getDirectory(), getSegmentedPath(uuid));
 			return createParentPath(uploadFolder.getAbsolutePath())
 				.andThen(fileSystem.rxMove(source, target).onErrorComplete(this::isCausedByFileAlreadyExists).doOnError(e -> {
-					log.error("Error while moving binary from temp upload dir {} to final dir {}", source, target);
+					log.error("Error while moving binary from temp upload dir " + source + " to final dir " + target, e);
 				}));
 		});
 	}
@@ -115,7 +112,11 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 			File tempFolder = new File(options.getDirectory(), "temp");
 			return createParentPath(tempFolder.getAbsolutePath())
 				.andThen(fileSystem.rxMove(sourceFilePath, path).doOnError(e -> {
-					log.info("Failed to move upload file {} to temp dir {}", sourceFilePath, path, e);
+					if (e instanceof FileAlreadyExistsException) {
+						log.error("File " + sourceFilePath + " already exists at the temp dir " + path);
+					} else {
+						log.error("Failed to move upload file " + sourceFilePath + " to the temp dir " + path, e);
+					}
 				}).onErrorComplete(e -> e instanceof FileAlreadyExistsException));
 		});
 	}
@@ -149,7 +150,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 				} else {
 					return fileSystem.rxMkdirs(folderPath)
 						.onErrorResumeNext(e -> {
-							log.error("Failed to create target folder {}", folderPath);
+							log.error("Failed to create target folder " + folderPath, e);
 							return Completable.error(error(INTERNAL_SERVER_ERROR, "node_error_upload_failed"));
 						}).doOnComplete(() -> {
 							if (log.isDebugEnabled()) {

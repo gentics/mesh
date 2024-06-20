@@ -173,7 +173,6 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					}
 				});
 			} catch (Exception e) {
-				log.error("Error while preparing migration");
 				return Completable.error(e);
 			}
 

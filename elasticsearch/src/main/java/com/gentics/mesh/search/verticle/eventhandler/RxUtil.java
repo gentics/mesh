@@ -76,7 +76,7 @@ public final class RxUtil {
 				}
 			})
 			.doOnNext(i -> log.info("Retry #{} after {}ms", i, delay.toMillis()))
-			.doOnError(err -> log.error("Retry limit of {} reached.", retryLimit))
+			.doOnError(err -> log.error("Retry limit of " + retryLimit + " reached.", err))
 			.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 }

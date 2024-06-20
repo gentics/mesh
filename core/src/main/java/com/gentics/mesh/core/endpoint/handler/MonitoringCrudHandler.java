@@ -98,7 +98,7 @@ public class MonitoringCrudHandler {
 			// to the cluster. Without additional nodes the write quorum would never
 			// be reached.
 			if (pluginStatus == PluginStatus.FAILED) {
-				log.error("Plugin {" + id + "} is in status failed.");
+				log.warn("Plugin {" + id + "} is in status failed.");
 				throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
 			}
 		}

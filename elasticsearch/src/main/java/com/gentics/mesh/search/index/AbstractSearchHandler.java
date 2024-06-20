@@ -186,7 +186,6 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 			if (error instanceof HttpErrorException) {
 				HttpErrorException he = (HttpErrorException) error;
 				log.error("Search query failed", error);
-				log.error("Info: " + error.toString());
 				try {
 					ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
 				} catch (Exception e1) {

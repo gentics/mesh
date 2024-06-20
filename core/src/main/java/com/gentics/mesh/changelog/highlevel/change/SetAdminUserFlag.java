@@ -43,7 +43,6 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 
 	@Override
 	public void apply() {
-		log.info("Applying change: " + getName());
 		GroupDao groupDao = Tx.get().groupDao();
 		for (HibRole role : Tx.get().roleDao().findAll()) {
 			if (!"admin".equals(role.getName())) {

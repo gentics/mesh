@@ -138,7 +138,6 @@ public class ChangeAddVersioning extends AbstractChange {
 	 * @param admin
 	 */
 	private void migrateBaseNode(Vertex baseNode, Vertex admin) {
-
 		log.info("Migrating basenode {" + baseNode.getProperty("uuid") + "}");
 		Vertex schemaContainer = baseNode.getVertices(Direction.OUT, "HAS_SCHEMA_CONTAINER").iterator().next();
 		Vertex schemaVersion = schemaContainer.getVertices(Direction.OUT, "HAS_LATEST_VERSION").iterator().next();
@@ -267,7 +266,7 @@ public class ChangeAddVersioning extends AbstractChange {
 			// Migrate editor edge from node to field container
 			Iterator<Edge> editorIterator = node.getEdges(Direction.OUT, "HAS_EDITOR").iterator();
 			if (!editorIterator.hasNext()) {
-				log.error("Could not find editor for node {" + node.getProperty("uuid") + "}. Using creator to set editor.");
+				log.warn("Could not find editor for node {" + node.getProperty("uuid") + "}. Using creator to set editor.");
 				fieldContainer.addEdge("HAS_EDITOR", creator);
 			} else {
 				editorEdge = editorIterator.next();
@@ -369,7 +368,7 @@ public class ChangeAddVersioning extends AbstractChange {
 		Vertex creator;
 		Iterator<Vertex> creatorIterator = element.getVertices(Direction.OUT, edge).iterator();
 		if (!creatorIterator.hasNext()) {
-			log.error("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");
+			log.warn("The element {" + element.getProperty("uuid") + "} has no {" + edge + "}. Using admin instead.");
 			creator = findAdmin();
 			element.addEdge(edge, creator);
 		} else {

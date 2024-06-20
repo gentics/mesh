@@ -73,11 +73,10 @@ public class BinaryStorageMigration extends AbstractChange {
 	public void applyInTx() {
 		// Move the data directory away
 		try {
-			log.info("Moving current data directory away to {" + dataSourceFolder().getAbsolutePath() + "}");
+			log.info("Moving current data directory away from {" + dataTargetFolder().getAbsolutePath() + "} to {" + dataSourceFolder().getAbsolutePath() + "}");
 			FileUtils.moveDirectory(dataTargetFolder(), dataSourceFolder());
 		} catch (Exception e) {
-			throw new RuntimeException("Could not move data folder to backup location {" + dataTargetFolder().getAbsolutePath()
-				+ "}. Maybe the permissions not allowing this?");
+			throw new RuntimeException("Could not move data folder to backup location {" + dataTargetFolder().getAbsolutePath() + "}.", e);
 		}
 
 		// Create binary root
@@ -132,7 +131,6 @@ public class BinaryStorageMigration extends AbstractChange {
 				file.getParentFile().mkdirs();
 				new FileOutputStream(file).close();
 				hash = EMPTY_HASH;
-
 			} catch (IOException e) {
 				log.error("Encountered field with missing hash and data. Could not touch file {" + file + "}");
 				throw new RuntimeException(e);
@@ -211,7 +209,7 @@ public class BinaryStorageMigration extends AbstractChange {
 				newFile.getParentFile().mkdirs();
 				Files.copy(oldFile, newFile);
 			} catch (IOException e) {
-				log.error("Error while coping file from {" + oldFile + " to " + newFile + "}");
+				log.error("Error while coping file from {" + oldFile + " to " + newFile + "}", e);
 			}
 		} else {
 			log.error("The binary data for field {" + fieldUuid + "} and hash {" + binaryUuid + "} could not be found.");

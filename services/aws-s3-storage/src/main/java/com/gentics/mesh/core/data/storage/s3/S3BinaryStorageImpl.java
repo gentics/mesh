@@ -258,7 +258,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 					return Single.error(e);
 				}
 			}).doOnError(e -> {
-				log.error("Error while checking for field {" + objectKey + "}", objectKey, e);
+				log.error("Error while checking for field {" + objectKey + "}", e);
 			});
 		});
 	}
@@ -275,7 +275,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 					return Single.error(e);
 				}
 			}).doOnError(e -> {
-				log.error("Error while checking for bucket {" + bucketName + "}", bucketName, e);
+				log.error("Error while checking for bucket {" + bucketName + "}", e);
 			});
 		});
 	}

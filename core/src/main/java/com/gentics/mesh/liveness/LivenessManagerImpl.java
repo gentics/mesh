@@ -45,7 +45,7 @@ public class LivenessManagerImpl implements LivenessManager {
 		liveFile = new File(options.getLivePath());
 		File liveFolder = liveFile.getParentFile();
 		if (liveFolder != null && !liveFolder.exists() && !liveFolder.mkdirs()) {
-			log.error("Could not create parent folder for livefile {" + liveFolder.getAbsolutePath() + "}");
+			log.warn("Could not create parent folder for livefile {" + liveFolder.getAbsolutePath() + "}");
 		}
 		try {
 			liveFile.createNewFile();

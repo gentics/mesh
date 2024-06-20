@@ -41,8 +41,7 @@ public class ShutdownHandler {
 		})
 			.subscribeOn(Schedulers.newThread()).timeout(1, TimeUnit.MINUTES)
 			.subscribe(() -> log.info("Shutdown successful"), err -> {
-				log.error("Shutdown failed", err);
-				log.error("Forcing process exit");
+				log.error("Shutdown failed. Halting the process.", err);
 				Runtime.getRuntime().halt(1);
 			});
 	}

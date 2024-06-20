@@ -82,7 +82,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 				change.setGraph(graph);
 				change.setDb(db);
 				change.markAsComplete();
-				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
+				log.debug("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
 		} finally {
 			graph.shutdown();

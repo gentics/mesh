@@ -696,7 +696,8 @@ public abstract class AbstractTypeProvider {
 								+ ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering + ", failed filter = " + e.getFilter());
 					} else {
 						log.info("Trying to apply old Java filtering");
-					}// fall through into the old filtering
+					}
+					// fall through into the old filtering
 				}			
 			case NEVER:
 				if (NativeFilter.ONLY.equals(envNativeFilter)) {

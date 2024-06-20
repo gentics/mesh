@@ -251,7 +251,7 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 		for (Entry<String, JsonObject> entry : getStoreEvents().entrySet()) {
 			log.debug("Store event {" + entry.getKey() + "}");
 			if (withJson) {
-				log.info("Json:\n" + entry.getValue().encodePrettily());
+				log.debug("Json:\n" + entry.getValue().encodePrettily());
 			}
 		}
 	}
