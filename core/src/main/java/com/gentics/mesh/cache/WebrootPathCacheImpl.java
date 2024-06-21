@@ -75,9 +75,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	@Override
 	public Path getPath(HibProject project, HibBranch branch, ContainerType type, String path) {
 		if (isDisabled()) {
-			if (log.isTraceEnabled()) {
-				log.trace("Path cache is disabled. Not using cache");
-			}
+			log.trace("Path cache is disabled. Not using cache");
 			return null;
 		}
 		String key = createCacheKey(project, branch, type, path);

@@ -211,7 +211,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
-			log.debug("Loading document info from index {" + fullIndexName + "} in bucket {" + bucket + "}");
+			log.trace("Loading document info from index {" + fullIndexName + "} in bucket {" + bucket + "}");
+
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
@@ -219,15 +220,12 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
-			log.debug(query.encodePrettily());
-			log.trace("Using query {\n" + query.encodePrettily() + "\n");
+			log.debug("Using {} query:\n\t", fullIndexName, query.encodePrettily());
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
 			try {
 				result = builder.sync();
-				if (log.isTraceEnabled()) {
-					log.trace("Got response {" + result.encodePrettily() + "}");
-				}
+				log.debug("Got response:\n\t{}", result.encodePrettily());
 				JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
 				processHits(hits, versions);
 
@@ -237,19 +235,15 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					try {
 						while (true) {
 							final String currentScroll = nextScrollId;
-							log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
+							log.debug("Fetching scroll result using scrollId {}", currentScroll);
 							JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
 							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-							if (log.isTraceEnabled()) {
-								log.trace("Got response {" + scrollHits.encodePrettily() + "}");
-							}
+							log.debug("Got response:\n\t[{}]", scrollHits.encodePrettily());
 							if (scrollHits.size() != 0) {
 								processHits(scrollHits, versions);
 								// Update the scrollId for the next fetch
 								nextScrollId = scrollResult.getString("_scroll_id");
-								if (log.isDebugEnabled()) {
-									log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
-								}
+								log.debug("Using scrollId [{}] for next fetch.", nextScrollId);
 							} else {
 								// The scroll yields no more data. We are done
 								break;

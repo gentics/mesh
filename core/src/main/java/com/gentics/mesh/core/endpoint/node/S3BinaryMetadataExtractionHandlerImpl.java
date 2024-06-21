@@ -333,11 +333,11 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 		String contentType = upload.contentType();
 		List<S3BinaryDataProcessor> processors = s3binaryProcessorRegistry.getProcessors(contentType);
 
-		return Observable.fromIterable(processors).flatMapMaybe(p -> p.process(ctx).doOnSuccess(s -> {
-			log.info("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} completed.");
-		}).doOnComplete(() -> {
-			log.warn("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} completed.");
-		}));
+		return Observable.fromIterable(processors)
+				.flatMapMaybe(p -> p.process(ctx)
+						.doOnSuccess(s -> log.info("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} succeeded."))
+						.doOnComplete(() -> log.trace("Processing of upload {}/{} in handler {} completed.", upload.fileName(), upload.uploadedFileName(), p.getClass())
+					)
+			);
 	}
-
 }

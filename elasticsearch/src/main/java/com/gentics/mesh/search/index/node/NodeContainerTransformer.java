@@ -574,8 +574,7 @@ public class NodeContainerTransformer extends AbstractTransformer<HibNodeFieldCo
 		addFields(document, "fields", container, contentDao.getSchemaContainerVersion(container).getSchema().getFields());
 		if (log.isTraceEnabled()) {
 			String json = document.toString();
-			log.trace("Search index json:");
-			log.trace(json);
+			log.trace("Search index json:\n\t{}", json);
 		}
 
 		// Add display field value

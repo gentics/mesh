@@ -361,12 +361,8 @@ public class ElasticSearchProvider implements SearchProvider {
 			.flatMapIterable(list -> list)
 			.reduce(new StringBuilder(), (builder, str) -> builder.append(str).append("\n"))
 			.map(StringBuilder::toString)
-			.doOnSuccess(bulkData -> {
-				if (log.isTraceEnabled()) {
-					log.trace("Using bulk payload:");
-					log.trace(bulkData);
-				}
-			}).flatMapCompletable(this::processBulk);
+			.doOnSuccess(bulkData -> log.trace("Using bulk payload:\n\t{}", bulkData))
+			.flatMapCompletable(this::processBulk);
 	}
 
 	@Override
@@ -379,8 +375,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.storeDocument(fullIndex, getType(), uuid, document).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
-						- start) + "[ms]");
+					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 			}).ignoreElement().compose(withTimeoutAndLog("Storing document {" + fullIndex + "} / {" + uuid + "}", true));
 	}

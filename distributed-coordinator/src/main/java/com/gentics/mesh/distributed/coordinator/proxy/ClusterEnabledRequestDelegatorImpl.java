@@ -1,12 +1,14 @@
 package com.gentics.mesh.distributed.coordinator.proxy;
 
 import java.util.HashSet;
-
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.distributed.DistributionUtils;
 import com.gentics.mesh.distributed.RequestDelegator;
@@ -15,17 +17,10 @@ import com.gentics.mesh.distributed.coordinator.MasterServer;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
-import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.httpproxy.ProxyRequest;
 
@@ -165,54 +160,6 @@ public class ClusterEnabledRequestDelegatorImpl implements RequestDelegator {
 	@Override
 	public boolean isMaster() {
 		return coordinator.isMaster();
-	}
-
-	/**
-	 * Log the given messages with loglevel <code>TRACE</code>.
-	 *
-	 * @param label
-	 *            A message that will be logged before the headers
-	 * @param headers
-	 *            The HTTP headers to log
-	 */
-	private void printHeaders(String label, MultiMap headers) {
-		if (log.isTraceEnabled()) {
-			log.trace(label + " ({})", headers.size());
-			headers.forEach(header -> log.trace("  {}: {}", header.getKey(), header.getValue()));
-		}
-	}
-
-	/**
-	 * End the given <code>forwardRequest</code> optionally with the provided body if it is not <code>null</code>.
-	 *
-	 * @param forwardRequest
-	 *            The proxy request
-	 * @param body
-	 *            The optional body for the request (may by <code>null</code>)
-	 */
-	private void proxyEndHandler(HttpClientRequest forwardRequest, Buffer body) {
-		if (body == null) {
-			forwardRequest.end();
-		} else {
-			forwardRequest.end(body);
-		}
-	}
-
-	private void forwardHeaders(HttpServerResponse response, HttpClientResponse forwardResponse) {
-		MultiMap headers = forwardResponse.headers();
-
-		for (String headerName : headers.names()) {
-			response.putHeader(headerName, headers.getAll(headerName));
-		}
-	}
-
-	private void forwardHeaders(HttpServerRequest request, HttpClientRequest forwardRequest) {
-		MultiMap headers = request.headers();
-
-		for (String headerName : headers.names()) {
-			forwardRequest.putHeader(headerName, headers.getAll(headerName));
-		}
-
 	}
 
 	/**

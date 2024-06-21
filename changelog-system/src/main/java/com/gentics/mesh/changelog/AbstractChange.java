@@ -5,15 +5,14 @@ import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Basic implementation of a changelog change. All change implementations should extend this class.
@@ -263,7 +262,7 @@ public abstract class AbstractChange implements Change {
 	protected void replaceSingleEdge(Vertex vertex, Direction direction, String label, String uuidPropertyKey) {
 		Iterator<Edge> edges = vertex.getEdges(direction, label).iterator();
 		if (!edges.hasNext()) {
-			log.warn(String.format("Expected vertex with uuid %s to have %s edge %s, but none was found", vertex.getProperty("uuid"), direction, label));
+			log.warn("Expected vertex with uuid {} to have {} edge {}, but none was found", vertex.getProperty("uuid"), direction, label);
 			return;
 		}
 		Edge edge = edges.next();
@@ -271,13 +270,4 @@ public abstract class AbstractChange implements Change {
 		vertex.setProperty(uuidPropertyKey, uuid);
 		edge.remove();
 	}
-
-	private void debug(Element element) {
-		System.out.println("---");
-		for (String key : element.getPropertyKeys()) {
-			System.out.println(key + " : " + element.getProperty(key));
-		}
-		System.out.println("---");
-	}
-
 }

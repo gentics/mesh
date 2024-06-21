@@ -268,13 +268,14 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 		} else {
 			// File has already been stored. Lets remove the upload from the vert.x tmpdir. We no longer need it.
 			return fs.rxDelete(uploadFilePath)
-				.doOnComplete(() -> {
-					if (log.isTraceEnabled()) {
-						log.trace("Removed temporary file {}", uploadFilePath);
-					}
-				})
+				.doOnComplete(() -> log.trace("Removed temporary file {}", uploadFilePath))
 				.doOnError(e -> {
-					log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
+					// Make parallel test less annoying
+					if (log.isDebugEnabled()) {
+						log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
+					} else {
+						log.warn("Failed to remove upload from tmpDir {}", uploadFilePath);
+					}
 				}).onErrorComplete();
 		}
 	}
@@ -443,7 +444,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				log.info("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} succeeded.");
 			})
 			.doOnComplete(() -> {
-				log.warn("Processing of upload {" + upload.fileName() + "/" + upload.uploadedFileName() + "} in handler {" + p.getClass() + "} completed.");
+				log.trace("Processing of upload {}/{} in handler {} completed.", upload.fileName(), upload.uploadedFileName(), p.getClass());
 			}));
 	}
 

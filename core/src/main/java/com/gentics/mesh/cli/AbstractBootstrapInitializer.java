@@ -522,7 +522,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					throw new RuntimeException("Could not read {" + keyFile + "}");
 				}
 			} else {
-				log.warn("Keyfile {" + keyFile + "} not found. Not loading keys..");
+				log.warn("Keyfile {" + keyFile + "} not found. Not loading keys.");
 			}
 		}
 	}
@@ -726,6 +726,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			// SNAPSHOT -> RELEASE
 			boolean isSnapshotUpgrade = diff == -1 && graph.compareTo(current, false) == 0 && graph.isSnapshot() && !current.isSnapshot();
 
+			//TODO Shouldn't this be documented or clearly optionated?
 			boolean ignoreSnapshotUpgrade = System.getProperty("ignoreSnapshotUpgradeCheck") != null;
 			if (ignoreSnapshotUpgrade) {
 				log.warn(

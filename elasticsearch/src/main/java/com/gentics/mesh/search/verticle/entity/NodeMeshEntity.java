@@ -42,7 +42,7 @@ public class NodeMeshEntity extends MeshEntity<HibNodeFieldContainer> {
 
 	@Override
 	public Optional<JsonObject> getPermissionPartial(PermissionChangedEventModelImpl event) {
-		log.warn("permission partial for node requested. This should never happen", new Throwable());
+		log.warn("Permission partial for node requested. This should never happen", new Throwable());
 		return Optional.empty();
 	}
 }

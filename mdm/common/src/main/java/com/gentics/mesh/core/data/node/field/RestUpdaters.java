@@ -630,7 +630,6 @@ public class RestUpdaters {
 				log.warn("The referenced node {" + item.getUuid() + "} does not exist for the field {" + fieldKey + "} of schema {" + schema.getName() + "}");
 			}
 		}
-
 	};
 
 	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {

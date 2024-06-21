@@ -141,9 +141,7 @@ public class MeshImpl implements Mesh {
 			try {
 				invokeUpdateCheck();
 			} catch (Exception e) {
-				if (log.isTraceEnabled()) {
-					log.trace("Error while checking for updates", e);
-				}
+				log.debug("Error while checking for updates", e);
 			}
 		}
 
@@ -245,11 +243,11 @@ public class MeshImpl implements Mesh {
 									});
 								}
 							} else {
-								log.warn("Failed to check for updates, caused by: ", ar2.cause());
+								log.warn("Failed to check for updates ", ar2.cause());
 							}
 						});
 					} else {
-						log.warn("Failed to check for updates, caused by:", ar.cause());
+						log.warn("Failed to check for updates", ar.cause());
 					}
 				});
 	}

@@ -160,7 +160,7 @@ public class GraphQLHandler {
 					}
 				});
 			} catch (Exception e) {
-			gc.fail(e);
+				gc.fail(e);
 			} finally {
 				long duration = sample.stop(graphQlTimer);
 				Long slowThreshold = options.getGraphQLOptions().getSlowThreshold();

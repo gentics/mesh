@@ -637,7 +637,7 @@ public class MeshPluginManagerImpl extends AbstractPluginManager implements Mesh
 		try {
 			pluginPath = FileUtils.expandIfZip(pluginPath);
 		} catch (Exception e) {
-			log.warn("Failed to unzip " + pluginPath, e);
+			log.error("Failed to unzip " + pluginPath, e);
 			return null;
 		}
 

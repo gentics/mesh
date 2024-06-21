@@ -71,7 +71,7 @@ public class PluginTypeProvider extends AbstractTypeProvider {
 				if (p instanceof MeshPlugin) {
 					return p;
 				} else {
-					log.warn("The found plugin is not a Gentics Mesh Plugin");
+					log.error("The found plugin is not a Gentics Mesh Plugin");
 				}
 				return null;
 			}).build();

@@ -180,7 +180,7 @@ public class SyncEventHandler implements EventHandler {
 			try {
 				pattern = Pattern.compile(indexPattern);
 			} catch (PatternSyntaxException e) {
-				log.warn("Index pattern {} is not valid, synchronizing all indices", e, indexPattern);
+				log.warn("Index pattern " + indexPattern + " is not valid, synchronizing all indices", e);
 			}
 		}
 		Optional<Pattern> optPattern = Optional.ofNullable(pattern);

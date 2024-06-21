@@ -105,9 +105,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 								.peek(bulkable -> bulkLength.addAndGet(bulkable.bulkLength()))
 								.collect(Collectors.toList());
 							BulkRequest request = new BulkRequest(requests);
-							if (log.isTraceEnabled()) {
-								log.trace("Sending bulk to elasticsearch:\n{}", request);
-							}
+							log.trace("Sending bulk to elasticsearch:\n\t{}", request);
 							subscriber.onNext(request);
 							BackpressureHelper.produced(requested, 1);
 						} while (!bulkableRequests.isEmpty());
@@ -151,8 +149,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 
 			@Override
 			public void onNext(SearchRequest searchRequest) {
-				log.trace("Search request of class [{}] received from upstream.",
-					searchRequest.getClass());
+				log.trace("Search request of class [{}] received from upstream.", searchRequest.getClass());
 
 				if (canceled.get()) {
 					return;

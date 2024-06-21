@@ -117,7 +117,6 @@ public class OkHttpWebsocket implements MeshWebsocket {
 			@Override
 			public void onMessage(WebSocket webSocket, String text) {
 				log.trace("Received message: {}", text);
-
 				try {
 					createEvent(text).ifPresent(events::onNext);
 				} catch (IOException e) {
