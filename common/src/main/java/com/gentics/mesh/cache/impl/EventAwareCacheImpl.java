@@ -107,7 +107,7 @@ public class EventAwareCacheImpl<K, V> implements EventAwareCache<K, V> {
 			eventSubscription = o.subscribe(event -> {
 				// Use a default implementation which will invalidate the whole cache on every event
 				if (log.isTraceEnabled()) {
-					log.trace("Got event:\n\t{}", event.body());
+					log.trace("Got event:\n{}", event.body());
 				}
 				if (onNext == null) {
 					invalidate();

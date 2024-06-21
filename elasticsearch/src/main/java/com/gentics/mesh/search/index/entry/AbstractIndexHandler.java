@@ -225,7 +225,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			JsonObject result = new JsonObject();
 			try {
 				result = builder.sync();
-				log.debug("Got response:\n\t{}", result.encodePrettily());
+				log.debug("Got response:\n{}", result.encodePrettily());
 				JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
 				processHits(hits, versions);
 

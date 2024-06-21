@@ -361,7 +361,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			.flatMapIterable(list -> list)
 			.reduce(new StringBuilder(), (builder, str) -> builder.append(str).append("\n"))
 			.map(StringBuilder::toString)
-			.doOnSuccess(bulkData -> log.trace("Using bulk payload:\n\t{}", bulkData))
+			.doOnSuccess(bulkData -> log.trace("Using bulk payload:\n{}", bulkData))
 			.flatMapCompletable(this::processBulk);
 	}
 

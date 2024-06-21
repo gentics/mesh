@@ -125,7 +125,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 						.firstOrError()
 						.subscribe(ignore -> {
 							waitForSync.set(false);
-							log.trace("Received event message on address {}:\n\t{}", message.address(), message.body());
+							log.trace("Received event message on address {}:\n{}", message.address(), message.body());
 							requests.onNext(new MessageEvent(event, MeshEventModel.fromMessage(message)));
 						});
 				}
@@ -289,10 +289,10 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			? Flowable.empty()
 			: request.execute(searchProvider)
 				.doOnSubscribe(ignore -> {
-					log.trace("Sending request to Elasticsearch:\n\t{}", request);
+					log.trace("Sending request to Elasticsearch:\n{}", request);
 				})
-				.doOnComplete(() -> log.trace("Request completed: {}", request))
-				.doOnError(err -> logElasticSearchError(err, () -> log.error("Error for request: " + request.toString() + "\n\t", err)))
+				.doOnComplete(() -> log.trace("Request completed"))
+				.doOnError(err -> logElasticSearchError(err, () -> log.error("Error for request:\n" + request.toString(), err)))
 				.andThen(Flowable.just(request))
 				.onErrorResumeNext(ignoreDeleteOnMissingIndexError(request))
 				.onErrorResumeNext(this::syncIndices)
@@ -345,7 +345,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 			if (indexNotFound && !stopped.get()) {
 				return syncEventHandler.generateSyncRequests(null)
 					.doOnNext(request -> {
-						log.trace("SyncRequest:\n\t{}", request);
+						log.trace("SyncRequest:\n{}", request);
 						idleChecker.addAndGetRequests(request.requestCount());
 					})
 					.doOnSubscribe(ignore -> log.debug("Index not found. Resyncing."))
@@ -385,7 +385,7 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 		try {
 			return this.mainEventhandler.handle(messageEvent)
 				.doOnNext(request -> {
-					log.trace("Request:\n\t{}", request);
+					log.trace("Request:\n{}", request);
 					idleChecker.addAndGetRequests(request.requestCount());
 				})
 				.retryWhen(retryWithDelay(

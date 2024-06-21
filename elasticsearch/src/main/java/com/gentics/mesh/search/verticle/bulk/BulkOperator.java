@@ -105,7 +105,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 								.peek(bulkable -> bulkLength.addAndGet(bulkable.bulkLength()))
 								.collect(Collectors.toList());
 							BulkRequest request = new BulkRequest(requests);
-							log.trace("Sending bulk to elasticsearch:\n\t{}", request);
+							log.trace("Sending bulk to elasticsearch:\n{}", request);
 							subscriber.onNext(request);
 							BackpressureHelper.produced(requested, 1);
 						} while (!bulkableRequests.isEmpty());
