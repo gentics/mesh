@@ -78,7 +78,10 @@ public class IdleChecker {
 	 * @return
 	 */
 	public int incrementAndGetTransformations() {
-		return transformations.incrementAndGet();
+		int current = transformations.incrementAndGet();
+		log.trace("Incremented transformations. Remaining requests: {}, remaining transformations: {}",
+				requests.get(), transformations.get());
+		return current;
 	}
 
 	/**
@@ -118,5 +121,17 @@ public class IdleChecker {
 	 */
 	public void resetTransformations() {
 		transformations.set(0);
+		log.trace("Reset transformations. Remaining requests: {}, remaining transformations: {}",
+				requests.get(), transformations.get());
+	}
+
+	/**
+	 * Resets the amount of pending transformations and requests
+	 */
+	public void reset() {
+		transformations.set(0);
+		requests.set(0);
+		log.trace("Reset transformations and requests. Remaining requests: {}, remaining transformations: {}",
+				requests.get(), transformations.get());
 	}
 }
