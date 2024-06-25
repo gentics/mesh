@@ -205,10 +205,14 @@ public class MeshOkHttpRequestImpl<T> implements MeshRequest<T> {
 	private Single<Response> getOkResponse() {
 		Single<Response> response =  Single.create(sub -> {
 			Call call = client.newCall(createRequest());
+			sub.setCancellable(call::cancel);
 			call.enqueue(new Callback() {
 				@Override
 				public void onFailure(Call call, IOException e) {
-					if (!sub.isDisposed()) {
+					// Don't call the onError twice, but notify about multiple exceptions (should not occur often).
+					if (sub.isDisposed()) {
+						e.printStackTrace();
+					} else {
 						sub.onError(new IOException(String.format("I/O Error in %s %s : %s (%s)",
 								HttpMethod.valueOf(method.toUpperCase()), url, e.getClass().getSimpleName(), e.getLocalizedMessage()), e));
 					}
