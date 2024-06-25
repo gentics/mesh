@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import javax.persistence.EntityManager;
+import jakarta.persistence.EntityManager;
 
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.enterprise.core.EnterpriseTestContextProvider;

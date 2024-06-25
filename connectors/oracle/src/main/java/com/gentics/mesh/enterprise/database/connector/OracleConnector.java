@@ -1,13 +1,13 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import com.gentics.mesh.enterprise.hibernate.dialect.Oracle12cLongTextDialect;
+import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
 
 import oracle.jdbc.driver.OracleDriver;
 
 /**
  * Oracle database connector for Gentics Mesh
  */
-public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, Oracle12cLongTextDialect> {
+public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, OracleLongTextDialect> {
 
 	@Override
 	public Class<OracleDriver> getJdbcDriverClass() {
@@ -15,7 +15,7 @@ public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, Ora
 	}
 
 	@Override
-	public Class<Oracle12cLongTextDialect> getHibernateDialectClass() {
-		return Oracle12cLongTextDialect.class;
+	public Class<OracleLongTextDialect> getHibernateDialectClass() {
+		return OracleLongTextDialect.class;
 	}
 }

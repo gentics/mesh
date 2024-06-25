@@ -7,6 +7,7 @@ import com.gentics.mesh.enterprise.database.connector.SQLServerConnector;
  */
 @ManagedBy(name = "mssql", connector = SQLServerConnector.class)
 public class ManagedSQLServerTestContextProvider extends ManagedDatabaseTestContextProvider {
+
 	@Override
 	protected String getConnectionUrl() {
 		return "jdbc:sqlserver://" + dbSettings.getHost() + ":" + dbSettings.getPort() + ";databaseName=";

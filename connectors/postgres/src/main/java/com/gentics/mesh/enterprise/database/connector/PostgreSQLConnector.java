@@ -1,12 +1,13 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import org.hibernate.dialect.PostgreSQL95Dialect;
 import org.postgresql.Driver;
+
+import com.gentics.mesh.enterprise.hibernate.dialect.PostgresDuplicationAwareDialect;
 
 /**
  * PostgreSQL database connector for Gentics Mesh
  */
-public class PostgreSQLConnector extends AbstractDatabaseConnector<Driver, PostgreSQL95Dialect> {
+public class PostgreSQLConnector extends AbstractDatabaseConnector<Driver, PostgresDuplicationAwareDialect> {
 
 	@Override
 	public Class<Driver> getJdbcDriverClass() {
@@ -14,8 +15,7 @@ public class PostgreSQLConnector extends AbstractDatabaseConnector<Driver, Postg
 	}
 
 	@Override
-	public Class<PostgreSQL95Dialect> getHibernateDialectClass() {
-		return PostgreSQL95Dialect.class;
+	public Class<PostgresDuplicationAwareDialect> getHibernateDialectClass() {
+		return PostgresDuplicationAwareDialect.class;
 	}
-
 }

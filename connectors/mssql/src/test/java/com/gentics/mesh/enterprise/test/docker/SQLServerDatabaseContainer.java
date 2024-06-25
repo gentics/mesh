@@ -49,11 +49,23 @@ public class SQLServerDatabaseContainer extends PreparingDatabaseContainer<SQLSe
 
 	@Override
 	protected void createDatabase(Connection c, String name) throws SQLException {
-		try (PreparedStatement pst = c.prepareStatement("CREATE DATABASE " + name)) {
+		try (PreparedStatement pst = c.prepareStatement("CREATE DATABASE " + name + " COLLATE Latin1_General_100_CS_AS_KS_WS")) {
 			pst.executeUpdate();
 		}
 		try (PreparedStatement pst = c.prepareStatement("ALTER DATABASE " + name + " SET READ_COMMITTED_SNAPSHOT ON")) {
 			pst.executeUpdate();
+		}
+		try (PreparedStatement pst = c.prepareStatement("sp_configure 'show advanced options', 1")) {
+			pst.execute();
+			try (PreparedStatement pst1 = c.prepareStatement("reconfigure")) {
+				pst1.execute();
+				try (PreparedStatement pst2 = c.prepareStatement("sp_configure 'max server memory', 1596")) {
+					pst2.execute();
+					try (PreparedStatement pst3 = c.prepareStatement("reconfigure")) {
+						pst3.execute();
+					}
+				}
+			}
 		}
 	}
 

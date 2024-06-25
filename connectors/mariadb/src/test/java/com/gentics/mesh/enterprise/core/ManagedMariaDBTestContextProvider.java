@@ -2,12 +2,12 @@ package com.gentics.mesh.enterprise.core;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.enterprise.database.HibernateTx;
 import com.gentics.mesh.enterprise.database.connector.MariaDBConnector;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
+
+import jakarta.persistence.EntityManager;
 
 /**
  * Test context provider for using a managed MariaDB

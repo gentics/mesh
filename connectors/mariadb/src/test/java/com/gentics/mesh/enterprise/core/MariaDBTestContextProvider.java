@@ -2,8 +2,6 @@ package com.gentics.mesh.enterprise.core;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.enterprise.database.HibernateTx;
 import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
@@ -12,6 +10,8 @@ import com.gentics.mesh.enterprise.test.docker.MariaDBDatabaseContainer;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
+
+import jakarta.persistence.EntityManager;
 
 public class MariaDBTestContextProvider extends PreparingDatabaseTestContextProvider<MariaDBDatabaseContainer> implements MeshTestContextProvider {
 
