@@ -8,10 +8,6 @@ import org.hsqldb.jdbcDriver;
  */
 public class HSQLDBConnector extends AbstractDatabaseConnector<jdbcDriver, HSQLDialect> {
 
-	static {
-		MAIN_CLASS_NAME = HSQLDBConnector.class.getCanonicalName();
-	}
-
 	@Override
 	public Class<jdbcDriver> getJdbcDriverClass() {
 		return jdbcDriver.class;

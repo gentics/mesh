@@ -18,7 +18,7 @@ import io.vertx.core.logging.Logger;
  * @param <DR>
  * @param <DI>
  */
-public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Dialect> extends DatabaseConnectorBase {
+public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Dialect> implements DatabaseConnector {
 
 	private static final Logger log = getLogger(AbstractDatabaseConnector.class);
 
@@ -44,15 +44,6 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 	@Override
 	public String getConnectorDescription() {
 		return getJdbcDriverClass() + " / " + getHibernateDialectClass();
-	}
-
-	/**
-	 * Stub for the jar manifest.
-	 * 
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		log.fatal("This is a Gentics Mesh 3.x Database Connector. It does not run on its own. Please place it under Gentics Mesh classpath or reference it in `databaseConnectorClasspath` Mesh option.");
 	}
 
 	protected <T> T instantiate(Class<T> cls, Supplier<T> instanceSupplier) {

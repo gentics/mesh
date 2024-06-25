@@ -9,10 +9,6 @@ import oracle.jdbc.driver.OracleDriver;
  */
 public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, Oracle12cLongTextDialect> {
 
-	static {
-		MAIN_CLASS_NAME = OracleConnector.class.getCanonicalName();
-	}
-
 	@Override
 	public Class<OracleDriver> getJdbcDriverClass() {
 		return OracleDriver.class;

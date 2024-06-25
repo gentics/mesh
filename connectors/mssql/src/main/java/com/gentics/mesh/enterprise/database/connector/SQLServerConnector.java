@@ -8,10 +8,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerDriver;
  */
 public class SQLServerConnector extends AbstractDatabaseConnector<SQLServerDriver, SqlServer2012UnicodeDialect> {
 
-	static {
-		MAIN_CLASS_NAME = SQLServerConnector.class.getCanonicalName();
-	}
-
 	@Override
 	public Class<SQLServerDriver> getJdbcDriverClass() {
 		return SQLServerDriver.class;

@@ -8,10 +8,6 @@ import org.postgresql.Driver;
  */
 public class PostgreSQLConnector extends AbstractDatabaseConnector<Driver, PostgreSQL95Dialect> {
 
-	static {
-		MAIN_CLASS_NAME = PostgreSQLConnector.class.getCanonicalName();
-	}
-
 	@Override
 	public Class<Driver> getJdbcDriverClass() {
 		return Driver.class;

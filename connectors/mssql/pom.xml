@@ -26,6 +26,11 @@
 			<version>10.2.0.jre17</version>
 		</dependency>
 		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>license-checker</artifactId>
+			<version>${license.checker.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.gentics.mesh.enterprise</groupId>
 			<artifactId>mesh-database-tests-common</artifactId>
 			<version>${project.version}</version>
@@ -81,11 +86,13 @@
 			                    </filter>
 			                </filters>
 			                <transformers>
-				                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-										<mainClass>com.gentics.mesh.enterprise.database.connector.SQLServerConnector</mainClass>
-								</transformer>
-			                	<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+				                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 			                </transformers>
+							<artifactSet>
+								<excludes>
+									<exclude>com.gentics.mesh:*</exclude>
+								</excludes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
@@ -113,7 +120,7 @@
 						<dependency>com.gentics.mesh.enterprise:mesh-enterprise-tests</dependency>
 						<dependency>com.gentics.mesh.enterprise:mesh-database-tests-common</dependency>
 					</dependenciesToScan>
-					<skip>${skip.mariadb.tests}</skip>
+					<skip>${skip.mssql.tests}</skip>
 					<jvm>${env.JAVA_HOME}/bin/java</jvm>
 					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
 						--add-opens=java.base/java.util=ALL-UNNAMED
@@ -133,7 +140,7 @@
 					</excludes>
 					<groups>${surefire.groups}</groups>
 					<excludedGroups>${surefire.excludedGroups}</excludedGroups>
-					<reportNameSuffix>mariadb</reportNameSuffix>
+					<reportNameSuffix>mssql</reportNameSuffix>
 					<systemPropertyVariables>
 						<mesh.testdb.manager.host>${mesh.testdb.manager.host}</mesh.testdb.manager.host>
 						<mesh.testdb.manager.port>${mesh.testdb.manager.port}</mesh.testdb.manager.port>
