@@ -30,10 +30,8 @@ public class DeleteFormHandler extends AbstractFormsHandler {
 			if (t == null) {
 				context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8).setStatusCode(204).end();
 			}
-			else if (t instanceof MeshRestClientMessageException) {
-				MeshRestClientMessageException restClientMessageException = (MeshRestClientMessageException) t;
-
-				if(restClientMessageException.getStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
+			else if (t instanceof MeshRestClientMessageException restClientMessageException) {
+                if(restClientMessageException.getStatusCode() == HttpResponseStatus.NOT_FOUND.code()) {
 					context.response().putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8).setStatusCode(204).end();
 				}
 			}
