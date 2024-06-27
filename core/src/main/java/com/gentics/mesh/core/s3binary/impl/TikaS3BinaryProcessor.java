@@ -219,8 +219,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 				};
 				promise.complete(consumer);
 			} catch (Exception e) {
-				log.error("Tika processing of upload failed");
-				promise.fail(e);
+				promise.fail(new IllegalStateException("Tika processing of uploaded S3 file " + upload.uploadedFileName() + " failed", e));
 			}
 		}, true);
 	}

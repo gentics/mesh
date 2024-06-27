@@ -428,7 +428,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			log.info("Sending startup completed event to {" + STARTUP + "}");
 			vertx.eventBus().publish(STARTUP.address, true);
 		}, e -> {
-			log.error("Error at sending completiness message", e);
+			log.error("Error at plugin files deployment", e);
 		});
 
 		if (initialPasswordInfo != null) {
@@ -589,9 +589,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 		this.vertx = vertx;
 		this.eventBusStore.setEventBus(vertx.eventBus());
-		if (this.vertx instanceof VertxInternal) {
-			((VertxInternal) this.vertx).blockedThreadChecker().setThreadBlockedHandler(this::blockedThreadLogger);
-		}
 	}
 
 	/**
@@ -1023,23 +1020,6 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			return fut.get(getClusteredVertxInitializationTimeoutInSeconds(), SECONDS);
 		} catch (Exception e) {
 			throw new RuntimeException("Error while creating clusterd Vert.x instance", e);
-		}
-	}
-
-	/**
-	 * Tone the thread blocked warning down a bit.
-	 * 
-	 * @param bte
-	 */
-	protected void blockedThreadLogger(BlockedThreadEvent bte) {
-		Thread thread = bte.thread();
-		final String message = "Thread [" + thread.getName() + "," + thread.getPriority() + "," + thread.getThreadGroup().getName() + "] has been blocked for " + (bte.duration() / 1_000_000) + " ms, time limit is " + (bte.maxExecTime() / 1_000_000) + " ms";
-		if (bte.duration() <= bte.warningExceptionTime() || !log.isDebugEnabled()) {
-			log.info(message);
-		} else {
-			VertxException stackTrace = new VertxException("Thread blocked");
-			stackTrace.setStackTrace(thread.getStackTrace());
-			log.debug(message, stackTrace);
 		}
 	}
 

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
+import com.gentics.mesh.core.rest.common.ExceptionResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -113,8 +114,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 			return;
 		} else {
 			Throwable failure = rc.failure();
+			Throwable topLevelFailure = failure;
 
-			// TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
 				if (failure instanceof AbstractRestException || failure instanceof JsonMappingException) {
@@ -134,7 +135,6 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 
 			int code = getResponseStatusCode(failure, rc.statusCode());
-			String failureMsg = failure != null ? failure.getMessage() : "-";
 			switch (code) {
 			case 400:
 			case 401:
@@ -170,7 +170,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 				rc.response().setStatusCode(400);
 				String msg = I18NUtil.get(ac, "error_parse_request_json_error");
-				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson(ac.isMinify(httpServerConfig)));
+				rc.response().end(new ExceptionResponse(msg, failure).toJson(ac.isMinify(httpServerConfig)));
 			}
 			if (failure instanceof AbstractRestException) {
 				AbstractRestException error = (AbstractRestException) failure;
@@ -188,10 +188,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 				// That's why we don't reuse the error message here.
 				String msg = I18NUtil.get(ac, "error_internal");
 				rc.response().setStatusCode(500);
-				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg), ac.isMinify(httpServerConfig)));
+				rc.response().end(JsonUtil.toJson(new ExceptionResponse(msg, topLevelFailure), ac.isMinify(httpServerConfig)));
 			}
 		}
-
 	}
 
 	private boolean isSilentError(RoutingContext rc) {

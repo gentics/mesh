@@ -218,8 +218,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 				};
 				promise.complete(consumer);
 			} catch (Exception e) {
-				log.error("Tika processing of upload failed");
-				promise.fail(e);
+				promise.fail(new IllegalStateException("Tika processing of uploaded file " + upload.uploadedFileName() + " failed", e));
 			}
 		}, true);
 	}

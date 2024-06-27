@@ -270,12 +270,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			return fs.rxDelete(uploadFilePath)
 				.doOnComplete(() -> log.trace("Removed temporary file {}", uploadFilePath))
 				.doOnError(e -> {
-					// Make parallel test less annoying
-					if (log.isDebugEnabled()) {
-						log.warn("Failed to remove upload from tmpDir {}", uploadFilePath, e);
-					} else {
-						log.warn("Failed to remove upload from tmpDir {}", uploadFilePath);
-					}
+					log.warn("Failed to remove upload from tmpDir {}", uploadFilePath);
 				}).onErrorComplete();
 		}
 	}

@@ -133,7 +133,7 @@ public class MeshImpl implements Mesh {
 		try {
 			meshInternal.boot().init(this, forceIndexSync, options, verticleLoader);
 		} catch (Throwable e1) {
-			log.error("Fatal error on Mesh init", e1);
+			log.error("FATAL: error on Mesh init", e1);
 			shutdown();
 			return this;
 		}
@@ -243,11 +243,11 @@ public class MeshImpl implements Mesh {
 									});
 								}
 							} else {
-								log.warn("Failed to check for updates ", ar2.cause());
+								log.info("Failed to check for updates ", ar2.cause());
 							}
 						});
 					} else {
-						log.warn("Failed to check for updates", ar.cause());
+						log.info("Failed to check for updates", ar.cause());
 					}
 				});
 	}

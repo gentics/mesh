@@ -98,7 +98,7 @@ public class MonitoringCrudHandler {
 			// to the cluster. Without additional nodes the write quorum would never
 			// be reached.
 			if (pluginStatus == PluginStatus.FAILED) {
-				log.warn("Plugin {" + id + "} is in status failed.");
+				log.error("Plugin {" + id + "} is in status failed.");
 				throw error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false);
 			}
 		}
@@ -131,16 +131,16 @@ public class MonitoringCrudHandler {
 				.map(Boolean::booleanValue)
 				.subscribe(isReadOnly -> {
 					if (isReadOnly) {
-						log.info("Local node cannot write - read only mode set");
+						log.warn("Local node cannot write - read only mode set");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else if (db.isReadOnly(false)) {
-						log.info("Local node cannot write - read only database");
+						log.warn("Local node cannot write - read only database");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else if (clusterManager.isClusterTopologyLocked()) {
-						log.info("Local node cannot write - cluster topology locked");
+						log.warn("Local node cannot write - cluster topology locked");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else if (!clusterManager.isWriteQuorumReached()) {
-						log.info("Local node cannot write - write quorum not reached");
+						log.warn("Local node cannot write - write quorum not reached");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else {
 						rc.response().setStatusCode(200).end();
