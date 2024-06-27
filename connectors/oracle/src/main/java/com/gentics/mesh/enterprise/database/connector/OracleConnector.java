@@ -15,7 +15,7 @@ public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, Ora
 		super(options);
 		LicenseService licenseService = new LicenseService(options);
 		if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("This database connector requires a license!");
+			throw new IllegalStateException("Oracle database connector requires a valid license!");
 		}
 	}
 

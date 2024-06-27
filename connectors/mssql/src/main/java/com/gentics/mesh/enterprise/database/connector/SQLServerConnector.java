@@ -14,7 +14,7 @@ public class SQLServerConnector extends AbstractDatabaseConnector<SQLServerDrive
 		super(options);
 		LicenseService licenseService = new LicenseService(options);
 		if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("This database connector requires a license!");
+			throw new IllegalStateException("Microsoft SQL Server database connector requires a valid license!");
 		}
 	}
 

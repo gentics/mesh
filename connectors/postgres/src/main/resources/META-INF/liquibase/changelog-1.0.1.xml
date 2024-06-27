@@ -1,0 +1,27 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <changeSet author="n.pomaroli@gentics.com" id="1662623704000-1">
+        <createIndex indexName="idx_mesh_binaryfieldref_metadataproperties_dbuuid" tableName="mesh_binaryfieldref_metadataproperties">
+            <column name="binaryfieldref_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1662623704000-2">
+        <dropPrimaryKey 
+            dropIndex="true" 
+            tableName="mesh_binaryfieldref_metadataproperties"/>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1662623704000-3">
+        <createIndex indexName="idx_mesh_s3binaryfieldref_metadataproperties_dbuuid" tableName="mesh_s3binaryfieldref_metadataproperties">
+            <column name="s3binaryfieldref_dbuuid"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="n.pomaroli@gentics.com" id="1662623704000-4">
+        <dropPrimaryKey 
+            dropIndex="true" 
+            tableName="mesh_s3binaryfieldref_metadataproperties"/>
+    </changeSet>
+</databaseChangeLog>

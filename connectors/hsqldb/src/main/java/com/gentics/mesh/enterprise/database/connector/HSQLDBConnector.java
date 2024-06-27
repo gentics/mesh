@@ -15,7 +15,7 @@ public class HSQLDBConnector extends AbstractDatabaseConnector<jdbcDriver, HSQLD
 		super(options);
 		LicenseService licenseService = new LicenseService(options);
 		if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("This database connector requires a license!");
+			throw new IllegalStateException("HSQLDB database connector requires a valid license!");
 		}
 	}
 
