@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import org.hibernate.dialect.Dialect;
 
+import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 import com.gentics.mesh.query.MetadataExtractorIntegrator;
 
 import io.vertx.core.logging.Logger;
@@ -24,8 +25,10 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 
 	protected static Driver DRIVER = null;
 
-	// Force no-arg ctor for the reflected instantiation
-	protected AbstractDatabaseConnector() {
+	protected EnterpriseMeshOptions options;
+
+	protected AbstractDatabaseConnector(EnterpriseMeshOptions options) {
+		this.options = options;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -44,6 +47,12 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 	@Override
 	public String getConnectorDescription() {
 		return getJdbcDriverClass() + " / " + getHibernateDialectClass();
+	}
+
+	@Override
+	public DatabaseConnector setOptions(EnterpriseMeshOptions options) {
+		this.options = options;
+		return this;
 	}
 
 	protected <T> T instantiate(Class<T> cls, Supplier<T> instanceSupplier) {

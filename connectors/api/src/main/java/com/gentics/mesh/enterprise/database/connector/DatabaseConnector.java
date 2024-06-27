@@ -4,6 +4,8 @@ import java.sql.Driver;
 
 import org.hibernate.dialect.Dialect;
 
+import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
+
 /**
  * A database connector interface for Gentics Mesh.
  */
@@ -48,4 +50,12 @@ public interface DatabaseConnector {
 	 * @return
 	 */
 	String getConnectorDescription();
+
+	/**
+	 * Set options instance to the connector.
+	 * 
+	 * @param options
+	 * @return fluent
+	 */
+	DatabaseConnector setOptions(EnterpriseMeshOptions options);
 }
