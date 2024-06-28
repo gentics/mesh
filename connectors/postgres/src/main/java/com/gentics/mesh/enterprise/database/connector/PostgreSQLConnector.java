@@ -28,4 +28,9 @@ public class PostgreSQLConnector extends AbstractDatabaseConnector<Driver, Postg
 	public Class<PostgresDuplicationAwareDialect> getHibernateDialectClass() {
 		return PostgresDuplicationAwareDialect.class;
 	}
+
+	@Override
+	public int getQueryParametersCountLimit() {
+		return 2048; // 2100 is a lie
+	}
 }

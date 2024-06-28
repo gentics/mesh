@@ -28,4 +28,14 @@ public class HSQLDBConnector extends AbstractDatabaseConnector<jdbcDriver, HSQLD
 	public Class<HSQLDialect> getHibernateDialectClass() {
 		return HSQLDialect.class;
 	}
+
+	@Override
+	public int getQueryParametersCountLimit() {
+		return Short.MAX_VALUE;
+	}
+
+	@Override
+	public String renderNonContentColumn(String column) {
+		return column;
+	}
 }

@@ -23,4 +23,9 @@ public class MariaDBConnector extends AbstractDatabaseConnector<Driver, MariaDBD
 	public Class<MariaDBDialect> getHibernateDialectClass() {
 		return MariaDBDialect.class;
 	}
+
+	@Override
+	public int getQueryParametersCountLimit() {
+		return 999;
+	}
 }
