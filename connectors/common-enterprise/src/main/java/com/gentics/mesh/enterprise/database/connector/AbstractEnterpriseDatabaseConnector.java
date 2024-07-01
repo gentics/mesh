@@ -17,7 +17,7 @@ import io.vertx.core.logging.Logger;
 import jakarta.persistence.EntityManager;
 
 /**
- * Base functionality for the Mesh Database Connector
+ * Base functionality for the Mesh Database Connector - licensed implementations.
  * 
  * @param <DR>
  * @param <DI>
