@@ -28,6 +28,7 @@ import org.hibernate.dialect.pagination.LimitHandler;
 import org.hibernate.engine.jdbc.Size;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.query.Query;
+import org.hibernate.query.internal.QueryOptionsImpl;
 import org.hibernate.query.spi.Limit;
 import org.hibernate.type.spi.TypeConfiguration;
 
@@ -122,7 +123,7 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 		Limit limit = new Limit();
 		limit.setFirstRow(pagingInfo.getActualPage() * pagingInfo.getPerPage().intValue());
 		limit.setMaxRows(pagingInfo.getPerPage().intValue());
-		query = limitHandler.processSql(query, limit);
+		query = limitHandler.processSql(query, limit, new QueryOptionsImpl());
 
 		if (limitHandler instanceof AbstractLimitHandler && ((AbstractLimitHandler)limitHandler).bindLimitParametersInReverseOrder()) {
 			return query.replaceFirst("\\?", " :limit ").replaceFirst("\\?", " :offset ");
