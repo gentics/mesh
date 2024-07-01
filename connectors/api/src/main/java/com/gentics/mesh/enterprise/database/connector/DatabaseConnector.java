@@ -14,11 +14,6 @@ import com.gentics.mesh.enterprise.hibernate.SessionMetadataIntegrator;
 public interface DatabaseConnector extends QueryUtils {
 
 	/**
-	 * Environment/property variable name.
-	 */
-	static final String MESH_DATABASE_CONNECTOR_ENV_PROP = "MESH_DATABASE_CONNECTOR";
-
-	/**
 	 * Get JDBC driver of a database, if already settled.
 	 * 
 	 * @return

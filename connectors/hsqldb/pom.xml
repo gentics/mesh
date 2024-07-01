@@ -27,9 +27,9 @@
 			<version>2.6.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.gentics</groupId>
-			<artifactId>license-checker</artifactId>
-			<version>${license.checker.version}</version>
+			<groupId>com.gentics.mesh.enterprise</groupId>
+			<artifactId>mesh-enterprise-mdm-hibernate-core</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh.enterprise</groupId>

@@ -40,7 +40,7 @@ public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector<SQLS
 
 	@Override
 	public int getQueryParametersCountLimit() {
-		return 1000;
+		return 2048; //2100 is a lie
 	}
 
 	@Override

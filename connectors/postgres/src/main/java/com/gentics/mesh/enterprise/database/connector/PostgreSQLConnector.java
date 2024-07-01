@@ -29,7 +29,7 @@ public class PostgreSQLConnector extends AbstractEnterpriseDatabaseConnector<Dri
 
 	@Override
 	public int getQueryParametersCountLimit() {
-		return 2048; // 2100 is a lie
+		return 32767;
 	}
 
 	@Override

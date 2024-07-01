@@ -280,21 +280,6 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 	public String getUUIDTypeName(Connection connection) {
 		SessionMetadataIntegrator smi = getSessionMetadataIntegrator();
 		TypeConfiguration typeConfig = smi.getSessionFactoryImplementor().getTypeConfiguration();
-		try {
-			DatabaseMetaData met = connection.getMetaData();
-			String productName = met.getDatabaseProductName();
-			switch (productName) {
-				case "PostgreSQL":
-					return "uuid";
-				case "Microsoft SQL Server":
-					return "uniqueidentifier";
-				default:
-					break;
-			}
-		} catch (Exception e) {
-			log.info("Could not get product name from connection", e);			
-		}
-		// fallback to hibernate dialect
 		int uuidType = smi.getBasicTypeForClass(UUID.class).getSqlTypeCodes(smi.getSessionFactoryImplementor())[0];
 		return typeConfig.getDdlTypeRegistry().getTypeName(uuidType, new Size(null, null, (long) DEFAULT_UUID_LENGTH), typeConfig.getBasicTypeForJavaType(UUID.class));
 	}
