@@ -147,9 +147,6 @@
 						<mesh.testdb.manager.host>${mesh.testdb.manager.host}</mesh.testdb.manager.host>
 						<mesh.testdb.manager.port>${mesh.testdb.manager.port}</mesh.testdb.manager.port>
 					</systemPropertyVariables>
-					<environmentVariables>
-						<LICENSEKEY>FBF4-6D85-75CD-7FA0-3EAE-FB5E-3D31-B936</LICENSEKEY>
-					</environmentVariables>
 				</configuration>
 			</plugin>
 		</plugins>
