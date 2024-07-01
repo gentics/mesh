@@ -1,5 +1,9 @@
 package com.gentics.mesh.enterprise.database.connector;
 
+import java.sql.Connection;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -11,13 +15,25 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.query.Query;
 
 import com.gentics.mesh.contentoperation.ContentColumn;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.rest.common.FieldTypes;
+import com.gentics.mesh.enterprise.hibernate.data.node.field.HibListFieldEdge;
 import com.gentics.mesh.parameter.PagingParameters;
+
+import jakarta.persistence.EntityManager;
 
 /**
  * Various DBMS dependent SQL query fixes.
  */
 public interface QueryUtils {
+
+	static final int DEFAULT_STRING_LENGTH = 1000000;
+	static final int DEFAULT_UUID_LENGTH = 16;
+	static final int DEFAULT_NUMBER_LENGTH = 64;
+	static final int DEFAULT_NUMBER_PRECISION = 40;
+	static final int DEFAULT_NUMBER_SCALE = DEFAULT_NUMBER_LENGTH - DEFAULT_NUMBER_PRECISION;
 
 	/**
 	 * Install paging fetch into the query.
@@ -208,4 +224,110 @@ public interface QueryUtils {
 	 * @return
 	 */
 	Optional<Set<String>> getDatabaseColumnNames(Class<?> cls);
+
+	/**
+	 * Get the name of the dialect-dependent type for UUID.
+	 *
+	 * @param connection
+	 * @return
+	 */
+	String getUUIDTypeName(Connection connection);
+
+	/**
+	 * Get a dummy comparison SQL predicate.
+	 * 
+	 * @param params query params holder
+	 * @param mustPass should the dummy succeed?
+	 * @return
+	 */
+	String getDummyComparison(Map<String, Object> params, boolean mustPass);
+
+	/**
+	 * Create a mass insertion query for the list field items.
+	 * 
+	 * @param <V> list item value type
+	 * @param <T> list item type
+	 * @param items items to insert 
+	 * @param em entity manager
+	 * @param startAt offset
+	 * @return
+	 */
+	<V, T extends HibListFieldEdge<V>> jakarta.persistence.Query makeListItemsMultiInsertionQuery(List<T> items, EntityManager em, long startAt);
+
+	/**
+	 * Delete all content edges of a project.
+	 * 
+	 * @param project
+	 * @param em
+	 * @return
+	 */
+	long deleteContentEdgesByProject(EntityManager em, HibProject project);
+
+	/**
+	 * Delete selected content edges by UUIDs.
+	 * 
+	 * @param uuids
+	 * @param em
+	 * @return
+	 */
+	long deleteContentEdgesByUuids(EntityManager em, Collection<UUID> uuids);
+
+	/**
+	 * Delete selected content edges by UUIDs, that belong to the specific branch.
+	 * 
+	 * @param uuids
+	 * @param em
+	 * @param branch
+	 * @return
+	 */
+	long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids);
+
+	/**
+	 * Check if the JPA-unmanaged table exists for the (micro)schema container version.
+	 *
+	 * @param connection
+	 * @param versionUuid
+	 * @return
+	 */
+	boolean tableExists(Connection connection, UUID versionUuid);
+
+	/**
+	 * Get Hibernate SQL type size scale for the content field type.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	int getSqlTypeScale(FieldTypes type);
+
+	/**
+	 * Get Hibernate SQL type precision for the content field type.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	int getSqlTypePrecision(FieldTypes type);
+
+	/**
+	 * Get Hibernate SQL type length for the content field type.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	long getSqlTypeLength(FieldTypes type);
+
+	/**
+	 * Find a corresponding SQL type name for a column {@link FieldTypes} unstance.
+	 * 
+	 * @param type
+	 * @param uuidTypeName a special type for UUIDs
+	 * @return
+	 */
+	String getSqlTypeName(FieldTypes type, String uuidTypeName);
+
+	/**
+	 * Get the name of the dialect-dependent type for UUID.
+	 *
+	 * @return
+	 */
+	String getUUIDTypeName();
 }

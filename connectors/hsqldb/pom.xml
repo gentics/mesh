@@ -18,7 +18,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh.enterprise</groupId>
-			<artifactId>mesh-enterprise-database-connector-common</artifactId>
+			<artifactId>mesh-enterprise-database-connector-common-enterprise</artifactId>
+			<version>${project.version}</version>
 		</dependency>	
 		<dependency>
 			<groupId>org.hsqldb</groupId>

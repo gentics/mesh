@@ -1,0 +1,58 @@
+package com.gentics.mesh.enterprise.database.connector;
+
+import static io.vertx.core.logging.LoggerFactory.getLogger;
+
+import java.sql.Driver;
+import java.util.Collection;
+import java.util.UUID;
+
+import org.hibernate.dialect.Dialect;
+
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
+import com.gentics.mesh.enterprise.server.license.LicenseService;
+
+import io.vertx.core.logging.Logger;
+import jakarta.persistence.EntityManager;
+
+/**
+ * Base functionality for the Mesh Database Connector
+ * 
+ * @param <DR>
+ * @param <DI>
+ */
+public abstract class AbstractEnterpriseDatabaseConnector<DR extends Driver, DI extends Dialect> extends AbstractDatabaseConnector<DR, DI> {
+
+	private static final Logger log = getLogger(AbstractEnterpriseDatabaseConnector.class);
+
+	protected AbstractEnterpriseDatabaseConnector(EnterpriseMeshOptions options) {
+		super(options);
+		LicenseService licenseService = new LicenseService(options);
+		if (!licenseService.isLicenseSufficient()) {
+			throw new IllegalStateException("Usage of " + getClass().getSimpleName() + " requires a valid Gentics license!");
+		}		
+	}
+
+	@Override
+	public long deleteContentEdgesByProject(EntityManager em, HibProject project) {
+		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_PROJECT + ")")
+				.setParameter("project", project)
+				.executeUpdate();
+	}
+
+	@Override
+	public long deleteContentEdgesByUuids(EntityManager em, Collection<UUID> uuids) {
+		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_NODE_UUIDS + ")")
+				.setParameter("nodesUuid", uuids)
+				.executeUpdate();
+	}
+
+	@Override
+	public long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids) {
+		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_NODE_UUIDS_BRANCH + ")")
+				.setParameter("nodesUuid", uuids)
+				.setParameter("branch", branch)
+				.executeUpdate();
+	}
+}

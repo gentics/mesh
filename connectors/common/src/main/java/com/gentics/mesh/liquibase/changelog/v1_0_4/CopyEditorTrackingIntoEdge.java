@@ -1,8 +1,6 @@
 package com.gentics.mesh.liquibase.changelog.v1_0_4;
 
 import static com.gentics.mesh.contentoperation.CommonContentColumn.DB_UUID;
-import static com.gentics.mesh.hibernate.util.HibernateUtil.maybeGetPhysicalTableName;
-import static com.gentics.mesh.hibernate.util.HibernateUtil.renderColumn;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
+import com.gentics.mesh.liquibase.LiquibaseStartupContext;
 import com.gentics.mesh.util.UUIDUtil;
 
 import liquibase.Scope;
@@ -79,9 +78,9 @@ public class CopyEditorTrackingIntoEdge implements CustomTaskChange {
 
 		String containerTableName;
 		try {
-			containerTableName = maybeGetPhysicalTableName(HibNodeFieldContainerEdgeImpl.class).get();
-		} catch (Exception e1) {
-			errors.addWarning("Change is started via migration script, i.e. the initial DB is empty and needs no editor tracking copy. Exiting.");
+			containerTableName = LiquibaseStartupContext.getConnectorIfStartup().maybeGetPhysicalTableName(HibNodeFieldContainerEdgeImpl.class).get();
+		} catch (Throwable e1) {
+			errors.addWarning("Change is started via migration script or unit test, i.e. the initial DB is empty and needs no editor tracking copy. Exiting.");
 			return;
 		}
 
@@ -104,7 +103,7 @@ public class CopyEditorTrackingIntoEdge implements CustomTaskChange {
 
 				try (PreparedStatement pst = conn.prepareStatement(String.format(
 						"UPDATE %s SET edited = (SELECT %s FROM %s WHERE %s.contentuuid = %s.%s) WHERE version_dbuuid = ?",
-						containerTableName, renderColumn("edited"), contentTableName, containerTableName, contentTableName, renderColumn(DB_UUID)))) {
+						containerTableName, LiquibaseStartupContext.getConnectorIfStartup().renderColumnUnsafe("edited", false), contentTableName, containerTableName, contentTableName, LiquibaseStartupContext.getConnectorIfStartup().renderColumn(DB_UUID)))) {
 					pst.setObject(1, dbValue);
 					int updatedRows = pst.executeUpdate();
 					log.info(String.format("%d updated rows for column 'edited'", updatedRows));
@@ -112,7 +111,7 @@ public class CopyEditorTrackingIntoEdge implements CustomTaskChange {
 
 				try (PreparedStatement pst = conn.prepareStatement(String.format(
 						"UPDATE %s SET editor_dbuuid = (SELECT %s FROM %s WHERE %s.contentuuid = %s.%s) WHERE version_dbuuid = ?",
-						containerTableName, renderColumn("editor_dbuuid"), contentTableName, containerTableName, contentTableName, renderColumn(DB_UUID)))) {
+						containerTableName, LiquibaseStartupContext.getConnectorIfStartup().renderColumnUnsafe("editor_dbuuid", false), contentTableName, containerTableName, contentTableName, LiquibaseStartupContext.getConnectorIfStartup().renderColumn(DB_UUID)))) {
 					pst.setObject(1, dbValue);
 					int updatedRows = pst.executeUpdate();
 					log.info(String.format("%d updated rows for column 'editor_dbuuid'", updatedRows));

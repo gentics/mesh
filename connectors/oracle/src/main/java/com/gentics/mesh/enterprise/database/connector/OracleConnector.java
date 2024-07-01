@@ -1,26 +1,31 @@
 package com.gentics.mesh.enterprise.database.connector;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
+import com.gentics.mesh.enterprise.hibernate.data.node.field.HibListFieldEdge;
 import com.gentics.mesh.enterprise.hibernate.dialect.OracleLongTextDialect;
-import com.gentics.mesh.enterprise.server.license.LicenseService;
+import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
+import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import oracle.jdbc.driver.OracleDriver;
 
 /**
  * Oracle database connector for Gentics Mesh
  */
-public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, OracleLongTextDialect> {
+public class OracleConnector extends AbstractEnterpriseDatabaseConnector<OracleDriver, OracleLongTextDialect> {
 
 	public OracleConnector(EnterpriseMeshOptions options) {
 		super(options);
-		LicenseService licenseService = new LicenseService(options);
-		if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("Oracle database connector requires a valid license!");
-		}
 	}
 
 	@Override
@@ -81,6 +86,39 @@ public class OracleConnector extends AbstractDatabaseConnector<OracleDriver, Ora
 	@Override
 	public String renderNonContentColumn(String column) {
 		return column;
+	}
+
+	@Override
+	public String getDummyComparison(Map<String, Object> params, boolean mustPass) {
+		Boolean value = Boolean.valueOf(mustPass);
+		String trueParam = HibernateUtil.makeParamName(value);
+		params.put(trueParam, value);
+		return " AND :" + trueParam + " ";
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public <V, T extends HibListFieldEdge<V>> Query makeListItemsMultiInsertionQuery(List<T> slice, EntityManager em, long startAt) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("INSERT ALL ");
+		sb.append(IntStream.range(0, slice.size()).mapToObj(index -> String.format(
+				"INTO %s%s (containertype, containeruuid, containerversionuuid, fieldkey, valueoruuid, itemindex, listuuid, dbuuid) VALUES (:containertype_%d, :containeruuid_%d, :containerversionuuid_%d, :fieldkey_%d, :valueoruuid_%d, :itemindex_%d, :listuuid_%d, :dbuuid_%d)", 
+				MeshTablePrefixStrategy.TABLE_NAME_PREFIX, AbstractHibListFieldEdgeImpl.getEntityTableName((Class) slice.get(0).getClass()), index, index, index, index, index, index, index, index)).collect(Collectors.joining(" ")));
+		sb.append(" SELECT 1 FROM DUAL");
+		Query query = em.createNativeQuery(sb.toString());
+		IntStream.range(0, slice.size()).forEach(index -> {
+			T item = slice.get(index);
+			query.setParameter("containertype_" + index, item.getContainerType().name());
+			query.setParameter("containeruuid_" + index, item.getContainerUuid());
+			query.setParameter("containerversionuuid_" + index, item.getContainerVersionUuid());
+			query.setParameter("fieldkey_" + index, item.getFieldName());
+			query.setParameter("valueoruuid_" + index, item.getValueOrUuid());
+			query.setParameter("itemindex_" + index, startAt + index);
+			query.setParameter("listuuid_" + index, item.getListUuid());
+			query.setParameter("dbuuid_" + index, item.getDbUuid());
+		});
+		return query;
 	}
 
 	protected String unblobStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {

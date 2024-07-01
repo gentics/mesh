@@ -37,6 +37,7 @@
 	<modules>
 		<module>api</module>
 		<module>common</module>
+       <module>common-enterprise</module>
 		<module>mariadb</module>
 		<module>hsqldb</module>
 		<module>mssql</module>

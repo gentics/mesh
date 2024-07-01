@@ -1,22 +1,20 @@
 package com.gentics.mesh.enterprise.database.connector;
 
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.dialect.HSQLDialect;
 import org.hsqldb.jdbcDriver;
 
 import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
-import com.gentics.mesh.enterprise.server.license.LicenseService;
 
 /**
  * HSQLDB Mesh database connector
  */
-public class HSQLDBConnector extends AbstractDatabaseConnector<jdbcDriver, HSQLDialect> {
+public class HSQLDBConnector extends AbstractEnterpriseDatabaseConnector<jdbcDriver, HSQLDialect> {
 
 	public HSQLDBConnector(EnterpriseMeshOptions options) {
 		super(options);
-		LicenseService licenseService = new LicenseService(options);
-		if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("HSQLDB database connector requires a valid license!");
-		}
 	}
 
 	@Override
@@ -37,5 +35,10 @@ public class HSQLDBConnector extends AbstractDatabaseConnector<jdbcDriver, HSQLD
 	@Override
 	public String renderNonContentColumn(String column) {
 		return column;
+	}
+
+	@Override
+	public String getDummyComparison(Map<String, Object> params, boolean mustPass) {
+		return StringUtils.EMPTY;
 	}
 }

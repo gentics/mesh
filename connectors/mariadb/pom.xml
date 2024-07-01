@@ -37,6 +37,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh.enterprise</groupId>
+			<artifactId>mesh-enterprise-mdm-hibernate-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh.enterprise</groupId>
 			<artifactId>mesh-database-tests-common</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>

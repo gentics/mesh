@@ -1,25 +1,21 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import static com.gentics.mesh.hibernate.util.HibernateUtil.renderColumn;
+import java.util.Map;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 import com.gentics.mesh.enterprise.hibernate.dialect.SqlServerUnicodeDialect;
-import com.gentics.mesh.enterprise.server.license.LicenseService;
+import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 
 /**
  * Microsoft SQL Server database connector for Gentics Mesh 3.x.
  */
-public class SQLServerConnector extends AbstractDatabaseConnector<SQLServerDriver, SqlServerUnicodeDialect> {
+public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector<SQLServerDriver, SqlServerUnicodeDialect> {
 
 	public SQLServerConnector(EnterpriseMeshOptions options) {
 		super(options);
-		LicenseService licenseService = new LicenseService(options);
-		if (!licenseService.isLicenseSufficient()) {
-			throw new IllegalStateException("Microsoft SQL Server database connector requires a valid license!");
-		}
 	}
 
 	@Override
@@ -39,10 +35,19 @@ public class SQLServerConnector extends AbstractDatabaseConnector<SQLServerDrive
 			// MSSQL requires ordering for pagination, but gets mad on a special case of DISTINCT...ORDER BY @@version.
 			sqlQuery = sqlQuery.replace("order by @@version", "order by " + myAlias + "." + renderColumn(CommonContentColumn.DB_UUID));
 		}
+		return sqlQuery;
 	}
 
 	@Override
 	public int getQueryParametersCountLimit() {
 		return 1000;
+	}
+
+	@Override
+	public String getDummyComparison(Map<String, Object> params, boolean mustPass) {
+		Boolean value = Boolean.valueOf(mustPass);
+		String trueParam = HibernateUtil.makeParamName(value);
+		params.put(trueParam, value);
+		return " AND :" + trueParam + " ";
 	}
 }

@@ -1,12 +1,11 @@
 package com.gentics.mesh.liquibase.changelog.v1_0_4;
 
-import static com.gentics.mesh.hibernate.util.HibernateUtil.maybeGetPhysicalTableName;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldEdgeImpl;
+import com.gentics.mesh.liquibase.LiquibaseStartupContext;
 
 import liquibase.Scope;
 import liquibase.change.custom.CustomTaskChange;
@@ -52,9 +51,9 @@ public class FixMicronodeToNodeReferences implements CustomTaskChange {
 	public void execute(Database database) throws CustomChangeException {
 		String nodeEdgeTableName;
 		try {
-			nodeEdgeTableName = maybeGetPhysicalTableName(HibNodeFieldEdgeImpl.class).get();
+			nodeEdgeTableName = LiquibaseStartupContext.getConnectorIfStartup().maybeGetPhysicalTableName(HibNodeFieldEdgeImpl.class).get();
 		} catch (Exception e1) {
-			errors.addWarning("Change is started via migration script, i.e. the initial DB is empty and needs no micronode reference fix. Exiting.");
+			errors.addWarning("Change is started via migration script or unit test, i.e. the initial DB is empty and needs no micronode reference fix. Exiting.");
 			return;
 		}
 		Scope.getCurrentScope().getLog(getClass()).info("Starting FixMicronodeToNodeReferences over " + nodeEdgeTableName);
