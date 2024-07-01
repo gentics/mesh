@@ -8,11 +8,13 @@ import java.nio.file.NoSuchFileException;
 import java.util.MissingResourceException;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
-import com.gentics.mesh.core.rest.common.ExceptionResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -24,8 +26,6 @@ import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -157,8 +157,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 						// AbstractRestExceptions may suppress logging of the stack trace
 						logStackTrace = ((AbstractRestException) failure).isLogStackTrace();
 					}
-					if (logStackTrace) {
-						log.error("Error:", failure);
+					if (logStackTrace || log.isDebugEnabled()) {
+						log.error("Error:", topLevelFailure);
 					} else {
 						log.error("Error: {}", failure.toString());
 					}
@@ -170,7 +170,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 			if (failure != null && ((failure.getCause() instanceof MeshJsonException) || failure instanceof MeshSchemaException)) {
 				rc.response().setStatusCode(400);
 				String msg = I18NUtil.get(ac, "error_parse_request_json_error");
-				rc.response().end(new ExceptionResponse(msg, failure).toJson(ac.isMinify(httpServerConfig)));
+				rc.response().end(new GenericMessageResponse(msg, failure.getMessage()).toJson(ac.isMinify(httpServerConfig)));
 			}
 			if (failure instanceof AbstractRestException) {
 				AbstractRestException error = (AbstractRestException) failure;
@@ -188,7 +188,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 				// That's why we don't reuse the error message here.
 				String msg = I18NUtil.get(ac, "error_internal");
 				rc.response().setStatusCode(500);
-				rc.response().end(JsonUtil.toJson(new ExceptionResponse(msg, topLevelFailure), ac.isMinify(httpServerConfig)));
+				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg), ac.isMinify(httpServerConfig)));
 			}
 		}
 	}

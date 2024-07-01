@@ -22,7 +22,7 @@ public class RouterLoggerHandlerImpl extends LoggerHandlerImpl {
 
 	@Override
 	protected void doLog(int status, String message) {
-		if (status >= 400) {
+		if (status >= 500) {
 			LOG.error(message);
 		} else {
 			LOG.info(message);
