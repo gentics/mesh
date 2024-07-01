@@ -157,8 +157,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 						// AbstractRestExceptions may suppress logging of the stack trace
 						logStackTrace = ((AbstractRestException) failure).isLogStackTrace();
 					}
-					if (logStackTrace || log.isDebugEnabled()) {
-						log.error("Error:", topLevelFailure);
+					if (logStackTrace) {
+						log.error("Error", topLevelFailure);
 					} else {
 						log.error("Error: {}", failure.toString());
 					}
