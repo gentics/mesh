@@ -24,8 +24,8 @@ import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.s3binary.impl.S3BinaryImpl;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see S3BinaryGraphField

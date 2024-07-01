@@ -32,8 +32,8 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 import com.gentics.mesh.util.ETag;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A core element is a public element which is also usually accessible via REST.
@@ -117,7 +117,7 @@ public interface HibCoreElement<T extends RestModel> extends HibTransformableEle
 				if (editor != null) {
 					model.setEditor(editor.transformToReference());
 				} else {
-					log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
+					log.warn("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
 				}
 			}
 

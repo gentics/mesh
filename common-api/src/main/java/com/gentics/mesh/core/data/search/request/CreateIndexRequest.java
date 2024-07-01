@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.search.request;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.search.SearchProvider;
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Index create request wrapper which can be used with RxJava.

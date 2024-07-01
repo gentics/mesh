@@ -24,8 +24,8 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class that is used to create and load mesh options.
@@ -131,11 +131,7 @@ public final class OptionsLoader {
 				options.getHttpServerOptions().setPort(Integer.valueOf(httpPort));
 			}
 		} catch (ParseException e) {
-			log.error("Error while parsing arguments {" + e.getMessage() + "}");
-			if (log.isDebugEnabled()) {
-				log.debug("Error while parsing argument", e);
-			}
-			throw new RuntimeException("Error while parsing arguments {" + e.getMessage() + "}");
+			throw new RuntimeException("Error while parsing arguments", e);
 		}
 	}
 

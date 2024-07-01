@@ -32,8 +32,8 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler which contains methods for user related requests.

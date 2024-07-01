@@ -33,8 +33,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The type handler is used to manage OrientDB type system and create, update, removed types.

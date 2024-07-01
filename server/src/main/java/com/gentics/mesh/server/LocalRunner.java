@@ -8,8 +8,8 @@ import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main runner that is used to deploy a preconfigured set of verticles.

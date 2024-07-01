@@ -15,8 +15,8 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for a Gentics Mesh plugin verticle.

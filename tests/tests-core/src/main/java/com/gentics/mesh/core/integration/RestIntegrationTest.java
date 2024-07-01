@@ -11,8 +11,8 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.test.AbstractIntegrationTest;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Ignore
 public class RestIntegrationTest extends AbstractIntegrationTest {

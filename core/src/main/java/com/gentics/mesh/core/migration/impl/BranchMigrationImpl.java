@@ -40,8 +40,8 @@ import com.gentics.mesh.metric.MetricsService;
 
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see BranchMigration
@@ -109,10 +109,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 			// TODO prepare errors. They should be easy to understand and to grasp
 			Completable result = Completable.complete();
 			if (!errorsDetected.isEmpty()) {
-				if (log.isDebugEnabled()) {
-					for (Exception error : errorsDetected) {
-						log.error("Encountered migration error.", error);
-					}
+				for (Exception error : errorsDetected) {
+					log.error("Encountered migration error.", error);
 				}
 				if (errorsDetected.size() == 1) {
 					result = Completable.error(errorsDetected.get(0));

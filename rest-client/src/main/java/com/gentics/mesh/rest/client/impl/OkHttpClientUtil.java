@@ -32,8 +32,8 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.Dispatcher;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;

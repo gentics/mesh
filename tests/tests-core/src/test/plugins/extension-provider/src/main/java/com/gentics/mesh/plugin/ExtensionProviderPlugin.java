@@ -5,8 +5,8 @@ import org.pf4j.PluginWrapper;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExtensionProviderPlugin extends AbstractPlugin {
 

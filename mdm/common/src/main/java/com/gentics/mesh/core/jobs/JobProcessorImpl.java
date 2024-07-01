@@ -21,8 +21,8 @@ import com.gentics.mesh.core.rest.job.JobType;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableSource;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for fetching all jobs and running them

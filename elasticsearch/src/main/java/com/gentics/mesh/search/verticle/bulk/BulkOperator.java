@@ -23,8 +23,8 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import io.reactivex.FlowableOperator;
 import io.reactivex.internal.util.BackpressureHelper;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An operator for Observables that bulks elastic search requests together.
@@ -105,9 +105,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 								.peek(bulkable -> bulkLength.addAndGet(bulkable.bulkLength()))
 								.collect(Collectors.toList());
 							BulkRequest request = new BulkRequest(requests);
-							if (log.isTraceEnabled()) {
-								log.trace("Sending bulk to elasticsearch:\n{}", request);
-							}
+							log.trace("Sending bulk to elasticsearch:\n{}", request);
 							subscriber.onNext(request);
 							BackpressureHelper.produced(requested, 1);
 						} while (!bulkableRequests.isEmpty());
@@ -151,8 +149,7 @@ public class BulkOperator implements FlowableOperator<SearchRequest, SearchReque
 
 			@Override
 			public void onNext(SearchRequest searchRequest) {
-				log.trace("Search request of class [{}] received from upstream.",
-					searchRequest.getClass());
+				log.trace("Search request of class [{}] received from upstream.", searchRequest.getClass());
 
 				if (canceled.get()) {
 					return;

@@ -41,8 +41,8 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
@@ -179,7 +179,7 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		log.error("Invalid type {" + source + "}.");
+		log.error("Invalid type {" + source + "} for schema model loading.");
 		return null;
 	}
 }

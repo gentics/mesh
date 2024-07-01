@@ -23,8 +23,8 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main description of a graph database.

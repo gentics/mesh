@@ -58,8 +58,8 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
 
 @Singleton
@@ -273,7 +273,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	@Override
 	public void markChangelogApplied() {
-		log.info("This is the initial setup.. marking all found changelog entries as applied");
+		log.info("Initial setup. Marking all found changelog entries as applied");
 		changelogSystem.markAllAsApplied();
 		highlevelChangelogSystem.markAllAsApplied(meshRoot.getChangelogRoot());
 		log.info("All changes marked");
@@ -343,7 +343,7 @@ public class OrientDBBootstrapInitializerImpl extends AbstractBootstrapInitializ
 
 	@Override
 	public boolean requiresChangelog(Predicate<? super HighLevelChange> filter) {
-		log.info("Checking whether changelog entries need to be applied");
+		log.trace("Checking whether changelog entries need to be applied");
 		ChangelogSystem cls = new ChangelogSystemImpl(db, options);
 		return cls.requiresChanges() || highlevelChangelogSystem.requiresChanges(meshRoot.getChangelogRoot(), filter);
 	}

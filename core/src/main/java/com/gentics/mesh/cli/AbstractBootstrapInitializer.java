@@ -17,11 +17,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import com.gentics.mesh.event.EventBusStore;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -65,6 +64,7 @@ import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.etc.config.DebugInfoOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.MonitoringConfig;
+import com.gentics.mesh.event.EventBusStore;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
@@ -87,13 +87,14 @@ import dagger.Lazy;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.btc.BlockedThreadEvent;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 
@@ -208,9 +209,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 *
 	 * @param flags
 	 * @param configuration
-	 *            Mesh configuration
+	 *			Mesh configuration
 	 * @param isJoiningCluster
-	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
+	 *			Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
 	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
@@ -426,7 +427,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			// Finally fire the startup event and log that bootstrap has completed
 			log.info("Sending startup completed event to {" + STARTUP + "}");
 			vertx.eventBus().publish(STARTUP.address, true);
-		}, log::error);
+		}, e -> {
+			log.error("Error at plugin files deployment", e);
+		});
 
 		if (initialPasswordInfo != null) {
 			System.out.println(initialPasswordInfo);
@@ -519,7 +522,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					throw new RuntimeException("Could not read {" + keyFile + "}");
 				}
 			} else {
-				log.warn("Keyfile {" + keyFile + "} not found. Not loading keys..");
+				log.warn("Keyfile {" + keyFile + "} not found. Not loading keys.");
 			}
 		}
 	}
@@ -534,7 +537,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * the IP of the local network adapter that is routed into the Internet.
 	 *
 	 * @param destination
-	 *            The remote host name or IP
+	 *			The remote host name or IP
 	 * @return An IP of a local network adapter
 	 */
 	protected String getLocalIpForRoutedRemoteIP(String destination) {
@@ -720,6 +723,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			// SNAPSHOT -> RELEASE
 			boolean isSnapshotUpgrade = diff == -1 && graph.compareTo(current, false) == 0 && graph.isSnapshot() && !current.isSnapshot();
 
+			//TODO Shouldn't this be documented or clearly optionated?
 			boolean ignoreSnapshotUpgrade = System.getProperty("ignoreSnapshotUpgradeCheck") != null;
 			if (ignoreSnapshotUpgrade) {
 				log.warn(
@@ -732,10 +736,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				}
 			}
 			if (isSnapshotUpgrade && !ignoreSnapshotUpgrade) {
-				log.error("You are currently trying to run release version {" + currentVersion
-					+ "} but your instance was last run using a snapshot version. {" + graphVersion
-					+ "}. Running this version could cause unforseen errors.");
-				throw new RuntimeException("Downgrade not allowed");
+				throw new RuntimeException("You are currently trying to run release version {" + currentVersion
+						+ "} but your instance was last run using a snapshot version. {" + graphVersion
+						+ "}. Running this version could cause unforseen errors.");
 			}
 
 			boolean isVersionDowngrade = diff >= 1;
@@ -907,9 +910,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * Create languages in the set, which do not exist yet
 	 *
 	 * @param root
-	 *            language root
+	 *			language root
 	 * @param languageSet
-	 *            language set
+	 *			language set
 	 */
 	protected void initLanguageSet(LanguageDao root, LanguageSet languageSet) {
 		for (Map.Entry<String, LanguageEntry> entry : languageSet.entrySet()) {
@@ -978,9 +981,9 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * Create a clustered vert.x instance and block until the instance has been created.
 	 *
 	 * @param options
-	 *            Mesh options
+	 *			Mesh options
 	 * @param vertxOptions
-	 *            Vert.x options
+	 *			Vert.x options
 	 */
 	protected Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions) {
 		clusterManager = db.clusterManager().getVertxClusterManager();

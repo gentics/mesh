@@ -5,8 +5,8 @@ import java.lang.reflect.Method;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Common interface for options. Every option should implement this in order to prepare for environment variable handling via the {@link EnvironmentVariable}

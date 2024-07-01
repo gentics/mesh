@@ -14,8 +14,8 @@ import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Dedicated entity definition for nodes. This class provides methods to transform database entities to documents and also to generate the partial update requests.
@@ -42,7 +42,7 @@ public class NodeMeshEntity extends MeshEntity<HibNodeFieldContainer> {
 
 	@Override
 	public Optional<JsonObject> getPermissionPartial(PermissionChangedEventModelImpl event) {
-		log.warn("permission partial for node requested. This should never happen", new Throwable());
+		log.warn("Permission partial for node requested. This should never happen", new Throwable());
 		return Optional.empty();
 	}
 }

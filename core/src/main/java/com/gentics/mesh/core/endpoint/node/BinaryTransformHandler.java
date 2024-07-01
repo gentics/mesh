@@ -62,8 +62,8 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.file.FileProps;
@@ -336,10 +336,10 @@ public class BinaryTransformHandler extends AbstractHandler {
 		}).onErrorResumeNext(e -> {
 			if (context.isInvokeStore()) {
 				if (log.isDebugEnabled()) {
-					log.debug("Error detected. Purging previously stored upload for tempId {}", temporaryId, e);
+					log.debug("Error detected. Purging previously stored upload for tempId " + temporaryId, e);
 				}
 				return binaryStorage.purgeTemporaryUpload(temporaryId).doOnError(e1 -> {
-					log.error("Error while purging temporary upload for tempId {}", temporaryId, e1);
+					log.error("Error while purging temporary upload for tempId " + temporaryId, e1);
 				}).onErrorComplete().andThen(Single.error(e));
 			} else {
 				return Single.error(e);

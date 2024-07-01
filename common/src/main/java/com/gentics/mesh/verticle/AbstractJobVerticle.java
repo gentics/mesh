@@ -1,12 +1,16 @@
 package com.gentics.mesh.verticle;
 
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.reactivex.Completable;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.Lock;
 import io.vertx.reactivex.RxHelper;
 
@@ -48,7 +52,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 				invokeJobAction(message);
 			}, rh -> {
 				if (rh.failed()) {
-					log.error(message);
+					log.error(messageToString(message));
 				}
 			});
 		});
@@ -114,7 +118,7 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
 				} else if (stopped) {
-					log.error("Not executing locked action, because processing was stopped");
+					log.warn("Not executing locked action, because processing was stopped");
 					if (message != null) {
 						message.reply(new JsonObject().put("status", STATUS_REJECTED));
 					}
@@ -124,13 +128,13 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 						message.reply(new JsonObject().put("status", STATUS_ACCEPTED));
 					}
 					action.doOnDispose(() -> {
-						log.debug("Releasing lock {" + lockName + "}");
+						log.trace("Releasing lock {" + lockName + "}");
 						lock.release();
 					}).doFinally(() -> {
-						log.debug("Releasing lock {" + lockName + "}");
+						log.trace("Releasing lock {" + lockName + "}");
 						lock.release();
 					}).subscribeOn(RxHelper.blockingScheduler(vertx)).subscribe(() -> {
-						log.debug("Action completed");
+						log.trace("Action completed");
 					}, error -> {
 						log.error("Error while executing locked action", error);
 					});
@@ -141,4 +145,19 @@ public abstract class AbstractJobVerticle extends AbstractVerticle {
 		}
 	}
 
+	private static final String messageToString(Message<Object> message) {
+		return Optional.ofNullable(message).map(msg -> {
+			StringBuffer sb = new StringBuffer();
+			sb.append("FROM: ").append(msg.address());
+			if (StringUtils.isNotBlank(msg.replyAddress())) {
+				sb.append(", REPLY TO: ").append(msg.replyAddress());
+			}
+			if (msg.body() != null) {
+				sb.append(", BODY: ").append(msg.body().toString());
+			} else {
+				sb.append(", NO BODY");
+			}
+			return sb.toString();
+		}).orElse("Message is NULL");
+	}
 }

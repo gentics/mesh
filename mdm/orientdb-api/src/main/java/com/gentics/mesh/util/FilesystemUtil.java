@@ -7,8 +7,8 @@ import org.apache.commons.lang3.SystemUtils;
 
 import com.orientechnologies.common.jnr.ONative;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utilities for filesystem operation.

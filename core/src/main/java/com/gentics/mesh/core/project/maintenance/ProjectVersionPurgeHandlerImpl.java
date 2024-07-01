@@ -20,8 +20,8 @@ import com.gentics.mesh.util.DateUtils;
 import com.google.common.collect.Lists;
 
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see ProjectVersionPurgeHandler

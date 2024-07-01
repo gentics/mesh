@@ -46,8 +46,8 @@ import com.gentics.mesh.parameter.GenericParameters;
 import com.gentics.mesh.parameter.ProjectLoadParameters;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A persisting extension to {@link ProjectDao}
@@ -250,7 +250,6 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		try {
 			CommonTx.get().data().mesh().routerStorageRegistry().addProject(project.getName());
 		} catch (InvalidNameException e) {
-			log.error("Failed to register project {" + project.getName() + "}");
 			throw error(BAD_REQUEST, "project_error_name_already_reserved", project.getName());
 		}
 

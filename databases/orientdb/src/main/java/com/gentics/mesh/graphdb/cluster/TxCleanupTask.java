@@ -16,8 +16,8 @@ import com.gentics.mesh.metric.MetricsService;
 
 import io.micrometer.core.instrument.Counter;
 import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Task which terminates stalled or long running commit operations.

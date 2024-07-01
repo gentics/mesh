@@ -13,15 +13,8 @@ import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-
 @Ignore
 public class ElasticsearchContainerTest {
-
-	static {
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
 
 	@ClassRule
 	public static ElasticsearchContainer server = new ElasticsearchContainer();

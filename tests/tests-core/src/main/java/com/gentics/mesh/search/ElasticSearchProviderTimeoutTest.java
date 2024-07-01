@@ -22,8 +22,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.http.HttpServer;
 
@@ -54,8 +54,9 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 			if (rh.absoluteURI().indexOf("_template/validation") > 0) {
 				rh.response().end(new JsonObject().encodePrettily());
 			} else {
-				log.info("Waiting for 16 second to answer request: " + rh.absoluteURI());
-				vertx.setTimer(Duration.ofSeconds(3).toMillis(), th -> rh.response().end());
+				Duration duration = Duration.ofSeconds(3);
+				log.info("Waiting for {} to answer request: {}", duration, rh.absoluteURI());
+				vertx.setTimer(duration.toMillis(), th -> rh.response().end());
 			}
 		});
 		server.rxListen().blockingGet();

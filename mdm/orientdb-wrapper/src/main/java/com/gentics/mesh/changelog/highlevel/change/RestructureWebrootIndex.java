@@ -23,8 +23,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.GraphDatabase;
 import com.syncleus.ferma.FramedTransactionalGraph;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Change which will get rid of the old {@link NodeGraphFieldContainer} webroot properties and instead add those props to the HAS_FIELD_CONTAINER edge.
@@ -60,8 +60,6 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 	public void apply() {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		ContentDao contentDao = Tx.get().contentDao();
-
-		log.info("Applying change: " + getName());
 		FramedTransactionalGraph graph = GraphDBTx.getGraphTx().getGraph();
 		Iterable<? extends GraphFieldContainerEdgeImpl> edges = graph.getFramedEdgesExplicit("@class", HAS_FIELD_CONTAINER,
 			GraphFieldContainerEdgeImpl.class);
@@ -113,7 +111,6 @@ public class RestructureWebrootIndex extends AbstractHighLevelChange {
 			container.getElement().removeProperty("publishedWebrootPathInfo");
 			container.getElement().removeProperty("webrootPathInfo");
 		}
-
 	}
 
 	@Override

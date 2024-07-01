@@ -32,8 +32,8 @@ import com.gentics.mesh.test.docker.MeshContainer;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Category(ClusterTests.class)
 public class ClusterConcurrencyTest extends AbstractClusterTest {

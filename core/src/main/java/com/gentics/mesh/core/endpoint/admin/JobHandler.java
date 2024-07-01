@@ -43,8 +43,8 @@ import com.gentics.mesh.core.verticle.handler.WriteLock;
 import com.gentics.mesh.parameter.JobParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * REST handler for job endpoint operations.

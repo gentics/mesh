@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 import com.gentics.mesh.core.rest.MeshEvent;
 import org.testcontainers.containers.output.OutputFrame;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Latching consumer of log messages which will release the latch once the startup completed message has been seen in the log.

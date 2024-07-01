@@ -27,6 +27,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -52,8 +54,6 @@ import io.reactivex.functions.Function;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Elastic search provider class which implements the {@link SearchProvider} interface.
@@ -326,7 +326,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			.flatMap(response -> {
 				boolean errors = response.getBoolean("errors");
 				if (errors) {
-					log.trace("Error after processing bulk:\n{}", response);
+					log.debug("Error after processing bulk:\n{}", response);
 					JsonArray items = response.getJsonArray("items");
 					for (int i = 0; i < items.size(); i++) {
 						JsonObject item = items.getJsonObject(i).getJsonObject("index");
@@ -336,7 +336,7 @@ public class ElasticSearchProvider implements SearchProvider {
 							String reason = error.getString("reason");
 							String id = item.getString("_id");
 							String index = item.getString("_index");
-							log.error("Could not store document {" + index + ":" + id + "} - " + type + " : " + reason);
+							log.error("Could not store document {" + index + ":" + id + "} - " + type + " :\n\t " + reason);
 						}
 					}
 					return Single.error(new ElasticsearchBulkResponseError(response));
@@ -361,12 +361,8 @@ public class ElasticSearchProvider implements SearchProvider {
 			.flatMapIterable(list -> list)
 			.reduce(new StringBuilder(), (builder, str) -> builder.append(str).append("\n"))
 			.map(StringBuilder::toString)
-			.doOnSuccess(bulkData -> {
-				if (log.isTraceEnabled()) {
-					log.trace("Using bulk payload:");
-					log.trace(bulkData);
-				}
-			}).flatMapCompletable(this::processBulk);
+			.doOnSuccess(bulkData -> log.trace("Using bulk payload:\n{}", bulkData))
+			.flatMapCompletable(this::processBulk);
 	}
 
 	@Override
@@ -379,8 +375,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		return client.storeDocument(fullIndex, getType(), uuid, document).async()
 			.doOnSuccess(response -> {
 				if (log.isDebugEnabled()) {
-					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis()
-						- start) + "[ms]");
+					log.debug("Added object {" + uuid + "} to index {" + fullIndex + "}. Duration " + (System.currentTimeMillis() - start) + "[ms]");
 				}
 			}).ignoreElement().compose(withTimeoutAndLog("Storing document {" + fullIndex + "} / {" + uuid + "}", true));
 	}
@@ -506,8 +501,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (error instanceof TimeoutException) {
 						log.error("The operation failed since the timeout of {" + timeout + "} ms has been reached. Action: " + msg);
 					} else {
-						log.error("Request failed {" + msg + "}", error.toString());
-						log.error(error);
+						log.error("Request failed {" + msg + "}", error);
 					}
 				});
 			return ignoreError ? t.onErrorComplete() : t;

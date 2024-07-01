@@ -19,8 +19,8 @@ import com.gentics.mesh.plugin.graphql.GraphQLPlugin;
 import com.gentics.mesh.plugin.registry.PluginRegistry;
 
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Plugin registry for {@link GraphQLPlugin}'s.

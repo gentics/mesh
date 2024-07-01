@@ -15,8 +15,8 @@ import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link LivenessManager}
@@ -45,7 +45,7 @@ public class LivenessManagerImpl implements LivenessManager {
 		liveFile = new File(options.getLivePath());
 		File liveFolder = liveFile.getParentFile();
 		if (liveFolder != null && !liveFolder.exists() && !liveFolder.mkdirs()) {
-			log.error("Could not create parent folder for livefile {" + liveFolder.getAbsolutePath() + "}");
+			log.warn("Could not create parent folder for livefile {" + liveFolder.getAbsolutePath() + "}");
 		}
 		try {
 			liveFile.createNewFile();

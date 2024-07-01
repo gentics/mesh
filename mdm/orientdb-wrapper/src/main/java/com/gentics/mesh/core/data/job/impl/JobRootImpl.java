@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.dao.ElementResolver.log;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PROJECT;
@@ -9,7 +10,6 @@ import static com.gentics.mesh.madl.index.EdgeIndexDefinition.edgeIndex;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -257,14 +257,14 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void purgeFailed() {
-		log.info("Purging failed jobs..");
+		log.info("Purging failed jobs...");
 		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
 		long count = 0;
 		for (Job job : it) {
 			job.delete();
 			count++;
 		}
-		log.info("Purged {" + count + "} failed jobs.");
+		log.info(count + "} failed jobs purged.");
 	}
 
 	@Override

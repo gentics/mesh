@@ -25,8 +25,8 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.vertx.core.http.impl.MimeMapping;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.buffer.Buffer;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -258,7 +258,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 					return Single.error(e);
 				}
 			}).doOnError(e -> {
-				log.error("Error while checking for field {" + objectKey + "}", objectKey, e);
+				log.error("Error while checking for field {" + objectKey + "}", e);
 			});
 		});
 	}
@@ -275,7 +275,7 @@ public class S3BinaryStorageImpl implements S3BinaryStorage {
 					return Single.error(e);
 				}
 			}).doOnError(e -> {
-				log.error("Error while checking for bucket {" + bucketName + "}", bucketName, e);
+				log.error("Error while checking for bucket {" + bucketName + "}", e);
 			});
 		});
 	}

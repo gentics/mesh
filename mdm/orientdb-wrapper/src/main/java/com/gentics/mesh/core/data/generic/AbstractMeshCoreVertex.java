@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.generic;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.rest.common.RestModel;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for mesh core vertices that includes methods which are commonly used when transforming the vertices into REST POJO's.

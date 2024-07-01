@@ -24,8 +24,8 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import io.micrometer.core.instrument.Counter;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation of an {@link OrientStorage}. Backup/Restore and clear code are for example shareable across specific implementations.

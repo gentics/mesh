@@ -9,8 +9,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
@@ -52,7 +52,7 @@ public class MonitoringServerVerticle extends AbstractVerticle {
 				promise.fail(rh.cause());
 			} else {
 				if (log.isInfoEnabled()) {
-					log.info("Started monitoring http server.. Port: " + options.getPort());
+					log.info("Started monitoring http server. Port: " + options.getPort());
 				}
 				promise.complete();
 			}

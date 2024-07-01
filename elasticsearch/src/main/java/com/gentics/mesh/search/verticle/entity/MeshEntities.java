@@ -51,8 +51,8 @@ import com.gentics.mesh.search.verticle.eventhandler.EventVertexMapper;
 import com.gentics.mesh.search.verticle.eventhandler.MeshHelper;
 import com.gentics.mesh.search.verticle.eventhandler.Util;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A helper class that abstracts the common functionality shared across mesh elements

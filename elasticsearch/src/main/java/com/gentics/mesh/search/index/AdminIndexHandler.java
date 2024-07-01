@@ -27,8 +27,8 @@ import com.gentics.mesh.search.verticle.eventhandler.SyncEventHandler;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for index admin operations (purge,sync)

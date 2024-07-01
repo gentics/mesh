@@ -20,8 +20,8 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contains checks for complex fields (list field).

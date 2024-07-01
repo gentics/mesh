@@ -73,8 +73,8 @@ import graphql.schema.GraphQLFieldDefinition.Builder;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeReference;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTypeProvider {
 
@@ -689,14 +689,15 @@ public abstract class AbstractTypeProvider {
 					maybeNativeFilter = Optional.of(filterProvider.createFilterOperation(filterArgument));
 					break;
 				} catch (UnformalizableQuery e) {
-					log.warn("The query filter cannot be formalized: {}", filterArgument);
-					log.debug(e);
+					log.warn("The query filter cannot be formalized: {}\n\t for reason: {}", filterArgument, e.getLocalizedMessage());
+					log.debug("Cannot formalize GraphQL query", e);
 					if (NativeQueryFiltering.ALWAYS.equals(nativeQueryFiltering) || NativeFilter.ONLY.equals(envNativeFilter)) {
 						throw new InvalidParameterException("Cannot proceed with an unformalizable query on params: requested GraphQL 'nativeFilter' = " + envNativeFilter 
 								+ ", Mesh GraphQL Options 'nativeQueryFiltering' = " + nativeQueryFiltering + ", failed filter = " + e.getFilter());
 					} else {
 						log.info("Trying to apply old Java filtering");
-					}// fall through into the old filtering
+					}
+					// fall through into the old filtering
 				}			
 			case NEVER:
 				if (NativeFilter.ONLY.equals(envNativeFilter)) {

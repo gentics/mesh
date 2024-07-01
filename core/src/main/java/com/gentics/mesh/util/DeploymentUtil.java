@@ -46,8 +46,8 @@ public final class DeploymentUtil {
 		vertx.deployVerticle(verticle, options, handler -> {
 			if (handler.succeeded()) {
 				String deploymentId = handler.result();
-				if (log.isInfoEnabled()) {
-					log.info("Deployed verticle {" + verticle.getClass().getName() + "} => " + deploymentId);
+				if (log.isDebugEnabled()) {
+					log.debug("Deployed verticle {" + verticle.getClass().getName() + "} => " + deploymentId);
 				}
 				fut.complete(deploymentId);
 			} else {

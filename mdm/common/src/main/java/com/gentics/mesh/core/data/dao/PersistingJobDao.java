@@ -16,8 +16,8 @@ import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.event.EventQueueBatch;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A persisting extension to {@link JobDao}

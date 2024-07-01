@@ -57,7 +57,7 @@ public class RenameReleasesToBranches extends AbstractChange {
 				jobQueue.add(edge.getId());
 				r++;
 				if (r % 10_000 == 0) {
-					log.info("Added element to job queue " + jobQueue.size());
+					log.info("Edge jobs queued: " + jobQueue.size());
 				}
 			}
 		} finally {

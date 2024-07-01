@@ -108,8 +108,8 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.reactivex.Observable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @MeshTestSetting(elasticsearch = TRACKING, testSize = FULL, startServer = true, synchronizeWrites = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {

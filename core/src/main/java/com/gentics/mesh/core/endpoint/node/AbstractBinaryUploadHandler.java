@@ -28,8 +28,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for binary upload handler and S3 binary upload handler.

@@ -8,8 +8,8 @@ import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import com.gentics.mesh.rest.client.impl.OkHttpClientUtil;
 import com.gentics.mesh.test.context.MeshTestHelper;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -40,9 +40,9 @@ public class SSLTestClient {
 		OkHttpClient client = client(clientCertName, trustAll);
 		Request request = new Request.Builder().url(String.format(FMT_TEST_URL, httpsPort)).build();
 
-		log.info("Performing request: " + request);
+		log.debug("Performing request: " + request);
 		Response response = client.newCall(request).execute();
-		log.info("Received response: " + response);
+		log.debug("Received response: " + response);
 	}
 
 	public static OkHttpClient client(ClientCert clientCertName, boolean trustAll) throws URISyntaxException, IOException {

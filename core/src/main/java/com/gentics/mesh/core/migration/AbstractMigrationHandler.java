@@ -42,8 +42,8 @@ import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.CollectionUtil;
 import com.gentics.mesh.util.StreamUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for migration handlers that deal with content migrations.

@@ -13,8 +13,8 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.BiFunction;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RXJava methods.

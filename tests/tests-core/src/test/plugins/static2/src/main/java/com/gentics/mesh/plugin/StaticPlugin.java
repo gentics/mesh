@@ -4,8 +4,8 @@ import org.pf4j.PluginWrapper;
 
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 public class StaticPlugin extends AbstractPlugin implements RestPlugin {

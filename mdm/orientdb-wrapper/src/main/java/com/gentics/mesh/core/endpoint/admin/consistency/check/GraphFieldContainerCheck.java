@@ -40,8 +40,8 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.FramedGraph;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Consistency check for node contents.
@@ -187,7 +187,8 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 
 		HibSchemaVersion version = container.getSchemaContainerVersion();
 		if (version == null) {
-			log.error("Container {" + container.getUuid() + "} has no schema version linked to it.");
+			log.warn("Container {" + container.getUuid() + "} has no schema version linked to it.");
+			// TODO this is an inconsistency, actually
 			return false;
 		}
 		HibSchema schemaContainer = version.getSchemaContainer();
@@ -215,14 +216,14 @@ public class GraphFieldContainerCheck extends AbstractConsistencyCheck {
 			draft = findDraft(latest);
 		}
 
-		log.info("Initial:" + initial.getUuid() + " version: " + initial.getVersion());
+		log.info("Initial: " + initial.getUuid() + " version: " + initial.getVersion());
 		if (draft != null) {
-			log.info("Draft:" + draft.getUuid() + " version: " + draft.getVersion());
+			log.info("Draft: " + draft.getUuid() + " version: " + draft.getVersion());
 		} else {
 			throw new RuntimeException("The draft version could not be found");
 		}
 		if (published != null) {
-			log.info("Publish:" + published.getUuid() + " version: " + published.getVersion());
+			log.info("Publish: " + published.getUuid() + " version: " + published.getVersion());
 		} else {
 			log.info("Published not found");
 		}

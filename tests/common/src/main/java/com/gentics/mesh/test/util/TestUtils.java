@@ -22,8 +22,8 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class TestUtils {
 

@@ -11,8 +11,8 @@ import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.HttpQueryUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for action context.

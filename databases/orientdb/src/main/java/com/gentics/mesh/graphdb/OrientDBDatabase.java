@@ -101,8 +101,8 @@ import com.tinkerpop.pipes.util.FastNoSuchElementException;
 import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * OrientDB specific mesh graph database implementation.
@@ -261,7 +261,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 				try {
 					return Integer.parseInt(val);
 				} catch (Exception e) {
-					log.error("Could not parse value of storage parameter {" + RIDBAG_PARAM_KEY + "}");
 					throw new RuntimeException("Parameter {" + RIDBAG_PARAM_KEY + "} could not be parsed.");
 				}
 			}
@@ -545,7 +544,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerFinished = false;
 				handlerResult = null;
 			} catch (ORecordDuplicatedException e) {
-				log.error(e);
+				log.error("Internal OrientDB error", e);
 				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			} catch (GenericRestException e) {
 				// Don't log. Just throw it along so that others can handle it
@@ -747,7 +746,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 					// Interval is fixed
 					Thread.sleep(500);
 				} catch (InterruptedException e1) {
-					log.info("Cleanup task stopped");
+					log.error("Cleanup task stopped", e1);
 					break;
 				}
 			}
@@ -772,7 +771,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (logError) {
 				log.error("Local instance is read-only due to limited disk space.");
 			} else {
-				log.warn("Local instance is read-only due to limited disk space.");
+				log.info("Local instance is read-only due to limited disk space.");
 			}
 			return true;
 		} else {
@@ -781,7 +780,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				if (logError) {
 					log.error("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
 				} else {
-					log.warn("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
+					log.info("Instance " + readOnlyInstance.get() + " is read-only due to limited disk space.");
 				}
 				return true;
 			} else {

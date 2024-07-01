@@ -15,8 +15,8 @@ import com.google.common.base.Objects;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central changelog system class which is responsible for handling listed changes.
@@ -82,7 +82,7 @@ public class ChangelogSystemImpl implements ChangelogSystem {
 				change.setGraph(graph);
 				change.setDb(db);
 				change.markAsComplete();
-				log.info("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
+				log.debug("Marking change {" + change.getUuid() + "/" + change.getName() + "} as completed.");
 			}
 		} finally {
 			graph.shutdown();

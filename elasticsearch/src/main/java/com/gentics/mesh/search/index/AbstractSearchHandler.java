@@ -59,8 +59,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation for a mesh search handler.
@@ -185,8 +185,8 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 		}, error -> {
 			if (error instanceof HttpErrorException) {
 				HttpErrorException he = (HttpErrorException) error;
+				log.error("Error at: " + error.toString());
 				log.error("Search query failed", error);
-				log.error("Info: " + error.toString());
 				try {
 					ac.send(he.getBody(), HttpResponseStatus.BAD_REQUEST);
 				} catch (Exception e1) {

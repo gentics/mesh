@@ -24,8 +24,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see Tag

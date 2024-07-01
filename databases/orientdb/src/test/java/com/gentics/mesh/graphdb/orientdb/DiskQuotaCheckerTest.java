@@ -12,12 +12,11 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.gentics.mesh.etc.config.DiskQuotaOptions;
 import com.gentics.mesh.graphdb.check.DiskQuotaChecker;
 import com.gentics.mesh.mock.MockingLoggerRule;
-
-import io.vertx.core.spi.logging.LogDelegate;
 
 /**
  * Test cases for the disk quota checker
@@ -28,7 +27,7 @@ public class DiskQuotaCheckerTest {
 	@Rule
 	public MockingLoggerRule rule = new MockingLoggerRule();
 
-	protected LogDelegate logger = rule.get(DiskQuotaChecker.class.getName());
+	protected Logger logger = rule.getLogger(DiskQuotaChecker.class.getName());
 
 	/**
 	 * Test that enough disk space usable will be accepted

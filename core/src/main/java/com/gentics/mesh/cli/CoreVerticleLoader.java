@@ -18,8 +18,8 @@ import com.gentics.mesh.verticle.BinaryCheckVerticle;
 import io.reactivex.Completable;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**

@@ -64,8 +64,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 
 import dagger.Lazy;
 import io.micrometer.core.instrument.Timer;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of an OrientDB transaction.

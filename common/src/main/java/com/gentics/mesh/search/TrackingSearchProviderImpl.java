@@ -23,8 +23,8 @@ import com.gentics.mesh.util.VersionNumber;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.
@@ -251,7 +251,7 @@ public class TrackingSearchProviderImpl implements TrackingSearchProvider {
 		for (Entry<String, JsonObject> entry : getStoreEvents().entrySet()) {
 			log.debug("Store event {" + entry.getKey() + "}");
 			if (withJson) {
-				log.info("Json:\n" + entry.getValue().encodePrettily());
+				log.debug("Json:\n" + entry.getValue().encodePrettily());
 			}
 		}
 	}

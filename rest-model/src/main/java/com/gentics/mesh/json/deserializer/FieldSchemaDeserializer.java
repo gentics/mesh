@@ -13,9 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * The field schema deserialize will deserialize the field by first examining the field type and delegating the deserialization to another jackson mapper which
  * will deserialize the node using the appropriate schema implementation class.
@@ -23,8 +20,6 @@ import io.vertx.core.logging.LoggerFactory;
  * @param <T>
  */
 public class FieldSchemaDeserializer<T extends FieldSchema> extends JsonDeserializer<T> {
-
-	private static final Logger log = LoggerFactory.getLogger(FieldSchemaDeserializer.class);
 
 	@Override
 	public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
@@ -42,8 +37,7 @@ public class FieldSchemaDeserializer<T extends FieldSchema> extends JsonDeserial
 			if (nameField != null) {
 				fieldName = nameField.textValue();
 			}
-			log.error("Schema type not found for field with name {" + fieldName + "}");
-			throw new JsonMappingException("Missing type property for field {" + fieldName + "}", jsonParser.getCurrentLocation());
+			throw new JsonMappingException(jsonParser, "Missing type property for field {" + fieldName + "}");
 		}
 	}
 }

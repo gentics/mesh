@@ -29,8 +29,8 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLOutputType;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GraphQL type provider for microschema types.
@@ -125,7 +125,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 			MicroschemaModelImpl model = JsonUtil.readValue(schema.getJson(), MicroschemaModelImpl.class);
 			return model;
 		}
-		log.error("Invalid type {" + source + "}.");
+		log.error("Invalid type {" + source + "} for microschema model loading.");
 		return null;
 	}
 }

@@ -25,8 +25,8 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Listener for OrientDB cluster specific events. The listener relays the events via messages to the eventbus.
@@ -194,7 +194,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 			case BACKUP:
 			case SYNCHRONIZING:
 				if (doLog && log.isInfoEnabled()) {
-					log.info("Current database stati: {}", getDatabaseStati());
+					log.info("Current database status: {}", getDatabaseStati());
 					log.info("Locking since " + entry.getKey() + " is in status " + entry.getValue());
 				}
 				return true;

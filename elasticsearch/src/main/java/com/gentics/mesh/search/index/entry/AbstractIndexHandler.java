@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
@@ -41,8 +43,6 @@ import io.reactivex.functions.Action;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Abstract class for index handlers.
@@ -104,16 +104,16 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 
 	protected Flowable<SearchRequest> diffAndSync(String indexName, String projectUuid, Optional<Pattern> indexPattern) {
 		if (indexPattern.orElse(MATCH_ALL).matcher(indexName).matches()) {
-		// Sync each bucket individually
-		Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
-		log.info("Handling index sync on handler {" + getClass().getName() + "}");
-		return buckets.flatMap(bucket -> {
-			log.info("Handling sync of {" + bucket + "}");
-			return diffAndSync(indexName, projectUuid, bucket);
-		}, 1);
+			// Sync each bucket individually
+			Flowable<Bucket> buckets = bucketManager.getBuckets(getTotalCountFromGraph());
+			log.debug("Handling index sync on handler: {}", getClass().getName());
+			return buckets.flatMap(bucket -> {
+				log.info("Handling sync of {" + bucket + "}");
+				return diffAndSync(indexName, projectUuid, bucket);
+			}, 1);
 		} else {
 			return Flowable.empty();
-	}
+		}
 	}
 
 	/**
@@ -154,7 +154,7 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					return db.tx(() -> {
 						T element = getElement(uuid);
 						if (element == null) {
-							log.error("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
+							log.warn("Element for uuid {" + uuid + "} in type handler {" + getType() + "}  could not be found. Skipping document.");
 							return Optional.empty();
 						} else {
 							return Optional.of(getTransformer().toDocument(element));
@@ -211,7 +211,8 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 		return Single.fromCallable(() -> {
 			String fullIndexName = searchProvider.installationPrefix() + indexName;
 			Map<String, String> versions = new HashMap<>();
-			log.debug("Loading document info from index {" + fullIndexName + "} in bucket {" + bucket + "}");
+			log.trace("Loading document info from index {" + fullIndexName + "} in bucket {" + bucket + "}");
+
 			ElasticsearchClient<JsonObject> client = searchProvider.getClient();
 			JsonObject query = new JsonObject();
 			query.put("size", ES_SYNC_FETCH_BATCH_SIZE);
@@ -219,15 +220,12 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 			query.put("query", bucket.rangeQuery());
 			query.put("sort", new JsonArray().add("_doc"));
 
-			log.debug(query.encodePrettily());
-			log.trace("Using query {\n" + query.encodePrettily() + "\n");
+			log.debug("Using {} query:\n\t", fullIndexName, query.encodePrettily());
 			RequestBuilder<JsonObject> builder = client.searchScroll(query, "1m", fullIndexName);
 			JsonObject result = new JsonObject();
 			try {
 				result = builder.sync();
-				if (log.isTraceEnabled()) {
-					log.trace("Got response {" + result.encodePrettily() + "}");
-				}
+				log.debug("Got response:\n{}", result.encodePrettily());
 				JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
 				processHits(hits, versions);
 
@@ -237,19 +235,15 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					try {
 						while (true) {
 							final String currentScroll = nextScrollId;
-							log.debug("Fetching scroll result using scrollId {" + currentScroll + "}");
+							log.debug("Fetching scroll result using scrollId {}", currentScroll);
 							JsonObject scrollResult = client.scroll("1m", currentScroll).sync();
 							JsonArray scrollHits = scrollResult.getJsonObject("hits").getJsonArray("hits");
-							if (log.isTraceEnabled()) {
-								log.trace("Got response {" + scrollHits.encodePrettily() + "}");
-							}
+							log.debug("Got response:\n\t[{}]", scrollHits.encodePrettily());
 							if (scrollHits.size() != 0) {
 								processHits(scrollHits, versions);
 								// Update the scrollId for the next fetch
 								nextScrollId = scrollResult.getString("_scroll_id");
-								if (log.isDebugEnabled()) {
-									log.debug("Using scrollId {" + nextScrollId + "} for next fetch.");
-								}
+								log.debug("Using scrollId [{}] for next fetch.", nextScrollId);
 							} else {
 								// The scroll yields no more data. We are done
 								break;
@@ -261,11 +255,9 @@ public abstract class AbstractIndexHandler<T extends HibBaseElement> implements 
 					}
 				}
 			} catch (HttpErrorException e) {
-				log.error("Error while loading version information from index {" + indexName + "}", e.toString());
-				log.error(e);
+				log.error("Could not load versions of index " + indexName);
 				throw e;
 			}
-
 			return versions;
 		});
 	}

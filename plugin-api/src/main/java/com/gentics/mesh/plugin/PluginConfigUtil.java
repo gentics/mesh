@@ -14,8 +14,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class which can be used to load plugin configuration files.
