@@ -81,7 +81,7 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 	@SuppressWarnings("unchecked")
 	@Override
 	public DR getJdbcDriver() {
-		// TODO Get the driver from Hibernate, if possible
+		// TODO Get the driver instance from Hibernate, if possible
 		return instantiate((Class<DR>) getJdbcDriverClass(), () -> (DR) DRIVER);
 	}
 
