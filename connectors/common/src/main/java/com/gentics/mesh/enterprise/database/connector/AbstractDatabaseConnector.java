@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.boot.model.naming.Identifier;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.dialect.Dialect;
@@ -59,7 +60,7 @@ import jakarta.persistence.EntityManager;
  * @param <DR>
  * @param <DI>
  */
-public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Dialect> implements DatabaseConnector {
+public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 
 	protected static final String DELETE_BY_ELEMENT_IN = "delete from nodefieldcontainer where element in ";
 	protected static final String FIND_BY_NODE_UUIDS = "select edge2.element from nodefieldcontainer edge2 where edge2.node.dbUuid in :nodesUuid";
@@ -78,11 +79,36 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 		this.options = options;		
 	}
 
+	@Override
+	public Driver getJdbcDriver() {
+		// TODO Get the driver instance from Hibernate, if possible
+		return instantiate(getJdbcDriverClass(), () -> DRIVER);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
-	public DR getJdbcDriver() {
-		// TODO Get the driver instance from Hibernate, if possible
-		return instantiate((Class<DR>) getJdbcDriverClass(), () -> (DR) DRIVER);
+	public Class<Driver> getJdbcDriverClass() {
+		try {
+			return (Class<Driver>) Class.forName(
+					StringUtils.isNotBlank(options.getStorageOptions().getDriverClass()) 
+							? options.getStorageOptions().getDriverClass() 
+							: getDefaultDriverClassName());
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Class<Dialect> getHibernateDialectClass() {
+		try {
+			return (Class<Dialect>) Class.forName(
+					StringUtils.isNotBlank(options.getStorageOptions().getDialectClass()) 
+							? options.getStorageOptions().getDialectClass() 
+							: getDefaultDialectClassName());
+		} catch (ClassNotFoundException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
@@ -102,8 +128,8 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public DI getHibernateDialect() {
-		return metadataExtractorIntegrator.isInitialized() ? (DI) metadataExtractorIntegrator.getDialect() : instantiate((Class<DI>) getHibernateDialectClass(), () -> getHibernateDialect());
+	public Dialect getHibernateDialect() {
+		return metadataExtractorIntegrator.isInitialized() ? metadataExtractorIntegrator.getDialect() : instantiate((Class<Dialect>) getHibernateDialectClass(), () -> getHibernateDialect());
 	}
 
 	@Override
@@ -422,14 +448,46 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 		}
 	}
 
+	/**
+	 * Get the default class name of a JDBC driver.
+	 * 
+	 * @return
+	 */
+	protected abstract String getDefaultDriverClassName();
+
+	/**
+	 * Get the default class name of a HibernateDialect.
+	 * 
+	 * @return
+	 */
+	protected abstract String getDefaultDialectClassName();
+
+	/**
+	 * Get default Hibernate paging offset parameter name. Default is `offset`, so the parameter will look like `:offset`.  
+	 * 
+	 * @return
+	 */
 	protected String getPagingOffsetParamName() {
 		return "offset";
 	}
 
+	/**
+	 * Get default Hibernate paging limit parameter name. Default is `limit`, so the parameter will look like `:limit`.
+	 * 
+	 * @return
+	 */
 	protected String getPagingLimitParamName() {
 		return "limit";
 	}
 
+	/**
+	 * Instantiate the provided class once.
+	 * 
+	 * @param <T>
+	 * @param cls
+	 * @param instanceSupplier
+	 * @return
+	 */
 	protected <T> T instantiate(Class<T> cls, Supplier<T> instanceSupplier) {
 		T instance;
 		if ((instance = instanceSupplier.get()) == null) {
@@ -448,10 +506,24 @@ public abstract class AbstractDatabaseConnector<DR extends Driver, DI extends Di
 		return instance;
 	}
 
+	/**
+	 * Get physical table name identifier for an arbitrary String. Use with caution!.
+	 * 
+	 * @param tableName
+	 * @return
+	 */
 	protected String getPhysicalTableNameIdentifier(String tableName) {
 		return getPhysicalTableNameIdentifier(tableName, getPhysicalNamingStrategy(), getSessionMetadataIntegrator().getJdbcEnvironment()).render(getHibernateDialect());
 	}
 
+	/**
+	 * Get physical table name identifier for an arbitrary String, using the provided naming strategy and environment. Use with caution!.
+	 * 
+	 * @param tableName
+	 * @param physicalTableNameStrategy
+	 * @param jdbcEnvironment
+	 * @return
+	 */
 	protected Identifier getPhysicalTableNameIdentifier(String tableName, PhysicalNamingStrategy physicalTableNameStrategy, JdbcEnvironment jdbcEnvironment) {
 		return physicalTableNameStrategy.toPhysicalTableName(
 				jdbcEnvironment.getIdentifierHelper().toIdentifier(tableName),

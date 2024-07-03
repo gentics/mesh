@@ -11,20 +11,10 @@ import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 /**
  * HSQLDB Mesh database connector
  */
-public class HSQLDBConnector extends AbstractEnterpriseDatabaseConnector<jdbcDriver, HSQLDialect> {
+public class HSQLDBConnector extends AbstractEnterpriseDatabaseConnector {
 
 	public HSQLDBConnector(EnterpriseMeshOptions options) {
 		super(options);
-	}
-
-	@Override
-	public Class<jdbcDriver> getJdbcDriverClass() {
-		return jdbcDriver.class;
-	}
-
-	@Override
-	public Class<HSQLDialect> getHibernateDialectClass() {
-		return HSQLDialect.class;
 	}
 
 	@Override
@@ -40,5 +30,16 @@ public class HSQLDBConnector extends AbstractEnterpriseDatabaseConnector<jdbcDri
 	@Override
 	public String getDummyComparison(Map<String, Object> params, boolean mustPass) {
 		return StringUtils.EMPTY;
+	}
+
+	@Override
+	protected String getDefaultDriverClassName() {
+		return jdbcDriver.class.getCanonicalName();
+	}
+
+	@Override
+	protected String getDefaultDialectClassName() {
+		// TODO Auto-generated method stub
+		return HSQLDialect.class.getCanonicalName();
 	}
 }

@@ -25,6 +25,7 @@
 			<groupId>com.oracle.ojdbc</groupId>
 			<artifactId>ojdbc10</artifactId>
 			<version>19.3.0.0</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh.enterprise</groupId>

@@ -17,25 +17,14 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import oracle.jdbc.driver.OracleDriver;
 
 /**
  * Oracle database connector for Gentics Mesh
  */
-public class OracleConnector extends AbstractEnterpriseDatabaseConnector<OracleDriver, OracleLongTextDialect> {
+public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 
 	public OracleConnector(EnterpriseMeshOptions options) {
 		super(options);
-	}
-
-	@Override
-	public Class<OracleDriver> getJdbcDriverClass() {
-		return OracleDriver.class;
-	}
-
-	@Override
-	public Class<OracleLongTextDialect> getHibernateDialectClass() {
-		return OracleLongTextDialect.class;
 	}
 
 	@Override
@@ -123,5 +112,15 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector<OracleD
 
 	protected String unblobStringContentColumn(String columnName, boolean makeAlias, boolean customAlias) {
 		return " TO_CHAR(" + columnName + ") " + (makeAlias ? ("AS " + columnName.substring(columnName.indexOf(".") + 1, columnName.length() - 1) + (customAlias ? Integer.toHexString(columnName.hashCode()) : StringUtils.EMPTY) + "\"") : StringUtils.EMPTY);
+	}
+
+	@Override
+	protected String getDefaultDriverClassName() {
+		return "oracle.jdbc.driver.OracleDriver";
+	}
+
+	@Override
+	protected String getDefaultDialectClassName() {
+		return OracleLongTextDialect.class.getCanonicalName();
 	}
 }

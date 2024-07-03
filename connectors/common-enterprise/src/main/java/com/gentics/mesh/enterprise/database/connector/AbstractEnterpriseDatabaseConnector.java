@@ -2,7 +2,6 @@ package com.gentics.mesh.enterprise.database.connector;
 
 import static io.vertx.core.logging.LoggerFactory.getLogger;
 
-import java.sql.Driver;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ import jakarta.persistence.EntityManager;
  * @param <DR>
  * @param <DI>
  */
-public abstract class AbstractEnterpriseDatabaseConnector<DR extends Driver, DI extends Dialect> extends AbstractDatabaseConnector<DR, DI> {
+public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector {
 
 	private static final Logger log = getLogger(AbstractEnterpriseDatabaseConnector.class);
 

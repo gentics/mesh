@@ -25,6 +25,7 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>42.3.3</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics</groupId>

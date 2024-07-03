@@ -7,13 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.hibernate.dialect.MariaDBDialect;
-import org.mariadb.jdbc.Driver;
-
 import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
-import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
+import com.gentics.mesh.enterprise.hibernate.dialect.MariaDBBinaryUuidDialect;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 
@@ -23,22 +20,12 @@ import jakarta.persistence.EntityManager;
 /**
  * MariaDB 10.3+ Database connector.
  */
-public class MariaDBConnector extends AbstractDatabaseConnector<Driver, MariaDBDialect> {
+public class MariaDBConnector extends AbstractDatabaseConnector {
 
 	private static final Logger log = getLogger(MariaDBConnector.class);
 
 	public MariaDBConnector(EnterpriseMeshOptions options) {
 		super(options);
-	}
-
-	@Override
-	public Class<Driver> getJdbcDriverClass() {
-		return Driver.class;
-	}
-
-	@Override
-	public Class<MariaDBDialect> getHibernateDialectClass() {
-		return MariaDBDialect.class;
 	}
 
 	@Override
@@ -95,5 +82,15 @@ public class MariaDBConnector extends AbstractDatabaseConnector<Driver, MariaDBD
 			log.info("{} of {} content edges deleted", updated, size);
 			return (long) updated;
 		});
+	}
+
+	@Override
+	protected String getDefaultDriverClassName() {
+		return "org.mariadb.jdbc.Driver";
+	}
+
+	@Override
+	protected String getDefaultDialectClassName() {
+		return MariaDBBinaryUuidDialect.class.getCanonicalName();
 	}
 }

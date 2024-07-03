@@ -7,25 +7,14 @@ import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 import com.gentics.mesh.enterprise.hibernate.dialect.SqlServerUnicodeDialect;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 
 /**
  * Microsoft SQL Server database connector for Gentics Mesh 3.x.
  */
-public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector<SQLServerDriver, SqlServerUnicodeDialect> {
+public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector {
 
 	public SQLServerConnector(EnterpriseMeshOptions options) {
 		super(options);
-	}
-
-	@Override
-	public Class<SQLServerDriver> getJdbcDriverClass() {
-		return SQLServerDriver.class;
-	}
-
-	@Override
-	public Class<SqlServerUnicodeDialect> getHibernateDialectClass() {
-		return SqlServerUnicodeDialect.class;
 	}
 
 	@Override
@@ -49,5 +38,15 @@ public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector<SQLS
 		String trueParam = HibernateUtil.makeParamName(value);
 		params.put(trueParam, value);
 		return " AND :" + trueParam + " ";
+	}
+
+	@Override
+	protected String getDefaultDriverClassName() {
+		return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+	}
+
+	@Override
+	protected String getDefaultDialectClassName() {
+		return SqlServerUnicodeDialect.class.getCanonicalName();
 	}
 }
