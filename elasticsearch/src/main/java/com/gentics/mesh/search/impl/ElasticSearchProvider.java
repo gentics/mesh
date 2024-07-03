@@ -97,7 +97,39 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public ElasticSearchProvider init() {
-		return this;
+		JsonObject settings = null;
+
+        try {
+            settings = client.clusterSettings().sync();
+        } catch (HttpErrorException e) {
+			log.error("Could not determine current cluster settings: {}", e.getMessage(), e);
+
+			return this;
+        }
+
+		Optional<Boolean> settingsDestructiveRequiresName = Optional.ofNullable(settings)
+				.map(o -> o.getJsonObject("persistent"))
+				.map(o -> o.getJsonObject("action"))
+				.map(o -> o.getBoolean("destructive_requires_name"));
+
+		if (settingsDestructiveRequiresName.isEmpty() || settingsDestructiveRequiresName.get()) {
+			log.info("Updating cluster configuration: destructive_requires_name=false");
+
+			JsonObject update = new JsonObject()
+				.put("persistent", new JsonObject()
+					.put("action", new JsonObject()
+						.put("destructive_requires_name", false)));
+
+            try {
+                settings = client.updateClusterSettings(update).sync();
+
+				log.info("Updated cluster configuration:\n%s", settings.encodePrettily());
+            } catch (HttpErrorException e) {
+				log.error("Could update cluster settings: {}", e.getMessage(), e);
+            }
+        }
+
+        return this;
 	}
 
 	@Override
@@ -122,7 +154,13 @@ public class ElasticSearchProvider implements SearchProvider {
 	public JsonObject getDefaultIndexSettings() {
 
 		JsonObject tokenizer = new JsonObject();
-		tokenizer.put("type", "nGram");
+
+        if (complianceMode == ComplianceMode.ES_8) {
+            tokenizer.put("type", "ngram");
+        } else {
+            tokenizer.put("type", "nGram");
+        }
+
 		tokenizer.put("min_gram", "3");
 		tokenizer.put("max_gram", "3");
 
@@ -703,6 +741,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		case ES_6:
 			return DEFAULT_TYPE;
 		case ES_7:
+		case ES_8:
 			return null;
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");

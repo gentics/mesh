@@ -338,10 +338,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private String typeName() {
-		String name = "default";
-		if (complianceMode() == ComplianceMode.ES_7) {
-			name = "_doc";
-		}
-		return name;
+		// Mapping types have been removed in ES 7 and ES 7+ uses "_doc" as dummy.
+        return complianceMode() == ComplianceMode.ES_6 ? "default" : "_doc";
 	}
 }

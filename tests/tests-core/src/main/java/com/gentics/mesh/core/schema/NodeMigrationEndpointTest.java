@@ -522,10 +522,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		int createIndex = 2;
 		assertThat(trackingSearchProvider()).hasEvents(store, update, delete, dropIndex, createIndex);
 		for (JsonObject mapping : trackingSearchProvider().getCreateIndexEvents().values()) {
-			String basePath = "$.mapping.default";
-			if (complianceMode() == ComplianceMode.ES_7) {
-				basePath = "$.mapping";
-			}
+			String basePath = complianceMode() == ComplianceMode.ES_6 ? "$.mapping.default" : "$.mapping";
+
 			assertThat(mapping).has(basePath + ".properties.fields.properties.teaser.fields.raw.type", "keyword",
 				"The mapping should include a raw field for the teaser field");
 			assertThat(mapping).hasNot(basePath + ".properties.fields.properties.title.fields.raw",
