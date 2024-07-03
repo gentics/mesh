@@ -25,5 +25,11 @@
 			<artifactId>mesh-enterprise-mdm-hibernate-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Licensing -->
+		<dependency>
+			<groupId>com.gentics</groupId>
+			<artifactId>license-checker</artifactId>
+			<version>${license.checker.version}</version>
+		</dependency>
 	</dependencies>
 </project>
