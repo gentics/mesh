@@ -78,8 +78,9 @@ The `search.complianceMode` setting or `MESH_ELASTICSEARCH_COMPLIANCE_MODE` envi
 
 Levels:
 
+* `ES_6` - Support Elasticsearch 6.x (*Default*)
 * `ES_7` - Support Elasticsearch 7.x
-* `PRE_ES_7` - Support Elasticsearch 6.x (*Default*)
+* `ES_8` - Support Elasticsearch 8.x
 
 == Security
 
@@ -112,11 +113,25 @@ The settings can be also configured via environment variables:
 * `MESH_ELASTICSEARCH_CA_PATH` - Override the ca path
 * `MESH_ELASTICSEARCH_HOSTNAME_VERIFICATION` - Override the hostname verification
 
+=== Creating certificates
+
+Creating and configuring certificates for Elasticsearch is covered in the Elasticsearch documentation in the sections "link:https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup.html#generate-certificates[Set up basic security]" and "link:https://www.elastic.co/guide/en/elasticsearch/reference/current/security-basic-setup-https.html#encrypt-http-communication[Encrypt HTTP client communications]".
+
+The following steps are a condensed version of how to create the HTTPS certificate.
+
+. Generate a certificate authority (CA): `bin/elasticsearch-certutil ca`. Choosing the default names, this will create a file called `elastic-stack-ca.p12`.
+. Create the HTTPS certificate: `bin/elasticsearch-certutil http`. Choosing the default names, this will create a file called `http.p12`.
+. Convert the PKCS12 files to PEM: `openssl pkcs12 -in elastic-stack-ca.p12 -out elastic-stack-ca.crt.pem -clcerts -nokeys` and `openssl pkcs12 -in http.p12 -out http.crt.pem -clcerts -nokeys`.
+. Enable HTTPS: Make sure the following entries exist in the `elasticsearch.yml` file:
+.. `xpack.security.http.ssl.enabled: true`
+.. `xpack.security.http.ssl.keystore.path: http.p12`
+. Set certificate paths: In the `mesh.yml` file set `search.certPath` and `search.caPath` to the paths for `http.crt.pem` and `elastic-stack-ca.crt.pem` respectively (or set the environment variables `MESH_ELASTICSEARCH_CERT_PATH` and `MESH_ELASTICSEARCH_CA_PATH` accordingly).
+
 == Basic Authentication
 
 Connections to Elasticsearch can be authenticated using a user. Details on how to configure this in Elasticsearch can be found in the link:https://www.elastic.co/guide/en/elastic-stack-overview/current/built-in-users.html[Elasticsearch documentation].
 
-When `xpack.security.enabled` has been enabled in Elasticsearch you can use the `elasticsearch-setup-passwords`
+When `xpack.security.enabled` has been enabled in Elasticsearch you can use the `elasticsearch-setup-passwords` script to create a password for basic authentication. When passwords have already been created, it can be reset via the `elasticsearch-reset-password` script.
 
 The authentication details can be configured using the `search.username` and `search.password` settings in the `mesh.yml`.
 

@@ -110,7 +110,8 @@ public class ElasticSearchProvider implements SearchProvider {
 		Optional<Boolean> settingsDestructiveRequiresName = Optional.ofNullable(settings)
 				.map(o -> o.getJsonObject("persistent"))
 				.map(o -> o.getJsonObject("action"))
-				.map(o -> o.getBoolean("destructive_requires_name"));
+				.map(o -> o.getString("destructive_requires_name"))
+				.map(Boolean::valueOf);
 
 		if (settingsDestructiveRequiresName.isEmpty() || settingsDestructiveRequiresName.get()) {
 			log.info("Updating cluster configuration: destructive_requires_name=false");
@@ -123,7 +124,9 @@ public class ElasticSearchProvider implements SearchProvider {
             try {
                 settings = client.updateClusterSettings(update).sync();
 
-				log.info("Updated cluster configuration:\n%s", settings.encodePrettily());
+				if (log.isInfoEnabled()) {
+					log.info("Updated cluster configuration:\n{}", settings.encodePrettily());
+				}
             } catch (HttpErrorException e) {
 				log.error("Could update cluster settings: {}", e.getMessage(), e);
             }
