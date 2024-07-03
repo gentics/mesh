@@ -284,6 +284,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 							hitsInfo.put("total", total - 1);
 							break;
 						case ES_7:
+						case ES_8:
 							hitsInfo.put("total", new JsonObject().put("value", total - 1));
 							break;
 						default:
@@ -355,6 +356,7 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 	protected long extractTotalCount(JsonObject info) {
 		switch (complianceMode) {
 		case ES_7:
+		case ES_8:
 			return info.getJsonObject("total").getLong("value");
 		case ES_6:
 			return info.getLong("total");
