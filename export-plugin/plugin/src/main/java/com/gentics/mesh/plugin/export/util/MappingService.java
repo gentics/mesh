@@ -12,8 +12,8 @@ import com.gentics.mesh.plugin.export.model.PluginConfiguration;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 

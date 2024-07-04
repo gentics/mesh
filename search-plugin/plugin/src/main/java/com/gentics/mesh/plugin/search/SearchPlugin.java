@@ -22,8 +22,8 @@ import com.gentics.vertx.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.commons.lang3.tuple.Pair;
@@ -98,9 +98,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 		log.info("Registering global routes for {}", name());
 
 		Router router = Router.router(vertx());
-
 		registerCacheEndpoints(router);
-
 		return router;
 	}
 
@@ -108,8 +106,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 		Collection<CustomHandler> customHandlers = getCustomHandlers();
 
 		if (customHandlers.isEmpty()) {
-			log.info("No custom handlers or queries configured");
-
+			log.debug("No custom handlers or queries configured");
 			return;
 		}
 
@@ -118,8 +115,8 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 		customHandlers.forEach(handler -> {
 			String path = "/" + handler.name();
 
-			if (log.isInfoEnabled()) {
-				log.info("Registering custom route /custom{} with handler {}", path, handler.getClass().getSimpleName());
+			if (log.isDebugEnabled()) {
+				log.debug("Registering custom route /custom{} with handler {}", path, handler.getClass().getSimpleName());
 			}
 
 			customRouter.route(path)
@@ -168,7 +165,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 	}
 
 	private void registerCacheEndpoints(Router globalRouter) {
-		log.info("Registering caching routes");
+		log.trace("Registering caching routes");
 
 		globalRouter.route("/cache/clear")
 			.method(HttpMethod.POST)
@@ -229,9 +226,7 @@ public class SearchPlugin extends AbstractPlugin implements RestPlugin {
 			} else {
 				config.setCaching(enabled);
 				msg = "Caching " + (enabled ? "enabled" : "disabled");
-
 			}
-
 			log.info(msg);
 
 			queryService.clearCache();

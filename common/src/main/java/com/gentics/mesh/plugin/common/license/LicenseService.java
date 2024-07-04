@@ -2,8 +2,8 @@ package com.gentics.mesh.plugin.common.license;
 
 import com.gentics.license.LicenseChecker;
 import com.gentics.mesh.plugin.common.MeshPluginException;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;

@@ -1,36 +1,34 @@
 package com.gentics.mesh.plugin.forms.export;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVFormat.Predefined;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.plugin.forms.config.ExportOptions;
 import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
-
 import com.google.common.base.Strings;
-import io.reactivex.Completable;
+
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVFormat.Predefined;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.io.output.StringBuilderWriter;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 
 /**
@@ -113,8 +111,7 @@ public class CsvExporter extends Exporter {
 		try {
 			exportFile = File.createTempFile("form-export", "." + format().fileExtension, storageDir);
 		} catch (IOException e) {
-			log.error("Could not create temporary file for export: {}", e, e.getMessage());
-
+			log.error("Could not create temporary file for export");
 			return Single.error(e);
 		}
 
@@ -125,10 +122,8 @@ public class CsvExporter extends Exporter {
 
 			log.debug("Writing export to temporary file: {}", exportFile.getAbsolutePath());
 		} catch (IOException e) {
-			log.error("Could not write to temporary export file: {}", e, e.getMessage());
-
+			log.error("Could not write to temporary export file", e);
 			exportFile.delete();
-
 			return Single.error(e);
 		}
 
@@ -147,7 +142,7 @@ public class CsvExporter extends Exporter {
 			csv.printRecords(records);
 			csv.flush();
 		} catch (IOException e) {
-			log.error("Could not create CSV printer: {}", e, e.getMessage());
+			log.error("Could not create CSV printer", e);
 			return Single.error(e);
 		}
 
@@ -239,7 +234,7 @@ public class CsvExporter extends Exporter {
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern(timestampFormat);
 					timestampValue = formatter.format(date); 
 				} catch (Throwable e) {
-					log.warn("Could not parse date", e);
+					log.error("Could not parse date", e);
 				}
 			}
 
@@ -269,7 +264,6 @@ public class CsvExporter extends Exporter {
 	}
 
 	private String normalizeValue(String value) {
-		return Strings.nullToEmpty(value)
-			.replaceAll("\r?\n", " ");
+		return Strings.nullToEmpty(value).replaceAll("\r?\n", " ");
 	}
 }

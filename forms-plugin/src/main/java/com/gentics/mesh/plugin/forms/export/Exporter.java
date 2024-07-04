@@ -1,5 +1,21 @@
 package com.gentics.mesh.plugin.forms.export;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.graphql.GraphQLError;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -14,26 +30,10 @@ import com.gentics.mesh.plugin.forms.util.ReflectionUtils;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-import com.jayway.jsonpath.JsonPath;
 
 import io.reactivex.Single;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.io.IOUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Abstract base class for exporting submitted form generator data.
@@ -141,14 +141,12 @@ public abstract class Exporter {
 			log.error("Could not load node {}", uuid);
 
 			List<GraphQLError> errors = response.getErrors();
-
 			if (!errors.isEmpty()) {
 				log.error("GraphQL errors:");
 				for (GraphQLError error : response.getErrors()) {
-					log.error("  {}: {}", error.getElementId(), error.getMessage());
+					log.error(" \t{}: {}", error.getElementId(), error.getMessage());
 				}
 			}
-
 			return null;
 		}
 
@@ -159,7 +157,6 @@ public abstract class Exporter {
 
 		if (schema == null || schema.isEmpty()) {
 			log.error("Schema {} not found", schemaName);
-
 			return null;
 		}
 
@@ -229,7 +226,7 @@ public abstract class Exporter {
 
 			query = new Handlebars().compileInline(rawQuery).apply(Context.newContext(renderCtx));
 		} catch (IOException e) {
-			log.error("Could not create export GraphQL query: ", e.getMessage());
+			log.error("Could not create export GraphQL query");
 			return Single.error(e);
 		}
 
@@ -291,7 +288,6 @@ public abstract class Exporter {
 
 		default:
 			log.error("Export format {} is not implemented", format.name());
-
 			return null;
 		}
 	}

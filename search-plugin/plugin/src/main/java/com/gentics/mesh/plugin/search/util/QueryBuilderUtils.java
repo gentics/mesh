@@ -1,8 +1,8 @@
 package com.gentics.mesh.plugin.search.util;
 
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jsoup.Jsoup;
 

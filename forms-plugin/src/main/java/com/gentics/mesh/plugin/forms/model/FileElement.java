@@ -126,7 +126,7 @@ public class FileElement extends FormElement {
 			try {
 				allowedContentType = fileHasAllowedContentType(fileUpload, allowedTypes);
 			} catch (IOException e) {
-				log.error("Could not check file type of uploaded file {} ({}): {}", e, fileUpload.fileName(), fileUpload.contentType(), e.getMessage());
+				log.error("Could not check file type of uploaded file " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")", e);
 
 				return new ValidationError()
 					.setName(getName())

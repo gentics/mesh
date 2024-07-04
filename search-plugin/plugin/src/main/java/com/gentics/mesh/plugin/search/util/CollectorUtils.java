@@ -1,6 +1,6 @@
 package com.gentics.mesh.plugin.search.util;
 
-import io.vertx.core.logging.Logger;
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -67,7 +67,6 @@ public class CollectorUtils {
 		return (m1, m2) -> {
 			m1.forEach((key, val) -> m2.merge(key, val, (u, v) -> {
 				log.warn(String.format(fmt, key, u, v));
-
 				return u;
 			}));
 		};

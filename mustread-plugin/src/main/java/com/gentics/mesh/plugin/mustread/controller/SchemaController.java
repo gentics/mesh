@@ -8,8 +8,8 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.plugin.mustread.helper.LogHelper;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 

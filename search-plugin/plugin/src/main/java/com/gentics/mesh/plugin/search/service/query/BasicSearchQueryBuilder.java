@@ -8,8 +8,8 @@ import com.gentics.mesh.plugin.search.util.QueryBuilderUtils;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -57,9 +57,6 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 	@Override
 	public SearchQueryBuilder init(SearchConfiguration config) {
 		this.config = config;
-
-		log.info("BasicSearchQueryBuilder initialized");
-
 		return this;
 	}
 
@@ -172,15 +169,12 @@ public class BasicSearchQueryBuilder implements SearchQueryBuilder {
 	protected void setParam(JsonObject query, JsonObject params, String paramName, String value) {
 		if (params == null) {
 			log.warn("No parameters provided, search query is hardcoded");
-
 			return;
 		}
 
 		JsonArray paths = params.getJsonArray(paramName, new JsonArray());
-
 		if (paths == null || paths.isEmpty()) {
 			log.debug("No paths for parameter \"{}\" provided", paramName);
-
 			return;
 		}
 

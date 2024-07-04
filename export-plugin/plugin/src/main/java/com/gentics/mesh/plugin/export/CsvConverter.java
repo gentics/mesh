@@ -4,8 +4,8 @@ import com.gentics.mesh.plugin.export.model.*;
 import com.gentics.mesh.plugin.export.util.Utils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.NumberFormat;

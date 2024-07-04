@@ -55,8 +55,6 @@ import com.icegreen.greenmail.util.ServerSetupTest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import okhttp3.Cookie;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -77,11 +75,6 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	protected final static String PROJECT_NAME = "testproject";
 	protected final static String PROJECT_HOSTNAME = "testhost";
 	protected final static String PROJECT_PATH_PREFIX = "/testprefix";
-
-	static {
-		// Use slf4j instead of JUL
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
 
 	@ClassRule
 	public static final MeshLocalServer server = new OrientDBMeshLocalServer()

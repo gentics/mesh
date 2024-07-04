@@ -7,8 +7,8 @@ import com.gentics.mesh.plugin.search.service.query.TemplateSearchQueryBuilder;
 import com.gentics.mesh.plugin.search.transformer.BasicHitTransformer;
 import dagger.Module;
 import dagger.Provides;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.pf4j.ExtensionPoint;
 import org.pf4j.PluginManager;
 

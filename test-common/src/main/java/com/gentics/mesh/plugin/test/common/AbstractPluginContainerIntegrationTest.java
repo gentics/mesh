@@ -19,11 +19,6 @@ import com.gentics.mesh.plugin.test.common.util.ConfigSetupAction;
 import com.gentics.mesh.plugin.test.common.util.MeshVersionUtil;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.docker.MeshContainer;
-import com.gentics.mesh.test.docker.MeshDockerServer;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
 /**
  * Abstract class for tests which are run against a mesh container. The tests deploys the final plugin jar in the container and runs the testcases.
@@ -38,9 +33,6 @@ public abstract class AbstractPluginContainerIntegrationTest {
 	}
 
 	static {
-		// Use slf4j instead of JUL
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-
 		/*
 		The comment plugin requires this port to be exposed to the container.
 		Other plugin tests should not be affected by this.

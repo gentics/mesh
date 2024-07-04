@@ -8,8 +8,8 @@ import com.gentics.mesh.plugin.common.service.MeshPluginService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Schema Initializer for creating the forms schemas and preparing the root nodes in projects, where the plugin is activated

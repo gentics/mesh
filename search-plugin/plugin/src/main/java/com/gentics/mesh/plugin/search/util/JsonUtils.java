@@ -7,10 +7,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -173,27 +174,20 @@ public class JsonUtils {
 				obj = resolveField(obj, pathElements[ii]);
 				error = obj == null;
 			} catch (Exception e) {
-				log.error("Could not get element: {}", e.getMessage());
+				log.error("Could not get element " + pathElements[ii] + " of path " + Arrays.toString(pathElements), e);
 			}
-
 			if (error) {
-				log.debug(
-					"Value for field \"{}\" ({}) is not a JsonObject",
-					pathElements[ii],
-					ii);
-
+				log.debug("Value for field \"{}\" ({}) is not a JsonObject", pathElements[ii], ii);
 				return defaultValue;
 			}
 		}
 
 		try {
 			Object val = resolveField(obj, pathElements[lastIdx]);
-
 			return val == null ? defaultValue : (T) val;
 		} catch (ClassCastException e) {
 			log.error("Unexpected field type", e);
 		}
-
 		return defaultValue;
 	}
 
@@ -212,31 +206,23 @@ public class JsonUtils {
 	public static Object setValue(JsonObject obj, String path, Object value) {
 		if (obj == null) {
 			log.debug("No JSON object provided");
-
 			return null;
 		}
-
 		if (path == null || path.isEmpty()) {
 			log.warn("No path provided");
-
 			return null;
 		}
-
 		String[] pathElements = path.split("/");
 		String fieldName = pathElements[pathElements.length - 1];
 
 		pathElements = (String[]) ArrayUtils.subarray(pathElements, 0, pathElements.length - 1);
-
 		JsonObject target = getValue(obj, pathElements, null);
 
 		if (target == null) {
 			return null;
 		}
-
 		Object oldVal = target.getValue(fieldName);
-
 		target.put(fieldName, value);
-
 		return oldVal;
 	}
 
@@ -270,22 +256,18 @@ public class JsonUtils {
 			try {
 				array = array.getJsonArray(Integer.parseInt(indices[ii]));
 			} catch (Exception e) {
-				log.error("Could not resolve element for index {} at position {}: {}", e, indices[ii], ii, e.getMessage());
-
+				log.error("Could not resolve element for index " + indices[ii] + " at position " + ii, e);
 				return null;
 			}
 		}
 
 		T ret;
-
 		try {
 			ret = (T) array.getValue(Integer.parseInt(indices[lastIdx]));
 		} catch (Exception e) {
-			log.error("Could not resolve element for last index {}: {}", e, indices[lastIdx], e.getMessage());
-
+			log.error("Could not resolve element for last index " + indices[lastIdx], e);
 			ret = null;
 		}
-
 		return ret;
 	}
 }

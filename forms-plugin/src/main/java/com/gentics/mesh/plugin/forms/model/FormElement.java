@@ -19,8 +19,8 @@ import com.gentics.mesh.plugin.forms.service.FormDataService;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import org.apache.commons.lang3.StringUtils;
 

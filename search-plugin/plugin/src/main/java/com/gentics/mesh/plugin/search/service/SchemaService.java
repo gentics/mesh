@@ -1,27 +1,7 @@
 package com.gentics.mesh.plugin.search.service;
 
-import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.plugin.search.config.SearchConfiguration;
-import com.gentics.mesh.plugin.search.util.RxUtils;
-import com.gentics.mesh.rest.client.MeshRestClient;
-import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Template;
-import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +12,28 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.plugin.search.config.SearchConfiguration;
+import com.gentics.mesh.plugin.search.util.RxUtils;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Template;
+
+import io.reactivex.Single;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Provides schema names for Mesh projects.
@@ -116,7 +118,7 @@ public class SchemaService extends AbstractCachingService<SchemaService.CacheKey
 			.expireAfterWrite(config.getExpireTime(), TimeUnit.SECONDS)
 			.buildAsync(this::loadForCache);
 
-		log.info("SchemaService initialized");
+		log.trace("SchemaService initialized");
 	}
 
 	/**
@@ -162,13 +164,7 @@ public class SchemaService extends AbstractCachingService<SchemaService.CacheKey
 		try {
 			return Single.just(handlebars.compileInline(key.source));
 		} catch (IOException e) {
-			log.error(
-				"Could not create template for query {}/: {}",
-				e,
-				key.project,
-				key.queryName,
-				e.getMessage());
-
+			log.error("Could not create template for query " + key);
 			return Single.error(e);
 		}
 	}
@@ -196,12 +192,8 @@ public class SchemaService extends AbstractCachingService<SchemaService.CacheKey
 	private Single<String> loadProjectSchemaPrefix(String project) {
 		if (StringUtils.isBlank(project)) {
 			String msg = "Missing project name";
-
-			log.error(msg);
-
 			return Single.error(new Exception(msg));
 		}
-
 		log.debug("Loading schemas for project {}", project);
 
 		return adminClient.findSchemas(project).toSingle().map(schemaPrefixExtractor(project));
@@ -273,8 +265,6 @@ public class SchemaService extends AbstractCachingService<SchemaService.CacheKey
 				"Could not determine schema prefix for project %s: [%s]",
 				project,
 				String.join(", ", prefixes.keySet()));
-
-			log.error(error);
 
 			throw new Exception(error);
 		};

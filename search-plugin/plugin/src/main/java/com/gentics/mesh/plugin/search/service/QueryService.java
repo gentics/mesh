@@ -347,8 +347,7 @@ public class QueryService extends AbstractCachingService<QueryService.CacheKey, 
 				input = getClass().getResourceAsStream("/queries/" + queryFilename);
 
 				if (input == null) {
-					log.error("Could not find {}", queryFilename);
-
+					log.error("Could not find query file {}", queryFilename);
 					return null;
 				}
 
@@ -361,15 +360,14 @@ public class QueryService extends AbstractCachingService<QueryService.CacheKey, 
 		try {
 			return IOUtils.toString(input, StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			log.error("Could not load query {}: {}", e, queryFilename, e.getMessage());
+			log.error("Could not load query " + queryFilename, e);
 		} finally {
 			try {
 				input.close();
 			} catch (IOException e) {
-				log.error("Could not close {} properly: {}", e, path, e.getMessage());
+				log.error("Could not close input properly: " + path, e);
 			}
 		}
-
 		return null;
 	}
 

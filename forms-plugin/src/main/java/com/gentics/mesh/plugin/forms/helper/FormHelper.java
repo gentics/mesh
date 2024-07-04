@@ -4,8 +4,8 @@ import com.gentics.mesh.plugin.forms.model.ValueListElement;
 import com.gentics.mesh.plugin.forms.util.ParameterUtil;
 import com.github.jknack.handlebars.Options;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -237,6 +237,7 @@ public class FormHelper {
 				parser = DateTimeFormatter.ofPattern(fmt.toString());
 			} catch (Exception e) {
 				log.error("Illegal source date/time format: {}, using default", fmt);
+				log.debug("Could not parse date/time format", e);
 			}
 		}
 
@@ -246,7 +247,7 @@ public class FormHelper {
 			parsedDate = parser.parse((CharSequence) dateTime);
 		} catch (DateTimeParseException e) {
 			log.error("Could not parse date/time '{}' with pattern '{}', returning original date/time", dateTime, parser);
-
+			log.debug("Could not parse date/time", e);
 			return dateTime;
 		}
 
@@ -254,6 +255,7 @@ public class FormHelper {
 			return DateTimeFormatter.ofPattern(pattern).format(parsedDate);
 		} catch (Exception e) {
 			log.error("Could not format date/time {} with pattern '{}', returning original date/time", parsedDate, pattern);
+			log.debug("Could not format date/time", e);
 		}
 
 		return dateTime;

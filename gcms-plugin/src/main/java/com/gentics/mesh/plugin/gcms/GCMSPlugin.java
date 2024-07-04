@@ -25,8 +25,8 @@ import com.gentics.mesh.plugin.gcms.config.GCMSPluginConfig;
 import io.reactivex.Completable;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of {@link AuthServicePlugin} for mapping GCMS Users and groups onto Mesh Users, Groups and Roles

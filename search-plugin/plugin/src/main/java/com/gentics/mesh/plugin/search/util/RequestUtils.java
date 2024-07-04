@@ -8,8 +8,8 @@ import com.gentics.mesh.parameter.client.VersioningParametersImpl;
 import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.plugin.PluginContext;
 import com.gentics.mesh.rest.client.MeshRequest;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;

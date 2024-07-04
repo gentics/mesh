@@ -16,8 +16,8 @@ import io.reactivex.functions.Consumer;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.List;
@@ -468,11 +468,7 @@ public class HandlerUtil {
 	 * 		status code
 	 */
 	private static void handleError(RoutingContext rc, Throwable error, boolean verbose) {
-		if (log.isTraceEnabled()) {
-			log.error("Error in plugin handler: {}", error, error.getMessage());
-		} else {
-			log.error("Error in plugin handler: {}", error.getMessage());
-		}
+		log.error("Error in plugin handler", error);
 
 		int status;
 		String message;

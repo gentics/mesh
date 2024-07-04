@@ -226,12 +226,10 @@ public class EyepinElement extends FormElement {
 						log.error("OkHttp POST to eyepin failed with code " + responseCode + ": " + response.message());
 					}
 				} catch (IOException e) {
-					log.error("OkHttp POST to eyepin failed.");
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.error("OkHttp POST to eyepin failed.", e);
 				}
 			} else {
-				log.error("Eyepin element has no customer id set. Address not inserted.");
+				log.warn("Eyepin element has no customer id set. Address not inserted.");
 			}
 		}
 	}
@@ -291,15 +289,8 @@ public class EyepinElement extends FormElement {
 				log.error("Eyepin response - code: " + responseBodyCode);
 				log.error("Eyepin response - description: " + responseBodyDescription);
 			}
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Throwable e) {
+			log.error("Eyepin response processing error", e);
 		}
 	}
 }

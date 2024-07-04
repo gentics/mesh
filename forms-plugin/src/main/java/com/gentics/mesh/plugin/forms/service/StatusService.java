@@ -1,5 +1,26 @@
 package com.gentics.mesh.plugin.forms.service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -24,32 +45,14 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Service for handling activation status of the plugin for projects
@@ -108,10 +111,8 @@ public class StatusService {
 				.doOnNext(project -> {
 					if (purgeInterval <= 0) {
 						log.warn("Download purge interval is less than 1, download purge disabled");
-
 						return;
 					}
-
 					Handler<Long> purgeHandler = purgeDownloadsHandler(project.getName());
 
 					// Start the first purge in a minute to make sure the purge is started at least once after startup  ...
@@ -352,8 +353,7 @@ public class StatusService {
 		try {
 			graphQlQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormDownloadsToPurge.graphql"), StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			log.error("Could not load GraphQL query for download purge: {}", e, e.getMessage());
-
+			log.error("Could not load GraphQL query for download purge", e);
 			return;
 		}
 
@@ -375,7 +375,7 @@ public class StatusService {
 				return purgeElements(projectName, elements.get())
 					.andThen(purgeNextPage(projectName, nodes.get().getBoolean("hasNextPage")));
 			})
-			.doOnError(cause -> log.error("Error while purging old downloads: {}", cause.getMessage()))
+			.doOnError(cause -> log.error("Error while purging old downloads", cause))
 			.subscribe();
 	}
 

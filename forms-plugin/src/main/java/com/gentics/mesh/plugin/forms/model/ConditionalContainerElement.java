@@ -48,8 +48,7 @@ public class ConditionalContainerElement extends FormElement {
 	@JsonIgnore
 	public boolean skipElements(MultiMap postedData) {
 		if (StringUtils.isBlank(elementToCheck)) {
-			log.warn("Configuration problem for {} {}: elementToCheck not specified. Element will act as a normal container without special logic.");
-
+			log.warn("Configuration problem for {}: elementToCheck not specified. Element will act as a normal container without special logic.", getName());
 			return false;
 		}
 
@@ -68,7 +67,6 @@ public class ConditionalContainerElement extends FormElement {
 	public boolean skipElements(NodeResponse formData) {
 		if (StringUtils.isBlank(elementToCheck)) {
 			log.warn("Configuration problem for {}: elementToCheck not specified. Element will act as a normal container without special logic.", getName());
-
 			return false;
 		}
 

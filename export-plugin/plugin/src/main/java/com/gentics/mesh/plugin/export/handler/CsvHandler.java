@@ -22,8 +22,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -84,7 +84,7 @@ public class CsvHandler implements Handler<PluginContext> {
 					// Ignore, it's an "error" that the request has been canceled.
 					return;
 				}
-				log.error(err);
+				log.error("CSV handler error", err);
 				rc.response().write(Utils.mapThrowableToJsonObject(err).encodePrettily());
 				rc.response().setStatusCode(500);
 				rc.response().end();

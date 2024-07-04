@@ -1,5 +1,18 @@
 package com.gentics.mesh.plugin.forms.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -15,27 +28,17 @@ import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.UsermailElement;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.web.RoutingContext;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Singleton
 public class MailService {
@@ -160,7 +163,7 @@ public class MailService {
 			boolean attachFiles) {
 		String from = configuration.getFromAddress();
 		if (StringUtils.isBlank(from)) {
-			log.error("Sending mail will probably fail, because no \"fromAddress\" is configured in config.yml.");
+			log.warn("Sending mail will probably fail, because no \"fromAddress\" is configured in config.yml.");
 		}
 
 		rc.put("baseUrl", FormDataService.getDownloadBaseUrl(form, projectName));
@@ -176,7 +179,7 @@ public class MailService {
 					MailClient client = MailClient.createShared(vertx, convertConfig(configuration.getMailOptions()), "client");
 					client.sendMail(m, sendRes -> {
 						if (sendRes.succeeded()) {
-							log.info(sendRes.result());
+							log.debug("Main sent: " + sendRes.result().toString());
 						} else {
 							log.error("Error while sending mail", sendRes.cause());
 						}

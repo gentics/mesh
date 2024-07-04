@@ -26,8 +26,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.EventBus;
@@ -192,7 +192,7 @@ public class MeshPluginService {
 
 				registeredConsumers.clear();
 			})
-			.doOnError(e -> log.error("Error while unregistering events: {}", e.getMessage()));
+			.doOnError(e -> log.error("Error while unregistering events", e));
 	}
 
 	/**
@@ -281,7 +281,7 @@ public class MeshPluginService {
 			.flatMapObservable(r -> Observable.fromIterable(r.getData()))
 			.filter(s -> s.getName().equals(folderSchemaName))
 			.singleOrError()
-			.doOnError(e -> log.error("Could not find folder schema \"{}\"", folderSchemaName))
+			.doOnError(e -> log.error("Could not find folder schema \"" + folderSchemaName + "\"", e))
 			.zipWith(prefixPath(project, path), Pair::of)
 			.flatMap(pair -> ensureFoldersRec(project, pair.getLeft(), pair.getRight(), publish));
 	}
@@ -368,7 +368,7 @@ public class MeshPluginService {
 				}
 			})
 			.concatMapCompletable(action -> action.apply(project), 1)
-			.doOnError(e -> log.error("Project initialization failed: {}", e.getMessage()));
+			.doOnError(e -> log.error("Project initialization failed", e));
 	}
 
 	/**
@@ -517,18 +517,8 @@ public class MeshPluginService {
 		request.setName(prefix + schemaName);
 
 		return adminClient.createSchema(request).toSingle()
-			.doOnError(e -> {
-				if (log.isTraceEnabled()) {
-					log.error("Could not create schema \"{}\": {}", e, schemaName, e.getMessage());
-				} else {
-					log.error("Could not create schema \"{}\": {}", schemaName, e.getMessage());
-				}
-			})
-			.doOnSuccess(r -> {
-				if (log.isInfoEnabled()) {
-					log.info("Created schema \"{}\" with UUID {}", r.getName(), r.getUuid());
-				}
-			})
+			.doOnError(e -> log.error("FATAL: Could not create schema \"{}\": {}", schemaName, e.getMessage()))
+			.doOnSuccess(r -> log.info("Created schema \"{}\" with UUID {}", r.getName(), r.getUuid()))
 			.map(schema -> new SchemaCreateOrUpdateResponse(schema, false));
 	}
 
@@ -563,13 +553,12 @@ public class MeshPluginService {
 			fields.put(folderSchema.getDisplayField(), new StringFieldImpl().setString(folderName));
 		}
 
-		if (log.isInfoEnabled()) {
-			log.info("Creating {} \"{}\" in parent {}", folderSchema.getName(), folderName, parentUuid);
+		if (log.isTraceEnabled()) {
+			log.trace("Creating {} \"{}\" in parent {}", folderSchema.getName(), folderName, parentUuid);
 		}
-
 		return adminClient.createNode(projectName, createRequest).toSingle()
-			.doOnError(e -> log.error("Could not create folder {}: {}", folderName, e.getMessage()))
-			.doOnSuccess(folder -> log.info("Created folder {}", folder.getUuid()));
+			.doOnError(e -> log.error("Could not create folder " + folderName, e))
+			.doOnSuccess(folder -> log.info("Created folder {} [{}]", folderName, folder.getUuid()));
 	}
 
 	/**

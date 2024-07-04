@@ -205,7 +205,6 @@ public class SearchHandler extends AbstractQueryHandler {
 
 		if (source != null && !source.contains(ES_BRANCH_UUID_FIELD)) {
 			log.trace("Injecting \"branchUuid\" into \"_source\"");
-
 			source.add(ES_BRANCH_UUID_FIELD);
 		}
 	}
@@ -219,8 +218,8 @@ public class SearchHandler extends AbstractQueryHandler {
 	 * @return A Single with a JSON object containing aggregated tags and the raw search hits
 	 */
 	private Single<JsonObject> transformResult(JsonObject input) {
-		if (log.isTraceEnabled()) {
-			log.trace("Query response:\n{}", input.encodePrettily());
+		if (log.isDebugEnabled()) {
+			log.debug("Query response:\n{}", input.encodePrettily());
 		}
 
 		List<String> activeTags = QueryBuilderUtils.getTags(context.request());
@@ -228,8 +227,7 @@ public class SearchHandler extends AbstractQueryHandler {
 		JsonArray responses = input.getJsonArray("responses");
 
 		if (responses == null || responses.isEmpty()) {
-			log.error("No responses from Elasticsearch query, enable TRACE for more details");
-
+			log.warn("No responses from Elasticsearch query. Enable DEBUG for more details");
 			return Single.just(output);
 		}
 
@@ -237,8 +235,7 @@ public class SearchHandler extends AbstractQueryHandler {
 		JsonObject hits = result.getJsonObject(ES_HITS_FIELD);
 
 		if (hits == null) {
-			log.error("No hits in Elasticsearch response, enable TRACE for more details");
-
+			log.warn("No hits in Elasticsearch response. Enable DEBUG for more details");
 			return Single.just(output);
 		}
 
@@ -433,10 +430,8 @@ public class SearchHandler extends AbstractQueryHandler {
 
 		if (StringUtils.isNotBlank(branchUuid)) {
 			log.trace("Found branch UUID in search hit");
-
 			return branchUuid;
 		}
-
 		log.trace("Extracting branch UUID from index name");
 
 		/*
@@ -504,14 +499,8 @@ public class SearchHandler extends AbstractQueryHandler {
 		// Load additional info that is not in the index via GraphQL (e.g. breadcrumb, path, ...).
 		return queryService.getSearchResultQuery(projectName, resultQuery)
 			.doOnSuccess(query -> {
-				if (log.isDebugEnabled()) {
-					log.debug("Loading search results for [{}] ({})", String.join(", ", uuids), lang);
-				}
-
-				if (log.isTraceEnabled()) {
-					log.trace("Using GrapqhQL query:\n{}", query);
-				}
-
+				log.debug("Loading search results for [{}] ({})", String.join(", ", uuids), lang);
+				log.trace("Using GrapqhQL query:\n{}", query);
 			})
 			.map(query -> new GraphQLRequest().setQuery(query).setVariables(variables))
 			.flatMapObservable(request -> context.client().graphql(projectName, request, version).toObservable())
@@ -547,7 +536,6 @@ public class SearchHandler extends AbstractQueryHandler {
 
 		if (data == null) {
 			log.warn("Empty response for UUIDs [{}] in branch {} ({})", String.join(", ", hits.keySet()), branch.getUuid(), projectName);
-
 			return Observable.empty();
 		}
 
@@ -583,8 +571,7 @@ public class SearchHandler extends AbstractQueryHandler {
 
 					ret.add(item);
 				} else {
-					log.warn("No Elasticsearch hit found for key \"{}\"", key);
-					log.debug("This may be caused by a missing language filter in the Elasticsearch query");
+					log.warn("No Elasticsearch hit found for key \"{}\". This may be caused by a missing language filter in the Elasticsearch query", key);
 				}
 			});
 
@@ -732,7 +719,6 @@ public class SearchHandler extends AbstractQueryHandler {
 			if (log.isTraceEnabled()) {
 				log.trace("No suggestions in response:\n{}", response.encodePrettily());
 			}
-
 			return accumulator;
 		}
 
@@ -777,9 +763,7 @@ public class SearchHandler extends AbstractQueryHandler {
 			return match && betterScore ? element : result;
 		};
 
-		if (log.isTraceEnabled()) {
-			log.trace("Processing did you mean suggestions:\n{}", input.encodePrettily());
-		}
+		log.trace("Processing did you mean suggestions:\n{}", input.encodePrettily());
 
 		JsonObject bestOption = input.getJsonArray("options", new JsonArray()).stream()
 			.map(e -> (JsonObject) e)

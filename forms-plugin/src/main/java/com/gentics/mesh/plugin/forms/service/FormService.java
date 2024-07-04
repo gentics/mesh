@@ -78,8 +78,8 @@ import io.reactivex.Single;
 import io.reactivex.functions.BiConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
@@ -245,12 +245,7 @@ public class FormService {
 		try {
 			return toForm(formData.encode(), formData.getString("uuid"), null).validateForm();
 		} catch (IOException e) {
-			log.error("Could not deserialize form: {}", e, e.getMessage());
-
-			if (log.isTraceEnabled()) {
-				log.trace("Received formData:\n{}", formData.encodePrettily());
-
-			}
+			log.error("Could not deserialize form of data:\n\t" + formData, e);
 		}
 
 		ValidationError error = new ValidationError()
@@ -508,7 +503,7 @@ public class FormService {
 					int cmsId = Integer.parseInt(cmsIdObject.toString());
 					request.getFields().put("cms_id", new NumberFieldImpl().setNumber(cmsId));
 				} catch (NumberFormatException e) {
-					log.error(String.format("Error while saving form: %s is not a valid cmsId", cmsIdObject));
+					log.error(String.format("Error while saving form: %s is not a valid cmsId", cmsIdObject), e);
 				}
 			}
 
@@ -524,7 +519,7 @@ public class FormService {
 										return updateSchema(projectName, formNode, optSchema.get())
 												.map(response -> formNode);
 									} else {
-										log.info("Did not find schema {}.", SchemaService.getSchemaName(uuid));
+										log.info("Did not find schema {}, creating one.", SchemaService.getSchemaName(uuid));
 										// create schema
 										return createAndAssignSchema(projectName, formNode).map(schemaResponse -> formNode);
 									}
@@ -753,8 +748,7 @@ public class FormService {
 		try {
 			form = toForm(formData, uuid, ParameterUtil.getFirstLanguage(rc, "en"));
 		} catch (IOException e) {
-			log.error("Could not create form instance from form data: {}", e.getMessage());
-
+			log.error("Could not create form instance from form data");
 			return Single.error(e);
 		}
 		return renderForm(uuid, form, pathPrefix, rc);

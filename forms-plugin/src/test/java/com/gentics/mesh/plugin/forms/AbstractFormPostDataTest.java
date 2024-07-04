@@ -1,25 +1,25 @@
 package com.gentics.mesh.plugin.forms;
 
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
-import com.gentics.mesh.core.rest.node.NodeListResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Consumer;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.forms.config.ReCaptchaOptions;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.mockwebserver.MockWebServer;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Base class for tests posting form data.

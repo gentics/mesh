@@ -26,8 +26,8 @@ import com.gentics.vertx.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for autocomplete queries.
@@ -100,15 +100,14 @@ public class AutocompleteHandler extends AbstractQueryHandler {
 		JsonArray emptyArray = new JsonArray();
 		List<String> partials = Arrays.asList(query.trim().split("\\s+"));
 
-		if (log.isTraceEnabled()) {
-			log.trace("Query response:\n{}", result.encodePrettily());
+		if (log.isDebugEnabled()) {
+			log.debug("Query response:\n{}", result.encodePrettily());
 		}
 
 		JsonArray responses = result.getJsonArray("responses");
 
 		if (responses == null || responses.isEmpty()) {
-			log.error("No responses from Elasticsearch query, enable TRACE for more details");
-
+			log.warn("No responses from Elasticsearch query. Enable DEBUG for more details");
 			return emptyArray;
 		}
 
@@ -117,8 +116,7 @@ public class AutocompleteHandler extends AbstractQueryHandler {
 			.getJsonArray("hits");
 
 		if (hits == null) {
-			log.error("No hits in Elasticsearch response, enable TRACE for more details");
-
+			log.warn("No hits in Elasticsearch response. Enable DEBUG for more details");
 			return emptyArray;
 		}
 
@@ -184,7 +182,7 @@ public class AutocompleteHandler extends AbstractQueryHandler {
 				String token = it.next();
 
 				if (token.toLowerCase().startsWith(term.toLowerCase())) {
-					log.trace("  Pruning \"{}\"", token);
+					log.debug("  Pruning \"{}\"", token);
 					it.remove();
 				}
 			}

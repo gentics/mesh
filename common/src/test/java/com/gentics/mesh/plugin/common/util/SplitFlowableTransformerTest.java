@@ -1,14 +1,6 @@
 package com.gentics.mesh.plugin.common.util;
 
-import com.gentics.mesh.error.InvalidArgumentException;
-import io.reactivex.Flowable;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -17,14 +9,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import com.gentics.mesh.error.InvalidArgumentException;
+
+import io.reactivex.Flowable;
 
 @RunWith(Parameterized.class)
 public class SplitFlowableTransformerTest {
-	static {
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-		LoggerFactory.getLogger(SplitFlowableTransformerTest.class);
-	}
 
 	@Parameters(name = "{index} input: {0}, chunkSize: {1}, expected result: {2}")
 	public static Collection<Object[]> data() {

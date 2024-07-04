@@ -1,5 +1,22 @@
 package com.gentics.mesh.plugin.keycloak;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.IOUtils;
+import org.pf4j.PluginWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.auth.util.KeycloakUtils;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -14,6 +31,7 @@ import com.gentics.mesh.plugin.common.license.LicensedPlugin;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import io.reactivex.Completable;
@@ -21,19 +39,8 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.file.FileSystem;
-import org.apache.commons.io.IOUtils;
-import org.pf4j.PluginWrapper;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfig> implements AuthServicePlugin {
@@ -110,12 +117,10 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	}
 
 	private void printToken(JsonObject token) {
-		if (log.isTraceEnabled()) {
-			log.trace(
+		log.trace(
 				"Token for user {}:\n{}",
 				token.getString("preferred_username"),
 				token.encodePrettily());
-		}
 	}
 
 	/**
@@ -152,11 +157,9 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 
 			publicKeys = keys;
 		} catch (Exception e) {
-			log.error("Error while loading public keys: {}", e.getMessage());
-
+			log.error("Error while loading public keys");
 			return Completable.error(e);
 		}
-
 		return Completable.complete();
 	}
 
@@ -172,11 +175,7 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 	}
 
 	private Single<String> loadDefaultMapperScript(Throwable error) {
-		log.error("Could not load mapper script: {}", error.getMessage());
-
-		if (log.isTraceEnabled()) {
-			log.trace(error);
-		}
+		log.error("Could not load mapper script", error);
 
 		log.debug("Using default mapper script");
 
@@ -187,11 +186,9 @@ public class KeycloakPlugin extends AbstractCommercialPlugin<KeycloakPluginConfi
 				getClass().getResourceAsStream(DEFAULT_SCRIPT_RESOURCE),
 					StandardCharsets.UTF_8);
 		} catch (IOException e) {
-			log.error("Could not load default mapper script: {}", e.getMessage());
-
+			log.error("Could not load default mapper script");
 			return Single.error(e);
 		}
-
 		return Single.just(script);
 	}
 

@@ -11,8 +11,8 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -64,9 +64,6 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 		this.cache = Caffeine.newBuilder()
 			.expireAfterWrite(config.getExpireTime(), TimeUnit.SECONDS)
 			.build();
-
-		log.info("TemplateSearchQueryBuilder initialized");
-
 		return this;
 	}
 
@@ -247,12 +244,10 @@ public class TemplateSearchQueryBuilder implements CachingSearchQueryBuilder {
 			}
 
 			log.info("Creating template for {}", cacheKey);
-
 			try {
 				return handlebars.compileInline(source);
 			} catch (IOException e) {
-				log.error("Could not parse query template \"{}\": {}\n{}", e, cacheKey, e.getMessage(), source);
-
+				log.error("Could not parse query template \"" + cacheKey + "\":\n\t" + source);
 				return new RuntimeException(e);
 			}
 		};

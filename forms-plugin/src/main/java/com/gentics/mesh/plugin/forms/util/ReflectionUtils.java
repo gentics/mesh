@@ -5,8 +5,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReflectionUtils {
 
@@ -14,23 +14,18 @@ public class ReflectionUtils {
 
 	private static Class<?> getTargetClass(String className, Class<?> expectedBase) {
 		if (className == null || className.isEmpty()) {
-			log.error("No class name specified");
-
+			log.warn("No class name specified");
 			return null;
 		}
-
 		if (expectedBase == null) {
 			log.warn("No expected base class specified");
-
 			return null;
 		}
-
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
-			log.error("Invalid class name: {}", e, className);
+			log.warn("No class '{}' found", className);
 		}
-
 		return null;
 	}
 
@@ -62,13 +57,11 @@ public class ReflectionUtils {
 
 		if (targetClass == null) {
 			log.error("Invalid {} specified", desc);
-
 			return null;
 		}
 
 		if (!expectedBase.isAssignableFrom(targetClass)) {
 			log.error("Specified {} is not an implementation of {}", desc, expectedBase.getSimpleName());
-
 			return null;
 		}
 
@@ -77,9 +70,9 @@ public class ReflectionUtils {
 		try {
 			ctor = ((Class<E>) targetClass).getConstructor();
 		} catch (NoSuchMethodException e) {
-			log.error("The {} class {} does not have a default constructor", e, desc, className);
+			log.error("The " + desc + " class " + className + " does not have a default constructor", e);
 		} catch (SecurityException e) {
-			log.error("Could not instantiate {} class", e, desc);
+			log.error("Could not instantiate class " + desc, e);
 		}
 
 		if (ctor == null) {
@@ -88,10 +81,9 @@ public class ReflectionUtils {
 			try {
 				return ctor.newInstance();
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				log.error("Could not instantiate {} class", e, desc);
+				log.error("Could not instantiate class " + desc, e);
 			}
 		}
-
 		return null;
 	}
 
@@ -111,10 +103,9 @@ public class ReflectionUtils {
 	 */
 	public static <E extends Enum<E>> E getEnumValue(Class<E> enumType, String name, E defaultValue) {
 		if (name == null || name.isEmpty()) {
-			if (log.isTraceEnabled()) {
-				log.trace("No enum value name supplied, using default: {}", defaultValue.name());
+			if (log.isDebugEnabled()) {
+				log.debug("No enum value name supplied, using default: {}", defaultValue.name());
 			}
-
 			return defaultValue;
 		}
 
@@ -128,19 +119,18 @@ public class ReflectionUtils {
 			values = invokeResult;
 		} catch (ClassCastException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
 			| InvocationTargetException e) {
-			log.error("Could not get enum values of {}", e, enumType.getName());
+			log.error("Could not get enum values of " + enumType.getName(), e);
 
-			if (log.isTraceEnabled()) {
-				log.trace("Using default: {}", defaultValue.name());
+			if (log.isDebugEnabled()) {
+				log.debug("Using default: {}", defaultValue.name());
 			}
-
 			return defaultValue;
 		}
 
 		for (E value : values) {
 			if (name.toLowerCase().equals(value.name().toLowerCase())) {
-				if (log.isTraceEnabled()) {
-					log.trace(
+				if (log.isDebugEnabled()) {
+					log.debug(
 						"Matching value found in {} for \"{}\": {}",
 						enumType.getName(),
 						name,
@@ -150,9 +140,8 @@ public class ReflectionUtils {
 				return value;
 			}
 		}
-
-		if (log.isTraceEnabled()) {
-			log.trace(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Invalid value \"{}\" for enum {}, using default: {}",
 				name,
 				enumType.getName(),

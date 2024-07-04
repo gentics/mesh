@@ -9,8 +9,8 @@ import io.reactivex.Single;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -55,12 +55,8 @@ public abstract class AbstractQueryHandler {
 	public Completable handle() {
 		if (querySupplier == null || resultMapper == null) {
 			String msg = getClass().getSimpleName() + " has not been initialized";
-
-			log.error(msg);
-
 			return Completable.error(new Exception(msg));
 		}
-
 		return internalHandle();
 	}
 
@@ -109,9 +105,7 @@ public abstract class AbstractQueryHandler {
 	 * @param query The query to log
 	 */
 	protected void traceQuery(JsonObject query) {
-		if (log.isTraceEnabled()) {
-			log.trace("Using Elasticsearch query:\n{}", query.encodePrettily());
-		}
+		log.trace("Using Elasticsearch query:\n{}", query.encodePrettily());
 	}
 
 	/**
@@ -133,9 +127,9 @@ public abstract class AbstractQueryHandler {
 				response = ((JsonArray) result).encode();
 			} else {
 				log.warn("Result is not a JSON object, sending empty response");
+				log.debug("Result: {}", result);
 				response = "{}";
 			}
-
 			pc.response()
 				.putHeader(HttpHeaders.CONTENT_TYPE, HttpConstants.APPLICATION_JSON_UTF8)
 				.end(response);

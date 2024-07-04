@@ -1,9 +1,10 @@
 package com.gentics.mesh.plugin.common.util;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Utility methods for handling JWTs.
@@ -41,7 +42,6 @@ public class AuthUtil {
 
 				if (parts.length != 3) {
 					log.error("Given token is not a JWT: {}", token);
-
 					return new JsonObject();
 				}
 
@@ -54,8 +54,7 @@ public class AuthUtil {
 					.put("payload", decodeTokenPart(parts[1]))
 					.put("signature", parts[2]);
 			} catch (Exception e) {
-				log.error("Could not decode token: {}\n{}", e.getMessage(), token);
-				log.trace(e);
+				log.error("Could not decode token: " + e.getLocalizedMessage() + "\n" + token, e);
 			}
 		} else {
 			log.warn("No token specified");

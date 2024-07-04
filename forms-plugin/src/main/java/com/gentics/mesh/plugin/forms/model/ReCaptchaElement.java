@@ -190,14 +190,12 @@ public class ReCaptchaElement extends FormElement {
 								}
 							}
 
-							if (success || !logError) {
-								if (log.isDebugEnabled()) {
-									log.debug("Recaptcha validation {}. Response:\n{}", success ? "succeeded" : "failed", json.encodePrettily());
-								}
-							} else {
+							if (log.isDebugEnabled()) {
+								log.debug("Recaptcha validation {}. Response:\n{}", success ? "succeeded" : "failed", json.encodePrettily());
+							}
+							if (!success && logError) {
 								log.error("Recaptcha validation failed. Response:\n{}", json.encodePrettily());
 							}
-
 							return success;
 						} else {
 							throw new ClientProtocolException("Verification request did not return entity");

@@ -18,8 +18,8 @@ import com.gentics.mesh.rest.client.MeshWebrootResponse;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.commons.lang.StringUtils;
 
 import java.time.ZonedDateTime;
