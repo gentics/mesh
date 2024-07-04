@@ -77,8 +77,8 @@ import com.gentics.mesh.util.UniquenessUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see NodeGraphFieldContainer

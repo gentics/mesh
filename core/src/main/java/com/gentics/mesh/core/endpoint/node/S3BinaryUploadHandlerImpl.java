@@ -46,8 +46,8 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for s3binary upload requests. This class is responsible only for the creation of the necessary Mesh fields. The real upload is done between the client and the AWS.

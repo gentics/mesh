@@ -42,8 +42,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import dagger.Lazy;
 import io.reactivex.Maybe;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
@@ -218,8 +218,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 				};
 				promise.complete(consumer);
 			} catch (Exception e) {
-				log.warn("Tika processing of upload failed", e);
-				promise.fail(e);
+				promise.fail(new IllegalStateException("Tika processing of uploaded file " + upload.uploadedFileName() + " failed", e));
 			}
 		}, true);
 	}

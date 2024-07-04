@@ -116,8 +116,8 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.URIUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
@@ -416,7 +416,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			if (forVersion(versioiningParameters.getVersion()) == PUBLISHED && !contentDao.getFieldContainers(node, branch, PUBLISHED).iterator().hasNext()) {
 				log.error("Could not find field container for languages {" + requestedLanguageTags + "} and branch {" + branch.getUuid()
 					+ "} and version params version {" + versioiningParameters.getVersion() + "}, branch {" + branch.getUuid() + "}");
-				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_version", node.getUuid(), branch.getUuid());
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_branch_language", 
+						node.getUuid(), 
+						requestedLanguageTags.stream().collect(Collectors.joining(",")), 
+						branch.getUuid());
 			}
 
 			// If a specific version was requested, that does not exist, we also
@@ -1958,8 +1961,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				// Check whether the parent node has a published field container
 				// for the given branch and language
 				if (!hasPublishedContent(parentNode, branchUuid)) {
-					log.error("Could not find published field container for node {" + parentNode.getUuid() + "} in branch {" + branchUuid + "}");
-					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid());
+					throw error(BAD_REQUEST, "node_error_parent_containers_not_published", parentNode.getUuid(), branch.getName());
 				}
 			}
 		}
@@ -1968,9 +1970,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (!isPublished) {
 			for (HibNode child : getChildren(node, branchUuid)) {
 				if (hasPublishedContent(child, branchUuid)) {
-					log.error("Found published field container for node {" + node.getUuid() + "} in branch {" + branchUuid + "}. Node is child of {"
-						+ node.getUuid() + "}");
-					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid());
+					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid(), branch.getName());
 				}
 			}
 		}

@@ -8,27 +8,37 @@ import java.util.Map;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.mockito.Mockito;
-
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.spi.logging.LogDelegate;
-import io.vertx.core.spi.logging.LogDelegateFactory;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.IMarkerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.BasicMDCAdapter;
+import org.slf4j.helpers.BasicMarkerFactory;
+import org.slf4j.spi.MDCAdapter;
+import org.slf4j.spi.SLF4JServiceProvider;
 
 /**
  * Test rule, that will register itself as logger delegate factory for vert.x logging.
  * Every LogDelegate will be a mock, and they will all be stored in a static map, so that tests can get the mocks and can verify specific log messages
  */
-public class MockingLoggerRule extends TestWatcher implements LogDelegateFactory {
+public class MockingLoggerRule extends TestWatcher implements SLF4JServiceProvider, ILoggerFactory {
+
+    // to avoid constant folding by the compiler, this field must *not* be final
+    public static String REQUESTED_API_VERSION = "2.0.99"; // !final
 	/**
 	 * Static map of all mocks, which were created
 	 */
-	protected static Map<String, LogDelegate> mocks = new HashMap<>();
+	protected static Map<String, Logger> mocks = new HashMap<>();
+
+	private final MDCAdapter mdcAdapter = new BasicMDCAdapter();
+	private final IMarkerFactory markerFactory = new BasicMarkerFactory();
 
 	/**
-	 * When a test is starting, register as logger delegate factory
+	 * When a test is starting, register as logger provider.
 	 */
 	@Override
 	protected void starting(Description description) {
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, MockingLoggerRule.class.getName());
+		System.setProperty(LoggerFactory.PROVIDER_PROPERTY_KEY, MockingLoggerRule.class.getName());
 	}
 
 	/**
@@ -39,22 +49,33 @@ public class MockingLoggerRule extends TestWatcher implements LogDelegateFactory
 		mocks.values().forEach(mock -> Mockito.reset(mock));
 	}
 
-	/**
-	 * Get the LogDelegate (mock) for the given logger
-	 * @param name logger name
-	 * @return LogDelegate mock
-	 */
-	public LogDelegate get(String name) {
-		return mocks.computeIfAbsent(name, key -> mock(LogDelegate.class));
+	@Override
+	public ILoggerFactory getLoggerFactory() {
+		return this;
 	}
 
 	@Override
-	public boolean isAvailable() {
-		return true;
+	public IMarkerFactory getMarkerFactory() {
+		return markerFactory;
 	}
 
 	@Override
-	public LogDelegate createDelegate(String name) {
-		return get(name);
+	public MDCAdapter getMDCAdapter() {
+		return mdcAdapter;
+	}
+
+	@Override
+	public String getRequestedApiVersion() {
+		return REQUESTED_API_VERSION;
+	}
+
+	@Override
+	public void initialize() {
+		
+	}
+
+	@Override
+	public Logger getLogger(String name) {
+		return mocks.computeIfAbsent(name, key -> mock(Logger.class));
 	}
 }

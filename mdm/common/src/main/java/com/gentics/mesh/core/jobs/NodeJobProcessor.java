@@ -19,8 +19,8 @@ import com.gentics.mesh.core.migration.NodeMigration;
 import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import io.reactivex.Completable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for starting a node migration from a job

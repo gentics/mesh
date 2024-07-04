@@ -27,8 +27,8 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.google.common.base.Objects;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An extension to {@link ImageVariantDao} with access to the persisting level.

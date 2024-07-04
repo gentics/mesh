@@ -23,8 +23,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.storage.LocalBinaryStorageImpl;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Changelog entry which re-runs the tika extraction.
@@ -62,7 +62,6 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 
 	@Override
 	public void apply() {
-		log.info("Applying change: " + getName());
 		Tx tx = Tx.get();
 		AtomicLong total = new AtomicLong(0);
 		BinaryDao binaryDao = tx.binaryDao();
@@ -70,7 +69,6 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);
 			if (uploadFile.exists()) {
-
 				Result<? extends HibBinaryField> fields = binaryDao.findFields(binary);
 				Map<String, TikaResult> results = new HashMap<>();
 
@@ -107,11 +105,10 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 				});
 			} else {
 				tx.commit();
-				log.info("File for binary {" + binary.getUuid() + "} could not be found {" + filename + "}");
+				log.warn("File for binary {" + binary.getUuid() + "} could not be found {" + filename + "}");
 			}
 		});
 		log.info("Done updating {" + total + "} binary fields.");
-
 	}
 
 	@Override

@@ -38,8 +38,8 @@ public class RemoveReleaseIndices extends AbstractChange {
 			"uniqueReleaseNameIndex"
 		).forEach(indexName -> {
 			try {
-				log.info("Removing index {}...", indexName);
 				index.removeIndex(indexName);
+				log.trace("Index {} removed.", indexName);
 			} catch (Throwable err) {
 				if (err.getCause() != null && err.getCause() instanceof NullPointerException) {
 					log.info("Index {} could not be found. It will be skipped.", indexName);

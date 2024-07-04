@@ -26,8 +26,8 @@ import com.gentics.mesh.etc.config.CacheConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.path.Path;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Central LRU webroot path cache which is used to quickly lookup cached paths.
@@ -75,9 +75,7 @@ public class WebrootPathCacheImpl extends AbstractMeshCache<String, Path> implem
 	@Override
 	public Path getPath(HibProject project, HibBranch branch, ContainerType type, String path) {
 		if (isDisabled()) {
-			if (log.isTraceEnabled()) {
-				log.trace("Path cache is disabled. Not using cache");
-			}
+			log.trace("Path cache is disabled. Not using cache");
 			return null;
 		}
 		String key = createCacheKey(project, branch, type, path);

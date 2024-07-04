@@ -17,8 +17,8 @@ import com.gentics.mesh.parameter.impl.SearchParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.route.AbstractProjectEndpoint;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
 
 public class GraphQLEndpoint extends AbstractProjectEndpoint {

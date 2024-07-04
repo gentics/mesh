@@ -20,8 +20,8 @@ import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.impl.TagFamilyImpl;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see TagFamilyRoot

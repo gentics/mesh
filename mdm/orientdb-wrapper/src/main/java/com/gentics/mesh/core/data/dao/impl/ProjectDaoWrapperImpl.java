@@ -22,8 +22,8 @@ import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DAO for project operations.

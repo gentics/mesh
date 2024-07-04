@@ -42,8 +42,8 @@ import com.google.common.collect.Sets;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see NodeContainerMappingProvider
@@ -321,8 +321,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 				}
 				break;
 			default:
-				log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
-				throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
+				throw new RuntimeException("Unknown mapping type for the field type {" + type + "}.");
 			}
 		}
 	}

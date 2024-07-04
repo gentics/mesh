@@ -11,8 +11,8 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import io.reactivex.Flowable;
 import io.reactivex.functions.Function;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility for RxJava related search code.
@@ -76,7 +76,7 @@ public final class RxUtil {
 				}
 			})
 			.doOnNext(i -> log.info("Retry #{} after {}ms", i, delay.toMillis()))
-			.doOnError(err -> log.error("Retry limit of {} reached.", retryLimit))
+			.doOnError(err -> log.error("Retry limit of " + retryLimit + " reached.", err))
 			.delay(delay.toMillis(), TimeUnit.MILLISECONDS);
 	}
 }

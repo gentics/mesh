@@ -11,8 +11,8 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.reactivex.Completable;
 import io.reactivex.schedulers.Schedulers;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for the shutdown endpoint.
@@ -41,8 +41,7 @@ public class ShutdownHandler {
 		})
 			.subscribeOn(Schedulers.newThread()).timeout(1, TimeUnit.MINUTES)
 			.subscribe(() -> log.info("Shutdown successful"), err -> {
-				log.error("Shutdown failed", err);
-				log.error("Forcing process exit");
+				log.error("Shutdown failed. Halting the process.", err);
 				Runtime.getRuntime().halt(1);
 			});
 	}

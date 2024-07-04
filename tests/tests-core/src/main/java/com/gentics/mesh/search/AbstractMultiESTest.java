@@ -24,16 +24,9 @@ import com.gentics.mesh.test.context.TestHttpMethods;
 import com.gentics.mesh.test.context.event.EventAsserter;
 import com.gentics.mesh.test.util.MeshAssert;
 
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import okhttp3.OkHttpClient;
 
 public abstract class AbstractMultiESTest implements TestHttpMethods, TestGraphHelper, PluginHelper {
-
-	static {
-		// Use slf4j instead of JUL
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
-	}
 
 	private OkHttpClient httpClient;
 

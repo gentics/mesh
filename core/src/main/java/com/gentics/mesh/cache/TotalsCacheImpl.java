@@ -61,8 +61,8 @@ import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class TotalsCacheImpl extends AbstractMeshCache<String, Long> implements TotalsCache {

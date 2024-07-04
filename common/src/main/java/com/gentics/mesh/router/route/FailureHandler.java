@@ -8,6 +8,9 @@ import java.nio.file.NoSuchFileException;
 import java.util.MissingResourceException;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -23,8 +26,6 @@ import com.gentics.mesh.monitor.liveness.LivenessManager;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -113,8 +114,8 @@ public class FailureHandler implements Handler<RoutingContext> {
 			return;
 		} else {
 			Throwable failure = rc.failure();
+			Throwable topLevelFailure = failure;
 
-			// TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
 				if (failure instanceof AbstractRestException || failure instanceof JsonMappingException) {
@@ -134,7 +135,6 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 
 			int code = getResponseStatusCode(failure, rc.statusCode());
-			String failureMsg = failure != null ? failure.getMessage() : "-";
 			switch (code) {
 			case 400:
 			case 401:
@@ -158,7 +158,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 						logStackTrace = ((AbstractRestException) failure).isLogStackTrace();
 					}
 					if (logStackTrace) {
-						log.error("Error:", failure);
+						log.error("Error", topLevelFailure);
 					} else {
 						log.error("Error: {}", failure.toString());
 					}
@@ -191,7 +191,6 @@ public class FailureHandler implements Handler<RoutingContext> {
 				rc.response().end(JsonUtil.toJson(new GenericMessageResponse(msg), ac.isMinify(httpServerConfig)));
 			}
 		}
-
 	}
 
 	private boolean isSilentError(RoutingContext rc) {

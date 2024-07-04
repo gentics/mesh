@@ -46,8 +46,8 @@ import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.result.Result;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see MeshRoot

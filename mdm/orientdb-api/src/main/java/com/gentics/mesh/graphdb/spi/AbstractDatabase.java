@@ -14,8 +14,8 @@ import com.gentics.mesh.metric.MetricsService;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract class for graph database implementations.

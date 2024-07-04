@@ -56,8 +56,8 @@ import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
 import com.gentics.mesh.test.util.TestUtils;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Category(ClusterTests.class)
 public class BasicClusterTest extends AbstractClusterTest {

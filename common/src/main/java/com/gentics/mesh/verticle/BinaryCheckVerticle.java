@@ -14,8 +14,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClientConfig;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -147,10 +147,8 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 
 				if (branchName == null) {
 					log.warn("No branch found for binary {} (fieldKey: {}, lang: {})", binary.getUuid(), binaryField.getFieldKey(), lang);
-
 					return;
 				}
-
 				String binaryBaseUrl = String.format("%s/%s/nodes/%s/binary/%s", meshBaseUrl, project, nodeUuid, binaryField.getFieldKey());
 				String parameters = String.format("?secret=%s&lang=%s&branch=%s&version=%s", binary.getCheckSecret(), lang, branchName, version);
 
@@ -183,9 +181,7 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 			.post(RequestBody.create(MediaType.parse("application/json"), checkRequest.toJson(true)))
 			.build();
 
-		if (log.isTraceEnabled()) {
-			log.trace("Performing binary check: POST {}\n{}", ctx.checkServiceUrl, new JsonObject(checkRequest.toJson(false)).encodePrettily());
-		}
+		log.trace("Performing binary check: POST {}\n{}", ctx.checkServiceUrl, new JsonObject(checkRequest.toJson(false)).encodePrettily());
 
 		try (Response response = client.newCall(request).execute()) {
 			if (!response.isSuccessful()) {

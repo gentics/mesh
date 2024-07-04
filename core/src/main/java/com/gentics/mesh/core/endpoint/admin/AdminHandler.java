@@ -38,8 +38,8 @@ import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler for admin request methods.
@@ -126,7 +126,6 @@ public abstract class AdminHandler extends AbstractHandler {
 				ConsistencyCheckResponse result = consistencyCheckHandler.checkConsistency(false, false).runInExistingTx(tx);
 				if (result.getResult() == INCONSISTENT) {
 					long count = result.getInconsistencies().size();
-					log.error("Backup aborted due to found inconsistencies: " + count);
 					throw error(INTERNAL_SERVER_ERROR, "backup_consistency_check_failed", String.valueOf(count));
 				}
 			}

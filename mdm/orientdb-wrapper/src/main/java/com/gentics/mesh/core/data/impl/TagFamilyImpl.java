@@ -48,8 +48,8 @@ import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @see TagFamily

@@ -45,8 +45,8 @@ import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.ValidationUtil;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**

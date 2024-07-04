@@ -37,8 +37,8 @@ import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Verticle which will execute the elasticsearch sync.
@@ -180,7 +180,7 @@ public class SyncEventHandler implements EventHandler {
 			try {
 				pattern = Pattern.compile(indexPattern);
 			} catch (PatternSyntaxException e) {
-				log.warn("Index pattern {} is not valid, synchronizing all indices", e, indexPattern);
+				log.warn("Index pattern " + indexPattern + " is not valid, synchronizing all indices", e);
 			}
 		}
 		Optional<Pattern> optPattern = Optional.ofNullable(pattern);

@@ -47,8 +47,8 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {

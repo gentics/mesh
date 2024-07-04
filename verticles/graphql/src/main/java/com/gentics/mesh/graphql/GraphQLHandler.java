@@ -40,8 +40,8 @@ import graphql.language.SourceLocation;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
 
 /**
@@ -160,7 +160,7 @@ public class GraphQLHandler {
 					}
 				});
 			} catch (Exception e) {
-			gc.fail(e);
+				gc.fail(e);
 			} finally {
 				long duration = sample.stop(graphQlTimer);
 				Long slowThreshold = options.getGraphQLOptions().getSlowThreshold();

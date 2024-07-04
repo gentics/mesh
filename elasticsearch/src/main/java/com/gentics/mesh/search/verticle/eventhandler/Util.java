@@ -20,8 +20,8 @@ import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
 import io.reactivex.Flowable;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Various static utility functions
@@ -144,6 +144,7 @@ public final class Util {
 	public static void logElasticSearchError(Throwable error, Runnable otherwise) {
 		if (error instanceof ConnectException) {
 			log.error("Could not connect to Elasticsearch. Maybe it is still starting?");
+			log.debug("ES connection error", error);
 		} else {
 			otherwise.run();
 		}

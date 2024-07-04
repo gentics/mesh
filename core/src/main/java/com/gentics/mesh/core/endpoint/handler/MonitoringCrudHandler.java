@@ -17,8 +17,8 @@ import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.monitor.liveness.LivenessManager;
 import com.gentics.mesh.plugin.manager.MeshPluginManager;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -134,6 +134,7 @@ public class MonitoringCrudHandler {
 						log.warn("Local node cannot write - read only mode set");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else if (db.isReadOnly(false)) {
+						log.warn("Local node cannot write - read only database");
 						rc.fail(error(SERVICE_UNAVAILABLE, "error_internal").setLogStackTrace(false));
 					} else if (clusterManager.isClusterTopologyLocked()) {
 						log.warn("Local node cannot write - cluster topology locked");

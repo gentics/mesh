@@ -15,8 +15,8 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.shared.SharedKeys;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
@@ -74,7 +74,6 @@ public class ProjectsRouterImpl implements ProjectsRouter {
 					return tx.projectDao().findByName(name);
 				});
 				if (project == null) {
-					log.warn("Project for name {" + name + "} could not be found.");
 					ctx.fail(error(NOT_FOUND, "project_not_found", name));
 					return;
 				}
