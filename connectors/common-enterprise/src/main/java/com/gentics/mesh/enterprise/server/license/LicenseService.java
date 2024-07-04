@@ -1,12 +1,14 @@
 package com.gentics.mesh.enterprise.server.license;
 
-import com.gentics.license.LicenseChecker;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.gentics.license.LicenseChecker;
+import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 
 /**
  * Service to perform license checks. I.e. check which services are licensed and allowed to use.
@@ -46,10 +48,9 @@ public class LicenseService {
 
 			LicenseChecker.doLicenseCheck(true, null, null);
 		} catch (Exception exception) {
-			logger.error("License check failed. ", exception);
+			logger.error("License check failed.", exception);
 			return false;
 		}
-
 		return true;
 	}
 
@@ -62,13 +63,11 @@ public class LicenseService {
 		if (!init()) {
 			return false;
 		}
-		boolean isLicensed = LicenseChecker.getLicenseCheckResult()
-				.containsFeature(LicensedFeature.MSQL);
+		boolean isLicensed = LicenseChecker.getLicenseCheckResult().containsFeature(LicensedFeature.MSQL);
 
 		if (!isLicensed) {
-			logger.error("Feature {} database connector is not licensed", LicensedFeature.MSQL.getProductName());
+			logger.warn("Feature {} database connector is not licensed", LicensedFeature.MSQL.getProductName());
 		}
-
 		return isLicensed;
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import static io.vertx.core.logging.LoggerFactory.getLogger;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 import com.gentics.mesh.enterprise.server.license.LicenseService;
 
-import io.vertx.core.logging.Logger;
+import org.slf4j.Logger;
 import jakarta.persistence.EntityManager;
 
 /**

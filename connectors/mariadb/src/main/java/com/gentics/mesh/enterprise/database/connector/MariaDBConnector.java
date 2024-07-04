@@ -1,6 +1,6 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import static io.vertx.core.logging.LoggerFactory.getLogger;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +14,7 @@ import com.gentics.mesh.enterprise.hibernate.dialect.MariaDBBinaryUuidDialect;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.SplittingUtils;
 
-import io.vertx.core.logging.Logger;
+import org.slf4j.Logger;
 import jakarta.persistence.EntityManager;
 
 /**

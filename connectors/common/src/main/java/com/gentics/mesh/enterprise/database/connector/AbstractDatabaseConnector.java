@@ -1,6 +1,6 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import static io.vertx.core.logging.LoggerFactory.getLogger;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -50,7 +50,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.query.MetadataExtractorIntegrator;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.core.logging.Logger;
+import org.slf4j.Logger;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 
@@ -497,7 +497,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 						return cls.getConstructor().newInstance();
 					} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 							| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-						log.fatal("Could not instantiate JDBC driver of class " + getJdbcDriverClass().getName());
+						log.error("FATAL: Could not instantiate JDBC driver of class " + getJdbcDriverClass().getName());
 						throw new IllegalArgumentException(e);
 					}
 				}
