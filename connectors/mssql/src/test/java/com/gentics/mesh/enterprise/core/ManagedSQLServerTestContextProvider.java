@@ -1,5 +1,7 @@
 package com.gentics.mesh.enterprise.core;
 
+import com.gentics.mesh.core.ManagedBy;
+import com.gentics.mesh.core.ManagedDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.database.connector.SQLServerConnector;
 
 /**

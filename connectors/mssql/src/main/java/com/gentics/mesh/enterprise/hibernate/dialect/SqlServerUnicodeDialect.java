@@ -21,7 +21,7 @@ import org.hibernate.type.descriptor.jdbc.spi.JdbcTypeRegistry;
 import org.hibernate.type.descriptor.sql.internal.DdlTypeImpl;
 import org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry;
 
-import com.gentics.mesh.enterprise.hibernate.TableAwareColumnAliasExtractor;
+import com.gentics.mesh.hibernate.TableAwareColumnAliasExtractor;
 
 /**
  * An extension to the latest SQL Server dialect, making use of Unicode-aware

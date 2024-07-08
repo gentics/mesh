@@ -3,8 +3,8 @@ package com.gentics.mesh.enterprise.database.connector;
 import java.util.Map;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 import com.gentics.mesh.enterprise.hibernate.dialect.SqlServerUnicodeDialect;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.parameter.PagingParameters;
 
@@ -13,7 +13,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  */
 public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector {
 
-	public SQLServerConnector(EnterpriseMeshOptions options) {
+	public SQLServerConnector(HibernateMeshOptions options) {
 		super(options);
 	}
 

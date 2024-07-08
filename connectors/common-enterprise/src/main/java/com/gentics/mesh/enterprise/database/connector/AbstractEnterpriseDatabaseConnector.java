@@ -1,18 +1,14 @@
 package com.gentics.mesh.enterprise.database.connector;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 import java.util.Collection;
 import java.util.UUID;
 
-import org.hibernate.dialect.Dialect;
-
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.database.connector.AbstractDatabaseConnector;
 import com.gentics.mesh.enterprise.server.license.LicenseService;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
-import org.slf4j.Logger;
 import jakarta.persistence.EntityManager;
 
 /**
@@ -23,9 +19,7 @@ import jakarta.persistence.EntityManager;
  */
 public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDatabaseConnector {
 
-	private static final Logger log = getLogger(AbstractEnterpriseDatabaseConnector.class);
-
-	protected AbstractEnterpriseDatabaseConnector(EnterpriseMeshOptions options) {
+	protected AbstractEnterpriseDatabaseConnector(HibernateMeshOptions options) {
 		super(options);
 		LicenseService licenseService = new LicenseService(options);
 		if (!licenseService.isLicenseSufficient()) {
@@ -34,7 +28,7 @@ public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDataba
 	}
 
 	@Override
-	public long deleteContentEdgesByProject(EntityManager em, HibProject project) {
+	public long deleteContentEdgesByProject(EntityManager em, Project project) {
 		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_PROJECT + ")")
 				.setParameter("project", project)
 				.executeUpdate();
@@ -48,7 +42,7 @@ public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDataba
 	}
 
 	@Override
-	public long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids) {
+	public long deleteContentEdgesByBranchUuids(EntityManager em, Branch branch, Collection<UUID> uuids) {
 		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_NODE_UUIDS_BRANCH + ")")
 				.setParameter("nodesUuid", uuids)
 				.setParameter("branch", branch)

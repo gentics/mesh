@@ -2,8 +2,8 @@ package com.gentics.mesh.enterprise.database.connector;
 
 import java.util.Map;
 
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
 import com.gentics.mesh.enterprise.hibernate.dialect.PostgresDuplicationAwareDialect;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
 /**
@@ -11,7 +11,7 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
  */
 public class PostgreSQLConnector extends AbstractEnterpriseDatabaseConnector {
 
-	public PostgreSQLConnector(EnterpriseMeshOptions options) {
+	public PostgreSQLConnector(HibernateMeshOptions options) {
 		super(options);
 	}
 

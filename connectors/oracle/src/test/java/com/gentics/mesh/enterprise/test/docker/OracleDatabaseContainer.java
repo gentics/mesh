@@ -9,6 +9,7 @@ import java.time.Duration;
 
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import com.gentics.mesh.test.docker.PreparingDatabaseContainer;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 
 /**

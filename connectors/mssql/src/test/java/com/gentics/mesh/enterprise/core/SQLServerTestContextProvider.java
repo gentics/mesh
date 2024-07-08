@@ -1,10 +1,11 @@
 package com.gentics.mesh.enterprise.core;
 
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
-import com.gentics.mesh.enterprise.test.docker.DatabaseContainer;
+import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.test.docker.SQLServerDatabaseContainer;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
+import com.gentics.mesh.test.docker.DatabaseContainer;
 
 public class SQLServerTestContextProvider extends PreparingDatabaseTestContextProvider<SQLServerDatabaseContainer> implements MeshTestContextProvider {
 
@@ -17,7 +18,7 @@ public class SQLServerTestContextProvider extends PreparingDatabaseTestContextPr
 	}
 
 	@Override
-	public void fillMeshOptions(EnterpriseMeshOptions options) {
+	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
 		options.getStorageOptions().setConnectionUrl("jdbc:sqlserver://localhost:" + getDatabaseContainer().getMappedPort() + ";databaseName=");
 		options.getStorageOptions().setDatabaseName(current);

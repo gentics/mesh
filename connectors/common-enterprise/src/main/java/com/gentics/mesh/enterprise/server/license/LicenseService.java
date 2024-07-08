@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.license.LicenseChecker;
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 /**
  * Service to perform license checks. I.e. check which services are licensed and allowed to use.
@@ -18,9 +18,9 @@ public class LicenseService {
 
 	protected static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
-	private final EnterpriseMeshOptions options;
+	private final HibernateMeshOptions options;
 
-	public LicenseService(EnterpriseMeshOptions options) {
+	public LicenseService(HibernateMeshOptions options) {
 		this.options = options;
 	}
 

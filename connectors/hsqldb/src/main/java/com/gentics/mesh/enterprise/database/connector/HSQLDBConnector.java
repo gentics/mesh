@@ -6,14 +6,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.dialect.HSQLDialect;
 import org.hsqldb.jdbcDriver;
 
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 /**
  * HSQLDB Mesh database connector
  */
 public class HSQLDBConnector extends AbstractEnterpriseDatabaseConnector {
 
-	public HSQLDBConnector(EnterpriseMeshOptions options) {
+	public HSQLDBConnector(HibernateMeshOptions options) {
 		super(options);
 	}
 

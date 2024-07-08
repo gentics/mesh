@@ -5,20 +5,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.persistence.EntityManager;
-
+import com.gentics.mesh.core.HibernateTestContextProvider;
+import com.gentics.mesh.core.HibernateTestUtils;
 import com.gentics.mesh.core.db.Database;
-import com.gentics.mesh.enterprise.core.EnterpriseTestContextProvider;
-import com.gentics.mesh.enterprise.core.EnterpriseTestUtils;
-import com.gentics.mesh.enterprise.database.HibernateTx;
-import com.gentics.mesh.enterprise.test.docker.InMemoryDatabase;
+import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.docker.InMemoryDatabase;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class HSQLMemoryTestContextProvider extends EnterpriseTestContextProvider implements MeshTestContextProvider, HSQLMemoryEnterpriseOptionsProvider {
+import jakarta.persistence.EntityManager;
+
+public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider implements MeshTestContextProvider, HSQLMemoryEnterpriseOptionsProvider {
 	
 	private static InMemoryDatabase server;
 
@@ -36,7 +36,7 @@ public class HSQLMemoryTestContextProvider extends EnterpriseTestContextProvider
 		}
 		server = new InMemoryDatabase();
 		if (settings.inMemoryDB() || settings.startStorageServer()) {
-			int port = EnterpriseTestUtils.pickLocalPort(false);
+			int port = HibernateTestUtils.pickLocalPort(false);
 			meshOptions.getStorageOptions().setConnectionUrl("jdbc:hsqldb:hsql://localhost:" + port + "/");
 			server.start(meshOptions.getStorageOptions().getDatabaseName(), port, Optional.ofNullable(directory), false);
 		} else {

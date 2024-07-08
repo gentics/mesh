@@ -1,10 +1,11 @@
 package com.gentics.mesh.enterprise.core;
 
-import com.gentics.mesh.enterprise.etc.config.EnterpriseMeshOptions;
-import com.gentics.mesh.enterprise.test.docker.DatabaseContainer;
+import com.gentics.mesh.core.PreparingDatabaseTestContextProvider;
 import com.gentics.mesh.enterprise.test.docker.OracleDatabaseContainer;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.test.MeshOptionsProvider;
 import com.gentics.mesh.test.MeshTestContextProvider;
+import com.gentics.mesh.test.docker.DatabaseContainer;
 
 public class OracleTestContextProvider extends PreparingDatabaseTestContextProvider<OracleDatabaseContainer> implements MeshTestContextProvider {
 
@@ -17,7 +18,7 @@ public class OracleTestContextProvider extends PreparingDatabaseTestContextProvi
 	}
 
 	@Override
-	public void fillMeshOptions(EnterpriseMeshOptions options) {
+	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
 		options.getStorageOptions().setConnectionUrl("jdbc:oracle:thin:@localhost:" + getDatabaseContainer().getMappedPort() + "/");
 		options.getStorageOptions().setDatabaseName(DatabaseContainer.DEFAULT_DATABASE);

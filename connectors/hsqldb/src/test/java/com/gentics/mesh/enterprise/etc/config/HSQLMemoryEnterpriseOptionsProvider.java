@@ -1,11 +1,12 @@
 package com.gentics.mesh.enterprise.etc.config;
 
-import com.gentics.mesh.enterprise.core.EnterpriseMeshOptionsProvider;
+import com.gentics.mesh.core.HibernateMeshOptionsProvider;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
-public interface HSQLMemoryEnterpriseOptionsProvider extends EnterpriseMeshOptionsProvider {
+public interface HSQLMemoryEnterpriseOptionsProvider extends HibernateMeshOptionsProvider {
 
 	@Override
-	default void fillMeshOptions(EnterpriseMeshOptions meshOptions) {		
+	default void fillMeshOptions(HibernateMeshOptions meshOptions) {		
 		meshOptions.getStorageOptions().setConnectionUrl("jdbc:hsqldb:mem:tsg");
 		meshOptions.getStorageOptions().setConnectionUsername("sa");
 		meshOptions.getStorageOptions().setConnectionPassword("");
