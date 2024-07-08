@@ -1,4 +1,4 @@
-package com.gentics.mesh.enterprise.etc.config;
+package com.gentics.mesh.enterprise.core;
 
 import com.gentics.mesh.core.HibernateMeshOptionsProvider;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;

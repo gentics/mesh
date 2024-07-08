@@ -1,4 +1,4 @@
-package com.gentics.mesh.enterprise.etc.config;
+package com.gentics.mesh.enterprise.core;
 
 import java.io.File;
 import java.io.IOException;
