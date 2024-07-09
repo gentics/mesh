@@ -147,6 +147,63 @@
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
+			<!-- Plugin for managing docker containers for the mesh-testdb-manager -->
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<showLogs>mssql,testdb-manager</showLogs>
+					<images>
+						<image>
+							<alias>mssql</alias>
+							<name>mcr.microsoft.com/mssql/server:2019-latest</name>
+							<run>
+								<skip>${skip.mssql.tests}</skip>
+								<env>
+									<ACCEPT_EULA>Y</ACCEPT_EULA>
+									<SA_PASSWORD><![CDATA[changeitNow4567&]]></SA_PASSWORD>
+								</env>
+								<wait>
+									<log>.*SQL Server is now ready for client connections.*</log>
+									<time>120000</time>
+								</wait>
+								<ports>
+									<port>mssql.port:1433</port>
+								</ports>
+							</run>
+						</image>
+						<!-- See https://git.gentics.com/psc/mesh/mesh-testdb-manager -->
+						<image>
+							<alias>testdb-manager</alias>
+							<name>docker.apa-it.at/gentics/apps/mesh-testdb-manager:latest</name>
+							<run>
+								<env>
+									<MESH_TESTDB_MANAGER_PORT>8080</MESH_TESTDB_MANAGER_PORT>
+									<MESH_TESTDB_MANAGER_POOL_SIZE>10</MESH_TESTDB_MANAGER_POOL_SIZE>
+									<MESH_TESTDB_MANAGER_THREADS>1</MESH_TESTDB_MANAGER_THREADS>
+									<MESH_TESTDB_MANAGER_NAME_PREFIX>mesh_test_</MESH_TESTDB_MANAGER_NAME_PREFIX>
+									<MESH_TESTDB_MANAGER_NAME_LENGTH>10</MESH_TESTDB_MANAGER_NAME_LENGTH>
+
+									<MESH_TESTDB_MANAGER_MSSQL_SKIPPED>${skip.mssql.tests}</MESH_TESTDB_MANAGER_MSSQL_SKIPPED>
+									<MESH_TESTDB_MANAGER_MSSQL_HOST>+${docker.container.mssql.ip}</MESH_TESTDB_MANAGER_MSSQL_HOST>
+									<MESH_TESTDB_MANAGER_MSSQL_PORT>1433</MESH_TESTDB_MANAGER_MSSQL_PORT>
+									<MESH_TESTDB_MANAGER_MSSQL_HOST_EXTERNAL>localhost</MESH_TESTDB_MANAGER_MSSQL_HOST_EXTERNAL>
+									<MESH_TESTDB_MANAGER_MSSQL_PORT_EXTERNAL>+${mssql.port}</MESH_TESTDB_MANAGER_MSSQL_PORT_EXTERNAL>
+									<MESH_TESTDB_MANAGER_MSSQL_PASSWORD><![CDATA[changeitNow4567&]]></MESH_TESTDB_MANAGER_MSSQL_PASSWORD>
+								</env>
+								<wait>
+									<log>.*WebSocket ready for connections.*</log>
+									<time>60000</time>
+								</wait>
+								<ports>
+									<port>8080:8080</port>
+								</ports>
+							</run>
+						</image>
+					</images>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

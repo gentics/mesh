@@ -148,6 +148,67 @@
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
+            <!-- Plugin for managing docker containers for the mesh-testdb-manager -->
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<showLogs>oracle,testdb-manager</showLogs>
+					<images>                    
+						<image>
+							<alias>oracle</alias>
+							<name>gvenzl/oracle-xe:latest</name>
+							<run>
+								<skip>${skip.oracle.tests}</skip>
+								<env>
+									<ORACLE_DATABASE>mesh</ORACLE_DATABASE>
+									<ORACLE_PASSWORD><![CDATA[changeitNow4567&]]></ORACLE_PASSWORD>
+									<APP_USER>meshdbuser</APP_USER>
+									<APP_USER_PASSWORD><![CDATA[changeitNow4567&]]></APP_USER_PASSWORD>
+								</env>
+								<wait>
+									<log>.*DATABASE IS READY TO USE!*</log>
+									<time>240000</time>
+								</wait>
+								<ports>
+									<port>oracle.port:1521</port>
+								</ports>
+							</run>
+						</image>
+						<!-- See https://git.gentics.com/psc/mesh/mesh-testdb-manager -->
+						<image>
+							<alias>testdb-manager</alias>
+							<name>docker.apa-it.at/gentics/apps/mesh-testdb-manager:latest</name>
+							<run>
+								<env>
+									<MESH_TESTDB_MANAGER_PORT>8080</MESH_TESTDB_MANAGER_PORT>
+									<MESH_TESTDB_MANAGER_POOL_SIZE>10</MESH_TESTDB_MANAGER_POOL_SIZE>
+									<MESH_TESTDB_MANAGER_THREADS>1</MESH_TESTDB_MANAGER_THREADS>
+									<MESH_TESTDB_MANAGER_NAME_PREFIX>mesh_test_</MESH_TESTDB_MANAGER_NAME_PREFIX>
+									<MESH_TESTDB_MANAGER_NAME_LENGTH>10</MESH_TESTDB_MANAGER_NAME_LENGTH>
+
+									<MESH_TESTDB_MANAGER_ORACLE_SKIPPED>${skip.oracle.tests}</MESH_TESTDB_MANAGER_ORACLE_SKIPPED>
+									<MESH_TESTDB_MANAGER_ORACLE_DB>mesh</MESH_TESTDB_MANAGER_ORACLE_DB>
+									<MESH_TESTDB_MANAGER_ORACLE_HOST>+${docker.container.oracle.ip}</MESH_TESTDB_MANAGER_ORACLE_HOST>
+									<MESH_TESTDB_MANAGER_ORACLE_PORT>1521</MESH_TESTDB_MANAGER_ORACLE_PORT>
+									<MESH_TESTDB_MANAGER_ORACLE_HOST_EXTERNAL>localhost</MESH_TESTDB_MANAGER_ORACLE_HOST_EXTERNAL>
+									<MESH_TESTDB_MANAGER_ORACLE_PORT_EXTERNAL>+${oracle.port}</MESH_TESTDB_MANAGER_ORACLE_PORT_EXTERNAL>
+									<MESH_TESTDB_MANAGER_ORACLE_USERNAME>meshdbuser</MESH_TESTDB_MANAGER_ORACLE_USERNAME>
+									<MESH_TESTDB_MANAGER_ORACLE_PASSWORD><![CDATA[changeitNow4567&]]></MESH_TESTDB_MANAGER_ORACLE_PASSWORD>
+								</env>
+								<wait>
+									<log>.*WebSocket ready for connections.*</log>
+									<time>60000</time>
+								</wait>
+								<ports>
+									<port>8080:8080</port>
+								</ports>
+							</run>
+						</image>
+					</images>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
