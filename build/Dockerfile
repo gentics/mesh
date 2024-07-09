@@ -29,7 +29,7 @@ RUN echo "deb http://ftp.at.debian.org/debian ${DEBIAN_RELEASE} main contrib non
   && rm -Rf /var/lib/apt/lists/*
 
 # Maven
-RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz" && \
+RUN cd /opt && wget -nv -O maven.tar.gz "https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz" && \
     tar -xzf maven.tar.gz && mv apache-maven* maven && rm maven.tar.gz && \
     ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
 
