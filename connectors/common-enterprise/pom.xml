@@ -25,6 +25,11 @@
 			<artifactId>mesh-mdm-hibernate-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-database-tests-common</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Licensing -->
 		<dependency>
 			<groupId>com.gentics</groupId>
@@ -50,5 +55,40 @@
 				</includes>
 			</resource>
 		</resources>
+		<plugins>
+			<plugin>
+				<groupId>com.gentics.mesh</groupId>
+				<artifactId>test-scanner-maven-plugin</artifactId>
+				<version>${project.version}</version>
+				<configuration>
+					<splits>${test.scanner.splits}</splits>
+					<dependenciesToScan>
+						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-core</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-rest-model</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-server</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
+						<dependency>com.gentics.mesh:mesh-tests</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
+					</dependenciesToScan>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>scan-test-files</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 </project>
