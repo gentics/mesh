@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.action;
 
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 
 /**
- * DAO action for {@link HibMicroschema}.
+ * DAO action for {@link Microschema}.
  * 
  * TODO MDM Merge with {@link MicroschemaDao}
  */
-public interface MicroschemaDAOActions extends DAOActions<HibMicroschema, MicroschemaResponse> {
+public interface MicroschemaDAOActions extends DAOActions<Microschema, MicroschemaResponse> {
 
 }

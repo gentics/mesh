@@ -38,7 +38,7 @@ import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -78,12 +78,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(HibRole.composeIndexName(), restRole.getUuid());
+		assertThat(trackingSearchProvider()).hasStore(Role.composeIndexName(), restRole.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			HibRole createdRole = tx.roleDao().findByUuid(restRole.getUuid());
+			Role createdRole = tx.roleDao().findByUuid(restRole.getUuid());
 			assertTrue(userDao.hasPermission(user(), createdRole, UPDATE_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, READ_PERM));
 			assertTrue(userDao.hasPermission(user(), createdRole, DELETE_PERM));
@@ -205,7 +205,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		HibRole extraRole;
+		Role extraRole;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupDao = tx.groupDao();
@@ -238,7 +238,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupRoot = tx.groupDao();
-			HibRole extraRole = roleDao.create("extra role", user());
+			Role extraRole = roleDao.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupRoot.addRole(group(), extraRole);
 			// Revoke read permission from the role
@@ -272,12 +272,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupRoot = tx.groupDao();
 
-			HibRole noPermRole = roleDao.create(noPermRoleName, user());
+			Role noPermRole = roleDao.create(noPermRoleName, user());
 			roleDao.grantPermissions(role(), group(), READ_PERM);
 
 			// Create and save some roles
 			for (int i = 0; i < nRoles; i++) {
-				HibRole extraRole = roleDao.create("extra role " + i, user());
+				Role extraRole = roleDao.create("extra role " + i, user());
 				groupRoot.addRole(group(), extraRole);
 				roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			}
@@ -370,7 +370,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String extraRoleUuid = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupDao = tx.groupDao();
-			HibRole extraRole = roleDao.create("extra role", user());
+			Role extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, UPDATE_PERM);
 			return extraRole.getUuid();
@@ -392,7 +392,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
-			HibRole reloadedRole = tx.roleDao().findByUuid(extraRoleUuid);
+			Role reloadedRole = tx.roleDao().findByUuid(extraRoleUuid);
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
 	}
@@ -456,7 +456,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Check that the role was updated
 		try (Tx tx = tx()) {
-			HibRole reloadedRole = tx.roleDao().findByUuid(roleUuid());
+			Role reloadedRole = tx.roleDao().findByUuid(roleUuid());
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 
@@ -469,7 +469,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String extraRoleUuid = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupDao = tx.groupDao();
-			HibRole extraRole = roleDao.create("extra role", user());
+			Role extraRole = roleDao.create("extra role", user());
 			groupDao.addRole(group(), extraRole);
 			roleDao.grantPermissions(role(), extraRole, DELETE_PERM);
 			return extraRole.getUuid();
@@ -485,7 +485,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(HibRole.composeIndexName(), extraRoleUuid);
+		assertThat(trackingSearchProvider()).hasDelete(Role.composeIndexName(), extraRoleUuid);
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {

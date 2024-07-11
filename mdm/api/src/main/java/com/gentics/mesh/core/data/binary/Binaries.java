@@ -17,7 +17,7 @@ public interface Binaries {
 	 * @param hash
 	 * @return
 	 */
-	Transactional<HibBinary> findByHash(String hash);
+	Transactional<Binary> findByHash(String hash);
 
 	/**
 	 * Find the binaries with the specified check status.
@@ -25,7 +25,7 @@ public interface Binaries {
 	 * @param checkStatus The check status to filter for.
 	 * @return A stream of matching binaries.
 	 */
-	Transactional<Stream<? extends HibBinary>> findByCheckStatus(BinaryCheckStatus checkStatus);
+	Transactional<Stream<? extends Binary>> findByCheckStatus(BinaryCheckStatus checkStatus);
 
 	/**
 	 * Create a new binary.
@@ -38,9 +38,9 @@ public interface Binaries {
 	 *            Size in bytes
 	 * @return
 	 */
-	Transactional<HibBinary> create(String uuid, String hash, Long size, BinaryCheckStatus checkStatus);
+	Transactional<Binary> create(String uuid, String hash, Long size, BinaryCheckStatus checkStatus);
 
-	default Transactional<HibBinary> create(String hash, long size) {
+	default Transactional<Binary> create(String hash, long size) {
 		return create(hash, size, BinaryCheckStatus.ACCEPTED);
 	}
 
@@ -51,7 +51,7 @@ public interface Binaries {
 	 * @param size
 	 * @return Transactional which executes the operation within a transaction
 	 */
-	default Transactional<HibBinary> create(String hash, long size, BinaryCheckStatus checkStatus) {
+	default Transactional<Binary> create(String hash, long size, BinaryCheckStatus checkStatus) {
 		return create(UUIDUtil.randomUUID(), hash, size, checkStatus);
 	}
 
@@ -60,5 +60,5 @@ public interface Binaries {
 	 *
 	 * @return
 	 */
-	Transactional<Stream<HibBinary>> findAll();
+	Transactional<Stream<Binary>> findAll();
 }

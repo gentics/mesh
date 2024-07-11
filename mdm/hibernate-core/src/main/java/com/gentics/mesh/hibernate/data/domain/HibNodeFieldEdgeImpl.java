@@ -12,8 +12,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.node.field.impl.HibNodeFieldImpl;
@@ -81,7 +81,7 @@ public class HibNodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> implements
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer container) {
+	public Field cloneTo(FieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?,?,?,?,?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.NODE);
@@ -104,7 +104,7 @@ public class HibNodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> implements
 		return nodeFieldEquals(obj);
 	}
 
-	public HibField getField() {
+	public Field getField() {
 		return getReferencingContainers().map(c -> c.getField(getFieldKey())).findAny().orElseThrow();
 	}
 

@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -29,7 +29,7 @@ public class NoIndexTest extends AbstractNodeSearchEndpointTest {
 
 	protected void setNoFieldIndexing(String fieldName, boolean disable) {
 		tx(() -> {
-			HibNode nodeTmp = content("concorde");
+			Node nodeTmp = content("concorde");
 			SchemaModel schema = nodeTmp.getSchemaContainer().getLatestVersion().getSchema();
 			schema.getField(fieldName).setNoIndex(disable);
 			actions().updateSchemaVersion(nodeTmp.getSchemaContainer().getLatestVersion());
@@ -39,7 +39,7 @@ public class NoIndexTest extends AbstractNodeSearchEndpointTest {
 
 	protected void setNoSchemaIndexing(boolean disable) {
 		tx(() -> {
-			HibNode nodeTmp = content("concorde");
+			Node nodeTmp = content("concorde");
 			SchemaModel schema = nodeTmp.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setNoIndex(disable);
 			actions().updateSchemaVersion(nodeTmp.getSchemaContainer().getLatestVersion());

@@ -14,8 +14,8 @@ import org.assertj.core.api.AbstractObjectArrayAssert;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.HibAddFieldChange;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.AddFieldChange;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -40,8 +40,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			SchemaVersion version = createVersion(schemaDao(tx));
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 
 			change.setFieldName("fieldName");
 			assertEquals("fieldName", change.getFieldName());
@@ -58,9 +58,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			change.setFieldName("name");
 			change.setType("html");
 			version.setSchema(schema);
@@ -73,13 +73,13 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAtEndPosition() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaVersionModel schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
 
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			change.setFieldName("stringField");
 			change.setType("string");
 			change.setInsertAfterPosition("thirdField");
@@ -97,13 +97,13 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringFieldAtPosition() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
 
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			change.setFieldName("stringField");
 			change.setType("string");
 			change.setInsertAfterPosition("firstField");
@@ -121,9 +121,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyStringField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			change.setFieldName("stringField");
 			change.setType("string");
 			version.setSchema(schema);
@@ -137,9 +137,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNodeField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			change.setFieldName("nodeField");
 			change.setType("node");
 			version.setSchema(schema);
@@ -154,9 +154,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyMicronodeField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("micronodeField");
 			change.setType("micronode");
@@ -172,9 +172,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyDateField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("dateField");
 			change.setType("date");
@@ -189,9 +189,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNumberField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("numberField");
 			change.setType("number");
@@ -206,9 +206,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyBinaryField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("binaryField");
 			change.setType("binary");
@@ -223,9 +223,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyListField() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("listField");
 			change.setType("list");
@@ -243,9 +243,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNoIndexTrue() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("noIndexField");
 			change.setType("string");
@@ -261,9 +261,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNoIndexFalse() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("indexedField");
 			change.setType("string");
@@ -279,9 +279,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyNoIndexNull() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("defaultIndexedField");
 			change.setType("string");
@@ -296,9 +296,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredTrue() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("requiredField");
 			change.setType("string");
@@ -314,9 +314,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredFalse() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("optionalField");
 			change.setType("string");
@@ -332,9 +332,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	public void testApplyRequiredNull() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("defaultRequiredField");
 			change.setType("string");
@@ -403,9 +403,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	
 	private void testApplyStringFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("stringAllowField");
 			change.setType("string");
@@ -425,9 +425,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	private void testApplyNodeFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("nodeAllowField");
 			change.setType("node");
@@ -447,9 +447,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	private void testApplyNodeListFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("nodeListFieldAllow");
 			change.setType("list");
@@ -470,9 +470,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	private void testApplyMicronodeFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("micronodeAllowField");
 			change.setType("micronode");
@@ -492,9 +492,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	private void testApplyMicronodeListFieldAllowance(boolean allow) {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			SchemaModelImpl schema = new SchemaModelImpl();
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("micronodeListFieldAllow");
 			change.setType("list");
@@ -517,11 +517,11 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testUpdateFromRest() {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
+			SchemaVersion version = createVersion(schemaDao(tx));
 			JsonObject elasticSearch = new JsonObject().put("test", "test");
 			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123", elasticSearch);
 
-			HibAddFieldChange change = (HibAddFieldChange) schemaDao(tx).createChange(version, model);
+			AddFieldChange change = (AddFieldChange) schemaDao(tx).createChange(version, model);
 			
 			assertEquals(change.getType(), model.getProperties().get(SchemaChangeModel.TYPE_KEY));
 			assertEquals(change.getFieldName(), model.getProperty(SchemaChangeModel.FIELD_NAME_KEY));
@@ -533,8 +533,8 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			HibSchemaVersion version = createVersion(schemaDao(tx));
-			HibAddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
+			SchemaVersion version = createVersion(schemaDao(tx));
+			AddFieldChange change = createChange(schemaDao(tx), version, ADDFIELD);
 			
 			change.setFieldName("name");
 			change.setType("html");

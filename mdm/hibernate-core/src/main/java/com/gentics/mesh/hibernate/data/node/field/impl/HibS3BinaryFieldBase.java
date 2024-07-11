@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.hibernate.data.domain.HibImageDataFieldBase;
 
 /**
@@ -9,6 +9,6 @@ import com.gentics.mesh.hibernate.data.domain.HibImageDataFieldBase;
  * @author plyhun
  *
  */
-public interface HibS3BinaryFieldBase extends S3HibBinaryField, HibImageDataFieldBase {
+public interface HibS3BinaryFieldBase extends S3BinaryField, HibImageDataFieldBase {
 
 }

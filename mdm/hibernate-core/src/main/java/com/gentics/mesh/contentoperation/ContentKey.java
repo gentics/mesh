@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.hibernate.data.domain.AbstractFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
@@ -53,8 +53,8 @@ public class ContentKey implements Serializable {
 		return new ContentKey(edge.getContainerUuid(), edge.getContainerVersionUuid(), edge.getContainerType());
 	}
 
-	public static ContentKey fromContentUUIDAndVersion(UUID contentUuid, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
-		ReferenceType type = version instanceof HibSchemaVersion ? ReferenceType.FIELD : ReferenceType.MICRONODE;
+	public static ContentKey fromContentUUIDAndVersion(UUID contentUuid, FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+		ReferenceType type = version instanceof SchemaVersion ? ReferenceType.FIELD : ReferenceType.MICRONODE;
 		return new ContentKey(contentUuid, (UUID) version.getId(), type);
 	}
 

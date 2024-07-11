@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -65,7 +65,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
 		assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
@@ -101,7 +101,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithNullFieldValue() throws IOException {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
 		StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
 		assertNull("No string field should have been created.", nodeField);
 	}
@@ -140,12 +140,12 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
-		HibNode node = folder("2015");
+		Node node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
+		NodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 			StringFieldListImpl list = new StringFieldListImpl();
 			List<String> oldValue;
@@ -164,7 +164,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			try (Tx tx = tx()) {
 				ContentDao contentDao = tx.contentDao();
-				HibNodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
+				NodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
 					response.getVersion().toString());
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
@@ -193,8 +193,8 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			Node node = folder("2015");
+			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getStringList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();

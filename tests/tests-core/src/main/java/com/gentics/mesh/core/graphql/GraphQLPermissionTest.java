@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -58,7 +58,7 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			NodeDao nodeDao = tx.nodeDao();
-			for (HibNode node : nodeDao.findAll(project())) {
+			for (Node node : nodeDao.findAll(project())) {
 				roleDao.revokePermissions(role(), node, InternalPermission.READ_PERM);
 			}
 			// Explicitly remove read_publish for a single node

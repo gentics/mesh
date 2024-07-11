@@ -17,7 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -34,9 +34,9 @@ import io.reactivex.Flowable;
  * @see UserIndexHandler
  */
 @Singleton
-public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implements UserIndexHandler {
+public class UserIndexHandlerImpl extends AbstractIndexHandler<User> implements UserIndexHandler {
 
-	private final static Set<String> indices = Collections.singleton(HibUser.composeIndexName());
+	private final static Set<String> indices = Collections.singleton(User.composeIndexName());
 
 	protected final UserTransformer transformer;
 
@@ -56,8 +56,8 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	public Class<HibUser> getElementClass() {
-		return HibUser.class;
+	public Class<User> getElementClass() {
+		return User.class;
 	}
 
 	@Override
@@ -79,12 +79,12 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(HibUser.composeIndexName(), null, indexPattern);
+		return diffAndSync(User.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, HibUser.composeIndexName());
+		return filterIndicesByType(indices, User.composeIndexName());
 	}
 
 	@Override
@@ -93,23 +93,23 @@ public class UserIndexHandlerImpl extends AbstractIndexHandler<HibUser> implemen
 	}
 
 	@Override
-	public Function<String, HibUser> elementLoader() {
+	public Function<String, User> elementLoader() {
 		return uuid -> Tx.get().userDao().findByUuid(uuid);
 	}
 
 	@Override
-	public Function<Collection<String>, Stream<Pair<String, HibUser>>> elementsLoader() {
+	public Function<Collection<String>, Stream<Pair<String, User>>> elementsLoader() {
 		return (uuids) -> Tx.get().userDao().findByUuids(uuids);
 	}
 
 	@Override
-	public Stream<? extends HibUser> loadAllElements() {
+	public Stream<? extends User> loadAllElements() {
 		return Tx.get().userDao().findAll().stream();
 	}
 
 	@Override
 	public Map<String, Optional<IndexInfo>> getIndices() {
-		String indexName = HibUser.composeIndexName();
+		String indexName = User.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "user");
 		return Collections.singletonMap(indexName, Optional.of(info));
 	}

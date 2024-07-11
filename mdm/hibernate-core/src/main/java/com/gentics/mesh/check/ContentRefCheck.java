@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.result.Result;
@@ -66,10 +66,10 @@ public class ContentRefCheck extends AbstractHibernateConsistencyCheck {
 		// check whether the table contains any entries, that reference inexistent contents
 
 		// check for schemas
-		Result<? extends HibSchema> schemas = schemaDao.findAll();
-		for (HibSchema schema : schemas) {
-			Iterable<? extends HibSchemaVersion> versions = schemaDao.findAllVersions(schema);
-			for (HibSchemaVersion version : versions) {
+		Result<? extends Schema> schemas = schemaDao.findAll();
+		for (Schema schema : schemas) {
+			Iterable<? extends SchemaVersion> versions = schemaDao.findAllVersions(schema);
+			for (SchemaVersion version : versions) {
 				String contentTable = dc.getPhysicalTableName(version);
 				String nodeUuidColumn = dc.renderColumn(CommonContentColumn.NODE);
 				String nodeTable = MeshTablePrefixStrategy.TABLE_NAME_PREFIX + "node";
@@ -131,7 +131,7 @@ public class ContentRefCheck extends AbstractHibernateConsistencyCheck {
 		if (countResult instanceof Number) {
 			long count = Number.class.cast(countResult).longValue();
 			if (count > 0) {
-				InconsistencyInfo info = new InconsistencyInfo()
+				InconsistencyInfoModel info = new InconsistencyInfoModel()
 						.setDescription(String.format(
 								"Table %s contains %d records, that reference records, which do not exist in tables %s",
 								sourceTable, count, targets))

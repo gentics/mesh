@@ -20,10 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -42,25 +42,25 @@ import com.gentics.mesh.parameter.value.FieldsSet;
  * @author plyhun
  *
  */
-public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGroup>, PersistingNamedEntityDao<HibGroup> {
+public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<Group>, PersistingNamedEntityDao<Group> {
 
 	@Override
-	default HibGroup create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibUser requestUser = ac.getUser();
+	default Group create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		User requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "error_name_must_be_set");
 		}
-		HibBaseElement groupPermissionRoot = Tx.get().data().permissionRoots().group();
+		BaseElement groupPermissionRoot = Tx.get().data().permissionRoots().group();
 		if (!userDao.hasPermission(requestUser, groupPermissionRoot, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", groupPermissionRoot.getUuid(),
 					CREATE_PERM.getRestPerm().getName());
 		}
 
 		// Check whether a group with the same name already exists
-		HibGroup groupWithSameName = findByName(requestModel.getName());
+		Group groupWithSameName = findByName(requestModel.getName());
 		// TODO why would we want to check for uuid's here? Makes no sense: &&
 		// !groupWithSameName.getUuid().equals(getUuid())
 		if (groupWithSameName != null) {
@@ -69,14 +69,14 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		}
 
 		// Finally create the group and set the permissions
-		HibGroup group = create(requestModel.getName(), requestUser, uuid);
+		Group group = create(requestModel.getName(), requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, groupPermissionRoot, group);
 		return group;
 	}
 
 	@Override
-	default HibGroup create(String name, HibUser user, String uuid) {
-		HibGroup group = createPersisted(uuid, g -> {
+	default Group create(String name, User user, String uuid) {
+		Group group = createPersisted(uuid, g -> {
 			g.setName(name);
 			g.setCreated(user);
 		});
@@ -87,7 +87,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default GroupRoleAssignModel createRoleAssignmentEvent(HibGroup group, HibRole role, Assignment assignment) {
+	default GroupRoleAssignModel createRoleAssignmentEvent(Group group, Role role, Assignment assignment) {
 		GroupRoleAssignModel model = new GroupRoleAssignModel();
 		model.setGroup(group.transformToReference());
 		model.setRole(role.transformToReference());
@@ -103,7 +103,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default GroupUserAssignModel createUserAssignmentEvent(HibGroup group, HibUser user, Assignment assignment) {
+	default GroupUserAssignModel createUserAssignmentEvent(Group group, User user, Assignment assignment) {
 		GroupUserAssignModel model = new GroupUserAssignModel();
 		model.setGroup(group.transformToReference());
 		model.setUser(user.transformToReference());
@@ -119,7 +119,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default boolean update(HibGroup group, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Group group, InternalActionContext ac, EventQueueBatch batch) {
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 		if (isEmpty(requestModel.getName())) {
@@ -127,7 +127,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		}
 
 		if (shouldUpdate(requestModel.getName(), group.getName())) {
-			HibGroup groupWithSameName = findByName(requestModel.getName());
+			Group groupWithSameName = findByName(requestModel.getName());
 			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(group.getUuid())) {
 				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name",
 						requestModel.getName());
@@ -143,7 +143,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default void delete(HibGroup group, BulkActionContext bac) {
+	default void delete(Group group, BulkActionContext bac) {
 		PersistingUserDao userDao = CommonTx.get().userDao();
 
 		// TODO unhardcode the admin name
@@ -152,11 +152,11 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 		}
 		bac.batch().add(group.onDeleted());
 
-		Set<? extends HibUser> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
+		Set<? extends User> affectedUsers = getUsers(group).stream().collect(Collectors.toSet());
 
 		deletePersisted(group);
 
-		for (HibUser affectedUser : affectedUsers) {
+		for (User affectedUser : affectedUsers) {
 			userDao.updateShortcutEdges(affectedUser);
 			bac.add(affectedUser.onUpdated());
 			bac.inc();
@@ -167,7 +167,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default GroupResponse transformToRestSync(HibGroup group, InternalActionContext ac, int level,
+	default GroupResponse transformToRestSync(Group group, InternalActionContext ac, int level,
 			String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -177,7 +177,7 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 			restGroup.setName(group.getName());
 		}
 		if (fields.has("roles")) {
-			for (HibRole role : getRoles(group)) {
+			for (Role role : getRoles(group)) {
 				String name = role.getName();
 				if (name != null) {
 					restGroup.getRoles().add(role.transformToReference());
@@ -190,59 +190,59 @@ public interface PersistingGroupDao extends GroupDao, PersistingDaoGlobal<HibGro
 	}
 
 	@Override
-	default void addUser(HibGroup group, HibUser user) {
+	default void addUser(Group group, User user) {
 		addUserPersisting(group, user);
 		Tx.get().permissionCache().clear();
 	}
 
 	/**
-	 * @see #addUser(HibGroup, HibUser)
+	 * @see #addUser(Group, User)
 	 * @param group group
 	 * @param user user
 	 */
-	void addUserPersisting(HibGroup group, HibUser user);
+	void addUserPersisting(Group group, User user);
 
 	@Override
-	default void removeUser(HibGroup group, HibUser user) {
+	default void removeUser(Group group, User user) {
 		removeUserPersisting(group, user);
 		Tx.get().permissionCache().clear();
 	}
 
 	/**
-	 * @see #removeUser(HibGroup, HibUser)
+	 * @see #removeUser(Group, User)
 	 * @param group group
 	 * @param user user
 	 */
-	void removeUserPersisting(HibGroup group, HibUser user);
+	void removeUserPersisting(Group group, User user);
 
 	@Override
-	default void addRole(HibGroup group, HibRole role) {
+	default void addRole(Group group, Role role) {
 		addRolePersisting(group, role);
 		Tx.get().permissionCache().clear();
 	}
 
 	/**
-	 * @see #addRole(HibGroup, HibRole)
+	 * @see #addRole(Group, Role)
 	 * @param group group
 	 * @param role role
 	 */
-	void addRolePersisting(HibGroup group, HibRole role);
+	void addRolePersisting(Group group, Role role);
 
 	@Override
-	default void removeRole(HibGroup group, HibRole role) {
+	default void removeRole(Group group, Role role) {
 		removeRolePersisting(group, role);
 		Tx.get().permissionCache().clear();
 	}
 
 	/**
-	 * @see #removeRole(HibGroup, HibRole)
+	 * @see #removeRole(Group, Role)
 	 * @param group group
 	 * @param role role
 	 */
-	void removeRolePersisting(HibGroup group, HibRole role);
+	void removeRolePersisting(Group group, Role role);
 
 	@Override
-	default Optional<NameCache<HibGroup>> maybeGetCache() {
+	default Optional<NameCache<Group>> maybeGetCache() {
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().groupNameCache());
 	}
 }

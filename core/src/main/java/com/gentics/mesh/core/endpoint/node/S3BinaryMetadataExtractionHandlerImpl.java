@@ -22,18 +22,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -195,7 +195,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 	}
 
 	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac,
-			List<Consumer<S3HibBinaryField>> fieldModifier, S3UploadContext context, String nodeUuid,
+			List<Consumer<S3BinaryField>> fieldModifier, S3UploadContext context, String nodeUuid,
 			String languageTag, String nodeVersion, String fieldName) {
 		FileUpload upload = context.getFileUpload();
 		String s3ObjectKey = context.getS3ObjectKey();
@@ -203,23 +203,23 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 
 		return db.singleTxWriteLock((batch, tx) -> {
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-			HibProject project = tx.getProject(ac);
-			HibBranch branch = tx.getBranch(ac);
+			Project project = tx.getProject(ac);
+			Branch branch = tx.getBranch(ac);
 			NodeDao nodeDao = tx.nodeDao();
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+			Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
 			// We need to check whether someone else has stored the binary in the meanwhile
-			S3HibBinary s3binary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
+			S3Binary s3binary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
 			if (s3binary == null) {
 				s3binary = s3binaries.create(nodeUuid, s3ObjectKey, fileName).runInExistingTx(tx);
 			}
-			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+			Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch,
+			NodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch,
 					ContainerType.DRAFT);
 
 			if (latestDraftVersion == null) {
@@ -235,7 +235,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			}
 
 			// Load the base version field container in order to create the diff
-			HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(),
+			NodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(),
 					nodeVersion);
 			if (baseVersionContainer == null) {
 				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
@@ -276,15 +276,15 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			}
 
 			// Create a new node version field container to store the upload
-			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch,
+			NodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch,
 					ac.getUser(), latestDraftVersion, true);
 
 			// Get the potential existing field
-			S3HibBinaryField oldField = (S3HibBinaryField) contentDao
+			S3BinaryField oldField = (S3BinaryField) contentDao
 					.detachField(newDraftVersion.getS3Binary(fieldName));
 
 			// Create the new field
-			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3binary);
+			S3BinaryField field = newDraftVersion.createS3Binary(fieldName, s3binary);
 
 			// Reuse the existing properties
 			if (oldField != null) {
@@ -301,7 +301,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 			field.setMimeType(upload.contentType());
 			field.setFileSize(upload.size());
 
-			for (Consumer<S3HibBinaryField> modifier : fieldModifier) {
+			for (Consumer<S3BinaryField> modifier : fieldModifier) {
 				modifier.accept(field);
 			}
 
@@ -328,7 +328,7 @@ public class S3BinaryMetadataExtractionHandlerImpl extends AbstractHandler {
 		});
 	}
 
-	private Observable<Consumer<S3HibBinaryField>> postProcessUpload(S3BinaryDataProcessorContext ctx) {
+	private Observable<Consumer<S3BinaryField>> postProcessUpload(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		String contentType = upload.contentType();
 		List<S3BinaryDataProcessor> processors = s3binaryProcessorRegistry.getProcessors(contentType);

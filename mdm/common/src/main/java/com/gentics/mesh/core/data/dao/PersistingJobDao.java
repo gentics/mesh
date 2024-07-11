@@ -5,15 +5,15 @@ import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobWarningListModel;
 import com.gentics.mesh.event.EventQueueBatch;
 
 import org.slf4j.Logger;
@@ -25,15 +25,15 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
+public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<Job> {
 	static final Logger log = LoggerFactory.getLogger(JobDao.class);
 
 	@Override
-	default JobResponse transformToRestSync(HibJob job, InternalActionContext ac, int level, String... languageTags) {
+	default JobResponse transformToRestSync(Job job, InternalActionContext ac, int level, String... languageTags) {
 		JobResponse response = new JobResponse();
 		response.setUuid(job.getUuid());
 
-		HibUser creator = job.getCreator();
+		User creator = job.getCreator();
 		if (creator != null) {
 			response.setCreator(creator.transformToReference());
 		} else {
@@ -51,13 +51,13 @@ public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
 		response.setCompletionCount(job.getCompletionCount());
 		response.setNodeName(job.getNodeName());
 
-		JobWarningList warnings = job.getWarnings();
+		JobWarningListModel warnings = job.getWarnings();
 		if (warnings != null) {
 			response.setWarnings(warnings.getData());
 		}
 
 		Map<String, String> props = response.getProperties();
-		HibBranch branch = job.getBranch();
+		Branch branch = job.getBranch();
 		if (branch != null) {
 			props.put("branchName", branch.getName());
 			props.put("branchUuid", branch.getUuid());
@@ -65,18 +65,18 @@ public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
 			log.debug("No referenced branch found.");
 		}
 
-		HibSchemaVersion toSchema = job.getToSchemaVersion();
+		SchemaVersion toSchema = job.getToSchemaVersion();
 		if (toSchema != null) {
-			HibSchema container = toSchema.getSchemaContainer();
+			Schema container = toSchema.getSchemaContainer();
 			props.put("schemaName", container.getName());
 			props.put("schemaUuid", container.getUuid());
 			props.put("fromVersion", job.getFromSchemaVersion().getVersion());
 			props.put("toVersion", toSchema.getVersion());
 		}
 
-		HibMicroschemaVersion toMicroschema = job.getToMicroschemaVersion();
+		MicroschemaVersion toMicroschema = job.getToMicroschemaVersion();
 		if (toMicroschema != null) {
-			HibMicroschema container = toMicroschema.getSchemaContainer();
+			Microschema container = toMicroschema.getSchemaContainer();
 			props.put("microschemaName", container.getName());
 			props.put("microschemaUuid", container.getUuid());
 			props.put("fromVersion", job.getFromMicroschemaVersion().getVersion());
@@ -86,12 +86,12 @@ public interface PersistingJobDao extends JobDao, PersistingDaoGlobal<HibJob> {
 	}
 
 	@Override
-	default HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default Job create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw new NotImplementedException("Jobs cannot be created using REST");
 	}
 
 	@Override
-	default boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Job job, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
 	}
 }

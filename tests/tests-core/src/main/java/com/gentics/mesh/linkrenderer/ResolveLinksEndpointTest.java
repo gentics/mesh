@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.StringFieldModel;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -29,7 +29,7 @@ public class ResolveLinksEndpointTest extends AbstractMeshTest {
 		branch.setSsl(true);
 		branch.setHostname("gentics.com");
 		client().updateBranch(PROJECT_NAME, branch.getUuid(), branch.toRequest()).blockingAwait();
-		nodeWithReference = createNode("name", StringField.of("{{mesh.link('" + folderUuid() + "')}}"));
+		nodeWithReference = createNode("name", StringFieldModel.of("{{mesh.link('" + folderUuid() + "')}}"));
 	}
 
 	@Test

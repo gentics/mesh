@@ -13,7 +13,7 @@ import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfigModel;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.test.category.ClusterTests;
 import com.gentics.mesh.test.docker.MeshContainer;
@@ -54,7 +54,7 @@ public class ClusterConfigEndpointTest extends AbstractClusterTest {
 
 		ClusterConfigRequest request = config.toRequest();
 		request.setWriteQuorum("2");
-		ClusterServerConfig serverConfig = request.getServers().stream()
+		ClusterServerConfigModel serverConfig = request.getServers().stream()
 			.filter(s -> s.getName().equals("nodeB"))
 			.findFirst().get();
 		serverConfig.setRole(ServerRole.REPLICA);
@@ -62,7 +62,7 @@ public class ClusterConfigEndpointTest extends AbstractClusterTest {
 		ClusterConfigResponse response = call(() -> serverA.client().updateClusterConfig(request));
 		assertEquals("The read quorum did not match.", 1, response.getReadQuorum().intValue());
 		assertEquals("The write quorum did not match.", "2", response.getWriteQuorum());
-		ClusterServerConfig updatedServerConfig = response.getServers().stream()
+		ClusterServerConfigModel updatedServerConfig = response.getServers().stream()
 			.filter(s -> s.getName().equals("nodeB"))
 			.findFirst().get();
 		assertEquals("The server should be in replica mode now.", ServerRole.REPLICA, updatedServerConfig.getRole());

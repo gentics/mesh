@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import jakarta.persistence.Entity;
 
-import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.branch.BranchSchemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.database.HibernateTx;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "branch_schema_version_edge")
-public class HibBranchSchemaVersionEdgeImpl extends AbstractHibBranchSchemaVersion<HibSchemaVersionImpl> implements HibBranchSchemaVersion, Serializable {
+public class HibBranchSchemaVersionEdgeImpl extends AbstractHibBranchSchemaVersion<HibSchemaVersionImpl> implements BranchSchemaVersion, Serializable {
 
 	private static final long serialVersionUID = 5299748263133922913L;
 
@@ -31,7 +31,7 @@ public class HibBranchSchemaVersionEdgeImpl extends AbstractHibBranchSchemaVersi
 	}
 
 	@Override
-	public HibSchemaVersion getSchemaContainerVersion() {
+	public SchemaVersion getSchemaContainerVersion() {
 		return getVersion();
 	}
 }

@@ -12,15 +12,17 @@ import javax.management.ObjectName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
+import com.gentics.mesh.core.data.branch.BranchVersionAssignment;
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
+
+
 
 /**
  * The migration status class keeps track of the status of a migration and manages also the errors and event handling.
@@ -31,7 +33,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-	private HibBranchVersionAssignment versionEdge;
+	private BranchVersionAssignment versionEdge;
 
 	private long completionCount = 0;
 
@@ -44,11 +46,11 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	@Override
 	public MigrationStatusHandler commit() {
-		HibJob job = getJob();
+		Job job = getJob();
 		return commit(job);
 	}
 
-	private MigrationStatusHandler commit(HibJob job) {
+	private MigrationStatusHandler commit(Job job) {
 		// Load the status if it has not yet been set or loaded.
 		if (status == null) {
 			status = job.getStatus();
@@ -92,12 +94,12 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	 * </ul>
 	 */
 	public MigrationStatusHandler done() {
-		done(new JobWarningList());
+		done(new JobWarningListModel());
 		return this;
 	}
 
-	public MigrationStatusHandler done(JobWarningList warnings) {
-		HibJob job = getJob();
+	public MigrationStatusHandler done(JobWarningListModel warnings) {
+		Job job = getJob();
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
 		job.setStopTimestamp();
@@ -121,7 +123,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		if (error instanceof MigrationAbortedException) {
 			log.error("Migration has been aborted", error);
 		} else {
-			HibJob job = getJob();
+			Job job = getJob();
 			setStatus(FAILED);
 			log.error("Error handling migration", error);
 
@@ -135,7 +137,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setVersionEdge(HibBranchVersionAssignment versionEdge) {
+	public void setVersionEdge(BranchVersionAssignment versionEdge) {
 		this.versionEdge = versionEdge;
 	}
 
@@ -154,7 +156,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		completionCount += increment;
 	}
 
-	private HibJob getJob() {
+	private Job getJob() {
 		Database db = CommonTx.get().data().mesh().database();
 		JobDao jobDao = Tx.get().jobDao();
 		return db.tx(() -> jobDao.findByUuid(jobUUID));

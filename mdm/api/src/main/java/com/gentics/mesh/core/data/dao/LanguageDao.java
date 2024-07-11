@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
  * DAO for language.
  */
-public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<HibLanguage, LanguageResponse> {
+public interface LanguageDao extends DaoGlobal<Language>, DaoTransformable<Language, LanguageResponse> {
 
 	/**
 	 * Return the language for the given language tag.
@@ -16,7 +16,7 @@ public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<Hi
 	 * @param tag
 	 * @return
 	 */
-	HibLanguage findByLanguageTag(String tag);
+	Language findByLanguageTag(String tag);
 
 	/**
 	 * Return the project language for the given language tag.
@@ -24,7 +24,7 @@ public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<Hi
 	 * @param tag
 	 * @return
 	 */
-	HibLanguage findByLanguageTag(HibProject project, String tag);
+	Language findByLanguageTag(Project project, String tag);
 
 	/**
 	 * Create the language.
@@ -33,7 +33,7 @@ public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<Hi
 	 * @param languageTag
 	 * @return
 	 */
-	HibLanguage create(String languageName, String languageTag);
+	Language create(String languageName, String languageTag);
 
 	/**
 	 * Assign the language to the project.
@@ -42,7 +42,7 @@ public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<Hi
 	 * @param project
 	 * @param batch
 	 */
-	void assign(HibLanguage language, HibProject project, EventQueueBatch batch, boolean throwOnExisting);
+	void assign(Language language, Project project, EventQueueBatch batch, boolean throwOnExisting);
 
 	/**
 	 * Remove the language from the project.
@@ -51,5 +51,5 @@ public interface LanguageDao extends DaoGlobal<HibLanguage>, DaoTransformable<Hi
 	 * @param project
 	 * @param batch
 	 */
-	void unassign(HibLanguage language, HibProject project, EventQueueBatch batch, boolean throwOnInexisting);
+	void unassign(Language language, Project project, EventQueueBatch batch, boolean throwOnInexisting);
 }

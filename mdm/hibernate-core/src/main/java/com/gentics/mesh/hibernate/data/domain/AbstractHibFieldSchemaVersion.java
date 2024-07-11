@@ -2,8 +2,8 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -28,9 +28,9 @@ public abstract class AbstractHibFieldSchemaVersion<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
-			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
-		> extends AbstractHibBaseElement implements HibFieldSchemaVersionElement<R, RM, RE, SC, SCV> {
+			SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>
+		> extends AbstractHibBaseElement implements FieldSchemaVersionElement<R, RM, RE, SC, SCV> {
 	
 	protected static final String EMPTY_JSON = "{}";
 

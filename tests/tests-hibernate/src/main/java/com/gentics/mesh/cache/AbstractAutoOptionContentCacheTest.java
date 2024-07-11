@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Matcher;
 
-import com.gentics.mesh.cache.CacheStatus;
+import com.gentics.mesh.cache.CacheStatusModel;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.ConfigUtils;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -19,7 +19,7 @@ public abstract class AbstractAutoOptionContentCacheTest extends AbstractContent
 	}
 
 	@Override
-	protected void checkStats(CacheStatus stats) {
+	protected void checkStats(CacheStatusModel stats) {
 		String rawSize = size()  + unit();
 		long sizeAvg = parseRawSize(rawSize);
 		assertEquals(((HibernateMeshOptions) options()).getCacheConfig().getFieldContainerCacheSize(), stats.getSetup());

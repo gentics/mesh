@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 
 public class VersioningExamples extends AbstractExamples {
 
@@ -33,7 +33,7 @@ public class VersioningExamples extends AbstractExamples {
 	 * @param version
 	 * @return
 	 */
-	public PublishStatusModel createPublishStatusModel(boolean published, UserReference publisher, String publishDate, String version) {
+	public PublishStatusModel createPublishStatusModel(boolean published, UserReferenceModel publisher, String publishDate, String version) {
 		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishDate(publishDate).setVersion(version);
 	}
 

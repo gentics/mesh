@@ -9,14 +9,14 @@ import jakarta.persistence.EntityManager;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeListFieldEdgeImpl;
@@ -29,8 +29,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibMicronodeListFieldImpl 
-			extends AbstractHibListFieldImpl<HibMicronodeListFieldEdgeImpl, HibMicronodeField, MicronodeFieldList, HibMicronode, UUID> 
-			implements HibMicronodeFieldList {
+			extends AbstractHibListFieldImpl<HibMicronodeListFieldEdgeImpl, MicronodeField, MicronodeFieldListModel, Micronode, UUID> 
+			implements MicronodeFieldList {
 
 	/**
 	 * The constructor for initializing the list field.
@@ -64,7 +64,7 @@ public class HibMicronodeListFieldImpl
 	 * @return
 	 */
 	public static HibMicronodeListFieldImpl fromContainer(HibernateTx tx, HibUnmanagedFieldContainer<?,?,?,?,?> container,
-			String fieldKey, List<HibMicronode> values) {
+			String fieldKey, List<Micronode> values) {
 		HibMicronodeListFieldImpl list = new HibMicronodeListFieldImpl(tx, fieldKey, container);
 		IntStream.range(0, values.size())
 			.mapToObj(i -> new HibMicronodeListFieldEdgeImpl(tx, list.valueOrNull(), i, fieldKey, (UUID) values.get(i).getId(), values.get(i).getSchemaContainerVersion(), container))
@@ -74,13 +74,13 @@ public class HibMicronodeListFieldImpl
 
 	@Override
 	// TODO do we need real BulkActionContext here?
-	public void insertReferenced(int index, HibMicronode value) {
+	public void insertReferenced(int index, Micronode value) {
 		makeFromValueAndIndex(value, index, HibernateTx.get());
 	}
 
 	@Override
 	// TODO do we need real BulkActionContext here?
-	public void deleteReferenced(HibMicronode value) {
+	public void deleteReferenced(Micronode value) {
 		HibernateTx tx = HibernateTx.get();		
 		if (value != null && tx.entityManager().createNamedQuery("micronodelistitem.deleteByNodeUuidVersion")
 				.setParameter("micronodeUuid", value.getId())
@@ -88,13 +88,13 @@ public class HibMicronodeListFieldImpl
 				.executeUpdate() == 1) {
 			HibernateTx.get().contentDao().delete(value, new DummyBulkActionContext());
 		} else {
-			HibMicronodeField.log.debug("The micronode { " + value + " } has not been deleted");
+			MicronodeField.log.debug("The micronode { " + value + " } has not been deleted");
 		}
 	}
 
 	@Override
 	// TODO do we need real BulkActionContext here?
-	public HibMicronode createMicronodeAt(Optional<Integer> maybeIndex, HibMicroschemaVersion microschemaVersion) {
+	public Micronode createMicronodeAt(Optional<Integer> maybeIndex, MicroschemaVersion microschemaVersion) {
 		HibernateTx tx = HibernateTx.get();
 
 		HibMicronodeContainerImpl micronode = new HibMicronodeContainerImpl();
@@ -113,22 +113,22 @@ public class HibMicronodeListFieldImpl
 	}
 
 	@Override
-	public Class<? extends HibMicronodeField> getListType() {
+	public Class<? extends MicronodeField> getListType() {
 		return HibMicronodeFieldImpl.class;
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer container) {
+	public Field cloneTo(FieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?,?,?,?,?>) container;
-		List<HibMicronode> values = getValues();
+		List<Micronode> values = getValues();
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.LIST);
 		unmanagedBase.ensureOldReferenceRemoved(tx, getFieldKey(), unmanagedBase::getMicronodeList, false);
 		return HibMicronodeListFieldImpl.fromContainer(tx, unmanagedBase, getFieldKey(), values);
 	}
 
 	@Override
-	protected HibMicronodeListFieldEdgeImpl makeFromValueAndIndex(HibMicronode micronode, int index, HibernateTx tx) {
+	protected HibMicronodeListFieldEdgeImpl makeFromValueAndIndex(Micronode micronode, int index, HibernateTx tx) {
 		EntityManager em = tx.entityManager();
 		get(index, tx).ifPresent(existing -> {
 			tx.forceDelete(existing, "dbUuid", e -> e.getId());
@@ -140,12 +140,12 @@ public class HibMicronodeListFieldImpl
 	}
 
 	@Override
-	protected HibMicronode getValue(HibMicronodeField field) {
+	protected Micronode getValue(MicronodeField field) {
 		return field.getMicronode();
 	}
 
 	@Override
-	protected HibListFieldItemConstructor<HibMicronodeListFieldEdgeImpl, HibMicronode, UUID> getItemConstructor() {
+	protected HibListFieldItemConstructor<HibMicronodeListFieldEdgeImpl, Micronode, UUID> getItemConstructor() {
 		return HibMicronodeListFieldEdgeImpl::new;
 	}
 }

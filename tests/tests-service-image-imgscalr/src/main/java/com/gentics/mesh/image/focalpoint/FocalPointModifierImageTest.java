@@ -1,6 +1,6 @@
 package com.gentics.mesh.image.focalpoint;
 
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.image.AbstractImageTest;
@@ -91,7 +91,7 @@ public class FocalPointModifierImageTest extends AbstractImageTest {
 	@Test
 	public void testManipulator() throws IOException {
 		String imageName = parameter.getImageName();
-		FocalPoint focalPoint = parameter.getFocalPoint();
+		FocalPointModel focalPoint = parameter.getFocalPoint();
 		Point targetSize = parameter.getTargetSize();
 		Float zoom = parameter.getZoom();
 
@@ -115,7 +115,7 @@ public class FocalPointModifierImageTest extends AbstractImageTest {
 
 	private static class Parameter {
 
-		private FocalPoint focalPoint;
+		private FocalPointModel focalPoint;
 		private Point targetSize;
 		private String imageName;
 		private Float zoom;
@@ -126,7 +126,7 @@ public class FocalPointModifierImageTest extends AbstractImageTest {
 		}
 
 		public Parameter setFocalPoint(float x, float y) {
-			this.focalPoint = new FocalPoint(x, y);
+			this.focalPoint = new FocalPointModel(x, y);
 			return this;
 		}
 
@@ -139,7 +139,7 @@ public class FocalPointModifierImageTest extends AbstractImageTest {
 			return targetSize;
 		}
 
-		public FocalPoint getFocalPoint() {
+		public FocalPointModel getFocalPoint() {
 			return focalPoint;
 		}
 

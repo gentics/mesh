@@ -6,12 +6,12 @@ import java.util.Stack;
 
 import com.gentics.mesh.cache.WebrootPathCache;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -40,8 +40,8 @@ public abstract class AbstractWebRootService implements WebRootService {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 		ContentDao contentDao = tx.contentDao();
-		HibProject project = tx.getProject(ac);
-		HibBranch branch = tx.getBranch(ac);
+		Project project = tx.getProject(ac);
+		Branch branch = tx.getBranch(ac);
 
 		Path cachedPath = pathStore.getPath(project, branch, type, path);
 		if (cachedPath != null) {
@@ -61,7 +61,7 @@ public abstract class AbstractWebRootService implements WebRootService {
 		}
 
 		String strippedPath = PathPrefixUtil.strip(branch, path);
-		HibNodeFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), strippedPath, type);
+		NodeFieldContainer containerByWebUrlPath = findByUrlFieldPath(branch.getUuid(), strippedPath, type);
 		if (containerByWebUrlPath != null) {
 			Path resolvedPath = contentDao.getPath(containerByWebUrlPath, ac);
 			pathStore.store(project, branch, type, path, resolvedPath);
@@ -70,13 +70,13 @@ public abstract class AbstractWebRootService implements WebRootService {
 
 		// Locating did not yield a result. Lets try the regular segment path info.
 		Path nodePath = new PathImpl();
-		HibNode baseNode = project.getBaseNode();
+		Node baseNode = project.getBaseNode();
 		nodePath.setTargetPath(strippedPath);
 		Stack<String> stack = new Stack<>();
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(strippedPath) || strippedPath.isEmpty()) {
-			Optional<HibNodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findFirst();
+			Optional<NodeFieldContainer> container = contentDao.getFieldContainers(baseNode, branch, type).stream().findFirst();
 			if (container.isPresent()) {
 				nodePath.addSegment(new PathSegmentImpl(container.get(), null, null, "/"));
 				stack.push("/");

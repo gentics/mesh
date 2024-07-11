@@ -52,27 +52,27 @@ import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingNodeDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -130,13 +130,13 @@ import jakarta.persistence.criteria.Subquery;
  *
  */
 @Singleton
-public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNodeImpl, HibProject, HibProjectImpl> implements PersistingNodeDao {
+public class NodeDaoImpl extends AbstractHibRootDao<Node, NodeResponse, HibNodeImpl, Project, HibProjectImpl> implements PersistingNodeDao {
 	private final ContentStorage contentStorage;
 	private final NodeDeleteDaoImpl nodeDeleteDao;
 	private final DatabaseConnector databaseConnector;
 
 	@Inject
-	public NodeDaoImpl(RootDaoHelper<HibNode, HibNodeImpl, HibProject, HibProjectImpl> rootDaoHelper,
+	public NodeDaoImpl(RootDaoHelper<Node, HibNodeImpl, Project, HibProjectImpl> rootDaoHelper,
 					   HibPermissionRoots permissionRoots, DatabaseConnector databaseConnector,
 					   CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory,
 					   Lazy<Vertx> vertx, ContentStorage contentStorage) {
@@ -174,12 +174,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Function<HibNode, HibProject> rootGetter() {
-		return HibNode::getProject;
+	public Function<Node, Project> rootGetter() {
+		return Node::getProject;
 	}
 
 	@Override
-	public Result<? extends HibNode> getChildren(HibNode node) {
+	public Result<? extends Node> getChildren(Node node) {
 		return new TraversalResult<>(
 				em().createNamedQuery("nodeBranchParent.findChildrenByNode", HibNodeImpl.class)
 						.setParameter("node", node)
@@ -187,7 +187,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Result<? extends HibNode> getChildren(HibNode node, String branchUuid) {
+	public Result<? extends Node> getChildren(Node node, String branchUuid) {
 		if (maybeChildrenLoader().isPresent()) {
 			return new TraversalResult<>(maybeChildrenLoader().get().apply(node));
 		}
@@ -201,28 +201,28 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid) {
+	public Map<Node, List<Node>> getChildren(Collection<Node> nodes, String branchUuid) {
 		if (nodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
 
 		UUID branchId = UUIDUtil.toJavaUuid(branchUuid);
-		List<UUID> nodesUuids = nodes.stream().map(HibNode::getId).map(UUID.class::cast).collect(Collectors.toList());
-		Map<HibNode, List<HibNode>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+		List<UUID> nodesUuids = nodes.stream().map(Node::getId).map(UUID.class::cast).collect(Collectors.toList());
+		Map<Node, List<Node>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
 			List<Object[]> resultList = em().createNamedQuery("nodeBranchParents.findChildrenByNodesAndBranch")
 					.setParameter("nodesUuids", uuids)
 					.setParameter("branch", branchId)
 					.getResultList();
 
 			return resultList.stream()
-					.map(tuples -> Pair.of((HibNode) tuples[0], (HibNode) tuples[1]))
+					.map(tuples -> Pair.of((Node) tuples[0], (Node) tuples[1]))
 					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 		});
 		return CollectionUtil.addFallbackValueForMissingKeys(map, nodes, Collections.emptyList());
 	}
 
 	@Override
-	public HibNode getParentNode(HibNode node, String branchUuid) {
+	public Node getParentNode(Node node, String branchUuid) {
 		if (maybeParentLoader().isPresent()) {
 			return maybeParentLoader().get().apply(node);
 		}
@@ -235,7 +235,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public String getParentNodeUuid(HibNode node, String branchUuid) {
+	public String getParentNodeUuid(Node node, String branchUuid) {
 		List<UUID> parentUuid = em().createNamedQuery("nodeBranchParent.findParentNodeUuidByNodeAndBranch")
 				.setParameter("node", node.getId())
 				.setParameter("branch", UUIDUtil.toJavaUuid(branchUuid))
@@ -250,21 +250,21 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid) {
+	public Map<Node, Node> getParentNodes(Collection<Node> nodes, String branchUuid) {
 		if (nodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
 
-		List<UUID> nodesUuids = nodes.stream().map(HibNode::getId).map(UUID.class::cast).collect(Collectors.toList());
+		List<UUID> nodesUuids = nodes.stream().map(Node::getId).map(UUID.class::cast).collect(Collectors.toList());
 
-		Map<HibNode, HibNode> map = SplittingUtils.splitAndMergeInMap(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+		Map<Node, Node> map = SplittingUtils.splitAndMergeInMap(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
 			List<Object[]> resultList = em().createNamedQuery("nodeBranchParents.findParentNodesByNodesAndBranch")
 					.setParameter("nodesUuids", uuids)
 					.setParameter("branch", UUIDUtil.toJavaUuid(branchUuid))
 					.getResultList();
 
 			return resultList.stream()
-					.map(tuples -> Pair.of((HibNode) tuples[0], (HibNode) tuples[1]))
+					.map(tuples -> Pair.of((Node) tuples[0], (Node) tuples[1]))
 					.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 		});
 
@@ -272,7 +272,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public void removeParent(HibNode node, String branchUuid) {
+	public void removeParent(Node node, String branchUuid) {
 		em().createNamedQuery("nodeBranchParents.deleteParentsInBranch")
 				.setParameter("node", node.getId())
 				.setParameter("branch", UUIDUtil.toJavaUuid(branchUuid))
@@ -287,7 +287,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param parentNode new parent node
 	 */
 	@Override
-	public void setParentNode(HibNode node, String branchUuid, HibNode parentNode) {
+	public void setParentNode(Node node, String branchUuid, Node parentNode) {
 		// node must be its own parent at distance 0 for the current branch
 		HibBranchImpl branch = em().find(HibBranchImpl.class, UUIDUtil.toJavaUuid(branchUuid));
 
@@ -300,8 +300,8 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public void migrateParentNodes(List<? extends HibNode> nodes, HibBranch oldBranch, HibBranch newBranch) {
-		SplittingUtils.splitAndConsume(nodes.stream().map(HibNode::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createNativeQuery(HibBranchNodeParent.BULK_INSERT_IN_CLOSURE_TABLE_SQL)
+	public void migrateParentNodes(List<? extends Node> nodes, Branch oldBranch, Branch newBranch) {
+		SplittingUtils.splitAndConsume(nodes.stream().map(Node::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createNativeQuery(HibBranchNodeParent.BULK_INSERT_IN_CLOSURE_TABLE_SQL)
 				.setParameter("nodeUuids", slice)
 				.setParameter("newBranchUuid", newBranch.getId())
 				.setParameter("oldBranchUuid", oldBranch.getId())
@@ -309,7 +309,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@SuppressWarnings("unchecked")
-	private void disconnectSubTree(HibNode node, HibBranch branch) {
+	private void disconnectSubTree(Node node, Branch branch) {
 		List<UUID> children = em().createQuery("select p.child.dbUuid from node_branch_parent p " +
 				"where p.nodeParent = :node and p.branchParent = :branch")
 				.setParameter("node", node)
@@ -326,7 +326,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				.executeUpdate());
 	}
 
-	private void insertIntoParentTree(HibNode node, HibNode parentNode, HibBranch branch) {
+	private void insertIntoParentTree(Node node, Node parentNode, Branch branch) {
 		em().createNativeQuery(HibBranchNodeParent.INSERT_IN_CLOSURE_TABLE_SQL)
 				.setParameter("node", node.getId())
 				.setParameter("parentNode", parentNode.getId())
@@ -342,7 +342,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param branch
 	 * @return true if the self reference was added, false otherwise
 	 */
-	private boolean ensureSelfReferenceAtDepthZero(HibNode node, HibBranch branch) {
+	private boolean ensureSelfReferenceAtDepthZero(Node node, Branch branch) {
 		HibBranchNodeParentId nodeSelfReferenceId = new HibBranchNodeParentId((UUID) node.getId(), (UUID) node.getId(), (UUID) branch.getId());
 		if (em().find(HibBranchNodeParent.class, nodeSelfReferenceId) == null) {
 			HibBranchNodeParent selfReference = new HibBranchNodeParent(node, node, branch, 0);
@@ -354,7 +354,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type, PagingParameters pagingParameter) {
+	public Page<? extends Node> getChildren(Node node, InternalActionContext ac, List<String> languageTags, String branchUuid, ContainerType type, PagingParameters pagingParameter) {
 		CriteriaQuery<HibNodeImpl> query = cb().createQuery(HibNodeImpl.class);
 		Root<HibBranchNodeParent> root = query.from(HibBranchNodeParent.class);
 		query.select(root.get("child"));
@@ -384,9 +384,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm) {
+	public Stream<? extends Node> getChildrenStream(Node node, InternalActionContext ac, InternalPermission perm) {
 		Tx tx = Tx.get();
-		HibBranch branch = tx.getBranch(ac);
+		Branch branch = tx.getBranch(ac);
 		CriteriaQuery<HibNodeImpl> query = cb().createQuery(HibNodeImpl.class);
 		Root<HibBranchNodeParent> root = query.from(HibBranchNodeParent.class);
 		query.select(root.get("child"));
@@ -402,21 +402,21 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeNativeFiltering) {
+	public Map<Node, List<NodeContent>> getChildren(Set<Node> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeNativeFiltering) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		Map<HibNode, List<HibNode>> nodeChildrenMap = Optional.ofNullable(maybeNativeFiltering.isPresent()).filter(b -> b)
+		Map<Node, List<Node>> nodeChildrenMap = Optional.ofNullable(maybeNativeFiltering.isPresent()).filter(b -> b)
 				.map(unused -> findAllStream(Tx.get().getProject(ac), ac, perm, paging, 
 								Optional.ofNullable(type), maybeNativeFiltering, Optional.ofNullable(nodes), Optional.empty(), Optional.empty(), Optional.ofNullable(languageTags), Optional.of(UUIDUtil.toJavaUuid(branchUuid)), true)
 						.collect(Collectors.groupingBy(p -> p.getParentEdge().getNodeParent(), Collectors.mapping(p -> p.getNode(), Collectors.toList()))))
 				.orElseGet(() -> {
-					Map<HibNode, List<HibNode>> children = getChildren(nodes, branchUuid);
+					Map<Node, List<Node>> children = getChildren(nodes, branchUuid);
 
 					// filter for permissions
-					HibUser user = ac.getUser();
+					User user = ac.getUser();
 					if (!user.isAdmin()) {
 						// prepare permissions for all nodes
 						PersistingUserDao userDao = CommonTx.get().userDao();
-						List<Object> nodeIds = children.values().stream().flatMap(Collection::stream).map(HibNode::getId).collect(Collectors.toList());
+						List<Object> nodeIds = children.values().stream().flatMap(Collection::stream).map(Node::getId).collect(Collectors.toList());
 						userDao.preparePermissionsForElementIds(user, nodeIds);
 						// remove children without permission
 						children.values().forEach(nodeList -> nodeList.removeIf(node -> !userDao.hasPermission(user, node, perm)));
@@ -427,10 +427,10 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		if (nodeChildrenMap.isEmpty()) {
 			return Collections.emptyMap();
 		}
-		Set<HibNode> allNodes = nodeChildrenMap.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
+		Set<Node> allNodes = nodeChildrenMap.values().stream().flatMap(Collection::stream).collect(Collectors.toSet());
 
-		Map<UUID, HibNodeFieldContainer> fieldContainers = SplittingUtils.splitAndMergeInMap(allNodes, inQueriesLimitForSplitting(3), (nodesSlice) -> getFieldContainers(Collections.emptyList(), nodesSlice, languageTags, branchUuid, type));
-		Map<HibNode, List<NodeContent>> map = nodeChildrenMap.entrySet().stream()
+		Map<UUID, NodeFieldContainer> fieldContainers = SplittingUtils.splitAndMergeInMap(allNodes, inQueriesLimitForSplitting(3), (nodesSlice) -> getFieldContainers(Collections.emptyList(), nodesSlice, languageTags, branchUuid, type));
+		Map<Node, List<NodeContent>> map = nodeChildrenMap.entrySet().stream()
 				.map(kv -> {
 					List<NodeContent> content = kv.getValue().stream().distinct().map(n -> new NodeContent(n, fieldContainers.getOrDefault(n.getId(), null), languageTags, type)).collect(Collectors.toList());
 					return Pair.of(kv.getKey(), content);
@@ -439,29 +439,29 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public boolean isBaseNode(HibNode node) {
+	public boolean isBaseNode(Node node) {
 		return node.isBaseNode();
 	}
 
 	@Override
-	public void removeElement(HibNode node) {
+	public void removeElement(Node node) {
 		em().remove(node);
 	}
 
 	@Override
-	public HibNode findByName(HibProject project, String name) {
+	public Node findByName(Project project, String name) {
 		return firstOrNull(rootDaoHelper.findByElementInRoot(project, null, "name", name, null));
 	}
 
 	@Override
-	public Result<? extends HibNode> findAll(HibProject project) {
+	public Result<? extends Node> findAll(Project project) {
 		return new TraversalResult<>(em().createNamedQuery("node.findByProject", HibNodeImpl.class)
 				.setParameter("project", project)
 				.getResultList().iterator());
 	}
 
 	@SuppressWarnings("unchecked")
-	public Stream<UUID> findAllUuids(HibProject project) {
+	public Stream<UUID> findAllUuids(Project project) {
 		return em().createNamedQuery("node.findUuidsByProject")
 				.setParameter("project", project)
 				.getResultStream();
@@ -469,18 +469,18 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Node> findAll(Project project, InternalActionContext ac, PagingParameters pagingInfo) {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		HibUser user = ac.getUser();
+		User user = ac.getUser();
 		UUID branchUuid = UUIDUtil.toJavaUuid(Tx.get().getBranch(ac).getUuid());
 		if (PersistingRootDao.shouldSort(pagingInfo)) {
 			InternalPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-			return new PageImpl<HibNode>(
+			return new PageImpl<Node>(
 					findAllStream(project, ac, perm, pagingInfo, Optional.of(type), Optional.empty()).collect(Collectors.toList()), 
 					pagingInfo, 
 					countAll(project, ac, perm, pagingInfo, Optional.of(type), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(branchUuid), false));
 		}
-		List<? extends HibNode> result;
+		List<? extends Node> result;
 		long totalElements;
 		if (user.isAdmin()) {
 			Query<HibNodeImpl> query = em().createNamedQuery("node.findByProjectBranchAndContainerType.admin", HibNodeImpl.class)
@@ -495,7 +495,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					.setParameter("type", type)
 					.getSingleResult()).longValue();
 		} else if (type == PUBLISHED) {
-			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			Query<HibNodeImpl> query = em().createNamedQuery("node.findByProjectBranchAndContainerType.read_published", HibNodeImpl.class).unwrap(Query.class);
 			result = SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3), slice -> {
 				query.setParameter("project", project)
@@ -512,7 +512,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					.setParameter("roles", slice)
 					.getSingleResult()).longValue());
 		} else {
-			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			Query<HibNodeImpl> query  = em().createNamedQuery("node.findByProjectBranchAndContainerType.read", HibNodeImpl.class).unwrap(Query.class);
 			result = SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3), slice -> {
 				query.setParameter("project", project)
@@ -541,12 +541,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Page<? extends HibNode> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibNode> filter) {
+	public Page<? extends Node> findAll(Project project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Node> filter) {
 		return rootDaoHelper.findAllInRoot(project, ac, pagingInfo, Optional.empty(), filter, true);
 	}
 
 	@Override
-	public Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+	public Stream<NodeContent> findAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		if (maybeFilter.isPresent()) {
 			ContentDao contentDao = Tx.get().contentDao();
 			UUID branchUuid = (UUID) Tx.get().getBranch(ac).getId();
@@ -565,14 +565,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Pair<Stream<NodeData>, Long> query(
-			HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeCtype, 
-			Optional<FilterOperation<?>> maybeFilter, Optional<Set<HibNode>> maybeParents, Optional<HibSchema> maybeContentSchema, 
-			Optional<HibSchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, 
+			Project project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeCtype, 
+			Optional<FilterOperation<?>> maybeFilter, Optional<Set<Node>> maybeParents, Optional<Schema> maybeContentSchema, 
+			Optional<SchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, 
 			boolean noSchemaVersionExtractionFromJoins, boolean countOnly) {
 		HibernateTxImpl tx = currentTransaction.getTx();
 		DatabaseConnector databaseConnector = tx.data().getDatabaseConnector();
 
-		HibUser user = ac.getUser();
+		User user = ac.getUser();
 
 		String nodeAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(getPersistenceClass()).get());
 
@@ -718,13 +718,13 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				if (o.getClass().isArray() && ((Object[]) o).length > 1) {
 					Object[] oo = (Object[]) o;
 					// Check if node responded (normally under index 0)
-					HibNode node = Arrays.stream(oo).filter(HibNode.class::isInstance).map(HibNode.class::cast).findAny().orElse(null);
+					Node node = Arrays.stream(oo).filter(Node.class::isInstance).map(Node.class::cast).findAny().orElse(null);
 					// Check if branch parent edge responded
 					HibBranchNodeParent parentEdge = Arrays.stream(oo).filter(HibBranchNodeParent.class::isInstance).map(HibBranchNodeParent.class::cast).findAny().orElse(null);
 					// Check if container edge responded
-					HibNodeFieldContainerEdge container = Arrays.stream(oo).filter(HibNodeFieldContainerEdge.class::isInstance).map(HibNodeFieldContainerEdge.class::cast).findAny().orElse(null);
+					NodeFieldContainerEdge container = Arrays.stream(oo).filter(NodeFieldContainerEdge.class::isInstance).map(NodeFieldContainerEdge.class::cast).findAny().orElse(null);
 					// Check if content fields responded
-					HibNodeFieldContainer content = maybeContentColumns.map(contentColumns -> {
+					NodeFieldContainer content = maybeContentColumns.map(contentColumns -> {
 						int contentIndex = (node != null ? 1 : 0) + (parentEdge != null ? 1 : 0) + (container != null ? 1 : 0);
 						HibNodeFieldContainerImpl fc = new HibNodeFieldContainerImpl();
 						for (int i = 0; i < contentColumns.size(); i++) {
@@ -734,14 +734,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					}).orElse(null);
 					return new NodeData(node, parentEdge, container, content);
 				} else {
-					return new NodeData((HibNode) o, null, null, null);
+					return new NodeData((Node) o, null, null, null);
 				}
 			}), 0L);
 		}
 	}
 
 	@Override
-	public long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter) {
+	public long countAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter) {
 		return countAll(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, null, Optional.of(type), maybeFilter, 
 				Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(languageTags), Optional.of((UUID) Tx.get().getBranch(ac).getId()), false);
 	}
@@ -764,9 +764,9 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @return
 	 */
 	public long countAll(
-			HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeCtype, 
-			Optional<FilterOperation<?>> maybeFilter, Optional<Set<HibNode>> maybeParents, Optional<HibSchema> maybeContentSchema, 
-			Optional<HibSchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, boolean noSchemaVersionExtractionFromJoins) {
+			Project project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeCtype, 
+			Optional<FilterOperation<?>> maybeFilter, Optional<Set<Node>> maybeParents, Optional<Schema> maybeContentSchema, 
+			Optional<SchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, boolean noSchemaVersionExtractionFromJoins) {
 		return query(project, ac, perm, paging, maybeCtype, maybeFilter, maybeParents, maybeContentSchema, maybeContentSchemaVersion, maybeContainerLanguages, maybeBranch, noSchemaVersionExtractionFromJoins, true)
 				.getRight();
 	}
@@ -789,17 +789,17 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @return
 	 */
 	public Stream<NodeData> findAllStream(
-			HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeCtype, 
-			Optional<FilterOperation<?>> maybeFilter, Optional<Set<HibNode>> maybeParents, Optional<HibSchema> maybeContentSchema, 
-			Optional<HibSchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, boolean noSchemaVersionExtractionFromJoins) {
+			Project project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeCtype, 
+			Optional<FilterOperation<?>> maybeFilter, Optional<Set<Node>> maybeParents, Optional<Schema> maybeContentSchema, 
+			Optional<SchemaVersion> maybeContentSchemaVersion, Optional<List<String>> maybeContainerLanguages, Optional<UUID> maybeBranch, boolean noSchemaVersionExtractionFromJoins) {
 		return query(project, ac, perm, paging, maybeCtype, maybeFilter, maybeParents, maybeContentSchema, maybeContentSchemaVersion, maybeContainerLanguages, maybeBranch, noSchemaVersionExtractionFromJoins, false)
 				.getLeft();
 	}
 
 	@Override
-	public Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter) {
+	public Stream<? extends Node> findAllStream(Project project, InternalActionContext ac, InternalPermission perm, PagingParameters paging, Optional<ContainerType> maybeContainerType, Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
-		HibUser user = ac.getUser();
+		User user = ac.getUser();
 		UUID branchUuid = (UUID) tx.getBranch(ac).getId();
 		UserDao userDao = tx.userDao();
 
@@ -837,18 +837,18 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Page<? extends HibNode> findAllNoPerm(HibProject project, InternalActionContext ac,
+	public Page<? extends Node> findAllNoPerm(Project project, InternalActionContext ac,
 												 PagingParameters pagingInfo) {
 		return rootDaoHelper.findAllInRoot(project, ac, pagingInfo, Optional.empty(), null, false);
 	}
 
 	@Override
-	public void addItem(HibProject root, HibNode item) {
+	public void addItem(Project root, Node item) {
 		item.setProject(root);
 	}
 
 	@Override
-	public void removeItem(HibProject root, HibNode item) {
+	public void removeItem(Project root, Node item) {
 		if (root.getBaseNode() != null && root.getBaseNode().getUuid().equals(item.getUuid())) {
 			throw new IllegalArgumentException(
 					"Cannot remove a root node { " + item.getUuid() + " } from the project { " + root.getName() + " }");
@@ -858,13 +858,13 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Class<? extends HibNode> getPersistenceClass(HibProject root) {
+	public Class<? extends Node> getPersistenceClass(Project root) {
 		return HibNodeImpl.class;
 	}
 
 
 	@Override
-	public HibNode findByUuidGlobal(String uuid) {
+	public Node findByUuidGlobal(String uuid) {
 		if (!UUIDUtil.isUUID(uuid)) {
 			return null;
 		}
@@ -873,7 +873,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Collection<? extends HibNode> findByUuidGlobal(Collection<String> uuids) {
+	public Collection<? extends Node> findByUuidGlobal(Collection<String> uuids) {
 		if (CollectionUtils.isEmpty(uuids)) {
 			return Collections.emptyList();
 		}
@@ -887,19 +887,19 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Stream<? extends HibNode> findAllGlobal() {
+	public Stream<? extends Node> findAllGlobal() {
 		return em().createQuery("select n from node n", HibNodeImpl.class).getResultStream();
 	}
 
 	@Override
-	public void deletePersisted(HibProject root, HibNode entity) {
+	public void deletePersisted(Project root, Node entity) {
 		beforeDeletedFromDatabase(entity);
 		em().remove(entity);
 		afterDeletedFromDatabase(entity);
 	}
 
 	@Override
-	public HibNode beforeDeletedFromDatabase(HibNode node) {
+	public Node beforeDeletedFromDatabase(Node node) {
 		// clear branch parent references
 		em().createNamedQuery("nodeBranchParents.deleteAllByNode")
 				.setParameter("node", node)
@@ -919,7 +919,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public HibNode createPersisted(HibProject root, String uuid, Consumer<HibNode> inflater) {
+	public Node createPersisted(Project root, String uuid, Consumer<Node> inflater) {
 		HibNodeImpl element = daoHelper.create(uuid, n -> {
 			n.setProject(root);
 			inflater.accept(n);
@@ -928,13 +928,13 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo,
+	public Iterator<? extends NodeFieldContainerEdge> getWebrootEdges(Node node, String segmentInfo,
 																		 String branchUuid, ContainerType type) {
 		return HibernateTx.get().contentDao().streamEdgesOfWebrootPath(segmentInfo, branchUuid, type).iterator();
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists) {
+	public Stream<NodeField> getInboundReferences(Node node, boolean lookupInFields, boolean lookupInLists) {
 		HibernateTx tx = HibernateTx.get();
 		EntityManager em = tx.entityManager();
 
@@ -950,26 +950,26 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 						.setParameter("uuid", node.getId())
 						.getResultStream()
 						.map(HibNodeFieldEdgeImpl::getField)
-						.map(HibNodeField.class::cast) : Stream.empty());
+						.map(NodeField.class::cast) : Stream.empty());
 	}
 
 	@Override
-	public Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	public Stream<NodeContent> findAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
 		Tx tx = Tx.get();
 		UUID projectId = (UUID) project.getId();
 		UUID branchId = (UUID) tx.getBranch(ac).getId();
-		HibUser user = ac.getUser();
+		User user = ac.getUser();
 
 		// this will preload the nodes (and put them into the cache) for performance reasons.
 		findAll(project, ac, ac.getPagingParameters());
 
-		Optional<List<HibRole>> maybeRoles = Optional.ofNullable(user).filter(u -> !u.isAdmin()).map(noAdmin -> IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator()));
-		Collection<HibNodeFieldContainer> allContent = findAllContent(maybeRoles, projectId, branchId, type, languageTags);
+		Optional<List<Role>> maybeRoles = Optional.ofNullable(user).filter(u -> !u.isAdmin()).map(noAdmin -> IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator()));
+		Collection<NodeFieldContainer> allContent = findAllContent(maybeRoles, projectId, branchId, type, languageTags);
 
 		return allContent.stream().map(c -> new NodeContent(c.getNode(), c, languageTags, type));
 	}
 
-	private Collection<HibNodeFieldContainer> findAllContent(Optional<List<HibRole>> maybeRoles, UUID projectId, UUID branchId, ContainerType type, List<String> languageTags) {
+	private Collection<NodeFieldContainer> findAllContent(Optional<List<Role>> maybeRoles, UUID projectId, UUID branchId, ContainerType type, List<String> languageTags) {
 		List<HibNodeFieldContainerEdgeImpl> edges;
 		if (maybeRoles.isEmpty()) {
 			// Here we hope that the number of languages on Earth never reaches SQL parameters limit...
@@ -997,7 +997,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+	public Stream<NodeContent> findAllContent(SchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
 		UUID branchId = (UUID) tx.getBranch(ac).getId();
 		if (maybeFilter.isPresent()) {
@@ -1008,8 +1008,8 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 						Optional.of(type), Optional.of(allFilter), Optional.empty(), Optional.empty(), Optional.ofNullable(schemaVersion), Optional.of(languageTags), Optional.of(branchId), true)
 					.map(nc -> new NodeContent(nc.getNode(), nc.getContent(), languageTags, type));
 		} else {
-			HibUser user = ac.getUser();
-			List<HibRole> roles = user.isAdmin() ? Collections.emptyList() : IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			User user = ac.getUser();
+			List<Role> roles = user.isAdmin() ? Collections.emptyList() : IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			TypedQuery<HibNodeFieldContainerEdgeImpl> edgesQuery;
 			if (roles.isEmpty()) {
 				edgesQuery = em().createNamedQuery("contentEdge.findByTypeBranchLanguageAndVersionForAdmin", HibNodeFieldContainerEdgeImpl.class);
@@ -1027,7 +1027,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					.setParameter("schemaVersion", schemaVersion)
 					.getResultList();		
 			List<HibNodeFieldContainerImpl> schemaContent = contentStorage.findMany(edges);
-		Map<UUID, HibNodeFieldContainer> contentByNode = schemaContent.stream()
+		Map<UUID, NodeFieldContainer> contentByNode = schemaContent.stream()
 					.collect(collectingByNodeWithLanguageFallback(languageTags));
 
 			return contentByNode.values().stream().map(c -> new NodeContent(c.getNode(), c, languageTags, type));
@@ -1035,12 +1035,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	}
 
 	@Override
-	public Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
+	public Stream<? extends Node> getBreadcrumbNodeStream(Node node, InternalActionContext ac) {
 		if (maybeBreadcrumbsLoader().isPresent()) {
 			return maybeBreadcrumbsLoader().get().apply(node).stream().map(HibNodeImpl.class::cast);
 		}
 
-		HibBranch branch = Tx.get().getBranch(ac, node.getProject());
+		Branch branch = Tx.get().getBranch(ac, node.getProject());
 		return em().createNamedQuery("nodeBranchParents.findBreadcrumbs", HibNodeImpl.class)
 				.setParameter("node", node)
 				.setParameter("branch", branch)
@@ -1050,14 +1050,14 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> nodes, InternalActionContext ac) {
+	public Map<Node, List<Node>> getBreadcrumbNodesMap(Collection<Node> nodes, InternalActionContext ac) {
 		if (nodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
 
 		UUID branchUuid = UUIDUtil.toJavaUuid(Tx.get().getBranch(ac).getUuid());
-		List<Object> nodesUuids = nodes.stream().map(HibNode::getId).collect(Collectors.toList());
-		Map<HibNode, List<HibNode>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
+		List<Object> nodesUuids = nodes.stream().map(Node::getId).collect(Collectors.toList());
+		Map<Node, List<Node>> map = SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, inQueriesLimitForSplitting(1), (uuids) -> {
 			List<Object[]> list = em().createNamedQuery("nodeBranchParents.findAncestors")
 					.setParameter("nodeUuids", uuids)
 					.setParameter("branchUuid", branchUuid)
@@ -1065,7 +1065,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 					.getResultList();
 
 			return list.stream()
-					.map(r -> Pair.of((HibNode) r[0], (HibNode) r[1]))
+					.map(r -> Pair.of((Node) r[0], (Node) r[1]))
 					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 		});
 
@@ -1074,7 +1074,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {
+	public void beforeGetETagForPage(Page<? extends CoreElement<? extends RestModel>> page, InternalActionContext ac) {
 		ContentInterceptor contentInterceptor = HibernateTx.get().getContentInterceptor();
 		List<DataLoaders.Loader> dataLoaderToInitialize = Arrays.asList(
 				DataLoaders.Loader.CHILDREN_LOADER,
@@ -1085,20 +1085,20 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				DataLoaders.Loader.MICRONODE_LOADER,
 				DataLoaders.Loader.LIST_ITEM_LOADER);
 
-		contentInterceptor.initializeDataLoaders((Collection<HibNode>) page.getWrappedList(), ac, dataLoaderToInitialize);
+		contentInterceptor.initializeDataLoaders((Collection<Node>) page.getWrappedList(), ac, dataLoaderToInitialize);
 
 		// prepare permissions on nodes and tags
-		HibBranch branch = Tx.get().getBranch(ac);
+		Branch branch = Tx.get().getBranch(ac);
 		PersistingUserDao userDao = CommonTx.get().userDao();
 		List<Object> permIds = new ArrayList<>();
-		permIds.addAll(page.getWrappedList().stream().map(HibCoreElement::getId).collect(Collectors.toList()));
-		permIds.addAll(page.getWrappedList().stream().flatMap(item -> ((HibNode)item).getTags(branch).stream()).map(HibTag::getId).collect(Collectors.toSet()));
+		permIds.addAll(page.getWrappedList().stream().map(CoreElement::getId).collect(Collectors.toList()));
+		permIds.addAll(page.getWrappedList().stream().flatMap(item -> ((Node)item).getTags(branch).stream()).map(Tag::getId).collect(Collectors.toSet()));
 		userDao.preparePermissionsForElementIds(ac.getUser(), permIds);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page,
+	public void beforeTransformToRestSync(Page<? extends CoreElement<? extends RestModel>> page,
 			InternalActionContext ac) {
 		ContentInterceptor contentInterceptor = HibernateTx.get().getContentInterceptor();
 		List<DataLoaders.Loader> dataLoaderToInitialize = Arrays.asList(
@@ -1110,13 +1110,13 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 				DataLoaders.Loader.MICRONODE_LOADER,
 				DataLoaders.Loader.LIST_ITEM_LOADER);
 
-		contentInterceptor.initializeDataLoaders((Collection<HibNode>) page.getWrappedList(), ac, dataLoaderToInitialize);
+		contentInterceptor.initializeDataLoaders((Collection<Node>) page.getWrappedList(), ac, dataLoaderToInitialize);
 
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 		if (fields.has("perms")) {
 			PersistingUserDao userDao = CommonTx.get().userDao();
-			List<Object> nodeIds = page.getWrappedList().stream().map(HibCoreElement::getId).collect(Collectors.toList());
+			List<Object> nodeIds = page.getWrappedList().stream().map(CoreElement::getId).collect(Collectors.toList());
 			userDao.preparePermissionsForElementIds(ac.getUser(), nodeIds);
 		}
 	}
@@ -1126,7 +1126,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param nodeUuids
 	 * @return
 	 */
-	public List<? extends HibNode> loadNodesWithEdges(Collection<UUID> nodeUuids) {
+	public List<? extends Node> loadNodesWithEdges(Collection<UUID> nodeUuids) {
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");
 		return SplittingUtils.splitAndMergeInList(nodeUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
 				.setParameter("nodeUuids", slice)
@@ -1139,7 +1139,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param nodeUuids
 	 * @return
 	 */
-	public List<? extends HibNode> loadNodesWithEdgesAndTags(List<UUID> nodeUuids) {
+	public List<? extends Node> loadNodesWithEdgesAndTags(List<UUID> nodeUuids) {
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.contentAndTags");
 		return em().createNamedQuery("node.findNodesByUuids", HibNodeImpl.class)
 				.setParameter("nodeUuids", nodeUuids)
@@ -1152,12 +1152,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param project
 	 * @param bac
 	 */
-	public void deleteAllFromProject(HibProject project, BulkActionContext bac) {
+	public void deleteAllFromProject(Project project, BulkActionContext bac) {
 		nodeDeleteDao.deleteAllFromProject(project, bac);
 	}
 
 	@Override
-	public void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteFromBranch(Node node, InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks) {
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (parameters.isRecursive()) {
 			nodeDeleteDao.deleteRecursiveFromBranch(node, branch, bac, ignoreChecks);
@@ -1166,7 +1166,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 	}
 	@Override
-	public void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
+	public void delete(Node node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
 		if (recursive) {
 			nodeDeleteDao.deleteRecursive(node, bac, ignoreChecks);
 		} else {
@@ -1174,11 +1174,11 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		}
 	}
 
-	private Map<UUID, HibNodeFieldContainer> getFieldContainers(Collection<HibRole> roles, Collection<HibNode> nodes, List<String> languageTags, String branchUuid, ContainerType type) {
+	private Map<UUID, NodeFieldContainer> getFieldContainers(Collection<Role> roles, Collection<Node> nodes, List<String> languageTags, String branchUuid, ContainerType type) {
 		return getFieldsContainers(roles, nodes, type, branchUuid, languageTags);
 	}
 
-	private Map<UUID, HibNodeFieldContainer> getFieldsContainers(Collection<HibRole> roles, Collection<HibNode> nodes, ContainerType type, String branchUuid, List<String> languageTags) {
+	private Map<UUID, NodeFieldContainer> getFieldsContainers(Collection<Role> roles, Collection<Node> nodes, ContainerType type, String branchUuid, List<String> languageTags) {
 		List<HibNodeFieldContainerEdgeImpl> edges;
 		if (roles.isEmpty()) {
 			edges = SplittingUtils.splitAndMergeInList(nodes, HibernateUtil.inQueriesLimitForSplitting(3 + languageTags.size()), (params) -> {
@@ -1214,7 +1214,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	 * @param languageTags
 	 * @return
 	 */
-	private Collector<HibNodeFieldContainerImpl, ?, Map<UUID, HibNodeFieldContainer>> collectingByNodeWithLanguageFallback(List<String> languageTags)  {
+	private Collector<HibNodeFieldContainerImpl, ?, Map<UUID, NodeFieldContainer>> collectingByNodeWithLanguageFallback(List<String> languageTags)  {
 		return Collectors.toMap(c -> c.get(CommonContentColumn.NODE, () -> null, Function.identity()), Function.identity(), (a, b) -> {
 			int indexOfA = languageTags.indexOf(a.getLanguageTag());
 			int indexOfB = languageTags.indexOf(b.getLanguageTag());
@@ -1223,7 +1223,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		});
 	}
 
-	public NativeJoin makeParentJoin(String nodeAlias, Set<HibNode> parents, Optional<UUID> maybeBranch) {
+	public NativeJoin makeParentJoin(String nodeAlias, Set<Node> parents, Optional<UUID> maybeBranch) {
 		String branchParentAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(HibBranchNodeParent.class).get());
 		NativeJoin mj = new NativeJoin();
 		maybeBranch.ifPresent(branchUuid -> {
@@ -1234,7 +1234,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		Optional.of(parents != null && parents.size() > 0).filter(b -> b).ifPresent(yes -> {
 			String parentNodesParam = makeParamName(parents);
 			mj.appendWhereClause(String.format(" ( %s.%s IN :%s) ", branchParentAlias, databaseConnector.renderNonContentColumn("nodeParent_dbUuid"), parentNodesParam));
-			mj.getParameters().put(parentNodesParam, parents.stream().map(HibNode::getId).collect(Collectors.toSet()));
+			mj.getParameters().put(parentNodesParam, parents.stream().map(Node::getId).collect(Collectors.toSet()));
 		});
 		{
 			Integer distance = Integer.valueOf(1);
@@ -1249,26 +1249,26 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 		return mj;
 	}
 
-	private Optional<Function<HibNode, HibNode>> maybeParentLoader() {
+	private Optional<Function<Node, Node>> maybeParentLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getParentLoader);
 	}
 
-	private Optional<Function<HibNode, List<HibNode>>> maybeChildrenLoader() {
+	private Optional<Function<Node, List<Node>>> maybeChildrenLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getChildrenLoader);
 	}
 
-	private Optional<Function<HibNode, List<HibNode>>> maybeBreadcrumbsLoader() {
+	private Optional<Function<Node, List<Node>>> maybeBreadcrumbsLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getBreadcrumbsLoader);
 	}
 
 	@Override
-	public Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly) {
+	public Set<String> findUsedLanguages(Project project, Collection<String> languageTags, boolean assignedLanguagesOnly) {
 		TypedQuery<String> query;
 		if (assignedLanguagesOnly) {
 			query = em().createNamedQuery("contentEdge.findUsedKnownLanguages", String.class);

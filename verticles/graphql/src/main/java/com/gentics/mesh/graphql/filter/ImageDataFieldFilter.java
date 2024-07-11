@@ -8,11 +8,11 @@ import com.gentics.graphqlfilter.filter.Filter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.core.data.HibImageDataElement;
-import com.gentics.mesh.core.data.node.field.HibImageDataField;
-import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
+import com.gentics.mesh.core.data.ImageDataElement;
+import com.gentics.mesh.core.data.node.field.ImageDataField;
+import com.gentics.mesh.core.data.node.field.nesting.ReferenceField;
 
-public abstract class ImageDataFieldFilter<E extends HibImageDataElement, T extends HibReferenceField<E> & HibImageDataField> extends EntityReferenceFilter<E, T, Map<String, ?>> {
+public abstract class ImageDataFieldFilter<E extends ImageDataElement, T extends ReferenceField<E> & ImageDataField> extends EntityReferenceFilter<E, T, Map<String, ?>> {
 
 	protected final String owner;
 
@@ -26,11 +26,11 @@ public abstract class ImageDataFieldFilter<E extends HibImageDataElement, T exte
 		List<FilterField<T, ?>> filters = super.getFilters();
 		//filters.add(makeWrappedFieldFilter("filename", "Filters by filename", StringFilter.filter(), HibImageDataField::getFileName));
 		//filters.add(makeWrappedFieldFilter("mime", "Filters by MIME type", StringFilter.filter(), HibImageDataField::getMimeType));
-		filters.add(makeWrappedFieldFilter("imageDominantColor", "Filters by image dominant color", StringFilter.filter(), HibImageDataField::getImageDominantColor));
-		filters.add(makeWrappedFieldFilter("plainText", "Filters by text data", StringFilter.filter(), HibImageDataField::getPlainText));
-		filters.add(makeWrappedFieldFilter("altitude", "Filters by altitude", NumberFilter.filter(), HibImageDataField::getLocationAltitude));
-		filters.add(makeWrappedFieldFilter("latitude", "Filters by latitude", NumberFilter.filter(), HibImageDataField::getLocationLatitude));
-		filters.add(makeWrappedFieldFilter("longitude", "Filters by longitude", NumberFilter.filter(), HibImageDataField::getLocationLongitude));	
+		filters.add(makeWrappedFieldFilter("imageDominantColor", "Filters by image dominant color", StringFilter.filter(), ImageDataField::getImageDominantColor));
+		filters.add(makeWrappedFieldFilter("plainText", "Filters by text data", StringFilter.filter(), ImageDataField::getPlainText));
+		filters.add(makeWrappedFieldFilter("altitude", "Filters by altitude", NumberFilter.filter(), ImageDataField::getLocationAltitude));
+		filters.add(makeWrappedFieldFilter("latitude", "Filters by latitude", NumberFilter.filter(), ImageDataField::getLocationLatitude));
+		filters.add(makeWrappedFieldFilter("longitude", "Filters by longitude", NumberFilter.filter(), ImageDataField::getLocationLongitude));	
 		filters.add(makeWrappedFieldFilter("focalPointX", "Filters by longitude", NumberFilter.filter(), 
 				edge -> (edge != null && edge.getImageFocalPoint() != null) ? edge.getImageFocalPoint().getX() : null));	
 		filters.add(makeWrappedFieldFilter("focalPointY", "Filters by longitude", NumberFilter.filter(), 
@@ -38,5 +38,5 @@ public abstract class ImageDataFieldFilter<E extends HibImageDataElement, T exte
 		return filters;
 	}
 
-	protected abstract <B extends HibImageDataElement, F extends ImageDataFilter<B>> F getBinaryFilter();
+	protected abstract <B extends ImageDataElement, F extends ImageDataFilter<B>> F getBinaryFilter();
 }

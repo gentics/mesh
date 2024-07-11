@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.util.Map;
 
-import com.gentics.mesh.core.data.node.field.HibImageDataField;
+import com.gentics.mesh.core.data.node.field.ImageDataField;
 
 /**
  * Hibernate image data field entity extension
@@ -10,7 +10,7 @@ import com.gentics.mesh.core.data.node.field.HibImageDataField;
  * @author plyhun
  *
  */
-public interface HibImageDataFieldBase extends HibImageDataField {
+public interface HibImageDataFieldBase extends ImageDataField {
 
 	public void setMetadataProperties(Map<String, String> properties);
 }

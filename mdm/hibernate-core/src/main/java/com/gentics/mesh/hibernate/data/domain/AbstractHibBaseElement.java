@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 
 /**
  * An ancestor of Mesh entity and Hibernate database element, common for all Enterprise Mesh entity implementation.
@@ -11,6 +11,6 @@ import com.gentics.mesh.core.data.HibBaseElement;
  *
  */
 @MappedSuperclass
-public abstract class AbstractHibBaseElement extends AbstractHibDatabaseElement implements HibBaseElement {
+public abstract class AbstractHibBaseElement extends AbstractHibDatabaseElement implements BaseElement {
 
 }

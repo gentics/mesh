@@ -10,12 +10,12 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -103,7 +103,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAutoPurgeWithUpload() {
 		enableAutoPurgeOnSchema();
-		HibNode node = content();
+		Node node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		tx(tx -> {
 			prepareSchema(content(), "", "binary"); 
@@ -119,7 +119,7 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutoPurgeWithBinaryTransform() throws IOException {
-		HibNode node = content();
+		Node node = content();
 		String nodeUuid = tx(() -> node.getUuid());
 		assertVersions(nodeUuid, "en", "PD(1.0)=>I(0.1)");
 		enableAutoPurgeOnSchema();
@@ -195,9 +195,9 @@ public class SchemaAutoPurgeEndpointTest extends AbstractMeshTest {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.setVersion("draft");
-		Tuple<String, Field> firstNameField = Tuple.tuple("firstName", FieldUtil.createStringField("joe"));
-		Tuple<String, Field> lastNameField = Tuple.tuple("lastName", FieldUtil.createStringField("doe"));
-		MicronodeField micronode = FieldUtil.createMicronodeField("card", firstNameField, lastNameField);
+		Tuple<String, FieldModel> firstNameField = Tuple.tuple("firstName", FieldUtil.createStringField("joe"));
+		Tuple<String, FieldModel> lastNameField = Tuple.tuple("lastName", FieldUtil.createStringField("doe"));
+		MicronodeFieldModel micronode = FieldUtil.createMicronodeField("card", firstNameField, lastNameField);
 		micronode.getMicroschema().setName("vcard");
 		nodeUpdateRequest.getFields().put("card", micronode);
 		call(() -> client().updateNode(projectName(), nodeUuid, nodeUpdateRequest));

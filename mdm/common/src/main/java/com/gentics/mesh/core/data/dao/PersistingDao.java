@@ -2,7 +2,7 @@ package com.gentics.mesh.core.data.dao;
 
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 
 /**
  * A DAO for persistent state manipulation. Use {@link Dao}/{@link DaoGlobal} instead of this when possible,
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.HibBaseElement;
  *
  * @param <T>
  */
-public interface PersistingDao<T extends HibBaseElement> {
+public interface PersistingDao<T extends BaseElement> {
 
 	/**
 	 * Get the final type of the persistence entity of the dao.

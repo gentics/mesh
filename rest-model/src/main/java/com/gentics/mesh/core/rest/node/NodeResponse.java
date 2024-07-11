@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -24,7 +24,7 @@ import com.gentics.mesh.parameter.NodeParameters;
 /**
  * POJO for the node rest response model.
  */
-public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, ExpandableNode, FieldContainer {
+public class NodeResponse extends AbstractGenericRestResponse implements NodeFieldModel, NodeFieldListItem, ExpandableNode, FieldContainerModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
@@ -56,7 +56,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Object which contains information about child elements.")
-	private Map<String, NodeChildrenInfo> childrenInfo;
+	private Map<String, NodeChildrenInfoModel> childrenInfo;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node.")
@@ -151,7 +151,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Map<String, NodeChildrenInfo> getChildrenInfo() {
+	public Map<String, NodeChildrenInfoModel> getChildrenInfo() {
 		return childrenInfo;
 	}
 
@@ -160,7 +160,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @param childrenInfo
 	 */
-	public void setChildrenInfo(Map<String, NodeChildrenInfo> childrenInfo) {
+	public void setChildrenInfo(Map<String, NodeChildrenInfoModel> childrenInfo) {
 		this.childrenInfo = childrenInfo;
 	}
 

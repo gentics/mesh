@@ -22,16 +22,16 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.NameConflictException;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<HibProject>, PersistingNamedEntityDao<HibProject> {
+public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Project>, PersistingNamedEntityDao<Project> {
 	static final Logger log = LoggerFactory.getLogger(ProjectDao.class);
 
 	/**
@@ -63,25 +63,25 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	 * 
 	 * @return
 	 */
-	HibBaseElement getSchemaContainerPermissionRoot(HibProject project);
+	BaseElement getSchemaContainerPermissionRoot(Project project);
 
 	/**
 	 * Return the microschema container permission root for the project.
 	 *
 	 * @return
 	 */
-	HibBaseElement getMicroschemaContainerPermissionRoot(HibProject project);
+	BaseElement getMicroschemaContainerPermissionRoot(Project project);
 
 	/**
 	 * Return the node permission root of the project. Internally this method will create the root when it has not yet been created.
 	 * 
 	 * @return Node root element
 	 */
-	HibBaseElement getNodePermissionRoot(HibProject project);
+	BaseElement getNodePermissionRoot(Project project);
 
 	@Override
-	default HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
-		HibProject project = findByName(projectName);
+	default Project findByName(InternalActionContext ac, String projectName, InternalPermission perm) {
+		Project project = findByName(projectName);
 		if (project == null) {
 			throw error(NOT_FOUND, "object_not_found_for_name", projectName);
 		}
@@ -89,13 +89,13 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
-		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
+	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
+		SchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
 	}
 
 	@Override
-	default ProjectResponse transformToRestSync(HibProject project, InternalActionContext ac, int level, String... languageTags) {
+	default ProjectResponse transformToRestSync(Project project, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		ProjectLoadParameters loadParams = ac.getProjectLoadParameters();
 		FieldsSet fields = generic.getFields();
@@ -117,17 +117,17 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default String getSubETag(HibProject project, InternalActionContext ac) {
+	default String getSubETag(Project project, InternalActionContext ac) {
 		return String.valueOf(project.getLastEditedTimestamp());
 	}
 
 	@Override
-	default HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
+	default Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch) {
 		PersistingBranchDao branchDao = CommonTx.get().branchDao();
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		
-		HibProject project = createPersisted(uuid, p -> {
+		Project project = createPersisted(uuid, p -> {
 			p.setName(name);
 		});		
 
@@ -138,7 +138,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		getNodePermissionRoot(project);
 
 		// Create the initial branch for the project and add the used schema version to it
-		HibBranch branch = branchDao.create(project, name, creator, batch);
+		Branch branch = branchDao.create(project, name, creator, batch);
 		
 		branch.setMigrated(true);
 		if (hostname != null) {
@@ -173,8 +173,8 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default HibNode createBaseNode(HibProject project, HibUser creator, HibSchemaVersion schemaVersion) {
-		HibNode baseNode = project.getBaseNode();
+	default Node createBaseNode(Project project, User creator, SchemaVersion schemaVersion) {
+		Node baseNode = project.getBaseNode();
 		CommonTx ctx = CommonTx.get();
 		ContentDao contentDao = ctx.contentDao();
 		BranchDao branchDao = ctx.branchDao();
@@ -185,7 +185,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 				n.setProject(project);
 				n.setCreated(creator);
 			});
-			HibLanguage language = ctx.languageDao().findByLanguageTag(project, ctx.data().options().getDefaultLanguage());
+			Language language = ctx.languageDao().findByLanguageTag(project, ctx.data().options().getDefaultLanguage());
 			if (language == null) {
 				language = ctx.languageDao().findByLanguageTag(ctx.data().options().getDefaultLanguage());
 				project.addLanguage(language);
@@ -197,8 +197,8 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibBaseElement projectPermRoot = CommonTx.get().data().permissionRoots().project();
+	default Project create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		BaseElement projectPermRoot = CommonTx.get().data().permissionRoots().project();
 		UserDao userDao = CommonTx.get().userDao();
 		SchemaDao schemaDao = CommonTx.get().schemaDao();
 		ContentDao contentDao = CommonTx.get().contentDao();
@@ -210,7 +210,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		// name)
 		ProjectCreateRequest requestModel = ac.fromJson(ProjectCreateRequest.class);
 		String projectName = requestModel.getName();
-		HibUser creator = ac.getUser();
+		User creator = ac.getUser();
 
 		if (StringUtils.isEmpty(requestModel.getName())) {
 			throw error(BAD_REQUEST, "project_missing_name");
@@ -219,7 +219,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 			throw error(FORBIDDEN, "error_missing_perm", projectPermRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		// TODO instead of this check, a constraint in the db should be added
-		HibProject conflictingProject = findByName(requestModel.getName());
+		Project conflictingProject = findByName(requestModel.getName());
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
@@ -228,13 +228,13 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
 		}
-		HibSchemaVersion schemaVersion = schemaDao.fromReference(requestModel.getSchema());
+		SchemaVersion schemaVersion = schemaDao.fromReference(requestModel.getSchema());
 
 		String hostname = requestModel.getHostname();
 		Boolean ssl = requestModel.getSsl();
 		String pathPrefix = requestModel.getPathPrefix();
-		HibProject project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
-		HibBranch initialBranch = branchDao.getInitialBranch(project);
+		Project project = create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, uuid, batch);
+		Branch initialBranch = branchDao.getInitialBranch(project);
 		String branchUuid = initialBranch.getUuid();
 
 		// Add project permissions
@@ -263,7 +263,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default boolean update(HibProject project, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Project project, InternalActionContext ac, EventQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
 
 		String oldName = project.getName();
@@ -271,7 +271,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		CommonTx.get().data().mesh().routerStorageRegistry().assertProjectName(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
-			HibProject projectWithSameName = findByName(newName);
+			Project projectWithSameName = findByName(newName);
 			if (projectWithSameName != null && !projectWithSameName.getUuid().equals(project.getUuid())) {
 				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
 			}
@@ -290,7 +290,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default void delete(HibProject project, BulkActionContext bac) {
+	default void delete(Project project, BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
@@ -302,14 +302,14 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		PersistingJobDao jobDao = CommonTx.get().jobDao();
 
 		// Remove the nodes in the project hierarchy
-		HibNode base = project.getBaseNode();
+		Node base = project.getBaseNode();
 		nodeDao.delete(base, bac, true, true);
 
 		// Remove the tagfamilies from the index
 		tagFamilyDao.onRootDeleted(project, bac);
 
 		// Remove all nodes in this project
-		for (HibNode node : findNodes(project)) {
+		for (Node node : findNodes(project)) {
 			nodeDao.delete(node, bac, true, false);
 			bac.inc();
 		}
@@ -318,12 +318,12 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 		nodeDao.onRootDeleted(project, bac);
 
 		// Unassign the schemas from the container
-		for (HibSchema container : project.getSchemas().list()) {
+		for (Schema container : project.getSchemas().list()) {
 			schemaDao.unassign(container, project, bac.batch());
 		}
 
 		// Unassign the microschemas from the container
-		for (HibMicroschema container : project.getMicroschemas().list()) {
+		for (Microschema container : project.getMicroschemas().list()) {
 			microschemaDao.unassign(container, project, bac.batch());
 		}
 
@@ -346,7 +346,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assigned) {
+	default ProjectSchemaEventModel onSchemaAssignEvent(Project project, Schema schema, Assignment assigned) {
 		ProjectSchemaEventModel model = new ProjectSchemaEventModel();
 		switch (assigned) {
 			case ASSIGNED:
@@ -362,7 +362,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assigned) {
+	default ProjectMicroschemaEventModel onMicroschemaAssignEvent(Project project, Microschema microschema, Assignment assigned) {
 		ProjectMicroschemaEventModel model = new ProjectMicroschemaEventModel();
 		switch (assigned) {
 			case ASSIGNED:
@@ -378,7 +378,7 @@ public interface PersistingProjectDao extends ProjectDao, PersistingDaoGlobal<Hi
 	}
 
 	@Override
-	default Optional<NameCache<HibProject>> maybeGetCache() {
+	default Optional<NameCache<Project>> maybeGetCache() {
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().projectNameCache());
 	}
 }

@@ -17,10 +17,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -40,16 +40,16 @@ public class HibPermissionRootImpl extends AbstractHibBaseElement implements Ser
 	private static final long serialVersionUID = -766477937727737773L;
 
 	@ManyToOne(targetEntity = HibProjectImpl.class, fetch = FetchType.LAZY)
-	private HibProject parent;
+	private Project parent;
 
 	@Enumerated(EnumType.STRING)
 	private PermissionType type;
 
-	public HibProject getParent() {
+	public Project getParent() {
 		return parent;
 	}
 
-	public HibPermissionRootImpl setParent(HibProject parent) {
+	public HibPermissionRootImpl setParent(Project parent) {
 		this.parent = parent;
 		return this;
 	}
@@ -64,7 +64,7 @@ public class HibPermissionRootImpl extends AbstractHibBaseElement implements Ser
 	}
 
 	@Transient
-	ImmutableMap<PermissionType, Supplier<Result<? extends HibBaseElement>>> globalDaoMap = ImmutableMap.<PermissionType, Supplier<Result<? extends HibBaseElement>>>builder()
+	ImmutableMap<PermissionType, Supplier<Result<? extends BaseElement>>> globalDaoMap = ImmutableMap.<PermissionType, Supplier<Result<? extends BaseElement>>>builder()
 			.put(PermissionType.PROJECT, () -> Tx.get().projectDao().findAll())
 			.put(PermissionType.USER, () -> Tx.get().userDao().findAll())
 			.put(PermissionType.GROUP, () -> Tx.get().groupDao().findAll())
@@ -74,7 +74,7 @@ public class HibPermissionRootImpl extends AbstractHibBaseElement implements Ser
 			.build();
 
 	@Transient
-	ImmutableMap<PermissionType, Function<HibProject, Result<? extends HibBaseElement>>> rootDaoMap = ImmutableMap.<PermissionType, Function<HibProject, Result<? extends HibBaseElement>>>builder()
+	ImmutableMap<PermissionType, Function<Project, Result<? extends BaseElement>>> rootDaoMap = ImmutableMap.<PermissionType, Function<Project, Result<? extends BaseElement>>>builder()
 			.put(PermissionType.MICROSCHEMA, (project) -> Tx.get().microschemaDao().findAll(project))
 			.put(PermissionType.SCHEMA, (project) -> Tx.get().schemaDao().findAll(project))
 			.put(PermissionType.BRANCH, (project) -> Tx.get().branchDao().findAll(project))
@@ -83,22 +83,22 @@ public class HibPermissionRootImpl extends AbstractHibBaseElement implements Ser
 			.build();
 
 	@Override
-	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
+	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		if (PermissionType.MESH.equals(type)) {
 			// TODO not clear when this will be called, I've only found an occurrence on tests
 			return true;
 		}
 
 		if (parent != null) {
-			Function<HibProject, Result<? extends HibBaseElement>> projectProvider = rootDaoMap.get(type);
+			Function<Project, Result<? extends BaseElement>> projectProvider = rootDaoMap.get(type);
 			if (projectProvider == null) {
 				throw new IllegalArgumentException("Don't know root node for type " + type);
 			}
 
-			Supplier<Result<? extends HibBaseElement>> provider = () -> projectProvider.apply(parent);
+			Supplier<Result<? extends BaseElement>> provider = () -> projectProvider.apply(parent);
 			return handleDefaultPermission(authUser, batch, role, permissionsToGrant, permissionsToRevoke, recursive, provider);
 		} else {
-			Supplier<Result<? extends HibBaseElement>> provider = globalDaoMap.get(type);
+			Supplier<Result<? extends BaseElement>> provider = globalDaoMap.get(type);
 			if (provider == null) {
 				throw new IllegalArgumentException("Don't know root node for type " + type);
 			}
@@ -107,11 +107,11 @@ public class HibPermissionRootImpl extends AbstractHibBaseElement implements Ser
 		}
 	}
 
-	public boolean handleDefaultPermission(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke, boolean recursive, Supplier<Result<? extends HibBaseElement>> childrenFinder) {
+	public boolean handleDefaultPermission(MeshAuthUser authUser, EventQueueBatch batch, Role role, Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke, boolean recursive, Supplier<Result<? extends BaseElement>> childrenFinder) {
 		boolean permissionChanged = false;
 		UserDao userDao = Tx.get().userDao();
 		if (recursive) {
-			for (HibBaseElement t : childrenFinder.get().stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, InternalPermission.READ_PERM)).collect(Collectors.toList())) {
+			for (BaseElement t : childrenFinder.get().stream().filter(e -> userDao.hasPermission(authUser.getDelegate(), this, InternalPermission.READ_PERM)).collect(Collectors.toList())) {
 				permissionChanged = t.applyPermissions(authUser, batch, role, recursive, permissionsToGrant, permissionsToRevoke) || permissionChanged;
 			}
 		}

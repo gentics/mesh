@@ -30,12 +30,12 @@ import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.ContentNoCacheStorage;
 import com.gentics.mesh.contentoperation.DynamicContentColumn;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.database.HibTxData;
@@ -221,7 +221,7 @@ public final class HibernateUtil {
 	 * @param version
 	 * @return
 	 */
-	public static Map<String, ContentColumn> collectVersionColumnsByAlias(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public static Map<String, ContentColumn> collectVersionColumnsByAlias(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		return collectVersionColumnsByAlias(collectVersionColumns(version));
 	}
 
@@ -242,8 +242,8 @@ public final class HibernateUtil {
 	 * @param version
 	 * @return
 	 */
-	public static List<ContentColumn> collectVersionColumns(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
-		Stream<ContentColumn> commonColumns = (version instanceof HibSchemaVersion) ?
+	public static List<ContentColumn> collectVersionColumns(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+		Stream<ContentColumn> commonColumns = (version instanceof SchemaVersion) ?
 				HibNodeFieldContainerImpl.COMMON_COLUMNS.stream() :
 				HibMicronodeContainerImpl.COMMON_COLUMNS.stream();
 	
@@ -326,7 +326,7 @@ public final class HibernateUtil {
 	 * @param maybeCustomAlias apply custom table alias, if applicable.
 	 * @return
 	 */
-	public static String makeContentSelectClause(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, Optional<String> maybeCustomAlias) {
+	public static String makeContentSelectClause(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Optional<String> maybeCustomAlias) {
 		return makeContentSelectClause(collectVersionColumns(version), maybeCustomAlias, false);
 	}
 
@@ -403,7 +403,7 @@ public final class HibernateUtil {
 	 * @param group
 	 * @return
 	 */
-	public static int dropGroupRoleConnection(EntityManager em, HibRole role, HibGroup group) {
+	public static int dropGroupRoleConnection(EntityManager em, Role role, Group group) {
 		HibernateTx tx = HibernateTx.get();
 		DatabaseConnector dc = tx.data().getDatabaseConnector();
 
@@ -428,7 +428,7 @@ public final class HibernateUtil {
 	 * @param group
 	 * @return
 	 */
-	public static int dropGroupUserConnection(EntityManager em, HibUser user, HibGroup group) {
+	public static int dropGroupUserConnection(EntityManager em, User user, Group group) {
 		HibernateTx tx = HibernateTx.get();
 		DatabaseConnector dc = tx.data().getDatabaseConnector();
 
@@ -467,7 +467,7 @@ public final class HibernateUtil {
 	 * @param field
 	 * @return
 	 */
-	public static int dropGroupUserConnection(EntityManager em, HibImageVariant variant, HibBinaryFieldEdgeImpl field) {
+	public static int dropGroupUserConnection(EntityManager em, ImageVariant variant, HibBinaryFieldEdgeImpl field) {
 		HibernateTx tx = HibernateTx.get();
 		DatabaseConnector dc = tx.data().getDatabaseConnector();
 

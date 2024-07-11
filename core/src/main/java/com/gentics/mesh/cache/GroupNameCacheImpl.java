@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
  *
  */
 @Singleton
-public class GroupNameCacheImpl extends AbstractNameCache<HibGroup> implements GroupNameCache {
+public class GroupNameCacheImpl extends AbstractNameCache<Group> implements GroupNameCache {
 
 	@Inject
 	public GroupNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {

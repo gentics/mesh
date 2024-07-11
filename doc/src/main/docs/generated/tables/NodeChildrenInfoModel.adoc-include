@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| count
+| true
+| integer
+| Count of children which utilize the schema.
+
+| schemaUuid
+| true
+| string
+| Reference to the schema of the node child
+
+|======

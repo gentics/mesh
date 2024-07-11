@@ -8,7 +8,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.EventCauseInfoModel;
 import com.gentics.mesh.core.rest.event.EventCauseInfoImpl;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -35,7 +35,7 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 
 	private List<Runnable> bulkActions = new ArrayList<>();
 
-	private EventCauseInfo cause;
+	private EventCauseInfoModel cause;
 
 	private final Vertx vertx;
 
@@ -63,12 +63,12 @@ public class EventQueueBatchImpl implements EventQueueBatch {
 	}
 
 	@Override
-	public void setCause(EventCauseInfo cause) {
+	public void setCause(EventCauseInfoModel cause) {
 		this.cause = cause;
 	}
 
 	@Override
-	public EventCauseInfo getCause() {
+	public EventCauseInfoModel getCause() {
 		return cause;
 	}
 

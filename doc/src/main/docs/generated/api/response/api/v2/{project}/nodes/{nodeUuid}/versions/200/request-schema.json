@@ -12,7 +12,7 @@
           "properties" : {
             "creator" : {
               "type" : "object",
-              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReferenceModel",
               "required" : true,
               "description" : "User reference of the creator of the element.",
               "properties" : {

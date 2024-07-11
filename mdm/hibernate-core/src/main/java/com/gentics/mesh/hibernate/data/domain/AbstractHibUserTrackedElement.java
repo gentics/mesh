@@ -2,14 +2,14 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.util.function.Function;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.user.CreatorTracking;
+import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.rest.common.RestModel;
+
 import jakarta.persistence.Embedded;
 import jakarta.persistence.MappedSuperclass;
-
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.user.HibCreatorTracking;
-import com.gentics.mesh.core.data.user.HibEditorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
-import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * Common part for the entities, that consider keeping the Mesh user creator/editor, and the corresponding timestamps.
@@ -19,23 +19,23 @@ import com.gentics.mesh.core.rest.common.RestModel;
  * @param <R>
  */
 @MappedSuperclass
-public abstract class AbstractHibUserTrackedElement<R extends RestModel> extends AbstractHibNamedElement<R> implements HibCreatorTracking, HibEditorTracking {
+public abstract class AbstractHibUserTrackedElement<R extends RestModel> extends AbstractHibNamedElement<R> implements CreatorTracking, EditorTracking {
 
 	@Embedded
 	protected UserTracking userTracking = new UserTracking();
 	
 	@Override
-	public HibUser getCreator() {
+	public User getCreator() {
 		return nullSafe(UserTracking::getCreator);
 	}
 
 	@Override
-	public void setCreator(HibUser user) {
+	public void setCreator(User user) {
 		userTracking.setCreator(user);
 	}
 
 	@Override
-	public void setCreated(HibUser creator) {
+	public void setCreated(User creator) {
 		userTracking.setCreated(creator);
 	}
 
@@ -55,18 +55,18 @@ public abstract class AbstractHibUserTrackedElement<R extends RestModel> extends
 	}
 
 	@Override
-	public HibUser getEditor() {
+	public User getEditor() {
 		return nullSafe(UserTracking::getEditor);
 	}
 
 	@Override
-	public void setEditor(HibUser user) {
+	public void setEditor(User user) {
 		userTracking.setEditor(user);
 	}
 
 	@Override
 	public Long getLastEditedTimestamp() {
-		return nullSafe(EditorTracking::getLastEditedTimestamp);
+		return nullSafe(HibEditorTracking::getLastEditedTimestamp);
 	}
 
 	@Override

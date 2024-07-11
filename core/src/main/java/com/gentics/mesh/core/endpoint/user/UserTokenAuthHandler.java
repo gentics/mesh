@@ -14,14 +14,13 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthenticationHandlerImpl;
 
@@ -45,7 +44,7 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 	}
 
 	@Override
-	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<User>> handler) {
+	public void authenticate(RoutingContext routingContext, Handler<AsyncResult<io.vertx.ext.auth.User>> handler) {
 		// Not needed
 	}
 
@@ -60,7 +59,7 @@ public class UserTokenAuthHandler extends AuthenticationHandlerImpl<MeshJWTAuthP
 			MeshAuthUser lastEditor = db.tx(tx -> {
 				// 1. Load the element from the root element using the given uuid
 				UserDao userDao = tx.userDao();
-				HibUser element = userDao.findByUuid(uuid);
+				User element = userDao.findByUuid(uuid);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);

@@ -26,20 +26,20 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
@@ -57,8 +57,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(null, (Field) null);
-		NodeFieldList nodeField = response.getFields().getNodeFieldList(FIELD_NAME);
+		NodeResponse response = createNode(null, (FieldModel) null);
+		NodeFieldListModel nodeField = response.getFields().getNodeFieldList(FIELD_NAME);
 		assertNull(nodeField);
 	}
 
@@ -94,7 +94,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 		NodeResponse response = createNode("listField", listField);
 
-		NodeFieldList listFromResponse = response.getFields().getNodeFieldList("listField");
+		NodeFieldListModel listFromResponse = response.getFields().getNodeFieldList("listField");
 		assertEquals(2, listFromResponse.getItems().size());
 		assertEquals(content().getUuid(), listFromResponse.getItems().get(0).getUuid());
 		assertEquals(folder("news").getUuid(), listFromResponse.getItems().get(1).getUuid());
@@ -105,32 +105,32 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		HibNode node = folder("2015");
-		HibNode targetNode = folder("news");
-		HibNode targetNode2 = folder("deals");
+		Node node = folder("2015");
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
 
-		List<List<HibNode>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
+		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
 			Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
+		NodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
-			List<HibNode> oldValue;
-			List<HibNode> newValue;
+			List<Node> oldValue;
+			List<Node> newValue;
 			NodeFieldListImpl list = new NodeFieldListImpl();
 			try (Tx tx = tx()) {
 				oldValue = getListValues(container::getNodeList, FIELD_NAME);
 				newValue = valueCombinations.get(i % valueCombinations.size());
-				for (HibNode value : newValue) {
+				for (Node value : newValue) {
 					list.add(new NodeFieldListItemImpl(value.getUuid()));
 				}
 			}
 			NodeResponse response = updateNode(FIELD_NAME, list);
-			NodeFieldList field = response.getFields().getNodeFieldList(FIELD_NAME);
+			NodeFieldListModel field = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
 
 			try (Tx tx = tx()) {
 				ContentDao contentDao = tx.contentDao();
-				HibNodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
+				NodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				newValue = getListValues(container::getNodeList, FIELD_NAME);
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertTrue("Check old value", CompareUtils.equals(oldValue, newValue));
@@ -142,8 +142,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		HibNode targetNode = folder("news");
-		HibNode targetNode2 = folder("deals");
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
@@ -160,8 +160,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		HibNode targetNode = folder("news");
-		HibNode targetNode2 = folder("deals");
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
@@ -176,8 +176,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			Node node = folder("2015");
+			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
@@ -193,8 +193,8 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		HibNode targetNode = folder("news");
-		HibNode targetNode2 = folder("deals");
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
 
 		NodeFieldListImpl list = new NodeFieldListImpl();
 		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
@@ -220,7 +220,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 		NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folderUuid());
 		listField.add(item);
 		NodeResponse response = createNode(FIELD_NAME, listField);
-		NodeFieldList listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);
+		NodeFieldListModel listFromResponse = response.getFields().getNodeFieldList(FIELD_NAME);
 		assertEquals(1, listFromResponse.getItems().size());
 	}
 
@@ -280,42 +280,42 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testReadNodeWithExistingField() {
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
+			NodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(folder("news"));
 			tx.success();
 		}
 		NodeResponse response = readNode(folder("2015"));
-		NodeFieldList deserializedListField = response.getFields().getNodeFieldList(FIELD_NAME);
+		NodeFieldListModel deserializedListField = response.getFields().getNodeFieldList(FIELD_NAME);
 		assertNotNull(deserializedListField);
 		assertEquals(1, deserializedListField.getItems().size());
 	}
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() throws IOException {
-		HibNode referencedNode = folder("news");
+		Node referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
 			// Create node list
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
+			NodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(referencedNode);
 			tx.success();
 		}
 		// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 		NodeResponse responseCollapsed = readNode(folder("2015"));
-		NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
+		NodeFieldListModel deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 		assertNotNull(deserializedNodeListField);
 		assertEquals("The newsNode should not be within in the list thus the list should be empty.", 0,
 			deserializedNodeListField.getItems().size());
@@ -332,22 +332,22 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
-		HibNode newsNode = folder("news");
+		Node newsNode = folder("news");
 
 		// Create node list
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			HibNodeFieldList nodeList = container.createNodeList(FIELD_NAME);
+			NodeFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode(newsNode);
 			tx.success();
 		}
 		// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 		NodeResponse responseCollapsed = readNode(folder("2015"));
-		NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
+		NodeFieldListModel deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
 		assertNotNull(deserializedNodeListField);
 		assertEquals("The newsNode should be the first item in the list.", newsNode.getUuid(),
 			deserializedNodeListField.getItems().get(0).getUuid());

@@ -24,7 +24,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
 import com.gentics.mesh.core.action.LoadAllAction;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -86,7 +86,7 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param actions
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void createElement(InternalActionContext ac, DAOActions<T, RM> actions) {
+	public <T extends CoreElement<RM>, RM extends RestModel> void createElement(InternalActionContext ac, DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, actions);
 	}
 
@@ -104,7 +104,7 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Element uuid
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
+	public <T extends CoreElement<RM>, RM extends RestModel> void deleteElement(InternalActionContext ac, DAOActions<T, RM> actions,
 		String uuid) {
 		deleteElement(ac, null, actions, uuid);
 	}
@@ -119,7 +119,7 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void deleteElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
+	public <T extends CoreElement<RM>, RM extends RestModel> void deleteElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		DAOActions<T, RM> actions,
 		String uuid) {
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
@@ -152,7 +152,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
+	public <T extends CoreElement<RM>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, uuid, actions);
 	}
@@ -171,7 +171,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 *            Actions to be used for loading the element
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
+	public <T extends CoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions) {
 		createOrUpdateElement(ac, null, uuid, actions);
 	}
@@ -186,7 +186,7 @@ public class HandlerUtilities {
 	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
 	 * @param actions
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
+	public <T extends CoreElement<RM>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		String uuid, DAOActions<T, RM> actions) {
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		try (WriteLock lock = writeLock.lock(ac)) {
@@ -233,7 +233,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 * @param perm
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
+	public <T extends CoreElement<RM>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
 		DAOActions<T, RM> actions, InternalPermission perm) {
 		readElement(ac, null, uuid, actions, perm);
 	}
@@ -251,7 +251,7 @@ public class HandlerUtilities {
 	 * @param perm
 	 *            Permission to check against when loading the element
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void readElement(InternalActionContext ac, Function<Tx, Object> parentLoader, String uuid,
+	public <T extends CoreElement<RM>, RM extends RestModel> void readElement(InternalActionContext ac, Function<Tx, Object> parentLoader, String uuid,
 		DAOActions<T, RM> actions, InternalPermission perm) {
 		ac.setHttpServerConfig(meshOptions.getHttpServerOptions());
 		syncTx(ac, tx -> {
@@ -284,7 +284,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 *            Actions to be used to load the paged data
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
+	public <T extends CoreElement<RM>, RM extends RestModel> void readElementList(InternalActionContext ac, LoadAllAction<T> actions) {
 		readElementList(ac, null, actions);
 	}
 
@@ -296,7 +296,7 @@ public class HandlerUtilities {
 	 * @param actions
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends HibCoreElement<RM>, RM extends RestModel> void readElementList(InternalActionContext ac, Function<Tx, Object> parentLoader,
+	public <T extends CoreElement<RM>, RM extends RestModel> void readElementList(InternalActionContext ac, Function<Tx, Object> parentLoader,
 		LoadAllAction<T> actions) {
 		PagingParameters pagingInfo = ac.getPagingParameters();
 		ValidationUtil.validate(pagingInfo);

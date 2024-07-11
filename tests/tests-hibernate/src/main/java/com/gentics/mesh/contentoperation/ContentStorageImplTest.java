@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.TxAction1;
 import org.apache.commons.lang3.tuple.Triple;
 import org.assertj.core.api.Assertions;
@@ -28,8 +28,8 @@ import com.gentics.mesh.contentoperation.ContentNoCacheStorage;
 import com.gentics.mesh.contentoperation.ContentStorageImpl;
 import com.gentics.mesh.contentoperation.ContentTableNotFoundException;
 import com.gentics.mesh.contentoperation.DynamicContentColumn;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -61,8 +61,8 @@ import com.gentics.mesh.util.UUIDUtil;
 @MeshTestSetting(testSize = EMPTY)
 public class ContentStorageImplTest extends AbstractMeshTest {
 
-	HibSchemaVersion version;
-	HibSchemaVersion mockVersion;
+	SchemaVersion version;
+	SchemaVersion mockVersion;
 	UuidGenerator generator;
 	ContentStorageImpl contentStorage;
 	UUID nodeUuid;
@@ -70,7 +70,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 	@Before
 	public void setup() {
 		generator = Mockito.mock(UuidGenerator.class);
-		HibNode node = tx(this::createHibernateNode);
+		Node node = tx(this::createHibernateNode);
 		nodeUuid = UUIDUtil.toJavaUuid(node.getUuid());
 
 		doAnswer(invocationOnMock -> UUID.fromString(invocationOnMock.getArgument(0))).when(generator).toJavaUuidOrGenerate(anyString());
@@ -81,7 +81,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		storageOptions.setSecondLevelCacheEnabled(false);
 		meshOptions.setStorageOptions(storageOptions);
 
-		mockVersion = Mockito.mock(HibSchemaVersion.class, Mockito.RETURNS_DEEP_STUBS);
+		mockVersion = Mockito.mock(SchemaVersion.class, Mockito.RETURNS_DEEP_STUBS);
 
 		UUID schemaVersionId = UUID.randomUUID();
 		UUID schemaId = UUID.randomUUID();
@@ -368,7 +368,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 	@Test
 	public void testFindManyMicronodes() {
 		tx((tx) -> {
-			HibMicroschemaVersion version = createMicroschemaVersion();
+			MicroschemaVersion version = createMicroschemaVersion();
 			createMicronodeTable(version);
 			UUID contentUuid = UUID.randomUUID();
 			createMicroContent(contentUuid, version, 1);
@@ -434,10 +434,10 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 	@NoConsistencyCheck
 	public void testGlobalCount() {
 		tx((tx) -> {
-			HibSchemaVersion version1 = createSchemaVersion();
+			SchemaVersion version1 = createSchemaVersion();
 			createContent(UUID.randomUUID(), version1, 1);
 
-			HibSchemaVersion version2 = createSchemaVersion();
+			SchemaVersion version2 = createSchemaVersion();
 			createContent(UUID.randomUUID(), version2, 2);
 
 			Assertions.assertThat(contentStorage.getGlobalCount()).isEqualTo(2);
@@ -446,7 +446,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		});
 	}
 
-	private HibNodeFieldContainerImpl createContent(UUID contentUuid, HibSchemaVersion version, int bucketId) {
+	private HibNodeFieldContainerImpl createContent(UUID contentUuid, SchemaVersion version, int bucketId) {
 		HibNodeFieldContainerImpl content = new HibNodeFieldContainerImpl();
 		content.setDbUuid(contentUuid);
 		content.setSchemaContainerVersion(version);
@@ -458,7 +458,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		return content;
 	}
 
-	private HibNodeFieldContainerImpl persistInContentInterceptor(UUID contentUuid, HibSchemaVersion version, int bucketId) {
+	private HibNodeFieldContainerImpl persistInContentInterceptor(UUID contentUuid, SchemaVersion version, int bucketId) {
 		HibNodeFieldContainerImpl content = new HibNodeFieldContainerImpl();
 		content.setDbUuid(contentUuid);
 		content.setSchemaContainerVersion(version);
@@ -470,7 +470,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		return content;
 	}
 
-	private HibMicronodeContainerImpl createMicroContent(UUID contentUuid, HibMicroschemaVersion version, long dbVersion) {
+	private HibMicronodeContainerImpl createMicroContent(UUID contentUuid, MicroschemaVersion version, long dbVersion) {
 		HibMicronodeContainerImpl microNode = new HibMicronodeContainerImpl();
 		microNode.setDbUuid(contentUuid);
 		microNode.setSchemaContainerVersion(version);
@@ -490,7 +490,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		return (HibSchemaVersionImpl) CoreTestUtils.createSchemaVersion(schema, "schema", "1.0", fields);
 	}
 
-	private HibNode createHibernateNode() {
+	private Node createHibernateNode() {
 		EntityManager entityManager = HibernateTx.get().entityManager();
 
 		HibNodeImpl hibNode = new HibNodeImpl();
@@ -533,7 +533,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		return version;
 	}
 
-	private HibNodeFieldContainerEdgeImpl createContainerEdge(UUID containerUuid, HibSchemaVersion schemaVersion, String languageTag, ContainerType initial) {
+	private HibNodeFieldContainerEdgeImpl createContainerEdge(UUID containerUuid, SchemaVersion schemaVersion, String languageTag, ContainerType initial) {
 		EntityManager em = HibernateTx.get().entityManager();
 		HibNodeFieldContainerEdgeImpl edge = new HibNodeFieldContainerEdgeImpl();
 		edge.setElement(UUID.randomUUID());
@@ -555,7 +555,7 @@ public class ContentStorageImplTest extends AbstractMeshTest {
 		return edge;
 	}
 
-	private void createMicronodeTable(HibMicroschemaVersion version) {
+	private void createMicronodeTable(MicroschemaVersion version) {
 		contentStorage.createMicronodeTable(version);
 		Tx.get().commit(); // make sure table is created
 	}

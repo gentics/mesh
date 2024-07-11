@@ -9,13 +9,13 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.jpa.QueryHints;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibEditorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
@@ -245,7 +245,7 @@ import jakarta.persistence.QueryHint;
 						"and edge.languageTag in :tags"
 		),
 })
-public class HibNodeFieldContainerEdgeImpl implements HibNodeFieldContainerEdge, HibEditorTracking, Serializable {
+public class HibNodeFieldContainerEdgeImpl implements NodeFieldContainerEdge, EditorTracking, Serializable {
 
 	private static final long serialVersionUID = 175969258170125593L;
 
@@ -254,17 +254,17 @@ public class HibNodeFieldContainerEdgeImpl implements HibNodeFieldContainerEdge,
 	private UUID element;
 
 	@ManyToOne(targetEntity = HibNodeImpl.class, fetch = FetchType.LAZY, optional = false)
-	private HibNode node;
+	private Node node;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private ContainerType type;
 
 	@ManyToOne(targetEntity = HibBranchImpl.class, fetch = FetchType.LAZY, optional = false)
-	private HibBranch branch;
+	private Branch branch;
 
 	@ManyToOne(targetEntity = HibSchemaVersionImpl.class, fetch = FetchType.LAZY, optional = false)
-	private HibSchemaVersion version;
+	private SchemaVersion version;
 
 	@Column(nullable = false)
 	private UUID contentUuid;
@@ -280,7 +280,7 @@ public class HibNodeFieldContainerEdgeImpl implements HibNodeFieldContainerEdge,
 	private Set<String> webrootUrlFields = new HashSet<>();
 
 	@Embedded
-	protected EditorTracking editorTracking = new EditorTracking();
+	protected HibEditorTracking editorTracking = new HibEditorTracking();
 
 	public UUID getElement() {
 		return element;
@@ -308,16 +308,16 @@ public class HibNodeFieldContainerEdgeImpl implements HibNodeFieldContainerEdge,
 	}
 
 	@Override
-	public HibNodeFieldContainer getNodeContainer() {
+	public NodeFieldContainer getNodeContainer() {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		return contentDao.getFieldContainerOfEdge(this);
 	}
 
-	public HibNode getNode() {
+	public Node getNode() {
 		return node;
 	}
 
-	public void setNode(HibNode node) {
+	public void setNode(Node node) {
 		this.node = node;
 	}
 
@@ -329,19 +329,19 @@ public class HibNodeFieldContainerEdgeImpl implements HibNodeFieldContainerEdge,
 		this.type = type;
 	}
 
-	public HibBranch getBranch() {
+	public Branch getBranch() {
 		return branch;
 	}
 
-	public void setBranch(HibBranch branch) {
+	public void setBranch(Branch branch) {
 		this.branch = branch;
 	}
 
-	public HibSchemaVersion getVersion() {
+	public SchemaVersion getVersion() {
 		return version;
 	}
 
-	public void setVersion(HibSchemaVersion version) {
+	public void setVersion(SchemaVersion version) {
 		this.version = version;
 	}
 
@@ -390,12 +390,12 @@ public class HibNodeFieldContainerEdgeImpl implements HibNodeFieldContainerEdge,
 	}
 
 	@Override
-	public HibUser getEditor() {
+	public User getEditor() {
 		return editorTracking.getEditor();
 	}
 
 	@Override
-	public void setEditor(HibUser user) {
+	public void setEditor(User user) {
 		editorTracking.setEditor(user);
 	}
 

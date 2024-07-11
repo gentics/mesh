@@ -11,10 +11,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -51,16 +51,16 @@ public class ServerSchemaStorageImpl implements ServerSchemaStorage {
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		for (HibSchema schema : schemaDao.findAll()) {
-			for (HibSchemaVersion version : schemaDao.findAllVersions(schema)) {
+		for (Schema schema : schemaDao.findAll()) {
+			for (SchemaVersion version : schemaDao.findAllVersions(schema)) {
 				SchemaVersionModel restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
 			}
 		}
 
 		// load all microschemas and add to storage
-		for (HibMicroschema container : microschemaDao.findAll()) {
-			for (HibMicroschemaVersion version : microschemaDao.findAllVersions(container)) {
+		for (Microschema container : microschemaDao.findAll()) {
+			for (MicroschemaVersion version : microschemaDao.findAllVersions(container)) {
 				MicroschemaVersionModel restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
 			}

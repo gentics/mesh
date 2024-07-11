@@ -21,21 +21,21 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -54,8 +54,8 @@ import com.gentics.mesh.database.HibernateTx;
  *
  */
 public class HibMicronodeContainerImpl extends AbstractHibBaseElement 
-		implements HibUnmanagedFieldContainer<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion>, 
-		HibMicronode, Serializable {
+		implements HibUnmanagedFieldContainer<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion>, 
+		Micronode, Serializable {
 
 	private static final long serialVersionUID = 1420762090369895613L;
 
@@ -84,18 +84,18 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 	}
 
 	@Override
-	public void setSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public void setSchemaContainerVersion(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		put(CommonContentColumn.SCHEMA_VERSION_DB_UUID, version.getId());
 		put(CommonContentColumn.SCHEMA_DB_UUID, version.getSchemaContainer().getId());
 	}
 
 	@Override
 	public ReferenceType getReferenceType() {
-		return HibMicronode.super.getReferenceType();
+		return Micronode.super.getReferenceType();
 	}
 
 	@Override
-	public HibNodeFieldContainer getContainer() {
+	public NodeFieldContainer getContainer() {
 		return getContents().findAny().orElseThrow();
 	}
 
@@ -108,7 +108,7 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 	}
 
 	@Override
-	public HibMicroschemaVersion getSchemaContainerVersion() {
+	public MicroschemaVersion getSchemaContainerVersion() {
 		return HibernateTx.get().load(getSchemaContainerVersionUuid(), HibMicroschemaVersionImpl.class);
 	}
 
@@ -124,13 +124,13 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 	}
 
 	@Override
-	public HibNode getNode() {
+	public Node getNode() {
 		ContentDao contentDao = Tx.get().contentDao();
-		Optional<? extends HibNodeFieldContainer> container = getContents().findAny();
+		Optional<? extends NodeFieldContainer> container = getContents().findAny();
 		if (container.isEmpty()) {
 			return null;
 		}
-		HibNodeFieldContainer tmp = container.get();
+		NodeFieldContainer tmp = container.get();
 		while (tmp.getPreviousVersion() != null) {
 			tmp = tmp.getPreviousVersion();
 		}
@@ -182,7 +182,7 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 	}
 
 	@Override
-	public Field getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
+	public FieldModel getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
 		int level) {
 
 		// Filter out unsupported field types
@@ -194,7 +194,7 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			switch (listFieldSchema.getListType()) {
-			case HibMicronodeFieldList.TYPE:
+			case MicronodeFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
 				return HibUnmanagedFieldContainer.super.getRestField(ac, fieldKey, fieldSchema, languageTags, level);
@@ -216,7 +216,7 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 		case LIST:
 			ListFieldSchema listFieldSchema = (ListFieldSchema) fieldSchema;
 			switch (listFieldSchema.getListType()) {
-			case HibMicronodeFieldList.TYPE:
+			case MicronodeFieldList.TYPE:
 				throw error(BAD_REQUEST, "error_unsupported_fieldtype", type + ":" + listFieldSchema.getListType());
 			default:
 				HibUnmanagedFieldContainer.super.updateField(ac, fieldMap, key, fieldSchema, schema);
@@ -227,7 +227,7 @@ public class HibMicronodeContainerImpl extends AbstractHibBaseElement
 	}
 
 	@Override
-	public Stream<? extends HibNodeFieldContainer> getNodeFieldContainers() {
+	public Stream<? extends NodeFieldContainer> getNodeFieldContainers() {
 		return getContainers().stream();
 	}
 

@@ -7,22 +7,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.result.Result;
@@ -42,15 +42,15 @@ public class HibernateBranchCheck extends AbstractHibernateConsistencyCheck {
 		BranchDao branchDao = tx.branchDao();
 		ContentDao contentDao = tx.contentDao();
 		LanguageDao languageDao = tx.languageDao();
-		List<String> languageTags = languageDao.findAll().stream().map(HibLanguage::getLanguageTag).collect(Collectors.toList());
+		List<String> languageTags = languageDao.findAll().stream().map(Language::getLanguageTag).collect(Collectors.toList());
 
-		for (HibProject project : projectDao.findAll()) {
-			HibNode baseNode = project.getBaseNode();
-			HibBranch initialBranch = project.getInitialBranch();
-			for (HibBranch branch : branchDao.findAll(project)) {
-				HibNodeFieldContainer content = contentDao.findVersion(baseNode, languageTags, branch.getUuid(), "draft");
+		for (Project project : projectDao.findAll()) {
+			Node baseNode = project.getBaseNode();
+			Branch initialBranch = project.getInitialBranch();
+			for (Branch branch : branchDao.findAll(project)) {
+				NodeFieldContainer content = contentDao.findVersion(baseNode, languageTags, branch.getUuid(), "draft");
 				if (content == null) {
-					InconsistencyInfo info = new InconsistencyInfo()
+					InconsistencyInfoModel info = new InconsistencyInfoModel()
 						.setDescription("Branch does not contain the project root node")
 						.setElementUuid(branch.getUuid())
 						.setSeverity(InconsistencySeverity.HIGH)
@@ -79,14 +79,14 @@ public class HibernateBranchCheck extends AbstractHibernateConsistencyCheck {
 	 * @param oldBranch old branch
 	 * @param branchToMigrateTo target branch
 	 */
-	protected void migrateRootNode(Tx tx, HibNode node, HibBranch oldBranch, HibBranch branchToMigrateTo) {
+	protected void migrateRootNode(Tx tx, Node node, Branch oldBranch, Branch branchToMigrateTo) {
 		PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 		TagDao tagDao = tx.tagDao();
 
 		EventQueueBatch batch = new DummyEventQueueBatch();
 
-		Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
-		Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
+		Result<NodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
+		Result<NodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
 
 		// 1. Migrate draft containers first
 		drafts.forEach(container -> {

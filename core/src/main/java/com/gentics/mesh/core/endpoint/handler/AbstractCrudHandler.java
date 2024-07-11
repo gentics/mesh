@@ -23,12 +23,12 @@ import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.action.DAOActions;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
@@ -45,7 +45,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Abstract class for CRUD REST handlers. The abstract class provides handler methods for create, read (one), read (multiple) and delete.
  */
-public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM extends RestModel> extends AbstractHandler implements CrudHandler {
+public abstract class AbstractCrudHandler<T extends CoreElement<RM>, RM extends RestModel> extends AbstractHandler implements CrudHandler {
 
 	public static final String TAGFAMILY_ELEMENT_CONTEXT_DATA_KEY = "rootElement";
 
@@ -136,9 +136,9 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			T object = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
-			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Set<Role> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
 
-			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, object);
+			Map<Role, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, object);
 			permissions.values().removeIf(Set::isEmpty);
 
 			ObjectPermissionResponse response = new ObjectPermissionResponse();
@@ -164,11 +164,11 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser requestUser = ac.getUser();
+			User requestUser = ac.getUser();
 			T object = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
-			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
-			Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
-			Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+			Set<Role> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Map<String, Role> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(Role::getUuid, Function.identity()));
+			Map<String, Role> allRolesByName = allRoles.stream().collect(Collectors.toMap(Role::getName, Function.identity()));
 
 			InternalPermission[] possiblePermissions = object.hasPublishPermissions()
 					? InternalPermission.values()
@@ -177,10 +177,10 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 			for (InternalPermission perm : possiblePermissions) {
 				List<RoleReference> roleRefsToSet = update.get(perm.getRestPerm());
 				if (roleRefsToSet != null) {
-					Set<HibRole> rolesToSet = new HashSet<>();
+					Set<Role> rolesToSet = new HashSet<>();
 					for (RoleReference roleRef : roleRefsToSet) {
 						// find the role for the role reference
-						HibRole role = null;
+						Role role = null;
 						if (!StringUtils.isEmpty(roleRef.getUuid())) {
 							role = allRolesByUuid.get(roleRef.getUuid());
 
@@ -210,7 +210,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 					// handle "exclusive" flag by revoking perm from all "other" roles
 					if (update.isExclusive()) {
 						// start with all roles, the user can see
-						Set<HibRole> rolesToRevoke = new HashSet<>(allRoles);
+						Set<Role> rolesToRevoke = new HashSet<>(allRoles);
 						// remove all roles, which get the permission granted
 						rolesToRevoke.removeAll(rolesToSet);
 
@@ -233,7 +233,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 				}
 			}
 
-			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, object);
+			Map<Role, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, object);
 			permissions.values().removeIf(Set::isEmpty);
 
 			ObjectPermissionResponse response = new ObjectPermissionResponse();
@@ -259,11 +259,11 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser requestUser = ac.getUser();
+			User requestUser = ac.getUser();
 			T object = crudActions().loadByUuid(context(tx, ac), uuid, READ_PERM, true);
-			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
-			Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
-			Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+			Set<Role> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Map<String, Role> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(Role::getUuid, Function.identity()));
+			Map<String, Role> allRolesByName = allRoles.stream().collect(Collectors.toMap(Role::getName, Function.identity()));
 
 			InternalPermission[] possiblePermissions = object.hasPublishPermissions()
 					? InternalPermission.values()
@@ -272,10 +272,10 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 			for (InternalPermission perm : possiblePermissions) {
 				List<RoleReference> roleRefsToRevoke = update.get(perm.getRestPerm());
 				if (roleRefsToRevoke != null) {
-					Set<HibRole> rolesToRevoke = new HashSet<>();
+					Set<Role> rolesToRevoke = new HashSet<>();
 					for (RoleReference roleRef : roleRefsToRevoke) {
 						// find the role for the role reference
-						HibRole role = null;
+						Role role = null;
 						if (!StringUtils.isEmpty(roleRef.getUuid())) {
 							role = allRolesByUuid.get(roleRef.getUuid());
 
@@ -304,7 +304,7 @@ public abstract class AbstractCrudHandler<T extends HibCoreElement<RM>, RM exten
 				}
 			}
 
-			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, object);
+			Map<Role, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, object);
 			permissions.values().removeIf(Set::isEmpty);
 
 			ObjectPermissionResponse response = new ObjectPermissionResponse();

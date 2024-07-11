@@ -26,20 +26,20 @@ import com.gentics.mesh.cache.PermissionCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeMigrationUser;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.PermissionInfoModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -63,14 +63,14 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>, PersistingNamedEntityDao<HibUser> {
+public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<User>, PersistingNamedEntityDao<User> {
 
 	Logger log = LoggerFactory.getLogger(PersistingUserDao.class);
 
 	/**
 	 * Update all shortcut edges.
 	 */
-	default void updateShortcutEdges(HibUser user) {
+	default void updateShortcutEdges(User user) {
 		// We don't expect any indexes or other shortcuts existing, so noop here.
 	}
 
@@ -82,7 +82,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param permission
 	 * @return
 	 */
-	default boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission) {
+	default boolean hasPermission(User user, BaseElement element, InternalPermission permission) {
 		if (log.isDebugEnabled()) {
 			log.debug("Checking permissions for element {" + element.getUuid() + "}");
 		}
@@ -90,7 +90,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission) {
+	default boolean hasPermissionForId(User user, Object elementId, InternalPermission permission) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
 		Boolean cached = permissionCache.hasPermission(user.getId(), permission, elementId);
 		if (cached != null) {
@@ -127,7 +127,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param elementId element ID
 	 * @return enumset of granted permissions
 	 */
-	EnumSet<InternalPermission> getPermissionsForElementId(HibUser user, Object elementId);
+	EnumSet<InternalPermission> getPermissionsForElementId(User user, Object elementId);
 
 	/**
 	 * Prepare the permissions of the user on the elements with given IDs.
@@ -135,7 +135,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param user user
 	 * @param elementIds collection of element IDs
 	 */
-	void preparePermissionsForElementIds(HibUser user, Collection<Object> elementIds);
+	void preparePermissionsForElementIds(User user, Collection<Object> elementIds);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -146,7 +146,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            User that is used to create creator and editor references
 	 * @return
 	 */
-	default HibUser create(String username, HibUser creator) {
+	default User create(String username, User creator) {
 		return create(username, creator, null);
 	}
 
@@ -158,8 +158,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param creator
 	 * @return
 	 */
-	private HibUser init(HibUser user, String username, HibUser creator) {
-		HibUser conflicting = findByUsername(username);
+	private User init(User user, String username, User creator) {
+		User conflicting = findByUsername(username);
 		if (conflicting != null && !conflicting.getUuid().equals(user.getUuid())) {
 			throw conflict(conflicting.getUuid(), username, "user_conflicting_username");
 		}
@@ -187,8 +187,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            Optional uuid
 	 * @return
 	 */
-	default HibUser create(String username, HibUser creator, String uuid) {
-		HibUser user = createPersisted(uuid, u -> {
+	default User create(String username, User creator, String uuid) {
+		User user = createPersisted(uuid, u -> {
 			init(u, username, creator);
 		});		
 		addBatchEvent(user.onCreated());
@@ -205,7 +205,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param node
 	 * @return
 	 */
-	default boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node) {
+	default boolean canReadNode(User user, InternalActionContext ac, Node node) {
 		if (user instanceof NodeMigrationUser) {
 			return true;
 		}
@@ -225,9 +225,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	default void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+	default void failOnNoReadPermission(User user, NodeFieldContainer container, String branchUuid, String requestedVersion) {
 		ContentDao contentDao = Tx.get().contentDao();
-		HibNode node = contentDao.getNode(container);
+		Node node = contentDao.getNode(container);
 		if (!hasReadPermission(user, container, branchUuid, requestedVersion)) {
 			throw error(FORBIDDEN, "error_missing_perm", node.getUuid(),
 				"published".equals(requestedVersion)
@@ -254,7 +254,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	default HibUser addCRUDPermissionOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode) {
+	default User addCRUDPermissionOnRole(User user, BaseElement sourceNode, InternalPermission permission, BaseElement targetNode) {
 		addPermissionsOnRole(user, sourceNode, permission, targetNode, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM, PUBLISH_PERM,
 			READ_PUBLISHED_PERM);
 		return user;
@@ -262,7 +262,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
-	 * {@link #addCRUDPermissionOnRole(HibUser, HasPermissions, InternalPermission, MeshVertex)} .
+	 * {@link #addCRUDPermissionOnRole(User, HasPermissions, InternalPermission, MeshVertex)} .
 	 *
 	 * @param user
 	 * @param sourceNode
@@ -275,13 +275,13 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	default HibUser addPermissionsOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode,
+	default User addPermissionsOnRole(User user, BaseElement sourceNode, InternalPermission permission, BaseElement targetNode,
 		InternalPermission... toGrant) {
 		// TODO inject dao via DI
 		RoleDao roleDao = Tx.get().roleDao();
 
 		// 2. Add CRUD permission to identified roles and target node
-		for (HibRole role : Tx.get().roleDao().getRolesWithPerm(sourceNode, permission)) {
+		for (Role role : Tx.get().roleDao().getRolesWithPerm(sourceNode, permission)) {
 			roleDao.grantPermissions(role, targetNode, toGrant);
 		}
 		return user;
@@ -290,7 +290,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	/**
 	 * Check if a node container has requested read permissions.
 	 */
-	default boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion) {
+	default boolean hasReadPermission(User user, NodeFieldContainer container, String branchUuid, String requestedVersion) {
 		return Tx.get().contentDao().getContainerEdges(container).anyMatch(edge -> hasReadPermission(user, edge, branchUuid, requestedVersion));
 	}
 
@@ -303,9 +303,9 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param requestedVersion
 	 * @return
 	 */
-	default boolean hasReadPermission(HibUser user, HibNodeFieldContainerEdge edge, String branchUuid, String requestedVersion) {
+	default boolean hasReadPermission(User user, NodeFieldContainerEdge edge, String branchUuid, String requestedVersion) {
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
-		HibNode node = edge.getNode();
+		Node node = edge.getNode();
 		ContainerType type = ContainerType.forVersion(requestedVersion);
 
 		if (ContainerType.PUBLISHED.equals(type)) {
@@ -325,7 +325,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 *            maximum allowed token age in minutes
 	 * @return
 	 */
-	default boolean isResetTokenValid(HibUser user, String token, int maxTokenAgeMins) {
+	default boolean isResetTokenValid(User user, String token, int maxTokenAgeMins) {
 		Long resetTokenIssueTimestamp = user.getResetTokenIssueTimestamp();
 		if (token == null || resetTokenIssueTimestamp == null) {
 			return false;
@@ -349,11 +349,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param ac
 	 * @return
 	 */
-	default String getSubETag(HibUser user, InternalActionContext ac) {
+	default String getSubETag(User user, InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(user.getLastEditedTimestamp());
 
-		HibNode referencedNode = user.getReferencedNode();
+		Node referencedNode = user.getReferencedNode();
 		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
 			|| ac.getNodeParameters().getExpandAll();
 		// We only need to compute the full etag if the referenced node is expanded.
@@ -365,7 +365,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			keyBuilder.append(referencedNode.getUuid());
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
-		for (HibGroup group : getGroups(user)) {
+		for (Group group : getGroups(user)) {
 			keyBuilder.append(group.getUuid());
 		}
 		keyBuilder.append(String.valueOf(user.isAdmin()));
@@ -380,8 +380,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param element
 	 * @return
 	 */
-	default PermissionInfo getPermissionInfo(HibUser user, HibBaseElement element) {
-		PermissionInfo info = new PermissionInfo();
+	default PermissionInfoModel getPermissionInfo(User user, BaseElement element) {
+		PermissionInfoModel info = new PermissionInfoModel();
 		Set<InternalPermission> permissions = getPermissions(user, element);
 		for (InternalPermission perm : permissions) {
 			info.set(perm.getRestPerm(), true);
@@ -397,7 +397,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param element
 	 * @return
 	 */
-	default Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element) {
+	default Set<InternalPermission> getPermissions(User user, BaseElement element) {
 		Predicate<? super InternalPermission> isValidPermission = perm -> perm != READ_PUBLISHED_PERM && perm != PUBLISH_PERM
 			|| element.hasPublishPermissions();
 
@@ -409,7 +409,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default UserResponse transformToRestSync(HibUser user, InternalActionContext ac, int level, String... languageTags) {
+	default UserResponse transformToRestSync(User user, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 		UserResponse restUser = new UserResponse();
@@ -458,11 +458,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param level
 	 *            Current depth level of transformation
 	 */
-	default void setNodeReference(HibUser user, InternalActionContext ac, UserResponse restUser, int level) {
+	default void setNodeReference(User user, InternalActionContext ac, UserResponse restUser, int level) {
 		NodeParameters parameters = ac.getNodeParameters();
 
 		// Check whether a node reference was set.
-		HibNode node = user.getReferencedNode();
+		Node node = user.getReferencedNode();
 		if (node == null) {
 			return;
 		}
@@ -483,32 +483,32 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	 * @param ac
 	 * @param restUser
 	 */
-	default void setGroups(HibUser user, InternalActionContext ac, UserResponse restUser) {
+	default void setGroups(User user, InternalActionContext ac, UserResponse restUser) {
 		// TODO filter by permissions
-		for (HibGroup group : getGroups(user)) {
+		for (Group group : getGroups(user)) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
 		}
 	}
 
 	@Override
-	default boolean updateDry(HibUser user, InternalActionContext ac) {
+	default boolean updateDry(User user, InternalActionContext ac) {
 		return update(user, ac, new DummyEventQueueBatch(), true);
 	}
 
 	@Override
-	default boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(User user, InternalActionContext ac, EventQueueBatch batch) {
 		return update(user, ac, batch, false);
 	}
 
 	@Override
-	default HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default User create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
-		HibBaseElement userRoot = tx.data().permissionRoots().user();
+		BaseElement userRoot = tx.data().permissionRoots().user();
 		GroupDao groupDao = tx.groupDao();
 		ProjectDao projectDao = tx.projectDao();
 		NodeDao nodeDao = tx.nodeDao();
-		HibUser requestUser = ac.getUser();
+		User requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
 		if (requestModel == null) {
@@ -524,7 +524,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			throw error(FORBIDDEN, "error_missing_perm", userRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 		String groupUuid = requestModel.getGroupUuid();
-		HibUser user = create(requestModel.getUsername(), requestUser, uuid);
+		User user = create(requestModel.getUsername(), requestUser, uuid);
 		user.setFirstname(requestModel.getFirstname());
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());
@@ -548,7 +548,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 		ExpandableNode reference = requestModel.getNodeReference();
 
 		if (!isBlank(groupUuid)) {
-			HibGroup parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
+			Group parentGroup = groupDao.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			groupDao.addUser(parentGroup, user);
 			// batch.add(parentGroup.onUpdated());
 			inheritRolePermissions(requestUser, parentGroup, user);
@@ -564,11 +564,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			}
 
 			// TODO decide whether we need to check perms on the project as well
-			HibProject project = projectDao.findByName(projectName);
+			Project project = projectDao.findByName(projectName);
 			if (project == null) {
 				throw error(BAD_REQUEST, "project_not_found", projectName);
 			}
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
+			Node node = nodeDao.loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
 			user.setReferencedNode(node);
 		} else if (reference != null) {
 			// TODO handle user create using full node rest model.
@@ -578,7 +578,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default void delete(HibUser user, BulkActionContext bac) {
+	default void delete(User user, BulkActionContext bac) {
 		// TODO unhardcode the admin name
 		if ("admin".equals(user.getUsername())) {
 			throw error(FORBIDDEN, "error_illegal_admin_deletion");
@@ -600,7 +600,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	// TODO change this to an async call since hashing of the password is
 	// blocking
 	@Override
-	default HibUser setPassword(HibUser user, String password) {
+	default User setPassword(User user, String password) {
 		if (isBlank(password)) {
 			throw error(BAD_REQUEST, "user_missing_password");
 		}
@@ -610,14 +610,14 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default void updatePasswordHash(HibUser user, String passwordHash) {
+	default void updatePasswordHash(User user, String passwordHash) {
 		user.setPasswordHash(passwordHash);
 		// Password has changed, the user is not forced to change their password anymore.
 		user.setForcedPasswordChange(false);
 	}
 
 	@Override
-	default String getRolesHash(HibUser user) {
+	default String getRolesHash(User user) {
 		return Stream.concat(
 				Stream.of(user.isAdmin() ? "1" : "0"), 
 				StreamSupport.stream(getRoles(user).spliterator(), false)
@@ -626,11 +626,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 			.collect(Collectors.joining());
 	}
 
-	private boolean update(HibUser user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
+	private boolean update(User user, InternalActionContext ac, EventQueueBatch batch, boolean dry) {
 		UserUpdateRequest requestModel = ac.fromJson(UserUpdateRequest.class);
 		boolean modified = false;
 		if (shouldUpdate(requestModel.getUsername(), user.getUsername())) {
-			HibUser conflictingUser = findByUsername(requestModel.getUsername());
+			User conflictingUser = findByUsername(requestModel.getUsername());
 			if (conflictingUser != null && !conflictingUser.getUuid().equals(user.getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
@@ -714,11 +714,11 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				HibProject project = Tx.get().projectDao().findByName(projectName);
+				Project project = Tx.get().projectDao().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}
-				HibNode node = Tx.get().nodeDao().loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
+				Node node = Tx.get().nodeDao().loadObjectByUuid(project, ac, referencedNodeUuid, READ_PERM);
 				if (!dry) {
 					user.setReferencedNode(node);
 				}
@@ -736,7 +736,7 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<HibUser>
 	}
 
 	@Override
-	default Optional<NameCache<HibUser>> maybeGetCache() {
+	default Optional<NameCache<User>> maybeGetCache() {
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().userNameCache());
 	}
 }

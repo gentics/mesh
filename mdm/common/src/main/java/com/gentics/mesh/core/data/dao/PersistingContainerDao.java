@@ -12,11 +12,11 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
@@ -34,8 +34,8 @@ public interface PersistingContainerDao<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
-			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+			SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
 			M extends FieldSchemaContainer
 		> extends PersistingDaoGlobal<SC>, ContainerDao<R, RM, RE, SC, SCV, M>, PersistingNamedEntityDao<SC> {
 
@@ -53,7 +53,7 @@ public interface PersistingContainerDao<
 	 * @param schemaChangeOperation
 	 * @return
 	 */
-	HibSchemaChange<?> createPersistedChange(SCV version, SchemaChangeOperation schemaChangeOperation);
+	SchemaChange<?> createPersistedChange(SCV version, SchemaChangeOperation schemaChangeOperation);
 
 	/**
 	 * Create new persisted version entity for the container entity.
@@ -78,7 +78,7 @@ public interface PersistingContainerDao<
 	};
 
 	@Override
-	default Map<HibBranch, SCV> findReferencedBranches(SC schema) {
+	default Map<Branch, SCV> findReferencedBranches(SC schema) {
 		return schema.findReferencedBranches();
 	}
 
@@ -88,9 +88,9 @@ public interface PersistingContainerDao<
 		if (listOfChanges.getChanges().isEmpty()) {
 			throw error(BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
-		HibSchemaChange<?> current = null;
+		SchemaChange<?> current = null;
 		for (SchemaChangeModel restChange : listOfChanges.getChanges()) {
-			HibSchemaChange<?> graphChange = createChange(version, restChange);
+			SchemaChange<?> graphChange = createChange(version, restChange);
 			// Set the first change to the schema container and chain all other changes to
 			// that change.
 			if (current == null) {
@@ -149,8 +149,8 @@ public interface PersistingContainerDao<
 	}
 
 	@Override
-	default void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bc) {
-		HibSchemaChange<?> next = change.getNextChange();
+	default void deleteChange(SchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bc) {
+		SchemaChange<?> next = change.getNextChange();
 		if (next != null) {
 			deleteChange(next, bc);
 		}
@@ -158,9 +158,9 @@ public interface PersistingContainerDao<
 	}
 
 	@Override
-	default HibSchemaChange<?> createChange(SCV version, SchemaChangeModel restChange) {
+	default SchemaChange<?> createChange(SCV version, SchemaChangeModel restChange) {
 		// Create an instance
-		HibSchemaChange<?> schemaChange = createPersistedChange(version, restChange.getOperation());
+		SchemaChange<?> schemaChange = createPersistedChange(version, restChange.getOperation());
 		
 		// Set properties from rest model
 		schemaChange.updateFromRest(restChange);
@@ -172,15 +172,15 @@ public interface PersistingContainerDao<
 		CommonTx ctx = CommonTx.get();
 		generateUnassignEvents(version).forEach(bac::add);
 		// Delete change
-		HibSchemaChange<?> change = version.getNextChange();
+		SchemaChange<?> change = version.getNextChange();
 		if (change != null) {
 			deleteChange(change, bac);
 		}
 		// Delete referenced jobs
-		for (HibJob job : version.referencedJobsViaFrom()) {
+		for (Job job : version.referencedJobsViaFrom()) {
 			ctx.jobDao().delete(job, bac);
 		}
-		for (HibJob job : version.referencedJobsViaTo()) {
+		for (Job job : version.referencedJobsViaTo()) {
 			ctx.jobDao().delete(job, bac);
 		}
 		beforeVersionDeletedFromDatabase(version);

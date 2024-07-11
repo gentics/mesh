@@ -14,17 +14,17 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -74,7 +74,7 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				.transactional(tx -> entities.project.getElement(model).stream().flatMap(project -> {
 					BranchDao branchDao = tx.branchDao();
 					NodeDao nodeDao = tx.nodeDao();
-					List<? extends HibBranch> branches = branchDao.findAll(project).list();
+					List<? extends Branch> branches = branchDao.findAll(project).list();
 					return nodeDao.findAll(project).stream().flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 							.flatMap(type -> branches.stream().flatMap(branch -> tx.contentDao()
 									.getFieldContainers(node, branch, type).stream()
@@ -105,15 +105,15 @@ public class ProjectUpdateEventHandler implements EventHandler {
 				}).collect(toFlowable())).runInNewTx());
 	}
 
-	private Stream<CreateDocumentRequest> createTagRequests(HibTagFamily family, HibProject project) {
+	private Stream<CreateDocumentRequest> createTagRequests(TagFamily family, Project project) {
 		TagDao tagDao = Tx.get().tagDao();
 		return tagDao.findAll(family).stream()
-				.map(tag -> helper.createDocumentRequest(HibTag.composeIndexName(project.getUuid()), tag.getUuid(),
+				.map(tag -> helper.createDocumentRequest(Tag.composeIndexName(project.getUuid()), tag.getUuid(),
 						entities.tag.transform(tag), complianceMode));
 	}
 
-	private CreateDocumentRequest createTagFamilyRequest(HibProject project, HibTagFamily family) {
-		return helper.createDocumentRequest(HibTagFamily.composeIndexName(project.getUuid()), family.getUuid(),
+	private CreateDocumentRequest createTagFamilyRequest(Project project, TagFamily family) {
+		return helper.createDocumentRequest(TagFamily.composeIndexName(project.getUuid()), family.getUuid(),
 				entities.tagFamily.transform(family), complianceMode);
 	}
 

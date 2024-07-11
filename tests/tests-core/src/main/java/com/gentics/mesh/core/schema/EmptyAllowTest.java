@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
@@ -51,7 +51,7 @@ public class EmptyAllowTest extends AbstractMeshTest {
 		client().assignSchemaToProject(PROJECT_NAME, response.getUuid()).blockingAwait();
 	}
 
-	private void createNode(Field field) {
+	private void createNode(FieldModel field) {
 		NodeCreateRequest req = new NodeCreateRequest();
 		req.setLanguage("en");
 		req.setSchemaName("test");
@@ -63,7 +63,7 @@ public class EmptyAllowTest extends AbstractMeshTest {
 		client().createNode(PROJECT_NAME, req).blockingAwait();
 	}
 
-	private void runTest(FieldSchema schemaField, Field nodeField) {
+	private void runTest(FieldSchema schemaField, FieldModel nodeField) {
 		createSchema(schemaField);
 		createNode(nodeField);
 	}

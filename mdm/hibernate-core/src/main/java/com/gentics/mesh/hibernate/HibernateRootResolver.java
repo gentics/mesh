@@ -14,10 +14,10 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.hibernate.data.dao.HibDaoCollectionImpl;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
@@ -44,7 +44,7 @@ public class HibernateRootResolver implements RootResolver {
 	}
 
 	@Override
-	public HibBaseElement resolvePathToElement(String pathToElement) {
+	public BaseElement resolvePathToElement(String pathToElement) {
 		if (StringUtils.isEmpty(pathToElement)) {
 			throw error(BAD_REQUEST, "Could not resolve path. The path must must not be empty or null.");
 		}
@@ -68,7 +68,7 @@ public class HibernateRootResolver implements RootResolver {
 		String rootNodeSegment = stack.pop();
 
 		// Check whether the root segment is a project name
-		HibProject project = daoCollection.projectDao().findByName(rootNodeSegment);
+		Project project = daoCollection.projectDao().findByName(rootNodeSegment);
 		if (project != null) {
 			return project;
 		} else {

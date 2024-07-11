@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.Field;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.database.HibernateTx;
 
@@ -14,7 +14,7 @@ import com.gentics.mesh.database.HibernateTx;
  * @author plyhun
  *
  */
-public interface HibFieldEdge extends HibDatabaseElement, HibField {
+public interface HibFieldEdge extends HibDatabaseElement, Field {
 
 	/**
 	 * If the edge is attached to a micronode, get it's root container field name.

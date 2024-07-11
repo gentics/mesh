@@ -11,7 +11,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -30,7 +30,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public HibJob loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	public Job loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		JobDao jobDao = ctx.tx().jobDao();
 		if (perm == null) {
 			return jobDao.findByUuid(uuid);
@@ -40,7 +40,7 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public HibJob loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+	public Job loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		JobDao jobDao = ctx.tx().jobDao();
 		if (perm == null) {
 			return jobDao.findByName(name);
@@ -50,50 +50,50 @@ public class JobDAOActionsImpl implements JobDAOActions {
 	}
 
 	@Override
-	public Page<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends Job> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().jobDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
-	public Page<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibJob> extraFilter) {
+	public Page<? extends Job> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
 		return ctx.tx().jobDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
-	public HibJob create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public Job create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return tx.jobDao().create(ac, batch, uuid);
 	}
 
 	@Override
-	public boolean update(Tx tx, HibJob job, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, Job job, InternalActionContext ac, EventQueueBatch batch) {
 		return tx.jobDao().update(job, ac, batch);
 	}
 
 	@Override
-	public void delete(Tx tx, HibJob job, BulkActionContext bac) {
+	public void delete(Tx tx, Job job, BulkActionContext bac) {
 		tx.jobDao().delete(job, bac);
 	}
 
 	@Override
-	public JobResponse transformToRestSync(Tx tx, HibJob job, InternalActionContext ac, int level, String... languageTags) {
+	public JobResponse transformToRestSync(Tx tx, Job job, InternalActionContext ac, int level, String... languageTags) {
 		JobDao jobDao = tx.jobDao();
 		return jobDao.transformToRestSync(job, ac, level, languageTags);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, HibJob job) {
+	public String getAPIPath(Tx tx, InternalActionContext ac, Job job) {
 		JobDao jobDao = tx.jobDao();
 		return jobDao.getAPIPath(job, ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, HibJob job) {
+	public String getETag(Tx tx, InternalActionContext ac, Job job) {
 		JobDao jobDao = tx.jobDao();
 		return jobDao.getETag(job, ac);
 	}
 
 	@Override
-	public Page<? extends HibJob> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+	public Page<? extends Job> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().jobDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

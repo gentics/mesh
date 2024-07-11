@@ -12,9 +12,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -29,25 +29,25 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "tagfamily")
 @ElementTypeKey(ElementType.TAGFAMILY)
-public class HibTagFamilyImpl extends AbstractHibUserTrackedElement<TagFamilyResponse> implements HibTagFamily, Serializable {
+public class HibTagFamilyImpl extends AbstractHibUserTrackedElement<TagFamilyResponse> implements TagFamily, Serializable {
 
 	private static final long serialVersionUID = 8600788302248772724L;
 
 	@OneToMany(targetEntity = HibTagImpl.class, mappedBy = "tagFamily")
-	private Set<HibTag> tags = new HashSet<>();
+	private Set<Tag> tags = new HashSet<>();
 
 	@ManyToOne(targetEntity = HibProjectImpl.class)
-	private HibProject project;
+	private Project project;
 
 	private String description;
 
 	@Override
-	public HibProject getProject() {
+	public Project getProject() {
 		return project;
 	}
 
 	@Override
-	public void setProject(HibProject project) {
+	public void setProject(Project project) {
 		this.project = project;
 	}
 
@@ -61,23 +61,23 @@ public class HibTagFamilyImpl extends AbstractHibUserTrackedElement<TagFamilyRes
 		this.description = description;
 	}
 
-	public Set<HibTag> getTags() {
+	public Set<Tag> getTags() {
 		return tags;
 	}
 
 	@Override
-	public Result<? extends HibTag> findAllTags() {
+	public Result<? extends Tag> findAllTags() {
 		return new TraversalResult<>(Collections.unmodifiableSet(tags));
 	}
 
 	@Override
-	public void addTag(HibTag tag) {
+	public void addTag(Tag tag) {
 		tags.add(tag);
 		tag.setTagFamily(this);
 	}
 
 	@Override
-	public void removeTag(HibTag tag) {
+	public void removeTag(Tag tag) {
 		tags.remove(tag);
 		tag.setTagFamily(null);
 	}

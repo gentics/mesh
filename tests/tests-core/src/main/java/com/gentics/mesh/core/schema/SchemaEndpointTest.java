@@ -51,9 +51,9 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -61,7 +61,7 @@ import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.EventCauseInfoModel;
 import com.gentics.mesh.core.rest.event.branch.BranchMicroschemaAssignModel;
 import com.gentics.mesh.core.rest.event.branch.BranchSchemaAssignEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -121,13 +121,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
-		assertThat(trackingSearchProvider()).hasStore(HibSchema.composeIndexName(), HibSchema.composeDocumentId(restSchema.getUuid()));
+		assertThat(trackingSearchProvider()).hasStore(Schema.composeIndexName(), Schema.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
-			HibSchema schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
+			Schema schemaContainer = schemaDao.findByUuid(restSchema.getUuid());
 			assertNotNull(schemaContainer);
 			assertEquals("Name does not match with the requested name", createRequest.getName(), schemaContainer.getName());
 			// assertEquals("Description does not match with the requested description", request.getDescription(), schema.getDescription());
@@ -249,7 +249,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			// Create schema with no read permission
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
-			HibSchema noPermSchema = schemaDao.create(schema, user());
+			Schema noPermSchema = schemaDao.create(schema, user());
 			SchemaVersionModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("No_Perm_Schema");
 			dummySchema.setVersion("1.0");
@@ -259,7 +259,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			for (int i = 0; i < nSchemas; i++) {
 				schema = FieldUtil.createMinimalValidSchema();
 				schema.setName("extra_schema_" + i);
-				HibSchema extraSchema = schemaDao.create(schema, user());
+				Schema extraSchema = schemaDao.create(schema, user());
 				extraSchema.getLatestVersion().setSchema(new SchemaModelImpl().setVersion("1.0").setName("extra_schema_" + i));
 				roleDao.grantPermissions(role(), extraSchema, READ_PERM);
 			}
@@ -321,8 +321,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			HibSchema container = schemaContainer("content");
-			HibSchemaVersion schemaVersion = container.getLatestVersion();
+			Schema container = schemaContainer("content");
+			SchemaVersion schemaVersion = container.getLatestVersion();
 			SchemaResponse restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			assertThat(restSchema).matches(schemaVersion).isValid();
 		}
@@ -390,7 +390,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = tx(() -> schemaContainer("content").getUuid());
 		tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, DELETE_PERM);
 			roleDao.grantPermissions(role(), schema, UPDATE_PERM);
 			roleDao.grantPermissions(role(), schema, CREATE_PERM);
@@ -535,7 +535,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			assertMigrationEvent(event, schemaVersion, schemaUuid);
 		});
 		expect(NODE_UPDATED).match(36, NodeMeshEventModel.class, event -> {
-			EventCauseInfo cause = event.getCause();
+			EventCauseInfoModel cause = event.getCause();
 			assertTrue("The cause of the node update event did not have the correct type.", cause instanceof SchemaMigrationCause);
 			SchemaMigrationCause migrationCause = (SchemaMigrationCause) cause;
 			assertMigrationEvent(migrationCause, schemaVersion, schemaUuid);
@@ -605,14 +605,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			String oldName = schema.getName();
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 
 			call(() -> client().updateSchema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			HibSchema reloaded = schemaDao.findByUuid(schema.getUuid());
+			Schema reloaded = schemaDao.findByUuid(schema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -637,7 +637,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testDeleteByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			assertThat(schemaDao.getNodes(schema)).isNotEmpty();
 		}
 
@@ -657,14 +657,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			HibSchema reloaded = schemaDao.findByUuid(uuid);
+			Schema reloaded = schemaDao.findByUuid(uuid);
 			NodeDao nodeDao = tx.nodeDao();
 
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
 			assertThat(schemaDao.getNodes(reloaded)).isNotEmpty();
 			BulkActionContext context = createBulkContext();
-			for (HibNode node : schemaDao.getNodes(schemaDao.findByUuid(getSchemaContainer().getUuid())).list()) {
+			for (Node node : schemaDao.getNodes(schemaDao.findByUuid(getSchemaContainer().getUuid())).list()) {
 				nodeDao.delete(node, context, false, true);
 			}
 			assertThat(schemaDao.getNodes(schemaDao.findByUuid(uuid))).isEmpty();
@@ -689,7 +689,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			assertNull("The referenced job should have been deleted", tx.<CommonTx>unwrap().jobDao().findByUuid(jobUuid));
-			HibSchema reloaded = schemaDao.findByUuid(uuid);
+			Schema reloaded = schemaDao.findByUuid(uuid);
 			assertNull("The version of the schema container should have been deleted as well.", 
 					tx.<CommonTx>unwrap().load(versionId, tx.<CommonTx>unwrap().schemaDao().getVersionPersistenceClass()));
 					// TODO find deleted version throws a NPE. This most probably should not be the case.
@@ -701,7 +701,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		HibSchema schema = schemaContainer("content");
+		Schema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			roleDao.revokePermissions(role(), schema, DELETE_PERM);
@@ -737,7 +737,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		try (Tx tx = tx()) {
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			String uuid = schema.getUuid();
 			Observable.range(0, nJobs)
 				.flatMapCompletable(i -> client().findSchemaByUuid(uuid).toCompletable())
@@ -751,7 +751,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
 		try (Tx tx = tx()) {
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			validateDeletion(i -> client().deleteSchema(schema.getUuid()), nJobs);
 		}
 	}
@@ -779,7 +779,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			awaitConcurrentRequests(nJobs, i -> client().findSchemaByUuid(schema.getUuid()));
 		}
 	}
@@ -791,7 +791,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 			roleDao.revokePermissions(role(), schema, UPDATE_PERM);
 			schemaUuid = schema.getUuid();
 			tx.success();
@@ -839,8 +839,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		});
 
 		tx(tx -> {
-			HibSchema schema = tx.schemaDao().findByUuid(response.getUuid());
-			HibSchemaVersion version = schema.getLatestVersion();
+			Schema schema = tx.schemaDao().findByUuid(response.getUuid());
+			SchemaVersion version = schema.getLatestVersion();
 			assertThat(version.getMicroschemaVersionHash(initialBranch())).as("Microschema Version Hash").isNull();
 		});
 	}
@@ -858,8 +858,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		});
 
 		tx(tx -> {
-			HibSchema schema = tx.schemaDao().findByUuid(response.getUuid());
-			HibSchemaVersion version = schema.getLatestVersion();
+			Schema schema = tx.schemaDao().findByUuid(response.getUuid());
+			SchemaVersion version = schema.getLatestVersion();
 			assertThat(version.getMicroschemaVersionHash(initialBranch())).as("Microschema Version Hash").isNull();
 		});
 	}

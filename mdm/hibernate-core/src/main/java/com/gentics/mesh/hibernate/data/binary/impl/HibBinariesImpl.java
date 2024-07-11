@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.database.HibernateDatabase;
@@ -31,7 +31,7 @@ public class HibBinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<HibBinary> findByHash(String SHA512Sum) {
+	public Transactional<Binary> findByHash(String SHA512Sum) {
 		return database.transactional((tx) -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
@@ -44,7 +44,7 @@ public class HibBinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Stream<? extends HibBinary>> findByCheckStatus(BinaryCheckStatus checkStatus) {
+	public Transactional<Stream<? extends Binary>> findByCheckStatus(BinaryCheckStatus checkStatus) {
 		return database.transactional(tx -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
@@ -55,7 +55,7 @@ public class HibBinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<HibBinary> create(String uuid, String SHA512Sum, Long size, BinaryCheckStatus checkStatus) {
+	public Transactional<Binary> create(String uuid, String SHA512Sum, Long size, BinaryCheckStatus checkStatus) {
 		return database.transactional((tx) -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 			HibBinaryImpl binary = hibTx.create(uuid, HibBinaryImpl.class);
@@ -72,13 +72,13 @@ public class HibBinariesImpl implements Binaries {
 	}
 
 	@Override
-	public Transactional<Stream<HibBinary>> findAll() {
+	public Transactional<Stream<Binary>> findAll() {
 		return database.transactional((tx) -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
 			return hibTx.entityManager().createQuery("select b from binary b", HibBinaryImpl.class)
 					.getResultStream()
-					.map(HibBinary.class::cast);
+					.map(Binary.class::cast);
 		});
 	}
 }

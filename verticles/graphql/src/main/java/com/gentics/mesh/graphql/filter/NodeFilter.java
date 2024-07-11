@@ -17,11 +17,11 @@ import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -90,7 +90,7 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 	}
 
 	private Optional<MainFilter<NodeContent>> createAllFieldFilters() {
-		HibProject project = Tx.get().getProject(context);
+		Project project = Tx.get().getProject(context);
 		SchemaDao schemaDao = Tx.get().schemaDao();
 		List<FilterField<NodeContent, ?>> schemaFields = schemaDao.findAll(project)
 			.stream()
@@ -100,11 +100,11 @@ public class NodeFilter extends EntityFilter<NodeContent> implements TypeReferen
 		return Optional.ofNullable(schemaFields).filter(fields -> !fields.isEmpty()).map(fields -> MainFilter.mainFilter("NodeFieldFilter", "Filters by fields", fields, false, Optional.of("CONTENT")));
 	}
 
-	private FilterField<NodeContent, ?> createFieldFilter(HibSchema schema) {
+	private FilterField<NodeContent, ?> createFieldFilter(Schema schema) {
 		String uuid = schema.getLatestVersion().getUuid();
 		return Optional.ofNullable(FieldFilter.filter(context, schema.getLatestVersion()))
 				.filter(fieldFilter -> !fieldFilter.getFilters().isEmpty())
-				.map(fieldFilter -> new MappedFilter<NodeContent, HibFieldContainer, Map<String, ?>>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
+				.map(fieldFilter -> new MappedFilter<NodeContent, FieldContainer, Map<String, ?>>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " schema",
 						fieldFilter, content -> (content == null ? null : ((NodeContent) content).getContainer()), 
 								Pair.pair(schema.getUuid(), new JoinPart(schema.getName(), uuid)), Optional.of(uuid)))
 				.orElse(null);

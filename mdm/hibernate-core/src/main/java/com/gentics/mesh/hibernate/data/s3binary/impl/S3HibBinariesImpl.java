@@ -1,7 +1,7 @@
 package com.gentics.mesh.hibernate.data.s3binary.impl;
 
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.database.HibernateDatabase;
@@ -30,7 +30,7 @@ public class S3HibBinariesImpl implements S3Binaries {
 	}
 
 	@Override
-	public Transactional<S3HibBinary> findByS3ObjectKey(String s3ObjectKey) {
+	public Transactional<S3Binary> findByS3ObjectKey(String s3ObjectKey) {
 		return database.transactional(tx -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
@@ -43,7 +43,7 @@ public class S3HibBinariesImpl implements S3Binaries {
 	}
 
 	@Override
-	public Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName, BinaryCheckStatus checkStatus) {
+	public Transactional<S3Binary> create(String uuid, String objectKey, String fileName, BinaryCheckStatus checkStatus) {
 		return database.transactional(tx -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 			HibS3BinaryImpl binary = hibTx.create(uuid, HibS3BinaryImpl.class);
@@ -59,13 +59,13 @@ public class S3HibBinariesImpl implements S3Binaries {
 	}
 
 	@Override
-	public Transactional<Stream<S3HibBinary>> findAll() {
+	public Transactional<Stream<S3Binary>> findAll() {
 		return database.transactional(tx -> {
 			HibernateTx hibTx = (HibernateTx) tx;
 
 			return hibTx.entityManager().createQuery("select s from s3binary s", HibS3BinaryImpl.class)
 					.getResultStream()
-					.map(S3HibBinary.class::cast);
+					.map(S3Binary.class::cast);
 		});
 	}
 }

@@ -1,6 +1,6 @@
 package com.gentics.mesh.generator;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_VERSION;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.mockito.Mockito.mock;
 
@@ -23,7 +23,7 @@ import org.raml.model.Raml;
 import org.raml.model.Resource;
 import org.raml.model.Response;
 
-import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.MeshVersions;
 import com.gentics.mesh.core.endpoint.admin.AdminEndpoint;
 import com.gentics.mesh.core.endpoint.admin.HealthEndpoint;
 import com.gentics.mesh.core.endpoint.admin.RestInfoEndpoint;
@@ -109,7 +109,7 @@ public class RAMLGenerator extends AbstractGenerator {
 	public String generate() {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
-		raml.setVersion(MeshVersion.getBuildInfo().getVersion());
+		raml.setVersion(MeshVersions.getBuildInfo().getVersion());
 		raml.setBaseUri("http://localhost:8080/api/v" + CURRENT_API_VERSION);
 		raml.getProtocols().add(Protocol.HTTP);
 		raml.getProtocols().add(Protocol.HTTPS);

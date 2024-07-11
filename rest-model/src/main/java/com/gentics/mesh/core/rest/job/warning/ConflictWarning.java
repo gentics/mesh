@@ -6,7 +6,7 @@ import com.gentics.mesh.annotation.Setter;
 /**
  * POJO for a job conflict.
  */
-public class ConflictWarning extends JobWarning {
+public class ConflictWarning extends JobWarningModel {
 
 	public ConflictWarning() {
 	}

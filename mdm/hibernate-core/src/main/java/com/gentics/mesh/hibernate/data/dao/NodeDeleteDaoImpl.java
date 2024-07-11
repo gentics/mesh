@@ -20,13 +20,13 @@ import org.slf4j.LoggerFactory;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -65,7 +65,7 @@ public class NodeDeleteDaoImpl {
 	 * @param project
 	 * @param bac
 	 */
-	public void deleteAllFromProject(HibProject project, BulkActionContext bac) {
+	public void deleteAllFromProject(Project project, BulkActionContext bac) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		((HibProjectImpl) project).getHibSchemas()
 				.stream()
@@ -94,7 +94,7 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursive(HibNode node, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursive(Node node, BulkActionContext bac, boolean ignoreChecks) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		Set<HibNodeImpl> descendants = em().createNamedQuery("nodeBranchParents.findDescendants", HibNodeImpl.class)
 				.setParameter("node", node)
@@ -102,7 +102,7 @@ public class NodeDeleteDaoImpl {
 				.collect(Collectors.toSet());
 
 		List<UUID> nodesUuidsToDelete = descendants.stream().map(HibNodeImpl::getDbUuid).collect(Collectors.toList());
-		Set<HibSchemaVersion> versions = descendants.stream().map(HibNode::getSchemaContainer)
+		Set<SchemaVersion> versions = descendants.stream().map(Node::getSchemaContainer)
 				.flatMap(this::getVersions)
 				.collect(Collectors.toSet());
 
@@ -146,7 +146,7 @@ public class NodeDeleteDaoImpl {
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	public void deleteRecursiveFromBranch(HibNode node, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	public void deleteRecursiveFromBranch(Node node, Branch branch, BulkActionContext bac, boolean ignoreChecks) {
 		// 1. get descendants in branch, fetching the edges as well
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		EntityGraph<?> entityGraph = em().getEntityGraph("node.content");
@@ -157,7 +157,7 @@ public class NodeDeleteDaoImpl {
 				.getResultStream()
 				.collect(Collectors.toSet());
 		List<UUID> nodesUuidsToDelete = descendants.stream().map(HibNodeImpl::getDbUuid).collect(Collectors.toList());
-		Set<HibSchemaVersion> versions = descendants.stream().map(HibNode::getSchemaContainer)
+		Set<SchemaVersion> versions = descendants.stream().map(Node::getSchemaContainer)
 				.flatMap(this::getVersions)
 				.collect(Collectors.toSet());
 		Set<ContentKey> relatedContainers = new HashSet<>();
@@ -197,12 +197,12 @@ public class NodeDeleteDaoImpl {
 			em().detach(n); // make sure the elements are not stored in the persistence context, otherwise em().find() will still return them after deletion
 		});
 		// finally delete the nodes
-		SplittingUtils.splitAndConsume(deletableNodes.stream().map(HibNode::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(0), slice -> em().createQuery("delete from node where dbUuid in :nodesUuid")
+		SplittingUtils.splitAndConsume(deletableNodes.stream().map(Node::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(0), slice -> em().createQuery("delete from node where dbUuid in :nodesUuid")
 				.setParameter("nodesUuid", slice)
 				.executeUpdate());
 	}
 
-	private Set<ContentKey> findDeletableContainersForBranch(Set<ContentKey> containersKeys, Set<HibNodeImpl> descendants, HibBranch branch) {
+	private Set<ContentKey> findDeletableContainersForBranch(Set<ContentKey> containersKeys, Set<HibNodeImpl> descendants, Branch branch) {
 		Map<UUID, Set<UUID>> branchMap = getBranchesOfContents(containersKeys.stream().map(ContentKey::getContentUuid).collect(Collectors.toSet()));
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		Map<ContentKey, ContentKey> previousContainersUuidsMap = contentDao.getPreviousContainersUuidsMap(containersKeys);
@@ -259,7 +259,7 @@ public class NodeDeleteDaoImpl {
 				.getResultList()
 				.forEach(tuple -> {
 					UUID contentUuid = tuple.get(0, UUID.class);
-					UUID branchUuid = UUIDUtil.toJavaUuid(tuple.get(1, HibBranch.class).getUuid());
+					UUID branchUuid = UUIDUtil.toJavaUuid(tuple.get(1, Branch.class).getUuid());
 					ret.computeIfAbsent(contentUuid, key -> new HashSet<>()).add(branchUuid);
 				});
 		});
@@ -357,7 +357,7 @@ public class NodeDeleteDaoImpl {
 				.forEach(tuple -> addReferenceUpdateEvent(handledNodeUuids, bac, tuple)));
 	}
 
-	private NodeMeshEventModel onDeleted(HibNode node) {
+	private NodeMeshEventModel onDeleted(Node node) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(node.getTypeInfo().getOnDeleted());
 		event.setUuid(node.getUuid());
@@ -365,7 +365,7 @@ public class NodeDeleteDaoImpl {
 		event.setType(null);
 		event.setBranchUuid(null);
 		event.setProject(node.getProject().transformToReference());
-		HibSchema schema = node.getSchemaContainer();
+		Schema schema = node.getSchemaContainer();
 		if (schema != null) {
 			event.setSchema(schema.transformToReference());
 		}
@@ -377,12 +377,12 @@ public class NodeDeleteDaoImpl {
 		UUID branchUuid = (UUID) tuple.get(1);
 		ContainerType ctype = (ContainerType) tuple.get(2);
 		HibProjectImpl project = (HibProjectImpl) tuple.get(3);
-		HibSchema schema = (HibSchema) tuple.get(4);
+		Schema schema = (Schema) tuple.get(4);
 		UUID uuid = (UUID) tuple.get(5);
 		addReferenceUpdateEvent(handledNodeUuids, UUIDUtil.toShortUuid(uuid), schema, languageTag, UUIDUtil.toShortUuid(branchUuid), ctype, bac, project);
 	}
    
-	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, String referencingNodeUuid, HibSchema schema, String languageTag, String branchUuid, ContainerType type, BulkActionContext bac, HibProject project) {
+	private void addReferenceUpdateEvent(Set<String> handledNodeUuids, String referencingNodeUuid, Schema schema, String languageTag, String branchUuid, ContainerType type, BulkActionContext bac, Project project) {
 		String key = referencingNodeUuid + languageTag + branchUuid + type.getCode();
 		if (!handledNodeUuids.contains(key)) {
 			bac.add(onReferenceUpdated(referencingNodeUuid, schema, branchUuid, type, languageTag, project));
@@ -390,7 +390,7 @@ public class NodeDeleteDaoImpl {
 		}
 	}
 
-	private NodeMeshEventModel onReferenceUpdated(String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag, HibProject project) {
+	private NodeMeshEventModel onReferenceUpdated(String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag, Project project) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);
 		event.setUuid(uuid);
@@ -404,11 +404,11 @@ public class NodeDeleteDaoImpl {
 		return event;
 	}
 
-	private Stream<HibSchemaVersion> getVersions(HibSchema schema) {
+	private Stream<SchemaVersion> getVersions(Schema schema) {
 		return StreamUtil.toStream(Tx.get().schemaDao().findAllVersions(schema));
 	}
 
-	private Stream<HibMicroschemaVersion> getMicroVersions(HibMicroschema schema) {
+	private Stream<MicroschemaVersion> getMicroVersions(Microschema schema) {
 		return StreamUtil.toStream(Tx.get().microschemaDao().findAllVersions(schema));
 	}
 

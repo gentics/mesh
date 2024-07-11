@@ -8,12 +8,12 @@ import java.util.List;
 
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.Bucket;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -74,7 +74,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 			PersistingGroupDao groupDao = ctx.groupDao();
 
 			// Delete all groups to get empty set of vertices to work with
-			for (HibGroup group : groupDao.findAll().list()) {
+			for (Group group : groupDao.findAll().list()) {
 				groupDao.deletePersisted(group);
 			}
 			long groupCount = ctx.count(groupDao.getPersistenceClass());
@@ -128,7 +128,7 @@ public class BucketManagerTest extends AbstractMeshTest {
 
 		// Create extra users
 		for (int i = 0; i < nUsers; i++) {
-			HibUser user = userDao.create("Anton" + i, user());
+			User user = userDao.create("Anton" + i, user());
 			assertNotNull(user.getBucketId());
 		}
 		long userCount = ctx.count(userDao.getPersistenceClass());

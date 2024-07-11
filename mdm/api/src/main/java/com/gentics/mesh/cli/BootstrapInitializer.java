@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -30,7 +30,7 @@ public interface BootstrapInitializer {
 	 * 
 	 * @return
 	 */
-	HibRole anonymousRole();
+	Role anonymousRole();
 
 	/**
 	 * Initialise the search index mappings.

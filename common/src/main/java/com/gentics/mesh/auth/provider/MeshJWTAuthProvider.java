@@ -15,7 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.gentics.mesh.auth.AuthenticationResult;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.KeyStoreOptions;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -103,7 +102,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 			} else {
 				JsonObject decodedJwt = rh.result().principal();
 				try {
-					User user = loadUserByJWT(decodedJwt);
+					io.vertx.ext.auth.User user = loadUserByJWT(decodedJwt);
 					AuthenticationResult result = new AuthenticationResult(user);
 
 					// Check whether an api key was used to authenticate the user.
@@ -119,7 +118,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	}
 
 	@Override
-	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+	public void authenticate(JsonObject authInfo, Handler<AsyncResult<io.vertx.ext.auth.User>> resultHandler) {
 		// The mesh auth provider is not using this method to authenticate a user.
 		throw new NotImplementedException();
 	}
@@ -143,7 +142,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 *            Password
 	 */
 	public String generateToken(String username, String password, String newPassword) {
-		HibUser user = authenticate(username, password, newPassword);
+		User user = authenticate(username, password, newPassword);
 		String uuid = db.tx(user::getUuid);
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
 		return jwtProvider.generateToken(tokenData, new JWTOptions()
@@ -158,8 +157,8 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @param password
 	 *            Password
 	 */
-	private HibUser authenticate(String username, String password, String newPassword) {
-		HibUser user = db.tx(tx -> { return tx.userDao().findByUsername(username); });
+	private User authenticate(String username, String password, String newPassword) {
+		User user = db.tx(tx -> { return tx.userDao().findByUsername(username); });
 		if (user != null) {
 			String accountPasswordHash = db.tx(user::getPasswordHash);
 			// TODO check if user is enabled
@@ -206,7 +205,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 *            User
 	 * @return The new token
 	 */
-	public String generateToken(User user) {
+	public String generateToken(io.vertx.ext.auth.User user) {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject();
@@ -230,7 +229,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @param expireDuration
 	 * @return Generated API key
 	 */
-	public String generateAPIToken(HibUser user, String tokenCode, Integer expireDuration) {
+	public String generateAPIToken(User user, String tokenCode, Integer expireDuration) {
 		AuthenticationOptions options = meshOptions.getAuthenticationOptions();
 		JsonObject tokenData = new JsonObject()
 			.put(USERID_FIELD_NAME, user.getUuid())
@@ -250,7 +249,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 	 * @return Mesh user
 	 * @throws Exception
 	 */
-	private User loadUserByJWT(JsonObject jwt) throws Exception {
+	private io.vertx.ext.auth.User loadUserByJWT(JsonObject jwt) throws Exception {
 		return db.tx(tx -> {
 			String userUuid = jwt.getString(USERID_FIELD_NAME);
 			MeshAuthUser user = tx.userDao().findMeshAuthUserByUuid(userUuid);
@@ -315,7 +314,7 @@ public class MeshJWTAuthProvider implements AuthenticationProvider, JWTAuth {
 			// Authentication was successful.
 			if (res.succeeded()) {
 				AuthenticationResult result = res.result();
-				User authenticatedUser = result.getUser();
+				io.vertx.ext.auth.User authenticatedUser = result.getUser();
 				String token = generateToken(authenticatedUser);
 				ac.addCookie(Cookie.cookie(SharedKeys.TOKEN_COOKIE_KEY, token)
 						.setMaxAge(meshOptions.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));

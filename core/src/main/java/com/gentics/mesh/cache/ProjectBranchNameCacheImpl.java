@@ -11,14 +11,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
  * @see ProjectBranchNameCache
  */
 @Singleton
-public class ProjectBranchNameCacheImpl extends AbstractNameCache<HibBranch> implements ProjectBranchNameCache {
+public class ProjectBranchNameCacheImpl extends AbstractNameCache<Branch> implements ProjectBranchNameCache {
 
 	private static final long CACHE_SIZE = 500;
 

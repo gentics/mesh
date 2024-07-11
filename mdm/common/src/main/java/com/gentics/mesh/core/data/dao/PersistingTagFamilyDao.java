@@ -15,11 +15,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -38,12 +38,12 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<HibProject, HibTagFamily>, PersistingNamedEntityDao<HibTagFamily> {
+public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<Project, TagFamily>, PersistingNamedEntityDao<TagFamily> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagFamilyDao.class);
 
 	@Override
-	default boolean update(HibProject project, HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Project project, TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the item, if it does not belong to the requested root.
 		if (!project.getUuid().equals(tagFamily.getProject().getUuid())) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", tagFamily.getUuid());
@@ -52,13 +52,13 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default HibTagFamily create(HibProject project, String name, HibUser user) {
+	default TagFamily create(Project project, String name, User user) {
 		return create(project, name, user, null);
 	}
 
 	@Override
-	default HibTagFamily create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibUser requestUser = ac.getUser();
+	default TagFamily create(Project project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		User requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
@@ -66,10 +66,10 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 		if (StringUtils.isEmpty(name)) {
 			throw error(BAD_REQUEST, "tagfamily_name_not_set");
 		}
-		HibBaseElement projectTagFamilyRoot = project.getTagFamilyPermissionRoot();
+		BaseElement projectTagFamilyRoot = project.getTagFamilyPermissionRoot();
 
 		// Check whether the name is already in-use.
-		HibTagFamily conflictingTagFamily = findByName(project, name);
+		TagFamily conflictingTagFamily = findByName(project, name);
 		if (conflictingTagFamily != null) {
 			throw conflict(conflictingTagFamily.getUuid(), name, "tagfamily_conflicting_name", name);
 		}
@@ -78,7 +78,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 			throw error(FORBIDDEN, "error_missing_perm", projectTagFamilyRoot.getUuid(),
 					CREATE_PERM.getRestPerm().getName());
 		}
-		HibTagFamily tagFamily = create(project, name, requestUser, uuid);
+		TagFamily tagFamily = create(project, name, requestUser, uuid);
 		userDao.inheritRolePermissions(requestUser, projectTagFamilyRoot, tagFamily);
 
 		return tagFamily;
@@ -86,8 +86,8 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 
 
 	@Override
-	default HibTagFamily create(HibProject project, String name, HibUser user, String uuid) {
-		HibTagFamily tagFamily = createPersisted(project, uuid, f -> {
+	default TagFamily create(Project project, String name, User user, String uuid) {
+		TagFamily tagFamily = createPersisted(project, uuid, f -> {
 			f.setName(name);
 			f.setCreated(user);
 			f.setProject(project);
@@ -99,17 +99,17 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default boolean update(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch) {
 		TagFamilyUpdateRequest requestModel = ac.fromJson(TagFamilyUpdateRequest.class);
 		Tx tx = Tx.get();
-		HibProject project = tx.getProject(ac);
+		Project project = tx.getProject(ac);
 		String newName = requestModel.getName();
 
 		if (isEmpty(newName)) {
 			throw error(BAD_REQUEST, "tagfamily_name_not_set");
 		}
 
-		HibTagFamily tagFamilyWithSameName = findByName(project, newName);
+		TagFamily tagFamilyWithSameName = findByName(project, newName);
 		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(tagFamily.getUuid())) {
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
@@ -122,7 +122,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default void delete(HibTagFamily tagFamily, BulkActionContext bac) {
+	default void delete(TagFamily tagFamily, BulkActionContext bac) {
 		TagDao tagDao = Tx.get().tagDao();
 
 		if (log.isDebugEnabled()) {
@@ -130,7 +130,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 		}
 
 		// Delete all the tags of the tag root
-		for (HibTag tag : tagDao.findAll(tagFamily).list()) {
+		for (Tag tag : tagDao.findAll(tagFamily).list()) {
 			tagDao.delete(tag, bac);
 		}
 
@@ -142,7 +142,7 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default TagFamilyResponse transformToRestSync(HibTagFamily tagFamily, InternalActionContext ac, int level, String... languageTags) {
+	default TagFamilyResponse transformToRestSync(TagFamily tagFamily, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -170,22 +170,22 @@ public interface PersistingTagFamilyDao extends TagFamilyDao, PersistingRootDao<
 	}
 
 	@Override
-	default void delete(HibProject root, HibTagFamily element, BulkActionContext bac) {
+	default void delete(Project root, TagFamily element, BulkActionContext bac) {
 		delete(element, bac);
 	}
 
 	@Override
-	default void addTag(HibTagFamily tagFamily, HibTag tag) {
+	default void addTag(TagFamily tagFamily, Tag tag) {
 		tagFamily.addTag(tag);
 	}
 
 	@Override
-	default void removeTag(HibTagFamily tagFamily, HibTag tag) {
+	default void removeTag(TagFamily tagFamily, Tag tag) {
 		tagFamily.removeTag(tag);
 	}
 
 	@Override
-	default Optional<NameCache<HibTagFamily>> maybeGetCache() {
+	default Optional<NameCache<TagFamily>> maybeGetCache() {
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().tagFamilyNameCache());
 	}
 }

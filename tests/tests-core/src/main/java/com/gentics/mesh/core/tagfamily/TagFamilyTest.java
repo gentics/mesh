@@ -10,7 +10,7 @@ import org.junit.Test;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -21,7 +21,7 @@ public class TagFamilyTest extends AbstractMeshTest {
 	@Test
 	@Ignore("Fails on CI pipeline. See https://github.com/gentics/mesh/issues/608")
 	public void testDelete() {
-		HibTagFamily tagFamily = tagFamily("colors");
+		TagFamily tagFamily = tagFamily("colors");
 		Long nTags = tx(tx -> {
 			return tx.tagDao().findAll(tagFamily).count();
 		});

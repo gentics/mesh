@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.field;
 
-import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.FieldContainer;
 
 @FunctionalInterface
 public interface DataAsserter {
-	void assertThat(HibFieldContainer container, String name);
+	void assertThat(FieldContainer container, String name);
 }

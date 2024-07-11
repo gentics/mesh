@@ -52,10 +52,10 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -63,7 +63,7 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.PermissionInfoModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -221,7 +221,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
 			assertNotNull("The project should have been created.", tx.projectDao().findByName(name));
-			HibProject project = tx.projectDao().findByUuid(restProject.getUuid());
+			Project project = tx.projectDao().findByUuid(restProject.getUuid());
 			assertNotNull(project);
 			assertTrue(userDao.hasPermission(user(), project, CREATE_PERM));
 			assertTrue(userDao.hasPermission(user(), project.getBaseNode(), CREATE_PERM));
@@ -265,7 +265,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			assertThat(restProject).hasUuid(uuid);
 
-			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
+			Project reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals("New Name", reloadedProject.getName());
 		}
 	}
@@ -385,7 +385,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			for (int i = 0; i < nProjects; i++) {
-				HibProject extraProject = createProject("extra_project_" + i, "folder");
+				Project extraProject = createProject("extra_project_" + i, "folder");
 				extraProject.setBaseNode(project().getBaseNode());
 				roleDao.grantPermissions(role(), extraProject, READ_PERM);
 			}
@@ -504,7 +504,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibProject project = project();
+			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			roleDao.grantPermissions(role(), project, READ_PERM, UPDATE_PERM);
@@ -516,7 +516,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			response = call(() -> client().findProjectByUuid(uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(response.getRootNode().getPath());
 
-			PermissionInfo permissions = response.getPermissions();
+			PermissionInfoModel permissions = response.getPermissions();
 			assertTrue(permissions.hasPerm(CREATE));
 			assertTrue(permissions.hasPerm(READ));
 			assertTrue(permissions.hasPerm(UPDATE));
@@ -527,7 +527,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			HibProject project = project();
+			Project project = project();
 			String uuid = project.getUuid();
 
 			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
@@ -601,7 +601,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibProject project = project();
+			Project project = project();
 			roleDao.grantPermissions(role(), project, UPDATE_PERM);
 			tx.success();
 		}
@@ -625,21 +625,21 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().findNodes(newName));
 
 		try (Tx tx = tx()) {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
 			assertThat(restProject).matches(project);
 			// All nodes + project + tags and tag families need to be reindex
 			// since the project name is part of the search document.
 			int expectedCount = 1;
-			for (HibNode node : tx.nodeDao().findAll(project())) {
+			for (Node node : tx.nodeDao().findAll(project())) {
 				expectedCount += tx.contentDao().getFieldContainerCount(node);
 			}
 			expectedCount += tx.tagDao().count();
 			expectedCount += tx.tagFamilyDao().count(project);
 
-			assertThat(trackingSearchProvider()).hasStore(HibProject.composeIndexName(), HibProject.composeDocumentId(uuid));
+			assertThat(trackingSearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
 			assertThat(trackingSearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
 
-			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
+			Project reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
 		}
 
@@ -660,7 +660,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = projectUuid();
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibProject project = project();
+			Project project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
@@ -672,7 +672,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid, UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			HibProject reloadedProject = tx.projectDao().findByUuid(uuid);
+			Project reloadedProject = tx.projectDao().findByUuid(uuid);
 			assertEquals("The name should not have been changed", PROJECT_NAME, reloadedProject.getName());
 		}
 	}
@@ -690,7 +690,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		Set<String> droppedIndices = new HashSet<>();
 		// Set<Tuple<String, String>> documentDeletes = new HashSet<>();
 		try (Tx tx = tx()) {
-			HibProject project = project();
+			Project project = project();
 			// for (Node node : project.getNodeRoot().findAll()) {
 			// for (NodeGraphFieldContainer ngfc : node.getGraphFieldContainersIt(initialBranchUuid(), PUBLISHED)) {
 			// String idx = NodeGraphFieldContainer.composeIndexName(projectUuid(), initialBranchUuid(),
@@ -706,8 +706,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// }
 			// }
 
-			droppedIndices.add(HibTagFamily.composeIndexName(projectUuid()));
-			droppedIndices.add(HibTag.composeIndexName(projectUuid()));
+			droppedIndices.add(TagFamily.composeIndexName(projectUuid()));
+			droppedIndices.add(Tag.composeIndexName(projectUuid()));
 
 			// 1. Determine a list all project indices which must be dropped
 			droppedIndices.add(ContentDao.composeIndexPattern(uuid));
@@ -746,9 +746,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// assertThat(trackingSearchProvider()).hasDelete(entry.v1(), entry.v2());
 		// }
 
-		assertThat(trackingSearchProvider()).hasDelete(HibProject.composeIndexName(), HibProject.composeDocumentId(uuid));
-		assertThat(trackingSearchProvider()).hasDrop(HibTagFamily.composeIndexName(uuid));
-		assertThat(trackingSearchProvider()).hasDrop(HibTag.composeIndexName(uuid));
+		assertThat(trackingSearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
+		assertThat(trackingSearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
+		assertThat(trackingSearchProvider()).hasDrop(Tag.composeIndexName(uuid));
 		for (String index : droppedIndices) {
 			assertThat(trackingSearchProvider()).hasDrop(index);
 		}
@@ -778,7 +778,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertThat(trackingSearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			HibProject project = tx.projectDao().findByUuid(uuid);
+			Project project = tx.projectDao().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}
 

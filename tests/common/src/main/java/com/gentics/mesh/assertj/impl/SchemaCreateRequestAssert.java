@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
@@ -32,7 +32,7 @@ public class SchemaCreateRequestAssert extends AbstractMeshAssert<SchemaCreateRe
 		return this;
 	}
 
-	public SchemaCreateRequestAssert matches(HibSchema schema) {
+	public SchemaCreateRequestAssert matches(Schema schema) {
 		// TODO make schemas extends generic nodes?
 		// assertGenericNode(schema, restSchema);
 		assertNotNull(schema);
@@ -47,13 +47,13 @@ public class SchemaCreateRequestAssert extends AbstractMeshAssert<SchemaCreateRe
 		return this;
 	}
 
-	public SchemaCreateRequestAssert matches(HibSchemaVersion version) {
+	public SchemaCreateRequestAssert matches(SchemaVersion version) {
 		assertNotNull(version);
 		assertNotNull(actual);
 
 		SchemaCreateRequest storedSchema = JsonUtil.readValue(version.getJson(), SchemaCreateRequest.class);
 		matches(storedSchema);
-		HibSchema container = version.getSchemaContainer();
+		Schema container = version.getSchemaContainer();
 		matches(container);
 		return this;
 	}

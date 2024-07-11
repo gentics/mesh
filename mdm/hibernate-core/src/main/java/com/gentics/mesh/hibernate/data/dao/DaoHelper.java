@@ -52,26 +52,26 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibCreatorTracking;
-import com.gentics.mesh.core.data.user.HibEditorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.CreatorTracking;
+import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.PermissionInfoModel;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -163,7 +163,7 @@ import jakarta.persistence.criteria.Subquery;
  * @param <D> The entity class (e.g. HibUserImpl)
  */
 @AutoFactory
-public class DaoHelper<T extends HibBaseElement, D extends T> {
+public class DaoHelper<T extends BaseElement, D extends T> {
 
 	private static final String INNER_JOIN_MESH_CONTENT = "inner join " + MeshTablePrefixStrategy.TABLE_NAME_PREFIX + MeshTablePrefixStrategy.CONTENT_TABLE_NAME_PREFIX;
 
@@ -268,7 +268,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param bypass should the extraction pass by?
 	 * @return
 	 */
-	public Optional<HibSchemaVersion> extractVersion(NativeJoin join, boolean bypass) {
+	public Optional<SchemaVersion> extractVersion(NativeJoin join, boolean bypass) {
 		String contentAlias = makeAlias("CONTENT");
 		return Optional.of(!bypass && join.getJoins().containsKey(contentAlias)).filter(hasContent -> hasContent).flatMap(yes -> {
 			String fragmentString = join.getJoins().get(contentAlias).getValue().toSqlJoinString();
@@ -289,11 +289,11 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param <E>
 	 * @return
 	 */
-	public <E> AbstractQuery<E> addPermissionRestriction(AbstractQuery<E> query, Root<HibNodeImpl> root, HibUser user, InternalPermission permission) {
+	public <E> AbstractQuery<E> addPermissionRestriction(AbstractQuery<E> query, Root<HibNodeImpl> root, User user, InternalPermission permission) {
 		return addPermissionRestriction(query, root, root.join("content"), user, permission);
 	}
 
-	public <E> AbstractQuery<E> addPermissionRestriction(AbstractQuery<E> query, Path<HibNodeImpl> root, Path<HibNodeFieldContainerEdgeImpl> jContent, HibUser user, InternalPermission permission) {
+	public <E> AbstractQuery<E> addPermissionRestriction(AbstractQuery<E> query, Path<HibNodeImpl> root, Path<HibNodeFieldContainerEdgeImpl> jContent, User user, InternalPermission permission) {
 		if (!user.isAdmin()) {
 			Root<HibPermissionImpl> rPerm = query.from(HibPermissionImpl.class);
 			if (permission == null || InternalPermission.READ_PUBLISHED_PERM == permission) {
@@ -321,7 +321,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param <E>
 	 * @return
 	 */
-	public <E> CriteriaQuery<E> addPermissionRestriction(CriteriaQuery<E> query, Path<?> root, HibUser user, InternalPermission permission) {
+	public <E> CriteriaQuery<E> addPermissionRestriction(CriteriaQuery<E> query, Path<?> root, User user, InternalPermission permission) {
 		return addPermissionRestriction(query, root, user, Collections.singletonList(permission));
 	}
 
@@ -335,7 +335,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param <E>
 	 * @return
 	 */
-	public <E> CriteriaQuery<E> addPermissionRestriction(CriteriaQuery<E> query, Path<?> root, HibUser user, List<InternalPermission> permissions) {
+	public <E> CriteriaQuery<E> addPermissionRestriction(CriteriaQuery<E> query, Path<?> root, User user, List<InternalPermission> permissions) {
 		if (!user.isAdmin()) {
 			Subquery<UUID> permissionQuery = query.subquery(UUID.class);
 			Root<HibPermissionImpl> permissionRoot = permissionQuery.from(HibPermissionImpl.class);
@@ -421,11 +421,11 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private <R extends HibBaseElement> Pair<Stream<? extends T>, Long> query(InternalActionContext ac, Optional<InternalPermission> maybePerm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot, boolean countOnly) {
+	private <R extends BaseElement> Pair<Stream<? extends T>, Long> query(InternalActionContext ac, Optional<InternalPermission> maybePerm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot, boolean countOnly) {
 		HibernateTxImpl tx = currentTransaction.getTx();
 
-		HibUser user = ac.getUser();
-		HibProject project = tx.getProject(ac);
+		User user = ac.getUser();
+		Project project = tx.getProject(ac);
 		String branchUuid = project != null ? tx.getBranch(ac, project).getUuid() : null;
 
 		String myAlias = makeAlias(databaseConnector.maybeGetDatabaseEntityName(domainClass).get());
@@ -523,7 +523,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param maybeRoot
 	 * @return
 	 */
-	public <R extends HibBaseElement> long countAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
+	public <R extends BaseElement> long countAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
 		return query(ac, Optional.ofNullable(perm), pagingInfo, maybeExtraFilter, maybeRoot, true).getRight();
 	}
 
@@ -538,7 +538,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param maybeRoot
 	 * @return
 	 */
-	public <R extends HibBaseElement> Page<? extends T> findAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
+	public <R extends BaseElement> Page<? extends T> findAll(InternalActionContext ac, InternalPermission perm, PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeExtraFilter, Optional<Pair<RootJoin<D, R>, R>> maybeRoot) {
 		Stream<? extends T> resultStream = query(ac, Optional.ofNullable(perm), pagingInfo, maybeExtraFilter, maybeRoot, false).getLeft();
 		if (PersistingRootDao.shouldPage(pagingInfo)) {
 			return new PageImpl<T>(
@@ -570,7 +570,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			String[] keyParts = key.split("\\.");
 			if ("fields".equals(keyParts[0]) && keyParts.length > 2) {
 				// We expect format of 'fields.<schema_name>'.<field_name>
-				HibSchema schema = Tx.get().schemaDao().findByName(keyParts[1]);
+				Schema schema = Tx.get().schemaDao().findByName(keyParts[1]);
 				if (schema == null) {
 					throw new IllegalArgumentException("No schema found for sorting request: " + key);
 				}
@@ -657,7 +657,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param otherJoins other joins to check the already existing required joins, before they are added. 
 	 * @return
 	 */
-	NativeJoin makePermissionJoins(String ownerAlias, HibUser user, InternalPermission perm, Optional<ContainerType> maybeContainerType, Optional<UUID> maybeBranchUuid, Iterable<NativeJoin> otherJoins) {
+	NativeJoin makePermissionJoins(String ownerAlias, User user, InternalPermission perm, Optional<ContainerType> maybeContainerType, Optional<UUID> maybeBranchUuid, Iterable<NativeJoin> otherJoins) {
 		NativeJoin permJoin = new NativeJoin();
 		if (user.isAdmin()) {
 			// Early return on admin users.
@@ -934,7 +934,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				&& joinIntoSchemaRef(join.getLeft()).map(ref -> makeContentJoin(ownerAlias, ansiJoin, ref.getKey().getLatestVersion(), maybeContainerType, maybeBranch, Optional.empty())).isPresent();
 	}
 
-	NativeJoin makeContentJoin(String ownerAlias, NativeJoin ansiJoin, HibFieldSchemaVersionElement<?,?,?,?,?> version, Optional<ContainerType> maybeContainerType, Optional<UUID> maybeBranch, Optional<List<String>> maybeLanguage) {
+	NativeJoin makeContentJoin(String ownerAlias, NativeJoin ansiJoin, FieldSchemaVersionElement<?,?,?,?,?> version, Optional<ContainerType> maybeContainerType, Optional<UUID> maybeBranch, Optional<List<String>> maybeLanguage) {
 		makeContentEdgeJoin(ansiJoin, ownerAlias, maybeContainerType, maybeBranch, maybeLanguage);
 		String contentAlias = ownerAlias + makeAlias("CONTENT");
 		String containerAlias = ownerAlias + makeAlias("CONTAINER");
@@ -1484,13 +1484,13 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		return (joinOwner.endsWith("LIST") || "CONTENT".equals(joinOwner) || "MICROCONTENT".equals(joinOwner)) && ("CONTENT".equals(currentJoin) || "MICROCONTENT".equals(currentJoin));
 	}
 
-	private Optional<Pair<HibFieldSchemaElement<?,?,?,?,?>, String>> joinIntoSchemaRef(JoinPart join) {
+	private Optional<Pair<FieldSchemaElement<?,?,?,?,?>, String>> joinIntoSchemaRef(JoinPart join) {
 		Class<?> tableClass = joinIntoPair(join).getKey();
 		if (tableClass == null || !HibUnmanagedFieldContainer.class.isAssignableFrom(tableClass)) {
 			// Already processed - entity case
 			return Optional.empty();
 		}
-		HibFieldSchemaElement<?,?,?,?,?> schema = null;
+		FieldSchemaElement<?,?,?,?,?> schema = null;
 		if ((schema = Tx.get().schemaDao().findByName(join.getField())) != null) {
 			return Optional.of(Pair.of(schema, join.getField()));
 		} else if ((schema = Tx.get().microschemaDao().findByName(join.getField())) != null) {
@@ -1769,7 +1769,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 				return null;
 			}
 		}
-		HibUser requestUser = ac.getUser();
+		User requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
 		if (daoCollection.get().userDao().hasPermission(requestUser, element, perm)) {
 			return element;
@@ -1830,11 +1830,11 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			model.setUuid(element.getUuid());
 		}
 
-		if (element instanceof HibEditorTracking) {
-			HibEditorTracking edited = (HibEditorTracking) element;
+		if (element instanceof EditorTracking) {
+			EditorTracking edited = (EditorTracking) element;
 
 			if (fields.has("editor")) {
-				HibUser editor = edited.getEditor();
+				User editor = edited.getEditor();
 				if (editor != null) {
 					model.setEditor(editor.transformToReference());
 				} else {
@@ -1848,10 +1848,10 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 			}
 		}
 
-		if (element instanceof HibCreatorTracking) {
-			HibCreatorTracking created = (HibCreatorTracking) element;
+		if (element instanceof CreatorTracking) {
+			CreatorTracking created = (CreatorTracking) element;
 			if (fields.has("creator")) {
-				HibUser creator = created.getCreator();
+				User creator = created.getCreator();
 				if (creator != null) {
 					model.setCreator(creator.transformToReference());
 				}
@@ -1865,7 +1865,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
 			if (!(ac instanceof NodeMigrationActionContextImpl)) {
-				PermissionInfo permissionInfo = getPermissionForUser(ac.getUser())
+				PermissionInfoModel permissionInfo = getPermissionForUser(ac.getUser())
 					.map(hibPermission -> {
 						if (elementType.equals(ElementType.NODE)) {
 							return hibPermission.getPermissionInfo();
@@ -1873,14 +1873,14 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 							return hibPermission.getPermissionInfoWithoutPublish();
 						}
 					})
-					.orElseGet(PermissionInfo::noPermissions);
+					.orElseGet(PermissionInfoModel::noPermissions);
 				model.setPermissions(permissionInfo);
 			}
 		}
 
 		RolePermissionParameters rolePermissionParameters = ac.getRolePermissionParameters();
-		if (rolePermissionParameters != null && element instanceof HibCoreElement) {
-			model.setRolePerms(daoCollection.get().roleDao().getRolePermissions(((HibCoreElement<? extends RestModel>) element), ac, rolePermissionParameters.getRoleUuid()));
+		if (rolePermissionParameters != null && element instanceof CoreElement) {
+			model.setRolePerms(daoCollection.get().roleDao().getRolePermissions(((CoreElement<? extends RestModel>) element), ac, rolePermissionParameters.getRoleUuid()));
 		}
 	}
 
@@ -1892,7 +1892,7 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	 * @param user
 	 * @return
 	 */
-	public Optional<HibPermissionImpl> getPermissionForUser(HibUser user) {
+	public Optional<HibPermissionImpl> getPermissionForUser(User user) {
 		return em().createQuery("select p" +
 				" from permission p" +
 				" join p.role r" +
@@ -1916,8 +1916,8 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 	@SuppressWarnings("unchecked")
 	public void delete(T element, BulkActionContext bac) {
 		currentTransaction.getTx().delete(element);
-		if (element instanceof HibCoreElement) {
-			bac.add(eventFactory.onDeleted(((HibCoreElement<? extends RestModel>) element)));
+		if (element instanceof CoreElement) {
+			bac.add(eventFactory.onDeleted(((CoreElement<? extends RestModel>) element)));
 		} else {
 			log.warn("Couldn't emit event. Class of element: " + element.getClass());
 		}
@@ -1947,11 +1947,11 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		return JpaUtil.count(em(), query);
 	}
 
-	public String getAPIPath(String domainEndpoint, HibCoreElement<? extends RestModel> element, InternalActionContext ac) {
+	public String getAPIPath(String domainEndpoint, CoreElement<? extends RestModel> element, InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + domainEndpoint + "/" + element.getUuid();
 	}	
 	
-	public String getSubETag(HibEditorTracking element, InternalActionContext ac) {
+	public String getSubETag(EditorTracking element, InternalActionContext ac) {
 		return String.valueOf(element.getLastEditedTimestamp());
 	}
 	

@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.node;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 
 /**
  * POJO for the rest model of the publish status of a single language of a node.
@@ -19,7 +19,7 @@ public class PublishStatusModel implements RestModel {
 	private String version;
 
 	@JsonPropertyDescription("Reference to the publisher user of the node content.")
-	private UserReference publisher;
+	private UserReferenceModel publisher;
 
 	@JsonPropertyDescription("ISO8601 formatted publish date string.")
 	private String publishDate;
@@ -73,7 +73,7 @@ public class PublishStatusModel implements RestModel {
 	 * 
 	 * @return
 	 */
-	public UserReference getPublisher() {
+	public UserReferenceModel getPublisher() {
 		return publisher;
 	}
 
@@ -83,7 +83,7 @@ public class PublishStatusModel implements RestModel {
 	 * @param publisher
 	 * @return Fluent API
 	 */
-	public PublishStatusModel setPublisher(UserReference publisher) {
+	public PublishStatusModel setPublisher(UserReferenceModel publisher) {
 		this.publisher = publisher;
 		return this;
 	}

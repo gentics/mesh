@@ -1,7 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.PermissionInfoModel;
 import org.assertj.core.api.AbstractAssert;
 
 import java.util.Arrays;
@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PermissionInfoAssert extends AbstractAssert<PermissionInfoAssert, PermissionInfo> {
+public class PermissionInfoAssert extends AbstractAssert<PermissionInfoAssert, PermissionInfoModel> {
 
-	public PermissionInfoAssert(PermissionInfo actual) {
+	public PermissionInfoAssert(PermissionInfoModel actual) {
 		super(actual, PermissionInfoAssert.class);
 	}
 

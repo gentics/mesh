@@ -20,10 +20,10 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.ContentInterceptor;
@@ -54,12 +54,12 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public HibNodeFieldContainerImpl findOne(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid) {
+	public HibNodeFieldContainerImpl findOne(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid) {
 		return findOne(ContentKey.fromContentUUIDAndVersion(contentUuid, version));
 	}
 
 	@Override
-	public HibMicronodeContainerImpl findOneMicronode(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid) {
+	public HibMicronodeContainerImpl findOneMicronode(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid) {
 		return findOne(ContentKey.fromContentUUIDAndVersion(contentUuid, version));
 	}
 
@@ -79,18 +79,18 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public List<HibNodeFieldContainerImpl> findMany(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public List<HibNodeFieldContainerImpl> findMany(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		return findMany(version, HibNodeFieldContainerImpl::new);
 	}
 
 	@Override
-	public List<HibMicronodeContainerImpl> findManyMicronodes(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public List<HibMicronodeContainerImpl> findManyMicronodes(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		return findMany(version, HibMicronodeContainerImpl::new);
 	}
 
-	private <T extends HibUnmanagedFieldContainer<?, ?, ?, ?, ?>> List<T> findMany(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, Supplier<T> constructor) {
+	private <T extends HibUnmanagedFieldContainer<?, ?, ?, ?, ?>> List<T> findMany(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Supplier<T> constructor) {
 		List<UUID> dbUuids = nonCachedStorage.findColumnValues(version, DB_UUID);
-		ReferenceType type = version instanceof HibSchemaVersion ? ReferenceType.FIELD : ReferenceType.MICRONODE;
+		ReferenceType type = version instanceof SchemaVersion ? ReferenceType.FIELD : ReferenceType.MICRONODE;
 
 		if (type.equals(ReferenceType.FIELD)) {
 			dbUuids.addAll(contentInterceptor().getFieldContainersUuids());
@@ -168,22 +168,22 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public <T> T findColumn(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid, ContentColumn contentColumn) {
+	public <T> T findColumn(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid, ContentColumn contentColumn) {
 		return nonCachedStorage.findColumn(version, contentUuid, contentColumn);
 	}
 
 	@Override
-	public void insert(HibNodeFieldContainerImpl container, HibSchemaVersion schemaVersion) {
+	public void insert(HibNodeFieldContainerImpl container, SchemaVersion schemaVersion) {
 		nonCachedStorage.insert(container, schemaVersion);
 	}
 
 	@Override
-	public void insert(HibMicronodeContainerImpl container, HibMicroschemaVersion microschemaVersion) {
+	public void insert(HibMicronodeContainerImpl container, MicroschemaVersion microschemaVersion) {
 		nonCachedStorage.insert(container, microschemaVersion);
 	}
 
 	@Override
-	public void delete(UUID dbUuid, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public void delete(UUID dbUuid, FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		if (useCache) {
 			ContentKey contentKey = ContentKey.fromContentUUIDAndVersion(dbUuid, version);
 			cachedStorage.evict(contentKey);
@@ -198,7 +198,7 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public void dropTable(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public void dropTable(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		if (useCache) {
 			cachedStorage.evictAll();
 		}
@@ -211,7 +211,7 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public void addColumnIfNotExists(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, DynamicContentColumn column) {
+	public void addColumnIfNotExists(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, DynamicContentColumn column) {
 		if (useCache) {
 			cachedStorage.evictAll();
 		}
@@ -219,22 +219,22 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public void createTable(HibSchemaVersion version) {
+	public void createTable(SchemaVersion version) {
 		nonCachedStorage.createTable(version);
 	}
 
 	@Override
-	public void createIndex(HibSchemaVersion version, CommonContentColumn column, boolean unique) {
+	public void createIndex(SchemaVersion version, CommonContentColumn column, boolean unique) {
 		nonCachedStorage.createIndex(version, column, unique);
 	}
 
 	@Override
-	public void createMicronodeTable(HibMicroschemaVersion microVersion) {
+	public void createMicronodeTable(MicroschemaVersion microVersion) {
 		nonCachedStorage.createMicronodeTable(microVersion);
 	}
 
 	@Override
-	public long delete(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, HibProject project) {
+	public long delete(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Project project) {
 		if (useCache) {
 			Map<ContentKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?>> inCache = cachedStorage.getAllInCache();
 			inCache.entrySet().stream()
@@ -252,7 +252,7 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public long delete(HibSchemaVersion version, Set<HibNodeImpl> nodes) {
+	public long delete(SchemaVersion version, Set<HibNodeImpl> nodes) {
 		if (useCache) {
 			Map<ContentKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?>> inCache = cachedStorage.getAllInCache();
 			inCache.entrySet().stream()
@@ -280,7 +280,7 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public long deleteUnreferencedMicronodes(HibMicroschemaVersion version) {
+	public long deleteUnreferencedMicronodes(MicroschemaVersion version) {
 		if (useCache) {
 			// since identifying the unreferenced micronodes is not straightforward (requires extra queries),
 			// we simple delete all micronodes from the cache.
@@ -307,7 +307,7 @@ public class ContentStorageImpl implements ContentStorage {
 	}
 
 	@Override
-	public List<ContentKey> findByNodes(HibSchemaVersion version, Set<HibNodeImpl> nodes) {
+	public List<ContentKey> findByNodes(SchemaVersion version, Set<HibNodeImpl> nodes) {
 		return nonCachedStorage.findByNodes(version, nodes);
 	}
 }

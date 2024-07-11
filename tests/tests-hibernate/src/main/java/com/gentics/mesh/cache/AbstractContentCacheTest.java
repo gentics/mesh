@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.mesh.cache.CacheStatus;
+import com.gentics.mesh.cache.CacheStatusModel;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.core.node.AbstractMassiveNodeLoadTest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -15,7 +15,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 
 public abstract class AbstractContentCacheTest extends AbstractMassiveNodeLoadTest {
 
-	public CacheStatus getCacheStats() {
+	public CacheStatusModel getCacheStats() {
 		HibernateMeshComponent mesh = ((HibernateMeshComponent)mesh());
 		ContentCachedStorage storage = mesh.contentCacheStorage();
 		return storage.getStatus();
@@ -26,9 +26,9 @@ public abstract class AbstractContentCacheTest extends AbstractMassiveNodeLoadTe
 		NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentFolderUuid, new VersioningParametersImpl().draft()));
 		assertEquals("The subnode did not contain the created node", numOfNodesPerLevel, nodeList.getData().size());
 
-		CacheStatus stats = getCacheStats();
+		CacheStatusModel stats = getCacheStats();
 		checkStats(stats);
 	}
 
-	protected abstract void checkStats(CacheStatus stats);
+	protected abstract void checkStats(CacheStatusModel stats);
 }

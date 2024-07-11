@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
-import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.NumberField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 
@@ -10,7 +10,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public class HibNumberFieldImpl extends AbstractBasicHibField<Number> implements HibNumberField {
+public class HibNumberFieldImpl extends AbstractBasicHibField<Number> implements NumberField {
 	/**
 	 * Convert to given value to an instance of Long, if that is possible without losing precision
 	 * @param value given value

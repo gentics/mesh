@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.Test;
 
-import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.MeshVersions;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -33,7 +33,7 @@ public class CopyEditorTrackingIntoEdgeTest extends AbstractMeshTest {
 					.executeUpdate()).as("Updated records in nodefieldcontainer table").isPositive();
 		});
 
-		db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+		db().init(MeshVersions.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 
 		tx(tx -> {
 			HibernateTx hTx = tx.unwrap();

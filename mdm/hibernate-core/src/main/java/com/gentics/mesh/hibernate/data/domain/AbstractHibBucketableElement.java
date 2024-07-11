@@ -3,7 +3,7 @@ package com.gentics.mesh.hibernate.data.domain;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.HibBucketableElement;
+import com.gentics.mesh.core.data.BucketableElement;
 
 /**
  * Common part of Hibernate entity, supported by search indexing with separating index buckets.
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.HibBucketableElement;
  *
  */
 @MappedSuperclass
-public abstract class AbstractHibBucketableElement extends AbstractHibBaseElement implements HibBucketableElement {
+public abstract class AbstractHibBucketableElement extends AbstractHibBaseElement implements BucketableElement {
 
 	@Embedded
 	protected BucketTracking bucketTracking = new BucketTracking();

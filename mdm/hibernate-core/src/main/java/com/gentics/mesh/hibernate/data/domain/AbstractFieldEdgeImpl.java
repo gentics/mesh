@@ -12,8 +12,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.database.HibernateTx;
 
@@ -25,7 +25,7 @@ import com.gentics.mesh.database.HibernateTx;
  * @param <VU> stored value type, either primitive or UUID
  */
 @MappedSuperclass
-public abstract class AbstractFieldEdgeImpl<VU> implements HibFieldEdge, HibField {
+public abstract class AbstractFieldEdgeImpl<VU> implements HibFieldEdge, Field {
 
 	@Id
 	private UUID dbUuid;
@@ -91,7 +91,7 @@ public abstract class AbstractFieldEdgeImpl<VU> implements HibFieldEdge, HibFiel
 		case MICRONODE:
 			return lookupInMicronode ? Stream.ofNullable(
 						tx.contentDao().getFieldContainer(tx.load(containerVersionUuid, HibMicroschemaVersionImpl.class), containerUuid)
-					).flatMap(HibMicronode::getContents).map(HibNodeFieldContainerImpl.class::cast) : Stream.empty();
+					).flatMap(Micronode::getContents).map(HibNodeFieldContainerImpl.class::cast) : Stream.empty();
 		default:
 			break;
 		}

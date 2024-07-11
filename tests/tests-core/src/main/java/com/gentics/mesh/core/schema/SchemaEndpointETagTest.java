@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -35,7 +35,7 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 
-			HibSchema schema = schemaContainer("content");
+			Schema schema = schemaContainer("content");
 
 			String responseTag = callETag(() -> client().findSchemaByUuid(schema.getUuid()));
 			String etag = schemaDao.getETag(schema, mockActionContext());

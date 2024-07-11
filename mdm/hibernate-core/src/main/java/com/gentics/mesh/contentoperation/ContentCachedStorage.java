@@ -22,11 +22,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import com.gentics.mesh.cache.CacheStatus;
+import com.gentics.mesh.cache.CacheStatusModel;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.field.HibHtmlField;
-import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.node.field.HtmlField;
+import com.gentics.mesh.core.data.node.field.StringField;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoBufferEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoEntry;
 import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoProvider;
@@ -298,7 +298,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 
 	private @NonNegative int weigh(@NonNull ContentKey key,
 			@NonNull HibUnmanagedFieldContainer<?, ?, ?, ?, ?> value) {
-		HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version = value.getSchemaContainerVersion();
+		FieldSchemaVersionElement<?, ?, ?, ?, ?> version = value.getSchemaContainerVersion();
 		int w = version.getSchema().getFields().stream().map(field -> {
 			FieldTypes type = FieldTypes.valueByName(field.getType());
 			int languageTagSize = Optional.ofNullable(value.getLanguageTag()).map(StringScale::getWeight).orElse(0);
@@ -324,7 +324,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 	private int weightOfType(FieldSchema field, FieldTypes type, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container) {
 		switch (type) {
 		case STRING:
-			HibStringField sValue = container.getString(field.getName());
+			StringField sValue = container.getString(field.getName());
 			if (sValue != null) {
 				String string = sValue.getString();
 				if (string != null) {
@@ -333,7 +333,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 			}
 			return 0;
 		case HTML:
-			HibHtmlField hValue = container.getHtml(field.getName());
+			HtmlField hValue = container.getHtml(field.getName());
 			if (hValue != null) {
 				String html = hValue.getHTML();
 				if (html != null) {
@@ -362,7 +362,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		CacheStatus status = getStatus();
+		CacheStatusModel status = getStatus();
 		return Flowable.just(DebugInfoBufferEntry.fromString(name() + ".json", status.toJson()));
 	}
 
@@ -371,7 +371,7 @@ public class ContentCachedStorage implements DebugInfoProvider {
 	 * 
 	 * @return
 	 */
-	public CacheStatus getStatus() {
-		return new CacheStatus(name(), getCurrentCacheSizeInUnits(), getMaxCacheSizeInUnits(), options.getCacheConfig().getFieldContainerCacheSize());
+	public CacheStatusModel getStatus() {
+		return new CacheStatusModel(name(), getCurrentCacheSizeInUnits(), getMaxCacheSizeInUnits(), options.getCacheConfig().getFieldContainerCacheSize());
 	}
 }

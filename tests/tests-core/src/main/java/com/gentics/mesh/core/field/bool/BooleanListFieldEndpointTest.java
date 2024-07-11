@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -64,7 +64,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
 		assertThat(response.getFields().getBooleanFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 	}
 
@@ -103,14 +103,14 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
 
-		HibNode node = folder("2015");
+		Node node = folder("2015");
 
 		List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
 			Collections.emptyList(), Arrays.asList(true, false), Arrays.asList(false));
 
 		for (int i = 0; i < 20; i++) {
 			BooleanFieldListImpl list = new BooleanFieldListImpl();
-			HibNodeFieldContainer container;
+			NodeFieldContainer container;
 			List<Boolean> oldValue;
 			List<Boolean> newValue;
 
@@ -152,8 +152,8 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			Node node = folder("2015");
+			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBooleanList(FIELD_NAME)).isNotNull();

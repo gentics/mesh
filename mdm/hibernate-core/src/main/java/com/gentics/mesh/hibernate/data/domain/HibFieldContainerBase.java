@@ -2,9 +2,9 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.hibernate.data.node.field.impl.AbstractBasicHibField;
 
@@ -14,7 +14,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.AbstractBasicHibField;
  * @author plyhun
  *
  */
-public interface HibFieldContainerBase extends HibDatabaseElement, HibFieldContainer, HibBaseElement {
+public interface HibFieldContainerBase extends HibDatabaseElement, FieldContainer, BaseElement {
 
 	/**
 	 * Get the reference type that the implementor provides.
@@ -34,5 +34,5 @@ public interface HibFieldContainerBase extends HibDatabaseElement, HibFieldConta
 	 * 
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainer> getNodeFieldContainers();
+	Stream<? extends NodeFieldContainer> getNodeFieldContainers();
 }

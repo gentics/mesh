@@ -5,9 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 
 /**
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.db.Tx;
  * 
  * @param <T>
  */
-public interface Dao<T extends HibBaseElement> {
+public interface Dao<T extends BaseElement> {
 
 	/**
 	 * Compare both values in order to determine whether the stored value should be updated.
@@ -48,7 +48,7 @@ public interface Dao<T extends HibBaseElement> {
 				return null;
 			}
 		}
-		HibUser requestUser = ac.getUser();
+		User requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
 		UserDao userDao = Tx.get().userDao();
 		if (userDao.hasPermission(requestUser, element, perm)) {

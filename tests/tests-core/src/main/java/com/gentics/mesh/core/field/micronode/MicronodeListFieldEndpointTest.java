@@ -33,10 +33,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
@@ -46,11 +46,11 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -97,7 +97,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> listField = new MicronodeFieldListImpl();
 		listField.add(createItem("Max", "Böse"));
 		listField.add(null);
 		createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -106,7 +106,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> listField = new MicronodeFieldListImpl();
 		listField.add(createItem("Max", "Böse"));
 		listField.add(null);
 		updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -116,14 +116,14 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
-		HibNode node = folder("2015");
+		Node node = folder("2015");
 
-		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
+		NodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 
-			final HibNodeFieldContainer currentContainer = container;
-			List<HibMicronode> oldValue = tx(() -> getListValues(currentContainer::getMicronodeList, FIELD_NAME));
-			FieldList<MicronodeField> newValue = new MicronodeFieldListImpl();
+			final NodeFieldContainer currentContainer = container;
+			List<Micronode> oldValue = tx(() -> getListValues(currentContainer::getMicronodeList, FIELD_NAME));
+			FieldListModel<MicronodeFieldModel> newValue = new MicronodeFieldListImpl();
 			NodeResponse response = null;
 			if (oldValue == null) {
 				// fill with new data
@@ -132,9 +132,9 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 				newValue.add(createItem("Moritz", "Böse"));
 				response = updateNode(FIELD_NAME, newValue);
 
-				FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
+				FieldListModel<MicronodeFieldModel> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 				List<String> uuids = new ArrayList<>();
-				for (MicronodeField item : responseField.getItems()) {
+				for (MicronodeFieldModel item : responseField.getItems()) {
 					uuids.add(item.getUuid());
 				}
 			} else if (i % 3 == 1) {
@@ -144,7 +144,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 				Collections.reverse(newValue.getItems());
 
 				response = updateNode(FIELD_NAME, newValue);
-				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELD_NAME);
+				FieldListModel<MicronodeFieldModel> updatedField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 
 				// compare uuids
 				assertFieldEquals(newValue, updatedField, false);
@@ -153,13 +153,13 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 				NodeResponse readResponse = readNode(node);
 				newValue = readResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
-				for (MicronodeField field : newValue.getItems()) {
+				for (MicronodeFieldModel field : newValue.getItems()) {
 					StringFieldImpl firstNameField = field.getFields().getStringField("firstName");
 					firstNameField.setString("Strammer " + firstNameField.getString());
 					field.getFields().put("firstName", firstNameField);
 				}
 				response = updateNode(FIELD_NAME, newValue);
-				FieldList<MicronodeField> updatedField = response.getFields().getMicronodeFieldList(FIELD_NAME);
+				FieldListModel<MicronodeFieldModel> updatedField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 				assertFieldEquals(newValue, updatedField, false);
 			} else {
 				response = updateNode(FIELD_NAME, new MicronodeFieldListImpl());
@@ -171,7 +171,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 			if (!bothEmpty) {
 				try (Tx tx = tx()) {
 					ContentDao contentDao = tx.contentDao();
-					HibNodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
+					NodeFieldContainer newContainer = contentDao.getNextVersions(container).iterator().next();
 					assertNotNull("No new container version was created. {" + i % 3 + "}", newContainer);
 					assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 					assertEquals("Check old value for run {" + i % 3 + "}", oldValue,
@@ -191,7 +191,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
@@ -206,7 +206,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
@@ -220,8 +220,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			Node node = folder("2015");
+			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronodeList(FIELD_NAME)).isNotNull();
@@ -237,7 +237,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
@@ -259,25 +259,25 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	@Test
 	public void testReorder() {
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
 
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
-		FieldList<MicronodeField> reorderedField = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> reorderedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> reorderedField.add(item));
 
-		Collections.sort(reorderedField.getItems(), new Comparator<MicronodeField>() {
+		Collections.sort(reorderedField.getItems(), new Comparator<MicronodeFieldModel>() {
 			@Override
-			public int compare(MicronodeField o1, MicronodeField o2) {
+			public int compare(MicronodeFieldModel o1, MicronodeFieldModel o2) {
 				return o1.getFields().getStringField("firstName").getString().compareTo(o2.getFields().getStringField("firstName").getString());
 			}
 		});
 
 		NodeResponse updateResponse = updateNode(FIELD_NAME, reorderedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
 		assertFieldEquals(reorderedField, updatedField, false);
 		assertMicronodes(updatedField);
@@ -288,19 +288,19 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	@Test
 	public void testAddMicronode() {
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
-		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 		changedField.getItems().add(1, createItem("Four", "Four"));
 
 		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertFieldEquals(changedField, updatedField, false);
 		assertMicronodes(updatedField);
 	}
@@ -310,19 +310,19 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	@Test
 	public void testRemoveMicronode() {
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("One", "One"));
 		field.add(createItem("Two", "Two"));
 		field.add(createItem("Three", "Three"));
 		NodeResponse initialResponse = updateNode(FIELD_NAME, field);
-		FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
-		FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> changedField = new MicronodeFieldListImpl();
 		initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 		changedField.getItems().remove(1);
 
 		NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
-		FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertFieldEquals(changedField, updatedField, false);
 		assertMicronodes(updatedField);
 	}
@@ -339,26 +339,26 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Ignore
 	public void testMultipleChanges() {
 		try (Tx tx = tx()) {
-			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+			FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 			field.add(createItem("One", "One"));
 			field.add(createItem("Two", "Two"));
 			field.add(createItem("Three", "Three"));
 			NodeResponse initialResponse = updateNode(FIELD_NAME, field);
-			FieldList<MicronodeField> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+			FieldListModel<MicronodeFieldModel> initialField = initialResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 
-			FieldList<MicronodeField> changedField = new MicronodeFieldListImpl();
+			FieldListModel<MicronodeFieldModel> changedField = new MicronodeFieldListImpl();
 			initialField.getItems().stream().forEachOrdered(item -> changedField.add(item));
 			changedField.getItems().add(createItem("Four", "Four"));
 			changedField.getItems().remove(1);
-			Collections.sort(changedField.getItems(), new Comparator<MicronodeField>() {
+			Collections.sort(changedField.getItems(), new Comparator<MicronodeFieldModel>() {
 				@Override
-				public int compare(MicronodeField o1, MicronodeField o2) {
+				public int compare(MicronodeFieldModel o1, MicronodeFieldModel o2) {
 					return o1.getFields().getStringField("firstName").getString().compareTo(o2.getFields().getStringField("firstName").getString());
 				}
 			});
 
 			NodeResponse updateResponse = updateNode(FIELD_NAME, changedField);
-			FieldList<MicronodeField> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
+			FieldListModel<MicronodeFieldModel> updatedField = updateResponse.getFields().getMicronodeFieldList(FIELD_NAME);
 			assertFieldEquals(changedField, updatedField, true);
 			assertMicronodes(updatedField);
 		}
@@ -368,14 +368,14 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Override
 	public void testCreateNodeWithField() {
 		// 1. Create the node
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		assertThat(field.getItems()).hasSize(2);
 		NodeResponse response = createNode(FIELD_NAME, field);
 
 		// Assert the response
-		FieldList<MicronodeField> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
+		FieldListModel<MicronodeFieldModel> responseField = response.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertNotNull(responseField);
 		assertFieldEquals(field, responseField, true);
 		assertMicronodes(responseField);
@@ -407,7 +407,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		fieldItem.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 		fieldItem.getFields().put("node", new NodeFieldImpl().setUuid(targetUuid));
 
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(fieldItem);
 		field.add(fieldItem);
 		field.add(fieldItem);
@@ -478,7 +478,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 		nodeList.add(new NodeFieldListItemImpl().setUuid(targetUuid));
 		fieldItem.getFields().put("node", nodeList);
 
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(fieldItem);
 		updateNode(FIELD_NAME, field);
 
@@ -522,8 +522,8 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
-		FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
+		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		FieldListModel<MicronodeFieldModel> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
 		assertNull(field);
 	}
 
@@ -533,7 +533,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	public void testListOrder() {
 		int nodeCount = 50;
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		String[] expected = new String[nodeCount];
 		for (int i = 0; i < nodeCount; i++) {
 			String name = "name" + i;
@@ -560,11 +560,11 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 * @param assertUuid
 	 *            true to assert equality of uuids
 	 */
-	protected void assertFieldEquals(FieldList<MicronodeField> expected, FieldList<MicronodeField> field, boolean assertUuid) {
+	protected void assertFieldEquals(FieldListModel<MicronodeFieldModel> expected, FieldListModel<MicronodeFieldModel> field, boolean assertUuid) {
 		assertEquals("Check # of micronode items", expected.getItems().size(), field.getItems().size());
 		for (int i = 0; i < expected.getItems().size(); i++) {
-			MicronodeField expectedMicronode = expected.getItems().get(i);
-			MicronodeField micronode = field.getItems().get(i);
+			MicronodeFieldModel expectedMicronode = expected.getItems().get(i);
+			MicronodeFieldModel micronode = field.getItems().get(i);
 			for (String fieldName : Arrays.asList("firstName", "lastName")) {
 				assertEquals("Check " + fieldName + " of item # " + (i + 1), expectedMicronode.getFields().getStringField(fieldName).getString(),
 					micronode.getFields().getStringField(fieldName).getString());
@@ -583,11 +583,11 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 * @param field
 	 *            field
 	 */
-	protected void assertMicronodes(FieldList<MicronodeField> field) {
+	protected void assertMicronodes(FieldListModel<MicronodeFieldModel> field) {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
-			TraversalResult<? extends HibMicronode> s = new TraversalResult<>(ctx.contentDao().findAllMicronodes());
-			Set<? extends HibMicronode> unboundMicronodes = s.stream()
+			TraversalResult<? extends Micronode> s = new TraversalResult<>(ctx.contentDao().findAllMicronodes());
+			Set<? extends Micronode> unboundMicronodes = s.stream()
 				.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();
 		}
@@ -612,7 +612,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 	@Override
 	public NodeResponse createNodeWithField() {
-		FieldList<MicronodeField> field = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> field = new MicronodeFieldListImpl();
 		field.add(createItem("Max", "Böse"));
 		field.add(createItem("Moritz", "Böse"));
 		assertThat(field.getItems()).hasSize(2);

@@ -40,7 +40,7 @@ public class ImageVariantResponse implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.")
-	private FocalPoint focalPoint;
+	private FocalPointModel focalPoint;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The image focal point zoom factor.")
@@ -73,7 +73,7 @@ public class ImageVariantResponse implements RestModel {
 	 * @param focalZoom
 	 */
 	public ImageVariantResponse(Integer width, Integer height, ImageRect rect, CropMode cropMode, ResizeMode resizeMode,
-			FocalPoint focalPoint, Float focalZoom) {
+			FocalPointModel focalPoint, Float focalZoom) {
 		super();
 		this.width = width;
 		this.height = height;
@@ -129,11 +129,11 @@ public class ImageVariantResponse implements RestModel {
 		return this;
 	}
 
-	public FocalPoint getFocalPoint() {
+	public FocalPointModel getFocalPoint() {
 		return focalPoint;
 	}
 
-	public ImageVariantResponse setFocalPoint(FocalPoint focalPoint) {
+	public ImageVariantResponse setFocalPoint(FocalPointModel focalPoint) {
 		this.focalPoint = focalPoint;
 		return this;
 	}

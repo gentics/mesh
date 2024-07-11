@@ -20,22 +20,22 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
-import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.BranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.BranchSchemaVersion;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -69,15 +69,15 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 				query = "select b from branch b join b.tags t where t = :tag"
 		)
 })
-public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse> implements HibBranch, Serializable {
+public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse> implements Branch, Serializable {
 
 	private static final long serialVersionUID = -5133700117945091432L;
 
 	@ManyToOne(targetEntity = HibProjectImpl.class)
-	private HibProject project;
+	private Project project;
 
 	@OneToOne(fetch = FetchType.LAZY, targetEntity = HibBranchImpl.class)
-	private HibBranch previousBranch;
+	private Branch previousBranch;
 
 	@OneToMany(mappedBy = "branch", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<HibBranchSchemaVersionEdgeImpl> schemaVersions = new HashSet<>();
@@ -86,7 +86,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	private Set<HibBranchMicroschemaVersionEdgeImpl> microschemaVersions = new HashSet<>();
 
 	@ManyToMany(targetEntity = HibTagImpl.class, fetch = FetchType.LAZY)
-	private Set<HibTag> tags = new HashSet<>();
+	private Set<Tag> tags = new HashSet<>();
 
 	private String hostName;
 
@@ -99,7 +99,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	private boolean isMigrated;
 
 	@Override
-	public HibProject getProject() {
+	public Project getProject() {
 		return project;
 	}
 
@@ -109,7 +109,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setActive(boolean active) {
+	public Branch setActive(boolean active) {
 		this.isActive = active;
 		return this;
 	}
@@ -120,7 +120,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setMigrated(boolean migrated) {
+	public Branch setMigrated(boolean migrated) {
 		this.isMigrated = migrated;
 		return this;
 	}
@@ -131,7 +131,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setHostname(String hostname) {
+	public Branch setHostname(String hostname) {
 		this.hostName = hostname;
 		return this;
 	}
@@ -142,7 +142,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setSsl(boolean ssl) {
+	public Branch setSsl(boolean ssl) {
 		this.isSsl = ssl;
 		return this;
 	}
@@ -153,7 +153,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setPathPrefix(String pathPrefix) {
+	public Branch setPathPrefix(String pathPrefix) {
 		this.pathPrefix = pathPrefix;
 		return this;
 	}
@@ -174,11 +174,11 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 		return mve;
 	}
 
-	public boolean removeSchemaVersion(HibSchemaVersion version) {
+	public boolean removeSchemaVersion(SchemaVersion version) {
 		return removeVersion(version, schemaVersions);
 	}
 
-	public boolean removeMicroschemaVersion(HibMicroschemaVersion version) {
+	public boolean removeMicroschemaVersion(MicroschemaVersion version) {
 		return removeVersion(version, microschemaVersions);
 	}
 
@@ -188,19 +188,19 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setLatest() {
+	public Branch setLatest() {
 		((HibProjectImpl)project).setLatestBranch(this);
 		return this;
 	}
 
 	@Override
-	public HibBranch setInitial() {
+	public Branch setInitial() {
 		((HibProjectImpl) project).setInitialBranch(this);
 		return this;
 	}
 
 	@Override
-	public List<? extends HibBranch> getNextBranches() {
+	public List<? extends Branch> getNextBranches() {
 		EntityManager em = HibernateTx.get().entityManager();
 		return em.createQuery("select b from branch b where b.previousBranch = :thisBranch", HibBranchImpl.class)
 				.setParameter("thisBranch", this)
@@ -208,60 +208,60 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setPreviousBranch(HibBranch branch) {
+	public Branch setPreviousBranch(Branch branch) {
 		previousBranch = branch;
 		return this;
 	}
 
 	@Override
-	public HibBranch getPreviousBranch() {
+	public Branch getPreviousBranch() {
 		return previousBranch;
 	}
 
 	@Override
-	public HibBranch unassignSchema(HibSchema schemaContainer) {
+	public Branch unassignSchema(Schema schemaContainer) {
 		schemaVersions.removeIf(sve -> sve.getSchemaContainerVersion().getSchemaContainer().getId().equals(schemaContainer.getId()));
 		return this;
 	}
 
 	@Override
-	public boolean contains(HibSchema schema) {
+	public boolean contains(Schema schema) {
 		return schemaVersions.stream().anyMatch(sve -> sve.getVersion().getSchemaContainer().getUuid().equals(schema.getUuid()));
 	}
 
 	@Override
-	public boolean contains(HibSchemaVersion version) {
+	public boolean contains(SchemaVersion version) {
 		return schemaVersions.stream().anyMatch(sve -> sve.getVersion().getUuid().equals(version.getUuid()));
 	}
 
 	@Override
-	public TraversalResult<? extends HibSchemaVersion> findAllSchemaVersions() {
+	public TraversalResult<? extends SchemaVersion> findAllSchemaVersions() {
 		return new TraversalResult<>(schemaVersions.stream().map(HibBranchSchemaVersionEdgeImpl::getVersion).iterator());
 	}
 
 	@Override
-	public HibBranch unassignMicroschema(HibMicroschema microschema) {
+	public Branch unassignMicroschema(Microschema microschema) {
 		microschemaVersions.removeIf(mve -> mve.getMicroschemaContainerVersion().getSchemaContainer().getId().equals(microschema.getId()));
 		return this;
 	}
 
 	@Override
-	public boolean contains(HibMicroschema microschema) {
+	public boolean contains(Microschema microschema) {
 		return microschemaVersions.stream().anyMatch(mve -> mve.getVersion().getSchemaContainer().getUuid().equals(microschema.getUuid()));
 	}
 
 	@Override
-	public boolean contains(HibMicroschemaVersion microschemaVersion) {
+	public boolean contains(MicroschemaVersion microschemaVersion) {
 		return microschemaVersions.stream().anyMatch(mve -> mve.getVersion().getUuid().equals(microschemaVersion.getUuid()));
 	}
 
 	@Override
-	public TraversalResult<? extends HibMicroschemaVersion> findAllMicroschemaVersions() {
+	public TraversalResult<? extends MicroschemaVersion> findAllMicroschemaVersions() {
 		return new TraversalResult<>(microschemaVersions.stream().map(HibBranchMicroschemaVersionEdgeImpl::getVersion).iterator());
 	}
 
 	@Override
-	public TraversalResult<? extends HibBranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges() {
+	public TraversalResult<? extends BranchMicroschemaVersion> findAllLatestMicroschemaVersionEdges() {
 		Collection<HibBranchMicroschemaVersionEdgeImpl> latestSchemaVersionEdges = microschemaVersions.stream()
 				.collect(Collectors.toMap(sve -> sve.getVersion().getSchemaContainer(),
 						Function.identity(),
@@ -272,17 +272,17 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public TraversalResult<? extends HibSchemaVersion> findActiveSchemaVersions() {
+	public TraversalResult<? extends SchemaVersion> findActiveSchemaVersions() {
 		return new TraversalResult<>(schemaVersions.stream().filter(HibBranchSchemaVersionEdgeImpl::isActive).map(HibBranchSchemaVersionEdgeImpl::getVersion));
 	}
 
 	@Override
-	public Iterable<? extends HibMicroschemaVersion> findActiveMicroschemaVersions() {
+	public Iterable<? extends MicroschemaVersion> findActiveMicroschemaVersions() {
 		return new TraversalResult<>(microschemaVersions.stream().filter(HibBranchMicroschemaVersionEdgeImpl::isActive).map(HibBranchMicroschemaVersionEdgeImpl::getVersion));
 	}
 
 	@Override
-	public Iterable<? extends HibBranchSchemaVersion> findAllLatestSchemaVersionEdges() {
+	public Iterable<? extends BranchSchemaVersion> findAllLatestSchemaVersionEdges() {
 		Collection<HibBranchSchemaVersionEdgeImpl> latestSchemaVersionEdges = schemaVersions.stream()
 				.collect(Collectors.toMap(sve -> sve.getVersion().getSchemaContainer(),
 						Function.identity(),
@@ -293,23 +293,23 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibBranch setProject(HibProject project) {
+	public Branch setProject(Project project) {
 		this.project = project;
 		return this;
 	}
 
 	@Override
-	public TraversalResult<? extends HibBranchSchemaVersion> findAllSchemaVersionEdges() {
+	public TraversalResult<? extends BranchSchemaVersion> findAllSchemaVersionEdges() {
 		return new TraversalResult<>(schemaVersions);
 	}
 
 	@Override
-	public TraversalResult<? extends HibBranchMicroschemaVersion> findAllMicroschemaVersionEdges() {
+	public TraversalResult<? extends BranchMicroschemaVersion> findAllMicroschemaVersionEdges() {
 		return new TraversalResult<>(microschemaVersions);
 	}
 
 	@Override
-	public HibSchemaVersion findLatestSchemaVersion(HibSchema schemaContainer) {
+	public SchemaVersion findLatestSchemaVersion(Schema schemaContainer) {
 		return schemaVersions.stream()
 				.filter(v -> schemaContainer.getUuid().equals(v.getVersion().getSchemaContainer().getUuid()))
 				.sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion().getVersion(), v1.getVersion().getVersion()))
@@ -319,7 +319,7 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public HibMicroschemaVersion findLatestMicroschemaVersion(HibMicroschema microschemaContainer) {
+	public MicroschemaVersion findLatestMicroschemaVersion(Microschema microschemaContainer) {
 		return microschemaVersions.stream()
 				.filter(v -> microschemaContainer.getUuid().equals(v.getVersion().getSchemaContainer().getUuid()))
 				.sorted((v1, v2) -> VersionUtil.compareVersions(v2.getVersion().getVersion(), v1.getVersion().getVersion()))
@@ -329,12 +329,12 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public void addTag(HibTag tag) {
+	public void addTag(Tag tag) {
 		tags.add(tag);
 	}
 
 	@Override
-	public void removeTag(HibTag tag) {
+	public void removeTag(Tag tag) {
 		tags.remove(tag);
 	}
 
@@ -344,23 +344,23 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 	}
 
 	@Override
-	public TraversalResult<? extends HibTag> getTags() {
+	public TraversalResult<? extends Tag> getTags() {
 		return new TraversalResult<>(tags.iterator());
 	}
 
 	@Override
-	public Page<? extends HibTag> getTags(HibUser user, PagingParameters params) {
+	public Page<? extends Tag> getTags(User user, PagingParameters params) {
 		UserDao userDao = Tx.get().userDao();
 		return new DynamicStreamPageImpl<>(tags.stream(), params, ( t) -> userDao.hasPermission(user, t, InternalPermission.READ_PERM), false);
 	}
 
 	@Override
-	public boolean hasTag(HibTag tag) {
+	public boolean hasTag(Tag tag) {
 		return tags.contains(tag);
 	}
 
 	@Override
-	public HibTag findTagByUuid(String uuid) {
+	public Tag findTagByUuid(String uuid) {
 		return tags.stream().filter(t -> t.getUuid().equals(uuid)).findFirst().orElse(null);
 	}
 
@@ -373,8 +373,8 @@ public class HibBranchImpl extends AbstractHibUserTrackedElement<BranchResponse>
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
-			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+			SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
 			I extends AbstractHibFieldSchemaVersion<R, RM, RE, SC, SCV>
 	> boolean removeVersion(SCV version, Set<? extends AbstractHibBranchSchemaVersion<I>> versions) {
 		HibernateTx tx = HibernateTx.get();

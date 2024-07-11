@@ -21,7 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.sksamuel.scrimage.ImmutableImage;
 import com.sksamuel.scrimage.webp.WebpImageReader;
 
@@ -29,8 +29,8 @@ public final class ImageTestUtil {
 	private ImageTestUtil() {
 	}
 
-	public static HibBinary createMockedBinary(String filePath) {
-		HibBinary mock = mock(HibBinary.class);
+	public static Binary createMockedBinary(String filePath) {
+		Binary mock = mock(Binary.class);
 		when(mock.openBlockingStream()).thenReturn(() -> ImageTestUtil.class.getResourceAsStream(filePath));
 		when(mock.getSHA512Sum()).thenReturn(filePath);
 		return mock;

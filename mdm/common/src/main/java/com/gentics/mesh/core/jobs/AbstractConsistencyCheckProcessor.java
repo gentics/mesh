@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.job.JobWarningList;
-import com.gentics.mesh.core.rest.job.warning.JobWarning;
+import com.gentics.mesh.core.rest.job.JobWarningListModel;
+import com.gentics.mesh.core.rest.job.warning.JobWarningModel;
 import com.google.common.base.Throwables;
 
 import io.reactivex.Completable;
@@ -48,14 +48,14 @@ public abstract class AbstractConsistencyCheckProcessor implements SingleJobProc
 	 * @param attemptRepair true to repair, false to check only
 	 * @return completable
 	 */
-	protected Completable process(HibJob job, boolean attemptRepair) {
+	protected Completable process(Job job, boolean attemptRepair) {
 		return Single.defer(() -> {
 			ConsistencyCheckResponse result = handler.checkConsistency(attemptRepair, true).runInNewTx();
 			return Single.just(result);
 		}).flatMapCompletable(result -> {
 			db.tx(() -> {
-				List<JobWarning> warnings = result.getInconsistencies().stream().map(inconsistency -> {
-					JobWarning warning = new JobWarning();
+				List<JobWarningModel> warnings = result.getInconsistencies().stream().map(inconsistency -> {
+					JobWarningModel warning = new JobWarningModel();
 					warning.setType("inconsistency");
 					warning.setMessage(inconsistency.getDescription());
 					Map<String, String> props = warning.getProperties();
@@ -67,7 +67,7 @@ public abstract class AbstractConsistencyCheckProcessor implements SingleJobProc
 					return warning;
 				}).collect(Collectors.toList());
 				if (!warnings.isEmpty()) {
-					JobWarningList jobWarningList = new JobWarningList();
+					JobWarningListModel jobWarningList = new JobWarningListModel();
 					jobWarningList.setWarnings(warnings);
 					job.setWarnings(jobWarningList);
 				}

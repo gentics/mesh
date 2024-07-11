@@ -30,12 +30,12 @@ import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -155,7 +155,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			// Add permission on own role
 			roleDao.grantPermissions(role(), role(), InternalPermission.UPDATE_PERM);
-			HibMicroschema vcard = microschemaContainer("vcard");
+			Microschema vcard = microschemaContainer("vcard");
 
 			// Revoke all permissions to vcard microschema
 			roleDao.revokePermissions(role(), vcard, InternalPermission.values());
@@ -163,7 +163,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		HibMicroschema vcard;
+		Microschema vcard;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 
@@ -401,9 +401,9 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupDao = tx.groupDao();
-			HibGroup testGroup = groupDao.create("testGroup", user());
-			HibRole testRole = tx.roleDao().create("testRole", user());
-			HibUser testUser = tx.userDao().create("test", user());
+			Group testGroup = groupDao.create("testGroup", user());
+			Role testRole = tx.roleDao().create("testRole", user());
+			User testUser = tx.userDao().create("test", user());
 			tx.userDao().setPassword(testUser, "dummy");
 
 			groupDao.addRole(testGroup, testRole);
@@ -446,7 +446,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			roleDao.revokePermissions(role(), node, InternalPermission.UPDATE_PERM);
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.UPDATE_PERM, node));
 			assertTrue(userDao.hasPermission(user(), role(), InternalPermission.UPDATE_PERM));
@@ -455,7 +455,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		expect(ROLE_PERMISSIONS_CHANGED).total(1);
 
-		HibNode node;
+		Node node;
 
 		try (Tx tx = tx()) {
 			node = folder("2015");

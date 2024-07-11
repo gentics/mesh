@@ -10,14 +10,14 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 
 /**
  * Custom deserializer for REST node fields. The type of the field selects the specific model class.
  * 
  * @param <T>
  */
-public class FieldDeserializer<T extends Field> extends JsonDeserializer<T> {
+public class FieldDeserializer<T extends FieldModel> extends JsonDeserializer<T> {
 
 	@Override
 	public T deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {

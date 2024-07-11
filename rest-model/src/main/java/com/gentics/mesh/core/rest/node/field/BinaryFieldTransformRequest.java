@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.node.field;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageRect;
 import com.gentics.mesh.parameter.image.ResizeMode;
@@ -40,7 +40,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Optional new focal point for the transformed image.")
-	private FocalPoint focalPoint;
+	private FocalPointModel focalPoint;
 
 	/**
 	 * Get resize width
@@ -217,7 +217,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 	 *
 	 * @return
 	 */
-	public FocalPoint getFocalPoint() {
+	public FocalPointModel getFocalPoint() {
 		return focalPoint;
 	}
 
@@ -227,7 +227,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 	 * @param focalPoint
 	 * @return Fluent API
 	 */
-	public BinaryFieldTransformRequest setFocalPoint(FocalPoint focalPoint) {
+	public BinaryFieldTransformRequest setFocalPoint(FocalPointModel focalPoint) {
 		this.focalPoint = focalPoint;
 		return this;
 	}

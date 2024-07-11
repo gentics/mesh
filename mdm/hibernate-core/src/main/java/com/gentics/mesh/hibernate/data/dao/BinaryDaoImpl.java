@@ -14,13 +14,13 @@ import com.gentics.mesh.contentoperation.ContentFieldKey;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -51,7 +51,7 @@ import jakarta.persistence.EntityGraph;
  *
  */
 @Singleton
-public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements PersistingBinaryDao {
+public class BinaryDaoImpl extends AbstractImageDataHibDao<Binary> implements PersistingBinaryDao {
 
 	private final HibBinariesImpl binaries;
 	private final ContentStorage contentStorage;
@@ -73,7 +73,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	}
 
 	@Override
-	public Result<HibBinaryField> findFields(HibBinary binary) {
+	public Result<BinaryField> findFields(Binary binary) {
 		Set<ContentFieldKey> contentFieldKeys = em().createNamedQuery("binaryfieldref.findByBinaryUuid", HibBinaryFieldEdgeImpl.class)
 			.setParameter("dbUuid", binary.getId())
 			.getResultStream()
@@ -102,7 +102,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	 * @param key
 	 * @return entity or null
 	 */
-	public HibBinaryField getField(UUID contentUuid, String key) {
+	public BinaryField getField(UUID contentUuid, String key) {
 		return em().createNamedQuery("binaryfieldref.findByContentAndKey", HibBinaryFieldImpl.class)
 				.setParameter("contentUuid", contentUuid)
 				.setParameter("key", key)
@@ -118,18 +118,18 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	 * @param key
 	 * @return entity or null
 	 */
-	public void removeField(BulkActionContext bac, HibField field) {
+	public void removeField(BulkActionContext bac, Field field) {
 		ImageVariantDaoImpl imageVariantDao = HibernateTx.get().imageVariantDao();
-		HibBinaryField binaryRef = (HibBinaryField) field;
+		BinaryField binaryRef = (BinaryField) field;
 		HibBinaryImpl binary = (HibBinaryImpl) binaryRef.getBinary();
 
-		for (HibImageVariant variant : imageVariantDao.getVariants(binaryRef, null)) {
+		for (ImageVariant variant : imageVariantDao.getVariants(binaryRef, null)) {
 			imageVariantDao.detachVariant(binaryRef, (HibImageVariantImpl) variant, variant.getKey(), null, false);
 		};
 		em().remove(binaryRef);
 		long fieldCount = ((Number) em().createNamedQuery("binary.getFieldCount").setParameter("uuid", binary.getId()).getSingleResult()).longValue();
 		if (fieldCount == 0) {
-			for (HibImageVariant variant : imageVariantDao.getVariants(binary, null)) {
+			for (ImageVariant variant : imageVariantDao.getVariants(binary, null)) {
 				imageVariantDao.deletePersistedVariant(binary, variant, true);
 			};
 			bac.add(currentTransaction.getTx().data().binaryStorage().delete(binary.getUuid()));
@@ -162,7 +162,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 	 * Load the binary fields and binaries, which are referenced in the given list of containers
 	 * @param containers containers, which probably contain binary fields
 	 */
-	public void loadBinaryFields(List<? extends HibNodeFieldContainer> containers) {
+	public void loadBinaryFields(List<? extends NodeFieldContainer> containers) {
 		// collect the refUuids from the binary fields
 		Set<UUID> refUuids = containers
 			.stream()
@@ -194,7 +194,7 @@ public class BinaryDaoImpl extends AbstractImageDataHibDao<HibBinary> implements
 		}
 
 		// load the binaries
-		SplittingUtils.splitAndMergeInList(binaryUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("binary.findByUuids", HibBinary.class)
+		SplittingUtils.splitAndMergeInList(binaryUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> em().createNamedQuery("binary.findByUuids", Binary.class)
 			.setParameter("uuids", slice)
 			.getResultList());
 	}

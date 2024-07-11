@@ -15,10 +15,10 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.database.HibernateTx;
@@ -70,28 +70,28 @@ public class HibSchemaChangeImpl extends AbstractHibPropertyContainerElement imp
 		this.operation = operation.name();
 	}
 
-	protected <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
+	protected <R extends FieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return findContainerVersion(previousVersionUuid);
 	}
 
-	protected void setPreviousContainerVersionInner(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
+	protected void setPreviousContainerVersionInner(FieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		this.previousVersionUuid = (UUID) containerVersion.getId();
 		this.containerUuid = (UUID) containerVersion.getSchemaContainer().getId();
 	}
 
-	protected <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion() {
+	protected <R extends FieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion() {
 		return findContainerVersion(nextVersionUuid);
 	}
 
-	protected void setNextSchemaContainerVersionInner(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
+	protected void setNextSchemaContainerVersionInner(FieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		this.nextVersionUuid = (UUID) containerVersion.getId();
 		this.containerUuid = (UUID) containerVersion.getSchemaContainer().getId();
 	}
 
-	protected HibSchemaChange<?> intoSchemaChange() {
+	protected SchemaChange<?> intoSchemaChange() {
 		SchemaChangeOperation schemaChangeOperation = SchemaChangeOperation.valueOf(operation);
-		HibSchemaChange<?> schemaChange = null;
-		Class<? extends HibSchemaChange<?>> schemaChangeClass = null;
+		SchemaChange<?> schemaChange = null;
+		Class<? extends SchemaChange<?>> schemaChangeClass = null;
 
 		switch (schemaChangeOperation) {
 		case ADDFIELD:
@@ -136,7 +136,7 @@ public class HibSchemaChangeImpl extends AbstractHibPropertyContainerElement imp
 		return schemaChange;
 	}
 
-	protected static final HibSchemaChangeImpl intoEntity(HibSchemaChange<?> schemaChange) {
+	protected static final HibSchemaChangeImpl intoEntity(SchemaChange<?> schemaChange) {
 		if (schemaChange == null) {
 			return null;
 		}
@@ -151,7 +151,7 @@ public class HibSchemaChangeImpl extends AbstractHibPropertyContainerElement imp
 		return impl;
 	}
 	
-	protected void fromSchemaChange(HibSchemaChange<?> schemaChange) {
+	protected void fromSchemaChange(SchemaChange<?> schemaChange) {
 		setNextSchemaContainerVersionInner(schemaChange.getNextContainerVersion());
 		setPreviousContainerVersionInner(schemaChange.getPreviousContainerVersion());
 		setOperation(schemaChange.getOperation());
@@ -161,17 +161,17 @@ public class HibSchemaChangeImpl extends AbstractHibPropertyContainerElement imp
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R findContainerVersion(UUID uuid) {
+	protected <R extends FieldSchemaVersionElement<?, ?, ?, ?, ?>> R findContainerVersion(UUID uuid) {
 		if (uuid == null) {
 			return null;
 		}
 		SchemaDaoImpl schemaDao = HibernateTx.get().schemaDao();
 		MicroschemaDaoImpl microschemaDao = HibernateTx.get().microschemaDao();
-		HibSchema schema = schemaDao.findByUuid(containerUuid);
+		Schema schema = schemaDao.findByUuid(containerUuid);
 		if (schema != null) {
 			return (R) schemaDao.findVersionByUuid(schema, uuid);
 		}
-		HibMicroschema microschema = microschemaDao.findByUuid(containerUuid);
+		Microschema microschema = microschemaDao.findByUuid(containerUuid);
 		if (microschema != null) {
 			return (R) microschemaDao.findVersionByUuid(microschema, uuid);
 		}

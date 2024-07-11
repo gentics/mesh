@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.rest.event.EventCauseAction;
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.EventCauseInfoModel;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
 /**
@@ -99,7 +99,7 @@ public interface EventQueueBatch {
 	 * 
 	 * @return
 	 */
-	EventCauseInfo getCause();
+	EventCauseInfoModel getCause();
 
 	/**
 	 * Set a basic root cause for all events in the batch.
@@ -115,6 +115,6 @@ public interface EventQueueBatch {
 	 * 
 	 * @param cause
 	 */
-	void setCause(EventCauseInfo cause);
+	void setCause(EventCauseInfoModel cause);
 
 }

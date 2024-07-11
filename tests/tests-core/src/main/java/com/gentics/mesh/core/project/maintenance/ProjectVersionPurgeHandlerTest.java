@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -17,7 +17,7 @@ public class ProjectVersionPurgeHandlerTest extends AbstractMeshTest {
 
 	@Test
 	public void testHandler() {
-		HibProject project = project();
+		Project project = project();
 
 		for (int i = 0; i < 10; i++) {
 			NodeUpdateRequest request = new NodeUpdateRequest();

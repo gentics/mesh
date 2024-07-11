@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -34,8 +34,8 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
@@ -1396,57 +1396,57 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoSchemaListModel> getBranchSchemaVersions(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaListModel.class);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
-		BranchInfoSchemaList schemaVersionReferences) {
+	public MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid,
+		BranchInfoSchemaListModel schemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class,
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaListModel.class,
 			schemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
+	public MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid,
 		SchemaReference... schemaVersionReferences) {
-		BranchInfoSchemaList info = new BranchInfoSchemaList();
+		BranchInfoSchemaListModel info = new BranchInfoSchemaListModel();
 		info.add(schemaVersionReferences);
 		return assignBranchSchemaVersions(projectName, branchUuid, info);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoMicroschemaListModel> getBranchMicroschemaVersions(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
-			BranchInfoMicroschemaList.class);
+			BranchInfoMicroschemaListModel.class);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
-		BranchInfoMicroschemaList microschemaVersionReferences) {
+	public MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+		BranchInfoMicroschemaListModel microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
-			BranchInfoMicroschemaList.class, microschemaVersionReferences);
+			BranchInfoMicroschemaListModel.class, microschemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+	public MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 		MicroschemaReference... microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		BranchInfoMicroschemaList list = new BranchInfoMicroschemaList();
+		BranchInfoMicroschemaListModel list = new BranchInfoMicroschemaListModel();
 		list.add(microschemaVersionReferences);
 		return assignBranchMicroschemaVersions(projectName, branchUuid, list);
 	}
@@ -1599,13 +1599,13 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
-		return prepareRequest(GET, "/admin/coordinator/config", CoordinatorConfig.class);
+	public MeshRequest<CoordinatorConfigModel> loadCoordinationConfig() {
+		return prepareRequest(GET, "/admin/coordinator/config", CoordinatorConfigModel.class);
 	}
 
 	@Override
-	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
-		return prepareRequest(POST, "/admin/coordinator/config", CoordinatorConfig.class, coordinatorConfig);
+	public MeshRequest<CoordinatorConfigModel> updateCoordinationConfig(CoordinatorConfigModel coordinatorConfig) {
+		return prepareRequest(POST, "/admin/coordinator/config", CoordinatorConfigModel.class, coordinatorConfig);
 	}
 
 	@Override

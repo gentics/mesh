@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -16,7 +16,7 @@ import com.gentics.mesh.util.SearchWaitUtil;
  * Handler for role index search operations.
  */
 @Singleton
-public class RoleSearchHandler extends AbstractSearchHandler<HibRole, RoleResponse> {
+public class RoleSearchHandler extends AbstractSearchHandler<Role, RoleResponse> {
 
 	@Inject
 	public RoleSearchHandler(Database db, SearchProvider searchProvider, RoleIndexHandlerImpl indexHandler, MeshOptions options, RoleDAOActions actions, SearchWaitUtil waitUtil) {

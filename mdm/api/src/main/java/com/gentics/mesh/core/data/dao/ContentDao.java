@@ -21,18 +21,18 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.error.Errors;
@@ -189,7 +189,7 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
+	String getPathSegment(Node node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language
@@ -203,7 +203,7 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	default String getPathSegment(HibNode node, String branchUuid, ContainerType type, String... languageTag) {
+	default String getPathSegment(Node node, String branchUuid, ContainerType type, String... languageTag) {
 		return getPathSegment(node, branchUuid, type, false, languageTag);
 	}
 
@@ -221,7 +221,7 @@ public interface ContentDao {
 	 * @param languageTag
 	 * @return
 	 */
-	HibNodeFieldContainer getLatestDraftFieldContainer(HibNode node, String languageTag);
+	NodeFieldContainer getLatestDraftFieldContainer(Node node, String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch.
@@ -232,7 +232,7 @@ public interface ContentDao {
 	 *            type
 	 * @return
 	 */
-	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type);
+	NodeFieldContainer getFieldContainer(Node node, String languageTag, Branch branch, ContainerType type);
 
 	/**
 	 * Return the draft field container for the given language in the latest branch.
@@ -240,7 +240,7 @@ public interface ContentDao {
 	 * @param languageTag
 	 * @return
 	 */
-	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag);
+	NodeFieldContainer getFieldContainer(Node node, String languageTag);
 
 	/**
 	 * Return the field container for the given language, type and branch Uuid.
@@ -250,7 +250,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type);
+	NodeFieldContainer getFieldContainer(Node node, String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Return a map with node as a key and all its field containers as values, filtering for the provided parameters.
@@ -261,7 +261,7 @@ public interface ContentDao {
 	 * @param type container type for filtering containers
 	 * @return map of nodes to lists of field containers
 	 */
-	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type);
+	Map<Node, List<NodeFieldContainer>> getFieldsContainers(Set<Node> nodes, String branchUuid, ContainerType type);
 
 	/**
 	 * Return a map with node as a key and all its field containers as values, filtering for the provided parameters.
@@ -271,7 +271,7 @@ public interface ContentDao {
 	 * @param versionNumber
 	 * @return
 	 */
-	Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber);
+	Map<Node, List<NodeFieldContainer>> getFieldsContainers(Set<Node> nodes, String branchUuid, VersionNumber versionNumber);
 
 	/**
 	 * Return the field containers for the given nodes of language, type and branch.
@@ -281,7 +281,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default Map<HibNode, HibNodeFieldContainer> getFieldsContainers(Collection<? extends HibNode> nodes, String languageTag, HibBranch branch, ContainerType type) {
+	default Map<Node, NodeFieldContainer> getFieldsContainers(Collection<? extends Node> nodes, String languageTag, Branch branch, ContainerType type) {
 		return nodes.stream().map(node -> Pair.of(node, getFieldContainer(node, languageTag, branch, type))).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
@@ -297,7 +297,7 @@ public interface ContentDao {
 	 *            user
 	 * @return
 	 */
-	HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser user);
+	NodeFieldContainer createFieldContainer(Node node, String languageTag, Branch branch, User user);
 
 	/**
 	 * Create a new field container for the given language and assign the schema version of the branch to the container. The field container will be
@@ -311,10 +311,10 @@ public interface ContentDao {
 	 *            user
 	 * @return
 	 */
-	HibNodeFieldContainer createFirstFieldContainerForNode(HibNode node, String languageTag, HibBranch branch, HibUser user);
+	NodeFieldContainer createFirstFieldContainerForNode(Node node, String languageTag, Branch branch, User user);
 
 	/**
-	 * Like {@link #createFieldContainer(HibNode, String, HibBranch, HibUser)}, but let the new field container be a clone of the given original (if not
+	 * Like {@link #createFieldContainer(Node, String, Branch, User)}, but let the new field container be a clone of the given original (if not
 	 * null).
 	 *
 	 * @param languageTag
@@ -327,8 +327,8 @@ public interface ContentDao {
 	 *            Whether to move the existing draft edge or create a new draft edge to the new container
 	 * @return Created container
 	 */
-	HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor,
-		HibNodeFieldContainer original,
+	NodeFieldContainer createFieldContainer(Node node, String languageTag, Branch branch, User editor,
+		NodeFieldContainer original,
 		boolean handleDraftEdge);
 
 	/**
@@ -345,14 +345,14 @@ public interface ContentDao {
 	 * 			the branch of the field container
 	 * @return
 	 */
-	HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch);
+	NodeFieldContainer createEmptyFieldContainer(SchemaVersion version, Node node, User editor, String languageTag, Branch branch);
 
 	/**
 	 * Return the draft field containers of the node in the latest branch.
 	 *
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node);
+	Result<NodeFieldContainer> getDraftFieldContainers(Node node);
 
 	/**
 	 * Return a traversal of field containers of given type for the node in the given branch.
@@ -361,7 +361,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default Result<HibNodeFieldContainer> getFieldContainers(HibNode node, HibBranch branch, ContainerType type) {
+	default Result<NodeFieldContainer> getFieldContainers(Node node, Branch branch, ContainerType type) {
 		return getFieldContainers(node, branch.getUuid(), type);
 	}
 
@@ -372,7 +372,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type);
+	Result<NodeFieldContainer> getFieldContainers(Node node, String branchUuid, ContainerType type);
 
 	/**
 	 * Return containers of the given type
@@ -380,14 +380,14 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type);
+	Result<NodeFieldContainer> getFieldContainers(Node node, ContainerType type);
 
 	/**
 	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any branch.
 	 *
 	 * @return
 	 */
-	long getFieldContainerCount(HibNode node);
+	long getFieldContainerCount(Node node);
 
 	/**
 	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
@@ -413,8 +413,8 @@ public interface ContentDao {
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
 	 * @return Next matching field container or null when no language matches
 	 */
-	default HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version) {
-		HibNodeFieldContainer fieldContainer = null;
+	default NodeFieldContainer findVersion(Node node, List<String> languageTags, String branchUuid, String version) {
+		NodeFieldContainer fieldContainer = null;
 
 		// TODO refactor the type handling and don't return INITIAL.
 		ContainerType type = forVersion(version);
@@ -447,7 +447,7 @@ public interface ContentDao {
 	 * @param version
 	 * @return Found version or null when no version could be found.
 	 */
-	default HibNodeFieldContainer findVersion(HibNode node, String languageTag, String branchUuid, String version) {
+	default NodeFieldContainer findVersion(Node node, String languageTag, String branchUuid, String version) {
 		return findVersion(node, Arrays.asList(languageTag), branchUuid, version);
 	}
 
@@ -458,7 +458,7 @@ public interface ContentDao {
 	 * @param languageTags
 	 * @return Next matching field container or null when no language matches
 	 */
-	default HibNodeFieldContainer findVersion(HibNode node, InternalActionContext ac, List<String> languageTags, String version) {
+	default NodeFieldContainer findVersion(Node node, InternalActionContext ac, List<String> languageTags, String version) {
 		Tx tx = Tx.get();
 		return findVersion(node, languageTags, tx.getBranch(ac).getUuid(), version);
 	}
@@ -471,7 +471,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default HibNodeFieldContainer findVersion(HibNode node, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	default NodeFieldContainer findVersion(Node node, InternalActionContext ac, List<String> languageTags, ContainerType type) {
 		return findVersion(node, ac, languageTags, type.getHumanCode());
 	}
 
@@ -487,7 +487,7 @@ public interface ContentDao {
 	 * @param failForLastContainer
 	 *            Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
+	void deleteLanguageContainer(Node node, InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac,
 		boolean failForLastContainer);
 
 
@@ -504,14 +504,14 @@ public interface ContentDao {
 	 *            user
 	 * @return published field container
 	 */
-	HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user);
+	NodeFieldContainer publish(Node node, InternalActionContext ac, String languageTag, Branch branch, User user);
 
 	/**
 	 * Gets all NodeField edges that reference this node.
 	 *
 	 * @return
 	 */
-	default Stream<HibNodeField> getInboundReferences(HibNode node) {
+	default Stream<NodeField> getInboundReferences(Node node) {
 		return getInboundReferences(node, true, true);
 	}
 
@@ -523,14 +523,14 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
+	Stream<NodeField> getInboundReferences(Node node, boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Gets all NodeField edges that reference the nodes.
 	 * 
 	 * @return
 	 */
-	default Stream<Pair<HibNodeField, HibNode>> getInboundReferences(Collection<HibNode> nodes) {
+	default Stream<Pair<NodeField, Node>> getInboundReferences(Collection<Node> nodes) {
 		return nodes.stream().flatMap(node -> getInboundReferences(node).map(ref -> Pair.of(ref, node)));
 	}
 
@@ -542,7 +542,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default String getIndexName(HibNodeFieldContainer content, String projectUuid, String branchUuid, ContainerType type) {
+	default String getIndexName(NodeFieldContainer content, String projectUuid, String branchUuid, ContainerType type) {
 		return ContentDao.composeIndexName(projectUuid, branchUuid, getSchemaContainerVersion(content).getUuid(), type, null, null);
 	}
 
@@ -551,7 +551,7 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	default String getDocumentId(HibNodeFieldContainer content) {
+	default String getDocumentId(NodeFieldContainer content) {
 		return ContentDao.composeDocumentId(getNode(content).getUuid(), getLanguageTag(content));
 	}
 
@@ -561,7 +561,7 @@ public interface ContentDao {
 	 * @param fields
 	 * @return
 	 */
-	default Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
+	default Stream<Pair<NodeField, Collection<NodeFieldContainer>>> getReferencingContents(Collection<NodeField> fields) {
 		return fields.stream().map(field -> Pair.of(field, field.getReferencingContents().collect(Collectors.toSet())));
 	}
 
@@ -571,7 +571,7 @@ public interface ContentDao {
 	 *
 	 * @param bac
 	 */
-	void delete(HibNodeFieldContainer content, BulkActionContext bac);
+	void delete(NodeFieldContainer content, BulkActionContext bac);
 
 	/**
 	 * Delete the field container. This will also delete linked elements like lists.
@@ -580,7 +580,7 @@ public interface ContentDao {
 	 * @param deleteNext
 	 *            true to also delete all "next" containers, false to only delete this container
 	 */
-	void delete(HibNodeFieldContainer content, BulkActionContext bac, boolean deleteNext);
+	void delete(NodeFieldContainer content, BulkActionContext bac, boolean deleteNext);
 
 	/**
 	 * "Delete" the field container from the branch. This will not actually delete the container itself, but will remove DRAFT and PUBLISHED edges
@@ -588,35 +588,35 @@ public interface ContentDao {
 	 * @param branch
 	 * @param bac
 	 */
-	void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac);
+	void deleteFromBranch(NodeFieldContainer content, Branch branch, BulkActionContext bac);
 
 	/**
 	 * Return the display field value for this container.
 	 *
 	 * @return
 	 */
-	String getDisplayFieldValue(HibNodeFieldContainer content);
+	String getDisplayFieldValue(NodeFieldContainer content);
 
 	/**
 	 * Get the parent node to which this container belongs.
 	 *
 	 * @return
 	 */
-	HibNode getNode(HibNodeFieldContainer content);
+	Node getNode(NodeFieldContainer content);
 
 	/**
 	 * Get the node field container for the given field.
 	 * @param field The field to get the node field container for.
 	 * @return The node field container for the given field.
 	 */
-	HibNodeFieldContainer getNodeFieldContainer(HibField field);
+	NodeFieldContainer getNodeFieldContainer(Field field);
 
 	/**
 	 * Get the parent nodes to which the containers belong.
 	 *
 	 * @return
 	 */
-	default Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer>  contents) {
+	default Stream<Pair<NodeFieldContainer, Node>> getNodes(Collection<NodeFieldContainer>  contents) {
 		return contents.stream().map(content -> Pair.of(content, getNode(content)));
 	}
 
@@ -630,7 +630,7 @@ public interface ContentDao {
 	 * @param conflictI18n
 	 *            key of the message in case of conflicts
 	 */
-	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
+	default void updateWebrootPathInfo(NodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n) {
 		updateWebrootPathInfo(content, ac, branchUuid, conflictI18n, true);
 	}
 
@@ -644,7 +644,7 @@ public interface ContentDao {
 	 *            key of the message in case of conflicts
 	 * @param checkForConflicts true to check for conflicts, false to omit the check
 	 */
-	void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts);
+	void updateWebrootPathInfo(NodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts);
 
 	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
@@ -653,7 +653,7 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @param conflictI18n
 	 */
-	default void updateWebrootPathInfo(HibNodeFieldContainer content, String branchUuid, String conflictI18n) {
+	default void updateWebrootPathInfo(NodeFieldContainer content, String branchUuid, String conflictI18n) {
 		updateWebrootPathInfo(content, null, branchUuid, conflictI18n, true);
 	}
 
@@ -664,7 +664,7 @@ public interface ContentDao {
 	 * @param conflictI18n
 	 * @param checkForConflicts true to check for conflicts, false to omit the check
 	 */
-	default void updateWebrootPathInfo(HibNodeFieldContainer content, String branchUuid, String conflictI18n, boolean checkForConflicts) {
+	default void updateWebrootPathInfo(NodeFieldContainer content, String branchUuid, String conflictI18n, boolean checkForConflicts) {
 		updateWebrootPathInfo(content, null, branchUuid, conflictI18n, checkForConflicts);
 	}
 
@@ -673,28 +673,28 @@ public interface ContentDao {
 	 *
 	 * @return Version Number
 	 */
-	VersionNumber getVersion(HibNodeFieldContainer content);
+	VersionNumber getVersion(NodeFieldContainer content);
 
 	/**
 	 * Set the Version Number.
 	 *
 	 * @param version
 	 */
-	void setVersion(HibNodeFieldContainer content, VersionNumber version);
+	void setVersion(NodeFieldContainer content, VersionNumber version);
 
 	/**
 	 * Check whether the field container has a next version
 	 *
 	 * @return true iff the field container has a next version
 	 */
-	boolean hasNextVersion(HibNodeFieldContainer content);
+	boolean hasNextVersion(NodeFieldContainer content);
 
 	/**
 	 * Get the next versions.
 	 *
 	 * @return iterable for all next versions
 	 */
-	Iterable<HibNodeFieldContainer> getNextVersions(HibNodeFieldContainer content);
+	Iterable<NodeFieldContainer> getNextVersions(NodeFieldContainer content);
 
 	/**
 	 * Set the next version.
@@ -702,21 +702,21 @@ public interface ContentDao {
 	 * @param current
 	 * @param next
 	 */
-	void setNextVersion(HibNodeFieldContainer current, HibNodeFieldContainer next);
+	void setNextVersion(NodeFieldContainer current, NodeFieldContainer next);
 
 	/**
 	 * Check whether the field container has a previous version
 	 *
 	 * @return true if the field container has a previous version
 	 */
-	boolean hasPreviousVersion(HibNodeFieldContainer content);
+	boolean hasPreviousVersion(NodeFieldContainer content);
 
 	/**
 	 * Get the previous version.
 	 *
 	 * @return previous version or null
 	 */
-	HibNodeFieldContainer getPreviousVersion(HibNodeFieldContainer content);
+	NodeFieldContainer getPreviousVersion(NodeFieldContainer content);
 
 	/**
 	 * Make this container a clone of the given container. Property Vertices are reused.
@@ -724,14 +724,14 @@ public interface ContentDao {
 	 * @param dest
 	 * @param src
 	 */
-	void clone(HibNodeFieldContainer dest, HibNodeFieldContainer src);
+	void clone(NodeFieldContainer dest, NodeFieldContainer src);
 
 	/**
 	 * Check whether this field container is the initial version for any branch.
 	 *
 	 * @return true if it is the initial, false if not
 	 */
-	default boolean isInitial(HibNodeFieldContainer content) {
+	default boolean isInitial(NodeFieldContainer content) {
 		return isType(content, INITIAL);
 	}
 
@@ -740,7 +740,7 @@ public interface ContentDao {
 	 *
 	 * @return true if it is the draft, false if not
 	 */
-	default boolean isDraft(HibNodeFieldContainer content) {
+	default boolean isDraft(NodeFieldContainer content) {
 		return isType(content, DRAFT);
 	}
 
@@ -749,7 +749,7 @@ public interface ContentDao {
 	 *
 	 * @return true if it is published, false if not
 	 */
-	default boolean isPublished(HibNodeFieldContainer content) {
+	default boolean isPublished(NodeFieldContainer content) {
 		return isType(content, PUBLISHED);
 	}
 
@@ -759,7 +759,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return true if it matches the type, false if not
 	 */
-	boolean isType(HibNodeFieldContainer content, ContainerType type);
+	boolean isType(NodeFieldContainer content, ContainerType type);
 
 	/**
 	 * Check whether this field container is the initial version for the given branch.
@@ -768,7 +768,7 @@ public interface ContentDao {
 	 *            branch Uuid
 	 * @return true if it is the initial, false if not
 	 */
-	default boolean isInitial(HibNodeFieldContainer content, String branchUuid) {
+	default boolean isInitial(NodeFieldContainer content, String branchUuid) {
 		return isType(content, INITIAL, branchUuid);
 	}
 
@@ -779,7 +779,7 @@ public interface ContentDao {
 	 *            branch Uuid
 	 * @return true if it is the draft, false if not
 	 */
-	default boolean isDraft(HibNodeFieldContainer content, String branchUuid) {
+	default boolean isDraft(NodeFieldContainer content, String branchUuid) {
 		return isType(content, DRAFT, branchUuid);
 	}
 
@@ -790,7 +790,7 @@ public interface ContentDao {
 	 *            branch Uuid
 	 * @return true if it is published, false if not
 	 */
-	default boolean isPublished(HibNodeFieldContainer content, String branchUuid) {
+	default boolean isPublished(NodeFieldContainer content, String branchUuid) {
 		return isType(content, PUBLISHED, branchUuid);
 	}
 
@@ -801,7 +801,7 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @return true if it matches the type, false if not
 	 */
-	boolean isType(HibNodeFieldContainer content, ContainerType type, String branchUuid);
+	boolean isType(NodeFieldContainer content, ContainerType type, String branchUuid);
 
 	/**
 	 * Get the branch Uuids for which this container is the container of given type.
@@ -810,14 +810,14 @@ public interface ContentDao {
 	 *            type
 	 * @return set of branch Uuids (may be empty, but never null)
 	 */
-	Set<String> getBranches(HibNodeFieldContainer content, ContainerType type);
+	Set<String> getBranches(NodeFieldContainer content, ContainerType type);
 
 	/**
 	 * Compare the container values of both containers and return a list of differences.
 	 *
 	 * @param container
 	 */
-	List<FieldContainerChange> compareTo(HibNodeFieldContainer content, HibNodeFieldContainer container);
+	List<FieldContainerChange> compareTo(NodeFieldContainer content, NodeFieldContainer container);
 
 	/**
 	 * Compare the values of this container with the values of the given fieldmap and return a list of detected differences.
@@ -825,7 +825,7 @@ public interface ContentDao {
 	 * @param fieldMap
 	 * @return
 	 */
-	List<FieldContainerChange> compareTo(HibNodeFieldContainer content, FieldMap fieldMap);
+	List<FieldContainerChange> compareTo(NodeFieldContainer content, FieldMap fieldMap);
 
 	/**
 	 * Return the schema version for the given content
@@ -833,21 +833,21 @@ public interface ContentDao {
 	 * @param content
 	 * @return
 	 */
-	HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content);
+	SchemaVersion getSchemaContainerVersion(NodeFieldContainer content);
 
 	/**
 	 * Get all micronode fields.
 	 *
 	 * @return list of micronode fields
 	 */
-	List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content);
+	List<MicronodeField> getMicronodeFields(NodeFieldContainer content);
 
 	/**
 	 * Get all micronode list fields.
 	 *
 	 * @return list of micronode list fields
 	 */
-	Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content);
+	Result<MicronodeFieldList> getMicronodeListFields(NodeFieldContainer content);
 
 	/**
 	 * Return the ETag for the field container.
@@ -855,31 +855,31 @@ public interface ContentDao {
 	 * @param ac
 	 * @return Generated entity tag
 	 */
-	String getETag(HibNodeFieldContainer content, InternalActionContext ac);
+	String getETag(NodeFieldContainer content, InternalActionContext ac);
 
 	/**
 	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
 	 */
-	void updateDisplayFieldValue(HibNodeFieldContainer content);
+	void updateDisplayFieldValue(NodeFieldContainer content);
 
 	/**
 	 * Returns the segment field value of this container.
 	 *
 	 * @return Determined segment field value or null if no segment field was specified or yet set
 	 */
-	String getSegmentFieldValue(HibNodeFieldContainer content);
+	String getSegmentFieldValue(NodeFieldContainer content);
 
 	/**
 	 * Update the current segment field and increment any found postfix number.
 	 */
-	void postfixSegmentFieldValue(HibNodeFieldContainer content);
+	void postfixSegmentFieldValue(NodeFieldContainer content);
 
 	/**
 	 * Return the URL field values for the container.
 	 *
 	 * @return
 	 */
-	Stream<String> getUrlFieldValues(HibNodeFieldContainer content);
+	Stream<String> getUrlFieldValues(NodeFieldContainer content);
 
 	/**
 	 * Traverse to the base node and build up the path to this container.
@@ -887,7 +887,7 @@ public interface ContentDao {
 	 * @param ac
 	 * @return
 	 */
-	Path getPath(HibNodeFieldContainer content, InternalActionContext ac);
+	Path getPath(NodeFieldContainer content, InternalActionContext ac);
 
 	/**
 	 * Create the specific delete event.
@@ -896,7 +896,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	NodeMeshEventModel onDeleted(HibNodeFieldContainer content, String branchUuid, ContainerType type);
+	NodeMeshEventModel onDeleted(NodeFieldContainer content, String branchUuid, ContainerType type);
 
 	/**
 	 * Create the specific create event.
@@ -905,7 +905,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	NodeMeshEventModel onCreated(HibNodeFieldContainer content, String branchUuid, ContainerType type);
+	NodeMeshEventModel onCreated(NodeFieldContainer content, String branchUuid, ContainerType type);
 
 	/**
 	 * Create the specific update event.
@@ -914,7 +914,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	NodeMeshEventModel onUpdated(HibNodeFieldContainer content, String branchUuid, ContainerType type);
+	NodeMeshEventModel onUpdated(NodeFieldContainer content, String branchUuid, ContainerType type);
 
 	/**
 	 * Create the taken offline event.
@@ -922,7 +922,7 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @return
 	 */
-	NodeMeshEventModel onTakenOffline(HibNodeFieldContainer content, String branchUuid);
+	NodeMeshEventModel onTakenOffline(NodeFieldContainer content, String branchUuid);
 
 	/**
 	 * Create the publish event.
@@ -930,7 +930,7 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @return
 	 */
-	NodeMeshEventModel onPublish(HibNodeFieldContainer content, String branchUuid);
+	NodeMeshEventModel onPublish(NodeFieldContainer content, String branchUuid);
 
 	/**
 	 * Transform the container into a version info object.
@@ -938,21 +938,21 @@ public interface ContentDao {
 	 * @param ac
 	 * @return
 	 */
-	VersionInfo transformToVersionInfo(HibNodeFieldContainer content, InternalActionContext ac);
+	VersionInfo transformToVersionInfo(NodeFieldContainer content, InternalActionContext ac);
 
 	/**
 	 * A container is purgeable when it is not being utilized as draft, published or initial version in any branch.
 	 *
 	 * @return
 	 */
-	boolean isPurgeable(HibNodeFieldContainer content);
+	boolean isPurgeable(NodeFieldContainer content);
 
 	/**
 	 * Check whether auto purge is enabled globally or for the schema of the container.
 	 *
 	 * @return
 	 */
-	boolean isAutoPurgeEnabled(HibNodeFieldContainer content);
+	boolean isAutoPurgeEnabled(NodeFieldContainer content);
 
 	/**
 	 * Purge the container from the version history and ensure that the links between versions are consistent.
@@ -960,12 +960,12 @@ public interface ContentDao {
 	 * @param bac
 	 *            Action context for the deletion process
 	 */
-	void purge(HibNodeFieldContainer content, BulkActionContext bac);
+	void purge(NodeFieldContainer content, BulkActionContext bac);
 
 	/**
 	 * Purge the container from the version without the use of a Bulk Action Context.
 	 */
-	default void purge(HibNodeFieldContainer content) {
+	default void purge(NodeFieldContainer content) {
 		purge(content, new DummyBulkActionContext());
 	}
 
@@ -974,21 +974,21 @@ public interface ContentDao {
 	 *
 	 * @return
 	 */
-	Result<HibNodeFieldContainer> versions(HibNodeFieldContainer content);
+	Result<NodeFieldContainer> versions(NodeFieldContainer content);
 
 	/**
 	 * Return the language tag of the field container.
 	 *
 	 * @return
 	 */
-	String getLanguageTag(HibNodeFieldContainer content);
+	String getLanguageTag(NodeFieldContainer content);
 
 	/**
 	 * Set the language for the field container.
 	 *
 	 * @param languageTag
 	 */
-	void setLanguageTag(HibNodeFieldContainer content, String languageTag);
+	void setLanguageTag(NodeFieldContainer content, String languageTag);
 
 	/**
 	 * Return an iterator over the edges for the given type and branch.
@@ -996,21 +996,21 @@ public interface ContentDao {
 	 * @param branchUuid
 	 * @return
 	 */
-	Iterator<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container, ContainerType type, String branchUuid);
+	Iterator<? extends NodeFieldContainerEdge> getContainerEdges(NodeFieldContainer container, ContainerType type, String branchUuid);
 
 	/**
 	 * Return a stream of all the edges of a container.
 	 * @param container
 	 * @return
 	 */
-	Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container);
+	Stream<? extends NodeFieldContainerEdge> getContainerEdges(NodeFieldContainer container);
 
 	/**
 	 * Return a stream of all the edges of all containers.
 	 * @param container
 	 * @return
 	 */
-	default Stream<Pair<HibNodeFieldContainer, Collection<? extends HibNodeFieldContainerEdge>>> getContainerEdges(Collection<HibNodeFieldContainer> containers) {
+	default Stream<Pair<NodeFieldContainer, Collection<? extends NodeFieldContainerEdge>>> getContainerEdges(Collection<NodeFieldContainer> containers) {
 		return containers.stream().map(container -> Pair.of(container, getContainerEdges(container).collect(Collectors.toSet())));
 	}
 
@@ -1025,7 +1025,7 @@ public interface ContentDao {
 	 * @param edge
 	 * @return
 	 */
-	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(HibNodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, HibNodeFieldContainerEdge edge);
+	NodeFieldContainerEdge getConflictingEdgeOfWebrootPath(NodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, NodeFieldContainerEdge edge);
 
 	/**
 	 * 	Retrieve a conflicting edge for the given urlFieldValue, branch uuid and type, or null if there's no conflicting
@@ -1037,7 +1037,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type);
+	NodeFieldContainerEdge getConflictingEdgeOfWebrootField(NodeFieldContainer content, NodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type);
 
 	/**
 	 * 	Retrieve a conflicting edge for one of the given urlFieldValues, branch uuid and type, or null if there's no conflicting
@@ -1049,7 +1049,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type);
+	NodeFieldContainerEdge getConflictingEdgeOfWebrootField(NodeFieldContainer content, NodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type);
 
 	/**
 	 * Set the segment info which consists of :nodeUuid + "-" + segment. The property is indexed and used for the webroot path resolving mechanism.
@@ -1057,7 +1057,7 @@ public interface ContentDao {
 	 * @param parentNode
 	 * @param segment
 	 */
-	String composeSegmentInfo(HibNode parentNode, String segment);
+	String composeSegmentInfo(Node parentNode, String segment);
 
 	/**
 	 * Return the field edges for the given node, branch and container type
@@ -1066,7 +1066,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type);
+	Result<? extends NodeFieldContainerEdge> getFieldEdges(Node node, String branchUuid, ContainerType type);
 
 	/**
 	 * Return the field edges for the given node, container type and current node project branch.
@@ -1074,7 +1074,7 @@ public interface ContentDao {
 	 * @param type
 	 * @return
 	 */
-	default Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode fieldNode, ContainerType version) {
+	default Result<? extends NodeFieldContainerEdge> getFieldEdges(Node fieldNode, ContainerType version) {
 		return getFieldEdges(fieldNode, fieldNode.getProject().getLatestBranch().getUuid(), version);
 	}
 
@@ -1086,7 +1086,7 @@ public interface ContentDao {
 	 * @param languageTags
 	 * @return
 	 */
-	NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags);
+	NodeFieldListItem toListItem(Node node, InternalActionContext ac, String[] languageTags);
 
 	/**
 	 * Get a {@link FieldMap} from the provided container
@@ -1097,7 +1097,7 @@ public interface ContentDao {
 	 * @param containerLanguageTags
 	 * @return
 	 */
-	FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags);
+	FieldMap getFieldMap(NodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags);
 
 	/**
 	 * Whether prefetching of list field values is supported. If this returns
@@ -1150,12 +1150,12 @@ public interface ContentDao {
 	 * @param listUuids list UUIDs
 	 * @return map of list UUIDs to lists of micronode field values
 	 */
-	Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids);
+	Map<String, List<Micronode>> getMicronodeListFieldValues(List<String> listUuids);
 
 	/**
 	 * Load the micronodes for the given collection of micronode fields
 	 * @param micronodeFields micronode fields
 	 * @return map of field to micronode
 	 */
-	Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields);
+	Map<MicronodeField, Micronode> getMicronodes(Collection<MicronodeField> micronodeFields);
 }

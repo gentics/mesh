@@ -1,6 +1,6 @@
 package com.gentics.mesh.context;
 
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.HttpServerConfig;
@@ -69,7 +69,7 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 
 	@Override
 	public boolean isAdmin() {
-		HibUser user = getUser();
+		User user = getUser();
 		if (user == null) {
 			return false;
 		}

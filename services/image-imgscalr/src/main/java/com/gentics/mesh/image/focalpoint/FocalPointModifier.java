@@ -10,7 +10,7 @@ import java.awt.image.BufferedImage;
 
 import org.imgscalr.Scalr;
 
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -39,7 +39,7 @@ public class FocalPointModifier {
 	 * @return resized and cropped image
 	 */
 	public BufferedImage apply(BufferedImage img, ImageManipulation parameters) {
-		FocalPoint focalPoint = parameters.getFocalPoint();
+		FocalPointModel focalPoint = parameters.getFocalPoint();
 		if (focalPoint == null) {
 			return img;
 		}
@@ -97,7 +97,7 @@ public class FocalPointModifier {
 	 * @param targetSize
 	 * @return Zoomed image or null if zoom factor is invalid
 	 */
-	private BufferedImage applyZoom(BufferedImage img, Float zoomFactor, FocalPoint focalPoint, Point targetSize) {
+	private BufferedImage applyZoom(BufferedImage img, Float zoomFactor, FocalPointModel focalPoint, Point targetSize) {
 		if (zoomFactor == null || zoomFactor <= 1) {
 			return null;
 		}
@@ -138,7 +138,7 @@ public class FocalPointModifier {
 	 * @param zoomHeight
 	 * @return
 	 */
-	protected Point calculateZoomStart(FocalPoint focalPoint, Point imageSize, int zoomWidth, int zoomHeight) {
+	protected Point calculateZoomStart(FocalPointModel focalPoint, Point imageSize, int zoomWidth, int zoomHeight) {
 		int x = imageSize.getX();
 		int y = imageSize.getY();
 
@@ -220,7 +220,7 @@ public class FocalPointModifier {
 	 * @param focalPoint
 	 * @return Calculated start point or null if cropping is not possible / not needed
 	 */
-	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, FocalPoint focalPoint) {
+	protected Point calculateCropStart(boolean alignX, Point targetSize, Point imageSize, FocalPointModel focalPoint) {
 
 		// Cropping is actually not needed if the source already matches the target size
 		if (targetSize.equals(imageSize)) {
@@ -261,7 +261,7 @@ public class FocalPointModifier {
 	 * @param img
 	 * @param focalPoint
 	 */
-	protected void drawFocusPointAxis(BufferedImage img, FocalPoint focalPoint) {
+	protected void drawFocusPointAxis(BufferedImage img, FocalPointModel focalPoint) {
 		Point point = focalPoint.convertToAbsolutePoint(new Point(img.getWidth(), img.getHeight()));
 
 		float strokeWidth = 3f;

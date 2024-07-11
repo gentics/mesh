@@ -13,13 +13,13 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -77,10 +77,10 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
 		// Create new branch
-		HibBranch newBranch = tx(() -> createBranch("newbranch"));
+		Branch newBranch = tx(() -> createBranch("newbranch"));
 
 		try (Tx tx = tx()) {
-			HibBranch initialBranch = initialBranch();
+			Branch initialBranch = initialBranch();
 			// Get for latest branch (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 				new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest branch").isNotNull().isEmpty();
@@ -102,12 +102,12 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			TagDao tagDao = tx.tagDao();
 			RoleDao roleDao = tx.roleDao();
-			HibTagFamily root = tagFamily("basic");
-			HibTag tag1 = tagDao.create(root, "test1", project(), user());
-			HibTag tag2 = tagDao.create(root, "test2", project(), user());
-			HibTag tag3 = tagDao.create(root, "test3", project(), user());
+			TagFamily root = tagFamily("basic");
+			Tag tag1 = tagDao.create(root, "test1", project(), user());
+			Tag tag2 = tagDao.create(root, "test2", project(), user());
+			Tag tag3 = tagDao.create(root, "test3", project(), user());
 
-			HibNode node = content();
+			Node node = content();
 
 			tagDao.addTag(node, tag1, latestBranch());
 			tagDao.addTag(node, tag3, latestBranch());

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.action;
 
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
 /**
@@ -8,6 +8,6 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
  * 
  * TODO MDM - Merge this interface with RoleDao
  */
-public interface RoleDAOActions extends DAOActions<HibRole, RoleResponse> {
+public interface RoleDAOActions extends DAOActions<Role, RoleResponse> {
 
 }

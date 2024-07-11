@@ -1,7 +1,7 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
-import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ElasticsearchTestMode.UNREACHABLE;
 import static org.junit.Assert.assertTrue;
 

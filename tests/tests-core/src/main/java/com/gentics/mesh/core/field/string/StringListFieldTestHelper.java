@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.string;
 
-import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 
@@ -13,20 +13,20 @@ public interface StringListFieldTestHelper {
 	static final String TEXT3 = "three";
 
 	static final DataProvider FILLTEXT = (container, name) -> {
-		HibStringFieldList field = container.createStringList(name);
+		StringFieldList field = container.createStringList(name);
 		field.createString(TEXT1);
 		field.createString(TEXT2);
 		field.createString(TEXT3);
 	};
 
 	static final DataProvider FILLNUMBERS = (container, name) -> {
-		HibStringFieldList field = container.createStringList(name);
+		StringFieldList field = container.createStringList(name);
 		field.createString("1");
 		field.createString("0");
 	};
 
 	static final DataProvider FILLTRUEFALSE = (container, name) -> {
-		HibStringFieldList field = container.createStringList(name);
+		StringFieldList field = container.createStringList(name);
 		field.createString("true");
 		field.createString("false");
 	};

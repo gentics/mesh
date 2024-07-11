@@ -7,12 +7,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
 
 /**
- * @see NodeField
+ * @see NodeFieldModel
  */
-public class NodeFieldImpl implements NodeField {
+public class NodeFieldImpl implements NodeFieldModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Uuid of the referenced node.")
@@ -32,7 +32,7 @@ public class NodeFieldImpl implements NodeField {
 	}
 
 	@Setter
-	public NodeField setUuid(String uuid) {
+	public NodeFieldModel setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;
 	}
@@ -49,7 +49,7 @@ public class NodeFieldImpl implements NodeField {
 	 *            webroot path
 	 * @return this instance
 	 */
-	public NodeField setPath(String path) {
+	public NodeFieldModel setPath(String path) {
 		this.path = path;
 		return this;
 	}
@@ -70,7 +70,7 @@ public class NodeFieldImpl implements NodeField {
 	 * 
 	 * @param languagePaths
 	 */
-	public NodeField setLanguagePaths(Map<String, String> languagePaths) {
+	public NodeFieldModel setLanguagePaths(Map<String, String> languagePaths) {
 		this.languagePaths = languagePaths;
 		return this;
 	}

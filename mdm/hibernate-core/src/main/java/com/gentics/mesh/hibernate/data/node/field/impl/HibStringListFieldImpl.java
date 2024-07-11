@@ -5,10 +5,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.node.field.StringField;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.database.HibernateTx;
@@ -22,8 +22,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibStringListFieldImpl extends
-			AbstractHibHomogenicPrimitiveListFieldImpl<HibStringListFieldEdgeImpl, HibStringField, StringFieldListImpl, String>
-		implements HibStringFieldList {
+			AbstractHibHomogenicPrimitiveListFieldImpl<HibStringListFieldEdgeImpl, StringField, StringFieldListImpl, String>
+		implements StringFieldList {
 
 	protected HibStringListFieldImpl(HibernateTx tx, String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent) {
 		super(tx, fieldKey, parent, HibStringListFieldEdgeImpl.class);
@@ -34,7 +34,7 @@ public class HibStringListFieldImpl extends
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer container) {
+	public Field cloneTo(FieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?, ?, ?, ?, ?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.LIST);
@@ -48,12 +48,12 @@ public class HibStringListFieldImpl extends
 	}
 
 	@Override
-	public HibStringField createString(String value) {
+	public StringField createString(String value) {
 		return createItem(value);
 	}
 
 	@Override
-	public HibStringField getString(int index) {
+	public StringField getString(int index) {
 		return get(index);
 	}
 
@@ -80,7 +80,7 @@ public class HibStringListFieldImpl extends
 	}
 
 	@Override
-	protected String getValue(HibStringField field) {
+	protected String getValue(StringField field) {
 		return field.getString();
 	}
 

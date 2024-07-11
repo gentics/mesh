@@ -5,7 +5,7 @@ import java.util.List;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.MicronodeMigrationContext;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import io.reactivex.Completable;
 
 public interface MicronodeMigration {
@@ -23,5 +23,5 @@ public interface MicronodeMigration {
 	 * @param containerList
 	 * @param ac
 	 */
-	default void beforeBatchMigration(List<? extends HibNodeFieldContainer> containerList, InternalActionContext ac) {}
+	default void beforeBatchMigration(List<? extends NodeFieldContainer> containerList, InternalActionContext ac) {}
 }

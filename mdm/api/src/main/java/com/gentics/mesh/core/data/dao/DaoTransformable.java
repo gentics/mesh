@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibTransformableElement;
+import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.common.RestModel;
 
@@ -22,7 +22,7 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 * @param page page of elements
 	 * @param ac action context
 	 */
-	default void beforeTransformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {}
+	default void beforeTransformToRestSync(Page<? extends CoreElement<? extends RestModel>> page, InternalActionContext ac) {}
 
 	/**
 	 * Transform the element into the matching rest model response asynchronously.
@@ -58,7 +58,7 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 * @param page
 	 * @param ac
 	 */
-	default void beforeGetETagForPage(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {}
+	default void beforeGetETagForPage(Page<? extends CoreElement<? extends RestModel>> page, InternalActionContext ac) {}
 
 	/**
 	 * Return the etag for the element.
@@ -67,7 +67,7 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 * @param ac
 	 * @return Generated etag
 	 */
-	default String getETag(HibTransformableElement<? extends RestModel> element, InternalActionContext ac) {
+	default String getETag(TransformableElement<? extends RestModel> element, InternalActionContext ac) {
 		return element.getETag(ac);
 	}
 
@@ -78,7 +78,7 @@ public interface DaoTransformable<T, R extends RestModel> {
 	 * @param ac
 	 * @return
 	 */
-	default String getAPIPath(HibTransformableElement<? extends RestModel> element, InternalActionContext ac) {
+	default String getAPIPath(TransformableElement<? extends RestModel> element, InternalActionContext ac) {
 		return element.getAPIPath(ac);
 	}
 }

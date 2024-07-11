@@ -6,7 +6,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 
 /**
  * Embeddable part of creator user/timestamp
@@ -16,18 +16,18 @@ import com.gentics.mesh.core.data.user.HibUser;
  *
  */
 @Embeddable
-public class UserTracking extends EditorTracking {
+public class UserTracking extends HibEditorTracking {
 
 	@ManyToOne(targetEntity = HibUserImpl.class, fetch = FetchType.LAZY)
-	private HibUser creator;
+	private User creator;
 
 	private Instant created;
 
-	public HibUser getCreator() {
+	public User getCreator() {
 		return creator;
 	}
 
-	public void setCreator(HibUser user) {
+	public void setCreator(User user) {
 		this.creator = user;
 	}
 
@@ -39,7 +39,7 @@ public class UserTracking extends EditorTracking {
 		this.created = timestamp != null ? Instant.ofEpochMilli(timestamp) : null;
 	}
 
-	public void setCreated(HibUser creator) {
+	public void setCreated(User creator) {
 		Instant now = Instant.now();
 		setCreator(creator);
 		setEditor(creator);

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -23,7 +23,7 @@ import com.gentics.mesh.parameter.SortingParameters;
  * @param <R> root entity type
  * @param <L> managed(leaf) entity type
  */
-public interface PersistingRootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends RootDao<R, L>, ElementResolver<R, L> {
+public interface PersistingRootDao<R extends CoreElement<? extends RestModel>, L extends CoreElement<? extends RestModel>> extends RootDao<R, L>, ElementResolver<R, L> {
 
 	/**
 	 * Get the persistent leaf entity class upon the root entity.

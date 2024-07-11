@@ -15,9 +15,9 @@ import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -32,7 +32,7 @@ import graphql.util.Pair;
  * @author plyhun
  *
  */
-public class MicronodeFilter extends MainFilter<HibMicronode> implements TypeReferencedFilter<HibMicronode, Map<String, ?>> {
+public class MicronodeFilter extends MainFilter<Micronode> implements TypeReferencedFilter<Micronode, Map<String, ?>> {
 
 	private static final String NAME = "MicronodeFilter";
 	private final static String OWNER = "MICRONODE";
@@ -55,8 +55,8 @@ public class MicronodeFilter extends MainFilter<HibMicronode> implements TypeRef
 	}
 
 	@Override
-	protected List<FilterField<HibMicronode, ?>> getFilters() {
-		List<FilterField<HibMicronode, ?>> filters = new ArrayList<>();
+	protected List<FilterField<Micronode, ?>> getFilters() {
+		List<FilterField<Micronode, ?>> filters = new ArrayList<>();
 		filters.add(FilterField.isNull());
 		filters.add(new MappedFilter<>(OWNER, "microschema", "Filters by microschema", MicroschemaFilter.filter(context), 
 			content -> content == null ? null : content.getSchemaContainerVersion().getSchemaContainer(), Pair.pair("microschema", new JoinPart(ElementType.MICROSCHEMA.name(), "uuid"))));
@@ -64,17 +64,17 @@ public class MicronodeFilter extends MainFilter<HibMicronode> implements TypeRef
 		return filters;
 	}
 
-	private MainFilter<HibMicronode> createAllFieldFilters() {
-		HibProject project = Tx.get().getProject(context);
+	private MainFilter<Micronode> createAllFieldFilters() {
+		Project project = Tx.get().getProject(context);
 		MicroschemaDao schemaDao = Tx.get().microschemaDao();
-		List<FilterField<HibMicronode, ?>> schemaFields = schemaDao.findAll(project)
+		List<FilterField<Micronode, ?>> schemaFields = schemaDao.findAll(project)
 			.stream()
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
 		return MainFilter.mainFilter("MicronodeFieldFilter", "Filters by fields", schemaFields, true, Optional.of("MICROCONTENT"));
 	}
 
-	private FilterField<HibMicronode, ?> createFieldFilter(HibMicroschema schema) {
+	private FilterField<Micronode, ?> createFieldFilter(Microschema schema) {
 		String uuid = schema.getLatestVersion().getUuid();
 		return new MappedFilter<>(OWNER, schema.getName(), "Filters by fields of the " + schema.getName() + " microschema",
 			FieldFilter.filter(context, schema.getLatestVersion()),

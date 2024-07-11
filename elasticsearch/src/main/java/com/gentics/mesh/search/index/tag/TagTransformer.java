@@ -7,9 +7,9 @@ import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
 import com.gentics.mesh.util.ETag;
@@ -20,16 +20,16 @@ import io.vertx.core.json.JsonObject;
  * Transformer for tag search index documents.
  */
 @Singleton
-public class TagTransformer extends AbstractTransformer<HibTag> {
+public class TagTransformer extends AbstractTransformer<Tag> {
 
 	@Inject
 	public TagTransformer() {
 	}
 
 	@Override
-	public String generateVersion(HibTag tag) {
-		HibProject project = tag.getProject();
-		HibTagFamily tagFamily = tag.getTagFamily();
+	public String generateVersion(Tag tag) {
+		Project project = tag.getProject();
+		TagFamily tagFamily = tag.getTagFamily();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(tag.getElementVersion());
@@ -50,7 +50,7 @@ public class TagTransformer extends AbstractTransformer<HibTag> {
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(HibTag tag) {
+	public JsonObject toDocument(Tag tag) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tag.getName());
 		addBasicReferences(document, tag);
@@ -68,7 +68,7 @@ public class TagTransformer extends AbstractTransformer<HibTag> {
 	 * @param document
 	 * @param tagFamily
 	 */
-	public void addTagFamily(JsonObject document, HibTagFamily tagFamily) {
+	public void addTagFamily(JsonObject document, TagFamily tagFamily) {
 		JsonObject info = new JsonObject();
 		info.put(NAME_KEY, tagFamily.getName());
 		info.put(UUID_KEY, tagFamily.getUuid());

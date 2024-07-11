@@ -3,23 +3,23 @@ package com.gentics.mesh.core.data.dao;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
- * DAO for {@link HibTag}.
+ * DAO for {@link Tag}.
  */
-public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagResponse>, RootDao<HibTagFamily, HibTag> {
+public interface TagDao extends DaoGlobal<Tag>, DaoTransformable<Tag, TagResponse>, RootDao<TagFamily, Tag> {
 
 	/**
 	 * Return the tag of the uuid.
@@ -28,7 +28,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param uuid
 	 * @return
 	 */
-	HibTag findByUuid(HibProject project, String uuid);
+	Tag findByUuid(Project project, String uuid);
 
 	/**
 	 * Return the sub etag of the tag.
@@ -37,7 +37,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param ac
 	 * @return
 	 */
-	String getSubETag(HibTag tag, InternalActionContext ac);
+	String getSubETag(Tag tag, InternalActionContext ac);
 
 	/**
 	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
@@ -51,7 +51,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 *            User that is used to assign creator and editor references of the new tag.
 	 * @return
 	 */
-	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator);
+	Tag create(TagFamily tagFamily, String name, Project project, User creator);
 
 	/**
 	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
@@ -67,7 +67,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 *            Optional uuid
 	 * @return
 	 */
-	HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid);
+	Tag create(TagFamily tagFamily, String name, Project project, User creator, String uuid);
 
 	/**
 	 * Load the tag of the branch.
@@ -78,7 +78,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param perm
 	 * @return
 	 */
-	HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm);
+	Tag loadObjectByUuid(Branch branch, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
 	/**
 	 * Load the tag and check permissions.
@@ -89,7 +89,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param perm
 	 * @return
 	 */
-	HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String tagUuid, InternalPermission perm);
+	Tag loadObjectByUuid(Project project, InternalActionContext ac, String tagUuid, InternalPermission perm);
 
 	/**
 	 * Return a page of nodes that are visible to the user and which are tagged by this tag. Use the paging and language information provided.
@@ -102,7 +102,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch, List<String> languageTags,
+	Page<? extends Node> findTaggedNodes(Tag tag, User requestUser, Branch branch, List<String> languageTags,
 		ContainerType type,
 		PagingParameters pagingInfo);
 
@@ -114,14 +114,14 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param perm permission to check
 	 * @return result
 	 */
-	Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac, InternalPermission perm);
+	Result<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Unassign the the node from the tag.
 	 *
 	 * @param node
 	 */
-	void removeNode(HibTag tag, HibNode node);
+	void removeNode(Tag tag, Node node);
 
 	/**
 	 * Return a traversal result of nodes that were tagged by this tag in the given branch
@@ -129,7 +129,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param branch
 	 * @return Result
 	 */
-	Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch);
+	Result<? extends Node> getNodes(Tag tag, Branch branch);
 
 	/**
 	 * Add the given tag to the list of tags for this node in the given branch.
@@ -137,7 +137,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param tag
 	 * @param branch
 	 */
-	void addTag(HibNode node, HibTag tag, HibBranch branch);
+	void addTag(Node node, Tag tag, Branch branch);
 
 	/**
 	 * Remove the given tag from the list of tags for this node in the given branch.
@@ -145,14 +145,14 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param tag
 	 * @param branch
 	 */
-	void removeTag(HibNode node, HibTag tag, HibBranch branch);
+	void removeTag(Node node, Tag tag, Branch branch);
 
 	/**
 	 * Remove all tags for the given branch.
 	 *
 	 * @param branch
 	 */
-	void removeAllTags(HibNode node, HibBranch branch);
+	void removeAllTags(Node node, Branch branch);
 
 	/**
 	 * Return a list of all tags that were assigned to this node in the given branch.
@@ -160,7 +160,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param branch
 	 * @return
 	 */
-	Result<HibTag> getTags(HibNode node, HibBranch branch);
+	Result<Tag> getTags(Node node, Branch branch);
 
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
@@ -170,7 +170,7 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param branch
 	 * @return Page which contains the result
 	 */
-	Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch);
+	Page<? extends Tag> getTags(Node node, User user, PagingParameters params, Branch branch);
 
 	/**
 	 * Tests if the node is tagged with the given tag.
@@ -179,5 +179,5 @@ public interface TagDao extends DaoGlobal<HibTag>, DaoTransformable<HibTag, TagR
 	 * @param branch
 	 * @return
 	 */
-	boolean hasTag(HibNode node, HibTag tag, HibBranch branch);
+	boolean hasTag(Node node, Tag tag, Branch branch);
 }

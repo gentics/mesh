@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.node.field.HibDateField;
-import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.node.field.DateField;
+import com.gentics.mesh.core.data.node.field.list.DateFieldList;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.database.HibernateTx;
@@ -21,8 +21,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibDateListFieldImpl
-		extends AbstractHibHomogenicPrimitiveListFieldImpl<HibDateListFieldEdgeImpl, HibDateField, DateFieldListImpl, Long>
-		implements HibDateFieldList {
+		extends AbstractHibHomogenicPrimitiveListFieldImpl<HibDateListFieldEdgeImpl, DateField, DateFieldListImpl, Long>
+		implements DateFieldList {
 
 	protected HibDateListFieldImpl(HibernateTx tx, String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent) {
 		super(tx, fieldKey, parent, HibDateListFieldEdgeImpl.class);
@@ -33,7 +33,7 @@ public class HibDateListFieldImpl
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer container) {
+	public Field cloneTo(FieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?, ?, ?, ?, ?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.LIST);
@@ -42,7 +42,7 @@ public class HibDateListFieldImpl
 	}
 
 	@Override
-	public HibDateField createDate(Long value) {
+	public DateField createDate(Long value) {
 		return createItem(value);
 	}
 
@@ -52,7 +52,7 @@ public class HibDateListFieldImpl
 	}
 
 	@Override
-	public HibDateField getDate(int index) {
+	public DateField getDate(int index) {
 		return get(index);
 	}
 
@@ -75,7 +75,7 @@ public class HibDateListFieldImpl
 	}
 
 	@Override
-	protected Long getValue(HibDateField field) {
+	protected Long getValue(DateField field) {
 		return field.getDate();
 	}
 

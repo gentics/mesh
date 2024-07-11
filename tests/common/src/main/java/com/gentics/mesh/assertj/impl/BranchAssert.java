@@ -10,15 +10,15 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
 
-public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
-	public BranchAssert(HibBranch actual) {
+public class BranchAssert extends AbstractAssert<BranchAssert, Branch> {
+	public BranchAssert(Branch actual) {
 		super(actual, BranchAssert.class);
 	}
 
@@ -71,7 +71,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            branch to match
 	 * @return fluent API
 	 */
-	public BranchAssert matches(HibBranch branch) {
+	public BranchAssert matches(Branch branch) {
 		if (branch == null) {
 			assertThat(actual).as(descriptionText()).isNull();
 		} else {
@@ -89,11 +89,11 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            branch to match
 	 * @return fluent API
 	 */
-	public BranchAssert hasNext(HibBranch branch) {
+	public BranchAssert hasNext(Branch branch) {
 		if (branch == null) {
 			assertThat(actual.getNextBranches()).as(descriptionText() + " next branches").isEmpty();
 		} else {
-			List<HibBranch> nextBranches = new ArrayList<>(actual.getNextBranches());
+			List<Branch> nextBranches = new ArrayList<>(actual.getNextBranches());
 			assertThat(nextBranches).as(descriptionText() + " next branch").contains(branch);
 		}
 		return this;
@@ -106,7 +106,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            branch to match
 	 * @return fluent API
 	 */
-	public BranchAssert hasPrevious(HibBranch branch) {
+	public BranchAssert hasPrevious(Branch branch) {
 		assertThat(actual.getPreviousBranch()).as(descriptionText() + " previous branch").matches(branch);
 		return this;
 	}
@@ -118,7 +118,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasSchemaVersion(HibSchemaVersion version) {
+	public BranchAssert hasSchemaVersion(SchemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
 		return this;
 	}
@@ -130,7 +130,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotSchemaVersion(HibSchemaVersion version) {
+	public BranchAssert hasNotSchemaVersion(SchemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
 		return this;
 	}
@@ -142,7 +142,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema
 	 * @return fluent API
 	 */
-	public BranchAssert hasSchema(HibSchema schemaContainer) {
+	public BranchAssert hasSchema(Schema schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isTrue();
 		return this;
 	}
@@ -154,7 +154,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotSchema(HibSchema schemaContainer) {
+	public BranchAssert hasNotSchema(Schema schemaContainer) {
 		assertThat(actual.contains(schemaContainer)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
@@ -166,7 +166,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            microschema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasMicroschemaVersion(HibMicroschemaVersion version) {
+	public BranchAssert hasMicroschemaVersion(MicroschemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isTrue();
 		return this;
 	}
@@ -178,7 +178,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            schema version
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotMicroschemaVersion(HibMicroschemaVersion version) {
+	public BranchAssert hasNotMicroschemaVersion(MicroschemaVersion version) {
 		assertThat(actual.contains(version)).as(descriptionText() + " has version").isFalse();
 		return this;
 	}
@@ -190,7 +190,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            microschema
 	 * @return fluent API
 	 */
-	public BranchAssert hasMicroschema(HibMicroschema microschema) {
+	public BranchAssert hasMicroschema(Microschema microschema) {
 		assertThat(actual.contains(microschema)).as(descriptionText() + " has schema").isTrue();
 		return this;
 	}
@@ -202,7 +202,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 *            microschema
 	 * @return fluent API
 	 */
-	public BranchAssert hasNotMicroschema(HibMicroschema microschema) {
+	public BranchAssert hasNotMicroschema(Microschema microschema) {
 		assertThat(actual.contains(microschema)).as(descriptionText() + " has schema").isFalse();
 		return this;
 	}
@@ -213,7 +213,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert isTagged(String... tags) {
-		Set<String> tagNames = actual.getTags().stream().map(HibTag::getName).collect(Collectors.toSet());
+		Set<String> tagNames = actual.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
 		assertThat(tagNames).as(descriptionText() + " tags").contains(tags);
 		return this;
 	}
@@ -224,7 +224,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert isNotTagged(String... tags) {
-		Set<String> tagNames = actual.getTags().stream().map(HibTag::getName).collect(Collectors.toSet());
+		Set<String> tagNames = actual.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
 		assertThat(tagNames).as(descriptionText() + " tags").doesNotContain(tags);
 		return this;
 	}
@@ -235,7 +235,7 @@ public class BranchAssert extends AbstractAssert<BranchAssert, HibBranch> {
 	 * @return fluent API
 	 */
 	public BranchAssert isOnlyTagged(String... tags) {
-		Set<String> tagNames = actual.getTags().stream().map(HibTag::getName).collect(Collectors.toSet());
+		Set<String> tagNames = actual.getTags().stream().map(Tag::getName).collect(Collectors.toSet());
 		assertThat(tagNames).as(descriptionText() + " tags").containsOnly(tags);
 		return this;
 	}

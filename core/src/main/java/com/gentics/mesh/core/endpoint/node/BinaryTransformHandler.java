@@ -17,21 +17,21 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -42,7 +42,7 @@ import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
@@ -120,12 +120,12 @@ public class BinaryTransformHandler extends AbstractHandler {
 		String languageTag = transformation.getLanguage();
 
 		// Load needed elements
-		HibNode node = db.tx(tx -> {
+		Node node = db.tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
-			HibNode n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+			Project project = tx.getProject(ac);
+			Node n = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+			Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
@@ -133,7 +133,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 
 		db.tx(tx -> {
-			HibNodeFieldContainer fieldContainer = loadTargetedContent(tx, node, languageTag, fieldName);
+			NodeFieldContainer fieldContainer = loadTargetedContent(tx, node, languageTag, fieldName);
 			if (fieldContainer == null) {
 				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
@@ -142,13 +142,13 @@ public class BinaryTransformHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
 			if ((fieldSchema instanceof BinaryFieldSchema)) {
-				HibBinaryField field = fieldContainer.getBinary(fieldName);
+				BinaryField field = fieldContainer.getBinary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
 				handleTransformImage(rc, uuid, fieldName);
 			} else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
-				S3HibBinaryField field = fieldContainer.getS3Binary(fieldName);
+				S3BinaryField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}
@@ -194,21 +194,21 @@ public class BinaryTransformHandler extends AbstractHandler {
 			parameters.setResizeMode(ResizeMode.SMART);
 		}
 		// Lookup the s3 binary and set the focal point parameters
-		S3HibBinaryField s3binaryField = db.tx(tx -> {
+		S3BinaryField s3binaryField = db.tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+			Project project = tx.getProject(ac);
+			Node node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-			HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+			Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
 
-			HibNodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
-			S3HibBinaryField field = loadS3BinaryField(container, fieldName);
+			NodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
+			S3BinaryField field = loadS3BinaryField(container, fieldName);
 			// Use the focal point which is stored along with the s3 binary field if no custom point was included in the query parameters.
 			// Otherwise the query parameter focal point will be used and thus override the stored focal point.
-			FocalPoint focalPoint = field.getImageFocalPoint();
+			FocalPointModel focalPoint = field.getImageFocalPoint();
 			if (!parameters.hasFocalPoint() && focalPoint != null) {
 				parameters.setFocalPoint(focalPoint);
 			}
@@ -281,19 +281,19 @@ public class BinaryTransformHandler extends AbstractHandler {
 		// Read and resize the original image and store the result in the filesystem
 		Single<TransformationResult> obsTransformation = db.tx(tx -> {
 				NodeDao nodeDao = tx.nodeDao();
-				HibProject project = tx.getProject(ac);
-				HibNode node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				Project project = tx.getProject(ac);
+				Node node = nodeDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
 
-				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+				Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 				}
 
-				HibNodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
-				HibBinaryField field = loadBinaryField(container, fieldName);
+				NodeFieldContainer container = loadTargetedContent(tx, node, languageTag, fieldName);
+				BinaryField field = loadBinaryField(container, fieldName);
 				// Use the focal point which is stored along with the binary field if no custom point was included in the query parameters.
 				// Otherwise the query parameter focal point will be used and thus override the stored focal point.
-				FocalPoint focalPoint = field.getImageFocalPoint();
+				FocalPointModel focalPoint = field.getImageFocalPoint();
 				if (!parameters.hasFocalPoint() && focalPoint != null) {
 					parameters.setFocalPoint(focalPoint);
 				}
@@ -318,7 +318,7 @@ public class BinaryTransformHandler extends AbstractHandler {
 		obsTransformation.flatMap(r -> {
 			db.tx(tx -> {
 				String hash = r.getHash();
-				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
+				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
 
 				// Set the info that the store operation is needed
 				if (binary == null) {
@@ -363,29 +363,29 @@ public class BinaryTransformHandler extends AbstractHandler {
 		return utils.eventAction((tx, batch) -> {
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 			NodeDao nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
+			Project project = tx.getProject(ac);
 
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(tx, node, languageTag, fieldName);
-			HibBranch branch = tx.getBranch(ac);
+			Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+			NodeFieldContainer latestDraftVersion = loadTargetedContent(tx, node, languageTag, fieldName);
+			Branch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
-			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
+			NodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion, true);
 
 			// TODO Add conflict checking
 
 			// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
-			S3HibBinary s3HibBinary = s3binaries.create(s3UploadContext.getS3BinaryUuid(), s3UploadContext.getS3ObjectKey(), s3UploadContext.getFileName()).runInExistingTx(tx);
+			S3Binary s3HibBinary = s3binaries.create(s3UploadContext.getS3BinaryUuid(), s3UploadContext.getS3ObjectKey(), s3UploadContext.getFileName()).runInExistingTx(tx);
 
 			// Now create the binary field in which we store the information about the file
-			S3HibBinaryField oldField = (S3HibBinaryField) contentDao.detachField(newDraftVersion.getS3Binary(fieldName));
-			S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
+			S3BinaryField oldField = (S3BinaryField) contentDao.detachField(newDraftVersion.getS3Binary(fieldName));
+			S3BinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 			if (oldField != null) {
 				oldField.copyTo(field);
 				newDraftVersion.removeField(oldField);
 			}
-			S3HibBinary currentS3Binary = field.getBinary();
+			S3Binary currentS3Binary = field.getBinary();
 
 			// TODO should we rename the image, if the extension is wrong?
 			if (nonNull(result)) {
@@ -424,23 +424,23 @@ public class BinaryTransformHandler extends AbstractHandler {
 		String languageTag, String fieldName, ImageManipulationParameters parameters) {
 		return utils.eventAction((tx, batch) -> {
 			NodeDao nodeDao = tx.nodeDao();
-			HibProject project = tx.getProject(ac);
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+			Project project = tx.getProject(ac);
+			Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
 
-			HibNodeFieldContainer latestDraftVersion = loadTargetedContent(tx, node, languageTag, fieldName);
+			NodeFieldContainer latestDraftVersion = loadTargetedContent(tx, node, languageTag, fieldName);
 
-			HibBranch branch = tx.getBranch(ac);
+			Branch branch = tx.getBranch(ac);
 
 			// Create a new node version field container to store the upload
-			HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
+			NodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 				latestDraftVersion, true);
 
 			// TODO Add conflict checking
 
 			// Now that the binary data has been resized and inspected we can use this information to create a new binary and store it.
 			String hash = result.getHash();
-			HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
+			Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
 			// Check whether the binary was already stored.
 			if (binary == null) {
 				// Open the file again since we already read from it. We need to read it again in order to store it in the binary storage.
@@ -457,13 +457,13 @@ public class BinaryTransformHandler extends AbstractHandler {
 			}
 
 			// Now create the binary field in which we store the information about the file
-			HibBinaryField oldField = (HibBinaryField) contentDao.detachField( newDraftVersion.getBinary(fieldName));
-			HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
+			BinaryField oldField = (BinaryField) contentDao.detachField( newDraftVersion.getBinary(fieldName));
+			BinaryField field = newDraftVersion.createBinary(fieldName, binary);
 			if (oldField != null) {
 				oldField.copyTo(field);
 				newDraftVersion.removeField(oldField);
 			}
-			HibBinary currentBinary = field.getBinary();
+			Binary currentBinary = field.getBinary();
 			currentBinary.setSize(result.getSize());
 			field.setMimeType(result.getMimeType());
 			// TODO should we rename the image, if the extension is wrong?
@@ -491,9 +491,9 @@ public class BinaryTransformHandler extends AbstractHandler {
 		});
 	}
 
-	private HibNodeFieldContainer loadTargetedContent(Tx tx, HibNode node, String languageTag, String fieldName) {
+	private NodeFieldContainer loadTargetedContent(Tx tx, Node node, String languageTag, String fieldName) {
 		ContentDao contentDao = tx.contentDao();
-		HibNodeFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
+		NodeFieldContainer latestDraftVersion = contentDao.getLatestDraftFieldContainer(node, languageTag);
 		if (latestDraftVersion == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
@@ -508,8 +508,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 		return latestDraftVersion;
 	}
 
-	private HibBinaryField loadBinaryField(HibNodeFieldContainer container, String fieldName) {
-		HibBinaryField initialField = container.getBinary(fieldName);
+	private BinaryField loadBinaryField(NodeFieldContainer container, String fieldName) {
+		BinaryField initialField = container.getBinary(fieldName);
 		if (initialField == null) {
 			throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 		}
@@ -521,8 +521,8 @@ public class BinaryTransformHandler extends AbstractHandler {
 	}
 
 
-	private S3HibBinaryField loadS3BinaryField(HibNodeFieldContainer container, String fieldName) {
-		S3HibBinaryField initialField = container.getS3Binary(fieldName);
+	private S3BinaryField loadS3BinaryField(NodeFieldContainer container, String fieldName) {
+		S3BinaryField initialField = container.getS3Binary(fieldName);
 		if (initialField == null) {
 			throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 		}

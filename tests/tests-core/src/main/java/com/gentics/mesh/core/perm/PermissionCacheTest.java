@@ -15,11 +15,11 @@ import com.gentics.mesh.cache.PermissionCacheImpl;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -48,8 +48,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testChangePermission() {
 		// revoke delete and update permissions
 		db().tx(tx -> {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.roleDao().revokePermissions(role, project, InternalPermission.DELETE_PERM, InternalPermission.UPDATE_PERM);
 		});
 
@@ -57,8 +57,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 
 		// grant update permission
 		db().tx(tx -> {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.roleDao().grantPermissions(role, project, InternalPermission.UPDATE_PERM);
 		});
 
@@ -73,8 +73,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testUserGroupAssignment() {
 		// remove user from group
 		db().tx(tx -> {
-			HibGroup group = tx.groupDao().findByUuid(groupUuid());
-			HibUser user = tx.userDao().findByUuid(userUuid());
+			Group group = tx.groupDao().findByUuid(groupUuid());
+			User user = tx.userDao().findByUuid(userUuid());
 			tx.groupDao().removeUser(group, user);
 		});
 
@@ -82,8 +82,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 
 		// add user to group
 		db().tx(tx -> {
-			HibGroup group = tx.groupDao().findByUuid(groupUuid());
-			HibUser user = tx.userDao().findByUuid(userUuid());
+			Group group = tx.groupDao().findByUuid(groupUuid());
+			User user = tx.userDao().findByUuid(userUuid());
 			tx.groupDao().addUser(group, user);
 		});
 
@@ -98,8 +98,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testGroupRoleAssignment() {
 		// remove role from group
 		db().tx(tx -> {
-			HibGroup group = tx.groupDao().findByUuid(groupUuid());
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Group group = tx.groupDao().findByUuid(groupUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.groupDao().removeRole(group, role);
 		});
 
@@ -107,8 +107,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 
 		// add role to group
 		db().tx(tx -> {
-			HibGroup group = tx.groupDao().findByUuid(groupUuid());
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Group group = tx.groupDao().findByUuid(groupUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.groupDao().addRole(group, role);
 		});
 
@@ -123,7 +123,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testDeleteRole() {
 		// delete the role
 		db().tx(tx -> {
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.roleDao().delete(role, new DummyBulkActionContext());
 		});
 
@@ -137,7 +137,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testDeleteGroup() {
 		// delete the group
 		db().tx(tx -> {
-			HibGroup group = tx.groupDao().findByUuid(groupUuid());
+			Group group = tx.groupDao().findByUuid(groupUuid());
 			tx.groupDao().delete(group, new DummyBulkActionContext());
 		});
 
@@ -154,7 +154,7 @@ public class PermissionCacheTest extends AbstractMeshTest {
 		});
 		assertThat(getPermissionCacheSize()).as("Cache size before deleting user").isEqualTo(1);
 		db().tx(tx -> {
-			HibUser user = tx.userDao().findByUuid(userUuid);
+			User user = tx.userDao().findByUuid(userUuid);
 			tx.userDao().delete(user, new DummyBulkActionContext());
 		});
 		assertThat(getPermissionCacheSize()).as("Cache size after deleting user").isEqualTo(0);
@@ -167,8 +167,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testGrantAdmin() {
 		// revoke all permissions from the group and revoke admin flag from user
 		db().tx(tx -> {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.roleDao().revokePermissions(role, project, InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
 					InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 		});
@@ -181,8 +181,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 
 		// grant the admin flag by using the method UserDao.update, to check whether this clears the permission cache
 		db().tx(tx -> {
-			HibUser user = tx.userDao().findByUuid(userUuid());
-			HibUser admin = tx.userDao().findByUsername("admin");
+			User user = tx.userDao().findByUuid(userUuid());
+			User admin = tx.userDao().findByUsername("admin");
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setAdmin(true);
 			InternalActionContext ac = getMockedInternalActionContext("", admin, project(), request);
@@ -199,8 +199,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	public void testRevokeAdmin() {
 		// revoke all permissions from the group and grant admin flag from user
 		db().tx(tx -> {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
-			HibRole role = tx.roleDao().findByUuid(roleUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
+			Role role = tx.roleDao().findByUuid(roleUuid());
 			tx.roleDao().revokePermissions(role, project, InternalPermission.CREATE_PERM, InternalPermission.READ_PERM,
 					InternalPermission.UPDATE_PERM, InternalPermission.DELETE_PERM);
 		});
@@ -213,8 +213,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 
 		// revoke the admin flag by using the method UserDao.update, to check whether this clears the permission cache
 		db().tx(tx -> {
-			HibUser user = tx.userDao().findByUuid(userUuid());
-			HibUser admin = tx.userDao().findByUsername("admin");
+			User user = tx.userDao().findByUuid(userUuid());
+			User admin = tx.userDao().findByUsername("admin");
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setAdmin(false);
 			InternalActionContext ac = getMockedInternalActionContext("", admin, project(), request);
@@ -269,8 +269,8 @@ public class PermissionCacheTest extends AbstractMeshTest {
 	 */
 	protected Set<InternalPermission> getPermissionsOnProject() {
 		return db().tx(tx -> {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
-			HibUser user = tx.userDao().findByUuid(userUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
+			User user = tx.userDao().findByUuid(userUuid());
 			return tx.userDao().getPermissions(user, project);
 		});
 	}

@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.dao;
 import java.util.Optional;
 
 import com.gentics.mesh.cache.NameCache;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.event.MeshEventModel;
  * 
  * @param <T>
  */
-public interface PersistingNamedEntityDao<T extends HibNamedElement> {
+public interface PersistingNamedEntityDao<T extends NamedElement> {
 
 	/**
 	 * Get the named entity cache, if supported.

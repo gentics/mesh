@@ -13,49 +13,49 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
+import com.gentics.mesh.core.rest.node.field.BooleanFieldModel;
+import com.gentics.mesh.core.rest.node.field.DateFieldModel;
+import com.gentics.mesh.core.rest.node.field.HtmlFieldModel;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
+import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.S3BinaryField;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
-import com.gentics.mesh.core.rest.node.field.binary.Location;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.NumberFieldModel;
+import com.gentics.mesh.core.rest.node.field.S3BinaryFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadataModel;
+import com.gentics.mesh.core.rest.node.field.binary.LocationModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataModel;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -73,15 +73,15 @@ public class RestUpdaters {
 	private static Logger log = LoggerFactory.getLogger(RestUpdaters.class);
 
 	public static FieldUpdater STRING_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		StringField stringField = fieldMap.getStringField(fieldKey);
-		HibStringField graphStringField = container.getString(fieldKey);
+		StringFieldModel stringField = fieldMap.getStringField(fieldKey);
+		StringField graphStringField = container.getString(fieldKey);
 		boolean isStringFieldSetToNull = fieldMap.hasField(fieldKey) && (stringField == null || stringField.getString() == null);
-		HibField.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = stringField == null || stringField.getString() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -113,15 +113,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater STRING_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibStringFieldList graphStringList = container.getStringList(fieldKey);
+		StringFieldList graphStringList = container.getStringList(fieldKey);
 		StringFieldListImpl stringList = fieldMap.getStringFieldList(fieldKey);
 		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
-		HibField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = stringList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphStringList, restIsNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphStringList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -151,15 +151,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater NUMBER_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibNumberField numberGraphField = container.getNumber(fieldKey);
-		NumberField numberField = fieldMap.getNumberField(fieldKey);
+		NumberField numberGraphField = container.getNumber(fieldKey);
+		NumberFieldModel numberField = fieldMap.getNumberField(fieldKey);
 		boolean isNumberFieldSetToNull = fieldMap.hasField(fieldKey) && (numberField == null || numberField.getNumber() == null);
-		HibField.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = numberField == null || numberField.getNumber() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -184,14 +184,14 @@ public class RestUpdaters {
 	public static FieldUpdater NUMBER_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
 		NumberFieldListImpl numberList = fieldMap.getNumberFieldList(fieldKey);
 
-		HibNumberFieldList graphNumberFieldList = container.getNumberList(fieldKey);
+		NumberFieldList graphNumberFieldList = container.getNumberList(fieldKey);
 		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
-		HibField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = numberList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -221,15 +221,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater DATE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibDateField dateGraphField = container.getDate(fieldKey);
-		DateField dateField = fieldMap.getDateField(fieldKey);
+		DateField dateGraphField = container.getDate(fieldKey);
+		DateFieldModel dateField = fieldMap.getDateField(fieldKey);
 		boolean isDateFieldSetToNull = fieldMap.hasField(fieldKey) && (dateField == null || dateField.getDate() == null);
-		HibField.failOnDeletionOfRequiredField(dateGraphField, isDateFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(dateGraphField, isDateFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = dateField == null || dateField.getDate() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - The field was explicitly set to null and is currently set in the graph so we can remove the field from the given container
@@ -252,15 +252,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater DATE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibDateFieldList graphDateFieldList = container.getDateList(fieldKey);
+		DateFieldList graphDateFieldList = container.getDateList(fieldKey);
 		DateFieldListImpl dateList = fieldMap.getDateFieldList(fieldKey);
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
-		HibField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = dateList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -290,15 +290,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater BOOLEAN_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibBooleanField booleanGraphField = container.getBoolean(fieldKey);
-		BooleanField booleanField = fieldMap.getBooleanField(fieldKey);
+		BooleanField booleanGraphField = container.getBoolean(fieldKey);
+		BooleanFieldModel booleanField = fieldMap.getBooleanField(fieldKey);
 		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
-		HibField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = booleanField == null || booleanField.getValue() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle deletion
@@ -321,15 +321,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater BOOLEAN_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibBooleanFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
+		BooleanFieldList graphBooleanFieldList = container.getBooleanList(fieldKey);
 		BooleanFieldListImpl booleanList = fieldMap.getBooleanFieldList(fieldKey);
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
-		HibField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = booleanList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -360,15 +360,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater HTML_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HtmlField htmlField = fieldMap.getHtmlField(fieldKey);
-		HibHtmlField htmlGraphField = container.getHtml(fieldKey);
+		HtmlFieldModel htmlField = fieldMap.getHtmlField(fieldKey);
+		HtmlField htmlGraphField = container.getHtml(fieldKey);
 		boolean isHtmlFieldSetToNull = fieldMap.hasField(fieldKey) && (htmlField == null || htmlField.getHTML() == null);
-		HibField.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean isHtmlFieldNull = htmlField == null || htmlField.getHTML() == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - The field was explicitly set to null and is currently set within the graph thus we must remove it.
@@ -391,15 +391,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater HTML_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibHtmlFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
+		HtmlFieldList graphHtmlFieldList = container.getHTMLList(fieldKey);
 		HtmlFieldListImpl htmlList = fieldMap.getHtmlFieldList(fieldKey);
 		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
-		HibField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = htmlList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -428,16 +428,16 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater MICRONODE_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibMicronodeField micronodeGraphField = container.getMicronode(fieldKey);
+		MicronodeField micronodeGraphField = container.getMicronode(fieldKey);
 		MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) fieldSchema;
-		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
+		MicronodeFieldModel micronodeRestField = fieldMap.getMicronodeField(fieldKey);
 		boolean isMicronodeFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeRestField == null;
-		HibField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = micronodeRestField == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
@@ -458,10 +458,10 @@ public class RestUpdaters {
 
 		Tx tx = Tx.get();
 		MicroschemaDao microschemaDao = tx.microschemaDao();
-		HibMicroschemaVersion microschemaVersion = microschemaDao.fromReference(tx.getProject(ac), microschemaReference,
+		MicroschemaVersion microschemaVersion = microschemaDao.fromReference(tx.getProject(ac), microschemaReference,
 				tx.getBranch(ac));
 
-		HibMicronode micronode = null;
+		Micronode micronode = null;
 
 		// check whether microschema is allowed
 		if (!ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
@@ -477,15 +477,15 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater MICRONODE_LIST_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibMicronodeFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
-		MicronodeFieldList micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
+		MicronodeFieldList micronodeGraphFieldList = container.getMicronodeList(fieldKey);
+		MicronodeFieldListModel micronodeList = fieldMap.getMicronodeFieldList(fieldKey);
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
-		HibField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = micronodeList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -513,15 +513,15 @@ public class RestUpdaters {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 
-		HibNodeField nodeFieldReference = container.getNode(fieldKey);
-		NodeField nodeField = fieldMap.getNodeField(fieldKey);
+		NodeField nodeFieldReference = container.getNode(fieldKey);
+		NodeFieldModel nodeField = fieldMap.getNodeField(fieldKey);
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
-		HibField.failOnDeletionOfRequiredField(nodeFieldReference, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(nodeFieldReference, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = nodeField == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(nodeFieldReference, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(nodeFieldReference, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
@@ -541,7 +541,7 @@ public class RestUpdaters {
 		}
 
 		// Handle Update / Create
-		HibNode node = nodeDao.findByUuid(tx.getProject(ac), nodeField.getUuid());
+		Node node = nodeDao.findByUuid(tx.getProject(ac), nodeField.getUuid());
 		if (node == null) {
 			// TODO We want to delete the field when the field has been explicitly set to null
 			if (log.isDebugEnabled()) {
@@ -571,15 +571,15 @@ public class RestUpdaters {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 
-		NodeFieldList nodeList = fieldMap.getNodeFieldList(fieldKey);
-		HibNodeFieldList graphNodeFieldList = container.getNodeList(fieldKey);
+		NodeFieldListModel nodeList = fieldMap.getNodeFieldList(fieldKey);
+		NodeFieldList graphNodeFieldList = container.getNodeList(fieldKey);
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
-		HibField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = nodeList == null;
 
 		// Skip this check for no migrations
 		if (!ac.isMigrationContext()) {
-			HibField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
+			Field.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
 		}
 
 		// Handle Deletion
@@ -602,13 +602,13 @@ public class RestUpdaters {
 		graphNodeFieldList.removeAll();
 
 		// Handle Update
-		HibProject project = tx.getProject(ac);
+		Project project = tx.getProject(ac);
 		AtomicInteger integer = new AtomicInteger();
 		for (NodeFieldListItem item : nodeList.getItems()) {
 			if (item == null) {
 				throw error(BAD_REQUEST, "field_list_error_null_not_allowed", fieldKey);
 			}
-			HibNode node = nodeDao.findByUuid(project, item.getUuid());
+			Node node = nodeDao.findByUuid(project, item.getUuid());
 			if (node == null) {
 				throw error(BAD_REQUEST, "node_list_item_not_found", item.getUuid());
 			}
@@ -623,7 +623,7 @@ public class RestUpdaters {
 			if (log.isDebugEnabled()) {
 				log.debug("Adding item {" + item.getUuid() + "} at position {" + pos + "}");
 			}
-			HibNodeField nodeItem = graphNodeFieldList.createNode(pos, node);
+			NodeField nodeItem = graphNodeFieldList.createNode(pos, node);
 			if (nodeItem != null) {
 				graphNodeFieldList.addItem(nodeItem);
 			} else {
@@ -633,11 +633,11 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		HibBinaryField graphBinaryField = container.getBinary(fieldKey);
-		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
+		BinaryField graphBinaryField = container.getBinary(fieldKey);
+		BinaryFieldModel binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
 
-		HibField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
 
 		boolean restIsNull = binaryField == null;
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
@@ -658,7 +658,7 @@ public class RestUpdaters {
 		// in fact initially being removed from the container.
 		String hash = binaryField.getSha512sum();
 		if (graphBinaryField == null && hash != null) {
-			HibBinary binary = Tx.get().binaries().findByHash(hash).runInExistingTx(Tx.get());
+			Binary binary = Tx.get().binaries().findByHash(hash).runInExistingTx(Tx.get());
 			if (binary != null) {
 				graphBinaryField = container.createBinary(fieldKey, binary);
 			} else {
@@ -677,9 +677,9 @@ public class RestUpdaters {
 		}
 
 		// Handle Update - Focal point
-		FocalPoint newFocalPoint = binaryField.getFocalPoint();
+		FocalPointModel newFocalPoint = binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			HibBinary binary = graphBinaryField.getBinary();
+			Binary binary = graphBinaryField.getBinary();
 			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
@@ -708,13 +708,13 @@ public class RestUpdaters {
 		}
 
 		// Handle Update - Metadata
-		BinaryMetadata metaData = binaryField.getMetadata();
+		BinaryMetadataModel metaData = binaryField.getMetadata();
 		if (metaData != null) {
 			graphBinaryField.clearMetadata();
 			for (Map.Entry<String, String> entry : metaData.getMap().entrySet()) {
 				graphBinaryField.setMetadata(entry.getKey(), entry.getValue());
 			}
-			Location loc = metaData.getLocation();
+			LocationModel loc = metaData.getLocation();
 			if (loc != null) {
 				graphBinaryField.setLocation(loc);
 			}
@@ -737,11 +737,11 @@ public class RestUpdaters {
 	};
 
 	public static FieldUpdater S3_BINARY_UPDATER = (container, ac, fieldMap, fieldKey, fieldSchema, schema) -> {
-		S3HibBinaryField graphS3BinaryField = container.getS3Binary(fieldKey);
-		S3BinaryField s3binaryField = fieldMap.getS3BinaryField(fieldKey);
+		S3BinaryField graphS3BinaryField = container.getS3Binary(fieldKey);
+		S3BinaryFieldModel s3binaryField = fieldMap.getS3BinaryField(fieldKey);
 		boolean isS3BinaryFieldSetToNull = fieldMap.hasField(fieldKey) && s3binaryField == null && graphS3BinaryField != null;
 
-		HibField.failOnDeletionOfRequiredField(graphS3BinaryField, isS3BinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+		Field.failOnDeletionOfRequiredField(graphS3BinaryField, isS3BinaryFieldSetToNull, fieldSchema, fieldKey, schema);
 
 		boolean restIsNull = s3binaryField == null;
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
@@ -762,7 +762,7 @@ public class RestUpdaters {
 		// in fact initially being removed from the container.
 		String s3ObjectKey = s3binaryField.getS3ObjectKey();
 		if (graphS3BinaryField == null && s3ObjectKey != null) {
-			S3HibBinary binary = Tx.get().s3binaries().findByS3ObjectKey(s3ObjectKey).runInExistingTx(Tx.get());
+			S3Binary binary = Tx.get().s3binaries().findByS3ObjectKey(s3ObjectKey).runInExistingTx(Tx.get());
 			if (binary != null) {
 				graphS3BinaryField = container.createS3Binary(fieldKey, binary);
 			} else {
@@ -781,9 +781,9 @@ public class RestUpdaters {
 		}
 
 		// Handle Update - Focal point
-		FocalPoint newFocalPoint = s3binaryField.getFocalPoint();
+		FocalPointModel newFocalPoint = s3binaryField.getFocalPoint();
 		if (newFocalPoint != null) {
-			S3HibBinary binary = graphS3BinaryField.getBinary();
+			S3Binary binary = graphS3BinaryField.getBinary();
 			Point imageSize = binary.getImageSize();
 			if (imageSize != null) {
 				if (!newFocalPoint.convertToAbsolutePoint(imageSize).isWithinBoundsOf(imageSize)) {
@@ -812,13 +812,13 @@ public class RestUpdaters {
 		}
 
 		// Handle Update - Metadata
-		S3BinaryMetadata metaData = s3binaryField.getMetadata();
+		S3BinaryMetadataModel metaData = s3binaryField.getMetadata();
 		if (metaData != null) {
 			graphS3BinaryField.clearMetadata();
 			for (Map.Entry<String, String> entry : metaData.getMap().entrySet()) {
 				graphS3BinaryField.setMetadata(entry.getKey(), entry.getValue());
 			}
-			Location loc = metaData.getLocation();
+			LocationModel loc = metaData.getLocation();
 			if (loc != null) {
 				graphS3BinaryField.setLocation(loc);
 			}

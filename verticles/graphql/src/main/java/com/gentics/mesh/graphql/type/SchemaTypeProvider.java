@@ -18,13 +18,13 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -69,8 +69,8 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newFieldDefinition().name("name").type(GraphQLString).dataFetcher((env) -> {
 			Object source = env.getSource();
-			if (source instanceof HibNamedElement) {
-				return ((HibNamedElement) source).getName();
+			if (source instanceof NamedElement) {
+				return ((NamedElement) source).getName();
 			}
 			return null;
 		}));
@@ -156,12 +156,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		return schemaType.build();
 	}
 
-	private HibSchemaVersion getSchemaContainerVersion(DataFetchingEnvironment env) {
+	private SchemaVersion getSchemaContainerVersion(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof HibSchemaVersion) {
-			return (HibSchemaVersion) source;
-		} else if (source instanceof HibSchema) {
-			return ((HibSchema) source).getLatestVersion();
+		if (source instanceof SchemaVersion) {
+			return (SchemaVersion) source;
+		} else if (source instanceof Schema) {
+			return ((Schema) source).getLatestVersion();
 		} else {
 			throw new RuntimeException("Invalid type {" + source + "}.");
 		}
@@ -169,13 +169,13 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	private SchemaVersionModel loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof HibSchema) {
-			HibSchema schema = env.getSource();
+		if (source instanceof Schema) {
+			Schema schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaModelImpl.class);
 			return model;
 		}
-		if (source instanceof HibSchemaVersion) {
-			HibSchemaVersion schema = env.getSource();
+		if (source instanceof SchemaVersion) {
+			SchemaVersion schema = env.getSource();
 			SchemaVersionModel model = JsonUtil.readValue(schema.getJson(), SchemaModelImpl.class);
 			return model;
 		}

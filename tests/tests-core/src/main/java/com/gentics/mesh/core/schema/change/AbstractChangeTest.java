@@ -4,9 +4,9 @@ import java.io.IOException;
 
 import com.gentics.mesh.core.data.dao.PersistingContainerDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
@@ -32,13 +32,13 @@ public abstract class AbstractChangeTest extends AbstractMeshTest {
 	abstract public void testFields() throws IOException;
 
 	/**
-	 * Assert that the {@link HibSchemaChange#apply(com.gentics.mesh.core.rest.schema.FieldSchemaContainer)} method is working as expected. The supplied schema
+	 * Assert that the {@link SchemaChange#apply(com.gentics.mesh.core.rest.schema.FieldSchemaContainer)} method is working as expected. The supplied schema
 	 * container schema must be correctly mutated.
 	 */
 	abstract public void testApply();
 
 	/**
-	 * Assert that the {@link HibSchemaChange#updateFromRest(com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel)} method will correctly populate the graph
+	 * Assert that the {@link SchemaChange#updateFromRest(com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel)} method will correctly populate the graph
 	 * object.
 	 * @throws IOException 
 	 */
@@ -58,8 +58,8 @@ public abstract class AbstractChangeTest extends AbstractMeshTest {
 				R extends FieldSchemaContainer, 
 				RM extends FieldSchemaContainerVersion, 
 				RE extends NameUuidReference<RE>, 
-				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
+				SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
+				SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>
 			> SCV createVersion(PersistingContainerDao<R, RM, RE, SC, SCV, ?> dao) {
 		SC container = dao.createPersisted(null, s -> {
 			s.setName(s.getUuid());
@@ -73,9 +73,9 @@ public abstract class AbstractChangeTest extends AbstractMeshTest {
 				R extends FieldSchemaContainer, 
 				RM extends FieldSchemaContainerVersion, 
 				RE extends NameUuidReference<RE>, 
-				SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
-				SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
-				T extends HibSchemaChange<?>
+				SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
+				SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>, 
+				T extends SchemaChange<?>
 		> T createChange(PersistingContainerDao<R, RM, RE, SC, SCV, ?> dao, SCV version, SchemaChangeOperation op) {
 		return (T) dao.createPersistedChange(version, op);
 	}

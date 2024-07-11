@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.graphql.javafilter;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_VERSION;
 
 import java.util.Arrays;
 import java.util.Collection;

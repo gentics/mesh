@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.TagDAOActions;
-import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tag.Tag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -16,7 +16,7 @@ import com.gentics.mesh.util.SearchWaitUtil;
  * Handler for tag index search operations.
  */
 @Singleton
-public class TagSearchHandler extends AbstractSearchHandler<HibTag, TagResponse> {
+public class TagSearchHandler extends AbstractSearchHandler<Tag, TagResponse> {
 
 	@Inject
 	public TagSearchHandler(Database db, SearchProvider searchProvider, TagIndexHandlerImpl indexHandler, MeshOptions options, TagDAOActions actions, SearchWaitUtil waitUtil) {

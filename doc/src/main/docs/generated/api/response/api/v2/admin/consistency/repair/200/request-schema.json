@@ -27,7 +27,7 @@
       "description" : "List of found inconsistencies.",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:InconsistencyInfo",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:consistency:InconsistencyInfoModel",
         "properties" : {
           "description" : {
             "type" : "string",

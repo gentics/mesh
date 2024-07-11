@@ -15,9 +15,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
@@ -30,39 +30,39 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "schema")
 @ElementTypeKey(ElementType.SCHEMA)
-public class HibSchemaImpl extends AbstractHibUserTrackedElement<SchemaResponse> implements HibSchema, Serializable {
+public class HibSchemaImpl extends AbstractHibUserTrackedElement<SchemaResponse> implements Schema, Serializable {
 
 	private static final long serialVersionUID = 8334546969092825031L;
 
 	@ManyToMany(mappedBy = "schemas", targetEntity = HibProjectImpl.class, fetch = FetchType.LAZY)
-	private Set<HibProject> projects = new HashSet<>();
+	private Set<Project> projects = new HashSet<>();
 
 	@OneToOne(targetEntity = HibSchemaVersionImpl.class)
-	private HibSchemaVersion latestVersion;
+	private SchemaVersion latestVersion;
 
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@OneToMany(mappedBy = "schema", targetEntity = HibSchemaVersionImpl.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private Set<HibSchemaVersion> versions = new HashSet<>();
+	private Set<SchemaVersion> versions = new HashSet<>();
 
 	@Override
-	public HibSchemaVersion getLatestVersion() {
+	public SchemaVersion getLatestVersion() {
 		return latestVersion;
 	}
 
 	@Override
-	public void setLatestVersion(HibSchemaVersion nextVersion) {
+	public void setLatestVersion(SchemaVersion nextVersion) {
 		this.latestVersion = nextVersion;
 	}
 
-	public Iterable<HibProject> getLinkedProjects() {
+	public Iterable<Project> getLinkedProjects() {
 		return Collections.unmodifiableSet(projects);
 	}
 
-	public Set<HibProject> getProjects() {
+	public Set<Project> getProjects() {
 		return projects;
 	}
 
-	public Set<HibSchemaVersion> getVersions() {
+	public Set<SchemaVersion> getVersions() {
 		return versions;
 	}
 }

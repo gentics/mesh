@@ -6,7 +6,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import org.hibernate.annotations.Cache;
@@ -21,7 +21,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "language")
 @ElementTypeKey(ElementType.LANGUAGE)
-public class HibLanguageImpl extends AbstractHibUserTrackedElement<LanguageResponse> implements HibLanguage, Serializable {
+public class HibLanguageImpl extends AbstractHibUserTrackedElement<LanguageResponse> implements Language, Serializable {
 
 	private static final long serialVersionUID = -8944598598650779513L;
 

@@ -16,8 +16,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.ProjectDAOActions;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -29,7 +29,7 @@ import com.gentics.mesh.parameter.ProjectPurgeParameters;
 /**
  * Handler for project specific requests.
  */
-public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectResponse> {
+public class ProjectCrudHandler extends AbstractCrudHandler<Project, ProjectResponse> {
 
 	private BootstrapInitializer boot;
 
@@ -48,7 +48,7 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 	 */
 	public void handleReadByName(InternalActionContext ac, String projectName) {
 		utils.syncTx(ac, tx -> {
-			HibProject project = tx.projectDao().findByName(ac, projectName, READ_PERM);
+			Project project = tx.projectDao().findByName(ac, projectName, READ_PERM);
 			return crudActions().transformToRestSync(tx, project, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -70,9 +70,9 @@ public class ProjectCrudHandler extends AbstractCrudHandler<HibProject, ProjectR
 				if (!ac.getUser().isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				HibUser user = ac.getUser();
+				User user = ac.getUser();
 				ProjectDao projectDao = tx.projectDao();
-				HibProject project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
+				Project project = projectDao.loadObjectByUuid(ac, uuid, DELETE_PERM);
 				if (before.isPresent()) {
 					tx.jobDao().enqueueVersionPurge(user, project, before.get());
 				} else {

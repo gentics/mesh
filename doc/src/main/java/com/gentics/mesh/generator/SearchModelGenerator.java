@@ -35,15 +35,15 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.db.TxData;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -197,43 +197,43 @@ public class SearchModelGenerator extends AbstractGenerator {
 
 	private void writeNodeDocumentExample(NodeDao nodeDao, ContentDao contentDao, TagDao tagDao, RoleDao roleDao) throws Exception {
 		String language = "de";
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibProject project = mockProject(user);
-		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
-		HibTag tagA = mockTag("green", user, tagFamily, project);
-		HibTag tagB = mockTag("red", user, tagFamily, project);
-		HibNode parentNode = mockNodeBasic("folder", user);
-		HibNode node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
+		User user = mockUser("joe1", "Joe", "Doe");
+		Project project = mockProject(user);
+		TagFamily tagFamily = mockTagFamily("colors", user, project);
+		Tag tagA = mockTag("green", user, tagFamily, project);
+		Tag tagB = mockTag("red", user, tagFamily, project);
+		Node parentNode = mockNodeBasic("folder", user);
+		Node node = mockNode(nodeDao, contentDao, tagDao, parentNode, project, user, language, tagA, tagB);
 		when(roleDao.getRolesWithPerm(Mockito.any(), Mockito.any())).thenReturn(new TraversalResult<>(Collections.emptyList()));
 
 		write(new NodeContainerTransformer(new HibernateMeshOptions(), roleDao).toDocument(contentDao.getLatestDraftFieldContainer(node, language), UUID_1, ContainerType.PUBLISHED), "node.search");
 	}
 
 	private void writeProjectDocumentExample() throws Exception {
-		HibUser creator = mockUser("admin", "Admin", "", null);
-		HibUser user = mockUser("joe1", "Joe", "Doe", creator);
-		HibProject project = mockProject(user);
+		User creator = mockUser("admin", "Admin", "", null);
+		User user = mockUser("joe1", "Joe", "Doe", creator);
+		Project project = mockProject(user);
 		write(new ProjectTransformer().toDocument(project), "project.search");
 	}
 
 	private void writeGroupDocumentExample() throws Exception {
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibGroup group = mockGroup("adminGroup", user);
+		User user = mockUser("joe1", "Joe", "Doe");
+		Group group = mockGroup("adminGroup", user);
 		write(new GroupTransformer().toDocument(group), "group.search");
 	}
 
 	private void writeRoleDocumentExample() throws Exception {
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibRole role = mockRole("adminRole", user);
+		User user = mockUser("joe1", "Joe", "Doe");
+		Role role = mockRole("adminRole", user);
 		write(new RoleTransformer().toDocument(role), "role.search");
 	}
 
 	private void writeUserDocumentExample(UserDao userDao) throws Exception {
-		HibUser creator = mockUser("admin", "Admin", "");
-		HibUser user = mockUser("joe1", "Joe", "Doe", creator);
-		HibGroup groupA = mockGroup("editors", user);
-		HibGroup groupB = mockGroup("superEditors", user);
-		Result<? extends HibGroup> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
+		User creator = mockUser("admin", "Admin", "");
+		User user = mockUser("joe1", "Joe", "Doe", creator);
+		Group groupA = mockGroup("editors", user);
+		Group groupB = mockGroup("superEditors", user);
+		Result<? extends Group> result = new TraversalResult<>(Arrays.asList(groupA, groupB));
 		when(userDao.getGroups(Mockito.any())).then(answer -> {
 			return result;
 		});
@@ -241,10 +241,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	private void writeTagFamilyDocumentExample(TagDao tagDao, TagFamilyDao tagFamilyDao) throws Exception {
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibProject project = mockProject(user);
-		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
-		List<HibTag> tagList = new ArrayList<>();
+		User user = mockUser("joe1", "Joe", "Doe");
+		Project project = mockProject(user);
+		TagFamily tagFamily = mockTagFamily("colors", user, project);
+		List<Tag> tagList = new ArrayList<>();
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
@@ -259,24 +259,24 @@ public class SearchModelGenerator extends AbstractGenerator {
 	}
 
 	private void writeSchemaDocumentExample() throws Exception {
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibSchema schemaContainer = mockSchemaContainer("content", user);
+		User user = mockUser("joe1", "Joe", "Doe");
+		Schema schemaContainer = mockSchemaContainer("content", user);
 
 		write(new SchemaTransformer().toDocument(schemaContainer), "schema.search");
 	}
 
 	private void writeMicroschemaDocumentExample() throws Exception {
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibMicroschema microschema = mockMicroschemaContainer("geolocation", user);
+		User user = mockUser("joe1", "Joe", "Doe");
+		Microschema microschema = mockMicroschemaContainer("geolocation", user);
 
 		write(new MicroschemaTransformer().toDocument(microschema), "microschema.search");
 	}
 
 	private void writeTagDocumentExample() throws Exception {
-		HibUser user = mockUser("joe1", "Joe", "Doe");
-		HibProject project = mockProject(user);
-		HibTagFamily tagFamily = mockTagFamily("colors", user, project);
-		HibTag tag = mockTag("red", user, tagFamily, project);
+		User user = mockUser("joe1", "Joe", "Doe");
+		Project project = mockProject(user);
+		TagFamily tagFamily = mockTagFamily("colors", user, project);
+		Tag tag = mockTag("red", user, tagFamily, project);
 		write(new TagTransformer().toDocument(tag), "tag.search");
 	}
 

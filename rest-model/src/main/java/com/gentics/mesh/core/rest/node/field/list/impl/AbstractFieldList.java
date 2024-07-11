@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
 import com.gentics.mesh.json.JsonUtil;
 
 /**
@@ -13,7 +13,7 @@ import com.gentics.mesh.json.JsonUtil;
  * @param <T>
  *            Field list value type
  */
-public abstract class AbstractFieldList<T> implements FieldList<T> {
+public abstract class AbstractFieldList<T> implements FieldListModel<T> {
 
 	private List<T> items = new ArrayList<>();
 
@@ -25,7 +25,7 @@ public abstract class AbstractFieldList<T> implements FieldList<T> {
 	}
 
 	@Override
-	public FieldList<T> setItems(List<T> items) {
+	public FieldListModel<T> setItems(List<T> items) {
 		this.items = items;
 		return this;
 	}

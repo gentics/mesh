@@ -13,8 +13,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshVersion;
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.MeshVersions;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -153,7 +153,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	private void setMeshVersions(String graphVersion, String buildVersion) throws IOException {
-		MeshVersion.buildInfo.set(new BuildInfo(buildVersion, null));
+		MeshVersions.buildInfo.set(new BuildInfo(buildVersion, null));
 		assertEquals(buildVersion, Mesh.getPlainVersion());
 
 		try (Tx tx = tx()) {
@@ -173,8 +173,8 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	@Deprecated
-	private void expectSuccess(String path, HibBaseElement vertex) throws InterruptedException {
-		HibBaseElement resolvedVertex = resolve(path);
+	private void expectSuccess(String path, BaseElement vertex) throws InterruptedException {
+		BaseElement resolvedVertex = resolve(path);
 		assertNotNull("We expected that the path {" + path + "} could be resolved but resolving failed.", resolvedVertex);
 		assertEquals(vertex.getUuid(), resolvedVertex.getUuid());
 	}
@@ -182,7 +182,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	private void expectFailure(String path) throws InterruptedException {
 		boolean error = false;
 		try {
-			HibBaseElement vertex = resolve(path);
+			BaseElement vertex = resolve(path);
 			assertNull("We expected that the path {" + path + "} can't be resolved successfully but it was.", vertex);
 			error = true;
 		} catch (Exception e) {
@@ -193,7 +193,7 @@ public class MeshRootTest extends AbstractMeshTest {
 		}
 	}
 
-	private HibBaseElement resolve(String pathToElement) throws InterruptedException {
+	private BaseElement resolve(String pathToElement) throws InterruptedException {
 		return boot().rootResolver().resolvePathToElement(pathToElement);
 	}
 

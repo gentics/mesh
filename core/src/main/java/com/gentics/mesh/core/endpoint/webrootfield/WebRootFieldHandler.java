@@ -15,9 +15,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
@@ -27,7 +27,7 @@ import com.gentics.mesh.core.endpoint.node.BinaryVariantsHandler;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -86,9 +86,9 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			Path nodePath = findNodePathByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			HibNode node = findNodeByPath(ac, rc, nodePath, path);
+			Node node = findNodeByPath(ac, rc, nodePath, path);
 
-			HibNodeFieldContainer container = graphSegment.getContainer();
+			NodeFieldContainer container = graphSegment.getContainer();
 			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
 
 			if (fieldSchema == null) {
@@ -129,7 +129,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			languageTags.add(lastSegment.getLanguageTag());
 			languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
 
-			Field field = container.getRestField(ac, fieldName, fieldSchema, languageTags, 0);
+			FieldModel field = container.getRestField(ac, fieldName, fieldSchema, languageTags, 0);
 			if (field == null) {
 				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
 			}
@@ -174,9 +174,9 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			Path nodePath = findNodePathByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			HibNode node = findNodeByPath(ac, rc, nodePath, path);
+			Node node = findNodeByPath(ac, rc, nodePath, path);
 
-			HibNodeFieldContainer container = graphSegment.getContainer();
+			NodeFieldContainer container = graphSegment.getContainer();
 			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
 
 			if (fieldSchema == null) {
@@ -197,7 +197,7 @@ public class WebRootFieldHandler extends AbstractWebrootHandler {
 			languageTags.add(lastSegment.getLanguageTag());
 			languageTags.addAll(ac.getNodeParameters().getLanguageList(options));
 
-			Field field = container.getRestField(ac, fieldName, fieldSchema, languageTags, 0);
+			FieldModel field = container.getRestField(ac, fieldName, fieldSchema, languageTags, 0);
 			if (field == null) {
 				throw error(NOT_FOUND, "error_field_not_found_with_name", fieldName);
 			}

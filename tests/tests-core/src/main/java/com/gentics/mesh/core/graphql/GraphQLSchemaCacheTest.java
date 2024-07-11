@@ -19,7 +19,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cache.GraphQLSchemaCache;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.graphql.GraphQLError;
+import com.gentics.mesh.core.rest.graphql.GraphQLErrorModel;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -48,12 +48,12 @@ public class GraphQLSchemaCacheTest extends AbstractMeshTest {
 	 * @return error messages
 	 */
 	protected static List<String> errorMessages(GraphQLResponse response) {
-		List<GraphQLError> errors = response.getErrors();
+		List<GraphQLErrorModel> errors = response.getErrors();
 
 		if (CollectionUtils.isEmpty(errors)) {
 			return Collections.emptyList();
 		} else {
-			return errors.stream().map(GraphQLError::getMessage).collect(Collectors.toList());
+			return errors.stream().map(GraphQLErrorModel::getMessage).collect(Collectors.toList());
 		}
 	}
 
@@ -68,7 +68,7 @@ public class GraphQLSchemaCacheTest extends AbstractMeshTest {
 	 * Consumer that asserts that the response contains a ValidationError
 	 */
 	protected final static Consumer<GraphQLResponse> validationError = response -> {
-		assertThat(response.getErrors()).usingElementComparatorOnFields("type").contains(new GraphQLError().setType("ValidationError"));
+		assertThat(response.getErrors()).usingElementComparatorOnFields("type").contains(new GraphQLErrorModel().setType("ValidationError"));
 	};
 
 	/**

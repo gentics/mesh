@@ -2,7 +2,7 @@ package com.gentics.mesh.example;
 
 import static com.gentics.mesh.example.ExampleUuids.BRANCH_UUID;
 
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 
 public class BranchExamples extends AbstractExamples {
@@ -15,8 +15,8 @@ public class BranchExamples extends AbstractExamples {
 		return info;
 	}
 
-	public BranchInfoSchemaList createSchemaReferenceList() {
-		BranchInfoSchemaList branchInfo = new BranchInfoSchemaList();
+	public BranchInfoSchemaListModel createSchemaReferenceList() {
+		BranchInfoSchemaListModel branchInfo = new BranchInfoSchemaListModel();
 		branchInfo.getSchemas().add(createBranchSchemaInfo("content"));
 		branchInfo.getSchemas().add(createBranchSchemaInfo("folder"));
 		branchInfo.getSchemas().add(createBranchSchemaInfo("binary-data"));

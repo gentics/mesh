@@ -14,10 +14,10 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.node.field.impl.AbstractDeletableHibField;
@@ -57,7 +57,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibS3BinaryFieldImpl;
 				) 
 		}
 )
-public class HibS3BinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<S3HibBinary> implements HibS3BinaryFieldBase, Serializable {
+public class HibS3BinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<S3Binary> implements HibS3BinaryFieldBase, Serializable {
 
 	private static final long serialVersionUID = 8083028337267324709L;
 
@@ -67,12 +67,12 @@ public class HibS3BinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<S3HibB
 	public HibS3BinaryFieldEdgeImpl() {
 	}
 
-	protected HibS3BinaryFieldEdgeImpl(HibernateTx tx, String fieldKey, S3HibBinary binary, HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
+	protected HibS3BinaryFieldEdgeImpl(HibernateTx tx, String fieldKey, S3Binary binary, HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		super(tx, fieldKey, binary, parentFieldContainer);
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer dst) {
+	public Field cloneTo(FieldContainer dst) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> dstBase = (HibUnmanagedFieldContainer<?,?,?,?,?>) dst;
 		dstBase.ensureColumnExists(getFieldKey(), FieldTypes.S3BINARY);
@@ -82,7 +82,7 @@ public class HibS3BinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<S3HibB
 	}
 
 	@Override
-	public S3HibBinaryField copyTo(S3HibBinaryField field) {
+	public S3BinaryField copyTo(S3BinaryField field) {
 		HibS3BinaryFieldBase target = HibS3BinaryFieldBase.class.cast(field);
 		if (AbstractDeletableHibField.class.isInstance(target)) {
 			target = HibS3BinaryFieldBase.class.cast(((AbstractDeletableHibField.class.cast(target)).getReferencedEdge()));
@@ -140,7 +140,7 @@ public class HibS3BinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<S3HibB
 	}
 
 	@Override
-	protected Class<? extends S3HibBinary> getImageEntityClass() {
+	protected Class<? extends S3Binary> getImageEntityClass() {
 		return HibS3BinaryImpl.class;
 	}
 

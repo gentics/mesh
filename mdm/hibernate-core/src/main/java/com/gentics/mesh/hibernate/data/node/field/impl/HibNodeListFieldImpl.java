@@ -7,13 +7,13 @@ import java.util.stream.IntStream;
 
 import jakarta.persistence.EntityManager;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibNodeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeListFieldEdgeImpl;
@@ -26,8 +26,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibNodeListFieldImpl 
-			extends AbstractHibListFieldImpl<HibNodeListFieldEdgeImpl, HibNodeField, NodeFieldList, HibNode, UUID> 
-			implements HibNodeFieldList {
+			extends AbstractHibListFieldImpl<HibNodeListFieldEdgeImpl, NodeField, NodeFieldListModel, Node, UUID> 
+			implements NodeFieldList {
 
 	public HibNodeListFieldImpl(HibernateTx tx, String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent) {
 		super(tx, fieldKey, parent, HibNodeListFieldEdgeImpl.class);
@@ -38,7 +38,7 @@ public class HibNodeListFieldImpl
 	}
 
 	@Override
-	public HibNodeField createNode(int index, HibNode node) {
+	public NodeField createNode(int index, Node node) {
 		return makeFromValueAndIndex(node, index, HibernateTx.get());
 	}
 
@@ -69,7 +69,7 @@ public class HibNodeListFieldImpl
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer container) {
+	public Field cloneTo(FieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?, ?, ?, ?, ?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.LIST);
@@ -78,7 +78,7 @@ public class HibNodeListFieldImpl
 	}
 
 	@Override
-	protected HibNodeListFieldEdgeImpl makeFromValueAndIndex(HibNode node, int index, HibernateTx tx) {
+	protected HibNodeListFieldEdgeImpl makeFromValueAndIndex(Node node, int index, HibernateTx tx) {
 		if (node == null) {
 			return null;
 		}
@@ -94,12 +94,12 @@ public class HibNodeListFieldImpl
 	}
 
 	@Override
-	protected HibNode getValue(HibNodeField field) {
+	protected Node getValue(NodeField field) {
 		return field.getNode();
 	}
 
 	@Override
-	protected HibListFieldItemConstructor<HibNodeListFieldEdgeImpl, HibNode, UUID> getItemConstructor() {
+	protected HibListFieldItemConstructor<HibNodeListFieldEdgeImpl, Node, UUID> getItemConstructor() {
 		return HibNodeListFieldEdgeImpl::new;
 	}
 }

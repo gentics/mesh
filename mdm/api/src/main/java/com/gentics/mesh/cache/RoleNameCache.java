@@ -1,6 +1,6 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 
 /**
  * Cache to fetch roles over the name.
@@ -8,6 +8,6 @@ import com.gentics.mesh.core.data.role.HibRole;
  * @author plyhun
  *
  */
-public interface RoleNameCache extends NameCache<HibRole> {
+public interface RoleNameCache extends NameCache<Role> {
 
 }

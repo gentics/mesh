@@ -10,7 +10,7 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 
 import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLTypeReference;
@@ -18,7 +18,7 @@ import graphql.schema.GraphQLTypeReference;
 /**
  * Filters users in GraphQl. This filter should be used whenever a list of users is returned.
  */
-public class UserFilter extends EntityFilter<HibUser> implements TypeReferencedFilter<HibUser, Map<String, ?>> {
+public class UserFilter extends EntityFilter<User> implements TypeReferencedFilter<User, Map<String, ?>> {
 
 	private static final ElementType ELEMENT = ElementType.USER;
 	private static final String NAME = "UserFilter";
@@ -36,16 +36,16 @@ public class UserFilter extends EntityFilter<HibUser> implements TypeReferencedF
 	}
 
 	@Override
-	protected List<FilterField<HibUser, ?>> getFilters() {
+	protected List<FilterField<User, ?>> getFilters() {
 		String owner = ELEMENT.name();
-		List<FilterField<HibUser, ?>> filters = new ArrayList<>();
+		List<FilterField<User, ?>> filters = new ArrayList<>();
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner, filter()));
-		filters.add(new MappedFilter<>(owner, "username", "Filters by username", StringFilter.filter(), HibUser::getUsername));
-		filters.add(new MappedFilter<>(owner, "firstname", "Filters by first name", StringFilter.filter(), HibUser::getFirstname));
-		filters.add(new MappedFilter<>(owner, "lastname", "Filters by last name", StringFilter.filter(), HibUser::getLastname));
-		filters.add(new MappedFilter<>(owner, "emailAddress", "Filters by email address", StringFilter.filter(), HibUser::getEmailAddress));
-		filters.add(new MappedFilter<>(owner, "forcedPasswordChange", "Filters by forced password change flag", BooleanFilter.filter(), HibUser::isForcedPasswordChange));
+		filters.add(new MappedFilter<>(owner, "username", "Filters by username", StringFilter.filter(), User::getUsername));
+		filters.add(new MappedFilter<>(owner, "firstname", "Filters by first name", StringFilter.filter(), User::getFirstname));
+		filters.add(new MappedFilter<>(owner, "lastname", "Filters by last name", StringFilter.filter(), User::getLastname));
+		filters.add(new MappedFilter<>(owner, "emailAddress", "Filters by email address", StringFilter.filter(), User::getEmailAddress));
+		filters.add(new MappedFilter<>(owner, "forcedPasswordChange", "Filters by forced password change flag", BooleanFilter.filter(), User::isForcedPasswordChange));
 		return filters;
 	}
 

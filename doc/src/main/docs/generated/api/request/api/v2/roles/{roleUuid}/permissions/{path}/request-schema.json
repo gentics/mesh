@@ -4,7 +4,7 @@
   "properties" : {
     "permissions" : {
       "type" : "object",
-      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfoModel",
       "required" : true,
       "description" : "Set of permissions which should be applied.",
       "properties" : {
