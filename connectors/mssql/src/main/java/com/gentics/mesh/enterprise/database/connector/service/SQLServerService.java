@@ -5,7 +5,7 @@ import com.gentics.mesh.database.connector.service.DatabaseConnectorService;
 import com.gentics.mesh.enterprise.database.connector.SQLServerConnector;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
-public class Service implements DatabaseConnectorService {
+public class SQLServerService implements DatabaseConnectorService {
 
 	@Override
 	public DatabaseConnector instantiate(HibernateMeshOptions options) {
