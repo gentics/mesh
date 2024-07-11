@@ -1,13 +1,5 @@
 package com.gentics.mesh.core.endpoint.admin;
 
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_BACKUP_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_EXPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_IMPORT_START;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_FINISHED;
-import static com.gentics.mesh.core.rest.MeshEvent.GRAPH_RESTORE_START;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYED;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_DEPLOYING;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_UNDEPLOYED;
@@ -36,7 +28,6 @@ import com.gentics.mesh.core.endpoint.admin.debuginfo.DebugInfoHandler;
 import com.gentics.mesh.core.endpoint.admin.plugin.PluginHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.parameter.impl.BackupParametersImpl;
 import com.gentics.mesh.parameter.impl.ConsistencyCheckParametersImpl;
 import com.gentics.mesh.parameter.impl.JobParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
@@ -99,15 +90,13 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 
 		addSecurityLogger();
 
-		addBackupHandler();
-		addRestoreHandler();
+		//addBackupHandler();
+		//addRestoreHandler();
 		addClusterStatusHandler();
 		addClusterConfigHandler();
 		addConsistencyCheckHandler();
-		addImportHandler();
-		addExportHandler();
-		// addVerticleHandler();
-		// addServiceHandler();
+		//addImportHandler();
+		//addExportHandler();
 		addJobHandler();
 		addPluginHandler();
 		addDebugInfoHandler();
@@ -239,64 +228,6 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
 		repairEndpoint.blockingHandler(rc -> {
 			consistencyHandler.invokeRepair(wrap(rc));
-		}, isOrderedBlockingHandlers());
-	}
-
-	private void addExportHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/export");
-		endpoint.method(POST);
-		endpoint.setMutating(false);
-		endpoint.description("Invoke a orientdb graph database export. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
-		endpoint.events(GRAPH_EXPORT_START, GRAPH_EXPORT_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleExport(wrap(rc));
-		}, false);
-	}
-
-	private void addImportHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/import");
-		endpoint.method(POST);
-		endpoint.description(
-			"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
-		endpoint.events(GRAPH_IMPORT_START, GRAPH_IMPORT_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleImport(wrap(rc));
-		}, isOrderedBlockingHandlers());
-	}
-
-	private void addRestoreHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/restore");
-		endpoint.description(
-			"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effectively destroy all previously stored data. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
-		endpoint.method(POST);
-		endpoint.events(GRAPH_RESTORE_START, GRAPH_RESTORE_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleRestore(wrap(rc));
-		}, isOrderedBlockingHandlers());
-	}
-
-	private void addBackupHandler() {
-		InternalEndpointRoute endpoint = createRoute();
-		endpoint.path("/graphdb/backup");
-		endpoint.method(POST);
-		endpoint.setMutating(false);
-		endpoint.addQueryParameters(BackupParametersImpl.class);
-		endpoint.description(
-			"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation. Irrelevant for non-OrientDB server.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
-		endpoint.events(GRAPH_BACKUP_START, GRAPH_BACKUP_FINISHED);
-		endpoint.blockingHandler(rc -> {
-			adminHandler.handleBackup(wrap(rc));
 		}, isOrderedBlockingHandlers());
 	}
 

@@ -79,12 +79,9 @@ The main components which are used to build Gentics Mesh are:
 |======
 | Component | Usage
 | http://vertx.io[Vert.x]                       | Provides HTTP server, Authentication, Upload handling, Eventbus and request routing.
-| https://orientdb.com/[OrientDB]               | Embedded Graph Database
-| https://github.com/Syncleus/Ferma[Ferma]      | OGM which forms an access layer ontop of the Graph Database.
 | https://google.github.io/dagger/[Dagger 2]    | Dependency injection library
 | https://github.com/ReactiveX/RxJava[RxJava2]  | Library which is used to composing asynchronous requests/processes.
-|======
-
+| https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html[Hibernate]               | Object relations mapping.
 == Big Picture
 
 Since you are most likely already familiar with the Gentics Mesh link:/docs/api[REST API] I assume it is best to start there.
@@ -152,45 +149,11 @@ The graph database structure is documented within this interactive https://porta
 
 NOTE: The gist may be a bit outdated in some places but the general structure is still valid.
 
-== Graph database handling
+== Database handling
 
-Gentics Mesh uses OrientDB to store its data in a graph. Instead of connecting to a remote database the database is directly embedded within Gentics Mesh.
+Gentics Mesh uses SQL database to store its data, through the object relation mapping library. The default RDBMS for use is MariaDB.
 
-This in turn provides many benefits:
-
-* Direct access to indices
-* No connection overhead
-* Ease of use (No dedicated DB setup needed)
-* Low level control over Transactions
-* Native database speed
-
-Downside should not be left unmentioned:
-
-* Garbage collector pauses due to the DB may also affect the application server
-* Each Gentics Mesh instance brings its own dedicated db. 
-  There is currently no way to use a central larger DB for multiple Gentics Mesh instances.
-
-The low level API is provided via a driver implementation of the http://tinkerpop.apache.org/[Apache TinkerPop] graph framework.
-This provides the classes for Vertex, Element, Edge. Gentics Mesh is not directly using these elements.
-Instead https://github.com/Syncleus/Ferma[Ferma] is being used to provide a layer on top of the OrientDB Apache Tinkerpop API.
-
-NOTE: Ferma is an object graph mapper which makes it possible to create dedicated Java classes for specific types of vertices and edges called `Frames`.
-
-Gentics Mesh contains various Ferma frames for all kinds of types. There are for example:
-
-.Examples
-[options="header"]
-|======
-| Type         | Description
-| MeshRootImpl | Root of the whole graph
-| UserImpl     | Represents a user
-| NodeRootImpl | Represents a node root which aggregates all nodes
-| NodeImpl     | Represents a node
-| ProjectImpl  | Represents a project
-| TagImpl      | Represents a tag 
-|======
-
-NOTE: Accessing these vertices always requires an active transaction.
+The single remote database is used for both single instance and clustered modes. 
 
 == Project structure
 
@@ -205,8 +168,8 @@ NOTE: Accessing these vertices always requires an active transaction.
 | mesh-rest-model             | Contains the POJOs for the REST API models.
 | mesh-doc                    | Contains sources for the getmesh.io documentation and tools to generate tables and examples from sources.             
 | mesh-server                 | Contains the Gentics Mesh server which can be run via `ServerRunner` main class.
-| mesh-orientdb               | Contains the OrientDB database provider code.
-| mesh-changelog-system       | Contains the Gentics Mesh database changelog system. The system is graph model class agnostic.
+| mesh-mdm                  | Contains an abstraction over multi-database management API (aka Multi Database Mesh).
+| mesh-mdm-hibernate               | Contains the ORM related abstractions, in separate API and implementation submodules.
 | mesh-distributed            | Contains code which take care of event handling and event processing in an cluster environment.
 | mesh-service-local-storage  | Contains code for the binary storage system which stores data locally on disk.
 | mesh-graphql                | Contains code for the GraphQL endpoint and GraphQL types.
@@ -279,10 +242,6 @@ Transactions can be started using the currently registered Database provider cla
 |======
 
 NOTE: Transactions should not be nested. Nesting transactions will just result in the inner transaction to utilize the previously opened outer transaction.
-
-== Pitfalls
-
-It is very important to understand that OrientDB is using MVCC in order to handle transaction concurrency control. This has important implications on how to design methods. Due to MVCC it may be required to retry a TrxHandler. Thus sideeffects that would otherwise change the outcome of the transaction must be avoided. Most problems can occur when modifying shared collections.Collections.unmodifiableList and other methods may help to secure the code.
 
 == Testing
 

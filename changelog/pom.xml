@@ -5,8 +5,10 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
+
+	<name>Gentics Mesh - Automatic changelog</name>
 
 	<artifactId>mesh-changelog</artifactId>
 	<packaging>pom</packaging>
@@ -18,6 +20,31 @@
 
 	<build>
 		<plugins>
+			<!-- Copy Mesh SQL Changelog entries to target directory -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/changelog/entries</outputDirectory>
+							<resources>          
+								<resource>
+									<directory>src/changelog/entries</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>              
+						</configuration>            
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Build the combined changelog -->
 			<plugin>
 				<groupId>com.gentics</groupId>
 				<artifactId>changelog-manager-plugin</artifactId>
@@ -32,6 +59,7 @@
 				<configuration>
 					<foldNewlinesInEntries>true</foldNewlinesInEntries>
 					<baseDirectory>${project.basedir}/src/changelog</baseDirectory>
+					<entriesDirectory>${project.build.directory}/changelog/entries</entriesDirectory>
 					<outputDirectory>${project.build.directory}/output</outputDirectory>
 					<outputFileExtension>adoc-include</outputFileExtension>
 					<changelogTitle>Gentics Mesh</changelogTitle>
@@ -45,6 +73,7 @@
 					<perMajorVersionChangelogFile>empty.vm</perMajorVersionChangelogFile>
 				</configuration>
 			</plugin>
+			<!-- Assemble combined changelog entries -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
@@ -64,6 +93,7 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- When installing, we copy the generated changelog file to the root directory -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>

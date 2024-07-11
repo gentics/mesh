@@ -1,0 +1,1 @@
+ Core: Mesh SQL incorrectly showed the version number of Mesh Core instead of its own. This has been fixed, Mesh SQL will now show its own version number.

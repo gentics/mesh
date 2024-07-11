@@ -3,68 +3,48 @@ package com.gentics.mesh.server.cluster;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Abstract implementation for cluster servers.
+ * An enterprise server that can be run in a cluster
  */
 public abstract class ClusterServer {
 
-	static {
-		// Disable direct IO (My dev system uses ZFS. Otherwise the test will not run)
-		System.setProperty("storage.wal.allowDirectIO", "false");
-	}
 	public static Logger log;
 
 	/**
-	 * Create the mesh options.
-	 * 
+	 * initialize clustering options
 	 * @param args
 	 * @return
 	 */
-	public static OrientDBMeshOptions init(String[] args) {
+	public static HibernateMeshOptions init(String[] args) {
 		LoggingConfigurator.init();
 		log = LoggerFactory.getLogger(ClusterServer.class);
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class, args);
 
-		// options.setAdminPassword("admin");
-		// options.getStorageOptions().setStartServer(true);
-		// options.getHttpServerOptions().setCorsAllowCredentials(true);
-		// options.getHttpServerOptions().setEnableCors(true);
-		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
-		options.getAuthenticationOptions().setKeystorePassword("finger");
+		HibernateMeshOptions defaultOption = new HibernateMeshOptions();
+		defaultOption.getSearchOptions().setUrl(null);
+		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class, defaultOption, args);
+		options.getClusterOptions().setClusterName("test");
+		options.getClusterOptions().setEnabled(true);
+
 		options.setInitialAdminPassword("admin");
 		options.setForceInitialAdminPasswordReset(false);
 
-		// options.getClusterOptions().setCoordinatorMode(CoordinatorMode.ALL);
-		// options.getClusterOptions().setCoordinatorRegex("gentics-mesh-[0-9]");
-		options.getStorageOptions().setStartServer(true);
-		options.getClusterOptions().setClusterName("test");
-		options.getClusterOptions().setEnabled(true);
-		options.getSearchOptions().setUrl(null);
-		options.getDebugInfoOptions().setLogEnabled(false);
-
-		// New settings
-		options.getStorageOptions().setSynchronizeWrites(true);
-		options.getStorageOptions().setSynchronizeWritesTimeout(290_000);
-		options.getClusterOptions().setTopologyLockTimeout(240_000);
-		options.getClusterOptions().setTopologyLockDelay(1);
-		options.getStorageOptions().setTxCommitTimeout(50_000);
 		return options;
 	}
 
 	/**
 	 * Run the server with the given options.
-	 * 
+	 *
 	 * @param options
 	 * @throws Exception
 	 */
-	public static void run(MeshOptions options) throws Exception {
+	public static void run(MeshOptions options) {
 		Mesh mesh = Mesh.create(options);
 		mesh.setCustomLoader(vertx -> {
 			JsonObject config = new JsonObject();
@@ -77,6 +57,5 @@ public abstract class ClusterServer {
 			log.error("Error while starting mesh. Invoking shutdown.", t);
 			mesh.shutdownAndTerminate(10);
 		}
-
 	}
 }

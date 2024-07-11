@@ -22,7 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
@@ -44,8 +43,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.util.UnixUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
@@ -183,18 +180,6 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 			addFileSystemBind(dataBackupPath, PATH_BACKUP, backupPath.bindMode);
 			addFileSystemBind(dataUploadsPath, PATH_UPLOADS, uploadsPath.bindMode);
 			// withCreateContainerCmdModifier(it -> it.withVolumes(new Volume("/data")));
-		}
-
-		if (isClustered()) {
-			try {
-				new File(confPath).mkdirs();
-				File confFile = new File(confPath, "default-distributed-db-config.json");
-				String jsonConfig = generateDistributedConfig(writeQuorum).encodePrettily();
-				FileUtils.writeStringToFile(confFile, jsonConfig, Charset.forName("UTF-8"));
-				addFileSystemBind(confFile.getAbsolutePath(), "/config/default-distributed-db-config.json", BindMode.READ_ONLY);
-			} catch (Exception e) {
-				throw new RuntimeException("Error while creating default-distributed-db-config.json", e);
-			}
 		}
 
 		changeUserInContainer();
@@ -373,28 +358,11 @@ public class MeshContainer extends GenericContainer<MeshContainer> {
 		}
 	}
 
-	// TODO de-orientDB this?
 	protected static String generateMeshYML(MeshOptions options, boolean enableClustering) throws JsonProcessingException {
 		options.getClusterOptions().setEnabled(enableClustering);
 		options.getClusterOptions().setVertxPort(8600);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
-	}
-
-	protected static JsonObject generateDistributedConfig(int writeQuorum) {
-		JsonObject json;
-		try {
-			json = new JsonObject(IOUtils.toString(MeshContainer.class.getResourceAsStream("/config/default-distributed-db-config.json")));
-			if (writeQuorum == -1) {
-				json.put("writeQuorum", "majority");
-			} else {
-				json.put("writeQuorum", writeQuorum);
-			}
-			return json;
-		} catch (IOException e) {
-			throw new RuntimeException("Could not find default config", e);
-		}
-
 	}
 
 	protected static String generateCommand(String classpath) {

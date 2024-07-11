@@ -618,8 +618,6 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Function<String, HibNode> elementLoader() {
-		// TODO override in OrientDB implementation to use index for performance, if required
-		//return (uuid) -> HibClassConverter.toGraph(db).index().findByUuid(HibNode.class, uuid);
 		return uuid -> CommonTx.get().nodeDao().findByUuidGlobal(uuid);
 	}
 
@@ -630,8 +628,6 @@ public class NodeIndexHandlerImpl extends AbstractIndexHandler<HibNode> implemen
 
 	@Override
 	public Stream<? extends HibNode> loadAllElements() {
-		// TODO override in OrientDB implementation to use index for performance, if required
-		//return HibClassConverter.toGraph(db).type().findAll(HibNode.class);
 		return CommonTx.get().nodeDao().findAllGlobal();
 	}
 

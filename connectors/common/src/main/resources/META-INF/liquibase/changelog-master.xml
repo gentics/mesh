@@ -1,0 +1,26 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <!-- 1.10.x / 2.0.x changes -->
+    <include file="changelog-1.0.0.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-1.0.1.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-1.0.2.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-1.0.3.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-1.0.4.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-sup-15215.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-2.0.0.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-sup-15472.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-sup-15549.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-sup-15690.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-sup-15949.xml" relativeToChangelogFile="true"/>
+    <include file="changelog-sup-16041.xml" relativeToChangelogFile="true"/>
+
+    <!-- 2.1.x changes -->
+    <includeAll path="entries-2.1.x" relativeToChangelogFile="true" errorIfMissingOrEmpty="false"/>
+    <!-- 3.0.x changes -->
+    <includeAll path="entries-3.0.x" relativeToChangelogFile="true" errorIfMissingOrEmpty="false"/>
+</databaseChangeLog>

@@ -1,0 +1,1 @@
+SQL: Deleting nodes in parallel requests could cause deadlocks in the database. This has been resolved by changing the delete requests and adding some indices.

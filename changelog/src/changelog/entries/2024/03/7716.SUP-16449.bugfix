@@ -1,0 +1,1 @@
+GraphQL: A native filter UUID list parameter hits an exception, when a database expects it containing DB-specific UUID types, and not strings, as provided by GraphQL API. This has been fixed.

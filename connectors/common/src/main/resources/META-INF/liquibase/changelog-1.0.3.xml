@@ -1,0 +1,55 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+	<changeSet id="1683885629246-1"	author="s.plyhun@gentics.com">
+		<createIndex tableName="mesh_stringlistitem" indexName="idx_mesh_stringlistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_boollistitem" indexName="idx_mesh_boollistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_htmllistitem" indexName="idx_mesh_htmllistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_datelistitem" indexName="idx_mesh_datelistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_numberlistitem" indexName="idx_mesh_numberlistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_nodelistitem" indexName="idx_mesh_nodelistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_micronodelistitem" indexName="idx_mesh_micronodelistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_nodefieldref" indexName="idx_mesh_nodefieldref_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+		<createIndex tableName="mesh_micronodefieldref" indexName="idx_mesh_micronodefieldref_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+	</changeSet>
+</databaseChangeLog>

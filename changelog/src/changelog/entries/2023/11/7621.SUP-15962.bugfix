@@ -1,0 +1,3 @@
+Core: The content/list cache has been refactored to improve the control over the memory consumption. Now both  `fieldContainerCacheSize` and `listFieldCacheSize` values accept the numeric values, meaning the number of cache entries, size in format `XXX{B|K|M|G|T}`, or a percent of total available memory. For instance, the value `50000` means 50000 entries, `5G` means absolute 5 Gigabytes of RAM, `50%` means half of the RAM available to Mesh..
+
+Monitoring: New files, `contentCache.json` and `listableFieldCache.json`, have been added to the debug info response, containing the content cache resources information. 

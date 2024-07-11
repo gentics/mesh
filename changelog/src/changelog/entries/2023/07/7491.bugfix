@@ -1,0 +1,1 @@
+Core: Under race conditions the publishing process might crash on multiple simultaneous node field processing. This has been fixed.

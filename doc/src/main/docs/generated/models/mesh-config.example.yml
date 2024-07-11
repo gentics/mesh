@@ -5,7 +5,7 @@ languagesFilePath: null
 updateCheck: true
 vertxOptions:
   workerPoolSize: 20
-  eventPoolSize: 2
+  eventPoolSize: 24
   orderedBlockingHandlers: true
   eventBus:
     checkInterval: 30000
@@ -46,6 +46,43 @@ versionPurgeMaxBatchSize: 10
 migrationMaxBatchSize: 50
 migrationTriggerInterval: 60000
 pluginUseHttp2: false
+storageOptions:
+  nativeQueryFiltering: "ON_DEMAND"
+  exportDirectory: "data/export"
+  retryLimit: 10
+  retryDelayMillis: 2000
+  driverClass: null
+  dialectClass: null
+  connectionUrl: null
+  connectionUrlExtraParams: ""
+  databaseName: "mesh"
+  databaseConnectorClasspath: ""
+  connectionUsername: "admin"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 20
+    maxPoolSize: 20
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 60000
+  secondLevelCacheEnabled: false
+  generateStatistics: false
+  queryTimeout: 0
+  slowSqlThreshold: 60000
+  jdbcBatchSize: 5
+  sqlParametersLimit: "definedByDatabase"
+  staleTxCheckInterval: 10000
+licenseKeyPath: "license.key"
+licenseKey: null
 httpServer:
   port: 8080
   sslPort: 8443
@@ -60,7 +97,7 @@ httpServer:
   keyPath: "config/key.pem"
   clientAuthMode: "NONE"
   trustedCertPaths: []
-  verticleAmount: 2
+  verticleAmount: 24
   minifyJson: true
   maxFormAttributeSize: -1
   serverTokens: true
@@ -130,6 +167,8 @@ content:
   batchSize: 5000
 cache:
   pathCacheSize: 20000
+  fieldContainerCacheSize: "50_000"
+  listFieldCacheSize: "50_000"
 debugInfo:
   logFolder: "debuginfo"
   logFileSize: "5MB"
@@ -139,20 +178,3 @@ graphQL:
   slowThreshold: 60000
   asyncWaitTimeout: 120000
   schemaCacheSize: 1000
-storage:
-  nativeQueryFiltering: "NEVER"
-  directory: "data/graphdb"
-  backupDirectory: "data/backup"
-  exportDirectory: "data/export"
-  startServer: false
-  synchronizeWrites: true
-  synchronizeWritesTimeout: 60000
-  txRetryDelay: 10
-  txRetryLimit: 10
-  txCommitTimeout: 0
-  parameters: {}
-  clusterJoinTimeout: 500000
-  diskQuota:
-    checkInterval: 10000
-    warnThreshold: "3G"
-    readOnlyThreshold: "1G"

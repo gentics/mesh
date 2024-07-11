@@ -1,0 +1,1 @@
+Core: The root-based data (e.g. tags, branches) was ignoring its root, when being requested in native filtering or sorting. This has been fixed.

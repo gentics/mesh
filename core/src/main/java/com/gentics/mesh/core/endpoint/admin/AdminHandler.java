@@ -255,7 +255,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Update the OrientDB cluster configuration.
+	 * Update the cluster configuration.
 	 * 
 	 * @param ac
 	 */

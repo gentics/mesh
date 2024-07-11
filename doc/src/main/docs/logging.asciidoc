@@ -160,10 +160,8 @@ The `INFO` lines will be logged to the file and to stdout.
 
 NOTE: The link:http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy[TimeBasedRollingPolicy] will control the rotation of logfiles based on the defined `fileNamePattern`.
 
-== OrientDB
+== ORM
 
-CAUTION: This section is irrelevant, if link:/premium-features/sql-db/#docs[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation instead.
+Gentics Mesh uses Hibernate 6.5.x as an object relation mapping solution. There are a couple of Hibernate-related configurations available at link:{{< relref "administration-guide.asciidoc" >}}#_storage_options[Mesh Options], namely `showSql` for logging the actual SQL queries passed to the RDBMS, and `formatSql` for having these queries human-readable in the console.
 
-The OrientDB server logging can be configured using the `orientdb-server-config.xml` and `orientdb-server-log.properties` files.
-
-More detailed information can be found in the https://orientdb.com/docs/3.0.x/admin/Logging.html[OrientDB Docs].
+More detailed information can be found in the https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html#logging-generated-sql[Hibernate documentation].

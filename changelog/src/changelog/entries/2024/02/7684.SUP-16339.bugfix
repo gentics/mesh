@@ -1,0 +1,1 @@
+Core: The process of updating from Mesh SQL < 2.x with a database containing many records in table mesh_nodefieldcontainer has been optimized to run much faster and to not consume a large amount of Java heap space.

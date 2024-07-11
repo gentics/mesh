@@ -1,0 +1,431 @@
+---
+title: Changelog
+---
+
+include::content/docs/variables.adoc-include[]
+
+////
+* Write changelog entries in present tense
+* Include GitHub issue or PR if possible using link:http://...[#123] format
+* Review your changelog entries
+* Don't include security sensitive information in the changelog
+* Include links to documentation if possible
+////
+
+= Gentics Mesh SQL Changelog
+
+////
+Note: Do not add changelog entries for versions 2.x here, but create the entries as files
+in changelog/src/changelog/entries/...
+
+Running
+mvn -pl changelog install
+will then create the new inclusion file changelog-2.adoc-include
+////
+
+include::content/docs/sql-changelog-2.adoc-include[]
+
+[[v1.10.32]]
+== 1.10.32 (28.05.2024)
+
+icon:check[] Core: A repair mechanism for `Content reference consistency check` has been improved to use off-transactional mechanism, to improve Mesh and database resource consumption.
+
+[[v1.10.31]]
+== 1.10.31 (13.05.2024)
+
+icon:check[] Core: Improvement of an error message of the webroot field URL conflict, now containing correct UUID, language and webroot URLS of a conflicting content.
+
+[[v1.10.30]]
+== 1.10.30 (17.04.2024)
+
+icon:check[] Core: A repair mechanism for `Node field container versions` inconsistencies has been implemented.
+
+[[v1.10.29]]
+== 1.10.29 (06.03.2024)
+
+icon:check[] Core: Getting lists of nodes over the REST API has been improved to use less queries for improved performance.
+
+[[v1.10.28]]
+== 1.10.28 (27.02.2024)
+
+icon:check[] Core: Due to incorrect mutation of cached permission entries, sometimes permissions were temporarily incorrectly granted on nodes.
+
+[[v1.10.27]]
+== 1.10.27 (21.02.2024)
+
+icon:check[] Core: Calculation of the memory consumption of cached Strings has been improved to better reflect the real memory consumption.
+Before this fix, the calculated memory consumption could be too small resulting in the cache using much more memory than the configured maximum size.
+
+[[v1.10.26]]
+== 1.10.26 (07.02.2024)
+
+icon:check[] Auth: Synchronization of users, groups and roles from AuthServicePlugin implementations (like the keycloak plugin) has been improved for performance and stability.
+
+icon:check[] REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+
+icon:check[] Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+icon:check[] Core: More consistency checks have been added for asynchronous execution.
+
+[[v1.10.25]]
+== 1.10.25 (17.01.2024)
+
+icon:check[] GraphQL/Core: The performance of getting nodes with micronode fields or micronode list fields has been improved.
+
+[[v1.10.24]]
+== 1.10.24 (10.01.2024)
+
+icon:check[] SQL: In cases of temporary unavailability of the database, it could happen that some (stale) transactions were left over, which could cause subsequent `java.lang.IllegalStateException: Session/EntityManager is closed` errors.
+The handling of database unavailability has been improved to properly dispose of such transactions and a periodic background check for stale transactions has been added.
+
+icon:check[] Core: The process of deleting nodes recursively has been refactored to avoid possible deadlocks in the database (when running in parallel requests).
+
+[[v1.10.23]]
+== 1.10.23 (20.12.2023)
+
+icon:check[] Core: Unnecessary uniqueness checks for segment fields will now be avoided, when updating nodes.
+
+icon:check[] Core: Configuring `fieldContainerCacheSize` with a memory size or percentage could cause a NullPointerException when handling nodes containing micronodes. This has been fixed.
+
+[[v1.10.22]]
+== 1.10.22 (06.12.2023)
+
+icon:check[] Core: Setting role permissions on node creation/update has been made more efficient.
+
+icon:check[] SQL: An edge case for `Too many SQL parameters` occurrences has been fixed.
+
+[[v1.10.21]]
+== 1.10.21 (29.11.2023)
+
+icon:check[] Core: A regression of creation of the named entities at MSSQL has been fixed.
+
+icon:check[] Core: More performant batch creation of the list fieds.
+
+[[v.1.10.20]]
+== 1.10.20 (18.11.2023)
+
+icon:plus[] Core: The content/list cache has been refactored to improve the control over the memory consumption. Now both  `fieldContainerCacheSize` and `listFieldCacheSize` values accept the numeric values, meaning the number of cache entries, size in format `XXX{B|K|M|G|T}`, or a percent of total available memory. For instance, the value `50000` means 50000 entries, `5G` means absolute 5 Gigabytes of RAM, `50%` means half of the RAM available to Mesh..
+
+icon:check[] Monitoring: New files, `contentCache.json` and `listableFieldCache.json`, have been added to the debug info response, containing the content cache resources information. 
+
+icon:check[] SQL: An error in indexing of the named entities disclosed the ability to create several entity instances with the same name. Affected entities are: project, schema, microschema, tag, tag family, branch, group, user, role, language. This has been fixed. 
+The already existing duplicated entities are fixed on first boot by renaming according to the pattern `dedup_<old_name>_<uuid>`.
+
+icon:check[] SQL: Batch loading of node reference fields has been introduced, to speed up the dedicated GraphQL requests.
+
+icon:check[] Cache: Improvements related to the NULL value caching support.
+
+icon:check[] GraphQL: The performance of getting all nodes of a project via GraphQL has been improved.
+
+[[v1.10.19]]
+== 1.10.19 (02.11.2023)
+
+icon:check[] GraphQL: Performance optimizations of the Elasticsearch-based requests.
+
+icon:check[] Core: Performance optimizations regarding batch loading of entities over a set of UUIDs.
+
+[[v1.10.18]]
+== 1.10.18 (24.10.2023)
+
+icon:check[] SQL: Due to incorrect SQL statements, deleting of nodes could be very slow. The SQL statements have been fixed.
+
+icon:check[] SQL: Some more possible `Too many SQL parameters` occurrences have been fixed.
+
+icon:check[] Core: Requests to branches failed with an internal error, if monitoring was disabled. This has been fixed.
+
+icon:check[] Core: The new configuration option `vertxOptions.orderedBlockingHandlers` allows to change the behaviour of concurrent handling of "long running" requests
+(requests that modify data or GraphQL requests). If the option is set to `true` (default value) such requests will be run in order (per http verticle) and never concurrently.
+As a consequence, it may happen that e.g. GraphQL requests are queued for some time if some other requests are currently handled.
+If the option is set to `false`, blocking requests will only be queued, if all threads of the worker pool are currently busy.
+
+[[v1.10.17]]
+== 1.10.17 (18.10.2023)
+
+icon:check[] Search: The indexed node fetcher has been completely rewritten, targeting the performance and stability.
+
+icon:check[] SQL: An index has been added to the Branch/SchemaVersion edge, for the schema version fetch performance.
+
+icon:check[] Core: Mesh SQL incorrectly showed the version number of Mesh Core instead of its own. This has been fixed, Mesh SQL will now show its own version number.
+
+icon:check[] GraphQL: Parent loading has been speeded up by using a batch data loading.
+
+icon:check[] Search: Minor logging changes in the search engine, making it less annoying.
+
+[[v1.10.16]]
+== 1.10.16 (04.10.2023)
+
+icon:check[] Core: More NPE occurrences during the massive concurrent publishing process have been fixes.
+
+[[v1.10.15]]
+== 1.10.15 (29.09.2023)
+
+icon:check[] GraphQL: An edge case of losing node data in the massive GraphQL response has been fixed.
+
+icon:check[] Core: A crash of an attempt to publish the node field, referencing to the deleted node, during the massive publish process, has been fixed.
+
+[[v1.10.14]]
+== 1.10.14 (25.09.2023)
+
+icon:check[] Core: An edge case of `Too many SQL parameters` occurrence has been fixed.
+
+[[v1.10.13]]
+== 1.10.13 (20.09.2023)
+
+icon:check[] Core: When running in the massive concurrent publishing process, it is possible to run into a race condition when some field containers are already processed while being referenced by the edge, 
+throwing an NPE. This has now been fixed.
+
+[[v1.10.12]]
+== 1.10.12 (04.09.2023)
+
+icon:check[] SQL: Deleting nodes in parallel requests could cause deadlocks in the database. This has been resolved by changing the delete requests and adding some indices.
+
+icon:check[] GraphQL: The result set of the retrieval of the complex nodes + children structure has been improved to contain all the items.
+
+icon:check[] Clustering: Calling cluster specific REST Endpoints on non-clustered instances could cause internal server errors. The behaviour has been changed so that
+a "Bad Request" error is returned containing a proper error message.
+
+icon:check[] Java Rest Client: After logging in with the `login()` method, the login token was never refreshed, which caused it to expire after the configured token expiration time (per default 1 hour),
+even if the client was used to do requests. This has been changed now, so that the login token in the client will be refreshed on every request to mesh.
+
+icon:check[] GraphQL: The metadata request does not crash anymore on the empty (micro)schemas. The new related filter, `isEmpty`, has been added as well.
+
+icon:check[] GraphQL: Link resolving in graphql queries ignored the language tags in the links. This has been fixed.
+
+[[v1.10.11]]
+== 1.10.11 (23.08.2023)
+
+icon:check[] Core: The performance of node deletion has been improved.
+
+[[v1.10.10]]
+== 1.10.10 (10.08.2023)
+
+icon:check[] Core: All named instances have been presented an own cache.
+
+icon:check[] SQL: All named entities have been indexed over name field for performance.
+
+icon:check[] SQL: More occurrences of ignoring the `storageOptions.sqlParametersLimit`, leading to the limit violation error, have been fixed.
+
+icon check[] Plugins: Logging fixed upon false triggering of a warning of inexisting role/group connection.
+
+[[v1.10.9]]
+== 1.10.9 (26.07.2023)
+
+icon:check[] Core: Uniqueness checks for webroot url field values will now only be done, if those values actually change. This will improve performance of e.g. schema migrations, where the webroot url field values are likely to not change.
+
+icon:check[] Core: An internal API for efficient loading of list field values has been added.
+
+icon:check[] Core: The performance of schema migrations has been improved by efficiently loading binary fields and list field values.
+
+icon:check[] GraphQL: The performance of graphql queries returning list fields has been improved by efficiently loading those list field values.
+
+icon:check[] Core: A cache for list field values has been added. The size of this cache can be configured with `cache.listFieldCacheSize` (defaults to 50000).
+
+[[v1.10.8]]
+== 1.10.8 (12.07.2023)
+
+icon:check[] Clustering: The caching implementation for clustered instances has been changed from distributed caches to local caches (with distributed invalidation)
+for performance reasons. This also fixes possible locks when uploading binary data.
+
+icon:check[] Clustering: Due to an incorrect check, it was possible that migration jobs could complete without actually migrating anything, when run in a clustered environment with disabled coordination mode.
+
+icon:check[] Core: A consistency check with repair option has been added for branches, that do not contain the project root node.
+
+icon:check[] Core: The indices have been added to node parent edge entity to speed up the node children fetch. 
+
+icon:check[] Core: The application of `storageOptions.sqlParametersLimit` has been improved, targeting some content fetch edge cases. 
+
+icon:check[] Core: Under race conditions the publishing process might crash on multiple simultaneous node field processing. This has been fixed.
+
+[[v1.10.7]]
+== 1.10.7 (28.06.2023)
+
+icon:check[] Core: The internal check for uniqueness of values in webroot fields has been improved.
+
+icon:check[] SQL: Some indices have been added.
+
+icon:check[] MSSQL: When using MSSQL, the datatypes of several columns have been changed from VARCHAR to NVARCHAR.
+
+icon:check[] Core: Occurrences of ignoring the `storageOptions.sqlParametersLimit`, leading to the limit violation error, have been fixed.
+
+[[v1.10.6]]
+== 1.10.6 (13.06.2023)
+
+icon:check[] Core: On a complex constellation of permissions over several roles/groups false permission decisions have been made over the user that shares the roles. This has been fixed. 
+
+[[v1.10.5]]
+== 1.10.5 (30.05.2023)
+
+icon:check[] Core: The requests to create, update or upsert a node have been extended to allow immediate publishing of the modified/created node and to set role permissions on the node.
+
+icon:check[] Core: The request to upload binary data into a binary field has been extended to allow immediate publishing of the modified/created node.
+
+[[v1.10.4]]
+== 1.10.4 (22.05.2023)
+
+icon:check[] SQL: A more sophisticated control over SQL parameter limit has been introduced, including the new options parameter `storageOptions.sqlParametersLimit`, to improve stability of demanding content queries.
+
+icon:check[] Core: Fixes the hibernate implementation for `BinaryDao.findFields()` where the typed query returned an instance of the wrong class.
+
+icon:check[] GraphQL: Performance of queries that return large amounts of nodes with link resolving in fields or getting node fields has been improved.
+
+icon:check[] SQL: Indices introduced for linked content entries: lists, (micro)node references. This improves performance on content fetch.
+
+[[v1.10.3]]
+== 1.10.3 (21.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
+
+icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+[[v1.10.2]]
+== 1.10.2 (09.03.2023)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh SQL Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
+[[v1.10.1]]
+== 1.10.1 (23.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
+[[v1.10.0]]
+== 1.10.0 (27.01.2023)
+
+icon:plus[] Rest: The new endpoints `/api/v2/.../rolePermissions` allow getting, granting and revoking permissions on entities for multiple roles in a single request.
+
+icon:plus[] Core: The core Vert.x library was updated to version `4.3.2`.
+
+icon:check[] GraphQL: In rare cases, GraphQL statements could "hang" forever, which caused the corresponding worker thread to be blocked forever.
+This has been fixed now by introducing a configurable timeout.
+
+icon:check[] GraphQL: The graphql library has been updated to version 20.0.
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
+[[v1.9.14]]
+== 1.9.14 (22.05.2023)
+
+icon:check[] SQL: A more sophisticated control over SQL parameter limit has been introduced, including the new options parameter `storageOptions.sqlParametersLimit`, to improve stability of demanding content queries.
+
+icon:check[] Core: Fixes the hibernate implementation for `BinaryDao.findFields()` where the typed query returned an instance of the wrong class.
+
+icon:check[] GraphQL: Performance of queries that return large amounts of nodes with link resolving in fields or getting node fields has been improved.
+
+icon:check[] SQL: Indices introduced for linked content entries: lists, (micro)node references. This improves performance on content fetch.
+
+[[v1.9.13]]
+== 1.9.13 (20.04.2023)
+
+icon:check[] Core: The name of a Mesh user is now forced to be unique on a database level, to prevent creating users with an already existing username. The duplicated username detection mechanism has also been improved.
+
+CAUTION: Duplicate usernames must be removed before the update, otherwise Mesh will fail to start!
+
+icon:check[] Monitoring: Failing calls to any `/health/...` endpoints will no longer log the whole stacktrace, since this does not contain useful information.
+
+icon:check[] Core: Migration jobs have been made more robust: Migration jobs will now be aborted, in cases were the storage is no longer ready to be written to
+(e.g. write quorum is not reached, or the storage is read-only due to insufficient disk space available). A periodic check (interval can be configured via setting `migrationTriggerInterval`)
+will continue processing of aborted jobs.
+
+[[v1.9.12]]
+== 1.9.12 (09.03.2023)
+
+icon:plus[] Docker: Additional command line tools have been added to the Mesh SQL Docker image: `rsync`, `curl`, `iputils`, `busybox-extras`, `tar`, `nano`.
+
+[[v1.9.11]]
+== 1.9.11 (23.02.2023)
+
+icon:check[] Search: The search endpoints (like e.g. `/api/v1/search/nodes`) were incorrectly treated as not "read-only", which caused them to fail during a cluster topology change,
+if the setting `cluster.topologyChangeReadOnly` was set to `true`. This has been changed now, the real search endpoints are read-only now. It is important to note, that this does still
+not apply to the index maintenance endpoints `/api/v1/search/sync`, `/api/v1/search/clear` and `/api/v1/search/status`.
+
+[[v1.9.10]]
+== 1.9.10 (27.01.2023)
+
+icon:check[] GraphQL: In rare cases, GraphQL statements could "hang" forever, which caused the corresponding worker thread to be blocked forever.
+This has been fixed now by introducing a configurable timeout.
+
+icon:check[] GraphQL: The graphql library has been updated to version 20.0.
+
+icon:check[] Core: The node migration process has been improved to reduce resources footprint on large workloads, by chunking the data. An additional configuration item `content.batchSize` has been added.
+
+icon:check[] Core: Corner case of updating the webroot info might throw a false conflict exception, when the segment field value is reset for a schema. This has been fixed.
+
+[[v1.9.9]]
+== 1.9.9 (15.12.2022)
+
+icon:check[] Clustering: Liveness check now marks an instance as dead, if the event bus did not get its own cluster instance ping within the timeout period, even if the non-cluster ping comes in time.
+
+icon:check[] Search: When using language specific index settings, nodes were incorrectly indexed in the language unspecific index when they were moved or tagged causing the node to be present in both the language specific and language unspecific index. This has been fixed.
+
+[[v1.9.8]]
+== 1.9.8 (01.12.2022)
+
+icon:check[] Core: Having a binary non-segment field update might break the uniqueness of the segment field value, allowing creation of multiple nodes with the same segment/webroot value. This has now been fixed.
+
+[[v1.9.7]]
+== 1.9.7 (22.11.2022)
+
+icon:check[] Logging: Remove superfluous error messages for HTTP status 4xx errors. These are logged by the logger handler as warnings.
+
+[[v1.9.6]]
+== 1.9.6 (18.11.2022)
+
+icon:check[] Docker-Image: The base images have been updated to a newer JDK minor version (`11.0.16`).
+
+icon:check[] The Gentics Mesh dependency was updated to `1.9.6`.
+
+[[v1.9.5]]
+== 1.9.5 (25.10.2022)
+
+icon:check[] The Gentics Mesh dependency was updated to `1.9.5`.
+
+[[v1.9.4]]
+== 1.9.4 (07.10.2022)
+
+icon:check[] Core: When updating permissions of a role for a given object, only the update permissions for the role were checked.
+A new check has been added to verify that the user requesting the permissions change has read permission on the object.
+
+icon:check[] Core: The value of the jdbc connection password won't be logged at startup anymore.
+
+icon:check[] The Gentics Mesh dependency was updated to `1.9.4`.
+
+[[v1.9.3]]
+== 1.9.3 (23.09.2022)
+
+icon:check[] Added healthcheck to the docker image.
+
+icon:check[] The Gentics Mesh dependency was updated to `1.9.3`.
+
+[[v1.9.2]]
+== 1.9.2 (08.09.2022)
+
+icon:check[] When parsing of metadata was activated, uploading of binaries failed, if they contained entries in the metadata with names that were only different in case.
+This has been fixed.
+
+icon:check[] Creation of content tables failed for Oracle due to an incorrect data type, which has been fixed.
+
+icon:line-chart[] Recursively deleting nodes is now more performant.
+
+icon:check[] The Gentics Mesh dependency was updated to `1.9.2`.
+
+
+[[v1.9.1]]
+== 1.9.1 (19.08.2022)
+
+icon:check[] The Gentics Mesh dependency was updated to `1.9.1`.
+
+[[v1.9.0]]
+== 1.9.0 (22.07.2022)
+
+This version is based on Gentics Mesh `1.9.0`.
+
+icon:plus[] It is now possible to use an external SQL database for data storage as alternative to the embedded OrientDB by using the commercially available `Gentics Mesh SQL`.

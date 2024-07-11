@@ -1970,7 +1970,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		if (!isPublished) {
 			for (HibNode child : getChildren(node, branchUuid)) {
 				if (hasPublishedContent(child, branchUuid)) {
-					throw error(BAD_REQUEST, "node_error_children_containers_still_published", node.getUuid(), branch.getName());
+					throw error(BAD_REQUEST, "node_error_children_containers_still_published", child.getUuid(), node.getUuid(), branch.getName());
 				}
 			}
 		}
