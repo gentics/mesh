@@ -1,0 +1,2 @@
+Clustering: The caching implementation for clustered instances has been changed from distributed caches to local caches (with distributed invalidation)
+for performance reasons. This also fixes possible locks when uploading binary data.

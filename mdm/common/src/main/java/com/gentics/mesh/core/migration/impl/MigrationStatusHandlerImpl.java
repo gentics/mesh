@@ -9,6 +9,9 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.job.HibJob;
@@ -18,10 +21,6 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobWarningList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The migration status class keeps track of the status of a migration and manages also the errors and event handling.

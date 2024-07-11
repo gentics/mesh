@@ -8,7 +8,7 @@
 	</formats>
 	<fileSets>
 		<fileSet>
-			<directory>${project.basedir}/src/changelog/entries</directory>
+			<directory>${project.build.directory}/changelog/entries</directory>
 			<outputDirectory>/</outputDirectory>
 			<filtered>false</filtered>
 		</fileSet>

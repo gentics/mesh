@@ -1,0 +1,190 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| storageOptions.nativeQueryFiltering
+| false
+| nativequeryfiltering
+| Enables the native database level filtering for queries. Default: ON_DEMAND
+
+| storageOptions.exportDirectory
+| true
+| string
+| Path to the database export directory.
+
+| storageOptions.retryLimit
+| false
+| int
+| Transaction retry count.
+
+| storageOptions.retryDelayMillis
+| false
+| int
+| Transaction wait interval between retries, in milliseconds.
+
+| storageOptions.driverClass
+| false
+| string
+| Optional JDBC driver class name. Use this to override the default database connector provided driver class.
+
+| storageOptions.dialectClass
+| false
+| string
+| Optional Hibernate dialect class name. User this to override the default database connector provided dialect class.
+
+| storageOptions.connectionUrl
+| false
+| string
+| JDBC connection URL.
+
+| storageOptions.connectionUrlExtraParams
+| false
+| string
+| JDBC connection URL extra parameters.
+
+| storageOptions.databaseName
+| false
+| string
+| Database name.
+
+| storageOptions.databaseConnectorClasspath
+| false
+| string
+| Mesh Database Connector classpath. This can be a path to either a connector JAR file, or a folder structure containing all the necessary JARs. Symlinks are supported.
+
+| storageOptions.connectionUsername
+| false
+| string
+| JDBC connection username.
+
+| storageOptions.connectionPassword
+| false
+| string
+| JDBC connection password.
+
+| storageOptions.showSql
+| false
+| boolean
+| Are actual SQL queries logged?
+
+| storageOptions.formatSql
+| false
+| boolean
+| Are actual SQL queries formatted during logging?
+
+| hikariOptions.autocommit
+| false
+| boolean
+| Connection auto-commit behavior.
+
+| hikariOptions.connectionTimeout
+| false
+| integer
+| Connection timeout.
+
+| hikariOptions.idleTimeout
+| false
+| integer
+| Idle timeout.
+
+| hikariOptions.maxLifetime
+| false
+| integer
+| Max lifetime.
+
+| hikariOptions.minimumIdleConnection
+| false
+| integer
+| Minimum idle connections in the pool.
+
+| hikariOptions.maxPoolSize
+| false
+| integer
+| Maximum pool size.
+
+| hikariOptions.poolName
+| false
+| string
+| Name of the connection pool.
+
+| hikariOptions.registerMBeans
+| false
+| boolean
+| Register JMX Management Beans.
+
+| hikariOptions.transactionIsolationLevel
+| false
+| integer
+| Transaction isolation level.
+
+| hikariOptions.leakDetectionThreshold
+| false
+| integer
+| Leak detection threshold.
+
+| storageOptions.synchronizeWrites
+| false
+| boolean
+| Flag which controls whether writes to the database should be synchronized. Setting this flag improves the stability of massive database updates, by the cost of overall performance. Default: false
+
+| storageOptions.synchronizeWritesTimeout
+| false
+| long
+| Set the timeout in milliseconds for the sync write lock. Default: 60000
+
+| storageOptions.secondLevelCacheEnabled
+| false
+| boolean
+| Enable Hibernate second-level cache
+
+| storageOptions.generateStatistics
+| false
+| boolean
+| Enable generation of hibernate statistics
+
+| storageOptions.queryTimeout
+| false
+| long
+| Global query timeout limit in milliseconds. A timeout value of zero means there is no query timeout.
+
+| storageOptions.slowSqlThreshold
+| false
+| long
+| Define a threshold in milliseconds, upon which a SQL query is considered slow and produces a log warning.
+
+| storageOptions.jdbcBatchSize
+| false
+| long
+| Hibernate JDBC Batch Size. Recommended values are between 5 and 30
+
+| storageOptions.sqlParametersLimit
+| false
+| string
+| SQL parameter number limit.
+
+| storageOptions.staleTxCheckInterval
+| false
+| long
+| Interval in ms for periodic check for stale transactions. Defaults to 10000 ms.
+
+| cacheConfig
+| true
+| enterprisecacheconfig
+| Cache options.
+
+| licenseKeyPath
+| false
+| string
+| Path to the license key file
+
+| licenseKey
+| false
+| string
+| The license key
+
+|======

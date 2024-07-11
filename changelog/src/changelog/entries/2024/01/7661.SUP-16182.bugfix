@@ -1,0 +1,2 @@
+SQL: In cases of temporary unavailability of the database, it could happen that some (stale) transactions were left over, which could cause subsequent `java.lang.IllegalStateException: Session/EntityManager is closed` errors.
+The handling of database unavailability has been improved to properly dispose of such transactions and a periodic background check for stale transactions has been added.

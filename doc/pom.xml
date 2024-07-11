@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
 	<packaging>jar</packaging>
-	<name>Mesh - Documentation</name>
+	<name>Gentics Mesh - Documentation</name>
 	<description>Parent module for documentation</description>
 
 	<properties>
@@ -31,10 +31,6 @@
 	</dependencyManagement>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-mdm-orientdb-wrapper</artifactId>
-		</dependency>
 
 		<!-- Generator dependencies -->
 		<dependency>
@@ -47,6 +43,19 @@
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-test-common</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-mdm-hibernate-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.10.2</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -56,6 +65,21 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.5.0</version>
 				<executions>
+					<execution>
+						<id>Generate Docs</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-classes</phase>
+						<configuration>
+							<executable>${env.JAVA_HOME}/bin/java</executable>
+							<arguments>
+								<argument>-classpath</argument>
+								<classpath/>
+								<argument>com.gentics.mesh.generator.DocGeneratorRunner</argument>
+							</arguments>
+						</configuration>
+					</execution>
 					<execution>
 						<id>Generate Examples</id>
 						<goals>
@@ -161,5 +185,4 @@
 			</releases>
 		</repository>
 	</repositories>
-
 </project>

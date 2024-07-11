@@ -9,20 +9,22 @@ properties([
 	parameters([
 		booleanParam(name: 'checkGitCommit',      defaultValue: false, description: 'If set to true, the current git revision is compared with the git revision of the last successful build. If they are equal, the build is skipped and env.BUILD_SKIPPED is set to true'),
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
-		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests or not"),
+		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests across chunks and databases"),
+		booleanParam(name: 'testMaria',           defaultValue: true,  description: "Whether to test MariaDB context"),
 		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
+		booleanParam(name: 'runSmokeTests',       defaultValue: false, description: "Whether to run smoke tests for the selected databases"),
 		booleanParam(name: 'runUnstableTests',    defaultValue: true,  description: "Whether to run tests in failing group."),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
 		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
-		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to deploy for the testing systems. This will skip building the changelog."),
+		booleanParam(name: 'runDeployTesting',    defaultValue: false, description: "Whether to run the testing deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
-		booleanParam(name: 'setBranchAsVersion',  defaultValue: false, description: "Whether to set the branch name as project version (unless runDeploy is true). Use this together with runMavenBuild to install the maven artifacts to the local repository (changelog and documentation will be skipped)."),
 		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests."),
-		booleanParam(name: 'runMavenDeploy',      defaultValue: false, description: "Whether to deploy the maven artifact during the maven build step."),
+		booleanParam(name: 'consistencyChecks',   defaultValue: false, description: "Whether to do consistency checks for every test. Enabling this will increase overall test runtime."),
 		string(	     name: 'testingVersion',      defaultValue: "",    description: "Version for testing"),
+		string(		 name: 'meshVersion',         defaultValue: "",    description: "Override Mesh version"),
 	])
 ])
 
@@ -33,6 +35,51 @@ final def registryHostStaging	   = "push.docker.gentics.com/docker-products";
 final def registryHostTest	   = "push.docker.gentics.com/docker-snapshots";
 
 def registryHost = registryHostStaging;
+
+final def testPart(partName, current, branches) {
+	def partId = "split${partName}${current}"
+	branches[partId] = {
+		node('mesh-worker-17') {
+			echo "Preparing slave environment for ${partId}"
+			sh "rm -rf ${partId}"
+			sh "mkdir ${partId}"
+			dir(partId) {
+				unstash 'project'
+				def postfix = current;
+				if (current <= 9) {
+					postfix = "0" + current
+				}
+				sshagent(["git"]) {
+					try {
+						def jacoco = Boolean.valueOf(params.runSonar);
+						def noMariadb = true
+						if (Boolean.valueOf(params.testMaria)) {
+							noMariadb = false
+						}
+						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							try {
+								// prior to starting the tests, start the docker containers with the db and the testdb-manager
+								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
+								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
+								// run the tests
+								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
+									sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
+								}
+							} finally {
+								// finally stop the docker containers
+								sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
+							}
+						}
+						stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
+					} finally {
+						step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+						deleteDir()
+					}
+				}
+			}
+		}
+	}
+}
 
 stage("Setup Build Environment") {
 	node("mesh-root-worker-17") {
@@ -72,10 +119,6 @@ stage("Setup Build Environment") {
 						sh 'git add .'
 						sh "git commit -m 'Raise version'"
 						GitHelper.addTag(version, 'Release of version ' + version)
-					} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-						version = branchName
-						echo "Building version " + version
-						MavenHelper.setVersion(version)
 					}
 				}
 				
@@ -88,19 +131,25 @@ stage("Setup Build Environment") {
 				}
 			}
 
+			stage("Setup") {
+				if (params.meshVersion?.trim()) {
+					echo "Setting Gentics Mesh version to " + params.meshVersion.trim()
+					MavenHelper.setProperty("mesh.version", params.meshVersion.trim())
+				}
+      		}
+
 			stage("Prebuild") {
 				if ( env.BUILD_SKIPPED != "true" && (Boolean.valueOf(params.runTests) || Boolean.valueOf(params.runUnstableTests))) {
 					def extraFlags = ""
 					if (Boolean.valueOf(params.runSonar)) {
-						extraFlags = "-Djacoco.skip=false"
+						extraFlags += " -Djacoco.skip=false"
 					}
 					// Install is needed to provide deps for the test plugin build
 					echo "Setup of GPG"
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
-					                 usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+						sh "mvn -s build/settings.xml -ff -B -U -pl '!doc,!changelog' -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
 					}
 				} else {
 					echo "Omitted since we don't execute tests"
@@ -119,36 +168,12 @@ stage("Setup Build Environment") {
 						def branches = [:]
 						for (int i = 0; i < runs; i++) {
 							def current = i
-							branches["split${current}"] = {
-								node('mesh-worker-17') {
-									echo "Preparing slave environment for ${current}"
-									sh "rm -rf split${current}"
-									sh "mkdir split${current}"
-									dir("split${current}") {
-										unstash 'project'
-										def postfix = current;
-										if (current <= 9) {
-											postfix = "0" + current
+							if (Boolean.valueOf(params.testMaria)) {
+								testPart("mariadb", current, branches)
+							} else {
+								echo "MariaDB split skipped.."
 										}
-										sshagent(["git"]) {
-											try {
-												def jacoco = Boolean.valueOf(params.runSonar);
-												withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-													sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
-													withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-														sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} split${current}"
 													}
-												}
-												stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
-											} finally {
-												step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-												deleteDir()
-											}
-										}
-									}
-								}
-							}
-						}
 						try {
 							parallel branches
 						} catch (err) {
@@ -157,9 +182,17 @@ stage("Setup Build Environment") {
 						}
 					} else {
 						sshagent(["git"]) {
+							def noMariadb = true
+							if (Boolean.valueOf(params.testMaria)) {
+								noMariadb = false
+							} else {
+								echo "MariaDB skipped.."
+							}
 							try {
-								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-									sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -U -e -pl '!ferma,!doc,!performance-tests' clean install"
+								withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+									withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
+										sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -Dskip.mariadb.tests=${noMariadb} -B -U -e test"
+								}
 								}
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -175,8 +208,10 @@ stage("Setup Build Environment") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runUnstableTests)) {
 					sshagent(["git"]) {
 						try {
-							withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!ferma,!doc,!performance-tests' test -DfailIfNoTests=false"
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
+									sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' test -DfailIfNoTests=false"
+							}
 							}
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -187,25 +222,56 @@ stage("Setup Build Environment") {
 				}
 			}
 
+			stage("Smoke Tests") {
+                if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runSmokeTests)) {
+                    sshagent(["git"]) {
+						def noMariadb = true
+						if (Boolean.valueOf(params.testMaria)) {
+							noMariadb = false
+						} else {
+							echo "MariaDB skipped.."
+						}
+                        withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'), usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							try {
+								// first we start the test db manager
+								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
+								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
+
+								if (!noMariadb) {
+									echo "Running MariaDB smoke test"
+									sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc' -Dskip.mariadb.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 -Dtest=com.gentics.mesh.smoketests.SmokeTest -DfailIfNoTests=false test"
+								}
+							} finally {
+								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+								// stop the db manager
+								sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
+							}
+                        }
+                    }
+                } else {
+                    echo "Smoke tests skipped.."
+                }
+			}
+
 			stage("Maven Build") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
-						if (Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runDeploy) || Boolean.valueOf(params.runMavenDeploy)) {
 							def extraFlags = ""
 							if (Boolean.valueOf(params.runDeployTesting)) {
-								extraFlags = "-am -pl bom,server,plugin-bom,plugin-parent -Dversion=0.0.0-SNAPSHOT"
+							extraFlags += " -Dmaven.test.skip -am -pl server"
 							}
+						if (Boolean.valueOf(params.runDeploy)) {
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
 							}
-						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-							sh "mvn -B -DskipTests -pl '!doc,!changelog' clean install"
 						} else {
-							sh "mvn -B -DskipTests clean package"
+							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -B -DskipTests ${extraFlags} clean package"
 						}
+					}
 					}
 				} else {
 					echo "Maven build skipped.."
@@ -236,7 +302,7 @@ stage("Setup Build Environment") {
 					node("mesh-cluster-worker-17") {
 						try {
 							unstash 'project'
-							sh "mvn -B -DskipTests clean install -pl '!doc'"
+							sh "mvn -B -DskipTests clean install"
 							sh "mvn -B -Dsurefire.groups=com.gentics.mesh.test.category.ClusterTests -DfailIfNoTests=false -Dmesh.container.image.prefix=docker.gentics.com/ test"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
@@ -270,7 +336,7 @@ stage("Setup Build Environment") {
 					node("mesh-performance-worker-17") {
 						try {
 							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
+							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 							deleteDir()
@@ -298,9 +364,9 @@ stage("Setup Build Environment") {
 							version = branchName;
 							registryHost = registryHostTest;
 						}
+
 						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
-
 							if (Boolean.valueOf(params.runDeploy)) {
 								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
 							}

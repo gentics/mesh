@@ -12,7 +12,7 @@ It is possible to run Gentics Mesh in a cluster mode.
 When done so all changes to your data with one exception are automatically being distributed to other instances. 
 Binary data (uploads) are currently not being handled by our cluster implementation and need dedicated handling.
 
-At its core Gentics Mesh makes use of the OrientDB clustering mode which allows run multiple instances in a master-master mode.
+At its core Gentics Mesh makes use of the Hazelcast cluster manager, which allows run multiple instances in a master-master mode.
 This means that each instance is able to receive data which is in turn automatically being distributed to other instances.
 
 Clustering is also a way to increase redundancy and fault tolerance since each instance can still run independently in case of a network failure or hardware fault of other instances.
@@ -34,7 +34,7 @@ cluster:
 
 === Port Mapping
 
-Clustering involves the following components: Vert.x, OrientDB, Hazelcast. Each component utilize different ports.
+Clustering involves the following components: Vert.x, Hazelcast. Each component utilize different ports.
 
 .Table Port Mappings
 [options="header",cols="5%,30%,20%,45%"]
@@ -45,11 +45,6 @@ Clustering involves the following components: Vert.x, OrientDB, Hazelcast. Each 
 | 0  (random, eventbus server)
 | TCP
 | `mesh.yml` - `cluster/vertxPort`
-
-|OrientDB
-|2424-2430 (binary), 2480-2490 (HTTP)
-|TCP
-| `orientdb-server-config.xml` - `network/listeners/listener`
 
 | Hazelcast
 | 2434 (dynamic)
@@ -209,9 +204,8 @@ If a request was delegated, the `X-Mesh-Forwarded-From` will be added to the res
 
 == Transaction handling / Change propagation
 
-Transactions are directly being handled by link:https://orientdb.com/docs/3.0.x/internals/Transactions.html[OrientDB].
+Transactions are directly being handled by link:https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html#managing-transactions[Hibernate ORM].
 
-The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
 Operations which modify permissions are handled asynchronous and may take a few milliseconds to propagate throughout the cluster.
 Operations which invoke node, micronode or branch migrations can only be executed separately throughout the cluster. 
 A running migration on one instance will cause the other instances of the cluster to reject any migration request as long as a migration is active.
@@ -262,10 +256,7 @@ Can I add new instances at any time?::
 Yes. New instances can be added at any time.
 
 Are my changes directly visible on other instances?::
-The replication handles this as fast as the network allows but by default replication is happening synchronous to full fill the `writeQuorum` and asynchronous once the quorum has been satisfied.
-which means that it could take a few moments until your changes are propagated throughout the cluster.
-This behaviour is configurable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/3.0.x/distributed/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
-Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
+The replication handles this as fast as the network allows it. Some minor lag, utilizing clearing the caches, is possible.
 
 What happens if the network between my instances fails?::
 The instances will continue to operate normally but will no longer be able to see each other's changes.
@@ -283,8 +274,6 @@ Yes. This can be done by starting a new cluster using a different `cluster.clust
 == Monitoring
 
 The `{apiLatest}/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
-
-Additionally it is possible to access the JMX beans of OrientDB.
 
 == Limitations
 

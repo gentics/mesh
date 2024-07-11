@@ -1,0 +1,1 @@
+Core: A crash of an attempt to publish the node field, referencing to the deleted node, during the massive publish process, has been fixed.

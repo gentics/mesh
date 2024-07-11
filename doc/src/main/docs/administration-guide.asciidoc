@@ -9,26 +9,16 @@ include::content/docs/variables.adoc-include[]
 [options="header"]
 |======
 | Component                                                    | Type                 | Version
-| https://orientdb.com/[OrientDB]                              | Graph Database       | 3.1.x
-| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
+| https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html[Hibernate]                              | ORM       | 6.5.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.9.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.12.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 4.5.x
+| https://hazelcast.com/[Hazelcast]                            | Cluster management | 3.12.x
 | https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
 |======
 
-TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io{apiLatest}/ or your local instance http://localhost:8080{apiLatest}/.
-
 == Run with Docker
 
-Alternatively you can start Gentics Mesh using Docker via:
-
-The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains Gentics Mesh together with demo content and our demo application.
-
 [source,bash]
-----
-docker run -p 8080:8080 gentics/mesh-demo
-----
 
 The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
 
@@ -37,7 +27,6 @@ The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics
 docker run -p 8080:8080 gentics/mesh
 or
 docker run \
- -v mesh-graphdb:/graphdb \
  -v mesh-uploads:/uploads \
  -p 8080:8080 \
  gentics/mesh
@@ -45,13 +34,10 @@ docker run \
 
 === Volumes / Locations
 
-CAUTION: The `/graphdb` volume is irrelevant, if link:/premium-features/sql-db/#docs[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation instead.
-
 [options="header"]
 |======
 | Name             | Description                          | Default Environment Setting
 | `/uploads`       | Location for fileuploads             | `MESH_BINARY_DIR=/uploads`
-| `/graphdb`       | Location for the graph database data | `MESH_GRAPH_DB_DIRECTORY=/graphdb`
 | `/config`        | Location for configuration files     | -
 | `/keystore`      | Location for the main keystore file which contains the cryptographic keys which are used to sign the JWT. | `MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks`
 | `/backups`       | Backup data location | `MESH_GRAPH_BACKUP_DIRECTORY=/backups`
@@ -82,7 +68,7 @@ All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] fi
 java -jar mesh-demo-X.X.X.jar
 ----
 
-Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Java Runtime 11.
+There are no external dependencies besides Java Runtime 17.
 On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
 [[cli]]
@@ -106,13 +92,9 @@ On first startup, Gentics Mesh will create all files and folders.
     tmp                        # Temporary directory
  config
     mesh.yml                   # Main Gentics Mesh configuration
-    automatic-backup.json      # OrientDB Automatic Backup configuration 
-    default-distributed-db-config.json # Default configuration for new Cluster Nodes
     hazelcast.xml              # Hazelcast cluster configuration
     keystore.jceks             # Gentics Mesh keystore used to generate and validate JWT's
     logback.xml                # Logging configuration file
-    orientdb-server-config.xml # OrientDB Cluster Server configuration
-    security.json              # OrientDB security configuration
     mesh-ui-config.js          # Configuration of the Mesh UI
 
 Gentics Mesh ships with two configuration files:
@@ -122,7 +104,7 @@ Gentics Mesh ships with two configuration files:
 
 All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
 
-The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The OrientDB graph data is stored within the ```graphdb``` folder. ```tmp``` is used by Vert.x and other components e.g. for file uploads.
+The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images.  ```tmp``` is used by Vert.x and other components e.g. for file uploads.
 
 NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
 
@@ -134,68 +116,14 @@ The ```elasticsearch``` folder contains the included Elasticsearch installation 
 
 === Server Requirements
 
-Gentics Mesh comes with OrientDB, an embedded graph database. There are no external dependencies besides Java Runtime 11.
+There are no external dependencies besides Java Runtime 11.
 
-Production servers must be run on Linux. Windows is not supported. You can however run Gentics Mesh on Windows via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
-
-==== GraphDB Storage Requirements
-
-The underlying storage filesystem for the Graph Database must support DirectIO.
-
-[options="header"]
-|======
-| Filesystem       | Supported
-| ```Ext4```       | Yes
-| ```XFS```        | Yes
-| ```NFS```        | No
-| ```GlusterFS```  | No
-| ```Ceph```       | No
-| ```ZFS```        | No
-| ```Amazon EFS``` | No
-| ```Amazon EBS``` | Yes
-|======
-
-Storage solutions which provide one of the supported filesystems by the means of iSCSI or Fiberchannel are supported.
-
-Gentics Mesh will periodically check the available disk space. If less disk space is available than defined as
-warn threshold, a warning will be logged. If less disk space is available than defined as read-only threshold,
-the Mesh instance (in cluster mode all Mesh instances) will be set read-only, so mutating requests will all fail
-with an appropriate message.
-
-The thresholds can be configured with the configuration settings `storage.diskQuota.warnThreshold` and `storage.diskQuota.readOnlyThreshold` either as percentage of the total disk space (e.g. `10%`) or as absolute disk space (e.g. `10M`). The check interval can be configured with `storage.diskQuota.checkInterval` (in ms). Setting this to `0` will disable the check.
+Production servers must be run on Linux. Work on Windows is neither guaranteed nor eligible for support. Running Gentics Mesh on Windows is encouraged via link:https://docs.docker.com/docker-for-windows/[Docker Windows].
 
 ==== Cluster Requirements
 
 * Each Gentics Mesh instance needs at least 1.5 GB heap memory.
 * A shared filesystem needs to be provided for the upload folder. This folder needs to be shared among all cluster instances. Using NFS is a typical choice for these folders.
-
-==== System Configuration
-
-The maximum open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
-
-The limits need to be configured specific to your execution environment.
-
-* Docker: Limits can be specified during startup or inside the `docker-compose.yaml`.
-* Systemd: Limits can be specified within the startup service file.
-* K8S/Openshift: Limits need to be configured in the deployments. The commercial helm chart already includes these.
-* sysvinit: The limits can be configured in the `/etc/security/limits.conf`
-
-Edit _/etc/security/limits.conf_ and add these two lines:
-
-[source,bash]
-----
-mesh   soft    nofile  60000
-mesh   hard    nofile  60000
-----
-
-Edit _/etc/pam.d/su_ and uncomment or add the following line:
-
-[source,bash]
-----
-session    required   pam_limits.so
-----
-
-NOTE: This change may require a logout and login.
 
 === Client Requirements
 
@@ -261,14 +189,6 @@ include::content/docs/generated/tables/GraphStorageOptions.adoc-include[]
 
 include::content/docs/generated/tables/DiskQuotaOptions.adoc-include[]
 
-==== OrientDB parameters
-
-[options="header"]
-|======
-| Configuration                                   | Type    | Default        | Description
-| ```ridBag.embeddedToSbtreeBonsaiThreshold```    | Number  | 2147483647     | Configures the ridbag threshold for OrientDB. This setting controls how OrientDB manages the internal ridbag data structure. This setting will be ignored when run in clustered mode. See OrientDB documentation for more details.
-|======
-
 === Search Options
 
 include::content/docs/generated/tables/ElasticSearchOptions.adoc-include[]
@@ -304,8 +224,6 @@ include::content/docs/generated/tables/ImageManipulatorOptions.adoc-include[]
 
 include::content/docs/generated/tables/CacheConfig.adoc-include[]
 
-Additionally it is possible to tweak the underlying OrientDB cache settings.
-
 === Debug Information Options
 
 include::content/docs/generated/tables/DebugInfoOptions.adoc-include[]
@@ -325,10 +243,9 @@ Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variabl
 | `-Xms`                            | Initial heap size of the Gentics Mesh Java process
 | `-Xss`                            | Stack size. A larger stack size may be required when deleting deep datasets. The default value is 1MB.
 | `-XX:MaxDirectMemorySize`         | Maximum direct memory limit. Direct memory is mostly used for IO buffers.
-| `-Dstorage.diskCache.bufferSize`  | Disk buffer size in megabytes used for the graph database. The disk cache will make use of direct memory that is independent of the above setting.
 |======
 
-The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + `disk cache` + (`stack size` * `thread count`) + `256 MB (OrientDB + JVM base memory)`.
+The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + `disk cache` + (`stack size` * `thread count`) + `256 MB (JVM base memory)`.
 
 ==== Recommendations (Single Node)
 
@@ -369,40 +286,6 @@ Additional admin users can be created by setting the `admin` flag the users.
 
 NOTE: The admin access can be restored via the use of the `resetAdminPassword` link:#cli[mesh server argument].
 
-== Backup & Recovery
-
-There are currently fours components which can be included in a backup:
-
-* *Graph Database* - The graph database contains the main content of Gentics Mesh.
-    The DB can be backed up on demand via `{apiLatest}/admin/graphdb/backup` endpoint or via the OrientDB backup job using `automatic-backup.json`.
-    This will automatically create a full backup. Note that both backup processes will block the application.
-    The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
-
-* *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
-
-* *Elasticsearch Index* - Optionally you can also backup the Elasticsearch index.
-    The index can also be re-created anytime using the `POST {apiLatest}/search/sync` endpoint.
-
-* *Configuration* - The Gentics Mesh configuration files should be part of a backup. Especially the `keystore.jks` file is important since it contains the cryptographic keys which are needed to authenticate issued tokens which includes also the API key.
-                    The `mesh.yaml` file contains the autogenerated password for the keystore file. The keystore file and the password to open it are required by Gentics Mesh to authenticate tokens.
-
-The ```POST {apiLatest}/admin/graphdb/restore``` endpoint can be used to restore created backups.
-The endpoint will utilize the latest backup found in the backup directory.
-
-NOTE: Invoking the `backup`/`restore` endpoints will block all execution and request processing. Reverse proxies may return a timeout error when the request takes too long.
-
-NOTE: The backup endpoint will only create a backup of the graph database. The other components need to be handled separately.
-
-NOTE: The restore operation can't be executed on Mesh instances which have clustering enabled.
-
-If you already run Gentics Mesh in a cluster you can start a dedicated backup instance which can run the backup process without interference of the other nodes.
-
-Take a look at our link:https://github.com/gentics/mesh-compose/tree/clustering#online-backup[docker-compose example] for a documented setup.
-
-== Import & Export
-
-The `POST {apiLatest}/admin/graphdb/export` and `POST {apiLatest}/admin/graphdb/import` endpoints can be used to generate Graph Database export files which are gzipped json files. A large database can be exported and reimported again to reduce the sparse file size.
-
 [[debuginfo]]
 == Debug Information
 
@@ -431,8 +314,6 @@ The following files from the `config` folder:
 - `mesh.yml`
 - `hazelcast.xml`
 - `logback.xml`
-- `default-distributed-db-config.xml`
-- `orientdb-server-config.xml`
 
 === Consistency Check
 Query name: `consistencyCheck`
@@ -556,14 +437,6 @@ The `repaired` property will be set to true if the inconsistency could be fixed.
 ----
 include::content/docs/api/response{apiLatest}/admin/consistency/repair/200/example.json[]
 ----
-
-== Filesystem support
-
-The filesystem https://en.wikipedia.org/wiki/ZFS[ZFS] (ZFS on Linux) does currently not support Direct IO on Linux.
-
-When using ZFS it is thus required to turn off direct IO usage of OrientDB. Please use the    `-Dstorage.wal.allowDirectIO=false` setting in this case.
-
-NOTE: The direct IO support will be included in ZFS 0.8
 
 == License
 

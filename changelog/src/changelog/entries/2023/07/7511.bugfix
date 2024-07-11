@@ -1,0 +1,1 @@
+Core: The performance of schema migrations has been improved by efficiently loading binary fields and list field values.

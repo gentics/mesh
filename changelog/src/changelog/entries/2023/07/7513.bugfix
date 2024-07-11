@@ -1,0 +1,1 @@
+Core: A cache for list field values has been added. The size of this cache can be configured with `cache.listFieldCacheSize` (defaults to 50000).

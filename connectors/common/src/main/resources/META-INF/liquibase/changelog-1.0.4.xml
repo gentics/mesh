@@ -1,0 +1,37 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+	
+	<property name="largetext.type" value="TEXT" dbms="postgresql,hsqldb"/>
+	<property name="largetext.type" value="LONGTEXT" dbms="mariadb,mysql"/>
+	
+	<changeSet author="s.plyhun@gentics.com" id="1682071146058-1">
+		<addColumn tableName="mesh_nodefieldcontainer">
+			<column name="edited" type="${timestamp.type}" />
+			<column name="editor_dbuuid" type="${uuid.type}" />
+		</addColumn>
+	</changeSet>
+	<changeSet id="1682071146058-2" author="s.plyhun@gentics.com">
+		<customChange class="com.gentics.mesh.liquibase.changelog.v1_0_4.CopyEditorTrackingIntoEdge"></customChange>
+	</changeSet>
+	<changeSet id="1682071146058-3" author="s.plyhun@gentics.com" dbms="mariadb,mysql">
+		<modifyDataType tableName="mesh_binaryfieldref" columnName="plaintext" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_s3binaryfieldref" columnName="plaintext" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_binaryfieldref_metadataproperties" columnName="pvalue" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_s3binaryfieldref_metadataproperties" columnName="pvalue" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_htmllistitem" columnName="valueoruuid" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_stringlistitem" columnName="valueoruuid" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_job" columnName="errordetail" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_job" columnName="warnings" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_microschemaversion" columnName="schemajson" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_schemaversion" columnName="schemajson" newDataType="LONGTEXT"/>
+		<modifyDataType tableName="mesh_schemachange_properties" columnName="pvalue" newDataType="LONGTEXT"/>
+	</changeSet>
+	<changeSet author="s.plyhun@gentics.com" id="1682071146058-4">
+		<customChange class="com.gentics.mesh.liquibase.changelog.v1_0_4.FixMicronodeToNodeReferences"></customChange>
+	</changeSet>
+</databaseChangeLog>

@@ -89,7 +89,7 @@ public class MeshTestContext implements TestRule {
 
 	static {
 		System.setProperty(TrackingSearchProviderImpl.TEST_PROPERTY_KEY, "true");
-		System.setProperty("memory.directMemory.preallocate", "false");
+		System.setProperty("org.jboss.logging.provider", "slf4j");
 	}
 
 	public static final Logger LOG = LoggerFactory.getLogger(MeshTestContext.class);
@@ -154,7 +154,7 @@ public class MeshTestContext implements TestRule {
 	 */
 	protected void starting(Description description) throws Throwable {
 		MeshTestSetting settings = getSettings(description);
-		// Setup the dagger context and orientdb,es once
+		// Setup the dagger context, orm, es once
 		if (description.isSuite()) {
 			setupOnce(settings);
 		} else {

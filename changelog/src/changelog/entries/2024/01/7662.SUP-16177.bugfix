@@ -1,0 +1,1 @@
+Core: The process of deleting nodes recursively has been refactored to avoid possible deadlocks in the database (when running in parallel requests).

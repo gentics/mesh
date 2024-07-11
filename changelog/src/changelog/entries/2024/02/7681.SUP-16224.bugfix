@@ -1,0 +1,5 @@
+REST: The endpoints for invoking a consistency check/repair now have a new query parameter `async` which allows to perform the action as a background job instead of synchronously.
+
+Core: Updating and publishing a node in a single request has been optimized to only create a single new version of the content.
+
+Core: More consistency checks have been added for asynchronous execution.

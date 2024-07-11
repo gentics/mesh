@@ -15,11 +15,10 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
-[[clustering_orientdb]]
-== Clustering Support for OrientDB
+[[support_orientdb]]
+== Support for OrientDB
 
-Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
-link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
+Starting with version 3.0.0 OrientDB is no longer part of Gentics Mesh, and is replaced by RDBMS-based solutions. The integration with link:https://mariadb.org/[MariaDB] is available for public use.
 
 [[v2.1.x]]
 == 2.1.x Changelog

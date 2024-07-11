@@ -1,0 +1,332 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <property name="smalltext.type" value="NVARCHAR(255)" dbms="mssql"/>
+    <property name="smalltext.type" value="VARCHAR(255)" dbms="oracle,postgresql,mariadb,mysql,hsqldb"/>
+
+    <property name="fieldkey.newtype" value="NVARCHAR(255)" dbms="mssql"/>
+    <property name="fieldkey.newtype" value="VARCHAR(255)" dbms="oracle,postgresql,mariadb,mysql,hsqldb"/>
+
+    <changeSet id="sup-15215-1"	author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_nodefieldcontainer_webrooturlfields"
+            columnName="webrooturlfields"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-2"	author="n.pomaroli@gentics.com">
+        <createIndex tableName="mesh_nodefieldcontainer_webrooturlfields" indexName="idx_mesh_nodefieldcontainer_webrooturlfields_webrooturlfields" clustered="false">
+			<column name="webrooturlfields" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-3"	author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_tagfamily"
+            columnName="description"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-4"	author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex indexName="idx_sha" tableName="mesh_binary"/>
+        <modifyDataType tableName="mesh_binary"
+            columnName="sha512sum"
+            newDataType="${smalltext.type}"/>
+        <createIndex indexName="idx_sha" tableName="mesh_binary">
+            <column name="sha512sum"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-5"	author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropUniqueConstraint constraintName="keytypeversioncontainer" tableName="mesh_binaryfieldref"/>
+        <dropIndex indexName="idx_content_key" tableName="mesh_binaryfieldref"/>
+        <modifyDataType tableName="mesh_binaryfieldref"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_binaryfieldref"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_binaryfieldref"
+            columnName="imagedominantcolor"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_binaryfieldref"
+            columnName="mimetype"
+            newDataType="${smalltext.type}"/>
+        <addUniqueConstraint columnNames="fieldkey, containeruuid, containertype, containerversionuuid" constraintName="keytypeversioncontainer" tableName="mesh_binaryfieldref"/>
+        <createIndex indexName="idx_content_key" tableName="mesh_binaryfieldref">
+            <column name="containeruuid"/>
+            <column name="fieldkey"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-6" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_binaryfieldref_metadataproperties"
+            columnName="pkey"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-7" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropUniqueConstraint constraintName="keytypeversioncontainerlistindex" tableName="mesh_boollistitem"/>
+        <dropIndex tableName="mesh_boollistitem" indexName="idx_mesh_boollistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_boollistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_boollistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <addUniqueConstraint columnNames="itemindex, listuuid, fieldkey, containeruuid, containertype, containerversionuuid" constraintName="keytypeversioncontainerlistindex" tableName="mesh_boollistitem"/>
+        <createIndex tableName="mesh_boollistitem" indexName="idx_mesh_boollistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+        </createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-8" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_branch_microschema_version_edge"
+            columnName="jobuuid"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-9" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_branch_schema_version_edge"
+            columnName="jobuuid"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-10" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_datelistitem" indexName="idx_mesh_datelistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_datelistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_datelistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_datelistitem" indexName="idx_mesh_datelistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-11" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_htmllistitem" indexName="idx_mesh_htmllistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_htmllistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_htmllistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_htmllistitem" indexName="idx_mesh_htmllistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-12" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropUniqueConstraint constraintName="keytypeversioncontainermicronode" tableName="mesh_micronodefieldref" />
+        <dropIndex tableName="mesh_micronodefieldref" indexName="idx_mesh_micronodefieldref_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_micronodefieldref"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_micronodefieldref"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <addUniqueConstraint columnNames="microschemaversion_dbuuid, fieldkey, containeruuid, containertype, containerversionuuid" constraintName="keytypeversioncontainermicronode" tableName="mesh_micronodefieldref"/>
+        <createIndex tableName="mesh_micronodefieldref" indexName="idx_mesh_micronodefieldref_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-13" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_micronodelistitem" indexName="idx_mesh_micronodelistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_micronodelistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_micronodelistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_micronodelistitem" indexName="idx_mesh_micronodelistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-14" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_microschemaversion"
+            columnName="version"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-15" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropUniqueConstraint constraintName="nodetypebranchversioncontentlanguage" tableName="mesh_nodefieldcontainer" />
+        <dropIndex indexName="idx_branch_version_type" tableName="mesh_nodefieldcontainer" />
+        <dropIndex indexName="idx_node_type_branch_language" tableName="mesh_nodefieldcontainer" />
+        <dropIndex indexName="idx_content_type_branch" tableName="mesh_nodefieldcontainer" />
+        <dropIndex indexName="idx_branch_type_webrootpath" tableName="mesh_nodefieldcontainer" />
+        <modifyDataType tableName="mesh_nodefieldcontainer"
+            columnName="type"
+            newDataType="${smalltext.type}"/>
+        <addUniqueConstraint columnNames="node_dbuuid, type, version_dbuuid, branch_dbuuid, contentuuid, languagetag" constraintName="nodetypebranchversioncontentlanguage" tableName="mesh_nodefieldcontainer"/>
+        <createIndex indexName="idx_branch_version_type" tableName="mesh_nodefieldcontainer">
+            <column name="branch_dbuuid"/>
+            <column name="version_dbuuid"/>
+            <column name="type"/>
+        </createIndex>
+        <createIndex indexName="idx_node_type_branch_language" tableName="mesh_nodefieldcontainer">
+            <column name="node_dbuuid"/>
+            <column name="type"/>
+            <column name="branch_dbuuid"/>
+            <column name="languagetag"/>
+        </createIndex>
+        <createIndex indexName="idx_content_type_branch" tableName="mesh_nodefieldcontainer">
+            <column name="contentuuid"/>
+            <column name="type"/>
+            <column name="branch_dbuuid"/>
+        </createIndex>
+        <createIndex indexName="idx_branch_type_webrootpath" tableName="mesh_nodefieldcontainer">
+            <column name="branch_dbuuid"/>
+            <column name="type"/>
+            <column name="webrootpath"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-16" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_nodefieldref" indexName="idx_mesh_nodefieldref_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_nodefieldref"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_nodefieldref"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_nodefieldref" indexName="idx_mesh_nodefieldref_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-17" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_nodelistitem" indexName="idx_mesh_nodelistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_nodelistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_nodelistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_nodelistitem" indexName="idx_mesh_nodelistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-18" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_numberlistitem" indexName="idx_mesh_numberlistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_numberlistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_numberlistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_numberlistitem" indexName="idx_mesh_numberlistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-19" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_permission"
+            columnName="type"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-20" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_permissionroot"
+            columnName="type"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-21" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex indexName="idx_s3_object_key" tableName="mesh_s3binary" />
+        <modifyDataType tableName="mesh_s3binary"
+            columnName="mimetype"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_s3binary"
+            columnName="s3objectkey"
+            newDataType="${smalltext.type}"/>
+        <createIndex indexName="idx_s3_object_key" tableName="mesh_s3binary">
+            <column name="s3objectkey"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-22" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex indexName="idx_content_field_key" tableName="mesh_s3binaryfieldref" />
+        <modifyDataType tableName="mesh_s3binaryfieldref"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_s3binaryfieldref"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_s3binaryfieldref"
+            columnName="imagedominantcolor"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_s3binaryfieldref"
+            columnName="mimetype"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_s3binaryfieldref"
+            columnName="s3objectkey"
+            newDataType="${smalltext.type}"/>
+        <createIndex indexName="idx_content_field_key" tableName="mesh_s3binaryfieldref">
+            <column name="containeruuid"/>
+            <column name="fieldkey"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-23" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_s3binaryfieldref_metadataproperties"
+            columnName="pkey"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-24" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_schemachange"
+            columnName="operation"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-25" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropPrimaryKey 
+            dropIndex="true" 
+            tableName="mesh_schemachange_properties"/>
+        <modifyDataType tableName="mesh_schemachange_properties"
+            columnName="pkey"
+            newDataType="${smalltext.type}"/>
+        <addNotNullConstraint tableName="mesh_schemachange_properties"
+            columnDataType="${smalltext.type}"
+            columnName="pkey" />
+        <addPrimaryKey tableName="mesh_schemachange_properties" columnNames="schemachange_dbuuid,pkey" constraintName="mesh_schemachange_properties_pkey"/>
+    </changeSet>
+    <changeSet id="sup-15215-26" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_schemaversion"
+            columnName="version"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-27" author="n.pomaroli@gentics.com" dbms="mssql">
+        <dropIndex tableName="mesh_stringlistitem" indexName="idx_mesh_stringlistitem_containeruuid_containertype_fieldkey" />
+        <modifyDataType tableName="mesh_stringlistitem"
+            columnName="fieldkey"
+            newDataType="${fieldkey.newtype}"/>
+        <modifyDataType tableName="mesh_stringlistitem"
+            columnName="containertype"
+            newDataType="${smalltext.type}"/>
+        <createIndex tableName="mesh_stringlistitem" indexName="idx_mesh_stringlistitem_containeruuid_containertype_fieldkey" clustered="false">
+			<column name="containeruuid" />
+			<column name="containertype" />
+			<column name="fieldkey" />
+		</createIndex>
+    </changeSet>
+    <changeSet id="sup-15215-28" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_user"
+            columnName="apitokenid"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_user"
+            columnName="passwordhash"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_user"
+            columnName="resettoken"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+    <changeSet id="sup-15215-29" author="n.pomaroli@gentics.com" dbms="mssql">
+        <modifyDataType tableName="mesh_version"
+            columnName="databaserevision"
+            newDataType="${smalltext.type}"/>
+        <modifyDataType tableName="mesh_version"
+            columnName="meshversion"
+            newDataType="${smalltext.type}"/>
+    </changeSet>
+</databaseChangeLog>
