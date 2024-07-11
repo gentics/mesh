@@ -97,40 +97,6 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public ElasticSearchProvider init() {
-		JsonObject settings = null;
-
-        try {
-            settings = client.clusterSettings().sync();
-        } catch (HttpErrorException e) {
-			log.error("Could not determine current cluster settings: {}", e.getMessage(), e);
-
-			return this;
-        }
-
-		Optional<Boolean> settingsDestructiveRequiresName = Optional.ofNullable(settings)
-				.map(o -> o.getJsonObject("persistent"))
-				.map(o -> o.getJsonObject("action"))
-				.map(o -> o.getString("destructive_requires_name"))
-				.map(Boolean::valueOf);
-
-		if (settingsDestructiveRequiresName.isEmpty() || settingsDestructiveRequiresName.get()) {
-			log.info("Updating cluster configuration: destructive_requires_name=false");
-
-			JsonObject update = new JsonObject()
-				.put("persistent", new JsonObject()
-					.put("action", new JsonObject()
-						.put("destructive_requires_name", false)));
-
-            try {
-                settings = client.updateClusterSettings(update).sync();
-
-				if (log.isInfoEnabled()) {
-					log.info("Updated cluster configuration:\n{}", settings.encodePrettily());
-				}
-            } catch (HttpErrorException e) {
-				log.error("Could update cluster settings: {}", e.getMessage(), e);
-            }
-        }
 
         return this;
 	}
