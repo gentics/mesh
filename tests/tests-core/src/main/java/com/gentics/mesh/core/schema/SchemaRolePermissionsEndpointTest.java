@@ -2,7 +2,7 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.test.TestSize.FULL;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -17,7 +17,7 @@ import com.gentics.mesh.test.context.ClientHandler;
 public class SchemaRolePermissionsEndpointTest extends AbstractRolePermissionEndpointTest {
 
 	@Override
-	protected HibBaseElement getTestedElement() {
+	protected BaseElement getTestedElement() {
 		return schemaContainer("content");
 	}
 

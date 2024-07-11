@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
@@ -51,7 +51,7 @@ public class AuthenticationRestHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			// TODO add permission check
 			PersistingUserDao userDao = CommonTx.get().userDao();
-			HibUser requestUser = userDao.mergeIntoPersisted(ac.getUser());
+			User requestUser = userDao.mergeIntoPersisted(ac.getUser());
 			return userDao.transformToRestSync(requestUser, ac, 0);
 		}, model -> ac.send(model, OK));
 	}

@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -42,7 +42,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testTransformToReference() throws Exception {
 	}
 
-	public HibLanguage englishLang() {
+	public Language englishLang() {
 		try (Tx tx = tx()) {
 			return tx.languageDao().findByLanguageTag("en");
 		}
@@ -73,7 +73,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testFindAllVisible() throws InvalidArgumentException {
 		LanguageResponse response = tx(tx -> {
 			LanguageDao languageDao = tx.languageDao();
-			HibLanguage english = languageDao.findByLanguageTag("en");
+			Language english = languageDao.findByLanguageTag("en");
 			InternalActionContext ac = mockActionContext();
 			ac.getGenericParameters().setFields("languageTag");
 			return languageDao.transformToRestSync(english, ac, 0);
@@ -101,7 +101,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 			int nChecks = 50000;
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
-				HibLanguage language = tx.languageDao().findByLanguageTag("de");
+				Language language = tx.languageDao().findByLanguageTag("de");
 				assertNotNull(language);
 			}
 
@@ -116,7 +116,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindByName() {
 		try (Tx tx = tx()) {
-			HibLanguage language = tx.languageDao().findByName("German");
+			Language language = tx.languageDao().findByName("German");
 			assertNotNull(language);
 
 			assertEquals("German", language.getName());
@@ -132,8 +132,8 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			HibLanguage language = tx.languageDao().findByName("German");
-			HibLanguage foundLanguage = tx.languageDao().findByUuid(language.getUuid());
+			Language language = tx.languageDao().findByName("German");
+			Language foundLanguage = tx.languageDao().findByUuid(language.getUuid());
 			assertNotNull(foundLanguage);
 
 			foundLanguage = tx.languageDao().findByUuid("bogus");
@@ -147,13 +147,13 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testTransformation() {
 		try (Tx tx = tx()) {
 			LanguageDao languageDao = tx.languageDao();
-			HibLanguage language = tx.languageDao().findByName("German");
+			Language language = tx.languageDao().findByName("German");
 
 			doTransformationTests(languageDao, language,
-					Pair.of("uuid", HibLanguage::getUuid),
-					Pair.of("name", HibLanguage::getName),
-					Pair.of("nativeName", HibLanguage::getNativeName),
-					Pair.of("languageTag", HibLanguage::getLanguageTag));
+					Pair.of("uuid", Language::getUuid),
+					Pair.of("name", Language::getName),
+					Pair.of("nativeName", Language::getNativeName),
+					Pair.of("languageTag", Language::getLanguageTag));
 	}
 	}
 
@@ -173,7 +173,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testRead() {
 		try (Tx tx = tx()) {
-			HibLanguage language = englishLang();
+			Language language = englishLang();
 			assertNotNull(language.getName());
 			assertEquals("English", language.getName());
 			assertNotNull(language.getNativeName());
@@ -190,7 +190,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 			LanguageDao languageDao = tx.languageDao();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
-			HibLanguage lang = languageDao.create(languageName, languageTag);
+			Language lang = languageDao.create(languageName, languageTag);
 
 			lang = languageDao.findByName(languageName);
 			assertNotNull(lang);

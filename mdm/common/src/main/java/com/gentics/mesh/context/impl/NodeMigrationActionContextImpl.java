@@ -5,10 +5,10 @@ import java.util.*;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.NodeMigrationUser;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
@@ -36,15 +36,15 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 	private String query;
 
-	private HibProject project;
+	private Project project;
 
-	private HibBranch branch;
+	private Branch branch;
 
 	private SchemaMigrationCause cause;
 
-	private HibSchemaVersion fromContainerVersion;
+	private SchemaVersion fromContainerVersion;
 
-	private HibSchemaVersion toContainerVersion;
+	private SchemaVersion toContainerVersion;
 
 	private MigrationStatusHandler status;
 
@@ -55,7 +55,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public HibBranch getBranch() {
+	public Branch getBranch() {
 		return branch;
 	}
 
@@ -115,7 +115,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public HibProject getProject() {
+	public Project getProject() {
 		return project;
 	}
 
@@ -124,16 +124,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	 *
 	 * @param project
 	 */
-	public void setProject(HibProject project) {
+	public void setProject(Project project) {
 		this.project = project;
 	}
 
-	public void setBranch(HibBranch branch) {
+	public void setBranch(Branch branch) {
 		this.branch = branch;
 	}
 
 	@Override
-	public HibUser getUser() {
+	public User getUser() {
 		return new NodeMigrationUser();
 	}
 
@@ -253,20 +253,20 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public HibSchemaVersion getFromVersion() {
+	public SchemaVersion getFromVersion() {
 		return fromContainerVersion;
 	}
 
-	public void setFromVersion(HibSchemaVersion fromContainerVersion) {
+	public void setFromVersion(SchemaVersion fromContainerVersion) {
 		this.fromContainerVersion = fromContainerVersion;
 	}
 
 	@Override
-	public HibSchemaVersion getToVersion() {
+	public SchemaVersion getToVersion() {
 		return toContainerVersion;
 	}
 
-	public void setToVersion(HibSchemaVersion toContainerVersion) {
+	public void setToVersion(SchemaVersion toContainerVersion) {
 		this.toContainerVersion = toContainerVersion;
 	}
 

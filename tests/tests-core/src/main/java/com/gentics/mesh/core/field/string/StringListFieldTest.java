@@ -15,15 +15,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibStringField;
-import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.StringField;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -54,20 +54,20 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			prepareNode(node, STRING_LIST, "string");
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			HibStringFieldList stringList = container.createStringList(STRING_LIST);
+			StringFieldList stringList = container.createStringList(STRING_LIST);
 			stringList.createString("dummyString1");
 			stringList.createString("dummyString2");
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, STRING_LIST, "string", response);
 		}
@@ -77,8 +77,8 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibStringFieldList list = container.createStringList(STRING_LIST);
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			StringFieldList list = container.createStringList(STRING_LIST);
 
 			list.createString("1");
 			assertEquals(STRING_LIST, list.getFieldKey());
@@ -92,7 +92,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			assertEquals(3, list.getList().size());
 			assertEquals("Some string 3", list.getList().get(2).getString());
 
-			HibStringFieldList loadedList = container.getStringList(STRING_LIST);
+			StringFieldList loadedList = container.getStringList(STRING_LIST);
 			assertNotNull(loadedList);
 			assertEquals(3, loadedList.getSize());
 			list.removeAll();
@@ -105,8 +105,8 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testBulkFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibStringFieldList list = container.createStringList(STRING_LIST);
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			StringFieldList list = container.createStringList(STRING_LIST);
 			List<String> params = List.of("1","2","3","4","whatever");
 			list.createStrings(params);
 			assertEquals(5, list.getSize());
@@ -120,13 +120,13 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibStringFieldList testField = container.createStringList(STRING_LIST);
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			StringFieldList testField = container.createStringList(STRING_LIST);
 			testField.createString("one");
 			testField.createString("two");
 			testField.createString("three");
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getStringList(STRING_LIST).equals(testField));
@@ -137,9 +137,9 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
-			HibStringFieldList fieldA = container.createStringList("fieldA");
-			HibStringFieldList fieldB = container.createStringList("fieldB");
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
+			StringFieldList fieldA = container.createStringList("fieldA");
+			StringFieldList fieldB = container.createStringList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.addItem(fieldA.createString("testString"));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -155,10 +155,10 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibStringFieldList fieldA = container.createStringList(STRING_LIST);
-			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((HibStringFieldList) null));
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			StringFieldList fieldA = container.createStringList(STRING_LIST);
+			assertFalse(fieldA.equals((FieldModel) null));
+			assertFalse(fieldA.equals((StringFieldList) null));
 		}
 	}
 
@@ -166,11 +166,11 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			String dummyValue = "test123";
 
 			// rest null - graph null
-			HibStringFieldList fieldA = container.createStringList(STRING_LIST);
+			StringFieldList fieldA = container.createStringList(STRING_LIST);
 
 			StringFieldListImpl restField = new StringFieldListImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
@@ -240,7 +240,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				field.getItems().add("someValue2");
 				updateContainer(ac, container, STRING_LIST, field);
 			}, (container) -> {
-				HibStringFieldList field = container.getStringList(STRING_LIST);
+				StringFieldList field = container.getStringList(STRING_LIST);
 				assertNotNull("The graph field {" + STRING_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
 				assertEquals("The list item of the field was not updated.", "someValue", field.getList().get(0).getString());

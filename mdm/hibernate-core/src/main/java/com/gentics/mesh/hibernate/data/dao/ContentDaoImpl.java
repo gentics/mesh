@@ -43,23 +43,23 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibDeletableField;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.DeletableField;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibDisplayField;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.DisplayField;
+import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
@@ -150,24 +150,24 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainer getLatestDraftFieldContainer(HibNode node, String languageTag) {
+	public NodeFieldContainer getLatestDraftFieldContainer(Node node, String languageTag) {
 		return getFieldContainer(node, languageTag, node.getProject().getLatestBranch(), DRAFT);
 	}
 
 	@Override
-	public HibNodeFieldContainerImpl getFieldContainerOfEdge(HibNodeFieldContainerEdge edge) {
+	public HibNodeFieldContainerImpl getFieldContainerOfEdge(NodeFieldContainerEdge edge) {
 		HibNodeFieldContainerEdgeImpl edgeImpl = (HibNodeFieldContainerEdgeImpl) edge;
 		return getFieldContainer(edgeImpl.getVersion(), edgeImpl.getContentUuid());
 	}
 
 	@Override
-	public void removeEdge(HibNodeFieldContainerEdge edge) {
+	public void removeEdge(NodeFieldContainerEdge edge) {
 		((HibNodeImpl)edge.getNode()).removeEdge((HibNodeFieldContainerEdgeImpl) edge);
 		currentTransaction.getEntityManager().remove(edge);
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, ContainerType type) {
+	public Result<NodeFieldContainer> getFieldContainers(Node node, ContainerType type) {
 		List<HibNodeFieldContainerEdgeImpl> edges;
 		if (contentEdgesInitialized(node)) {
 			HibNodeImpl impl = (HibNodeImpl) node;
@@ -187,7 +187,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Result<HibNodeFieldContainer> getFieldContainers(HibNode node, String branchUuid, ContainerType type) {
+	public Result<NodeFieldContainer> getFieldContainers(Node node, String branchUuid, ContainerType type) {
 		if (maybeTypeLoader().isPresent()) {
 			return new TraversalResult<>(maybeTypeLoader().get().apply(node, type));
 		}
@@ -213,13 +213,13 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, ContainerType type) {
+	public Map<Node, List<NodeFieldContainer>> getFieldsContainers(Set<Node> nodes, String branchUuid, ContainerType type) {
 		if (nodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
 
 		UUID branchId = UUIDUtil.toJavaUuid(branchUuid);
-		List<UUID> nodesUuids = nodes.stream().map(HibNode::getId).map(UUID.class::cast).collect(Collectors.toList());
+		List<UUID> nodesUuids = nodes.stream().map(Node::getId).map(UUID.class::cast).collect(Collectors.toList());
 		return SplittingUtils.splitAndMergeInMapOfLists(nodesUuids, HibernateUtil.inQueriesLimitForSplitting(2), (uuids) -> {
 			List<HibNodeFieldContainerEdgeImpl> edges = currentTransaction.getEntityManager()
 					.createNamedQuery("contentEdge.findByNodesTypeAndBranch", HibNodeFieldContainerEdgeImpl.class)
@@ -232,7 +232,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			return contentStorage.findMany(edges).stream()
 					.collect(Collectors.groupingBy(HibNodeFieldContainerImpl::getNodeId))
 					.entrySet().stream()
-					.map(uuidContent -> Pair.of(nodes.stream().filter(node -> node.getId().equals(uuidContent.getKey())).findAny().orElse(null), (List<HibNodeFieldContainer>) (List<?>) uuidContent.getValue()))
+					.map(uuidContent -> Pair.of(nodes.stream().filter(node -> node.getId().equals(uuidContent.getKey())).findAny().orElse(null), (List<NodeFieldContainer>) (List<?>) uuidContent.getValue()))
 					.filter(pair -> pair.getKey() != null)
 					.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 		});
@@ -245,12 +245,12 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param type
 	 * @return
 	 */
-	public List<HibNodeFieldContainerImpl> getFieldsContainers(Set<HibNode> nodes, ContainerType type) {
+	public List<HibNodeFieldContainerImpl> getFieldsContainers(Set<Node> nodes, ContainerType type) {
 		if (nodes.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		List<HibNodeFieldContainerEdgeImpl> edges = SplittingUtils.splitAndMergeInList(nodes.stream().map(HibNode::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(1), slice -> currentTransaction.getEntityManager()
+		List<HibNodeFieldContainerEdgeImpl> edges = SplittingUtils.splitAndMergeInList(nodes.stream().map(Node::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(1), slice -> currentTransaction.getEntityManager()
 				.createNamedQuery("contentEdge.findByNodesAndType", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("nodeUuids", slice)
 				.setParameter("type", type)
@@ -260,7 +260,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Map<HibNode, List<HibNodeFieldContainer>> getFieldsContainers(Set<HibNode> nodes, String branchUuid, VersionNumber versionNumber) {
+	public Map<Node, List<NodeFieldContainer>> getFieldsContainers(Set<Node> nodes, String branchUuid, VersionNumber versionNumber) {
 		if (nodes.isEmpty()) {
 			return Collections.emptyMap();
 		}
@@ -281,7 +281,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		// 	  (select recursive parent from version_table parent join edge on edge.uuid = parent.id where edge.branch = :branch)
 		// 	  where version.versionNumber = versionNumber
 		// 3. create cache for content versions
-		List<HibNodeFieldContainerEdgeImpl> edges = SplittingUtils.splitAndMergeInList(nodes.stream().map(HibNode::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(3), slice -> currentTransaction.getEntityManager()
+		List<HibNodeFieldContainerEdgeImpl> edges = SplittingUtils.splitAndMergeInList(nodes.stream().map(Node::getId).collect(Collectors.toList()), HibernateUtil.inQueriesLimitForSplitting(3), slice -> currentTransaction.getEntityManager()
 					.createNamedQuery("contentEdge.findByNodesTypeAndBranch", HibNodeFieldContainerEdgeImpl.class)
 					.setParameter("nodeUuids", slice)
 					.setParameter("type", ContainerType.DRAFT)
@@ -291,7 +291,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 		return contentStorage.findMany(edges).stream()
 				.map(container -> {
-					HibNodeFieldContainer current = container;
+					NodeFieldContainer current = container;
 					while (current != null && !current.getVersion().equals(versionNumber)) {
 						current = current.getPreviousVersion();
 					}
@@ -299,16 +299,16 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 					return current;
 				})
 				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(HibNodeFieldContainer::getNode));
+				.collect(Collectors.groupingBy(NodeFieldContainer::getNode));
 	}
 
 	@Override
-	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, HibBranch branch, ContainerType type) {
+	public NodeFieldContainer getFieldContainer(Node node, String languageTag, Branch branch, ContainerType type) {
 		return getFieldContainer(node, languageTag, branch.getUuid(), type);
 	}
 
 	@Override
-	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag) {
+	public NodeFieldContainer getFieldContainer(Node node, String languageTag) {
 		String branch = node.getProject().getLatestBranch().getUuid();
 		return getFieldContainer(node, languageTag, branch, DRAFT);
 	}
@@ -332,7 +332,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainerEdge getEdge(HibNode node, String languageTag, String branchUuid, ContainerType type) {
+	public NodeFieldContainerEdge getEdge(Node node, String languageTag, String branchUuid, ContainerType type) {
 		HibNodeImpl impl = (HibNodeImpl) node;
 		if (contentEdgesInitialized(node)) {
 			return impl.getContentEdges().stream()
@@ -346,8 +346,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainer getFieldContainer(HibNode node, String languageTag, String branchUuid, ContainerType type) {
-		HibNodeFieldContainerEdge edge = getEdge(node, languageTag, branchUuid, type);
+	public NodeFieldContainer getFieldContainer(Node node, String languageTag, String branchUuid, ContainerType type) {
+		NodeFieldContainerEdge edge = getEdge(node, languageTag, branchUuid, type);
 		if (edge == null) {
 			return null;
 		}
@@ -355,7 +355,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return getFieldContainerOfEdge(edge);
 	}
 
-	public long getFieldContainerCount(HibNode node) {
+	public long getFieldContainerCount(Node node) {
 		EntityManager entityManager = currentTransaction.getEntityManager();
 		return ((Number) entityManager.createNamedQuery("contentEdge.countContentByNode")
 					.setParameter("node", node)
@@ -364,25 +364,25 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists) {
+	public Stream<NodeField> getInboundReferences(Node node, boolean lookupInFields, boolean lookupInLists) {
 		EntityManager em = currentTransaction.getEntityManager();
-		Stream<HibNodeField> listItems = lookupInLists ? em.createNamedQuery("nodelistitem.findByNodeUuid", HibNodeListFieldEdgeImpl.class)
+		Stream<NodeField> listItems = lookupInLists ? em.createNamedQuery("nodelistitem.findByNodeUuid", HibNodeListFieldEdgeImpl.class)
 				.setParameter("nodeUuid", node.getId())
 				.getResultStream()
-				.map(HibNodeField.class::cast) : Stream.empty();
-		Stream<HibNodeField> edges = lookupInFields ? currentTransaction.getEntityManager()
+				.map(NodeField.class::cast) : Stream.empty();
+		Stream<NodeField> edges = lookupInFields ? currentTransaction.getEntityManager()
 				.createNamedQuery("nodefieldref.findEdgeByNodeUuid", HibNodeFieldEdgeImpl.class)
 				.setParameter("uuid", node.getId())
 				.getResultStream()
-				.map(HibNodeField.class::cast) : Stream.empty();
+				.map(NodeField.class::cast) : Stream.empty();
 		return Stream.concat(listItems, edges);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Stream<Pair<HibNodeField, HibNode>> getInboundReferences(Collection<HibNode> nodes) {
+	public Stream<Pair<NodeField, Node>> getInboundReferences(Collection<Node> nodes) {
 		EntityManager em = currentTransaction.getEntityManager();
-		Collection<Object> nodeUuids = nodes.stream().map(HibNode::getId).collect(Collectors.toSet());
+		Collection<Object> nodeUuids = nodes.stream().map(Node::getId).collect(Collectors.toSet());
 		Set<Object[]> refs = SplittingUtils.splitAndMergeInSet(nodeUuids, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
 			Stream<Object[]> listItems = em.createNamedQuery("nodelistitem.findByNodeUuids")
 					.setParameter("nodeUuids", slice)
@@ -394,11 +394,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			return Stream.concat(listItems, edges).collect(Collectors.toSet());
 		});
 		return refs.stream().map((tuple) -> {
-			return Pair.of((HibNodeField) tuple[0], (HibNode) tuple[1]);
+			return Pair.of((NodeField) tuple[0], (Node) tuple[1]);
 		});
 	}
 
-	private <T extends HibField> Optional<T> castField(HibField field, Class<T> cls) {
+	private <T extends Field> Optional<T> castField(Field field, Class<T> cls) {
 		if (cls.isInstance(field)) {
 			return Optional.ofNullable(cls.cast(field));
 		}
@@ -407,19 +407,19 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> getReferencingContents(Collection<HibNodeField> fields) {
-		Map<ReferenceType, Set<HibNodeField>> classFields = (Map) fields.stream()
+	public Stream<Pair<NodeField, Collection<NodeFieldContainer>>> getReferencingContents(Collection<NodeField> fields) {
+		Map<ReferenceType, Set<NodeField>> classFields = (Map) fields.stream()
 				.collect(Collectors.groupingBy(impl -> castField(impl, AbstractFieldEdgeImpl.class).map(AbstractFieldEdgeImpl::getContainerType)
 						.or(() -> castField(impl, AbstractHibField.class).map(impl1 -> impl1.getContainer().getReferenceType()))
 						.orElseThrow(() -> new IllegalStateException("Unknown HibField implementation: " + impl)), 
 					Collectors.mapping(Function.identity(), Collectors.toSet())));
 
 		// Nodes referenced by nodes (already loaded)
-		Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> nodesAlreadyLoaded = (Stream) Optional.ofNullable(
+		Stream<Pair<NodeField, Collection<NodeFieldContainer>>> nodesAlreadyLoaded = (Stream) Optional.ofNullable(
 					classFields.get(ReferenceType.FIELD))
 						.map(fields1 -> fields1.stream()
 								.filter(AbstractHibField.class::isInstance)
-								.map(field -> Pair.of(field, Collections.singleton(HibNodeFieldContainer.class.cast(AbstractHibField.class.cast(field).getContainer()))))
+								.map(field -> Pair.of(field, Collections.singleton(NodeFieldContainer.class.cast(AbstractHibField.class.cast(field).getContainer()))))
 				).orElseGet(() -> Stream.empty());
 
 		// Nodes referenced by nodes (edges only)
@@ -433,14 +433,14 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 								})
 				).orElseGet(() -> Stream.empty())
 				.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toSet())));
-		Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> nodesJustLoaded = (Stream) contentStorage.findMany(nodesToLoad.keySet()).stream()
+		Stream<Pair<NodeField, Collection<NodeFieldContainer>>> nodesJustLoaded = (Stream) contentStorage.findMany(nodesToLoad.keySet()).stream()
 			.flatMap(content -> nodesToLoad.get(ContentKey.fromContent(content)).stream().map(field -> Pair.of(field, content)))
 			.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toSet())))
 			.entrySet().stream()
 			.map(entry -> Pair.of(entry.getKey(), entry.getValue()));
 
 		// origin content UUID / set of its referencing fields
-		Map<UUID, Collection<HibNodeField>> micronodeFields = (Map) Optional.ofNullable(
+		Map<UUID, Collection<NodeField>> micronodeFields = (Map) Optional.ofNullable(
 				classFields.get(ReferenceType.MICRONODE))
 					.map(fields1 -> fields1.stream().map(impl -> Pair.of(
 							impl, 
@@ -468,7 +468,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			}).stream().collect(Collectors.groupingBy(pair -> pair.getLeft().getType(), Collectors.mapping(Function.identity(), Collectors.toMap(pair -> pair.getRight(), pair -> pair.getLeft()))));
 
 		// Nodes referenced by micronode (s|lists). Note the remove() call.
-		Stream<Pair<HibNodeField, Collection<HibNodeFieldContainer>>> nodeMicroEdges = (Stream) Optional.ofNullable(micronodeEdges.remove(ReferenceType.FIELD))
+		Stream<Pair<NodeField, Collection<NodeFieldContainer>>> nodeMicroEdges = (Stream) Optional.ofNullable(micronodeEdges.remove(ReferenceType.FIELD))
 				.map(nodeFieldEdges -> {
 					// referencing ContentKey / origin 
 					Map<ContentKey, Set<UUID>> contentKeyUuids = nodeFieldEdges.entrySet().stream().collect(Collectors.groupingBy(Entry::getValue, Collectors.mapping(Entry::getKey, Collectors.toSet())));
@@ -499,7 +499,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param version
 	 * @param project
 	 */
-	public void delete(HibSchemaVersion version, HibProject project, BulkActionContext bac) {
+	public void delete(SchemaVersion version, Project project, BulkActionContext bac) {
 		long deletedCount = contentStorage.delete(version, project);
 		if (deletedCount > 0) {
 			deleteUnreferencedForVersion(version, bac);
@@ -510,7 +510,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * Delete all micronodes (and associated entities) for the given versions which are not referenced by any field
 	 * @param version
 	 */
-	public void deleteUnreferencedMicronodes(HibMicroschemaVersion version) {
+	public void deleteUnreferencedMicronodes(MicroschemaVersion version) {
 		long deletedCount = contentStorage.deleteUnreferencedMicronodes(version);
 		if (deletedCount > 0) {
 			Set<Pair<FieldTypes, FieldTypes>> fieldTypes = getFieldTypePairs(version.getSchema().getFields());
@@ -550,7 +550,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param versions
 	 * @param nodes
 	 */
-	public void delete(Set<HibSchemaVersion> versions, Set<HibNodeImpl> nodes, BulkActionContext bac) {
+	public void delete(Set<SchemaVersion> versions, Set<HibNodeImpl> nodes, BulkActionContext bac) {
 		Set<ContentKey> contentKeys = new HashSet<>();
 		versions.forEach(version -> {
 			contentKeys.addAll(contentStorage.findByNodes(version, nodes));
@@ -578,7 +578,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		// 2. Create a set of pairs, where the left of the pair is the type of the field, and the right is the optional
 		// extra type (available for list fields). We can then iterate through the type list to delete the edges
 		// corresponding to the field type.
-		Set<HibSchemaVersion> schemaVersions = contentKeys.stream()
+		Set<SchemaVersion> schemaVersions = contentKeys.stream()
 				.map(ContentKey::getSchemaVersionUuid)
 				.distinct()
 				.map(id -> em.find(HibSchemaVersionImpl.class, id))
@@ -634,7 +634,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		contentStorage.delete(contentKeys);
 	}
 
-	private void deleteUnreferencedForVersion(HibSchemaVersion version, BulkActionContext bac) {
+	private void deleteUnreferencedForVersion(SchemaVersion version, BulkActionContext bac) {
 		deleteUnreferencedContentVersions(version);
 
 		Set<Pair<FieldTypes, FieldTypes>> fieldTypes = getFieldTypePairs(version.getSchema().getFields());
@@ -688,7 +688,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.executeUpdate();
 	}
 
-	private void deleteUnreferencedContentVersions(HibSchemaVersion version) {
+	private void deleteUnreferencedContentVersions(SchemaVersion version) {
 		String contentTableName = databaseConnector.getPhysicalTableName(version);
 		String query = String.format("delete from mesh_nodefieldcontainer_versions_edge " +
 				" where thisversion_dbuuid = :versionUuid and not exists (select 1 from %1$s content where content.%2$s = thiscontentuuid) " +
@@ -734,7 +734,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param clazz the class of the field
 	 * @param version
 	 */
-	private void deleteUnreferencedFieldRows(Class<?> clazz, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	private void deleteUnreferencedFieldRows(Class<?> clazz, FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		String fieldTableName = databaseConnector.getSessionMetadataIntegrator().getTableName(clazz);
 		String contentTableName = databaseConnector.getPhysicalTableName(version);
 		String query = String.format("delete from %s " +
@@ -749,7 +749,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void delete(HibNodeFieldContainer content, BulkActionContext bac) {
+	public void delete(NodeFieldContainer content, BulkActionContext bac) {
 		delete(content, bac, true);
 	}
 
@@ -758,7 +758,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param containers
 	 */
 	@SuppressWarnings("unchecked")
-	public void purge(List<? extends HibNodeFieldContainer> containers, BulkActionContext bac) {
+	public void purge(List<? extends NodeFieldContainer> containers, BulkActionContext bac) {
 		if (containers.isEmpty()) {
 			return;
 		}
@@ -832,7 +832,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param containers
 	 * @param bac
 	 */
-	public void delete(List<? extends HibNodeFieldContainer> containers, BulkActionContext bac) {
+	public void delete(List<? extends NodeFieldContainer> containers, BulkActionContext bac) {
 		HibernateTx tx = HibernateTx.get();
 		EntityManager em = tx.entityManager();
 
@@ -849,7 +849,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		// 2. Create a set of pairs, where the left of the pair is the type of the field, and the right is the optional
 		// extra type (available for list fields). We can then iterate through the type list to delete the edges
 		// corresponding to the field type.
-		Set<HibSchemaVersion> schemaVersions = containers.stream().map(HibNodeFieldContainer::getSchemaContainerVersion)
+		Set<SchemaVersion> schemaVersions = containers.stream().map(NodeFieldContainer::getSchemaContainerVersion)
 				.collect(Collectors.toSet());
 
 		Set<Pair<String, String>> fieldTypes = schemaVersions.stream()
@@ -900,8 +900,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 		// 3. Add events to the action context.
 		List<HibNodeFieldContainerEdgeImpl> edges = new ArrayList<>();
-		for (HibNodeFieldContainer container : containers) {
-			List<? extends HibNodeFieldContainerEdge> containerEdges = getContainerEdges(container).collect(Collectors.toList());
+		for (NodeFieldContainer container : containers) {
+			List<? extends NodeFieldContainerEdge> containerEdges = getContainerEdges(container).collect(Collectors.toList());
 			containerEdges.forEach(edge -> {
 				switch (edge.getType()) {
 					case DRAFT:
@@ -938,7 +938,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		contentStorage.delete((Collection<? extends HibUnmanagedFieldContainer<?, ?, ?, ?, ?>>) containers);
 
 		// 6. Update bac count.
-		for (HibNodeFieldContainer ignored : containers) {
+		for (NodeFieldContainer ignored : containers) {
 			bac.inc();
 		}
 	}
@@ -965,10 +965,10 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void delete(HibNodeFieldContainer content, BulkActionContext bac, boolean deleteNext) {
+	public void delete(NodeFieldContainer content, BulkActionContext bac, boolean deleteNext) {
 		if (deleteNext) {
 			// Recursively delete all versions of the container
-			for (HibNodeFieldContainer next : getNextVersions(content)) {
+			for (NodeFieldContainer next : getNextVersions(content)) {
 				// no need to delete next since we will do that
 				delete(next, bac);
 			}
@@ -987,7 +987,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		// Delete the fields
 		content.getFields().forEach(field -> ((AbstractHibField) field).onFieldDeleted(tx, bac));
 
-		List<? extends HibNodeFieldContainerEdge> edges = getContainerEdges(content).collect(Collectors.toList());
+		List<? extends NodeFieldContainerEdge> edges = getContainerEdges(content).collect(Collectors.toList());
 
 		edges.forEach(edge -> {
 			switch (edge.getType()) {
@@ -1009,7 +1009,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Stream<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container) {
+	public Stream<? extends NodeFieldContainerEdge> getContainerEdges(NodeFieldContainer container) {
 		EntityManager em = currentTransaction.getEntityManager();
 		if (contentEdgesInitialized(container.getNode())) {
 			HibNodeImpl impl = (HibNodeImpl) container.getNode();
@@ -1022,22 +1022,22 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public String getDisplayFieldValue(HibNodeFieldContainer content) {
+	public String getDisplayFieldValue(NodeFieldContainer content) {
 		SchemaModel schema = getSchemaContainerVersion(content).getSchema();
 		String displayFieldName = schema.getDisplayField();
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
 
 		if (fieldSchema != null) {
-			HibField field = content.getField(fieldSchema);
-			if (field instanceof HibDisplayField) {
-				return ((HibDisplayField) field).getDisplayName();
+			Field field = content.getField(fieldSchema);
+			if (field instanceof DisplayField) {
+				return ((DisplayField) field).getDisplayName();
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public HibNodeFieldContainer findVersion(HibNode node, List<String> languageTags, String branchUuid, String version) {
+	public NodeFieldContainer findVersion(Node node, List<String> languageTags, String branchUuid, String version) {
 		if (maybeVersionLoader().isPresent()) {
 			return maybeVersionLoader().get().apply(node, languageTags, version);
 		}
@@ -1046,7 +1046,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNode getNode(HibNodeFieldContainer content) {
+	public Node getNode(NodeFieldContainer content) {
 		HibNodeFieldContainerImpl impl = (HibNodeFieldContainerImpl) content;
 		// TODO Should this getter make the permissions check?
 		return impl.get(CommonContentColumn.NODE, () -> null,
@@ -1055,8 +1055,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Stream<Pair<HibNodeFieldContainer, HibNode>> getNodes(Collection<HibNodeFieldContainer> contents) {
-		Map<UUID, Collection<HibNodeFieldContainer>> nodeUuids = (Map) contents.stream()
+	public Stream<Pair<NodeFieldContainer, Node>> getNodes(Collection<NodeFieldContainer> contents) {
+		Map<UUID, Collection<NodeFieldContainer>> nodeUuids = (Map) contents.stream()
 				.map(HibNodeFieldContainerImpl.class::cast)
 				.map(impl -> Pair.of(impl.get(CommonContentColumn.NODE, () -> null), impl))
 				.collect(Collectors.groupingBy(pair -> (UUID) pair.getKey(), Collectors.mapping(Pair::getValue, Collectors.toSet())));
@@ -1064,16 +1064,16 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainer getNodeFieldContainer(HibField field) {
+	public NodeFieldContainer getNodeFieldContainer(Field field) {
 		if (field instanceof AbstractHibField) {
-			return (HibNodeFieldContainer) ((AbstractHibField) field).getContainer();
+			return (NodeFieldContainer) ((AbstractHibField) field).getContainer();
 		}
 
 		return null;
 	}
 
 	@Override
-	public VersionNumber getVersion(HibNodeFieldContainer content) {
+	public VersionNumber getVersion(NodeFieldContainer content) {
 		HibNodeFieldContainerImpl impl = (HibNodeFieldContainerImpl) content;
 		return new VersionNumber(impl.<String>get(CommonContentColumn.CURRENT_VERSION_NUMBER,
 				() -> contentStorage.findColumn(getSchemaContainerVersion(content), impl.getDbUuid(),
@@ -1081,13 +1081,13 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void setVersion(HibNodeFieldContainer content, VersionNumber version) {
+	public void setVersion(NodeFieldContainer content, VersionNumber version) {
 		HibNodeFieldContainerImpl impl = (HibNodeFieldContainerImpl) content;
 		impl.put(CommonContentColumn.CURRENT_VERSION_NUMBER, version.getFullVersion());
 	}
 
 	@Override
-	public boolean hasNextVersion(HibNodeFieldContainer content) {
+	public boolean hasNextVersion(NodeFieldContainer content) {
 		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findNextEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
@@ -1097,7 +1097,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Iterable<HibNodeFieldContainer> getNextVersions(HibNodeFieldContainer content) {
+	public Iterable<NodeFieldContainer> getNextVersions(NodeFieldContainer content) {
 		return StreamUtil.toIterable(currentTransaction.getEntityManager().createNamedQuery("containerversions.findNextEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
@@ -1106,7 +1106,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void setNextVersion(HibNodeFieldContainer current, HibNodeFieldContainer next) {
+	public void setNextVersion(NodeFieldContainer current, NodeFieldContainer next) {
 		EntityManager em = currentTransaction.getEntityManager();
 		HibNodeFieldContainerVersionsEdgeImpl edge = new HibNodeFieldContainerVersionsEdgeImpl();
 		edge.setThisContentUuid((UUID) current.getId());
@@ -1117,7 +1117,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public boolean hasPreviousVersion(HibNodeFieldContainer content) {
+	public boolean hasPreviousVersion(NodeFieldContainer content) {
 		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
@@ -1127,7 +1127,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainer getPreviousVersion(HibNodeFieldContainer content) {
+	public NodeFieldContainer getPreviousVersion(NodeFieldContainer content) {
 		return currentTransaction.getEntityManager().createNamedQuery("containerversions.findPreviousEdgeByVersion", HibNodeFieldContainerVersionsEdgeImpl.class)
 				.setParameter("contentUuid", content.getId())
 				.setParameter("version", getSchemaContainerVersion(content))
@@ -1138,16 +1138,16 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void clone(HibNodeFieldContainer dest, HibNodeFieldContainer src) {
-		List<HibField> otherFields = src.getFields();
+	public void clone(NodeFieldContainer dest, NodeFieldContainer src) {
+		List<Field> otherFields = src.getFields();
 
-		for (HibField graphField : otherFields) {
+		for (Field graphField : otherFields) {
 			graphField.cloneTo(dest);
 		}
 	}
 
 	@Override
-	public boolean isType(HibNodeFieldContainer content, ContainerType type) {
+	public boolean isType(NodeFieldContainer content, ContainerType type) {
 		EntityManager em = currentTransaction.getEntityManager();
 		if (contentEdgesInitialized(content.getNode())) {
 			HibNodeImpl impl = (HibNodeImpl) content.getNode();
@@ -1164,7 +1164,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public boolean isType(HibNodeFieldContainer content, ContainerType type, String branchUuid) {
+	public boolean isType(NodeFieldContainer content, ContainerType type, String branchUuid) {
 		EntityManager em = currentTransaction.getEntityManager();
 		if (contentEdgesInitialized(content.getNode())) {
 			HibNodeImpl impl = (HibNodeImpl) content.getNode();
@@ -1181,7 +1181,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Set<String> getBranches(HibNodeFieldContainer content, ContainerType type) {
+	public Set<String> getBranches(NodeFieldContainer content, ContainerType type) {
 		EntityManager em = currentTransaction.getEntityManager();
 
 		return em.createNamedQuery("contentEdge.findByContentAndTypes", HibNodeFieldContainerEdgeImpl.class)
@@ -1189,17 +1189,17 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 				.setParameter("types", Collections.singletonList(type))
 				.getResultStream()
 				.map(HibNodeFieldContainerEdgeImpl::getBranch)
-				.map(HibBranch::getUuid)
+				.map(Branch::getUuid)
 				.collect(Collectors.toSet());
 	}
 
 	@Override
-	public HibSchemaVersion getSchemaContainerVersion(HibNodeFieldContainer content) {
+	public SchemaVersion getSchemaContainerVersion(NodeFieldContainer content) {
 		return content.getSchemaContainerVersion();
 	}
 
 	@Override
-	public List<HibMicronodeField> getMicronodeFields(HibNodeFieldContainer content) {
+	public List<MicronodeField> getMicronodeFields(NodeFieldContainer content) {
 		return currentTransaction.getEntityManager()
 				.createNamedQuery("micronodefieldref.findEdgeByContentUuidAndType", HibMicronodeFieldEdgeImpl.class)
 				.setParameter("uuid", content.getId())
@@ -1210,7 +1210,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Result<HibMicronodeFieldList> getMicronodeListFields(HibNodeFieldContainer content) {
+	public Result<MicronodeFieldList> getMicronodeListFields(NodeFieldContainer content) {
 		return new TraversalResult<>(currentTransaction.getEntityManager()
 				.createNamedQuery("micronodelistitem.findUniqueFieldKeysByContentUuidTypeAndVersion", Tuple.class)
 				.setParameter("containerUuid", content.getId())
@@ -1220,27 +1220,27 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void setDisplayFieldValue(HibNodeFieldContainer container, String value) {
+	public void setDisplayFieldValue(NodeFieldContainer container, String value) {
 		// nothing to do
 	}
 
 	@Override
-	public boolean isPurgeable(HibNodeFieldContainer content) {
+	public boolean isPurgeable(NodeFieldContainer content) {
 		return getContainerEdges(content).findAny().isEmpty();
 	}
 
 	@Override
-	public String getLanguageTag(HibNodeFieldContainer content) {
+	public String getLanguageTag(NodeFieldContainer content) {
 		return content.getLanguageTag();
 	}
 
 	@Override
-	public void setLanguageTag(HibNodeFieldContainer content, String languageTag) {
+	public void setLanguageTag(NodeFieldContainer content, String languageTag) {
 		content.setLanguageTag(languageTag);
 	}
 
 	@Override
-	public Iterator<? extends HibNodeFieldContainerEdge> getContainerEdges(HibNodeFieldContainer container, ContainerType type, String branchUuid) {
+	public Iterator<? extends NodeFieldContainerEdge> getContainerEdges(NodeFieldContainer container, ContainerType type, String branchUuid) {
 		EntityManager em = currentTransaction.getEntityManager();
 		if (contentEdgesInitialized(container.getNode())) {
 			HibNodeImpl impl = (HibNodeImpl) container.getNode();
@@ -1257,7 +1257,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootPath(HibNodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, HibNodeFieldContainerEdge edge) {
+	public NodeFieldContainerEdge getConflictingEdgeOfWebrootPath(NodeFieldContainer content, String segmentInfo, String branchUuid, ContainerType type, NodeFieldContainerEdge edge) {
 		//TODO do we need to check contentUuid?
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createNamedQuery("contentEdge.findByBranchTypeAndWebroot", HibNodeFieldContainerEdgeImpl.class)
@@ -1270,7 +1270,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
+	public NodeFieldContainerEdge getConflictingEdgeOfWebrootField(NodeFieldContainer content, NodeFieldContainerEdge edge, String urlFieldValue, String branchUuid, ContainerType type) {
 		//TODO do we need to check contentUuid?
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createNamedQuery("contentEdge.findByBranchTypeAndUrlField", HibNodeFieldContainerEdgeImpl.class)
@@ -1283,11 +1283,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainerEdge getConflictingEdgeOfWebrootField(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type) {
+	public NodeFieldContainerEdge getConflictingEdgeOfWebrootField(NodeFieldContainer content, NodeFieldContainerEdge edge, Set<String> urlFieldValues, String branchUuid, ContainerType type) {
 		//TODO do we need to check contentUuid?
 
 		EntityManager em = currentTransaction.getEntityManager();
-		AtomicReference<HibNodeFieldContainerEdge> foundConflictingEdge = new AtomicReference<>();
+		AtomicReference<NodeFieldContainerEdge> foundConflictingEdge = new AtomicReference<>();
 		UUID edgeUuid = ((HibNodeFieldContainerEdgeImpl ) edge).getElement();
 
 		// split the set of field values into slices, and - as long as we did not find a conflicting edge - keep searching for each slice
@@ -1306,7 +1306,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Result<? extends HibNodeFieldContainerEdge> getFieldEdges(HibNode node, String branchUuid, ContainerType type) {
+	public Result<? extends NodeFieldContainerEdge> getFieldEdges(Node node, String branchUuid, ContainerType type) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return new TraversalResult<>(em.createNamedQuery("contentEdge.findByNodeTypeAndBranch", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("node", node)
@@ -1327,8 +1327,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNodeFieldContainer createPersisted(String nodeUUID, HibSchemaVersion schemaVersion, String uuid,
-			String languageTag, VersionNumber versionNumber, HibUser editor) {
+	public NodeFieldContainer createPersisted(String nodeUUID, SchemaVersion schemaVersion, String uuid,
+			String languageTag, VersionNumber versionNumber, User editor) {
 		long dbVersion = 1L;
 		Object schemaVersionDbUuid = schemaVersion.getId();
 		Object schemaDbUuid = schemaVersion.getSchemaContainer().getId();
@@ -1355,8 +1355,8 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<HibNode, HibNodeFieldContainer> getFieldsContainers(Collection<? extends HibNode> nodes,
-			String languageTag, HibBranch branch, ContainerType type) {
+	public Map<Node, NodeFieldContainer> getFieldsContainers(Collection<? extends Node> nodes,
+			String languageTag, Branch branch, ContainerType type) {
 		return contentStorage.findMany(getEdges((Collection<HibNodeImpl>) nodes, List.of(languageTag), branch.getUuid(), type))
 				.stream().collect(Collectors.toMap(HibNodeFieldContainerImpl::getNodeId, Function.identity()))
 				.entrySet().stream()
@@ -1366,44 +1366,44 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	/**
-	 * Create the persistent database table for the given {@link HibSchemaVersion}.
+	 * Create the persistent database table for the given {@link SchemaVersion}.
 	 *
 	 * @param version
 	 */
-	public void createContentTable(HibSchemaVersion version) {
+	public void createContentTable(SchemaVersion version) {
 		contentStorage.createTable(version);
 		contentStorage.createIndex(version, CommonContentColumn.NODE, false);
 	}
 
 	/**
-	 * Create the persistent database table for the given {@link HibMicroschemaVersion}.
+	 * Create the persistent database table for the given {@link MicroschemaVersion}.
 	 *
 	 * @param version
 	 */
-	public void createContentTable(HibMicroschemaVersion version) {
+	public void createContentTable(MicroschemaVersion version) {
 		contentStorage.createMicronodeTable(version);
 	}
 
 	/**
-	 * Delete the persisted table of a {@link HibSchemaVersion}.
+	 * Delete the persisted table of a {@link SchemaVersion}.
 	 *
 	 * @param version
 	 */
-	public void deleteContentTable(HibSchemaVersion version) {
+	public void deleteContentTable(SchemaVersion version) {
 		contentStorage.dropTable(version);
 	}
 
 	/**
-	 * Delete the persisted table of a {@link HibMicroschemaVersion}.
+	 * Delete the persisted table of a {@link MicroschemaVersion}.
 	 *
 	 * @param version
 	 */
-	public void deleteContentTable(HibMicroschemaVersion version) {
+	public void deleteContentTable(MicroschemaVersion version) {
 		contentStorage.dropTable(version);
 	}
 
 	@Override
-	public HibNodeFieldContainerEdgeImpl createContainerEdge(HibNode node, HibNodeFieldContainer container, HibBranch branch, String languageTag, ContainerType type) {
+	public HibNodeFieldContainerEdgeImpl createContainerEdge(Node node, NodeFieldContainer container, Branch branch, String languageTag, ContainerType type) {
 		HibernateTx tx = HibernateTx.get();
 		EntityManager em = tx.entityManager();
 		HibNodeImpl graphNode = (HibNodeImpl) node;
@@ -1424,7 +1424,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		return edge;
 	}
 	@Override
-	public void connectFieldContainer(HibNode node, HibNodeFieldContainer container, HibBranch branch,
+	public void connectFieldContainer(Node node, NodeFieldContainer container, Branch branch,
 									  String languageTag, boolean handleDraftEdge) {
 		HibNodeImpl graphNode = (HibNodeImpl) node;
 		if (handleDraftEdge) {
@@ -1456,7 +1456,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		}
 	}
 
-	public HibNodeFieldContainerEdgeImpl getDraftEdgeForLanguageAndBranch(Set<HibNodeFieldContainerEdgeImpl> edges, String languageTag, HibBranch branch) {
+	public HibNodeFieldContainerEdgeImpl getDraftEdgeForLanguageAndBranch(Set<HibNodeFieldContainerEdgeImpl> edges, String languageTag, Branch branch) {
 		return edges.stream()
 				.filter(edge -> edge.getBranch().equals(branch)
 						&& edge.getLanguageTag().equals(languageTag)
@@ -1466,11 +1466,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibNode getParentNode(HibNodeFieldContainer container, String branchUuid) {
+	public Node getParentNode(NodeFieldContainer container, String branchUuid) {
 		return container.getNode();
 	}
 
-	public void delete(HibMicronode micronode, BulkActionContext bac) {
+	public void delete(Micronode micronode, BulkActionContext bac) {
 		HibernateTx tx = HibernateTx.get();
 		// Delete the fields
 		micronode.getFields().forEach(field -> ((AbstractHibField) field).onFieldDeleted(tx, bac));
@@ -1675,7 +1675,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		});
 	}
 
-	public void tryDelete(HibMicronode micronode, AbstractFieldEdgeImpl<UUID> owner, BulkActionContext bac) {
+	public void tryDelete(Micronode micronode, AbstractFieldEdgeImpl<UUID> owner, BulkActionContext bac) {
 		if (micronode == null) {
 			return;
 		}
@@ -1689,7 +1689,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			.ifPresentOrElse(
 					otherOwner -> {
 						// The micronode is occupied by someone else -> no deletion allowed.
-						HibMicronodeField.log.debug("Micronode { " + micronode.getUuid() + " } is occupied by " + otherOwner.getReferenceType() + "{ " + owner.getUuid() + " }, no deletion possible");
+						MicronodeField.log.debug("Micronode { " + micronode.getUuid() + " } is occupied by " + otherOwner.getReferenceType() + "{ " + owner.getUuid() + " }, no deletion possible");
 					}, () -> {
 						// Free to delete
 						delete(micronode, bac);
@@ -1697,19 +1697,19 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 			);
 	}
 
-	public HibNodeFieldContainerImpl getFieldContainer(HibSchemaVersion version, UUID containerUUID) {
+	public HibNodeFieldContainerImpl getFieldContainer(SchemaVersion version, UUID containerUUID) {
 		return contentStorage.findOne(version, containerUUID);
 	}
 
-	public HibMicronodeContainerImpl getFieldContainer(HibMicroschemaVersion version, UUID containerUUID) {
+	public HibMicronodeContainerImpl getFieldContainer(MicroschemaVersion version, UUID containerUUID) {
 		return contentStorage.findOneMicronode(version, containerUUID);
 	}
 
-	public Stream<HibNodeFieldContainerImpl> getFieldsContainers(HibSchemaVersion version) {
+	public Stream<HibNodeFieldContainerImpl> getFieldsContainers(SchemaVersion version) {
 		return contentStorage.findMany(version).stream();
 	}
 
-	public Stream<HibMicronodeContainerImpl> getFieldsContainers(HibMicroschemaVersion version) {
+	public Stream<HibMicronodeContainerImpl> getFieldsContainers(MicroschemaVersion version) {
 		return contentStorage.findManyMicronodes(version).stream();
 	}
 
@@ -1732,7 +1732,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public void deleteField(HibDeletableField field) {
+	public void deleteField(DeletableField field) {
 		AbstractDeletableHibField<?> impl = (AbstractDeletableHibField<?>) field;
 		HibFieldEdge referenced = impl.getReferencedEdge();
 		if (referenced != null) {
@@ -1741,20 +1741,20 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public HibField detachField(HibField field) {
+	public Field detachField(Field field) {
 		if (AbstractReferenceHibField.class.isInstance(field)) {
 			return AbstractReferenceHibField.class.cast(field).getReferencedEdge();
 		}
 		return field;
 	}
 
-	private Optional<BiFunction<HibNode, ContainerType, List<HibNodeFieldContainer>>> maybeTypeLoader() {
+	private Optional<BiFunction<Node, ContainerType, List<NodeFieldContainer>>> maybeTypeLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getTypeLoader);
 	}
 
-	private Optional<TriFunction<HibNode, List<String>, String, HibNodeFieldContainer>> maybeVersionLoader() {
+	private Optional<TriFunction<Node, List<String>, String, NodeFieldContainer>> maybeVersionLoader() {
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
 		return contentInterceptor.getDataLoaders().flatMap(DataLoaders::getVersionLoader);
@@ -1765,7 +1765,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param node
 	 * @return
 	 */
-	private boolean contentEdgesInitialized(HibNode node) {
+	private boolean contentEdgesInitialized(Node node) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.contains(node);
 	}
@@ -1796,7 +1796,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * Preload values of list fields in the given containers
 	 * @param containers containers
 	 */
-	public void loadListFields(List<? extends HibNodeFieldContainer> containers) {
+	public void loadListFields(List<? extends NodeFieldContainer> containers) {
 		getBooleanListFieldValues(getListFieldListUuids(containers, HibBooleanListFieldImpl.class));
 		getDateListFieldValues(getListFieldListUuids(containers, HibDateListFieldImpl.class));
 		getNumberListFieldValues(getListFieldListUuids(containers, HibNumberListFieldImpl.class));
@@ -1812,7 +1812,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	 * @param classOfU class of the list field implementation in question
 	 * @return list of list UUIDs
 	 */
-	protected <U extends AbstractHibListFieldImpl<?, ?, ?, ?, ?>> List<String> getListFieldListUuids(List<? extends HibNodeFieldContainer> containers, Class<U> classOfU) {
+	protected <U extends AbstractHibListFieldImpl<?, ?, ?, ?, ?>> List<String> getListFieldListUuids(List<? extends NodeFieldContainer> containers, Class<U> classOfU) {
 		return containers.stream()
 				.flatMap(container -> container.getFields().stream())
 				.filter(field -> classOfU.isAssignableFrom(field.getClass()))
@@ -1853,7 +1853,7 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Map<String, List<HibMicronode>> getMicronodeListFieldValues(List<String> listUuids) {
+	public Map<String, List<Micronode>> getMicronodeListFieldValues(List<String> listUuids) {
 		Map<String, List<ContentKey>> keyLists = getListValues(listUuids, edge -> new ContentKey(edge.getValueOrUuid(),
 				(UUID) edge.getMicroschemaVersion().getId(), ReferenceType.MICRONODE),
 				HibMicronodeListFieldEdgeImpl.class);
@@ -1862,17 +1862,17 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 		keyLists.values().forEach(keys::addAll);
 		List<HibMicronodeContainerImpl> micronodes = contentStorage.findManyMicronodes(keys);
 
-		Map<ContentKey, HibMicronode> micronodesPerKey = new HashMap<>();
+		Map<ContentKey, Micronode> micronodesPerKey = new HashMap<>();
 		micronodes.forEach(micronode -> {
 			ContentKey key = ContentKey.fromContent(micronode);
 			micronodesPerKey.put(key, micronode);
 		});
 
-		Map<String, List<HibMicronode>> resultMap = new HashMap<>();
+		Map<String, List<Micronode>> resultMap = new HashMap<>();
 		keyLists.entrySet().forEach(entry -> {
-			List<HibMicronode> micronodeList = new ArrayList<>();
+			List<Micronode> micronodeList = new ArrayList<>();
 			entry.getValue().forEach(key -> {
-				HibMicronode micronode = micronodesPerKey.get(key);
+				Micronode micronode = micronodesPerKey.get(key);
 				if (micronode != null) {
 					micronodeList.add(micronode);
 				}
@@ -1945,11 +1945,11 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 	}
 
 	@Override
-	public Map<HibMicronodeField, HibMicronode> getMicronodes(Collection<HibMicronodeField> micronodeFields) {
+	public Map<MicronodeField, Micronode> getMicronodes(Collection<MicronodeField> micronodeFields) {
 		EntityManager em = currentTransaction.getEntityManager();
 
-		Map<UUID, List<HibMicronodeField>> micronodeUuids = new HashMap<>();
-		for (HibMicronodeField field : micronodeFields) {
+		Map<UUID, List<MicronodeField>> micronodeUuids = new HashMap<>();
+		for (MicronodeField field : micronodeFields) {
 			UUID uuid = null;
 
 			if (field instanceof HibMicronodeFieldImpl) {
@@ -1977,12 +1977,12 @@ public class ContentDaoImpl implements PersistingContentDao, HibQueryFieldMapper
 
 		List<HibMicronodeContainerImpl> micronodes = contentStorage.findManyMicronodes(keyMap.keySet());
 
-		Map<HibMicronodeField, HibMicronode> resultMap = new HashMap<>();
+		Map<MicronodeField, Micronode> resultMap = new HashMap<>();
 		micronodes.stream().forEach(micronode -> {
 			ContentKey key = ContentKey.fromContent(micronode);
 
 			for (UUID uuid : keyMap.getOrDefault(key, Collections.emptySet())) {
-				for (HibMicronodeField field : micronodeUuids.getOrDefault(uuid, Collections.emptyList())) {
+				for (MicronodeField field : micronodeUuids.getOrDefault(uuid, Collections.emptyList())) {
 					resultMap.put(field, micronode);
 				}
 			}

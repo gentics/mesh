@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.tag.TagReference;
 /**
  * POJO for a node update request.
  */
-public class NodeUpdateRequest implements FieldContainer {
+public class NodeUpdateRequest implements FieldContainerModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")

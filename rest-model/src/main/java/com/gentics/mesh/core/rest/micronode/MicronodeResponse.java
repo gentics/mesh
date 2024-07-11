@@ -8,14 +8,14 @@ import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 /**
  * POJO for the micronode rest response model.
  */
-public class MicronodeResponse extends AbstractResponse implements MicronodeField {
+public class MicronodeResponse extends AbstractResponse implements MicronodeFieldModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the microschema of the micronode.")

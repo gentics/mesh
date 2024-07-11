@@ -15,13 +15,13 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -177,7 +177,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	 */
 	public void handleClusterStatus(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
+			User user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -246,7 +246,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	 */
 	public void handleLoadClusterConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
+			User user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -262,7 +262,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	public void handleUpdateClusterConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
+				User user = ac.getUser();
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
@@ -280,7 +280,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	 */
 	public void handleLoadCoordinationMaster(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
+			User user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -300,7 +300,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	public void handleSetCoordinationMaster(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
+				User user = ac.getUser();
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
@@ -328,7 +328,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	 */
 	public void handleLoadCoordinationConfig(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
+			User user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
@@ -344,11 +344,11 @@ public abstract class AdminHandler extends AbstractHandler {
 	public void handleUpdateCoordinationConfig(InternalActionContext ac) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
-				HibUser user = ac.getUser();
+				User user = ac.getUser();
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
+				CoordinatorConfigModel request = ac.fromJson(CoordinatorConfigModel.class);
 				coordinator.updateConfig(request);
 				return coordinator.loadConfig();
 			}, model -> ac.send(model, OK));
@@ -361,7 +361,7 @@ public abstract class AdminHandler extends AbstractHandler {
 	 */
 	public void handleCacheClear(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			HibUser user = ac.getUser();
+			User user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

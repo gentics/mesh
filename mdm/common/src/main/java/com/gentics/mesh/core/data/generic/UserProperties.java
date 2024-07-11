@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.generic;
 
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.user.User;
 
 /**
  * Domain model extension for elements which store user references (creator, editor) via properties instead of edges.
@@ -14,7 +14,7 @@ public interface UserProperties {
 	 * @param element
 	 * @return
 	 */
-	HibUser getCreator(HibBaseElement element);
+	User getCreator(BaseElement element);
 
 	/**
 	 * Return the editor of the element.
@@ -22,7 +22,7 @@ public interface UserProperties {
 	 * @param element
 	 * @return
 	 */
-	HibUser getEditor(HibBaseElement element);
+	User getEditor(BaseElement element);
 
 	/**
 	 * Set the creator for the element.
@@ -30,7 +30,7 @@ public interface UserProperties {
 	 * @param element
 	 * @param user
 	 */
-	void setCreator(HibBaseElement element, HibUser user);
+	void setCreator(BaseElement element, User user);
 
 	/**
 	 * Set the editor for the element.
@@ -38,6 +38,6 @@ public interface UserProperties {
 	 * @param element
 	 * @param user
 	 */
-	void setEditor(HibBaseElement element, HibUser user);
+	void setEditor(BaseElement element, User user);
 
 }

@@ -8,11 +8,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.node.field.s3binary.S3RestResponse;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -24,7 +24,7 @@ import io.reactivex.Single;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * Handler which will accept {@link S3HibBinaryField} elements and return the s3 binary data using the given context.
+ * Handler which will accept {@link S3BinaryField} elements and return the s3 binary data using the given context.
  */
 @Singleton
 public class S3BinaryFieldResponseHandler {
@@ -49,7 +49,7 @@ public class S3BinaryFieldResponseHandler {
 	 * @param node 
 	 * @param s3binaryField
 	 */
-	public void handle(RoutingContext rc, HibNode node, S3HibBinaryField s3binaryField) {
+	public void handle(RoutingContext rc, Node node, S3BinaryField s3binaryField) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc, httpServerConfig);
 		ImageManipulationParameters imageParams = ac.getImageParameters();
 
@@ -68,7 +68,7 @@ public class S3BinaryFieldResponseHandler {
 	 * @param rc
 	 * @param s3binaryField
 	 */
-	private void respond(RoutingContext rc, S3HibBinaryField s3binaryField) {
+	private void respond(RoutingContext rc, S3BinaryField s3binaryField) {
 		String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
 		s3Binarystorage.exists(s3Options.getBucket(), s3ObjectKey).flatMap(
 				(res) -> {
@@ -93,10 +93,10 @@ public class S3BinaryFieldResponseHandler {
 	 * @param s3binaryField
 	 * @param imageParams
 	 */
-	private void resizeAndRespond(RoutingContext rc, S3HibBinaryField s3binaryField, ImageManipulationParameters imageParams) {
+	private void resizeAndRespond(RoutingContext rc, S3BinaryField s3binaryField, ImageManipulationParameters imageParams) {
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
-			FocalPoint fp = s3binaryField.getImageFocalPoint();
+			FocalPointModel fp = s3binaryField.getImageFocalPoint();
 			if (fp != null) {
 				imageParams.setFocalPoint(fp);
 			}

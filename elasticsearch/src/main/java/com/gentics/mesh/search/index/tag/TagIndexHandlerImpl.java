@@ -19,10 +19,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.ProjectDao;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tag.Tag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -38,7 +38,7 @@ import io.reactivex.Flowable;
  * Handler for the tag specific search index.
  */
 @Singleton
-public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements TagIndexHandler {
+public class TagIndexHandlerImpl extends AbstractIndexHandler<Tag> implements TagIndexHandler {
 
 	/**
 	 * Name of the custom property of SearchQueueEntry containing the project uuid.
@@ -63,8 +63,8 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Class<HibTag> getElementClass() {
-		return HibTag.class;
+	public Class<Tag> getElementClass() {
+		return Tag.class;
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	public Map<String, Optional<IndexInfo>> getIndices() {
 		return db.tx(tx -> {
 			Map<String, Optional<IndexInfo>> indexInfo = new HashMap<>();
-			for (HibProject project : tx.projectDao().findAll()) {
+			for (Project project : tx.projectDao().findAll()) {
 				IndexInfo info = getIndex(project.getUuid());
 				indexInfo.put(info.getIndexName(), Optional.of(info));
 			}
@@ -103,7 +103,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	 * @return
 	 */
 	public IndexInfo getIndex(String projectUuid) {
-		return new IndexInfo(HibTag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
+		return new IndexInfo(Tag.composeIndexName(projectUuid), null, getMappingProvider().getMapping(), "tag");
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 			return tx.projectDao().findAll().stream()
 				.map(project -> {
 					String uuid = project.getUuid();
-					return diffAndSync(HibTag.composeIndexName(uuid), uuid, indexPattern);
+					return diffAndSync(Tag.composeIndexName(uuid), uuid, indexPattern);
 				}).collect(Collectors.collectingAndThen(Collectors.toList(), Flowable::merge));
 		}));
 	}
@@ -122,8 +122,8 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 		return db.tx(tx -> {
 			Set<String> activeIndices = new HashSet<>();
 			ProjectDao projectDao = tx.projectDao();
-			for (HibProject project : projectDao.findAll()) {
-				activeIndices.add(HibTag.composeIndexName(project.getUuid()));
+			for (Project project : projectDao.findAll()) {
+				activeIndices.add(Tag.composeIndexName(project.getUuid()));
 			}
 			return indices.stream()
 				.filter(i -> i.startsWith(getType() + "-"))
@@ -135,9 +135,9 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
 		return db.tx(tx -> {
-			HibProject project = tx.getProject(ac);
+			Project project = tx.getProject(ac);
 			if (project != null) {
-				return Collections.singleton(HibTag.composeIndexName(project.getUuid()));
+				return Collections.singleton(Tag.composeIndexName(project.getUuid()));
 			} else {
 				return getIndices().keySet();
 			}
@@ -145,17 +145,17 @@ public class TagIndexHandlerImpl extends AbstractIndexHandler<HibTag> implements
 	}
 
 	@Override
-	public Function<String, HibTag> elementLoader() {
+	public Function<String, Tag> elementLoader() {
 		return uuid -> Tx.get().tagDao().findByUuid(uuid);
 	}
 
 	@Override
-	public Function<Collection<String>, Stream<Pair<String, HibTag>>> elementsLoader() {
+	public Function<Collection<String>, Stream<Pair<String, Tag>>> elementsLoader() {
 		return (uuids) -> Tx.get().tagDao().findByUuids(uuids);
 	}
 
 	@Override
-	public Stream<? extends HibTag> loadAllElements() {
+	public Stream<? extends Tag> loadAllElements() {
 		return Tx.get().tagDao().findAll().stream();
 	}
 

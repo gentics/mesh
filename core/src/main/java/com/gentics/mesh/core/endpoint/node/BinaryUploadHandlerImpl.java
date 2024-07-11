@@ -27,20 +27,20 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.BinaryDataProcessor;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.BinaryProcessorRegistryImpl;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -186,7 +186,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				.map(list -> Tuple.tuple(hash, list));
 		}).flatMap(modifierListAndHash -> {
 			String hash = modifierListAndHash.v1();
-			List<Consumer<HibBinaryField>> modifierList = modifierListAndHash.v2();
+			List<Consumer<BinaryField>> modifierList = modifierListAndHash.v2();
 			ctx.setHash(hash);
 
 			// Check whether the binary with the given hashsum was already stored
@@ -208,15 +208,15 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				maybeExisting = db.tx((tx) -> {
 					NodeDao nodeDao = tx.nodeDao();
 					ContentDao contentDao = tx.contentDao();
-					HibProject project = tx.getProject(ac);
-					HibBranch branch = tx.getBranch(ac, project);
-					HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.READ_PERM);
-					HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+					Project project = tx.getProject(ac);
+					Branch branch = tx.getBranch(ac, project);
+					Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.READ_PERM);
+					NodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 					FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
 					if (fieldSchema != null) {
-						HibBinaryField binaryField = latestDraftVersion.getBinary(fieldName);
+						BinaryField binaryField = latestDraftVersion.getBinary(fieldName);
 						if (binaryField != null) {
-							HibBinary binary = binaryField.getBinary();
+							Binary binary = binaryField.getBinary();
 							if (binary != null 
 									&& binaryUuid.equals(binary.getUuid()) 
 									&& Objects.equals(attributes.get("filename"), binaryField.getFileName())
@@ -284,7 +284,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 			});
 	}
 
-	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<HibBinaryField>> fieldModifier, UploadContext context,
+	private Single<NodeResponse> storeUploadInGraph(InternalActionContext ac, List<Consumer<BinaryField>> fieldModifier, UploadContext context,
 		String nodeUuid,
 		String languageTag, String nodeVersion,
 		String fieldName, boolean publish) {
@@ -295,12 +295,12 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 		return db.singleTxWriteLock(
 			(batch, tx) -> {
 				PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-				HibProject project = tx.getProject(ac);
-				HibBranch branch = tx.getBranch(ac);
+				Project project = tx.getProject(ac);
+				Branch branch = tx.getBranch(ac);
 				NodeDao nodeDao = tx.nodeDao();
-				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+				Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 				// Load the current latest draft
-				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+				NodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 				FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
 
 				if (fieldSchema == null) {
@@ -323,7 +323,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				}
 
 				// We need to check whether someone else has stored the binary in the meanwhile
-				HibBinary binary = binaries.findByHash(hash).runInExistingTx(tx);
+				Binary binary = binaries.findByHash(hash).runInExistingTx(tx);
 
 				if (binary == null) {
 					BinaryCheckStatus checkStatus = StringUtils.isNotBlank(((BinaryFieldSchema) fieldSchema).getCheckServiceUrl())
@@ -333,13 +333,13 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 					binary = binaries.create(binaryUuid, hash, upload.size(), checkStatus).runInExistingTx(tx);
 				}
 
-				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+				Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
 				// Load the base version field container in order to create the diff
-				HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				NodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 				if (baseVersionContainer == null) {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 				}
@@ -367,15 +367,15 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				}
 
 				// Create a new node version field container to store the upload
-				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
+				NodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion,
 					true);
 
 				// Get the potential existing field
-				HibBinaryField oldField = (HibBinaryField) contentDao.detachField(newDraftVersion.getBinary(fieldName));
+				BinaryField oldField = (BinaryField) contentDao.detachField(newDraftVersion.getBinary(fieldName));
 
 				// Create the new field
-				HibBinaryField field = newDraftVersion.createBinary(fieldName, binary);
+				BinaryField field = newDraftVersion.createBinary(fieldName, binary);
 
 				// Reuse the existing properties
 				if (oldField != null) {
@@ -392,7 +392,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				field.setMimeType(upload.contentType());
 				field.getBinary().setSize(upload.size());
 
-				for (Consumer<HibBinaryField> modifier : fieldModifier) {
+				for (Consumer<BinaryField> modifier : fieldModifier) {
 					modifier.accept(field);
 				}
 
@@ -413,7 +413,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 				batch.add(contentDao.onUpdated(newDraftVersion, branch.getUuid(), DRAFT));
 	
 				if (publish) {
-					HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+					NodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
 					// Invoke a store of the document since it must now also be added to the published index
 					batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
 				}
@@ -429,7 +429,7 @@ public class BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler impleme
 	 * @param ctx
 	 * @return Consumers which modify the graph field
 	 */
-	private Observable<Consumer<HibBinaryField>> postProcessUpload(BinaryDataProcessorContext ctx) {
+	private Observable<Consumer<BinaryField>> postProcessUpload(BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		String contentType = upload.contentType();
 		List<BinaryDataProcessor> processors = binaryProcessorRegistry.getProcessors(contentType);

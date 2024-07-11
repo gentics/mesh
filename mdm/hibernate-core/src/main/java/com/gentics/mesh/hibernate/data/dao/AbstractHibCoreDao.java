@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.dao;
 
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
@@ -20,7 +20,7 @@ import io.vertx.core.Vertx;
  * @param <R>
  * @param <D>
  */
-public abstract class AbstractHibCoreDao<T extends HibCoreElement<R>, R extends RestModel, D extends T> extends AbstractHibDao<T> {
+public abstract class AbstractHibCoreDao<T extends CoreElement<R>, R extends RestModel, D extends T> extends AbstractHibDao<T> {
 
 	protected final DaoHelper<T,D> daoHelper;
 

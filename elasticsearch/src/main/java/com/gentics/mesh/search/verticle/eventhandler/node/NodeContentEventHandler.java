@@ -16,20 +16,20 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.search.request.BulkRequest;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.event.EventCauseInfo;
+import com.gentics.mesh.core.rest.event.EventCauseInfoModel;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -74,7 +74,7 @@ public class NodeContentEventHandler implements EventHandler {
 			case NODE_CONTENT_CREATED:
 			case NODE_UPDATED:
 			case NODE_PUBLISHED:
-				EventCauseInfo cause = message.getCause();
+				EventCauseInfoModel cause = message.getCause();
 				if (cause != null && cause.getAction() == SCHEMA_MIGRATION) {
 					return migrationUpdate(message);
 				} else {
@@ -138,13 +138,13 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private Transactional<String> getSchemaVersionUuid(NodeMeshEventModel message) {
 		return findLatestSchemaVersion(message)
-			.mapInTx(HibBaseElement::getUuid);
+			.mapInTx(BaseElement::getUuid);
 	}
 
-	private Transactional<HibSchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
+	private Transactional<SchemaVersion> findLatestSchemaVersion(NodeMeshEventModel message) {
 		return helper.getDb().transactional(tx -> {
-			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
-			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
+			Schema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
+			Project project = tx.projectDao().findByUuid(message.getProject().getUuid());
 			return tx.branchDao().findByUuid(project, message.getBranchUuid())
 				.findLatestSchemaVersion(schema);
 		});
@@ -153,7 +153,7 @@ public class NodeContentEventHandler implements EventHandler {
 	private String getSchemaVersionUuid(SchemaReference reference) {
 		return helper.getDb().tx(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
-			HibSchema schema = schemaDao
+			Schema schema = schemaDao
 				.findByUuid(reference.getUuid());
 			return schemaDao.findVersionByRev(schema, reference.getVersion()).getUuid();
 		});
@@ -161,10 +161,10 @@ public class NodeContentEventHandler implements EventHandler {
 
 	private String getMicroschemaVersionHash(NodeMeshEventModel message, String schemaVersionUuid) {
 		return helper.getDb().tx(tx -> {
-			HibSchema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
-			HibProject project = tx.projectDao().findByUuid(message.getProject().getUuid());
-			HibBranch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
-			HibSchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
+			Schema schema = tx.schemaDao().findByUuid(message.getSchema().getUuid());
+			Project project = tx.projectDao().findByUuid(message.getProject().getUuid());
+			Branch branch = tx.branchDao().findByUuid(project, message.getBranchUuid());
+			SchemaVersion schemaVersion = tx.schemaDao().findVersionByUuid(schema, schemaVersionUuid);
 			return schemaVersion.getMicroschemaVersionHash(branch);
 		});
 	}

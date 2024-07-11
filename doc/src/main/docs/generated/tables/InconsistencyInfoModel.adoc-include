@@ -1,0 +1,35 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| description
+| true
+| string
+| Description of the inconsistency.
+
+| elementUuid
+| true
+| string
+| Uuid of the element which is related to the inconsistency.
+
+| repairAction
+| true
+| string
+| Repair action which will attept to fix the inconsistency. The action will only be invoked when using invoking the rapair endpoint.
+
+| repaired
+| true
+| boolean
+| Status of the inconsistency. This will indicate whether the inconsistency could be resolved via the repair action.
+
+| severity
+| true
+| string
+| Level of severity of the inconsistency.
+
+|======

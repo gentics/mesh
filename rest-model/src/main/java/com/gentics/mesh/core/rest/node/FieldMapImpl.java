@@ -23,9 +23,9 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.*;
 import com.gentics.mesh.core.rest.node.field.impl.*;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -59,7 +59,7 @@ public class FieldMapImpl implements FieldMap {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Field> T getField(String key, FieldTypes type, String listType, boolean expand) {
+	public <T extends FieldModel> T getField(String key, FieldTypes type, String listType, boolean expand) {
 
 		try {
 			JsonNode jsonNode = node.get(key);
@@ -100,7 +100,7 @@ public class FieldMapImpl implements FieldMap {
 		}
 	}
 
-	private FieldList<?> transformListFieldJsonNode(JsonNode jsonNode, String key, String listType) throws JsonProcessingException {
+	private FieldListModel<?> transformListFieldJsonNode(JsonNode jsonNode, String key, String listType) throws JsonProcessingException {
 
 		ObjectMapper mapper = JsonUtil.getMapper();
 		// ListFieldSchemaImpl listFieldSchema = (ListFieldSchemaImpl) fieldSchema;
@@ -108,7 +108,7 @@ public class FieldMapImpl implements FieldMap {
 		case "node":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
-				return pojoNodeToValue(jsonNode, NodeFieldList.class, key);
+				return pojoNodeToValue(jsonNode, NodeFieldListModel.class, key);
 			}
 			// TODO use NodeFieldListItemDeserializer to deserialize the item in expanded form
 			NodeFieldListImpl nodeListField = new NodeFieldListImpl();
@@ -136,9 +136,9 @@ public class FieldMapImpl implements FieldMap {
 		case "micronode":
 			// Unwrap stored pojos
 			if (jsonNode.isPojo()) {
-				return pojoNodeToValue(jsonNode, MicronodeFieldList.class, key);
+				return pojoNodeToValue(jsonNode, MicronodeFieldListModel.class, key);
 			}
-			MicronodeFieldList micronodeFieldList = new MicronodeFieldListImpl();
+			MicronodeFieldListModel micronodeFieldList = new MicronodeFieldListImpl();
 			for (JsonNode node : jsonNode) {
 				micronodeFieldList.getItems().add(JsonUtil.readValue(node.toString(), MicronodeResponse.class));
 			}
@@ -196,17 +196,17 @@ public class FieldMapImpl implements FieldMap {
 	 * @param key
 	 * @return
 	 */
-	private HtmlField transformHtmlFieldJsonNode(JsonNode jsonNode, String key) {
+	private HtmlFieldModel transformHtmlFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			HtmlField field = pojoNodeToValue(jsonNode, HtmlField.class, key);
+			HtmlFieldModel field = pojoNodeToValue(jsonNode, HtmlFieldModel.class, key);
 			if (field == null || field.getHTML() == null) {
 				return null;
 			} else {
 				return field;
 			}
 		}
-		HtmlField htmlField = new HtmlFieldImpl();
+		HtmlFieldModel htmlField = new HtmlFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isTextual()) {
 			htmlField.setHTML(jsonNode.textValue());
 		}
@@ -249,10 +249,10 @@ public class FieldMapImpl implements FieldMap {
 	 * @param key
 	 * @return
 	 */
-	private DateField transformDateFieldJsonNode(JsonNode jsonNode, String key) {
+	private DateFieldModel transformDateFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			DateField field = pojoNodeToValue(jsonNode, DateField.class, key);
+			DateFieldModel field = pojoNodeToValue(jsonNode, DateFieldModel.class, key);
 			if (field == null || field.getDate() == null) {
 				return null;
 			} else {
@@ -260,7 +260,7 @@ public class FieldMapImpl implements FieldMap {
 			}
 		}
 
-		DateField dateField = new DateFieldImpl();
+		DateFieldModel dateField = new DateFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isTextual()) {
 			dateField.setDate(jsonNode.textValue());
 		}
@@ -279,7 +279,7 @@ public class FieldMapImpl implements FieldMap {
 	 * @return
 	 * @throws IOException
 	 */
-	private NodeField transformNodeFieldJsonNode(JsonNode jsonNode, String key, boolean expand) throws IOException {
+	private NodeFieldModel transformNodeFieldJsonNode(JsonNode jsonNode, String key, boolean expand) throws IOException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
 			Object pojo = ((POJONode) jsonNode).getPojo();
@@ -312,10 +312,10 @@ public class FieldMapImpl implements FieldMap {
 	 * @param key
 	 * @return
 	 */
-	private BooleanField transformBooleanFieldJsonNode(JsonNode jsonNode, String key) {
+	private BooleanFieldModel transformBooleanFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			BooleanField field = pojoNodeToValue(jsonNode, BooleanField.class, key);
+			BooleanFieldModel field = pojoNodeToValue(jsonNode, BooleanFieldModel.class, key);
 			if (field == null || field.getValue() == null) {
 				return null;
 			} else {
@@ -323,7 +323,7 @@ public class FieldMapImpl implements FieldMap {
 			}
 		}
 
-		BooleanField booleanField = new BooleanFieldImpl();
+		BooleanFieldModel booleanField = new BooleanFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isBoolean()) {
 			booleanField.setValue(jsonNode.booleanValue());
 		}
@@ -333,17 +333,17 @@ public class FieldMapImpl implements FieldMap {
 		return booleanField;
 	}
 
-	private NumberField transformNumberFieldJsonNode(JsonNode jsonNode, String key) {
+	private NumberFieldModel transformNumberFieldJsonNode(JsonNode jsonNode, String key) {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			NumberField field = pojoNodeToValue(jsonNode, NumberField.class, key);
+			NumberFieldModel field = pojoNodeToValue(jsonNode, NumberFieldModel.class, key);
 			if (field == null || field.getNumber() == null) {
 				return null;
 			} else {
 				return field;
 			}
 		}
-		NumberField numberField = new NumberFieldImpl();
+		NumberFieldModel numberField = new NumberFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isNumber()) {
 			Number number = jsonNode.numberValue();
 			numberField.setNumber(number);
@@ -354,33 +354,33 @@ public class FieldMapImpl implements FieldMap {
 		return numberField;
 	}
 
-	private BinaryField transformBinaryFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
+	private BinaryFieldModel transformBinaryFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, BinaryField.class, key);
+			return pojoNodeToValue(jsonNode, BinaryFieldModel.class, key);
 		}
 		return JsonUtil.getMapper().treeToValue(jsonNode, BinaryFieldImpl.class);
 	}
 
-	private S3BinaryField transformS3BinaryFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
+	private S3BinaryFieldModel transformS3BinaryFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			return pojoNodeToValue(jsonNode, S3BinaryField.class, key);
+			return pojoNodeToValue(jsonNode, S3BinaryFieldModel.class, key);
 		}
 		return JsonUtil.getMapper().treeToValue(jsonNode, S3BinaryFieldImpl.class);
 	}
 
-	private StringField transformStringFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
+	private StringFieldModel transformStringFieldJsonNode(JsonNode jsonNode, String key) throws JsonProcessingException {
 		// Unwrap stored pojos
 		if (jsonNode.isPojo()) {
-			StringField field = pojoNodeToValue(jsonNode, StringField.class, key);
+			StringFieldModel field = pojoNodeToValue(jsonNode, StringFieldModel.class, key);
 			if (field == null || field.getString() == null) {
 				return null;
 			} else {
 				return field;
 			}
 		}
-		StringField stringField = new StringFieldImpl();
+		StringFieldModel stringField = new StringFieldImpl();
 		if (!jsonNode.isNull() && jsonNode.isTextual()) {
 			stringField.setString(jsonNode.textValue());
 		}
@@ -398,7 +398,7 @@ public class FieldMapImpl implements FieldMap {
 	 * @param key
 	 * @return
 	 */
-	private <T extends Field> T pojoNodeToValue(JsonNode jsonNode, Class<T> clazz, String key) {
+	private <T extends FieldModel> T pojoNodeToValue(JsonNode jsonNode, Class<T> clazz, String key) {
 		Object pojo = ((POJONode) jsonNode).getPojo();
 		if (pojo == null) {
 			return null;
@@ -411,7 +411,7 @@ public class FieldMapImpl implements FieldMap {
 		}
 	}
 
-	private <I, AT> FieldList<I> getBasicList(String fieldKey, Class<AT> clazzOfJsonArray, FieldList<I> list, Class<I> classOfItem, I[] itemsArray) {
+	private <I, AT> FieldListModel<I> getBasicList(String fieldKey, Class<AT> clazzOfJsonArray, FieldListModel<I> list, Class<I> classOfItem, I[] itemsArray) {
 		if (itemsArray != null) {
 			list.getItems().addAll((List<I>) Arrays.asList(itemsArray));
 		}
@@ -433,7 +433,7 @@ public class FieldMapImpl implements FieldMap {
 		return getField(key, FieldTypes.LIST, "date");
 	}
 
-	private <T extends Field> T getField(String key, FieldTypes type, String listType) {
+	private <T extends FieldModel> T getField(String key, FieldTypes type, String listType) {
 		return getField(key, type, listType, false);
 	}
 
@@ -448,12 +448,12 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
-	public BinaryField getBinaryField(String key) {
+	public BinaryFieldModel getBinaryField(String key) {
 		return getField(key, FieldTypes.BINARY);
 	}
 
 	@Override
-	public S3BinaryField getS3BinaryField(String key) {
+	public S3BinaryFieldModel getS3BinaryField(String key) {
 		return getField(key, FieldTypes.S3BINARY);
 	}
 
@@ -491,12 +491,12 @@ public class FieldMapImpl implements FieldMap {
 	 *            Field type
 	 * @return
 	 */
-	private <T extends Field> T getField(String key, FieldTypes type) {
+	private <T extends FieldModel> T getField(String key, FieldTypes type) {
 		return getField(key, type, null);
 	}
 
 	@Override
-	public NodeField getNodeField(String key) {
+	public NodeFieldModel getNodeField(String key) {
 		return getField(key, FieldTypes.NODE);
 	}
 
@@ -527,19 +527,19 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
-	public MicronodeFieldList getMicronodeFieldList(String key) {
+	public MicronodeFieldListModel getMicronodeFieldList(String key) {
 		return getField(key, FieldTypes.LIST, "micronode");
 	}
 
 	@Override
-	public Field put(String fieldKey, Field field) {
+	public FieldModel put(String fieldKey, FieldModel field) {
 		ObjectNode objectNode = ((ObjectNode) node);
 		objectNode.putPOJO(fieldKey, field);
 		return field;
 	}
 
 	@Override
-	public FieldMap putAll(Map<String, Field> fieldMap) {
+	public FieldMap putAll(Map<String, FieldModel> fieldMap) {
 		ObjectNode objectNode = ((ObjectNode) node);
 		fieldMap.forEach((key, field) -> {
 			objectNode.putPOJO(key, field);
@@ -580,12 +580,12 @@ public class FieldMapImpl implements FieldMap {
 	}
 
 	@Override
-	public NodeFieldList getNodeFieldList(String key) {
+	public NodeFieldListModel getNodeFieldList(String key) {
 		return getField(key, FieldTypes.LIST, "node");
 	}
 
 	@Override
-	public Field getField(String key, FieldSchema fieldSchema) {
+	public FieldModel getField(String key, FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		String listType = null;
 		if (fieldSchema instanceof ListFieldSchema) {
@@ -608,7 +608,7 @@ public class FieldMapImpl implements FieldMap {
 		Set<String> urlFieldValues = new HashSet<>();
 		for (String urlField : schema.getUrlFields()) {
 			FieldSchema fieldSchema = schema.getField(urlField);
-			Field field = getField(urlField, fieldSchema);
+			FieldModel field = getField(urlField, fieldSchema);
 			if (field instanceof StringFieldImpl) {
 				StringFieldImpl stringField = (StringFieldImpl) field;
 				String value = stringField.getString();

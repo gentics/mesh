@@ -21,17 +21,17 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.DynamicContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibEditorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -52,8 +52,8 @@ import com.gentics.mesh.util.VersionNumber;
  *
  */
 public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement 
-		implements HibUnmanagedFieldContainer<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion>,
-			HibNodeFieldContainer, HibEditorTracking, Serializable {
+		implements HibUnmanagedFieldContainer<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion>,
+			NodeFieldContainer, EditorTracking, Serializable {
 
 	private static final long serialVersionUID = -3107902884955621371L;
 
@@ -124,7 +124,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public HibUser getEditor() {
+	public User getEditor() {
 		return this.get(
 				CommonContentColumn.EDITOR_DB_UUID, () -> contentStorage().findColumn(getSchemaContainerVersion(),
 						getDbUuid(), CommonContentColumn.EDITOR_DB_UUID),
@@ -132,7 +132,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public void setEditor(HibUser user) {
+	public void setEditor(User user) {
 		Object editorUuid = (user == null) ? null : user.getId();
 		put(CommonContentColumn.EDITOR_DB_UUID, editorUuid);
 	}
@@ -167,7 +167,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public HibNode getNode() {
+	public Node getNode() {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		return contentDao.getNode(this);
 	}
@@ -191,13 +191,13 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public Iterable<HibNodeFieldContainer> getNextVersions() {
+	public Iterable<NodeFieldContainer> getNextVersions() {
 		ContentDaoImpl contentDao = (ContentDaoImpl) Tx.get().contentDao();
 		return contentDao.getNextVersions(this);
 	}
 
 	@Override
-	public void setNextVersion(HibNodeFieldContainer container) {
+	public void setNextVersion(NodeFieldContainer container) {
 		ContentDaoImpl contentDao = (ContentDaoImpl) Tx.get().contentDao();
 		contentDao.setNextVersion(this, container);
 	}
@@ -209,19 +209,19 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public HibNodeFieldContainer getPreviousVersion() {
+	public NodeFieldContainer getPreviousVersion() {
 		ContentDaoImpl contentDao = (ContentDaoImpl) Tx.get().contentDao();
 		return contentDao.getPreviousVersion(this);
 	}
 
 	@Override
-	public void clone(HibNodeFieldContainer container) {
+	public void clone(NodeFieldContainer container) {
 		ContentDaoImpl contentDao = (ContentDaoImpl) Tx.get().contentDao();
 		contentDao.clone(this, container);
 	}
 
 	@Override
-	public HibSchemaVersion getSchemaContainerVersion() {
+	public SchemaVersion getSchemaContainerVersion() {
 		return HibernateTx.get().load(getSchemaContainerVersionUuid(), HibSchemaVersionImpl.class);
 	}
 
@@ -231,7 +231,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public void setSchemaContainerVersion(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	public void setSchemaContainerVersion(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		put(CommonContentColumn.SCHEMA_VERSION_DB_UUID, version.getId());
 		put(CommonContentColumn.SCHEMA_DB_UUID, version.getSchemaContainer().getId());
 	}
@@ -272,7 +272,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 	}
 
 	@Override
-	public Stream<? extends HibNodeFieldContainer> getNodeFieldContainers() {
+	public Stream<? extends NodeFieldContainer> getNodeFieldContainers() {
 		// this is already a node container we look for
 		return Stream.of(this);
 	}
@@ -328,7 +328,7 @@ public class HibNodeFieldContainerImpl extends AbstractHibBucketableElement
 		List<FieldSchema> basicFields = schema.getFields().stream().filter(this::isBasicField).collect(Collectors.toList());
 		for (FieldSchema fieldSchema : basicFields) {
 			String key = fieldSchema.getName();
-			Field field = restFields.getField(key, fieldSchema);
+			FieldModel field = restFields.getField(key, fieldSchema);
 			boolean restFieldIsNull = field == null || field.getValue() == null;
 			if (fieldSchema.isRequired() && restFieldIsNull) {
 				throw error(BAD_REQUEST, "node_error_missing_required_field_value", key, schema.getName());

@@ -31,7 +31,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -77,7 +77,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
 		try (Tx tx = tx()) {
-			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
+			Microschema vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
@@ -131,7 +131,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
 		try (Tx tx = tx()) {
-			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
+			Microschema vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
@@ -217,7 +217,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			HibMicroschema vcardContainer = microschemaContainer("vcard");
+			Microschema vcardContainer = microschemaContainer("vcard");
 			assertNotNull(vcardContainer);
 			MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			assertThat((MicroschemaModel) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
@@ -269,7 +269,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
+			Microschema vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
@@ -286,7 +286,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibMicroschema vcardContainer = microschemaContainers().get("vcard");
+			Microschema vcardContainer = microschemaContainers().get("vcard");
 			uuid = vcardContainer.getUuid();
 			roleDao.grantPermissions(role(), vcardContainer, DELETE_PERM);
 			roleDao.grantPermissions(role(), vcardContainer, UPDATE_PERM);
@@ -317,7 +317,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibMicroschema microschema = microschemaContainers().get("vcard");
+			Microschema microschema = microschemaContainers().get("vcard");
 			uuid = microschema.getUuid();
 			roleDao.revokePermissions(role(), microschema, UPDATE_PERM);
 			tx.success();
@@ -333,14 +333,14 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
-			HibMicroschema microschema = microschemaContainers().get("vcard");
+			Microschema microschema = microschemaContainers().get("vcard");
 			String oldName = microschema.getName();
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
 
 			call(() -> client().updateMicroschema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			HibMicroschema reloaded = tx.microschemaDao().findByUuid(microschema.getUuid());
+			Microschema reloaded = tx.microschemaDao().findByUuid(microschema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -360,7 +360,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		// schema_delete_still_in_use
 
 		try (Tx tx = tx()) {
-			HibMicroschema reloaded = tx.microschemaDao().findByUuid(uuid);
+			Microschema reloaded = tx.microschemaDao().findByUuid(uuid);
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
 	}
@@ -468,7 +468,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			microschemaContainerUuid);
 
 		try (Tx tx = tx()) {
-			HibMicroschema reloaded = tx.microschemaDao().findByUuid(microschemaContainerUuid);
+			Microschema reloaded = tx.microschemaDao().findByUuid(microschemaContainerUuid);
 			assertNotNull("The microschema should not have been deleted.", reloaded);
 		}
 
@@ -485,7 +485,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		call(() -> client().deleteMicroschema(microschemaContainerUuid));
 
 		try (Tx tx = tx()) {
-			HibMicroschema searched = tx.microschemaDao().findByUuid(microschemaContainerUuid);
+			Microschema searched = tx.microschemaDao().findByUuid(microschemaContainerUuid);
 			assertNull("The microschema should have been deleted.", searched);
 		}
 	}
@@ -493,7 +493,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		HibMicroschema microschema;
+		Microschema microschema;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			microschema = microschemaContainers().get("vcard");

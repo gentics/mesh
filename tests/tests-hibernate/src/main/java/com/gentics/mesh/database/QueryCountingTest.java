@@ -19,7 +19,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -133,7 +133,7 @@ public class QueryCountingTest extends AbstractCountingTest {
 	@Test
 	public void testGetTaggedNodes() {
 		String tagName = "tag-" + RandomUtils.nextInt(0, NUM_TAGS);
-		HibTagFamily family = tx(() -> Tx.get().tagFamilyDao().findByName(tagFamily.getName()));
+		TagFamily family = tx(() -> Tx.get().tagFamilyDao().findByName(tagFamily.getName()));
 		String tagUuid = tx(() -> Tx.get().tagDao().findByName(family, tagName)).getUuid();
 
 		NodeListResponse result = doTest(() -> client().findNodesForTag(projectName(), tagFamily.getUuid(), tagUuid, new GenericParametersImpl().setETag(etag).setFields(field)), countNodesNoMoreThan());

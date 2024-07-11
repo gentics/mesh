@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.assertj.MeshAssertions;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -49,12 +49,12 @@ public class ClusterConfigEndpointNoClusterTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoadCoordinationConfig() {
-		CoordinatorConfig coordinatorConfig = call(() -> client().loadCoordinationConfig());
+		CoordinatorConfigModel coordinatorConfig = call(() -> client().loadCoordinationConfig());
 		MeshAssertions.assertThat(coordinatorConfig).hasFieldOrPropertyWithValue("mode", CoordinatorMode.DISABLED);
 	}
 
 	@Test
 	public void testUpdateCoordinationConfig() {
-		call(() -> client().updateCoordinationConfig(new CoordinatorConfig()));
+		call(() -> client().updateCoordinationConfig(new CoordinatorConfigModel()));
 	}
 }

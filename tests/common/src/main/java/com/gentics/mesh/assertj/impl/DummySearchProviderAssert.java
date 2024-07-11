@@ -19,15 +19,15 @@ import java.util.stream.IntStream;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.search.request.Bulkable;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.DeleteDocumentRequest;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.search.TrackingSearchProvider;
 import com.gentics.mesh.util.Tuple;
@@ -179,7 +179,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param languages
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert storedAllContainers(HibNode node, HibProject project, HibBranch branch, String... languages) {
+	public DummySearchProviderAssert storedAllContainers(Node node, Project project, Branch branch, String... languages) {
 		for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 			for (String lang : languages) {
 				String projectUuid = project.getUuid();
@@ -197,8 +197,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param tag
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert stored(HibTag tag) {
-		assertThat(actual).hasStore(HibTag.composeIndexName(tag.getProject().getUuid()), HibTag.composeDocumentId(tag.getUuid()));
+	public DummySearchProviderAssert stored(Tag tag) {
+		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeDocumentId(tag.getUuid()));
 		return this;
 	}
 
@@ -208,8 +208,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param tagfamily
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert stored(HibTagFamily tagfamily) {
-		assertThat(actual).hasStore(HibTagFamily.composeIndexName(tagfamily.getProject().getUuid()), HibTagFamily.composeDocumentId(tagfamily.getUuid()));
+	public DummySearchProviderAssert stored(TagFamily tagfamily) {
+		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}
 

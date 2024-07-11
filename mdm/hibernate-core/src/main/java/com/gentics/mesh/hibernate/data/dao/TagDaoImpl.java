@@ -20,16 +20,16 @@ import org.hibernate.Hibernate;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.PersistingTagDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -61,12 +61,12 @@ import io.vertx.core.Vertx;
  *
  */
 @Singleton
-public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTagImpl> implements PersistingTagDao {
+public class TagDaoImpl extends AbstractHibDaoGlobal<Tag, TagResponse, HibTagImpl> implements PersistingTagDao {
 
-	private final RootDaoHelper<HibTag, HibTagImpl, HibTagFamily, HibTagFamilyImpl> rootDaoHelper;
+	private final RootDaoHelper<Tag, HibTagImpl, TagFamily, HibTagFamilyImpl> rootDaoHelper;
 
 	@Inject
-	public TagDaoImpl(RootDaoHelper<HibTag, HibTagImpl, HibTagFamily, HibTagFamilyImpl> rootDaoHelper, HibPermissionRoots permissionRoots,
+	public TagDaoImpl(RootDaoHelper<Tag, HibTagImpl, TagFamily, HibTagFamilyImpl> rootDaoHelper, HibPermissionRoots permissionRoots,
 			CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory,
 			Lazy<Vertx> vertx) {
 		super(rootDaoHelper.getDaoHelper(), permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
@@ -74,11 +74,11 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public Page<? extends HibNode> findTaggedNodes(HibTag tag, HibUser requestUser, HibBranch branch,
+	public Page<? extends Node> findTaggedNodes(Tag tag, User requestUser, Branch branch,
 			List<String> languageTags, ContainerType type, PagingParameters pagingInfo) {
 		String branchUuid =branch.getUuid();
 
-		List<? extends HibNode> nodes = null;
+		List<? extends Node> nodes = null;
 		if (requestUser.isAdmin()) {
 			nodes = em().createNamedQuery("node.findByTagsLanguageTagsAndContainerTypeForAdmin", HibNodeImpl.class)
 					.setParameter("tagUuid", tag.getId())
@@ -86,7 +86,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 					.setParameter("type", type)
 					.getResultList();
 		} else {
-			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(requestUser).iterator());
+			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(requestUser).iterator());
 			nodes = SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createNamedQuery("node.findByTagsLanguageTagsAndContainerType", HibNodeImpl.class)
 					.setParameter("tagUuid", tag.getId())
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
@@ -99,10 +99,10 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public Result<? extends HibNode> findTaggedNodes(HibTag tag, InternalActionContext ac, InternalPermission perm) {
-		HibUser user = ac.getUser();
+	public Result<? extends Node> findTaggedNodes(Tag tag, InternalActionContext ac, InternalPermission perm) {
+		User user = ac.getUser();
 		Tx tx = Tx.get();
-		HibBranch branch = tx.getBranch(ac);
+		Branch branch = tx.getBranch(ac);
 		String branchUuid = branch.getUuid();
 
 		Stream<HibNodeImpl> stream = null;
@@ -112,14 +112,14 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 					.getResultStream();
 		} else if (perm == null || perm == InternalPermission.READ_PUBLISHED_PERM) {
-			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			stream = em().createNamedQuery("node.findByTagsLanguageTags", HibNodeImpl.class)
 					.setParameter("tagUuid", tag.getId())
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 					.setParameter("roles", roles)
 					.getResultStream();
 		} else {
-			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			String query = HibNodeImpl.QUERY_FIND_BY_TAGS_LANG_TAGS + "and perm." + HibPermissionImpl.getColumnName(perm) + " = true";
 			stream = em().createQuery(query, HibNodeImpl.class)
 					.setParameter("tagUuid", tag.getId())
@@ -131,7 +131,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public void removeNode(HibTag tag, HibNode node) {
+	public void removeNode(Tag tag, Node node) {
 		em().createQuery("delete from node_tag t where t.id.nodeUUID = :nodeuuid and t.id.tagUUID = :taguuid")
 				.setParameter("nodeuuid", node.getId())
 				.setParameter("taguuid", tag.getId())
@@ -139,7 +139,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public Result<? extends HibNode> getNodes(HibTag tag, HibBranch branch) {
+	public Result<? extends Node> getNodes(Tag tag, Branch branch) {
 		Stream<HibNodeImpl> nodes = em().createQuery("select t.node from node_tag t where t.id.tagUUID = :taguuid and t.id.branchUUID = :branchuuid", HibNodeImpl.class)
 				.setParameter("taguuid", tag.getId())
 				.setParameter("branchuuid", branch.getId())
@@ -149,7 +149,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public void removeTag(HibNode node, HibTag tag, HibBranch branch) {
+	public void removeTag(Node node, Tag tag, Branch branch) {
 		em().createQuery("delete from node_tag t where t.id.nodeUUID = :nodeuuid and t.id.tagUUID = :taguuid and t.id.branchUUID = :branchuuid")
 				.setParameter("nodeuuid", node.getId())
 				.setParameter("taguuid", tag.getId())
@@ -158,7 +158,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public void removeAllTags(HibNode node, HibBranch branch) {
+	public void removeAllTags(Node node, Branch branch) {
 		em().createQuery("delete from node_tag t where t.id.nodeUUID = :nodeuuid and t.id.branchUUID = :branchuuid")
 				.setParameter("nodeuuid", node.getId())
 				.setParameter("branchuuid", branch.getId())
@@ -166,7 +166,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public Result<HibTag> getTags(HibNode node, HibBranch branch) {
+	public Result<Tag> getTags(Node node, Branch branch) {
 		HibNodeImpl impl = (HibNodeImpl) node;
 		if (em().contains(node) && Hibernate.isInitialized(impl.getTags())) {
 			// creating a new traversal result to avoid concurrent exceptions
@@ -182,7 +182,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public Page<? extends HibTag> getTags(HibNode node, HibUser user, PagingParameters params, HibBranch branch) {
+	public Page<? extends Tag> getTags(Node node, User user, PagingParameters params, Branch branch) {
 		CriteriaQuery<HibTagImpl> query = cb().createQuery(HibTagImpl.class);
 		Root<HibNodeTag> root = query.from(HibNodeTag.class);
 		query.select(root.get("tag"))
@@ -197,7 +197,7 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public boolean hasTag(HibNode node, HibTag tag, HibBranch branch) {
+	public boolean hasTag(Node node, Tag tag, Branch branch) {
 		return em().createQuery("select t from node_tag t where t.id.nodeUUID = :nodeuuid and t.id.tagUUID = :taguuid and t.id.branchUUID = :branchuuid")
 				.setParameter("nodeuuid", node.getId())
 				.setParameter("taguuid", tag.getId())
@@ -208,36 +208,36 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public Stream<? extends HibTag> findAllStream(HibTagFamily root, InternalActionContext ac,
+	public Stream<? extends Tag> findAllStream(TagFamily root, InternalActionContext ac,
 			InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeNativeFilter) {
 		return StreamSupport.stream(rootDaoHelper.findAllInRoot(root, ac, paging, maybeNativeFilter, null, permission).spliterator(), false);
 	}
 
 	@Override
-	public long countAll(HibTagFamily root, InternalActionContext ac, InternalPermission permission,
+	public long countAll(TagFamily root, InternalActionContext ac, InternalPermission permission,
 			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
 		return rootDaoHelper.countAllInRoot(root, ac, pagingInfo, maybeFilter, permission);
 	}
 
 	@Override
-	public Page<? extends HibTag> findAll(HibTagFamily root, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends Tag> findAll(TagFamily root, InternalActionContext ac, PagingParameters pagingInfo) {
 		return rootDaoHelper.findAllInRoot(root, ac, pagingInfo, Optional.empty(), null, true);
 	}
 
 	@Override
-	public Page<? extends HibTag> findAll(HibTagFamily root, InternalActionContext ac, PagingParameters pagingInfo,
-			Predicate<HibTag> extraFilter) {
+	public Page<? extends Tag> findAll(TagFamily root, InternalActionContext ac, PagingParameters pagingInfo,
+			Predicate<Tag> extraFilter) {
 		return rootDaoHelper.findAllInRoot(root, ac, pagingInfo, Optional.empty(), extraFilter, true);
 	}
 
 	@Override
-	public Page<? extends HibTag> findAllNoPerm(HibTagFamily root, InternalActionContext ac,
+	public Page<? extends Tag> findAllNoPerm(TagFamily root, InternalActionContext ac,
 			PagingParameters pagingInfo) {
 		return rootDaoHelper.findAllInRoot(root, ac, pagingInfo, Optional.empty(), null, false);
 	}
 
 	@Override
-	public HibTag findByName(HibTagFamily root, String name) {
+	public Tag findByName(TagFamily root, String name) {
 		return HibernateTx.get().data().mesh().tagNameCache().get(getCacheKey(root, name), key -> {
 			return firstOrNull(
 					em().createQuery("select t from tag t where t.name = :name and t.tagFamily = :tagFamily", HibTagImpl.class)
@@ -247,19 +247,19 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public HibTag findByName(String name) {
+	public Tag findByName(String name) {
 		return HibernateTx.get().data().mesh().tagNameCache().get(name, tagName -> {
 			return super.findByName(tagName);
 		});
 	}
 
 	@Override
-	public HibTag findByUuid(HibTagFamily root, String uuid) {
+	public Tag findByUuid(TagFamily root, String uuid) {
 		if (!UUIDUtil.isUUID(uuid)) {
 			return null;
 		}
 
-		HibTag tag = daoHelper.findByUuid(uuid);
+		Tag tag = daoHelper.findByUuid(uuid);
 		// double check that the tag actually belongs to the tag family
 		if (tag != null && Objects.equals(tag.getTagFamily(), root)) {
 			return tag;
@@ -268,27 +268,27 @@ public class TagDaoImpl extends AbstractHibDaoGlobal<HibTag, TagResponse, HibTag
 	}
 
 	@Override
-	public void addItem(HibTagFamily root, HibTag item) {
+	public void addItem(TagFamily root, Tag item) {
 		root.addTag(item);
 	}
 
 	@Override
-	public void removeItem(HibTagFamily root, HibTag item) {
+	public void removeItem(TagFamily root, Tag item) {
 		root.removeTag(item);
 	}
 
 	@Override
-	public long globalCount(HibTagFamily root) {
+	public long globalCount(TagFamily root) {
 		return daoHelper.count();
 	}
 
 	@Override
-	public Result<? extends HibTag> findAll(HibTagFamily root) {
+	public Result<? extends Tag> findAll(TagFamily root) {
 		return new TraversalResult<>(((HibTagFamilyImpl) root).getTags());
 	}
 
 	@Override
-	public HibTag beforeDeletedFromDatabase(HibTag element) {
+	public Tag beforeDeletedFromDatabase(Tag element) {
 		removeItem(element.getTagFamily(), element);
 		em().createQuery("delete from node_tag t where t.id.tagUUID = :taguuid")
 				.setParameter("taguuid", element.getId())

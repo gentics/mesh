@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 
 public class PathPrefixUtilTest {
 
@@ -22,7 +22,7 @@ public class PathPrefixUtilTest {
 
 	@Test
 	public void testStrip() {
-		HibBranch branch = Mockito.mock(HibBranch.class);
+		Branch branch = Mockito.mock(Branch.class);
 		when(branch.getPathPrefix()).thenReturn("");
 		assertEquals("", PathPrefixUtil.strip(branch, ""));
 
@@ -33,7 +33,7 @@ public class PathPrefixUtilTest {
 
 	@Test
 	public void testStartsWithPrefix() {
-		HibBranch branch = Mockito.mock(HibBranch.class);
+		Branch branch = Mockito.mock(Branch.class);
 		when(branch.getPathPrefix()).thenReturn("cba");
 		assertFalse(PathPrefixUtil.startsWithPrefix(branch, "/abc"));
 

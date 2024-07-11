@@ -21,12 +21,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -76,7 +76,7 @@ import com.gentics.mesh.hibernate.data.node.field.impl.HibBinaryFieldImpl;
 				) 
 		}
 )
-public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<HibBinary> implements HibBinaryFieldBase, Serializable {
+public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<Binary> implements HibBinaryFieldBase, Serializable {
 
 	private static final long serialVersionUID = -192130888476185291L;
 
@@ -87,12 +87,12 @@ public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<HibBinar
 	public HibBinaryFieldEdgeImpl() {
 	}
 
-	protected HibBinaryFieldEdgeImpl(HibernateTx tx, String fieldKey, HibBinary binary, HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
+	protected HibBinaryFieldEdgeImpl(HibernateTx tx, String fieldKey, Binary binary, HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		super(tx, fieldKey, binary, parentFieldContainer);
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer dst) {
+	public Field cloneTo(FieldContainer dst) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> dstBase = (HibUnmanagedFieldContainer<?,?,?,?,?>) dst;
 		dstBase.ensureColumnExists(getFieldKey(), FieldTypes.BINARY);
@@ -102,7 +102,7 @@ public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<HibBinar
 	}
 
 	@Override
-	public HibBinaryField copyTo(HibBinaryField targetField) {
+	public BinaryField copyTo(BinaryField targetField) {
 		HibBinaryFieldBase target = HibBinaryFieldBase.class.cast(targetField);
 		if (AbstractDeletableHibField.class.isInstance(target)) {
 			target = HibBinaryFieldBase.class.cast(((AbstractDeletableHibField.class.cast(target)).getReferencedEdge()));
@@ -118,7 +118,7 @@ public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<HibBinar
 		target.setLocationAltitude(getLocationAltitude());
 		target.setPlainText(getPlainText());
 
-		for (HibImageVariant variant : getImageVariants()) {
+		for (ImageVariant variant : getImageVariants()) {
 			HibernateTx.get().imageVariantDao().attachVariant(target, (HibImageVariantImpl) variant, false);
 		}
 
@@ -142,18 +142,18 @@ public class HibBinaryFieldEdgeImpl extends AbstractBinaryFieldEdgeImpl<HibBinar
 	}
 
 	@Override
-	protected Class<? extends HibBinary> getImageEntityClass() {
+	protected Class<? extends Binary> getImageEntityClass() {
 		return HibBinaryImpl.class;
 	}
 
 	@Override
-	public HibNodeFieldContainer getParentContainer() {
+	public NodeFieldContainer getParentContainer() {
 		HibernateTx tx = HibernateTx.get();
 		return tx.contentDao().getFieldContainer(tx.load(getContainerVersionUuid(), HibSchemaVersionImpl.class), getContainerUuid());
 	}
 
 	@Override
-	public Result<? extends HibImageVariant> getImageVariants() {
+	public Result<? extends ImageVariant> getImageVariants() {
 		return new TraversalResult<>(variants);
 	}
 

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.data.node.field.nesting.ListableField;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
@@ -24,8 +24,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  */
 public abstract class AbstractHibHeterogenicPrimitiveListFieldImpl<
 			I extends AbstractHibListFieldEdgeImpl<V>, 
-			LF extends HibListableField, 
-			RM extends Field, 
+			LF extends ListableField, 
+			RM extends FieldModel, 
 			U,
 			V extends U
 		> extends AbstractHibListFieldImpl<I, LF, RM, U, V> {

@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.node.field.impl;
 
 import java.time.Instant;
 
-import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.DateField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 
@@ -12,7 +12,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public class HibDateFieldImpl extends AbstractBasicHibField<Instant> implements HibDateField {
+public class HibDateFieldImpl extends AbstractBasicHibField<Instant> implements DateField {
 
 	public HibDateFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, Instant value) {
 		super(fieldKey, parent, FieldTypes.DATE, value);

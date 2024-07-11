@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -66,7 +66,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 		String etag;
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			HibUser user = tx.userDao().findByUuid(userUuid());
+			User user = tx.userDao().findByUuid(userUuid());
 
 			etag = userDao.getETag(user(), mockActionContext());
 			callETag(() -> client().findUserByUuid(user.getUuid()), etag, true, 304);

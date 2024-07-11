@@ -1,7 +1,7 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.Field;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 
@@ -11,7 +11,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public abstract class AbstractHibField implements HibField {
+public abstract class AbstractHibField implements Field {
 
 	private String fieldKey;
 	private final HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parentContainer;

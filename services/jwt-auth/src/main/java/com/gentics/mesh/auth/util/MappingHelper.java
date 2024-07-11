@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.data.HibNamedBaseElement;
+import com.gentics.mesh.core.data.NamedBaseElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 
 /**
@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.dao.DaoGlobal;
  *
  * @param <T> type of mapped entitiy
  */
-public class MappingHelper <T extends HibNamedBaseElement> {
+public class MappingHelper <T extends NamedBaseElement> {
 	/**
 	 * Map of handled entities by uuid
 	 */

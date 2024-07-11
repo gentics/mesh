@@ -50,21 +50,21 @@ import org.apache.commons.lang3.tuple.Triple;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -78,7 +78,7 @@ import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfoModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -119,7 +119,7 @@ import com.gentics.mesh.util.URIUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject, HibNode> {
+public interface PersistingNodeDao extends NodeDao, PersistingRootDao<Project, Node> {
 	static final Logger log = LoggerFactory.getLogger(NodeDao.class);
 
 	/**
@@ -133,12 +133,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param maybeFilter
 	 * @return
 	 */
-	Stream<? extends HibNode> findAllStream(HibProject project, InternalActionContext ac, InternalPermission internalPermission, PagingParameters paging, Optional<ContainerType> maybeType, Optional<FilterOperation<?>> maybeFilter);
+	Stream<? extends Node> findAllStream(Project project, InternalActionContext ac, InternalPermission internalPermission, PagingParameters paging, Optional<ContainerType> maybeType, Optional<FilterOperation<?>> maybeFilter);
 
 	@Override
-	default NodeReference transformToReference(HibNode node, InternalActionContext ac) {
+	default NodeReference transformToReference(Node node, InternalActionContext ac) {
 		CommonTx tx = CommonTx.get();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 
 		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(node.getUuid());
@@ -156,7 +156,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default NodeResponse transformToRestSync(HibNode node, InternalActionContext ac, int level, String... languageTags) {
+	default NodeResponse transformToRestSync(Node node, InternalActionContext ac, int level, String... languageTags) {
 		Tx tx = Tx.get();
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -172,11 +172,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 		}
 
-		HibSchema container = node.getSchemaContainer();
+		Schema container = node.getSchemaContainer();
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + node.getUuid() + "} could not be found.");
 		}
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 		if (fields.has("languages")) {
 			restNode.setAvailableLanguages(getLanguageInfo(node, ac));
 		}
@@ -209,7 +209,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return restNode;
 	}
 
-	private void setBreadcrumbToRest(HibNode node, InternalActionContext ac, NodeResponse restNode) {
+	private void setBreadcrumbToRest(Node node, InternalActionContext ac, NodeResponse restNode) {
 		List<NodeReference> breadcrumbs = getBreadcrumbNodeStream(node, ac)
 			.map(node1 -> transformToReference(node1, ac))
 			.collect(Collectors.toList());
@@ -217,7 +217,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+	default Stream<NodeContent> findAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		ContentDao contentDao = Tx.get().contentDao();
 
 		return findAllStream(project, ac, type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM, paging, Optional.ofNullable(type), maybeFilter)
@@ -228,7 +228,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac,
+	default Stream<NodeContent> findAllContent(SchemaVersion schemaVersion, InternalActionContext ac,
 			List<String> languageTags, ContainerType type, PagingParameters paging,	Optional<FilterOperation<?>> maybeFilter) {
 		Tx tx = Tx.get();
 		SchemaDao schemaDao = tx.schemaDao();
@@ -237,7 +237,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				ac.getUser(),
 				ContainerType.forVersion(ac.getVersioningParameters().getVersion())).stream()
 				.map(node -> {
-					HibNodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
+					NodeFieldContainer container = contentDao.findVersion(node, ac, languageTags, type);
 					return new NodeContent(node, container, languageTags, type);
 				})
 				.filter(content -> content.getContainer() != null);
@@ -251,12 +251,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	@Override
-	default Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac) {
+	default Stream<? extends Node> getBreadcrumbNodeStream(Node node, InternalActionContext ac) {
 		Tx tx = Tx.get();
 		String branchUuid = tx.getBranch(ac, node.getProject()).getUuid();
-		HibNode current = node;
+		Node current = node;
 
-		Deque<HibNode> breadcrumb = new ArrayDeque<>();
+		Deque<Node> breadcrumb = new ArrayDeque<>();
 		while (current != null) {
 			breadcrumb.addFirst(current);
 			current = getParentNode(current, branchUuid);
@@ -273,10 +273,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	@Override
-	default Map<String, PublishStatusModel> getLanguageInfo(HibNode node, InternalActionContext ac) {
+	default Map<String, PublishStatusModel> getLanguageInfo(Node node, InternalActionContext ac) {
 		Map<String, PublishStatusModel> languages = new HashMap<>();
 		Tx tx = Tx.get();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 
 		tx.contentDao().getFieldContainers(node, branch, PUBLISHED).stream().forEach(c -> {
 
@@ -294,12 +294,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default HibNode loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	default Node loadObjectByUuid(Project project, InternalActionContext ac, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		Tx tx = Tx.get();
 		UserDao userDao = tx.userDao();
 		ContentDao contentDao = tx.contentDao();
 
-		HibNode element = findByUuidGlobal(uuid);
+		Node element = findByUuidGlobal(uuid);
 		boolean notFound = element == null || !element.getProject().getUuid().equals(project.getUuid());
 		if (!errorIfNotFound && notFound) {
 			return null;
@@ -308,12 +308,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
-		HibUser requestUser = ac.getUser();
+		User requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
-			HibBranch branch = tx.getBranch(ac, element.getProject());
+			Branch branch = tx.getBranch(ac, element.getProject());
 
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList(CommonTx.get().data().options());
-			HibNodeFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(),
+			NodeFieldContainer fieldContainer = contentDao.findVersion(element, requestedLanguageTags, branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 
 			if (fieldContainer == null) {
@@ -343,7 +343,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param ac
 	 * @param restNode
 	 */
-	private void setProjectReference(HibNode node, InternalActionContext ac, NodeResponse restNode) {
+	private void setProjectReference(Node node, InternalActionContext ac, NodeResponse restNode) {
 		restNode.setProject(node.getProject().transformToReference());
 	}
 
@@ -357,8 +357,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 *            Model to be updated
 	 * @return
 	 */
-	private void setParentNodeInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
-		HibNode parentNode = getParentNode(node, branch.getUuid());
+	private void setParentNodeInfo(Node node, InternalActionContext ac, Branch branch, NodeResponse restNode) {
+		Node parentNode = getParentNode(node, branch.getUuid());
 		if (parentNode != null) {
 			restNode.setParentNode(transformToReference(parentNode, ac));
 		} else {
@@ -382,7 +382,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param languageTags
 	 * @return
 	 */
-	private void setFields(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode, int level, FieldsSet fieldsSet,
+	private void setFields(Node node, InternalActionContext ac, Branch branch, NodeResponse restNode, int level, FieldsSet fieldsSet,
 		String... languageTags) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		NodeParameters nodeParameters = ac.getNodeParameters();
@@ -408,7 +408,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// First check whether the NGFC for the requested language,branch and version could be found.
 		ContentDao contentDao = Tx.get().contentDao();
-		HibNodeFieldContainer fieldContainer = contentDao.findVersion(node, requestedLanguageTags, branch.getUuid(), versioiningParameters.getVersion());
+		NodeFieldContainer fieldContainer = contentDao.findVersion(node, requestedLanguageTags, branch.getUuid(), versioiningParameters.getVersion());
 		if (fieldContainer == null) {
 			// If a published version was requested, we check whether any
 			// published language variant exists for the node, if not, response
@@ -477,7 +477,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 			// editor and edited
 			if (fieldsSet.has("editor")) {
-				HibUser editor = fieldContainer.getEditor();
+				User editor = fieldContainer.getEditor();
 				if (editor != null) {
 					restNode.setEditor(editor.transformToReference());
 				}
@@ -516,16 +516,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setChildrenInfo(HibNode node, InternalActionContext ac, HibBranch branch, NodeResponse restNode) {
-		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
+	private void setChildrenInfo(Node node, InternalActionContext ac, Branch branch, NodeResponse restNode) {
+		Map<String, NodeChildrenInfoModel> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
-		for (HibNode child : getChildren(node, branch.getUuid())) {
+		for (Node child : getChildren(node, branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
 				String schemaName = child.getSchemaContainer().getName();
-				NodeChildrenInfo info = childrenInfo.get(schemaName);
+				NodeChildrenInfoModel info = childrenInfo.get(schemaName);
 				if (info == null) {
-					info = new NodeChildrenInfo();
+					info = new NodeChildrenInfoModel();
 					String schemaUuid = child.getSchemaContainer().getUuid();
 					info.setSchemaUuid(schemaUuid);
 					info.setCount(1);
@@ -548,9 +548,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 *            Branch which will be used to identify the branch specific tags
 	 * @return
 	 */
-	private void setTagsToRest(HibNode node, InternalActionContext ac, NodeResponse restNode, HibBranch branch) {
+	private void setTagsToRest(Node node, InternalActionContext ac, NodeResponse restNode, Branch branch) {
 		List<TagReference> list = node.getTags(branch).stream()
-			.map(HibTag::transformToReference)
+			.map(Tag::transformToReference)
 			.collect(Collectors.toList());
 		restNode.setTags(list);
 	}
@@ -565,7 +565,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 *            Branch which will be used to identify the nodes relations and thus the correct path can be determined
 	 * @return
 	 */
-	private void setPathsToRest(HibNode node, InternalActionContext ac, NodeResponse restNode, HibBranch branch) {
+	private void setPathsToRest(Node node, InternalActionContext ac, NodeResponse restNode, Branch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 
@@ -584,14 +584,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 	}
 
-	private Map<String, String> getLanguagePaths(HibNode node, InternalActionContext ac, LinkType linkType, HibBranch branch) {
+	private Map<String, String> getLanguagePaths(Node node, InternalActionContext ac, LinkType linkType, Branch branch) {
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		String branchUuid = Tx.get().getBranch(ac, node.getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Map<String, String> languagePaths = new HashMap<>();
 		WebRootLinkReplacer linkReplacer = CommonTx.get().data().mesh().webRootLinkReplacer();
-		for (HibNodeFieldContainer currentFieldContainer : Tx.get().contentDao().getFieldContainers(node, branch, forVersion(versioiningParameters.getVersion()))) {
+		for (NodeFieldContainer currentFieldContainer : Tx.get().contentDao().getFieldContainers(node, branch, forVersion(versioiningParameters.getVersion()))) {
 			String currLanguage = currentFieldContainer.getLanguageTag();
 			String languagePath = linkReplacer.resolve(ac, branchUuid, type, node, linkType, true, currLanguage);
 			languagePaths.put(currLanguage, languagePath);
@@ -600,16 +600,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void onRootDeleted(HibProject root, BulkActionContext bac) {
+	default void onRootDeleted(Project root, BulkActionContext bac) {
 		// Remove all nodes in this project, including root.
-		for (HibNode node : findAll(root)) {
+		for (Node node : findAll(root)) {
 			delete(node, bac, true, false);
 			bac.inc();
 		}
 	}
 
 	@Override
-	default void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch) {
+	default void moveTo(Node sourceNode, InternalActionContext ac, Node targetNode, EventQueueBatch batch) {
 		Tx tx = Tx.get();
 
 		// TODO should we add a guard that terminates this loop when it runs to
@@ -619,9 +619,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// node.
 		// We must detect and prevent such actions because those would
 		// invalidate the tree structure
-		HibBranch branch = tx.getBranch(ac, sourceNode.getProject());
+		Branch branch = tx.getBranch(ac, sourceNode.getProject());
 		String branchUuid = branch.getUuid();
-		HibNode parent = getParentNode(targetNode, branchUuid);
+		Node parent = getParentNode(targetNode, branchUuid);
 		ContentDao contentDao = Tx.get().contentDao();
 		while (parent != null) {
 			if (parent.getUuid().equals(sourceNode.getUuid())) {
@@ -653,7 +653,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		assertPublishConsistency(sourceNode, ac, branch);
 	}
 
-	private NodeMovedEventModel onNodeMoved(HibNode node, String branchUuid, HibNode target) {
+	private NodeMovedEventModel onNodeMoved(Node node, String branchUuid, Node target) {
 		NodeMovedEventModel model = new NodeMovedEventModel();
 		model.setEvent(NODE_MOVED);
 		model.setBranchUuid(branchUuid);
@@ -664,7 +664,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac) {
+	default NavigationResponse transformToNavigation(Node node, InternalActionContext ac) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
@@ -701,19 +701,19 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param languages list of languages
 	 * @return
 	 */
-	private String buildNavigationEtagKey(InternalActionContext ac, HibNode node, int maxDepth, int level, String branchUuid, ContainerType type, List<String> languages) {
+	private String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String branchUuid, ContainerType type, List<String> languages) {
 		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
+		List<Node> nodes = getChildren(node, ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
 		if (level == maxDepth || nodes.isEmpty()) {
 			return builder.toString();
 		}
-		for (HibNode child : nodes) {
+		for (Node child : nodes) {
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
 				builder.append(buildNavigationEtagKey(ac, child, maxDepth, level + 1, branchUuid, type, languages));
 			} else if (parameters.isIncludeAll()) {
@@ -723,12 +723,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return builder.toString();
 	}
 
-	private Stream<? extends HibNode> getChildren(HibNode node, HibUser requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
+	private Stream<? extends Node> getChildren(Node node, User requestUser, String branchUuid, List<String> languageTags, ContainerType type) {
 		InternalPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		UserDao userRoot = Tx.get().userDao();
 		ContentDao contentDao = Tx.get().contentDao();
 
-		Predicate<HibNode> languageFilter = languageTags == null || languageTags.isEmpty()
+		Predicate<Node> languageFilter = languageTags == null || languageTags.isEmpty()
 				? item -> true
 				: item -> languageTags.stream().anyMatch(languageTag -> contentDao.getFieldContainer(item, languageTag, branchUuid, type) != null);
 
@@ -751,9 +751,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param languages      languages
 	 * @return
 	 */
-	private NavigationResponse buildNavigationResponse(InternalActionContext ac, HibNode node, int maxDepth, int level,
+	private NavigationResponse buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 													   NavigationResponse navigation, NavigationElement currentElement, String branchUuid, ContainerType type, List<String> languages) {
-		List<HibNode> nodes = getChildren(node, ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
+		List<Node> nodes = getChildren(node, ac.getUser(), branchUuid, languages, type).collect(Collectors.toList());
 		List<NavigationResponse> responses = new ArrayList<>();
 
 		NodeResponse response = transformToRestSync(node, ac, 0);
@@ -768,7 +768,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
-		for (HibNode child : nodes) {
+		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
 			// TODO also allow navigations over containers
 			if (child.getSchemaContainer().getLatestVersion().getSchema().getContainer()) {
@@ -793,12 +793,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag) {
+	default PublishStatusModel transformToPublishStatus(Node node, InternalActionContext ac, String languageTag) {
 		Tx tx = Tx.get();
 		ContentDao contentDao = tx.contentDao();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 
-		HibNodeFieldContainer container = contentDao.getFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
+		NodeFieldContainer container = contentDao.getFieldContainer(node, languageTag, branch.getUuid(), PUBLISHED);
 		if (container != null) {
 			String date = container.getLastEditedDate();
 			return buildPublishStatusModel(container, date);
@@ -811,11 +811,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 	}
 
-	private PublishStatusModel buildPublishStatusModel(HibNodeFieldContainer container, String date) {
+	private PublishStatusModel buildPublishStatusModel(NodeFieldContainer container, String date) {
 		PublishStatusModel status = new PublishStatusModel();
 		status.setPublished(true);
 		status.setVersion(container.getVersion().toString());
-		HibUser editor = container.getEditor();
+		User editor = container.getEditor();
 		if (editor != null) {
 			status.setPublisher(editor.transformToReference());
 		}
@@ -825,14 +825,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
+	default void publish(Node node, InternalActionContext ac, BulkActionContext bac, String languageTag) {
 		Tx tx = Tx.get();
 		ContentDao contentDao = tx.contentDao();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 		String branchUuid = branch.getUuid();
 
 		// get the draft version of the given language
-		HibNodeFieldContainer draftVersion = contentDao.getFieldContainer(node, languageTag, branchUuid, DRAFT);
+		NodeFieldContainer draftVersion = contentDao.getFieldContainer(node, languageTag, branchUuid, DRAFT);
 
 		// if not existent -> NOT_FOUND
 		if (draftVersion == null) {
@@ -845,18 +845,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// TODO check whether all required fields are filled, if not -> unable to publish
-		HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, draftVersion.getLanguageTag(), branch, ac.getUser());
+		NodeFieldContainer publishedContainer = contentDao.publish(node, ac, draftVersion.getLanguageTag(), branch, ac.getUser());
 		// Invoke a store of the document since it must now also be added to the published index
 		bac.add(contentDao.onPublish(publishedContainer, branchUuid));
 	}
 
 	@Override
-	default Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac) {
+	default Result<? extends Node> getBreadcrumbNodes(Node node, InternalActionContext ac) {
 		return new TraversalResult<>(() -> getBreadcrumbNodeStream(node, ac).iterator());
 	}
 
 	@Override
-	default NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac) {
+	default NodeVersionsResponse transformToVersionList(Node node, InternalActionContext ac) {
 		NodeVersionsResponse response = new NodeVersionsResponse();
 		Map<String, List<VersionInfo>> versions = new HashMap<>();
 		ContentDao contentDao = Tx.get().contentDao();
@@ -871,7 +871,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac) {
+	default PublishStatusResponse transformToPublishStatus(Node node, InternalActionContext ac) {
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = getLanguageInfo(node, ac);
 		publishStatus.setAvailableLanguages(languages);
@@ -879,19 +879,19 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void publish(HibNode node, InternalActionContext ac, BulkActionContext bac) {
+	default void publish(Node node, InternalActionContext ac, BulkActionContext bac) {
 		Tx tx = Tx.get();
 		ContentDao contentDao = Tx.get().contentDao();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 		String branchUuid = branch.getUuid();
 
-		List<HibNodeFieldContainer> unpublishedContainers = contentDao
+		List<NodeFieldContainer> unpublishedContainers = contentDao
 				.getFieldContainers(node, branch, ContainerType.DRAFT).stream().filter(
 						c -> !contentDao.isPublished(c, branchUuid)).collect(Collectors.toList());
 
 		// publish all unpublished containers and handle recursion
 		unpublishedContainers.stream().forEach(c -> {
-			HibNodeFieldContainer newVersion = tx.contentDao().publish(node, ac, c.getLanguageTag(), branch, ac.getUser());
+			NodeFieldContainer newVersion = tx.contentDao().publish(node, ac, c.getLanguageTag(), branch, ac.getUser());
 			bac.add(contentDao.onPublish(newVersion, branchUuid));
 		});
 		assertPublishConsistency(node, ac, branch);
@@ -902,7 +902,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// level the consistency is correct.
 		PublishParameters parameters = ac.getPublishParameters();
 		if (parameters.isRecursive()) {
-			for (HibNode nodeToPublish : getChildren(node, branchUuid)) {
+			for (Node nodeToPublish : getChildren(node, branchUuid)) {
 				publish(nodeToPublish, ac, bac);
 			}
 		}
@@ -910,9 +910,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default HibNode create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default Node create(Project project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
-		HibBranch branch = tx.getBranch(ac);
+		Branch branch = tx.getBranch(ac);
 		UserDao userDao = tx.userDao();
 		SchemaDao schemaDao = tx.schemaDao();
 
@@ -922,7 +922,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
 
-		HibUser requestUser = ac.getUser();
+		User requestUser = ac.getUser();
 
 		String body = ac.getBodyAsString();
 
@@ -937,8 +937,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			HibSchema schemaByUuid = schemaDao.loadObjectByUuid(project, ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-			HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
+			Schema schemaByUuid = schemaDao.loadObjectByUuid(project, ac, schemaInfo.getSchema().getUuid(), READ_PERM);
+			SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByUuid);
 			if (schemaVersion == null) {
 				throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByUuid.getName(), branch.getName(), project.getName());
 			}
@@ -947,12 +947,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// 3. Or just schema reference by name
 		if (!isEmpty(schemaInfo.getSchema().getName())) {
-			HibSchema schemaByName = schemaDao.findByName(project, schemaInfo.getSchema().getName());
+			Schema schemaByName = schemaDao.findByName(project, schemaInfo.getSchema().getName());
 			if (schemaByName != null) {
 				String schemaName = schemaByName.getName();
 				String schemaUuid = schemaByName.getUuid();
 				if (userDao.hasPermission(requestUser, schemaByName, READ_PERM)) {
-					HibSchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
+					SchemaVersion schemaVersion = branch.findLatestSchemaVersion(schemaByName);
 					if (schemaVersion == null) {
 						throw error(BAD_REQUEST, "schema_error_schema_not_linked_to_branch", schemaByName.getName(), branch.getName(),
 								project.getName());
@@ -980,11 +980,11 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private HibNode createNode(InternalActionContext ac, HibSchemaVersion schemaVersion, EventQueueBatch batch,
+	private Node createNode(InternalActionContext ac, SchemaVersion schemaVersion, EventQueueBatch batch,
 							String uuid) {
 		Tx tx = Tx.get();
-		HibProject project = tx.getProject(ac);
-		HibUser requestUser = ac.getUser();
+		Project project = tx.getProject(ac);
+		User requestUser = ac.getUser();
 		UserDao userRoot = tx.userDao();
 
 		NodeCreateRequest requestModel = ac.fromJson(NodeCreateRequest.class);
@@ -996,18 +996,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// Load the parent node in order to create the node
-		HibNode parentNode = loadObjectByUuid(project, ac, requestModel.getParentNode().getUuid(),
+		Node parentNode = loadObjectByUuid(project, ac, requestModel.getParentNode().getUuid(),
 				CREATE_PERM);
-		HibBranch branch = tx.getBranch(ac);
+		Branch branch = tx.getBranch(ac);
 		// BUG: Don't use the latest version. Use the version which is linked to the
 		// branch!
-		HibNode node = create(parentNode, requestUser, schemaVersion, project, branch, uuid);
+		Node node = create(parentNode, requestUser, schemaVersion, project, branch, uuid);
 
 		// Add initial permissions to the created node
 		userRoot.inheritRolePermissions(requestUser, parentNode, node);
 
 		// Create the language specific graph field container for the node
-		HibLanguage language = Tx.get().languageDao().findByLanguageTag(project, requestModel.getLanguage());
+		Language language = Tx.get().languageDao().findByLanguageTag(project, requestModel.getLanguage());
 		if (language == null) {
 			if (requestModel.isAssignLanguage()) {
 				language = Tx.get().languageDao().findByLanguageTag(requestModel.getLanguage());
@@ -1021,7 +1021,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 		}
 		ContentDao contentDao = Tx.get().contentDao();
-		HibNodeFieldContainer container = contentDao.createFirstFieldContainerForNode(node, language.getLanguageTag(), branch, requestUser);
+		NodeFieldContainer container = contentDao.createFirstFieldContainerForNode(node, language.getLanguageTag(), branch, requestUser);
 		container.createFieldsFromRest(ac, requestModel.getFields());
 
 		batch.add(node.onCreated());
@@ -1045,7 +1045,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		if (requestModel.isPublish()) {
-			HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+			NodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
 			// Invoke a store of the document since it must now also be added to the published index
 			batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
 		}
@@ -1053,17 +1053,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return node;
 	}
 
-	default String getAPIPath(HibNode node, InternalActionContext ac) {
+	default String getAPIPath(Node node, InternalActionContext ac) {
 		return VersionUtils.baseRoute(ac) + "/" + encodeSegment(node.getProject().getName()) + "/nodes/" + node.getUuid();
 	}
 
 	@Override
-	default void delete(HibProject root, HibNode element, BulkActionContext bac) {
+	default void delete(Project root, Node element, BulkActionContext bac) {
 		delete(element, bac, false, true);
 	}
 
 	@Override
-	default void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
+	default void delete(Node node, BulkActionContext bac, boolean ignoreChecks, boolean recursive) {
 		if (!ignoreChecks) {
 			// Prevent deletion of basenode
 			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
@@ -1076,14 +1076,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		if (recursive) {
 			// No need to check the branch since this delete must affect all branches
-			for (HibNode child : getChildren(node)) {
+			for (Node child : getChildren(node)) {
 				delete(child, bac, false, true);
 				bac.process();
 			}
 		}
 		ContentDao contentDao = Tx.get().contentDao();
 		// Delete all initial containers (which will delete all containers)
-		for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, INITIAL)) {
+		for (NodeFieldContainer container : contentDao.getFieldContainers(node, INITIAL)) {
 			contentDao.delete(container, bac);
 		}
 		if (log.isDebugEnabled()) {
@@ -1097,7 +1097,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		bac.process();
 	}
 
-	default NodeMeshEventModel onDeleted(HibNode node, String branchUuid, ContainerType type, String languageTag) {
+	default NodeMeshEventModel onDeleted(Node node, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(node.getTypeInfo().getOnDeleted());
 		event.setUuid(node.getUuid());
@@ -1105,7 +1105,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		event.setType(type);
 		event.setBranchUuid(branchUuid);
 		event.setProject(node.getProject().transformToReference());
-		HibSchema schema = node.getSchemaContainer();
+		Schema schema = node.getSchemaContainer();
 		if (schema != null) {
 			event.setSchema(schema.transformToReference());
 		}
@@ -1113,14 +1113,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks) {
+	default void deleteFromBranch(Node node, InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks) {
 		DeleteParameters parameters = ac.getDeleteParameters();
 		ContentDao contentDao = Tx.get().contentDao();
 
 		// 1. Remove subfolders from branch
 		String branchUuid = branch.getUuid();
 
-		for (HibNode child : getChildren(node, branchUuid)) {
+		for (Node child : getChildren(node, branchUuid)) {
 			if (!parameters.isRecursive()) {
 				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
 			}
@@ -1128,7 +1128,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// 2. Delete all language containers
-		for (HibNodeFieldContainer container : contentDao.getFieldContainers(node, branch, DRAFT)) {
+		for (NodeFieldContainer container : contentDao.getFieldContainers(node, branch, DRAFT)) {
 			contentDao.deleteLanguageContainer(node, ac, branch, container.getLanguageTag(), bac, false);
 		}
 
@@ -1141,17 +1141,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac) {
+	default void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac) {
 		Tx tx = Tx.get();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 		PublishParameters parameters = ac.getPublishParameters();
 		takeOffline(node, ac, bac, branch, parameters);
 	}
 
-	private void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, PublishParameters parameters) {
+	private void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac, Branch branch, PublishParameters parameters) {
 		// Handle recursion first to start at the leaves
 		if (parameters.isRecursive()) {
-			for (HibNode child : getChildren(node, branch.getUuid())) {
+			for (Node child : getChildren(node, branch.getUuid())) {
 				takeOffline(child, ac, bac, branch, parameters);
 			}
 		}
@@ -1164,12 +1164,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag) {
+	default void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag) {
 		ContentDao contentDao = Tx.get().contentDao();
 		String branchUuid = branch.getUuid();
 
 		// Locate the published container
-		HibNodeFieldContainer published = contentDao.getFieldContainer(node, languageTag, branchUuid, PUBLISHED);
+		NodeFieldContainer published = contentDao.getFieldContainer(node, languageTag, branchUuid, PUBLISHED);
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
@@ -1183,24 +1183,24 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default List<String> getAvailableLanguageNames(HibNode node) {
+	default List<String> getAvailableLanguageNames(Node node) {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
-		for (HibNodeFieldContainer container : Tx.get().contentDao().getDraftFieldContainers(node)) {
+		for (NodeFieldContainer container : Tx.get().contentDao().getDraftFieldContainers(node)) {
 			languageTags.add(container.getLanguageTag());
 		}
 		return languageTags;
 	}
 
 	@Override
-	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags) {
+	default Map<Node, String> getPaths(Collection<Node> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags) {
 		return getPaths(sourceNodes, Tx.get().getBranch(ac).getUuid(), ac, type, languageTags);
 	}
 
 	@Override
-	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags) {
+	default Map<Node, String> getPaths(Collection<Node> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags) {
 		BranchDao branchDao = Tx.get().branchDao();
-		HibBranch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
+		Branch branch = sourceNodes.stream().map(node -> branchDao.findByUuid(node.getProject(), branchUuid)).findFirst().orElse(null);
 		return getPaths(sourceNodes, branch, ac, type, languageTags);
 	}
 
@@ -1213,27 +1213,27 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param languageTags optional language tags
 	 * @return map of path per node
 	 */
-	default Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, HibBranch branch, InternalActionContext ac, ContainerType type, String... languageTags) {
+	default Map<Node, String> getPaths(Collection<Node> sourceNodes, Branch branch, InternalActionContext ac, ContainerType type, String... languageTags) {
 		ContentDao contentDao = Tx.get().contentDao();
-		Map<HibNode, List<HibNode>> breadcrumbPerNode = getBreadcrumbNodesMap(sourceNodes, ac);
+		Map<Node, List<Node>> breadcrumbPerNode = getBreadcrumbNodesMap(sourceNodes, ac);
 
-		List<HibNode> allAncestors = breadcrumbPerNode.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+		List<Node> allAncestors = breadcrumbPerNode.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
 
-		Set<HibNode> allNodes = new HashSet<>(sourceNodes);
+		Set<Node> allNodes = new HashSet<>(sourceNodes);
 		allNodes.addAll(allAncestors);
 
-		Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branch.getUuid(), type);
+		Map<Node, List<NodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(allNodes, branch.getUuid(), type);
 		List<String> languages = Arrays.asList(languageTags);
 		return breadcrumbPerNode.entrySet()
 				.stream()
 				.map(kv -> {
-					HibNode sourceNode = kv.getKey();
-					List<HibNode> breadcrumb = kv.getValue();
+					Node sourceNode = kv.getKey();
+					List<Node> breadcrumb = kv.getValue();
 					Collections.reverse(breadcrumb);
-					List<? extends HibNode> ancestors = breadcrumb;
+					List<? extends Node> ancestors = breadcrumb;
 					List<String> segments = new ArrayList<>();
 					for (int i = 0; i < ancestors.size(); i++) {
-						HibNode node = ancestors.get(i);
+						Node node = ancestors.get(i);
 						if (node.isBaseNode()) {
 							if (ancestors.size() == 1) {
 								segments.add("");
@@ -1241,13 +1241,13 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 							continue;
 						}
 						boolean isSourceNode = i == 0;
-						List<HibNodeFieldContainer> containers = fieldsContainers.getOrDefault(node, Collections.emptyList());
-						HibNodeFieldContainer container = getContainerWithLanguageFallback(containers, languages, !isSourceNode);
+						List<NodeFieldContainer> containers = fieldsContainers.getOrDefault(node, Collections.emptyList());
+						NodeFieldContainer container = getContainerWithLanguageFallback(containers, languages, !isSourceNode);
 						String segment = container != null ? contentDao.getSegmentFieldValue(container) : null;
 						if (segment == null) {
 							// Abort early if one of the path segments could not be resolved.
 							// We need to fall back to url fields in those cases.
-							HibNodeFieldContainer containerForUrlFieldValues = getContainerWithLanguageFallback(containers, languages, false);
+							NodeFieldContainer containerForUrlFieldValues = getContainerWithLanguageFallback(containers, languages, false);
 							String fallbackPath = null;
 							if (containerForUrlFieldValues != null) {
 								fallbackPath = contentDao.getUrlFieldValues(containerForUrlFieldValues)
@@ -1268,12 +1268,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	private HibNodeFieldContainer getContainerWithLanguageFallback(List<HibNodeFieldContainer> containers, List<String> languageTags, boolean anyLanguage) {
-		Map<String, List<HibNodeFieldContainer>> containerByLanguage = containers.stream().collect(Collectors.groupingBy(HibNodeFieldContainer::getLanguageTag));
+	private NodeFieldContainer getContainerWithLanguageFallback(List<NodeFieldContainer> containers, List<String> languageTags, boolean anyLanguage) {
+		Map<String, List<NodeFieldContainer>> containerByLanguage = containers.stream().collect(Collectors.groupingBy(NodeFieldContainer::getLanguageTag));
 
-		HibNodeFieldContainer container = null;
+		NodeFieldContainer container = null;
 		for (String languageTag : languageTags) {
-			List<HibNodeFieldContainer> c = containerByLanguage.getOrDefault(languageTag, Collections.emptyList());
+			List<NodeFieldContainer> c = containerByLanguage.getOrDefault(languageTag, Collections.emptyList());
 			if (!c.isEmpty()) {
 				container = c.get(0);
 				break;
@@ -1288,14 +1288,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
+	default String getPath(Node node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag) {
 		ContentDao contentDao = Tx.get().contentDao();
 		// We want to avoid rending the path again for nodes which we have already handled.
 		// Thus utilise the action context data map to retrieve already handled paths.
 		String cacheKey = node.getUuid() + branchUuid + type.getCode() + Arrays.toString(languageTag);
 		return (String) ac.data().computeIfAbsent(cacheKey, key -> {
 			BranchDao branchDao = Tx.get().branchDao();
-			HibBranch branch = branchDao.findByUuid(node.getProject(), branchUuid);
+			Branch branch = branchDao.findByUuid(node.getProject(), branchUuid);
 
 			List<String> segments = new ArrayList<>();
 			String segment = contentDao.getPathSegment(node, branchUuid, type, languageTag);
@@ -1307,7 +1307,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 			// For the path segments of the container, we add all (additional)
 			// project languages to the list of languages for the fallback.
-			HibNode current = node;
+			Node current = node;
 			while (current != null) {
 				current = getParentNode(current, branchUuid);
 				if (current == null || getParentNode(current, branchUuid) == null) {
@@ -1334,7 +1334,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param pathBuilder consumer, which will get a stringbuilder and should append the path
 	 * @return complete path
 	 */
-	private String getWithSanitizedPathPrefix(HibBranch branch, Consumer<StringBuilder> pathBuilder) {
+	private String getWithSanitizedPathPrefix(Branch branch, Consumer<StringBuilder> pathBuilder) {
 		StringBuilder builder = new StringBuilder();
 		if (branch != null) {
 			String prefix = PathPrefixUtil.sanitize(branch.getPathPrefix());
@@ -1352,7 +1352,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		return builder.toString();
 	}
 
-	private String buildPathFromSegments(HibBranch branch, List<String> segments) {
+	private String buildPathFromSegments(Branch branch, List<String> segments) {
 		Collections.reverse(segments);
 
 		// Finally construct the path from all segments
@@ -1375,7 +1375,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 *            The order of languages will be used to search for the url field values.
 	 * @return null if no url field could be found.
 	 */
-	private String getUrlFieldPath(HibNode node, HibBranch branch, ContainerType type, String... languages) {
+	private String getUrlFieldPath(Node node, Branch branch, ContainerType type, String... languages) {
 		ContentDao contentDao = Tx.get().contentDao();
 		return Stream.of(languages)
 				.flatMap(language -> Stream.ofNullable(contentDao.getFieldContainer(node, language, branch != null ? branch.getUuid() : null, type)))
@@ -1415,7 +1415,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @return
 	 */
 	@Override
-	default boolean update(HibProject project, HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Project project, Node node, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the branch, if it does not belong to the requested project.
 		if (!project.getUuid().equals(node.getProject().getUuid())) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", node.getUuid());
@@ -1428,9 +1428,9 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		// Image variants update case
 		if (requestModel.getManipulation() != null) {
 			ContentDao contentDao = tx.contentDao();
-			HibBranch branch = tx.getBranch(ac, node.getProject());
-			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
-			HibSchemaVersion schema = latestDraftVersion.getSchemaContainerVersion();
+			Branch branch = tx.getBranch(ac, node.getProject());
+			NodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
+			SchemaVersion schema = latestDraftVersion.getSchemaContainerVersion();
 			String fieldKey = schema.getSchema().getSegmentField();
 			return tx.imageVariantDao().createVariants(latestDraftVersion.getBinary(fieldKey), requestModel.getManipulation().getVariants(), ac, requestModel.getManipulation().isDeleteOther()).stream().findAny().isPresent();
 		}
@@ -1448,7 +1448,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		nodeParameters.setLanguages(languageTag);
 
-		HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+		Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 		if (language == null) {
 			if (requestModel.isAssignLanguage()) {
 				language = tx.languageDao().findByLanguageTag(languageTag);
@@ -1462,8 +1462,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 		}
 		ContentDao contentDao = tx.contentDao();
-		HibBranch branch = tx.getBranch(ac, node.getProject());
-		HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
+		Branch branch = tx.getBranch(ac, node.getProject());
+		NodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, DRAFT);
 
 		// Check whether this is the first time that an update for the given language and branch occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates on existing contents.
@@ -1475,7 +1475,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 				if (createRequest.getParentNode() == null || isEmpty(createRequest.getParentNode().getUuid())) {
 					throw error(BAD_REQUEST, "node_missing_parentnode_field");
 				}
-				HibNode parentNode = loadObjectByUuid(node.getProject(), ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
+				Node parentNode = loadObjectByUuid(node.getProject(), ac, createRequest.getParentNode().getUuid(), CREATE_PERM);
 				// check whether the parent node is visible in the branch
 				if (!parentNode.isBaseNode() && !isVisibleInBranch(parentNode, branch.getUuid())) {
 					log.error(
@@ -1495,7 +1495,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			if (requestModel.isPublish()) {
-				HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
+				NodeFieldContainer publishedContainer = contentDao.publish(node, ac, language.getLanguageTag(), branch, ac.getUser());
 				// Invoke a store of the document since it must now also be added to the published index
 				batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
 			}
@@ -1509,14 +1509,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			}
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
-			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(latestDraftVersion);
+			SchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(latestDraftVersion);
 			if (!latestDraftVersion.getSchemaContainerVersion().equals(branch.findLatestSchemaVersion(schemaVersion
 					.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
 			}
 
 			// Load the base version field container in order to create the diff
-			HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, requestModel.getLanguage(), branch.getUuid(), version);
+			NodeFieldContainer baseVersionContainer = contentDao.findVersion(node, requestModel.getLanguage(), branch.getUuid(), version);
 			if (baseVersionContainer == null) {
 				throw error(BAD_REQUEST, "node_error_draft_not_found", version, requestModel.getLanguage());
 			}
@@ -1565,7 +1565,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			if (!requestModel.getFields().isEmpty()) {
 
 				// Create new field container as clone of the existing
-				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, language.getLanguageTag(), branch, ac.getUser(),
+				NodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, language.getLanguageTag(), branch, ac.getUser(),
 						latestDraftVersion, true);
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
@@ -1589,7 +1589,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			} else if (requestModel.isPublish()) {
 				// If the located draft version was already published we are done
 				if (!contentDao.isPublished(latestDraftVersion, branch.getUuid())) {
-					HibNodeFieldContainer publishedContainer = contentDao.publish(node, ac, languageTag, branch, ac.getUser());
+					NodeFieldContainer publishedContainer = contentDao.publish(node, ac, languageTag, branch, ac.getUser());
 					// Invoke a store of the document since it must now also be added to the published index
 					batch.add(contentDao.onPublish(publishedContainer, branch.getUuid()));
 				}
@@ -1604,17 +1604,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch) {
+	default Page<? extends Tag> updateTags(Node node, InternalActionContext ac, EventQueueBatch batch) {
 		Tx tx = Tx.get();
-		List<HibTag> tags = node.getTagsToSet(ac, batch);
-		HibBranch branch = tx.getBranch(ac);
+		List<Tag> tags = node.getTagsToSet(ac, batch);
+		Branch branch = tx.getBranch(ac);
 		applyTags(node, branch, tags, batch);
-		HibUser user = ac.getUser();
+		User user = ac.getUser();
 		return tx.tagDao().getTags(node, user, ac.getPagingParameters(), branch);
 	}
 
 	@Override
-	default String getSubETag(HibNode node, InternalActionContext ac) {
+	default String getSubETag(Node node, InternalActionContext ac) {
 		CommonTx tx = CommonTx.get();
 		UserDao userDao = tx.userDao();
 		TagDao tagDao = tx.tagDao();
@@ -1623,12 +1623,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		StringBuilder keyBuilder = new StringBuilder();
 
 		// Parameters
-		HibBranch branch = tx.getBranch(ac, node.getProject());
+		Branch branch = tx.getBranch(ac, node.getProject());
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
-		HibNode parentNode = getParentNode(node, branch.getUuid());
-		HibNodeFieldContainer container = contentDao.findVersion(node, ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
+		Node parentNode = getParentNode(node, branch.getUuid());
+		NodeFieldContainer container = contentDao.findVersion(node, ac.getNodeParameters().getLanguageList(tx.data().options()), branch.getUuid(),
 				ac.getVersioningParameters()
 						.getVersion());
 
@@ -1680,14 +1680,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		keyBuilder.append(expandedFields);
 
 		// branch specific tags
-		for (HibTag tag : node.getTags(branch)) {
+		for (Tag tag : node.getTags(branch)) {
 			// Tags can't be moved across branches thus we don't need to add the
 			// tag family etag
 			keyBuilder.append(tagDao.getETag(tag, ac));
 		}
 
 		// branch specific children
-		for (HibNode child : getChildren(node, branch.getUuid())) {
+		for (Node child : getChildren(node, branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PUBLISHED_PERM)) {
 				keyBuilder.append("-");
 				keyBuilder.append(child.getSchemaContainer().getName());
@@ -1695,10 +1695,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		// Publish state & availableLanguages
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
+		for (NodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), PUBLISHED)) {
 			keyBuilder.append(c.getLanguageTag() + "published");
 		}
-		for (HibNodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), DRAFT)) {
+		for (NodeFieldContainer c : contentDao.getFieldContainers(node, branch.getUuid(), DRAFT)) {
 			keyBuilder.append(c.getLanguageTag() + "draft");
 		}
 
@@ -1708,7 +1708,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		getBreadcrumbNodeStream(node, ac)
 				.skip(1) // start from parent
-				.map(HibNode::getUuid)
+				.map(Node::getUuid)
 				.forEach(uuid -> {
 					String key = uuid + getDisplayName(node, ac);
 					keyBuilder.append(key);
@@ -1734,7 +1734,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			keyBuilder.append(path);
 
 			// languagePaths
-			for (HibNodeFieldContainer currentFieldContainer : contentDao.getFieldContainers(node, branch.getUuid(), forVersion(versioiningParameters.getVersion()))) {
+			for (NodeFieldContainer currentFieldContainer : contentDao.getFieldContainers(node, branch.getUuid(), forVersion(versioiningParameters.getVersion()))) {
 				String currLanguage = currentFieldContainer.getLanguageTag();
 				keyBuilder.append(currLanguage + "=" + linkReplacer.resolve(ac, branch.getUuid(), type, node, ac.getNodeParameters()
 						.getResolveLinks(), currLanguage));
@@ -1749,12 +1749,12 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default String getDisplayName(HibNode node, InternalActionContext ac) {
+	default String getDisplayName(Node node, InternalActionContext ac) {
 		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParameters versioningParameters = ac.getVersioningParameters();
 		ContentDao contentDao = Tx.get().contentDao();
 
-		HibNodeFieldContainer container = contentDao.findVersion(node, nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, node.getProject()).getUuid(), versioningParameters.getVersion());
+		NodeFieldContainer container = contentDao.findVersion(node, nodeParameters.getLanguageList(Tx.get().data().options()), Tx.get().getBranch(ac, node.getProject()).getUuid(), versioningParameters.getVersion());
 		if (container == null) {
 			if (log.isDebugEnabled()) {
 				log.debug("Could not find any matching i18n field container for node {" + node.getUuid() + "}.");
@@ -1768,8 +1768,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default String getParentNodeUuid(HibNode node, String branchUuid) {
-		HibNode parentNode = getParentNode(node, branchUuid);
+	default String getParentNodeUuid(Node node, String branchUuid) {
+		Node parentNode = getParentNode(node, branchUuid);
 		return parentNode != null ? parentNode.getUuid() : null;
 	}
 
@@ -1779,8 +1779,8 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param ac action context
 	 * @param grant request
 	 */
-	default void grantRolePermissions(HibNode node, InternalActionContext ac, ObjectPermissionGrantRequest grant) {
-		HibUser requestUser = ac.getUser();
+	default void grantRolePermissions(Node node, InternalActionContext ac, ObjectPermissionGrantRequest grant) {
+		User requestUser = ac.getUser();
 		Tx tx = Tx.get();
 		RoleDao roleDao = tx.roleDao();
 		UserDao userDao = tx.userDao();
@@ -1861,17 +1861,17 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
+	default void updateTags(Node node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list) {
 		Tx tx = Tx.get();
-		List<HibTag> tags = node.getTagsToSet(list, ac, batch);
-		HibBranch branch = tx.getBranch(ac);
+		List<Tag> tags = node.getTagsToSet(list, ac, batch);
+		Branch branch = tx.getBranch(ac);
 		applyTags(node, branch, tags, batch);
 	}
 
-	private void applyTags(HibNode node, HibBranch branch, List<? extends HibTag> tags, EventQueueBatch batch) {
-		List<HibTag> currentTags = node.getTags(branch).list();
+	private void applyTags(Node node, Branch branch, List<? extends Tag> tags, EventQueueBatch batch) {
+		List<Tag> currentTags = node.getTags(branch).list();
 
-		List<HibTag> toBeAdded = tags.stream()
+		List<Tag> toBeAdded = tags.stream()
 				.filter(StreamUtil.not(new HashSet<>(currentTags)::contains))
 				.collect(Collectors.toList());
 		toBeAdded.forEach(tag -> {
@@ -1879,7 +1879,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 			batch.add(onTagged(node, tag, branch, ASSIGNED));
 		});
 
-		List<HibTag> toBeRemoved = currentTags.stream()
+		List<Tag> toBeRemoved = currentTags.stream()
 				.filter(StreamUtil.not(new HashSet<>(tags)::contains))
 				.collect(Collectors.toList());
 		toBeRemoved.forEach(tag -> {
@@ -1889,7 +1889,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment) {
+	default NodeTaggedEventModel onTagged(Node node, Tag tag, Branch branch, Assignment assignment) {
 		NodeTaggedEventModel model = new NodeTaggedEventModel();
 		model.setTag(tag.transformToReference());
 
@@ -1911,16 +1911,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID) {
+	default void removeInitialFieldContainerEdge(Node node, NodeFieldContainer initial, String branchUUID) {
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
-		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, initial.getLanguageTag(), branchUUID, INITIAL);
+		NodeFieldContainerEdge edge = contentDao.getEdge(node, initial.getLanguageTag(), branchUUID, INITIAL);
 		// TODO we should not delete the actual content, should we?
 		//contentDao.getFieldContainerOfEdge(edge);
 		contentDao.removeEdge(edge);
 	}
 
 	@Override
-	default HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project) {
+	default Node create(Node parentNode, User creator, SchemaVersion schemaVersion, Project project) {
 		return create(parentNode, creator, schemaVersion, project, CommonTx.get().branchDao().getLatestBranch(project), null);
 	}
 
@@ -1928,14 +1928,14 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	default HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid) {
+	default Node create(Node parentNode, User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid) {
 		if (!parentNode.isBaseNode() && !CommonTx.get().nodeDao().isVisibleInBranch(parentNode, branch.getUuid())) {
 			log.error(String.format("Error while creating node in branch {%s}: requested parent node {%s} exists, but is not visible in branch.",
 				branch.getName(), parentNode.getUuid()));
 			throw error(NOT_FOUND, "object_not_found_for_uuid", parentNode.getUuid());
 		}
 
-		HibNode node = create(creator, schemaVersion, project, uuid);
+		Node node = create(creator, schemaVersion, project, uuid);
 		setParentNode(node, branch.getUuid(), parentNode);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);
@@ -1943,7 +1943,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch) {
+	default void assertPublishConsistency(Node node, InternalActionContext ac, Branch branch) {
 
 		String branchUuid = branch.getUuid();
 		// Check whether the node got a published version and thus is published
@@ -1952,7 +1952,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// A published node must have also a published parent node.
 		if (isPublished) {
-			HibNode parentNode = node.getParentNode(branchUuid);
+			Node parentNode = node.getParentNode(branchUuid);
 
 			// Only assert consistency of parent nodes which are not project
 			// base nodes.
@@ -1968,7 +1968,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 
 		// A draft node can't have any published child nodes.
 		if (!isPublished) {
-			for (HibNode child : getChildren(node, branchUuid)) {
+			for (Node child : getChildren(node, branchUuid)) {
 				if (hasPublishedContent(child, branchUuid)) {
 					throw error(BAD_REQUEST, "node_error_children_containers_still_published", child.getUuid(), node.getUuid(), branch.getName());
 				}
@@ -1977,29 +1977,29 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default boolean isVisibleInBranch(HibNode node, String branchUuid) {
+	default boolean isVisibleInBranch(Node node, String branchUuid) {
 		return CommonTx.get().contentDao().getFieldEdges(node, branchUuid, DRAFT).hasNext();
 	}
 
 	@Override
-	default boolean hasPublishedContent(HibNode node, String branchUuid) {
+	default boolean hasPublishedContent(Node node, String branchUuid) {
 		return CommonTx.get().contentDao().getFieldEdges(node, branchUuid, PUBLISHED).hasNext();
 	}
 
 	@Override
-	default void removePublishedEdge(HibNode node, String languageTag, String branchUuid) {
+	default void removePublishedEdge(Node node, String languageTag, String branchUuid) {
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
 		contentDao.removeEdge(contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED));
 	}
 
 	@Override
-	default void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac) {
+	default void removePublishedEdges(Node node, String branchUuid, BulkActionContext bac) {
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
-		Result<? extends HibNodeFieldContainerEdge> publishEdges = contentDao.getFieldEdges(node, branchUuid, PUBLISHED);
+		Result<? extends NodeFieldContainerEdge> publishEdges = contentDao.getFieldEdges(node, branchUuid, PUBLISHED);
 
 		// Remove the published edge for each found container
 		publishEdges.forEach(edge -> {
-			HibNodeFieldContainer content = edge.getNodeContainer();
+			NodeFieldContainer content = edge.getNodeContainer();
 			bac.add(contentDao.onTakenOffline(content, branchUuid));
 			contentDao.removeEdge(edge);
 			if (contentDao.isAutoPurgeEnabled(content) && contentDao.isPurgeable(content)) {
@@ -2009,16 +2009,16 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid) {
+	default void setPublished(Node node, InternalActionContext ac, NodeFieldContainer container, String branchUuid) {
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
 		String languageTag = container.getLanguageTag();
 		boolean isAutoPurgeEnabled = contentDao.isAutoPurgeEnabled(container);
 		Set<String> oldUrlFieldValues = Collections.emptySet();
 
 		// Remove an existing published edge
-		HibNodeFieldContainerEdge edge = contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED);
+		NodeFieldContainerEdge edge = contentDao.getEdge(node, languageTag, branchUuid, PUBLISHED);
 		if (edge != null) {
-			HibNodeFieldContainer oldPublishedContainer = contentDao.getFieldContainerOfEdge(edge);
+			NodeFieldContainer oldPublishedContainer = contentDao.getFieldContainerOfEdge(edge);
 			if (oldPublishedContainer != null) {
 				oldUrlFieldValues = contentDao.getUrlFieldValues(oldPublishedContainer).collect(Collectors.toSet());
 				contentDao.removeEdge(edge);
@@ -2032,7 +2032,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 		if (ac.isPurgeAllowed()) {
 			// Check whether a previous draft can be purged.
-			HibNodeFieldContainer prev = container.getPreviousVersion();
+			NodeFieldContainer prev = container.getPreviousVersion();
 			if (isAutoPurgeEnabled && prev != null && contentDao.isPurgeable(prev)) {
 				contentDao.purge(prev);
 			}
@@ -2047,7 +2047,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default Path resolvePath(HibNode node, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
+	default Path resolvePath(Node node, String branchUuid, ContainerType type, Path path, Stack<String> pathStack) {
 		if (pathStack.isEmpty()) {
 			return path;
 		}
@@ -2059,10 +2059,10 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 		}
 
 		String segmentInfo = contentDao.composeSegmentInfo(node, segment);
-		Iterator<? extends HibNodeFieldContainerEdge> edges = getWebrootEdges(node, segmentInfo, branchUuid, type);
+		Iterator<? extends NodeFieldContainerEdge> edges = getWebrootEdges(node, segmentInfo, branchUuid, type);
 		if (edges.hasNext()) {
-			HibNodeFieldContainerEdge edge = edges.next();
-			HibNode childNode = edge.getNode();
+			NodeFieldContainerEdge edge = edges.next();
+			Node childNode = edge.getNode();
 			PathSegment pathSegment = contentDao.getSegment(childNode, branchUuid, type, segment);
 			if (pathSegment != null) {
 				path.addSegment(pathSegment);
@@ -2073,18 +2073,18 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default void addReferenceUpdates(HibNode updatedNode, BulkActionContext bac) {
+	default void addReferenceUpdates(Node updatedNode, BulkActionContext bac) {
 		Set<String> handledNodeUuids = new HashSet<>();
 		PersistingContentDao contentDao = CommonTx.get().contentDao();
 
 		getInboundReferences(updatedNode)
-			.flatMap(HibNodeField::getReferencingContents)
+			.flatMap(NodeField::getReferencingContents)
 			.forEach(nodeContainer -> {
 				contentDao.getContainerEdges(nodeContainer).forEach(edge -> {
 					ContainerType type = edge.getType();
 					// Only handle published or draft contents
 					if (type.equals(DRAFT) || type.equals(PUBLISHED)) {
-						HibNode referencingNode = nodeContainer.getNode();
+						Node referencingNode = nodeContainer.getNode();
 						String uuid = referencingNode.getUuid();
 						String languageTag = nodeContainer.getLanguageTag();
 						String branchUuid = edge.getBranchUuid();
@@ -2105,7 +2105,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param languageTags
 	 * @return
 	 */
-	Set<String> findUsedLanguages(HibProject project, Collection<String> languageTags, boolean assignedLanguagesOnly);
+	Set<String> findUsedLanguages(Project project, Collection<String> languageTags, boolean assignedLanguagesOnly);
 
 	/**
 	 * Get the edges for the given node, that satisfy the webroot lookup data.
@@ -2116,7 +2116,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 * @param type
 	 * @return
 	 */
-	Iterator<? extends HibNodeFieldContainerEdge> getWebrootEdges(HibNode node, String segmentInfo, String branchUuid, ContainerType type);
+	Iterator<? extends NodeFieldContainerEdge> getWebrootEdges(Node node, String segmentInfo, String branchUuid, ContainerType type);
 
 	/**
 	 * Create a new referenced element update event model.
@@ -2135,7 +2135,7 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	 *            Language of the content that was updated (if known)
 	 * @return
 	 */
-	private NodeMeshEventModel onReferenceUpdated(HibNode node, String uuid, HibSchema schema, String branchUuid, ContainerType type, String languageTag) {
+	private NodeMeshEventModel onReferenceUpdated(Node node, String uuid, Schema schema, String branchUuid, ContainerType type, String languageTag) {
 		NodeMeshEventModel event = new NodeMeshEventModel();
 		event.setEvent(NODE_REFERENCE_UPDATED);
 		event.setUuid(uuid);
@@ -2150,24 +2150,24 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<HibProject
 	}
 
 	@Override
-	default HibNode create(HibProject project, HibUser user, HibSchemaVersion version) {
+	default Node create(Project project, User user, SchemaVersion version) {
 		return create(user, version, project, null);
 	}
 
 	@Override
-	default Stream<? extends HibNode> findAllStream(HibProject root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
+	default Stream<? extends Node> findAllStream(Project root, InternalActionContext ac, InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		return findAllStream(root, ac, permission, paging, Optional.empty(), maybeFilter);
 	}
 
 	@Override
-	default long countAll(HibProject root, InternalActionContext ac, InternalPermission permission,
+	default long countAll(Project root, InternalActionContext ac, InternalPermission permission,
 			PagingParameters pagingInfo, Optional<FilterOperation<?>> maybeFilter) {
 		return countAllContent(root, ac, ac.getNodeParameters().getLanguageList(Tx.get().data().options()), permission == READ_PUBLISHED_PERM ? PUBLISHED : DRAFT, maybeFilter);
 	}
 
-	private HibNode create(HibUser creator, HibSchemaVersion version, HibProject project, String uuid) {
+	private Node create(User creator, SchemaVersion version, Project project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
-		HibNode node = createPersisted(project, uuid, n -> {
+		Node node = createPersisted(project, uuid, n -> {
 			n.setSchemaContainer(version.getSchemaContainer());
 
 			// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?

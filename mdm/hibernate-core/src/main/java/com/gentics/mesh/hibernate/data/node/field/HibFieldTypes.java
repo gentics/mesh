@@ -53,14 +53,14 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -102,16 +102,16 @@ public enum HibFieldTypes {
 		this.getter = getter;
 	}
 
-	public Field getRestField(HibFieldContainer container, InternalActionContext ac, String fieldKey,
-							  FieldSchema fieldSchema, List<String> languageTags, int level, Supplier<HibNode> parentNode) {
+	public FieldModel getRestField(FieldContainer container, InternalActionContext ac, String fieldKey,
+							  FieldSchema fieldSchema, List<String> languageTags, int level, Supplier<Node> parentNode) {
 		return transformer.transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
 	}
 
-	public void updateField(HibFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema, FieldSchemaContainer schema) {
+	public void updateField(FieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 		updater.update(container, ac, fieldMap, fieldKey, fieldSchema, schema);
 	}
 
-	public HibField getField(HibFieldContainer container, FieldSchema schema) {
+	public Field getField(FieldContainer container, FieldSchema schema) {
 		return getter.get(container, schema);
 	}
 

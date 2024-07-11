@@ -17,7 +17,7 @@
           },
           "creator" : {
             "type" : "object",
-            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReferenceModel",
             "required" : true,
             "description" : "User reference of the creator of the element.",
             "properties" : {
@@ -43,7 +43,7 @@
           },
           "editor" : {
             "type" : "object",
-            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReferenceModel",
             "description" : "User reference of the editor of the element."
           },
           "edited" : {
@@ -75,7 +75,7 @@
                 },
                 "publisher" : {
                   "type" : "object",
-                  "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+                  "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReferenceModel",
                   "description" : "Reference to the publisher user of the node content."
                 },
                 "publishDate" : {
@@ -185,7 +185,7 @@
             "description" : "Object which contains information about child elements.",
             "additionalProperties" : {
               "type" : "object",
-              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:NodeChildrenInfo",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:NodeChildrenInfoModel",
               "properties" : {
                 "schemaUuid" : {
                   "type" : "string",
@@ -250,7 +250,7 @@
           },
           "permissions" : {
             "type" : "object",
-            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfoModel",
             "required" : true,
             "properties" : {
               "create" : {
@@ -285,7 +285,7 @@
           },
           "rolePerms" : {
             "type" : "object",
-            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfo",
+            "$ref" : "urn:jsonschema:com:gentics:mesh:core:rest:common:PermissionInfoModel",
             "description" : "Permission information for provided role. This property will only be populated if a role query parameter has been specified."
           }
         }

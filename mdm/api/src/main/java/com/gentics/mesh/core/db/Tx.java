@@ -5,9 +5,9 @@ import java.util.Optional;
 import com.gentics.mesh.cache.CacheCollection;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.DaoCollection;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.security.SecurityUtils;
@@ -56,7 +56,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 * @param ac
 	 * @return branch
 	 */
-	default HibBranch getBranch(InternalActionContext ac) {
+	default Branch getBranch(InternalActionContext ac) {
 		return getBranch(ac, null);
 	}
 
@@ -69,7 +69,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 *            project for overriding the project set in the action context
 	 * @return branch
 	 */
-	HibBranch getBranch(InternalActionContext ac, HibProject project);
+	Branch getBranch(InternalActionContext ac, Project project);
 
 	/**
 	 * Return the project that may be set when this action context is used for a project specific request (e.g.: /api/v2/dummy/nodes..)
@@ -77,7 +77,7 @@ public interface Tx extends BaseTransaction, DaoCollection, CacheCollection, Sec
 	 * @param ac
 	 * @return Project or null if no project has been specified in the given context.
 	 */
-	HibProject getProject(InternalActionContext ac);
+	Project getProject(InternalActionContext ac);
 
 	/**
 	 * Return the transaction-carried data.

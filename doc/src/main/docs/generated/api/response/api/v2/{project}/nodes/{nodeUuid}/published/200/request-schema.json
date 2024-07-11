@@ -21,7 +21,7 @@
           },
           "publisher" : {
             "type" : "object",
-            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReferenceModel",
             "description" : "Reference to the publisher user of the node content.",
             "properties" : {
               "firstName" : {

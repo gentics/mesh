@@ -5,14 +5,14 @@ import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.Schema;
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -22,19 +22,19 @@ import com.gentics.mesh.event.EventQueueBatch;
  */
 public interface TestGraphHelper extends TestHelper {
 
-	default HibProject createProject(String name, String schema) {
+	default Project createProject(String name, String schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		HibSchema schemaEntity = Tx.get().schemaDao().findByName(schema);
+		Schema schemaEntity = Tx.get().schemaDao().findByName(schema);
 		return Tx.get().projectDao().create(name, null, null, null, user(), schemaEntity.getLatestVersion(), batch);
 	}
 
-	default HibBranch createBranch(String name) {
+	default Branch createBranch(String name) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-		HibProject project = project();
+		Project project = project();
 		return Tx.get().branchDao().create(project, name, user(), batch);
 	}
 
-	default HibMicroschema createMicroschema(MicroschemaVersionModel schema) {
+	default Microschema createMicroschema(MicroschemaVersionModel schema) {
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 		return microschemaDao.create(schema, user(), batch);
@@ -45,7 +45,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * 
 	 * @return
 	 */
-	default HibBranch latestBranch() {
+	default Branch latestBranch() {
 		return project().getLatestBranch();
 	}
 
@@ -54,7 +54,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * 
 	 * @return
 	 */
-	default HibBranch initialBranch() {
+	default Branch initialBranch() {
 		return project().getInitialBranch();
 	}
 
@@ -62,7 +62,7 @@ public interface TestGraphHelper extends TestHelper {
 	 * Returns all graph field containers in the dummy project.
 	 * @return
 	 */
-	default Stream<HibNodeFieldContainer> getAllContents() {
+	default Stream<NodeFieldContainer> getAllContents() {
 		return Tx.get().nodeDao().findAll(project()).stream()
 			.flatMap(node -> Stream.of(DRAFT, PUBLISHED)
 			.flatMap(type -> Tx.get().contentDao().getFieldContainers(node, type).stream()));

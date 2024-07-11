@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.search.context.impl;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
@@ -11,8 +11,8 @@ public class MoveEntryContextImpl implements MoveEntryContext {
 
 	private String branchUuid;
 	private ContainerType type;
-	private HibNodeFieldContainer oldContainer;
-	private HibNodeFieldContainer newContainer;
+	private NodeFieldContainer oldContainer;
+	private NodeFieldContainer newContainer;
 
 	@Override
 	public String getBranchUuid() {
@@ -37,23 +37,23 @@ public class MoveEntryContextImpl implements MoveEntryContext {
 	}
 
 	@Override
-	public HibNodeFieldContainer getOldContainer() {
+	public NodeFieldContainer getOldContainer() {
 		return oldContainer;
 	}
 
 	@Override
-	public MoveEntryContext setOldContainer(HibNodeFieldContainer container) {
+	public MoveEntryContext setOldContainer(NodeFieldContainer container) {
 		this.oldContainer = container;
 		return this;
 	}
 
 	@Override
-	public HibNodeFieldContainer getNewContainer() {
+	public NodeFieldContainer getNewContainer() {
 		return newContainer;
 	}
 
 	@Override
-	public MoveEntryContext setNewContainer(HibNodeFieldContainer container) {
+	public MoveEntryContext setNewContainer(NodeFieldContainer container) {
 		this.newContainer = container;
 		return this;
 	}

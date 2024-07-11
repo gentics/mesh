@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 
 /**
  * Filters groups in GraphQl. This filter should be used whenever a list of groups is returned.
  */
-public class GroupFilter extends EntityFilter<HibGroup> {
+public class GroupFilter extends EntityFilter<Group> {
 
 	private static final ElementType ELEMENT = ElementType.GROUP;
 	private static final String NAME = "GroupFilter";
@@ -35,9 +35,9 @@ public class GroupFilter extends EntityFilter<HibGroup> {
 	}
 
 	@Override
-	protected List<FilterField<HibGroup, ?>> getFilters() {
+	protected List<FilterField<Group, ?>> getFilters() {
 		String owner = ELEMENT.name();
-		List<FilterField<HibGroup, ?>> filters = new ArrayList<>();
+		List<FilterField<Group, ?>> filters = new ArrayList<>();
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner));

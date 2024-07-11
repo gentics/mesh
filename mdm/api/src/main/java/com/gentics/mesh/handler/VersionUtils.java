@@ -3,7 +3,7 @@ package com.gentics.mesh.handler;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.MeshVersions;
 import com.gentics.mesh.context.InternalActionContext;
 
 /**
@@ -32,7 +32,7 @@ public final class VersionUtils {
 	 * @return
 	 */
 	public static Stream<String> generateVersionMountpoints() {
-		return IntStream.rangeClosed(1, MeshVersion.CURRENT_API_VERSION)
+		return IntStream.rangeClosed(1, MeshVersions.CURRENT_API_VERSION)
 			.mapToObj(VersionUtils::baseRoute);
 	}
 

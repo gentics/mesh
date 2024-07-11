@@ -20,18 +20,18 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
-import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.BranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.BranchSchemaVersion;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibProject, HibBranch>, PersistingNamedEntityDao<HibBranch> {
+public interface PersistingBranchDao extends BranchDao, PersistingRootDao<Project, Branch>, PersistingNamedEntityDao<Branch> {
 	static final Logger log = LoggerFactory.getLogger(BranchDao.class);
 
 	/**
@@ -62,7 +62,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @param version
 	 * @return
 	 */
-	HibBranchSchemaVersion connectToSchemaVersion(HibBranch branch, HibSchemaVersion version);
+	BranchSchemaVersion connectToSchemaVersion(Branch branch, SchemaVersion version);
 
 	/**
 	 * Make a new connection of the branch to the microschema version, containing the migration status data.
@@ -71,10 +71,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @param version
 	 * @return
 	 */
-	HibBranchMicroschemaVersion connectToMicroschemaVersion(HibBranch branch, HibMicroschemaVersion version);
+	BranchMicroschemaVersion connectToMicroschemaVersion(Branch branch, MicroschemaVersion version);
 
 	@Override
-	default HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, EventQueueBatch batch) {
+	default Branch create(Project project, String name, User creator, String uuid, boolean setLatest, Branch baseBranch, EventQueueBatch batch) {
 		return create(project, name, creator, uuid, setLatest, baseBranch, true, batch);
 	}
 
@@ -88,7 +88,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @param batch
 	 * @return new Branch
 	 */
-	default HibBranch create(HibProject project, String name, HibUser creator, EventQueueBatch batch) {
+	default Branch create(Project project, String name, User creator, EventQueueBatch batch) {
 		return create(project, name, creator, null, true, getLatestBranch(project), batch);
 	}
 
@@ -104,9 +104,9 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @param batch
 	 * @return
 	 */
-	default HibBranch create(HibProject project, String name, HibUser creator, String uuid, boolean setLatest, HibBranch baseBranch, boolean assignSchemas,
+	default Branch create(Project project, String name, User creator, String uuid, boolean setLatest, Branch baseBranch, boolean assignSchemas,
 		EventQueueBatch batch) {
-		HibBranch branch = createPersisted(project, uuid, b -> {
+		Branch branch = createPersisted(project, uuid, b -> {
 			b.setCreated(creator);
 			b.setName(name);
 			b.setActive(true);
@@ -141,10 +141,10 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default HibBranch create(HibProject project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default Branch create(Project project, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		CommonTx tx = CommonTx.get();
 		BranchCreateRequest request = ac.fromJson(BranchCreateRequest.class);
-		HibUser requestUser = ac.getUser();
+		User requestUser = ac.getUser();
 
 		// Check for completeness of request
 		if (StringUtils.isEmpty(request.getName())) {
@@ -161,12 +161,12 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		}
 
 		// Check for uniqueness of branch name (per project)
-		HibBranch conflictingBranch = findByName(project, request.getName());
+		Branch conflictingBranch = findByName(project, request.getName());
 		if (conflictingBranch != null) {
 			throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", request.getName());
 		}
 
-		HibBranch baseBranch = fromReference(project, request.getBaseBranch());
+		Branch baseBranch = fromReference(project, request.getBaseBranch());
 		if (baseBranch != null && !userDao.hasPermission(requestUser, baseBranch, READ_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", baseBranch.getUuid(), READ_PERM.getRestPerm().getName());
 		}
@@ -175,7 +175,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			baseBranch = getLatestBranch(project);
 		}
 
-		HibBranch branch = create(project, request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false, batch);
+		Branch branch = create(project, request.getName(), requestUser, uuid, request.isLatest(), baseBranch, false, batch);
 		if (!isEmpty(request.getHostname())) {
 			branch.setHostname(request.getHostname());
 		}
@@ -185,7 +185,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 		if (request.getSsl() != null) {
 			branch.setSsl(request.getSsl());
 		}
-		HibUser creator = branch.getCreator();
+		User creator = branch.getCreator();
 		tx.jobDao().enqueueBranchMigration(creator, branch);
 		assignSchemas(project, creator, baseBranch, branch, true, batch);
 
@@ -205,47 +205,47 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 *            The newly created branch
 	 * @param batch
 	 */
-	private void assignSchemas(HibProject project, HibUser creator, HibBranch baseBranch, HibBranch newBranch, boolean migrate, EventQueueBatch batch) {
+	private void assignSchemas(Project project, User creator, Branch baseBranch, Branch newBranch, boolean migrate, EventQueueBatch batch) {
 		// Assign the same schema versions as the base branch, so that a migration can be started
 		if (baseBranch != null && migrate) {
-			for (HibSchemaVersion schemaVersion : baseBranch.findActiveSchemaVersions()) {
+			for (SchemaVersion schemaVersion : baseBranch.findActiveSchemaVersions()) {
 				assignSchemaVersion(newBranch, creator, schemaVersion, batch);
 			}
 		}
 
 		// assign the newest schema versions of all project schemas to the branch
-		for (HibSchema schemaContainer : project.getSchemas()) {
+		for (Schema schemaContainer : project.getSchemas()) {
 			assignSchemaVersion(newBranch, newBranch.getCreator(), schemaContainer.getLatestVersion(), batch);
 		}
 
 		// ... same for microschemas
 		if (baseBranch != null && migrate) {
-			for (HibMicroschemaVersion microschemaVersion : baseBranch.findActiveMicroschemaVersions()) {
+			for (MicroschemaVersion microschemaVersion : baseBranch.findActiveMicroschemaVersions()) {
 				assignMicroschemaVersion(newBranch, creator, microschemaVersion, batch);
 			}
 		}
 
-		for (HibMicroschema microschema : project.getMicroschemas()) {
+		for (Microschema microschema : project.getMicroschemas()) {
 			assignMicroschemaVersion(newBranch, newBranch.getCreator(), microschema.getLatestVersion(), batch);
 		}
 	}
 
 	@Override
-	default void onRootDeleted(HibProject project, BulkActionContext bac) {
+	default void onRootDeleted(Project project, BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting branches of project {" + project.getUuid() + "}");
 		}
 
 		// Delete all branches
-		for (HibBranch branch : findAll(project).list()) {
+		for (Branch branch : findAll(project).list()) {
 			bac.add(branch.onDeleted());
 			deletePersisted(project, branch);
 			bac.process();
 		}
 	}
 
-	default HibBranch fromReference(HibProject project, BranchReference reference) {
-		HibBranch branch = null;
+	default Branch fromReference(Project project, BranchReference reference) {
+		Branch branch = null;
 
 		if (reference == null) {
 			return null;
@@ -271,7 +271,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default BranchResponse transformToRestSync(HibBranch branch, InternalActionContext ac, int level, String... languageTags) {
+	default BranchResponse transformToRestSync(Branch branch, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -308,7 +308,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default boolean update(HibProject project, HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Project project, Branch branch, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the branch, if it does not belong to the requested project.
 		if (!project.getUuid().equals(branch.getProject().getUuid())) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", branch.getUuid());
@@ -319,7 +319,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 
 		if (shouldUpdate(requestModel.getName(), branch.getName())) {
 			// Check for conflicting project name
-			HibBranch conflictingBranch = findConflictingBranch(branch, requestModel.getName());
+			Branch conflictingBranch = findConflictingBranch(branch, requestModel.getName());
 			if (conflictingBranch != null) {
 				throw conflict(conflictingBranch.getUuid(), conflictingBranch.getName(), "branch_conflicting_name", requestModel.getName());
 			}
@@ -351,19 +351,19 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default void delete(HibProject project, HibBranch branch, BulkActionContext bac) {
+	default void delete(Project project, Branch branch, BulkActionContext bac) {
 		bac.add(branch.onDeleted());
 		deletePersisted(project, branch);
 	}
 
 	@Override
-	default HibJob assignSchemaVersion(HibBranch branch, HibUser user, HibSchemaVersion schemaVersion, EventQueueBatch batch) {
+	default Job assignSchemaVersion(Branch branch, User user, SchemaVersion schemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();
-		HibBranchSchemaVersion edge = findBranchSchemaEdge(branch, schemaVersion);
-		HibJob job = null;
+		BranchSchemaVersion edge = findBranchSchemaEdge(branch, schemaVersion);
+		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			HibSchemaVersion currentVersion = branch.findLatestSchemaVersion(schemaVersion.getSchemaContainer());
+			SchemaVersion currentVersion = branch.findLatestSchemaVersion(schemaVersion.getSchemaContainer());
 			edge = connectToSchemaVersion(branch, schemaVersion);
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
@@ -381,13 +381,13 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default HibJob assignMicroschemaVersion(HibBranch branch, HibUser user, HibMicroschemaVersion microschemaVersion, EventQueueBatch batch) {
+	default Job assignMicroschemaVersion(Branch branch, User user, MicroschemaVersion microschemaVersion, EventQueueBatch batch) {
 		JobDao jobDao = Tx.get().jobDao();
-		HibBranchMicroschemaVersion edge = findBranchMicroschemaEdge(branch, microschemaVersion);
-		HibJob job = null;
+		BranchMicroschemaVersion edge = findBranchMicroschemaEdge(branch, microschemaVersion);
+		Job job = null;
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			HibMicroschemaVersion currentVersion = branch.findLatestMicroschemaVersion(microschemaVersion.getSchemaContainer());
+			MicroschemaVersion currentVersion = branch.findLatestMicroschemaVersion(microschemaVersion.getSchemaContainer());
 			edge = connectToMicroschemaVersion(branch, microschemaVersion);
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
@@ -412,8 +412,8 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @param restNode
 	 *            Rest model which will be updated
 	 */
-	private void setTagsToRest(HibBranch branch, InternalActionContext ac, BranchResponse restNode) {
-		restNode.setTags(branch.getTags().stream().map(HibTag::transformToReference).collect(Collectors.toList()));
+	private void setTagsToRest(Branch branch, InternalActionContext ac, BranchResponse restNode) {
+		restNode.setTags(branch.getTags().stream().map(Tag::transformToReference).collect(Collectors.toList()));
 	}
 
 	/**
@@ -423,9 +423,9 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	 * @param branchNameOrUuid
 	 * @return
 	 */
-	default Optional<HibBranch> findBranchOpt(HibProject project, String branchNameOrUuid) {
+	default Optional<Branch> findBranchOpt(Project project, String branchNameOrUuid) {
 		return Optional.ofNullable(CommonTx.get().data().mesh().branchCache().get(getCacheKey(project, branchNameOrUuid), key -> {
-			HibBranch branch = null;
+			Branch branch = null;
 
 			if (!isEmpty(branchNameOrUuid)) {
 				branch = findByUuid(project, branchNameOrUuid);
@@ -444,18 +444,18 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 	}
 
 	@Override
-	default HibBranch findBranch(HibProject project, String branchNameOrUuid) {
+	default Branch findBranch(Project project, String branchNameOrUuid) {
 		return findBranchOpt(project, branchNameOrUuid)
 			.orElseThrow(() -> error(BAD_REQUEST, "branch_error_not_found", branchNameOrUuid));
 	}
 
 	@Override
-	default HibBranch findBranchOrLatest(HibProject project, String branchNameOrUuid) {
+	default Branch findBranchOrLatest(Project project, String branchNameOrUuid) {
 		return findBranchOpt(project, branchNameOrUuid).orElseGet(() -> getLatestBranch(project));
 	}
 
 	@Override
-	default Optional<NameCache<HibBranch>> maybeGetCache() {
+	default Optional<NameCache<Branch>> maybeGetCache() {
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().branchCache());
 	}
 }

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.endpoint.migration;
 
-import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
+import com.gentics.mesh.core.data.branch.BranchVersionAssignment;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobWarningListModel;
 
 
 /**
@@ -30,7 +30,7 @@ public interface MigrationStatusHandler {
 	 * @param warningList
 	 * @return
 	 */
-	MigrationStatusHandler done(JobWarningList warningList);
+	MigrationStatusHandler done(JobWarningListModel warningList);
 
 	/**
 	 * Handle the error and inform all channels.
@@ -46,7 +46,7 @@ public interface MigrationStatusHandler {
 	 * 
 	 * @param versionEdge
 	 */
-	void setVersionEdge(HibBranchVersionAssignment versionEdge);
+	void setVersionEdge(BranchVersionAssignment versionEdge);
 
 	/**
 	 * Set the current status.

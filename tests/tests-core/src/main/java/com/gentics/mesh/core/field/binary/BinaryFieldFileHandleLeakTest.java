@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -30,7 +30,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		HibNode node = folder("news");
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -56,7 +56,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		HibNode node = folder("news");
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -90,7 +90,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		HibNode node = folder("news");
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -117,7 +117,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		HibNode node = folder("news");
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -141,7 +141,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "image/png";
 		String fieldName = "image";
 		String fileName = "somefile.png";
-		HibNode node = folder("news");
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);
@@ -168,7 +168,7 @@ public class BinaryFieldFileHandleLeakTest extends AbstractMeshTest {
 		String contentType = "text/plain";
 		String fieldName = "image";
 		String fileName = "somefile.txt";
-		HibNode node = folder("news");
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", fieldName);

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.MeshEvent.NODE_MOVED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -17,10 +17,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMovedEventModel;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
@@ -47,8 +47,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			NodeDao nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
-			HibNode sourceNode = folder("news");
-			HibNode targetNode = content("concorde");
+			Node sourceNode = folder("news");
+			Node targetNode = content("concorde");
 			String oldParentUuid = nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), BAD_REQUEST,
@@ -63,7 +63,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			NodeDao nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
-			HibNode sourceNode = folder("news");
+			Node sourceNode = folder("news");
 			String oldParentUuid = nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
 			assertNotEquals(sourceNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), sourceNode.getUuid()), BAD_REQUEST, "node_move_error_same_nodes");
@@ -77,8 +77,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			NodeDao nodeDao = tx.nodeDao();
 
 			String branchUuid = project().getLatestBranch().getUuid();
-			HibNode sourceNode = folder("news");
-			HibNode targetNode = folder("2015");
+			Node sourceNode = folder("news");
+			Node targetNode = folder("2015");
 			String oldParentUuid = nodeDao.getParentNode(sourceNode, branchUuid).getUuid();
 			assertNotEquals(targetNode.getUuid(), nodeDao.getParentNode(sourceNode, branchUuid).getUuid());
 
@@ -91,8 +91,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		HibNode sourceNode = folder("deals");
-		HibNode targetNode = folder("2015");
+		Node sourceNode = folder("deals");
+		Node targetNode = folder("2015");
 
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
@@ -115,8 +115,8 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		HibNode sourceNode = folder("deals");
-		HibNode targetNode = folder("2015");
+		Node sourceNode = folder("deals");
+		Node targetNode = folder("2015");
 		String branchUuid = initialBranchUuid();
 		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
 		String targetNodeUuid = tx(() -> targetNode.getUuid());
@@ -198,9 +198,9 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveInBranch() {
-		HibBranch newBranch;
-		HibNode movedNode = folder("deals");
-		HibNode targetNode = folder("2015");
+		Branch newBranch;
+		Node movedNode = folder("deals");
+		Node targetNode = folder("2015");
 		String oldParentUuid;
 		try (Tx tx = tx()) {
 			// 1. Get original parent uuid

@@ -9,8 +9,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -30,9 +30,9 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser user = tx.userDao().findByUuid(response.getUuid());
+			User user = tx.userDao().findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
-			for (HibRole role : userDao.getRoles(user())) {
+			for (Role role : userDao.getRoles(user())) {
 				roleDao.revokePermissions(role, user, InternalPermission.READ_PERM);
 			}
 			tx.success();
@@ -51,7 +51,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser user = userDao.findByUuid(response.getUuid());
+			User user = userDao.findByUuid(response.getUuid());
 			System.out.println("User Uuid:" + response.getUuid());
 			roleDao.grantPermissions(role(), user, InternalPermission.READ_PERM);
 			tx.success();

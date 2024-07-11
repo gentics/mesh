@@ -26,16 +26,16 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.dao.PersistingNodeDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
@@ -102,7 +102,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
+		Node node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 		String language;
 		// check for null
 		if (node == null) {
@@ -128,10 +128,10 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			}
 			ContentDao contentDao = Tx.get().contentDao();
 
-			HibNodeFieldContainer nullableGraphFieldContainer = contentDao.getFieldContainer(node, language);
-			Optional<HibNodeFieldContainer> maybeGraphFieldContainer = Optional.ofNullable(nullableGraphFieldContainer);
+			NodeFieldContainer nullableGraphFieldContainer = contentDao.getFieldContainer(node, language);
+			Optional<NodeFieldContainer> maybeGraphFieldContainer = Optional.ofNullable(nullableGraphFieldContainer);
 
-			Optional<S3HibBinary> maybeBinaryField = maybeGraphFieldContainer
+			Optional<S3Binary> maybeBinaryField = maybeGraphFieldContainer
 				.flatMap(graphFieldContainer -> Optional.ofNullable(graphFieldContainer.getSchemaContainerVersion()))
 				.flatMap(schemaContainerVersion -> Optional.ofNullable(schemaContainerVersion.getSchema()))
 				.flatMap(schema -> Optional.ofNullable(schema.getFields()))
@@ -141,7 +141,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 					//if there is a S3 field and we can do the link resolving with S3 from the configuration then we should return the presigned URL
 					if (Objects.isNull(linkResolver) || linkResolver.equals("s3")) {
 						String fieldName = s3binaryFieldSchema.getName();
-						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName)).map(S3HibBinaryField::getBinary);
+						return Optional.ofNullable(nullableGraphFieldContainer.getS3Binary(fieldName)).map(S3BinaryField::getBinary);
 					} else {
 						return Optional.empty();
 					}
@@ -154,13 +154,13 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 	}
 
 	@Override
-	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, HibNode node, LinkType type,
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
 		String... languageTags) {
 		return resolve(ac, branchNameOrUuid, edgeType, node, type, false, languageTags);
 	}
 
 	@Override
-	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, HibNode node, LinkType type,
+	public String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type,
 		boolean forceAbsolute,
 		String... languageTags) {
 		Tx tx = Tx.get();
@@ -168,9 +168,9 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 
 		languageTags = appendDefaultLanguageIfNotContained(languageTags);
 
-		HibProject theirProject = node.getProject();
+		Project theirProject = node.getProject();
 
-		HibBranch branch = tx.branchDao().findBranchOrLatest(theirProject, branchNameOrUuid);
+		Branch branch = tx.branchDao().findBranchOrLatest(theirProject, branchNameOrUuid);
 
 		// edge type defaults to DRAFT
 		if (edgeType == null) {
@@ -234,20 +234,20 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		});
 
 		// 3. load the nodes by their UUIDs
-		Map<String, ? extends HibNode> nodeMap = nodeDao.findByUuidGlobal(branchesPerNodeUuid.keySet()).stream().collect(Collectors.toMap(HibNode::getUuid, Function.identity()));
+		Map<String, ? extends Node> nodeMap = nodeDao.findByUuidGlobal(branchesPerNodeUuid.keySet()).stream().collect(Collectors.toMap(Node::getUuid, Function.identity()));
 
 		// 4. load paths of the nodes per requested languages
-		Map<HibBranch, Map<String[], Map<HibNode, String>>> pathsPerBranchAndNode = new HashMap<>();
-		Map<String, HibBranch> branchPerUUids = new HashMap<>();
+		Map<Branch, Map<String[], Map<Node, String>>> pathsPerBranchAndNode = new HashMap<>();
+		Map<String, Branch> branchPerUUids = new HashMap<>();
 		for (Entry<String, Set<String>> entry : branchesPerNodeUuid.entrySet()) {
 			String nodeUuid = entry.getKey();
-			HibNode node = nodeMap.get(nodeUuid);
+			Node node = nodeMap.get(nodeUuid);
 			if (node != null) {
-				HibProject theirProject = node.getProject();
+				Project theirProject = node.getProject();
 
 				for (String branchUuidOrName : entry.getValue()) {
 					String key = theirProject.getUuid() + "-" + branchUuidOrName;
-					HibBranch theirBranch = branchPerUUids.computeIfAbsent(key, unused -> branchDao.findBranchOrLatest(theirProject, branchUuidOrName));
+					Branch theirBranch = branchPerUUids.computeIfAbsent(key, unused -> branchDao.findBranchOrLatest(theirProject, branchUuidOrName));
 
 					for (String[] nodeLanguageTags : languageTagsPerNodeUuid.get(nodeUuid)) {
 						pathsPerBranchAndNode.computeIfAbsent(theirBranch, k -> new HashMap<>())
@@ -256,11 +256,11 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				}
 			}
 		}
-		for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
-			HibBranch currentBranch = entry.getKey();
-			for (Entry<String[], Map<HibNode, String>> entry2 : entry.getValue().entrySet()) {
+		for (Entry<Branch, Map<String[], Map<Node, String>>> entry : pathsPerBranchAndNode.entrySet()) {
+			Branch currentBranch = entry.getKey();
+			for (Entry<String[], Map<Node, String>> entry2 : entry.getValue().entrySet()) {
 				String[] nodeLanguageTags = entry2.getKey();
-				Set<HibNode> nodes = entry2.getValue().keySet();
+				Set<Node> nodes = entry2.getValue().keySet();
 				entry2.setValue(nodeDao.getPaths(nodes, currentBranch, ac, edgeType, nodeLanguageTags));
 			}
 		}
@@ -268,14 +268,14 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 		// 5. adapt paths to link type
 		switch (linkType) {
 		case SHORT:
-			HibProject txProject = tx.getProject(ac);
-			HibBranch txBranch = tx.getBranch(ac);
-			for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
-				HibBranch currentBranch = entry.getKey();
-				Map<String[], Map<HibNode, String>> languageTagsMap = entry.getValue();
-				for (Map<HibNode, String> pathMap : languageTagsMap.values()) {
-					for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
-						HibNode node = entry2.getKey();
+			Project txProject = tx.getProject(ac);
+			Branch txBranch = tx.getBranch(ac);
+			for (Entry<Branch, Map<String[], Map<Node, String>>> entry : pathsPerBranchAndNode.entrySet()) {
+				Branch currentBranch = entry.getKey();
+				Map<String[], Map<Node, String>> languageTagsMap = entry.getValue();
+				for (Map<Node, String> pathMap : languageTagsMap.values()) {
+					for (Entry<Node, String> entry2 : pathMap.entrySet()) {
+						Node node = entry2.getKey();
 						if (txProject == null || !txBranch.equals(currentBranch)) {
 							String path = entry2.getValue();
 							entry2.setValue(generateSchemeAuthorityForNode(node, currentBranch) + path);
@@ -285,11 +285,11 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			}
 			break;
 		case MEDIUM:
-			for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
-				Map<String[], Map<HibNode, String>> languageTagsMap = entry.getValue();
-				for (Map<HibNode, String> pathMap : languageTagsMap.values()) {
-					for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
-						HibNode node = entry2.getKey();
+			for (Entry<Branch, Map<String[], Map<Node, String>>> entry : pathsPerBranchAndNode.entrySet()) {
+				Map<String[], Map<Node, String>> languageTagsMap = entry.getValue();
+				for (Map<Node, String> pathMap : languageTagsMap.values()) {
+					for (Entry<Node, String> entry2 : pathMap.entrySet()) {
+						Node node = entry2.getKey();
 						String path = entry2.getValue();
 						entry2.setValue("/" + node.getProject().getName() + path);
 					}
@@ -298,12 +298,12 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 			break;
 		case FULL:
 			String baseRoute = VersionUtils.baseRoute(ac.getApiVersion()) + "/";
-			for (Entry<HibBranch, Map<String[], Map<HibNode, String>>> entry : pathsPerBranchAndNode.entrySet()) {
-				HibBranch currentBranch = entry.getKey();
-				Map<String[], Map<HibNode, String>> languageTagsMap = entry.getValue();
-				for (Map<HibNode, String> pathMap : languageTagsMap.values()) {
-					for (Entry<HibNode, String> entry2 : pathMap.entrySet()) {
-						HibNode node = entry2.getKey();
+			for (Entry<Branch, Map<String[], Map<Node, String>>> entry : pathsPerBranchAndNode.entrySet()) {
+				Branch currentBranch = entry.getKey();
+				Map<String[], Map<Node, String>> languageTagsMap = entry.getValue();
+				for (Map<Node, String> pathMap : languageTagsMap.values()) {
+					for (Entry<Node, String> entry2 : pathMap.entrySet()) {
+						Node node = entry2.getKey();
 						String path = entry2.getValue();
 						entry2.setValue(
 								baseRoute + node.getProject().getName() + "/webroot" + path + branchQueryParameter(currentBranch));
@@ -324,11 +324,11 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 				seg.getTargetUuid().ifPresentOrElse(nodeUuid -> {
 					String currentBranch = seg.getBranch().orElse(branch);
 					String[] nodeLanguageTags = seg.getLanguageTags().orElse(finLanguageTags);
-					HibNode node = nodeMap.get(nodeUuid);
+					Node node = nodeMap.get(nodeUuid);
 					String renderedSegment = null;
 					if (node != null) {
 						String key = node.getProject().getUuid() + "-" + currentBranch;
-						HibBranch theirBranch = branchPerUUids.computeIfAbsent(key, unused -> branchDao.findBranchOrLatest(node.getProject(), currentBranch));
+						Branch theirBranch = branchPerUUids.computeIfAbsent(key, unused -> branchDao.findBranchOrLatest(node.getProject(), currentBranch));
 						renderedSegment = pathsPerBranchAndNode.getOrDefault(theirBranch, Collections.emptyMap()).getOrDefault(nodeLanguageTags, Collections.emptyMap()).getOrDefault(node, null);
 					}
 					if (StringUtils.isBlank(renderedSegment)) {
@@ -425,7 +425,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 	 *            branch
 	 * @return scheme and authority or empty string if the branch of the node does not supply the needed information
 	 */
-	private String generateSchemeAuthorityForNode(HibNode node, HibBranch branch) {
+	private String generateSchemeAuthorityForNode(Node node, Branch branch) {
 		String hostname = branch.getHostname();
 		if (StringUtils.isEmpty(hostname)) {
 			// Fallback to urls without authority/scheme
@@ -450,7 +450,7 @@ public class WebRootLinkReplacerImpl implements WebRootLinkReplacer {
 	 *            The branch to generate the query parameter for.
 	 * @return Example: "?branch=test1"
 	 */
-	private String branchQueryParameter(HibBranch branch) {
+	private String branchQueryParameter(Branch branch) {
 		if (branch.isLatest()) {
 			return "";
 		}

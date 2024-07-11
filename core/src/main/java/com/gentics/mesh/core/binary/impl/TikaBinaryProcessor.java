@@ -24,17 +24,17 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.node.field.binary.Location;
+import com.gentics.mesh.core.rest.node.field.binary.LocationModel;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -48,7 +48,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * This class can be used to parse binary data from {@link HibBinaryField} fields. Once parsed the processor will populate the field with additional meta data
+ * This class can be used to parse binary data from {@link BinaryField} fields. Once parsed the processor will populate the field with additional meta data
  * from the parsing result.
  */
 @Singleton
@@ -131,7 +131,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<HibBinaryField>> process(BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<BinaryField>> process(BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName())
 			.flatMap(
@@ -152,12 +152,12 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		return db.maybeTx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			ContentDao contentDao = tx.contentDao();
-			HibProject project = tx.getProject(ac);
-			HibBranch branch = tx.getBranch(ac);
-			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
+			Project project = tx.getProject(ac);
+			Branch branch = tx.getBranch(ac);
+			Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
+			NodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()
@@ -176,7 +176,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 		});
 	}
 
-	private Maybe<Consumer<HibBinaryField>> process(BinaryExtractOptions extractOptions, FileUpload upload) {
+	private Maybe<Consumer<BinaryField>> process(BinaryExtractOptions extractOptions, FileUpload upload) {
 		// Shortcut if no field specific options are specified and parsing is globally disabled
 		if (!options.getUploadOptions().isParser() && extractOptions == null) {
 			log.debug("Not parsing " + upload.fileName()
@@ -205,7 +205,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 				boolean parseMetadata = extractOptions == null || extractOptions.getMetadata();
 				TikaResult pr = parseFile(ins, len, parseMetadata);
 
-				Consumer<HibBinaryField> consumer = field -> {
+				Consumer<BinaryField> consumer = field -> {
 					pr.getMetadata().forEach((e, k) -> {
 						field.setMetadata(e, k);
 					});
@@ -251,7 +251,7 @@ public class TikaBinaryProcessor extends AbstractBinaryProcessor {
 	 */
 	public TikaResult parseFile(InputStream ins, int len, boolean parseMetadata) throws TikaException, IOException {
 
-		Location loc = new Location();
+		LocationModel loc = new LocationModel();
 		Map<String, String> fields = new HashMap<>();
 
 		Metadata metadata = new Metadata();

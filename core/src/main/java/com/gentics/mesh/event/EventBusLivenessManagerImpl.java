@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.MeshEvent;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.monitor.liveness.EventBusLivenessManager;
@@ -149,7 +149,7 @@ public final class EventBusLivenessManagerImpl implements EventBusLivenessManage
 
 				// get the currently known cluster node names
 				ClusterStatusResponse clusterStatus = clusterManager.getClusterStatus();
-				Set<String> nodeNames = clusterStatus.getInstances().stream().map(ClusterInstanceInfo::getName).collect(Collectors.toSet());
+				Set<String> nodeNames = clusterStatus.getInstances().stream().map(ClusterInstanceInfoModel::getName).collect(Collectors.toSet());
 
 				// remove all unknown cluster nodes from the map of pings
 				lastClusterPingTimestamps.keySet().retainAll(nodeNames);

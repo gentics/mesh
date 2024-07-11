@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.job.JobType;
@@ -61,7 +61,7 @@ public class JobProcessorImpl implements JobProcessor {
 		return processing;
 	}
 
-	private List<? extends HibJob> getJobsToExecute() {
+	private List<? extends Job> getJobsToExecute() {
 		return db.tx((tx) -> {
 			return tx.jobDao().findAll().stream()
 					// Don't execute failed or completed jobs again
@@ -70,9 +70,9 @@ public class JobProcessorImpl implements JobProcessor {
 		});
 	}
 
-	private Completable process(HibJob job) {
+	private Completable process(Job job) {
 		return Completable.defer(() -> {
-			HibJob startedJob = db.tx(() -> {
+			Job startedJob = db.tx(() -> {
 				log.info("Processing job {" + job.getUuid() + "}");
 				job.setStartTimestamp();
 				job.setStatus(STARTING);
@@ -84,7 +84,7 @@ public class JobProcessorImpl implements JobProcessor {
 		});
 	}
 
-	private CompletableSource processTask(HibJob job) {
+	private CompletableSource processTask(Job job) {
 		JobType jobType = db.tx((tx) -> {
 			JobType type = job.getType();
 			if (type == null) {

@@ -2,12 +2,12 @@ package com.gentics.mesh.core.rest.node.field.impl;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.BooleanFieldModel;
 
 /**
- * @see BooleanField
+ * @see BooleanFieldModel
  */
-public class BooleanFieldImpl implements BooleanField {
+public class BooleanFieldImpl implements BooleanFieldModel {
 
 	@JsonPropertyDescription("Boolean field value")
 	private Boolean value;
@@ -18,7 +18,7 @@ public class BooleanFieldImpl implements BooleanField {
 	}
 
 	@Override
-	public BooleanField setValue(Boolean value) {
+	public BooleanFieldModel setValue(Boolean value) {
 		this.value = value;
 		return this;
 	}

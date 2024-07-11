@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.StringFieldModel;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -60,7 +60,7 @@ public class GraphQLEndpointFilterTest extends AbstractMeshTest {
 		request.setLanguage("de");
 		request.setParentNodeUuid(folderUuid());
 		request.setFields(FieldMap.of(
-			"name", StringField.of("deFieldTest")
+			"name", StringFieldModel.of("deFieldTest")
 		));
 		client().createNode(PROJECT_NAME, request).blockingAwait();
 	}

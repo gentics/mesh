@@ -11,18 +11,18 @@ import java.util.stream.Stream;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -40,9 +40,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
 /**
- * Dao for {@link HibNode}
+ * Dao for {@link Node}
  */
-public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeResponse>, RootDao<HibProject, HibNode> {
+public interface NodeDao extends Dao<Node>, DaoTransformable<Node, NodeResponse>, RootDao<Project, Node> {
 
 	/**
 	 * Return the API path for the node.
@@ -51,7 +51,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	String getAPIPath(HibNode element, InternalActionContext ac);
+	String getAPIPath(Node element, InternalActionContext ac);
 
 	/**
 	 * Create a child node in the latest branch of the project.
@@ -62,7 +62,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param project
 	 * @return
 	 */
-	HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project);
+	Node create(Node parentNode, User creator, SchemaVersion schemaVersion, Project project);
 
 	/**
 	 * Create a child node in the given branch
@@ -75,14 +75,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param uuid
 	 * @return
 	 */
-	HibNode create(HibNode parentNode, HibUser creator, HibSchemaVersion schemaVersion, HibProject project, HibBranch branch, String uuid);
+	Node create(Node parentNode, User creator, SchemaVersion schemaVersion, Project project, Branch branch, String uuid);
 
 	/**
 	 * Return the children for this node for all branches.
 	 *
 	 * @return
 	 */
-	Result<? extends HibNode> getChildren(HibNode node);
+	Result<? extends Node> getChildren(Node node);
 
 	/**
 	 * Return the children for this node in the given branch.
@@ -90,7 +90,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 * @return
 	 */
-	Result<? extends HibNode> getChildren(HibNode node, String branchUuid);
+	Result<? extends Node> getChildren(Node node, String branchUuid);
 
 	/**
 	 * Return all content of the provided type using language fallback for each node in the given branch.
@@ -102,7 +102,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	default Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
+	default Map<Node, List<NodeContent>> getChildren(Set<Node> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type) {
 		return getChildren(nodes, ac, branchUuid, languageTags, type, null, Optional.empty());
 	}
 
@@ -117,7 +117,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param maybeFilter an optional filter to apply
 	 * @return
 	 */
-	Map<HibNode, List<NodeContent>> getChildren(Set<HibNode> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
+	Map<Node, List<NodeContent>> getChildren(Set<Node> nodes, InternalActionContext ac, String branchUuid, List<String> languageTags, ContainerType type, PagingParameters sorting, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Return the children for this node. Only fetches nodes from the provided branch and also checks permissions.
@@ -125,7 +125,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac action context
 	 * @param perm permission
 	 */
-	Stream<? extends HibNode> getChildrenStream(HibNode node, InternalActionContext ac, InternalPermission perm);
+	Stream<? extends Node> getChildrenStream(Node node, InternalActionContext ac, InternalPermission perm);
 
 	/**
 	 * Return all children of the provides nodes for the specified branch
@@ -133,7 +133,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 * @return
 	 */
-	Map<HibNode, List<HibNode>> getChildren(Collection<HibNode> nodes, String branchUuid);
+	Map<Node, List<Node>> getChildren(Collection<Node> nodes, String branchUuid);
 
 	/**
 	 * Returns the parent node of this node.
@@ -142,7 +142,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 *            branch Uuid
 	 * @return
 	 */
-	HibNode getParentNode(HibNode node, String branchUuid);
+	Node getParentNode(Node node, String branchUuid);
 
 	/**
 	 * Returns a map with nodes and their immediate parents. Nodes, which do not have a parent will be mapped to null.
@@ -150,7 +150,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid branch UUID
 	 * @return map of parents per node
 	 */
-	Map<HibNode, HibNode> getParentNodes(Collection<HibNode> nodes, String branchUuid);
+	Map<Node, Node> getParentNodes(Collection<Node> nodes, String branchUuid);
 
 	/**
 	 * Returns the parent node uuid of this node.
@@ -160,7 +160,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @return
 	 */
 
-	String getParentNodeUuid(HibNode node, String branchUuid);
+	String getParentNodeUuid(Node node, String branchUuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.
@@ -175,7 +175,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param pagingParameter
 	 * @return
 	 */
-	Page<? extends HibNode> getChildren(HibNode node, InternalActionContext ac, List<String> languageTags, String branchUuid,
+	Page<? extends Node> getChildren(Node node, InternalActionContext ac, List<String> languageTags, String branchUuid,
 		ContainerType type,
 		PagingParameters pagingParameter);
 
@@ -185,14 +185,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 * @param parentNode
 	 */
-	void setParentNode(HibNode node, String branchUuid, HibNode parentNode);
+	void setParentNode(Node node, String branchUuid, Node parentNode);
 
 	/**
 	 * Return a list of language names for draft versions in the latest branch
 	 *
 	 * @return
 	 */
-	List<String> getAvailableLanguageNames(HibNode node);
+	List<String> getAvailableLanguageNames(Node node);
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -201,7 +201,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	String getDisplayName(HibNode node, InternalActionContext ac);
+	String getDisplayName(Node node, InternalActionContext ac);
 
 	/**
 	 * Move this node into the target node.
@@ -210,7 +210,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param targetNode
 	 * @param batch
 	 */
-	void moveTo(HibNode sourceNode, InternalActionContext ac, HibNode targetNode, EventQueueBatch batch);
+	void moveTo(Node sourceNode, InternalActionContext ac, Node targetNode, EventQueueBatch batch);
 
 	/**
 	 * Transform the node into a navigation response rest model.
@@ -218,7 +218,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	NavigationResponse transformToNavigation(HibNode node, InternalActionContext ac);
+	NavigationResponse transformToNavigation(Node node, InternalActionContext ac);
 
 	/**
 	 * Transform the node into a publish status response rest model.
@@ -226,7 +226,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	PublishStatusResponse transformToPublishStatus(HibNode node, InternalActionContext ac);
+	PublishStatusResponse transformToPublishStatus(Node node, InternalActionContext ac);
 
 	/**
 	 * Publish the node (all languages)
@@ -235,7 +235,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @return
 	 */
-	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac);
+	void publish(Node node, InternalActionContext ac, BulkActionContext bac);
 
 	/**
 	 * Take the node offline (all languages)
@@ -244,7 +244,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @return
 	 */
-	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac);
+	void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -253,7 +253,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 * @return
 	 */
-	PublishStatusModel transformToPublishStatus(HibNode node, InternalActionContext ac, String languageTag);
+	PublishStatusModel transformToPublishStatus(Node node, InternalActionContext ac, String languageTag);
 
 	/**
 	 * Publish a language of the node
@@ -263,7 +263,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 * @return
 	 */
-	void publish(HibNode node, InternalActionContext ac, BulkActionContext bac, String languageTag);
+	void publish(Node node, InternalActionContext ac, BulkActionContext bac, String languageTag);
 
 	/**
 	 * Remove published edges for each container found
@@ -271,7 +271,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 * @param bac
 	 */
-	void removePublishedEdges(HibNode node, String branchUuid, BulkActionContext bac);
+	void removePublishedEdges(Node node, String branchUuid, BulkActionContext bac);
 
 	/**
 	 * Take a language of the node offline.
@@ -281,7 +281,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branch
 	 * @param languageTag
 	 */
-	void takeOffline(HibNode node, InternalActionContext ac, BulkActionContext bac, HibBranch branch, String languageTag);
+	void takeOffline(Node node, InternalActionContext ac, BulkActionContext bac, Branch branch, String languageTag);
 
 	/**
 	 * Return a string path for each of the provided node for the current branch, container type with language fallbacks
@@ -291,7 +291,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTags
 	 * @return
 	 */
-	Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags);
+	Map<Node, String> getPaths(Collection<Node> sourceNodes, InternalActionContext ac, ContainerType type, String... languageTags);
 
 	/**
 	 * Return a string path for each of the provided node for the given branch, container type with language fallbacks
@@ -302,7 +302,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTags optional language tags
 	 * @return map of path per node
 	 */
-	Map<HibNode, String> getPaths(Collection<HibNode> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags);
+	Map<Node, String> getPaths(Collection<Node> sourceNodes, String branchUuid, InternalActionContext ac, ContainerType type, String... languageTags);
 
 	/**
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
@@ -317,7 +317,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 *
 	 * @return
 	 */
-	String getPath(HibNode node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
+	String getPath(Node node, ActionContext ac, String branchUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Resolve the given path for the base node and return the path object that contains the resolved nodes.
@@ -330,17 +330,17 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param pathStack
 	 * @return
 	 */
-	Path resolvePath(HibNode baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
+	Path resolvePath(Node baseNode, String branchUuid, ContainerType type, Path nodePath, Stack<String> pathStack);
 
 	/**
-	 * Delete the node. Please use {@link ContentDao#deleteFromBranch(HibNode, InternalActionContext, HibBranch, BulkActionContext, boolean)}
+	 * Delete the node. Please use {@link ContentDao#deleteFromBranch(Node, InternalActionContext, Branch, BulkActionContext, boolean)}
 	 * if you want to delete the node just from a specific branch.
 	 *
 	 * @param bac
 	 * @param ignoreChecks
 	 * @param recursive
 	 */
-	void delete(HibNode node, BulkActionContext bac, boolean ignoreChecks, boolean recursive);
+	void delete(Node node, BulkActionContext bac, boolean ignoreChecks, boolean recursive);
 
 	/**
 	 * Return the breadcrumb nodes.
@@ -348,14 +348,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */
-	Result<? extends HibNode> getBreadcrumbNodes(HibNode node, InternalActionContext ac);
+	Result<? extends Node> getBreadcrumbNodes(Node node, InternalActionContext ac);
 
 	/**
 	 * Check whether the node is the base node of its project
 	 *
 	 * @return true for base node
 	 */
-	boolean isBaseNode(HibNode node);
+	boolean isBaseNode(Node node);
 
 	/**
 	 * Check whether the node is visible in the given branch (that means has at least one DRAFT field container in the branch)
@@ -364,7 +364,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 *            branch uuid
 	 * @return true if the node is visible in the branch
 	 */
-	boolean isVisibleInBranch(HibNode node, String branchUuid);
+	boolean isVisibleInBranch(Node node, String branchUuid);
 
 	/**
 	 * Check if the node has a content with status = published within the given branch
@@ -373,7 +373,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param branchUuid
 	 * @return
 	 */
-	boolean hasPublishedContent(HibNode node, String branchUuid);
+	boolean hasPublishedContent(Node node, String branchUuid);
 
 	/**
 	 * Transform the node information to a version list response.
@@ -381,7 +381,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return Versions response
 	 */
-	NodeVersionsResponse transformToVersionList(HibNode node, InternalActionContext ac);
+	NodeVersionsResponse transformToVersionList(Node node, InternalActionContext ac);
 
 	/**
 	 * Update the tags of the node and return a page of updated tags.
@@ -391,7 +391,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param batch
 	 * @return
 	 */
-	Page<? extends HibTag> updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch);
+	Page<? extends Tag> updateTags(Node node, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Update the tags of the node using the provides list of tag references.
@@ -402,7 +402,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param list
 	 * @return
 	 */
-	void updateTags(HibNode node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
+	void updateTags(Node node, InternalActionContext ac, EventQueueBatch batch, List<TagReference> list);
 
 	/**
 	 * Create a new node.
@@ -412,27 +412,27 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param version
 	 * @return
 	 */
-	HibNode create(HibProject project, HibUser user, HibSchemaVersion version);
+	Node create(Project project, User user, SchemaVersion version);
 	
 	/**
 	 * Find the node by UUID globally.<br>
 	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
-	 * Use {@link NodeDao#findByUuid(HibCoreElement, String)}} with the valid project binding instead.
+	 * Use {@link NodeDao#findByUuid(CoreElement, String)}} with the valid project binding instead.
 	 * 
 	 * @param uuid
 	 * @return
 	 */
-	HibNode findByUuidGlobal(String uuid);
+	Node findByUuidGlobal(String uuid);
 
 	/**
 	 * Find the nodes by UID globally.<br>
 	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
-	 * Use {@link NodeDao#findByUuid(HibCoreElement, String)}} with the valid project binding instead.
+	 * Use {@link NodeDao#findByUuid(CoreElement, String)}} with the valid project binding instead.
 	 * 
 	 * @param uuids collection of UUIDs
 	 * @return collection of nodes
 	 */
-	Collection<? extends HibNode> findByUuidGlobal(Collection<String> uuids);
+	Collection<? extends Node> findByUuidGlobal(Collection<String> uuids);
 
 	/**
 	 * Count all the nodes globally.<br>
@@ -449,7 +449,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param container
 	 * @param branchUuid
 	 */
-	void setPublished(HibNode node, InternalActionContext ac, HibNodeFieldContainer container, String branchUuid);
+	void setPublished(Node node, InternalActionContext ac, NodeFieldContainer container, String branchUuid);
 
 	/**
 	 * Fetch all contents for the provided project in the action context branch and the container type.
@@ -460,7 +460,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	default Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	default Stream<NodeContent> findAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type) {
 		return findAllContent(project, ac, languageTags, type, null, Optional.empty());
 	}
 
@@ -475,7 +475,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param maybeFilter
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
+	Stream<NodeContent> findAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Count all contents for the provided project in the action context branch and the container type.
@@ -487,7 +487,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param maybeFilter
 	 * @return
 	 */
-	long countAllContent(HibProject project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter);
+	long countAllContent(Project project, InternalActionContext ac, List<String> languageTags, ContainerType type, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Fetch all contents for the provided schemaVersion in the action context branch and the container type.
@@ -498,7 +498,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param type
 	 * @return
 	 */
-	default Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
+	default Stream<NodeContent> findAllContent(SchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type) {
 		return findAllContent(schemaVersion, ac, languageTags, type, null, Optional.empty());
 	}
 
@@ -513,7 +513,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param maybeFilter
 	 * @return
 	 */
-	Stream<NodeContent> findAllContent(HibSchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
+	Stream<NodeContent> findAllContent(SchemaVersion schemaVersion, InternalActionContext ac, List<String> languageTags, ContainerType type, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter);
 
 	/**
 	 * Stream the hierarchical patch of the node.
@@ -522,7 +522,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	Stream<? extends HibNode> getBreadcrumbNodeStream(HibNode node, InternalActionContext ac);
+	Stream<? extends Node> getBreadcrumbNodeStream(Node node, InternalActionContext ac);
 
 	/**
 	 * Return a breadcrumb node map, where the key is the source node and the value is a list of ancestors including the
@@ -531,7 +531,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	Map<HibNode, List<HibNode>> getBreadcrumbNodesMap(Collection<HibNode> node, InternalActionContext ac);
+	Map<Node, List<Node>> getBreadcrumbNodesMap(Collection<Node> node, InternalActionContext ac);
 
 	/**
 	 * Get publish status for all languages of the node.
@@ -540,7 +540,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	Map<String, PublishStatusModel> getLanguageInfo(HibNode node, InternalActionContext ac);
+	Map<String, PublishStatusModel> getLanguageInfo(Node node, InternalActionContext ac);
 
 	/**
 	 * Method called whenever we perform a publish action (publish, take offline, move node)
@@ -549,7 +549,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @param branch
 	 */
-	void assertPublishConsistency(HibNode node, InternalActionContext ac, HibBranch branch);
+	void assertPublishConsistency(Node node, InternalActionContext ac, Branch branch);
 
 
 	/**
@@ -563,14 +563,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param bac
 	 * @param ignoreChecks
 	 */
-	void deleteFromBranch(HibNode node, InternalActionContext ac, HibBranch branch, BulkActionContext bac, boolean ignoreChecks);
+	void deleteFromBranch(Node node, InternalActionContext ac, Branch branch, BulkActionContext bac, boolean ignoreChecks);
 
 	/**
 	 * Remove branch parent of the node
 	 * @param node
 	 * @param branchUuid
 	 */
-	void removeParent(HibNode node, String branchUuid);
+	void removeParent(Node node, String branchUuid);
 
 	/**
 	 * Adds reference update events to the context for all draft and published contents that reference this node.
@@ -578,14 +578,14 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param node
 	 * @param bac
 	 */
-	void addReferenceUpdates(HibNode node, BulkActionContext bac);
+	void addReferenceUpdates(Node node, BulkActionContext bac);
 
 	/**
 	 * Gets all NodeField edges that reference this node.
 	 *
 	 * @return
 	 */
-	default Stream<HibNodeField> getInboundReferences(HibNode node) {
+	default Stream<NodeField> getInboundReferences(Node node) {
 		return getInboundReferences(node, true, true);
 	}
 
@@ -597,13 +597,13 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 *
 	 * @return
 	 */
-	Stream<HibNodeField> getInboundReferences(HibNode node, boolean lookupInFields, boolean lookupInLists);
+	Stream<NodeField> getInboundReferences(Node node, boolean lookupInFields, boolean lookupInLists);
 
 	/**
 	 * Delete the given element
 	 * @param node
 	 */
-	void removeElement(HibNode node);
+	void removeElement(Node node);
 
 	/**
 	 * Remove all edges to field container with type {@link ContainerType#INITIAL} for the specified branch uuid
@@ -612,7 +612,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param initial
 	 * @param branchUUID
 	 */
-	void removeInitialFieldContainerEdge(HibNode node, HibNodeFieldContainer initial, String branchUUID);
+	void removeInitialFieldContainerEdge(Node node, NodeFieldContainer initial, String branchUUID);
 
 	/**
 	 * Remove the published edge for the given language tag and branch UUID
@@ -621,7 +621,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param languageTag
 	 * @param branchUuid
 	 */
-	void removePublishedEdge(HibNode node, String languageTag, String branchUuid);
+	void removePublishedEdge(Node node, String languageTag, String branchUuid);
 
 	/**
 	 * Create a node tagged / untagged event.
@@ -632,16 +632,16 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 *            Type of the assignment
 	 * @return
 	 */
-	NodeTaggedEventModel onTagged(HibNode node, HibTag tag, HibBranch branch, Assignment assignment);
+	NodeTaggedEventModel onTagged(Node node, Tag tag, Branch branch, Assignment assignment);
 	
 	/**
 	 * Find all the existing nodes.<br>
 	 * <b>Attention: this method serves administration purposes. Don't use it for the node manipulation or general retrieval!</b><br>
-	 * Use {@link NodeDao#findAll(HibProject)} with the valid project binding instead.
+	 * Use {@link NodeDao#findAll(Project)} with the valid project binding instead.
 	 * 
 	 * @return
 	 */
-	Stream<? extends HibNode> findAllGlobal();
+	Stream<? extends Node> findAllGlobal();
 
 	/**
 	 * Get ETag part of node.
@@ -650,7 +650,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	String getSubETag(HibNode node, InternalActionContext ac);
+	String getSubETag(Node node, InternalActionContext ac);
 
 	/**
 	 * Transform the node to a reference.
@@ -659,7 +659,7 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param ac
 	 * @return
 	 */
-	NodeReference transformToReference(HibNode node, InternalActionContext ac);
+	NodeReference transformToReference(Node node, InternalActionContext ac);
 
 	/**
 	 * Copy all the parent nodes from the old branch to the new branch
@@ -667,5 +667,5 @@ public interface NodeDao extends Dao<HibNode>, DaoTransformable<HibNode, NodeRes
 	 * @param oldBranch
 	 * @param newBranch
 	 */
-	void migrateParentNodes(List<? extends HibNode> nodes, HibBranch oldBranch, HibBranch newBranch);
+	void migrateParentNodes(List<? extends Node> nodes, Branch oldBranch, Branch newBranch);
 }

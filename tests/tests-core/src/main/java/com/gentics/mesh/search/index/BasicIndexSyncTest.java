@@ -16,7 +16,7 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.mesh.context.impl.BulkActionContextImpl;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
@@ -24,14 +24,14 @@ import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -173,7 +173,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			HibGroup group3 = tx.groupDao().findByName("group_3");
+			Group group3 = tx.groupDao().findByName("group_3");
 			CommonTx.get().groupDao().deletePersisted(group3);
 
 			// suppress publishing of events
@@ -248,8 +248,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Assert deletion
 		tx(tx -> {
-			HibTagFamily tagFamily = tagFamily("colors");
-			HibTag tag = tagDao.findByName(tagFamily, "tag_3");
+			TagFamily tagFamily = tagFamily("colors");
+			Tag tag = tagDao.findByName(tagFamily, "tag_3");
 			tx.<CommonTx>unwrap().tagDao().deletePersisted(tag);
 
 			// suppress publishing of events
@@ -265,8 +265,8 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert insert
 		tx(tx -> {
 			CommonTx ctx = tx.unwrap();
-			HibProject project = Tx.get().projectDao().findByUuid(projectUuid());
-			HibUser user = Tx.get().userDao().findByUuid(userUuid());
+			Project project = Tx.get().projectDao().findByUuid(projectUuid());
+			User user = Tx.get().userDao().findByUuid(userUuid());
 			for (int i = 0; i < 400; i++) {
 				ctx.tagFamilyDao().create(project, "tagfamily_" + i, user);
 			}
@@ -293,7 +293,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			PersistingTagFamilyDao tagFamilyDao = Tx.get().<CommonTx>unwrap().tagFamilyDao();
-			HibTagFamily tagfamily_3 = tagFamilyDao.findByName(project(), "tagfamily_3");
+			TagFamily tagfamily_3 = tagFamilyDao.findByName(project(), "tagfamily_3");
 			tagFamilyDao.deletePersisted(project(), tagfamily_3);
 
 			// suppress publishing of events
@@ -332,7 +332,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 
 		// Now manually delete the project
 		tx(tx -> {
-			HibProject project = tx.projectDao().findByName("project_2");
+			Project project = tx.projectDao().findByName("project_2");
 			BulkActionContextImpl context = Mockito.mock(BulkActionContextImpl.class);
 			Mockito.when(context.batch()).thenReturn(Mockito.mock(EventQueueBatch.class));
 			tx.projectDao().delete(project, context);
@@ -347,7 +347,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 	public void testNodeSync() throws Exception {
 		// Assert insert
 		tx(tx -> {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			tx.contentDao().createFieldContainer(node, german(), initialBranch(), user());
 
 			// suppress publishing of events
@@ -373,7 +373,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer draft = contentDao.getFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
+			NodeFieldContainer draft = contentDao.getFieldContainer(folder("2015"), german(), latestBranch(), ContainerType.DRAFT);
 			contentDao.delete(draft, new DummyBulkActionContext());
 
 			// suppress publishing of events
@@ -415,7 +415,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			PersistingSchemaDao schemaDao = ((CommonTx) tx).schemaDao();
-			HibSchema schema = schemaDao.findByName("schema_3");
+			Schema schema = schemaDao.findByName("schema_3");
 			schemaDao.deleteVersion(schema.getLatestVersion(), new DummyBulkActionContext());
 			schemaDao.deletePersisted(schema);
 
@@ -455,7 +455,7 @@ public class BasicIndexSyncTest extends AbstractMeshTest {
 		// Assert deletion
 		tx(tx -> {
 			PersistingMicroschemaDao microschemaDao = ((CommonTx) tx).microschemaDao();
-			HibMicroschema microschema = microschemaDao.findByName("microschema_101");
+			Microschema microschema = microschemaDao.findByName("microschema_101");
 			microschemaDao.deleteVersion(microschema.getLatestVersion(), new DummyBulkActionContext());
 			microschemaDao.deletePersisted(microschema);
 

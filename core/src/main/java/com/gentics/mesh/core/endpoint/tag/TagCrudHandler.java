@@ -27,14 +27,14 @@ import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -93,9 +93,9 @@ public class TagCrudHandler extends AbstractHandler {
 				TagDao tagDao = tx.tagDao();
 				PagingParameters pagingParams = ac.getPagingParameters();
 				NodeParameters nodeParams = ac.getNodeParameters();
-				HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
-				HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
-				Page<? extends HibNode> page = tagDao.findTaggedNodes(tag, ac.getUser(), tx.getBranch(ac),
+				TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+				Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+				Page<? extends Node> page = tagDao.findTaggedNodes(tag, ac.getUser(), tx.getBranch(ac),
 					nodeParams.getLanguageList(options),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 				return pageTransformer.transformToRestSync(page, ac, 0);
@@ -134,7 +134,7 @@ public class TagCrudHandler extends AbstractHandler {
 			utils.syncTx(ac, (batch, tx) -> {
 				TagDao tagDao = tx.tagDao();
 
-				HibTag tag = tagActions.create(tx, ac, batch, null);
+				Tag tag = tagActions.create(tx, ac, batch, null);
 				TagResponse model = tagDao.transformToRestSync(tag, ac, 0);
 				String path = tagDao.getAPIPath(tag, ac);
 				ResultInfo resultInfo = new ResultInfo(model);
@@ -222,12 +222,12 @@ public class TagCrudHandler extends AbstractHandler {
 
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
-			HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
-			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+			TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
 
-			Set<HibRole> roles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Set<Role> roles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
 
-			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(roles, tag);
+			Map<Role, Set<InternalPermission>> permissions = roleDao.getPermissions(roles, tag);
 			permissions.values().removeIf(Set::isEmpty);
 
 			ObjectPermissionResponse response = new ObjectPermissionResponse();
@@ -255,23 +255,23 @@ public class TagCrudHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser requestUser = ac.getUser();
-			HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
-			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+			User requestUser = ac.getUser();
+			TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
 
-			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
-			Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
-			Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+			Set<Role> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Map<String, Role> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(Role::getUuid, Function.identity()));
+			Map<String, Role> allRolesByName = allRoles.stream().collect(Collectors.toMap(Role::getName, Function.identity()));
 
 			InternalPermission[] possiblePermissions = InternalPermission.basicPermissions();
 
 			for (InternalPermission perm : possiblePermissions) {
 				List<RoleReference> roleRefsToSet = update.get(perm.getRestPerm());
 				if (roleRefsToSet != null) {
-					Set<HibRole> rolesToSet = new HashSet<>();
+					Set<Role> rolesToSet = new HashSet<>();
 					for (RoleReference roleRef : roleRefsToSet) {
 						// find the role for the role reference
-						HibRole role = null;
+						Role role = null;
 						if (!StringUtils.isEmpty(roleRef.getUuid())) {
 							role = allRolesByUuid.get(roleRef.getUuid());
 
@@ -301,7 +301,7 @@ public class TagCrudHandler extends AbstractHandler {
 					// handle "exclusive" flag by revoking perm from all "other" roles
 					if (update.isExclusive()) {
 						// start with all roles, the user can see
-						Set<HibRole> rolesToRevoke = new HashSet<>(allRoles);
+						Set<Role> rolesToRevoke = new HashSet<>(allRoles);
 						// remove all roles, which get the permission granted
 						rolesToRevoke.removeAll(rolesToSet);
 
@@ -324,7 +324,7 @@ public class TagCrudHandler extends AbstractHandler {
 				}
 			}
 
-			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, tag);
+			Map<Role, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, tag);
 			permissions.values().removeIf(Set::isEmpty);
 
 			ObjectPermissionResponse response = new ObjectPermissionResponse();
@@ -352,23 +352,23 @@ public class TagCrudHandler extends AbstractHandler {
 		utils.syncTx(ac, tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser requestUser = ac.getUser();
-			HibTagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
-			HibTag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
+			User requestUser = ac.getUser();
+			TagFamily tagFamily = tagFamilyActions.loadByUuid(context(tx, ac), tagFamilyUuid, READ_PERM, true);
+			Tag tag = tagActions.loadByUuid(context(tx, ac, tagFamily), tagUuid, READ_PERM, true);
 
-			Set<HibRole> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
-			Map<String, HibRole> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(HibRole::getUuid, Function.identity()));
-			Map<String, HibRole> allRolesByName = allRoles.stream().collect(Collectors.toMap(HibRole::getName, Function.identity()));
+			Set<Role> allRoles = roleDao.findAll(ac, new PagingParametersImpl().setPerPage(Long.MAX_VALUE)).stream().collect(Collectors.toSet());
+			Map<String, Role> allRolesByUuid = allRoles.stream().collect(Collectors.toMap(Role::getUuid, Function.identity()));
+			Map<String, Role> allRolesByName = allRoles.stream().collect(Collectors.toMap(Role::getName, Function.identity()));
 
 			InternalPermission[] possiblePermissions = InternalPermission.basicPermissions();
 
 			for (InternalPermission perm : possiblePermissions) {
 				List<RoleReference> roleRefsToRevoke = update.get(perm.getRestPerm());
 				if (roleRefsToRevoke != null) {
-					Set<HibRole> rolesToRevoke = new HashSet<>();
+					Set<Role> rolesToRevoke = new HashSet<>();
 					for (RoleReference roleRef : roleRefsToRevoke) {
 						// find the role for the role reference
-						HibRole role = null;
+						Role role = null;
 						if (!StringUtils.isEmpty(roleRef.getUuid())) {
 							role = allRolesByUuid.get(roleRef.getUuid());
 
@@ -397,7 +397,7 @@ public class TagCrudHandler extends AbstractHandler {
 				}
 			}
 
-			Map<HibRole, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, tag);
+			Map<Role, Set<InternalPermission>> permissions = roleDao.getPermissions(allRoles, tag);
 			permissions.values().removeIf(Set::isEmpty);
 
 			ObjectPermissionResponse response = new ObjectPermissionResponse();

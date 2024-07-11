@@ -1,10 +1,10 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 
 /**
  * Cache for project specific branches.
  */
-public interface ProjectBranchNameCache extends NameCache<HibBranch> {
+public interface ProjectBranchNameCache extends NameCache<Branch> {
 
 }

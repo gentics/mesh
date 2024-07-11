@@ -4,24 +4,24 @@ import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
 /**
  * Create mocked user for node migrations.
  */
-public class NodeMigrationUser implements HibUser {
+public class NodeMigrationUser implements User {
 
 	@Override
-	public UserReference transformToReference() {
+	public UserReferenceModel transformToReference() {
 		return null;
 	}
 
@@ -41,7 +41,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibNode getReferencedNode() {
+	public Node getReferencedNode() {
 		return null;
 	}
 
@@ -76,12 +76,12 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibUser getCreator() {
+	public User getCreator() {
 		return null;
 	}
 
 	@Override
-	public HibUser getEditor() {
+	public User getEditor() {
 		return null;
 	}
 
@@ -96,7 +96,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibUser setForcedPasswordChange(boolean force) {
+	public User setForcedPasswordChange(boolean force) {
 		return null;
 	}
 
@@ -106,7 +106,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibUser setResetTokenIssueTimestamp(Long timestamp) {
+	public User setResetTokenIssueTimestamp(Long timestamp) {
 		return null;
 	}
 
@@ -116,12 +116,12 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibUser setAPITokenId(String code) {
+	public User setAPITokenId(String code) {
 		return null;
 	}
 
 	@Override
-	public HibUser setAPITokenIssueTimestamp() {
+	public User setAPITokenIssueTimestamp() {
 		return null;
 	}
 
@@ -141,43 +141,43 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibUser setUsername(String string) {
+	public User setUsername(String string) {
 		return this;
 	}
 
 	@Override
-	public HibUser setLastname(String lastname) {
+	public User setLastname(String lastname) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public HibUser setFirstname(String firstname) {
+	public User setFirstname(String firstname) {
 		return this;
 	}
 
 	@Override
-	public HibUser setEmailAddress(String email) {
+	public User setEmailAddress(String email) {
 		return this;
 	}
 
 	@Override
-	public HibUser disable() {
+	public User disable() {
 		return this;
 	}
 
 	@Override
-	public HibUser enable() {
+	public User enable() {
 		return this;
 	}
 
 	@Override
-	public HibUser invalidateResetToken() {
+	public User invalidateResetToken() {
 		return this;
 	}
 
 	@Override
-	public HibUser setPasswordHash(String hash) {
+	public User setPasswordHash(String hash) {
 		return this;
 	}
 
@@ -192,17 +192,17 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public HibUser setResetToken(String token) {
+	public User setResetToken(String token) {
 		return this;
 	}
 
 	@Override
-	public HibUser setReferencedNode(HibNode node) {
+	public User setReferencedNode(Node node) {
 		return this;
 	}
 
 	@Override
-	public void setEditor(HibUser user) {
+	public void setEditor(User user) {
 
 	}
 
@@ -227,12 +227,12 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public void setCreator(HibUser user) {
+	public void setCreator(User user) {
 
 	}
 
 	@Override
-	public void setCreated(HibUser creator) {
+	public void setCreated(User creator) {
 
 	}
 
@@ -285,7 +285,7 @@ public class NodeMigrationUser implements HibUser {
 	}
 
 	@Override
-	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive,
+	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, Role role, boolean recursive,
                                     Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		return false;
 	}

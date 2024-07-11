@@ -25,15 +25,15 @@ import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -50,8 +50,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 			UserDao userDao = tx.userDao();
 
-			HibUser extraUser = userDao.create("extraUser", user());
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			User extraUser = userDao.create("extraUser", user());
+			Group group = groupDao.findByUuid(group().getUuid());
 			groupDao.addUser(group, extraUser);
 			groupDao.mergeIntoPersisted(group);
 			extraUserUuid = extraUser.getUuid();
@@ -77,7 +77,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			HibUser extraUser = userDao.findByUuid(extraUserUuid);
+			User extraUser = userDao.findByUuid(extraUserUuid);
 			roleDao.revokePermissions(role(), extraUser, READ_PERM);
 			tx.success();
 		}
@@ -95,7 +95,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
 
-			HibUser extraUser = userDao.create("extraUser", user());
+			User extraUser = userDao.create("extraUser", user());
 			userUuid = extraUser.getUuid();
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			tx.success();
@@ -111,12 +111,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userLastname = "Einstein";
 		final String groupUuid = groupUuid();
 		final String groupName = tx(() -> group().getName());
-		HibUser extraUser = tx(tx -> {
+		User extraUser = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
 			GroupDao groupDao = tx.groupDao();
 
-			HibUser user = userDao.create("extraUser", user());
+			User user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);
@@ -131,7 +131,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertEquals("The group name was not set.", groupName, groupRef.getName());
 			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
 
-			UserReference userRef = event.getUser();
+			UserReferenceModel userRef = event.getUser();
 			assertNotNull(userRef);
 			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
 			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
@@ -145,7 +145,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
 			assertThat(restGroup).matches(group());
-			assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
 			assertTrue("User should be member of the group.", groupDao.hasUser(group(), extraUser));
@@ -158,12 +158,12 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
-		HibUser extraUser;
+		User extraUser;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
 
-			HibGroup group = group();
+			Group group = group();
 			extraUser = userDao.create("extraUser", user());
 			roleDao.grantPermissions(role(), extraUser, READ_PERM);
 			roleDao.revokePermissions(role(), group, UPDATE_PERM);
@@ -181,7 +181,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		HibUser extraUser;
+		User extraUser;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
@@ -224,17 +224,17 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 		final String userFirstname = "Albert";
 		final String userLastname = "Einstein";
 
-		HibUser extraUser = tx(tx -> {
+		User extraUser = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
 			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
-			HibUser user = userDao.create("extraUser", user());
+			User user = userDao.create("extraUser", user());
 			user.setFirstname(userFirstname);
 			user.setLastname(userLastname);
 			roleDao.grantPermissions(role(), user, READ_PERM);
 
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			Group group = groupDao.findByUuid(group().getUuid());
 			groupDao.addUser(group, user);
 			groupDao.mergeIntoPersisted(group);
 			return user;
@@ -247,7 +247,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertEquals("The group name was not set.", groupName, groupRef.getName());
 			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
 
-			UserReference userRef = event.getUser();
+			UserReferenceModel userRef = event.getUser();
 			assertNotNull(userRef);
 			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
 			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
@@ -260,7 +260,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), extraUserUuid);
+			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), extraUserUuid);
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertFalse("User should not be member of the group.", groupDao.hasUser(group(), extraUser));
 		}

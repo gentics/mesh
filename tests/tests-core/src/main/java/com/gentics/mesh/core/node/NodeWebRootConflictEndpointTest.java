@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -46,7 +46,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "conflictName";
 		try (Tx trx = tx()) {
-			HibNode folderA = folder("2014");
+			Node folderA = folder("2014");
 			// 1. Create nodeA
 			NodeCreateRequest requestA = new NodeCreateRequest();
 			requestA.setLanguage("en");
@@ -60,7 +60,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()));
 
 			// 3. Create nodeB
-			HibNode folderB = folder("2015");
+			Node folderB = folder("2015");
 			NodeCreateRequest requestB = new NodeCreateRequest();
 			requestB.setLanguage("en");
 			requestB.setParentNodeUuid(folderB.getUuid());
@@ -89,8 +89,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testCreateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		HibNode parent = tx(() -> folder("2015"));
-		HibSchema contentSchema = tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		Schema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content
@@ -121,8 +121,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testCreateCaseSensitivityOfWebrootPath() {
 		String conflictingName = "filename.html";
-		HibNode parent = tx(() -> folder("2015"));
-		HibSchema contentSchema = tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		Schema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content
@@ -160,8 +160,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testUpdateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		String nonConflictingName = "otherfilename.html";
-		HibNode parent = tx(() -> folder("2015"));
-		HibSchema contentSchema = tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		Schema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content
@@ -200,8 +200,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTranslateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		HibNode parent = tx(() -> folder("2015"));
-		HibSchema contentSchema = tx(() -> schemaContainer("content"));
+		Node parent = tx(() -> folder("2015"));
+		Schema contentSchema = tx(() -> schemaContainer("content"));
 
 		tx(() -> {
 			// create the initial content
@@ -267,11 +267,11 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		HibBranch initialBranch = tx(() -> initialBranch());
+		Branch initialBranch = tx(() -> initialBranch());
 		String folderUuid = folderUuid();
 
 		// 1. Create new branch and migrate nodes
-		HibBranch newBranch = tx(() -> createBranch(newBranchName));
+		Branch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
 		context.setOldBranch(initialBranch);
@@ -304,12 +304,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testDuplicateCrossBranchesSameNode() {
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
-		HibBranch initialBranch = tx(() -> initialBranch());
+		Branch initialBranch = tx(() -> initialBranch());
 		String initialBranchUuid = initialBranchUuid();
 		String folderUuid = tx(() -> folder("2015").getUuid());
 
 		// 1. Create new branch and migrate nodes
-		HibBranch newBranch = tx(() -> createBranch(newBranchName));
+		Branch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
 		context.setOldBranch(initialBranch);
@@ -344,10 +344,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String newBranchName = "newbranch";
 		String folderUuid = tx(() -> folder("2015").getUuid());
-		HibBranch initialBranch = tx(() -> initialBranch());
+		Branch initialBranch = tx(() -> initialBranch());
 
 		// 1. Create new branch and migrate nodes
-		HibBranch newBranch = tx(() -> createBranch(newBranchName));
+		Branch newBranch = tx(() -> createBranch(newBranchName));
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setOldBranch(initialBranch);
 		context.setNewBranch(newBranch);

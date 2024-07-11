@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadataModel;
 
-public class BinaryMetadataAssert extends AbstractAssert<BinaryMetadataAssert, BinaryMetadata> {
-	public BinaryMetadataAssert(BinaryMetadata actual) {
+public class BinaryMetadataAssert extends AbstractAssert<BinaryMetadataAssert, BinaryMetadataModel> {
+	public BinaryMetadataAssert(BinaryMetadataModel actual) {
 		super(actual, BinaryMetadataAssert.class);
 	}
 

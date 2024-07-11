@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.handler.VersionUtils;
 
@@ -27,7 +27,7 @@ public class CommonDaoHelper {
 	 *
 	 * @return API path or null if the element has no public path
 	 */
-	public String getRootLevelAPIPath(InternalActionContext ac, HibCoreElement<? extends RestModel> element) {
+	public String getRootLevelAPIPath(InternalActionContext ac, CoreElement<? extends RestModel> element) {
 		return VersionUtils.baseRoute(ac) + "/" + getAPISegment(element.getTypeInfo().getType()) + "/" + element.getUuid();
 	}
 

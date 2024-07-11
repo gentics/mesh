@@ -21,25 +21,25 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.BooleanField;
-import com.gentics.mesh.core.rest.node.field.DateField;
-import com.gentics.mesh.core.rest.node.field.HtmlField;
-import com.gentics.mesh.core.rest.node.field.NumberField;
-import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.BooleanFieldModel;
+import com.gentics.mesh.core.rest.node.field.DateFieldModel;
+import com.gentics.mesh.core.rest.node.field.HtmlFieldModel;
+import com.gentics.mesh.core.rest.node.field.NumberFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -116,7 +116,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 		Optional<FieldSchema> maybeS3BinaryField = fieldShouldExist ? Optional.of(new S3BinaryFieldSchemaImpl()
 				.setAllowedMimeTypes("image/*").setName("s3binary").setLabel("S3 Binary content")) : Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeS3BinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeS3BinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String nodeUuid = tx(() -> node.getUuid());
 			call(() -> client().updateNodeS3BinaryField(PROJECT_NAME, nodeUuid, "s3binary",
 					new S3BinaryUploadRequest().setFilename(fileName).setLanguage("en").setVersion("1.0")));
@@ -143,7 +143,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				new BinaryFieldSchemaImpl().setAllowedMimeTypes("image/*").setName("binary").setLabel("Binary content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeBinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeBinaryContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String contentType = "application/octet-stream";
 			int binaryLen = 8000;
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
@@ -183,12 +183,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new HtmlFieldSchemaImpl().setName("html_content").setLabel("HTML content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 			NodeUpdateRequest request = response.toRequest();
-			HtmlField html = new HtmlFieldImpl();
+			HtmlFieldModel html = new HtmlFieldImpl();
 			html.setHTML(value);
 			request.getFields().put("html_content", html);
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request));
@@ -227,12 +227,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new StringFieldSchemaImpl().setName("string_content").setLabel("String content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 			NodeUpdateRequest request = response.toRequest();
-			request.getFields().put("string_content", StringField.of(value));
+			request.getFields().put("string_content", StringFieldModel.of(value));
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request));
 		}) : Optional.empty();
 
@@ -290,12 +290,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new BooleanFieldSchemaImpl().setName("boolean_content").setLabel("Boolean content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 			NodeUpdateRequest request = response.toRequest();
-			BooleanField field = new BooleanFieldImpl();
+			BooleanFieldModel field = new BooleanFieldImpl();
 			field.setValue(value);
 			request.getFields().put("boolean_content", field);
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request));
@@ -356,12 +356,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new DateFieldSchemaImpl().setName("date_content").setLabel("Date content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 			NodeUpdateRequest request = response.toRequest();
-			DateField field = new DateFieldImpl();
+			DateFieldModel field = new DateFieldImpl();
 			field.setDate(nowAsISO);
 			request.getFields().put("date_content", field);
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request));
@@ -426,12 +426,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				? Optional.of(new NumberFieldSchemaImpl().setName("number_content").setLabel("Float number content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 			NodeUpdateRequest request = response.toRequest();
-			NumberField field = new NumberFieldImpl();
+			NumberFieldModel field = new NumberFieldImpl();
 			field.setNumber(value);
 			request.getFields().put("number_content", field);
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request));
@@ -494,12 +494,12 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testMicronode(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		HibMicroschema container = microschemaContainers().get("vcard");
+		Microschema container = microschemaContainers().get("vcard");
 		MicronodeResponse micronode = new MicronodeResponse();
 		MicroschemaReferenceImpl reference = new MicroschemaReferenceImpl();
 		reference.setUuid(container.getUuid());
-		micronode.getFields().put("firstName", StringField.of("Mickey"));
-		micronode.getFields().put("lastName", StringField.of("Mouse"));
+		micronode.getFields().put("firstName", StringFieldModel.of("Mickey"));
+		micronode.getFields().put("lastName", StringFieldModel.of("Mouse"));
 		micronode.setMicroschema(reference);
 
 		Optional<FieldSchema> maybeField = fieldShouldExist
@@ -507,7 +507,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 						.setName("micronode_content").setLabel("Micronode VCARD content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -549,14 +549,14 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testMicronodeList(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		HibMicroschema container = microschemaContainers().get("vcard");
+		Microschema container = microschemaContainers().get("vcard");
 		MicroschemaReferenceImpl reference = new MicroschemaReferenceImpl();
 		reference.setUuid(container.getUuid());
 
 		List<MicronodeResponse> list = IntStream.range(0, 5).mapToObj(i -> {
 			MicronodeResponse micronode = new MicronodeResponse();
-			micronode.getFields().put("firstName", StringField.of("Mickey" + i));
-			micronode.getFields().put("lastName", StringField.of("Mouse" + i));
+			micronode.getFields().put("firstName", StringFieldModel.of("Mickey" + i));
+			micronode.getFields().put("lastName", StringFieldModel.of("Mouse" + i));
 			micronode.setMicroschema(reference);
 			return micronode;
 		}).collect(Collectors.toList());
@@ -604,7 +604,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testNode(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		HibSchema container = schemaContainers().get("folder");
+		Schema container = schemaContainers().get("folder");
 		NodeFieldImpl nodeField = new NodeFieldImpl();
 		NodeResponse referenced = createNode();
 		SchemaReferenceImpl reference = new SchemaReferenceImpl();
@@ -615,7 +615,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				new NodeFieldSchemaImpl().setAllowedSchemas("folder").setName("node_content").setLabel("Node content"))
 				: Optional.empty();
 
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
@@ -654,7 +654,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private void testNodeList(boolean fieldShouldExist, boolean contentShouldExist) throws IOException {
-		HibSchema container = schemaContainers().get("folder");
+		Schema container = schemaContainers().get("folder");
 		NodeFieldImpl nodeField = new NodeFieldImpl();
 
 		List<NodeResponse> list = IntStream.range(0, 5).mapToObj(i -> {
@@ -700,34 +700,34 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 				: Optional.empty();
 
 		@SuppressWarnings("unchecked")
-		Optional<Consumer<HibNode>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
+		Optional<Consumer<Node>> maybeContentSupplier = contentShouldExist ? Optional.of(node -> {
 			String uuid = tx(() -> node.getUuid());
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)));
 			NodeUpdateRequest request = response.toRequest();
-			FieldList<T> fieldList;
+			FieldListModel<T> fieldList;
 
 			switch (type) {
 			case STRING:
-				fieldList = (FieldList<T>) new StringFieldListImpl();
+				fieldList = (FieldListModel<T>) new StringFieldListImpl();
 				break;
 			case HTML:
-				fieldList = (FieldList<T>) new HtmlFieldListImpl();
+				fieldList = (FieldListModel<T>) new HtmlFieldListImpl();
 				break;
 			case NUMBER:
-				fieldList = (FieldList<T>) new NumberFieldListImpl();
+				fieldList = (FieldListModel<T>) new NumberFieldListImpl();
 				break;
 			case DATE:
-				fieldList = (FieldList<T>) new DateFieldListImpl();
+				fieldList = (FieldListModel<T>) new DateFieldListImpl();
 				break;
 			case BOOLEAN:
-				fieldList = (FieldList<T>) new BooleanFieldListImpl();
+				fieldList = (FieldListModel<T>) new BooleanFieldListImpl();
 				break;
 			case NODE:
-				fieldList = (FieldList<T>) new NodeFieldListImpl();
+				fieldList = (FieldListModel<T>) new NodeFieldListImpl();
 				break;
 			case MICRONODE:
-				fieldList = (FieldList<T>) new MicronodeFieldListImpl();
+				fieldList = (FieldListModel<T>) new MicronodeFieldListImpl();
 				break;
 			default:
 				throw new IllegalArgumentException("Unsupported list item type: " + type.name());
@@ -755,9 +755,9 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 	}
 
 	private <F extends FieldSchema> void testField(String path, Optional<F> field,
-			Optional<Consumer<HibNode>> contentSupplier, Consumer<MeshWebrootFieldResponse> resultsConsumer,
+			Optional<Consumer<Node>> contentSupplier, Consumer<MeshWebrootFieldResponse> resultsConsumer,
 			boolean isBinaryContent) throws IOException {
-		HibNode node = content("news_2015");
+		Node node = content("news_2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String fieldName;
 
@@ -765,7 +765,7 @@ public class WebRootFieldTypeTest extends AbstractMeshTest {
 			try (Tx tx = tx()) {
 				FieldSchema schema = field.get();
 				ContentDao contentDao = tx.contentDao();
-				HibSchema container = schemaContainer("content");
+				Schema container = schemaContainer("content");
 				node.setSchemaContainer(container);
 				contentDao.getLatestDraftFieldContainer(node, english())
 						.setSchemaContainerVersion(container.getLatestVersion());

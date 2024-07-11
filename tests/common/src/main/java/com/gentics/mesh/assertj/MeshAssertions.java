@@ -47,16 +47,16 @@ import com.gentics.mesh.assertj.impl.TagMeshEventModelAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.PermissionInfoModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
@@ -72,7 +72,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadataModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -165,7 +165,7 @@ public class MeshAssertions extends Assertions {
 		return new NavigationResponseAssert(actual);
 	}
 
-	public static NodeAssert assertThat(HibNode actual) {
+	public static NodeAssert assertThat(Node actual) {
 		return new NodeAssert(actual);
 	}
 
@@ -177,7 +177,7 @@ public class MeshAssertions extends Assertions {
 		return new SchemaCreateRequestAssert(actual);
 	}
 
-	public static SchemaContainerAssert assertThat(HibFieldSchemaElement<?, ?, ?, ?, ?> actual) {
+	public static SchemaContainerAssert assertThat(FieldSchemaElement<?, ?, ?, ?, ?> actual) {
 		return new SchemaContainerAssert(actual);
 	}
 
@@ -185,11 +185,11 @@ public class MeshAssertions extends Assertions {
 		return new SchemaChangeModelAssert(actual);
 	}
 
-	public static MicronodeAssert assertThat(HibMicronode actual) {
+	public static MicronodeAssert assertThat(Micronode actual) {
 		return new MicronodeAssert(actual);
 	}
 
-	public static BranchAssert assertThat(HibBranch actual) {
+	public static BranchAssert assertThat(Branch actual) {
 		return new BranchAssert(actual);
 	}
 
@@ -197,7 +197,7 @@ public class MeshAssertions extends Assertions {
 		return new BranchResponseAssert(actual);
 	}
 
-	public static NodeGraphFieldContainerAssert assertThat(HibNodeFieldContainer actual) {
+	public static NodeGraphFieldContainerAssert assertThat(NodeFieldContainer actual) {
 		return new NodeGraphFieldContainerAssert(actual);
 	}
 
@@ -213,7 +213,7 @@ public class MeshAssertions extends Assertions {
 		return new PublishStatusModelAssert(actual);
 	}
 
-	public static PermissionInfoAssert assertThat(PermissionInfo actual) {
+	public static PermissionInfoAssert assertThat(PermissionInfoModel actual) {
 		return new PermissionInfoAssert(actual);
 	}
 
@@ -241,7 +241,7 @@ public class MeshAssertions extends Assertions {
 		return new GenericMessageResponseAssert(actual);
 	}
 
-	public static LanguageAssert assertThat(HibLanguage actual) {
+	public static LanguageAssert assertThat(Language actual) {
 		return new LanguageAssert(actual);
 	}
 
@@ -261,7 +261,7 @@ public class MeshAssertions extends Assertions {
 		return new GroupListResponseAssert(actual);
 	}
 
-	public static BinaryMetadataAssert assertThat(BinaryMetadata actual) {
+	public static BinaryMetadataAssert assertThat(BinaryMetadataModel actual) {
 		return new BinaryMetadataAssert(actual);
 	}
 }

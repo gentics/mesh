@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.Language;
 
 /**
- * Asserter for {@link HibLanguage}
+ * Asserter for {@link Language}
  */
-public class LanguageAssert extends AbstractAssert<LanguageAssert, HibLanguage> {
+public class LanguageAssert extends AbstractAssert<LanguageAssert, Language> {
 
-	public LanguageAssert(HibLanguage actual) {
+	public LanguageAssert(Language actual) {
 		super(actual, LanguageAssert.class);
 	}
 

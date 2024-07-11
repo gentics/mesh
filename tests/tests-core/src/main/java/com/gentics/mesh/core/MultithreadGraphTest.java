@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -20,7 +20,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 		runAndWait(() -> {
 			try (Tx tx = tx()) {
 				UserDao userDao = tx.userDao();
-				HibUser user = userDao.create("test", null);
+				User user = userDao.create("test", null);
 				user.setCreated(user());
 				assertNotNull(user);
 				tx.success();
@@ -32,10 +32,10 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 			try (Tx tx = tx()) {
 				// fg.getEdges();
 				runAndWait(() -> {
-					HibUser user = tx.userDao().findByUsername("test");
+					User user = tx.userDao().findByUsername("test");
 					assertNotNull(user);
 				});
-				HibUser user = tx.userDao().findByUsername("test");
+				User user = tx.userDao().findByUsername("test");
 				assertNotNull(user);
 				System.out.println("Read user");
 
@@ -43,7 +43,7 @@ public class MultithreadGraphTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			HibUser user = tx.userDao().findByUsername("test");
+			User user = tx.userDao().findByUsername("test");
 			assertNotNull(user);
 		}
 	}

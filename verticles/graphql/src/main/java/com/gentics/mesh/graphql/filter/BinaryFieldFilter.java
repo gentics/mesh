@@ -10,16 +10,16 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.node.field.HibImageDataField;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.field.ImageDataField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.util.Pair;
 
-public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinaryField> {
+public class BinaryFieldFilter extends ImageDataFieldFilter<Binary, BinaryField> {
 
 	private static final Map<String, BinaryFieldFilter> instances = Collections.synchronizedMap(new HashMap<>());
 
@@ -42,13 +42,13 @@ public class BinaryFieldFilter extends ImageDataFieldFilter<HibBinary, HibBinary
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected List<FilterField<HibBinaryField, ?>> getFilters() {
-		List<FilterField<HibBinaryField, ?>> filters = super.getFilters();
-		filters.add(makeWrappedFieldFilter("filename", "Filters by filename", StringFilter.filter(), HibImageDataField::getFileName));
-		filters.add(makeWrappedFieldFilter("mime", "Filters by MIME type", StringFilter.filter(), HibImageDataField::getMimeType));
+	protected List<FilterField<BinaryField, ?>> getFilters() {
+		List<FilterField<BinaryField, ?>> filters = super.getFilters();
+		filters.add(makeWrappedFieldFilter("filename", "Filters by filename", StringFilter.filter(), ImageDataField::getFileName));
+		filters.add(makeWrappedFieldFilter("mime", "Filters by MIME type", StringFilter.filter(), ImageDataField::getMimeType));
 		filters.add(new MappedFilter<>(owner, "variants", "Filters by image variants", 
 				ListFilter.imageVariantListFilter(context, "BINARYFIELD"),
-				content -> content == null ? null : (Collection<HibImageVariant>) CommonTx.get().imageVariantDao().getVariants(content, context).list(), Pair.pair("variants", new JoinPart("IMAGEVARIANT", "uuid"))));
+				content -> content == null ? null : (Collection<ImageVariant>) CommonTx.get().imageVariantDao().getVariants(content, context).list(), Pair.pair("variants", new JoinPart("IMAGEVARIANT", "uuid"))));
 		return filters;
 	}
 

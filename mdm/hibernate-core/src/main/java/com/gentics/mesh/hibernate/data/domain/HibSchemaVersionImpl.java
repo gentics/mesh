@@ -14,10 +14,10 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -34,21 +34,21 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Entity(name = HibSchemaVersionImpl.TABLE_NAME)
 @ElementTypeKey(ElementType.SCHEMAVERSION)
 public class HibSchemaVersionImpl 
-			extends AbstractHibFieldSchemaVersion<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion> 
-			implements HibSchemaVersion, Serializable {
+			extends AbstractHibFieldSchemaVersion<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion> 
+			implements SchemaVersion, Serializable {
 
 	private static final long serialVersionUID = -8916169864431516391L;
 
 	public static final String TABLE_NAME = "schemaversion";
 
 	@ManyToOne(targetEntity = HibSchemaImpl.class)
-	private HibSchema schema;
+	private Schema schema;
 	
 	@OneToOne(targetEntity = HibSchemaVersionImpl.class, fetch = FetchType.LAZY)
-	private HibSchemaVersion previousVersion;
+	private SchemaVersion previousVersion;
 	
 	@OneToOne(targetEntity = HibSchemaVersionImpl.class, fetch = FetchType.LAZY)
-	private HibSchemaVersion nextVersion;
+	private SchemaVersion nextVersion;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	private HibSchemaChangeImpl nextChange;
@@ -63,37 +63,37 @@ public class HibSchemaVersionImpl
 	private Set<HibJobImpl> fromJobs = new HashSet<>();
 
 	@Override
-	public void setPreviousVersion(HibSchemaVersion version) {
+	public void setPreviousVersion(SchemaVersion version) {
 		this.previousVersion = version;
 	}
 
 	@Override
-	public void setNextVersion(HibSchemaVersion version) {
+	public void setNextVersion(SchemaVersion version) {
 		this.nextVersion = version;
 	}
 
 	@Override
-	public HibSchemaVersion getPreviousVersion() {
+	public SchemaVersion getPreviousVersion() {
 		return previousVersion;
 	}
 
 	@Override
-	public HibSchemaVersion getNextVersion() {
+	public SchemaVersion getNextVersion() {
 		return nextVersion;
 	}
 
 	@Override
-	public HibSchemaChange<?> getNextChange() {
+	public SchemaChange<?> getNextChange() {
 		return nextChange == null ? null : nextChange.intoSchemaChange();
 	}
 
 	@Override
-	public HibSchemaChange<?> getPreviousChange() {
+	public SchemaChange<?> getPreviousChange() {
 		return previousChange == null ? null : previousChange.intoSchemaChange();
 	}
 
 	@Override
-	public void setPreviousChange(HibSchemaChange<?> change) {
+	public void setPreviousChange(SchemaChange<?> change) {
 		this.previousChange = HibSchemaChangeImpl.intoEntity(change);
 		if (previousChange != null) {
 			previousChange.setNextSchemaContainerVersionInner(this);
@@ -101,7 +101,7 @@ public class HibSchemaVersionImpl
 	}
 
 	@Override
-	public void setNextChange(HibSchemaChange<?> change) {
+	public void setNextChange(SchemaChange<?> change) {
 		this.nextChange = HibSchemaChangeImpl.intoEntity(change);
 		if (nextChange != null) {
 			nextChange.setPreviousContainerVersionInner(this);
@@ -109,32 +109,32 @@ public class HibSchemaVersionImpl
 	}
 
 	@Override
-	public Iterable<? extends HibJob> referencedJobsViaFrom() {
+	public Iterable<? extends Job> referencedJobsViaFrom() {
 		return new TraversalResult<>(fromJobs.iterator());
 	}
 
 	@Override
-	public HibSchema getSchemaContainer() {
+	public Schema getSchemaContainer() {
 		return schema;
 	}
 
 	@Override
-	public void setSchemaContainer(HibSchema container) {
+	public void setSchemaContainer(Schema container) {
 		this.schema = container;
 	}
 
 	@Override
-	public Iterable<? extends HibJob> referencedJobsViaTo() {
+	public Iterable<? extends Job> referencedJobsViaTo() {
 		return new TraversalResult<>(toJobs.iterator());
 	}
 
 	@Override
-	public Class<? extends HibSchemaVersion> getContainerVersionClass() {
+	public Class<? extends SchemaVersion> getContainerVersionClass() {
 		return getClass();
 	}
 
 	@Override
-	public Class<? extends HibSchema> getContainerClass() {
+	public Class<? extends Schema> getContainerClass() {
 		return HibSchemaImpl.class;
 	}
 }

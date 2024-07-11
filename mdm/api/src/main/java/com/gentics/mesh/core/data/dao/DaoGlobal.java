@@ -12,7 +12,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.result.Result;
@@ -24,7 +24,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * 
  * @param <T>
  */
-public interface DaoGlobal<T extends HibBaseElement> extends Dao<T> {
+public interface DaoGlobal<T extends BaseElement> extends Dao<T> {
 
 	/**
 	 * Load the element by uuid.

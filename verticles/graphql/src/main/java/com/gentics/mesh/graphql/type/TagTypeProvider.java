@@ -18,8 +18,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -55,15 +55,15 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 		// .name
 		tagType.field(newFieldDefinition().name("name").description("Name of the tag").type(GraphQLString).dataFetcher((env) -> {
-			HibTag tag = env.getSource();
+			Tag tag = env.getSource();
 			return tag.getName();
 		}));
 
 		// .tagFamily
 		tagType.field(newFieldDefinition().name("tagFamily").description("Tag family to which the tag belongs").dataFetcher((env) -> {
 			GraphQLContext gc = env.getContext();
-			HibTag tag = env.getSource();
-			HibTagFamily tagFamily = tag.getTagFamily();
+			Tag tag = env.getSource();
+			TagFamily tagFamily = tag.getTagFamily();
 			return gc.requiresPerm(tagFamily, READ_PERM);
 		}).type(new GraphQLTypeReference(TAG_FAMILY_TYPE_NAME)));
 
@@ -76,7 +76,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 				.dataFetcher((env) -> {
 					ContentDao contentDao = Tx.get().contentDao();
 					GraphQLContext gc = env.getContext();
-					HibTag tag = env.getSource();
+					Tag tag = env.getSource();
 					TagDao tagDao = Tx.get().tagDao();
 
 					List<String> languageTags = getLanguageArgument(env);

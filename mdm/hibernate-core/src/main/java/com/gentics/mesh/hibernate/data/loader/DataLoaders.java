@@ -18,14 +18,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -62,24 +62,24 @@ import com.gentics.mesh.util.VersionNumber;
  */
 public class DataLoaders {
 
-	private final Set<HibNode> nodes;
-	private final HibBranch branch;
+	private final Set<Node> nodes;
+	private final Branch branch;
 	private final InternalActionContext ac;
 	private final List<Loader> loaders;
 	private final ContentDaoImpl contentDao;
 	private final NodeDao nodeDao;
 
-	private final Map<ContainerType, Map<HibNode, List<HibNodeFieldContainer>>> containersByType = new HashMap<>();
-	private final Map<String, Map<HibNode, List<HibNodeFieldContainer>>> containersByVersion = new HashMap<>();
+	private final Map<ContainerType, Map<Node, List<NodeFieldContainer>>> containersByType = new HashMap<>();
+	private final Map<String, Map<Node, List<NodeFieldContainer>>> containersByVersion = new HashMap<>();
 
-	private Map<HibNode, HibNode> parentNodes;
-	private Map<HibNode, List<HibNode>> children;
-	private Map<HibNode, List<HibNode>> breadcrumbs;
+	private Map<Node, Node> parentNodes;
+	private Map<Node, List<Node>> children;
+	private Map<Node, List<Node>> breadcrumbs;
 
 	/**
 	 * Batch Loaded Micronodes (keys are pairs of contentUUID/fieldKey)
 	 */
-	private Map<Pair<String, String>, HibMicronode> micronodes;
+	private Map<Pair<String, String>, Micronode> micronodes;
 
 	/**
 	 * Create a DataLoaders, registering the provided loaders functions
@@ -87,7 +87,7 @@ public class DataLoaders {
 	 * @param ac
 	 * @param loaders
 	 */
-	public DataLoaders(Collection<? extends HibNode> nodes, InternalActionContext ac, List<Loader> loaders) {
+	public DataLoaders(Collection<? extends Node> nodes, InternalActionContext ac, List<Loader> loaders) {
 		this.nodes = new HashSet<>(nodes);
 		this.branch = Tx.get().getBranch(ac);
 		this.ac = ac;
@@ -97,10 +97,10 @@ public class DataLoaders {
 	}
 
 	/**
-	 * Get an optional function that given a {@link HibNode} and a {@link ContainerType} and returns a list of containers
+	 * Get an optional function that given a {@link Node} and a {@link ContainerType} and returns a list of containers
 	 * @return
 	 */
-	public Optional<BiFunction<HibNode, ContainerType, List<HibNodeFieldContainer>>> getTypeLoader() {
+	public Optional<BiFunction<Node, ContainerType, List<NodeFieldContainer>>> getTypeLoader() {
 		if (!loaders.contains(Loader.FOR_TYPE_CONTENT_LOADER)) {
 			return Optional.empty();
 		}
@@ -109,10 +109,10 @@ public class DataLoaders {
 	}
 
 	/**
-	 * Get an optional function that take given a {@link HibNode}, a language list and a version returns the matching container
+	 * Get an optional function that take given a {@link Node}, a language list and a version returns the matching container
 	 * @return
 	 */
-	public Optional<TriFunction<HibNode, List<String>, String, HibNodeFieldContainer>> getVersionLoader() {
+	public Optional<TriFunction<Node, List<String>, String, NodeFieldContainer>> getVersionLoader() {
 		if (!loaders.contains(Loader.FOR_VERSION_CONTENT_LOADER)) {
 			return Optional.empty();
 		}
@@ -121,10 +121,10 @@ public class DataLoaders {
 	}
 
 	/**
-	 * Get an optional function that given a {@link HibNode} returns its parent
+	 * Get an optional function that given a {@link Node} returns its parent
 	 * @return
 	 */
-	public Optional<Function<HibNode, HibNode>> getParentLoader() {
+	public Optional<Function<Node, Node>> getParentLoader() {
 		if (!loaders.contains(Loader.PARENT_LOADER)) {
 			return Optional.empty();
 		}
@@ -133,10 +133,10 @@ public class DataLoaders {
 	}
 
 	/**
-	 * Get an optional function that given a {@link HibNode} returns its children
+	 * Get an optional function that given a {@link Node} returns its children
 	 * @return
 	 */
-	public Optional<Function<HibNode, List<HibNode>>> getChildrenLoader() {
+	public Optional<Function<Node, List<Node>>> getChildrenLoader() {
 		if (!loaders.contains(Loader.CHILDREN_LOADER)) {
 			return Optional.empty();
 		}
@@ -145,10 +145,10 @@ public class DataLoaders {
 	}
 
 	/**
-	 * Get an optional function that given a {@link HibNode} returns its breadcrumbs
+	 * Get an optional function that given a {@link Node} returns its breadcrumbs
 	 * @return
 	 */
-	public Optional<Function<HibNode, List<HibNode>>> getBreadcrumbsLoader() {
+	public Optional<Function<Node, List<Node>>> getBreadcrumbsLoader() {
 		if (!loaders.contains(Loader.BREADCRUMBS_LOADER)) {
 			return Optional.empty();
 		}
@@ -164,7 +164,7 @@ public class DataLoaders {
 	 * @param defaultSupplier default supplier
 	 * @return micronode
 	 */
-	public HibMicronode getMicronode(HibMicronodeField field, Supplier<HibMicronode> defaultSupplier) {
+	public Micronode getMicronode(MicronodeField field, Supplier<Micronode> defaultSupplier) {
 		if (!loaders.contains(Loader.MICRONODE_LOADER)) {
 			return defaultSupplier.get();
 		}
@@ -205,8 +205,8 @@ public class DataLoaders {
 	 * @param type
 	 * @return
 	 */
-	private List<HibNodeFieldContainer> loadContainersForType(HibNode node, ContainerType type) {
-		Supplier<List<HibNodeFieldContainer>> fallback = () -> contentDao.getFieldsContainers(Collections.singleton(node), branch.getUuid(), type)
+	private List<NodeFieldContainer> loadContainersForType(Node node, ContainerType type) {
+		Supplier<List<NodeFieldContainer>> fallback = () -> contentDao.getFieldsContainers(Collections.singleton(node), branch.getUuid(), type)
 				.getOrDefault(node, Collections.emptyList());
 		return load(node, () -> loadContainersForType(type), fallback);
 	}
@@ -218,8 +218,8 @@ public class DataLoaders {
 	 * @param version
 	 * @return
 	 */
-	private List<HibNodeFieldContainer> loadContainersForVersion(HibNode node, String version) {
-		Supplier<List<HibNodeFieldContainer>> fallback = () -> {
+	private List<NodeFieldContainer> loadContainersForVersion(Node node, String version) {
+		Supplier<List<NodeFieldContainer>> fallback = () -> {
 			ContainerType containerType = ContainerType.forVersion(version);
 			if (!containerType.equals(ContainerType.INITIAL)) {
 				return contentDao.getFieldsContainers(Collections.singleton(node), branch.getUuid(), containerType).getOrDefault(node, Collections.emptyList());
@@ -239,12 +239,12 @@ public class DataLoaders {
 	 * @param version
 	 * @return
 	 */
-	private HibNodeFieldContainer loadContainerForVersion(HibNode node, List<String> languageTags, String version) {
-		Map<String, HibNodeFieldContainer> containers = loadContainersForVersion(node, version).stream()
-				.collect(Collectors.toMap(HibNodeFieldContainer::getLanguageTag, Function.identity(), (a, b) -> a));
+	private NodeFieldContainer loadContainerForVersion(Node node, List<String> languageTags, String version) {
+		Map<String, NodeFieldContainer> containers = loadContainersForVersion(node, version).stream()
+				.collect(Collectors.toMap(NodeFieldContainer::getLanguageTag, Function.identity(), (a, b) -> a));
 
 		for (String languageTag : languageTags) {
-			HibNodeFieldContainer container = containers.get(languageTag);
+			NodeFieldContainer container = containers.get(languageTag);
 			if (container != null) {
 				return container;
 			}
@@ -259,7 +259,7 @@ public class DataLoaders {
 	 * @param node
 	 * @return
 	 */
-	private HibNode loadParentNode(HibNode node) {
+	private Node loadParentNode(Node node) {
 		return load(node, this::getParentNodes, () -> nodeDao.getParentNode(node, branch.getUuid()));
 	}
 
@@ -270,8 +270,8 @@ public class DataLoaders {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private List<HibNode> loadChildren(HibNode node) {
-		return load(node, this::loadChildren, () -> (List<HibNode>) nodeDao.getChildren(node, branch.getUuid()).list());
+	private List<Node> loadChildren(Node node) {
+		return load(node, this::loadChildren, () -> (List<Node>) nodeDao.getChildren(node, branch.getUuid()).list());
 	}
 
 	/**
@@ -281,8 +281,8 @@ public class DataLoaders {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private List<HibNode> loadBreadcrumbs(HibNode node) {
-		return load(node, this::loadBreadcrumbsMap, () -> (List<HibNode>) nodeDao.getBreadcrumbNodes(node, ac).list());
+	private List<Node> loadBreadcrumbs(Node node) {
+		return load(node, this::loadBreadcrumbsMap, () -> (List<Node>) nodeDao.getBreadcrumbNodes(node, ac).list());
 	}
 
 	/**
@@ -292,15 +292,15 @@ public class DataLoaders {
 	 * @param defaultSupplier default supplier
 	 * @return micronode
 	 */
-	private HibMicronode loadMicronode(HibMicronodeField field, Supplier<HibMicronode> defaultSupplier) {
+	private Micronode loadMicronode(MicronodeField field, Supplier<Micronode> defaultSupplier) {
 		Optional<Pair<String, String>> optKey = getHashKey(field);
 		if (optKey.isPresent()) {
 			Pair<String, String> key = optKey.get();
-			Map<Pair<String, String>, HibMicronode> micronodesMap = loadMicronodes();
+			Map<Pair<String, String>, Micronode> micronodesMap = loadMicronodes();
 			if (micronodesMap.containsKey(key)) {
 				return micronodesMap.get(key);
 			}
-			HibMicronode micronode = defaultSupplier.get();
+			Micronode micronode = defaultSupplier.get();
 			micronodesMap.put(key, micronode);
 			return micronode;
 		} else {
@@ -308,17 +308,17 @@ public class DataLoaders {
 		}
 	}
 
-	private Map<HibNode, List<HibNodeFieldContainer>> loadContainersForType(ContainerType type) {
+	private Map<Node, List<NodeFieldContainer>> loadContainersForType(ContainerType type) {
 		if (!containersByType.containsKey(type)) {
-			Map<HibNode, List<HibNodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(nodes, branch.getUuid(), type);
+			Map<Node, List<NodeFieldContainer>> fieldsContainers = contentDao.getFieldsContainers(nodes, branch.getUuid(), type);
 			// the map will not contain entries for nodes, that do not have any containers of the given type, so we add those (mapping to empty lists)
-			for (HibNode node : nodes) {
+			for (Node node : nodes) {
 				fieldsContainers.computeIfAbsent(node, n -> Collections.emptyList());
 			}
 			containersByType.put(type, fieldsContainers);
 
 			if (loaders.contains(Loader.LIST_ITEM_LOADER)) {
-				List<HibNodeFieldContainer> containers = new ArrayList<>();
+				List<NodeFieldContainer> containers = new ArrayList<>();
 				fieldsContainers.values().forEach(list -> containers.addAll(list));
 				contentDao.loadListFields(containers);
 			}
@@ -327,7 +327,7 @@ public class DataLoaders {
 		return containersByType.get(type);
 	}
 
-	private Map<HibNode, List<HibNode>> loadBreadcrumbsMap() {
+	private Map<Node, List<Node>> loadBreadcrumbsMap() {
 		if (breadcrumbs == null) {
 			breadcrumbs = nodeDao.getBreadcrumbNodesMap(nodes, ac);
 		}
@@ -335,21 +335,21 @@ public class DataLoaders {
 		return breadcrumbs;
 	}
 
-	private Map<HibNode, List<HibNodeFieldContainer>> loadContainersForVersion(String version) {
+	private Map<Node, List<NodeFieldContainer>> loadContainersForVersion(String version) {
 		ContainerType containerType = ContainerType.forVersion(version);
 		if (containerType.equals(ContainerType.PUBLISHED) || containerType.equals(ContainerType.DRAFT)) {
 			return loadContainersForType(containerType);
 		}
 
 		if (!containersByVersion.containsKey(version)) {
-			Map<HibNode, List<HibNodeFieldContainer>> fieldContainers = contentDao.getFieldsContainers(nodes, branch.getUuid(), new VersionNumber(version));
+			Map<Node, List<NodeFieldContainer>> fieldContainers = contentDao.getFieldsContainers(nodes, branch.getUuid(), new VersionNumber(version));
 			containersByVersion.put(version, fieldContainers);
 		}
 
 		return containersByVersion.get(version);
 	}
 
-	private Map<HibNode, HibNode> getParentNodes() {
+	private Map<Node, Node> getParentNodes() {
 		if (parentNodes == null) {
 			parentNodes = nodeDao.getParentNodes(nodes, branch.getUuid());
 		}
@@ -357,13 +357,13 @@ public class DataLoaders {
 		return parentNodes;
 	}
 
-	private Map<HibNode, List<HibNode>> loadChildren() {
+	private Map<Node, List<Node>> loadChildren() {
 		if (children == null) {
 			children = nodeDao.getChildren(nodes, branch.getUuid());
 
 			// also prepare the permissions for the children
 			PersistingUserDao userDao = CommonTx.get().userDao();
-			List<Object> nodeIds = children.values().stream().flatMap(list -> list.stream()).map(HibNode::getId).collect(Collectors.toList());
+			List<Object> nodeIds = children.values().stream().flatMap(list -> list.stream()).map(Node::getId).collect(Collectors.toList());
 			userDao.preparePermissionsForElementIds(ac.getUser(), nodeIds);
 		}
 
@@ -374,24 +374,24 @@ public class DataLoaders {
 	 * If {@link #micronodes} has not been filled, do this now for all contents from {@link #containersByType}
 	 * @return filled micronodes map
 	 */
-	private Map<Pair<String, String>, HibMicronode> loadMicronodes() {
+	private Map<Pair<String, String>, Micronode> loadMicronodes() {
 		if (micronodes == null) {
-			List<HibMicronodeField> micronodeFields = new ArrayList<>();
-			for (Map<HibNode, List<HibNodeFieldContainer>> map : containersByType.values()) {
-				for (List<HibNodeFieldContainer> lists : map.values()) {
-					for (HibNodeFieldContainer content : lists) {
-						for (HibField field : content.getFields()) {
-							if (field instanceof HibMicronodeField) {
-								micronodeFields.add(HibMicronodeField.class.cast(field));
+			List<MicronodeField> micronodeFields = new ArrayList<>();
+			for (Map<Node, List<NodeFieldContainer>> map : containersByType.values()) {
+				for (List<NodeFieldContainer> lists : map.values()) {
+					for (NodeFieldContainer content : lists) {
+						for (Field field : content.getFields()) {
+							if (field instanceof MicronodeField) {
+								micronodeFields.add(MicronodeField.class.cast(field));
 							}
 						}
 					}
 				}
 			}
 
-			Map<HibMicronodeField, HibMicronode> tempMap = contentDao.getMicronodes(micronodeFields);
+			Map<MicronodeField, Micronode> tempMap = contentDao.getMicronodes(micronodeFields);
 			micronodes = new HashMap<>();
-			for (Entry<HibMicronodeField, HibMicronode> entry : tempMap.entrySet()) {
+			for (Entry<MicronodeField, Micronode> entry : tempMap.entrySet()) {
 				getHashKey(entry.getKey()).ifPresent(key -> {
 					micronodes.put(key, entry.getValue());
 				});
@@ -407,7 +407,7 @@ public class DataLoaders {
 	 * @param micronodeField micronode field
 	 * @return optional hash key
 	 */
-	private Optional<Pair<String, String>> getHashKey(HibMicronodeField micronodeField) {
+	private Optional<Pair<String, String>> getHashKey(MicronodeField micronodeField) {
 		if (micronodeField instanceof HibMicronodeFieldImpl) {
 			HibMicronodeFieldImpl impl = HibMicronodeFieldImpl.class.cast(micronodeField);
 			return Optional.of(Pair.of(impl.getContainer().getUuid(), impl.getFieldKey()));
@@ -416,9 +416,9 @@ public class DataLoaders {
 		}
 	}
 
-	private <T> T load(HibNode node, Supplier<Map<HibNode, T>> mapSupplier, Supplier<T> fallbackValue) {
+	private <T> T load(Node node, Supplier<Map<Node, T>> mapSupplier, Supplier<T> fallbackValue) {
 		nodes.add(node);
-		Map<HibNode, T> map = mapSupplier.get();
+		Map<Node, T> map = mapSupplier.get();
 
 		if (!map.containsKey(node)) {
 			// this could happen when the data loader is loading a node that is not contained in the initial nodes

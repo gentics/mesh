@@ -27,9 +27,9 @@ import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -41,16 +41,16 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -100,7 +100,7 @@ public class TestDataProvider {
 	private final String italian = "it";
 	private final String french = "fr";
 
-	private HibProject project;
+	private Project project;
 	private String projectUuid;
 	private String branchUuid;
 
@@ -108,16 +108,16 @@ public class TestDataProvider {
 
 	private TestSize size;
 
-	private Map<String, HibSchema> schemaContainers = new HashMap<>();
-	private Map<String, HibMicroschema> microschemaContainers = new HashMap<>();
-	private Map<String, HibTagFamily> tagFamilies = new HashMap<>();
+	private Map<String, Schema> schemaContainers = new HashMap<>();
+	private Map<String, Microschema> microschemaContainers = new HashMap<>();
+	private Map<String, TagFamily> tagFamilies = new HashMap<>();
 	private long contentCount = 0;
-	private Map<String, HibNode> folders = new HashMap<>();
-	private Map<String, HibNode> contents = new HashMap<>();
-	private Map<String, HibTag> tags = new HashMap<>();
-	private Map<String, HibUser> users = new HashMap<>();
-	private Map<String, HibRole> roles = new HashMap<>();
-	private Map<String, HibGroup> groups = new HashMap<>();
+	private Map<String, Node> folders = new HashMap<>();
+	private Map<String, Node> contents = new HashMap<>();
+	private Map<String, Tag> tags = new HashMap<>();
+	private Map<String, User> users = new HashMap<>();
+	private Map<String, Role> roles = new HashMap<>();
+	private Map<String, Group> groups = new HashMap<>();
 
 	private String contentUuid;
 
@@ -215,7 +215,7 @@ public class TestDataProvider {
 		userDao.updatePasswordHash(userDao.findByUsername("admin"), hash);
 	}
 
-	private void addPermissions(HibBaseElement element) {
+	private void addPermissions(BaseElement element) {
 		addPermissions(Arrays.asList(element));
 	}
 
@@ -223,11 +223,11 @@ public class TestDataProvider {
 		return size;
 	}
 
-	private void addPermissions(Collection<? extends HibBaseElement> elements) {
+	private void addPermissions(Collection<? extends BaseElement> elements) {
 		RoleDao roleDao = Tx.get().roleDao();
 
-		HibRole role = userInfo.getRole();
-		for (HibBaseElement meshVertex : elements) {
+		Role role = userInfo.getRole();
+		for (BaseElement meshVertex : elements) {
 			if (log.isTraceEnabled()) {
 				log.trace("Granting CRUD permissions on {" + meshVertex.getId() + "} with role {" + role.getId() + "}");
 			}
@@ -242,13 +242,13 @@ public class TestDataProvider {
 	 * @param tx
 	 */
 	private void addBootstrappedData(Tx tx) {
-		for (HibGroup group : tx.groupDao().findAll()) {
+		for (Group group : tx.groupDao().findAll()) {
 			groups.put(group.getName(), group);
 		}
-		for (HibUser user : tx.userDao().findAll()) {
+		for (User user : tx.userDao().findAll()) {
 			users.put(user.getUsername(), user);
 		}
-		for (HibRole role : tx.roleDao().findAll()) {
+		for (Role role : tx.roleDao().findAll()) {
 			roles.put(role.getName(), role);
 		}
 	}
@@ -259,7 +259,7 @@ public class TestDataProvider {
 		addContent(tx, folders.get("2014"), "News_2014", "News!", "Neuigkeiten!");
 		addContent(tx, folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014");
 
-		HibNode content = addContent(tx, folders.get("news"), "News Overview", "News Overview", "News Übersicht",
+		Node content = addContent(tx, folders.get("news"), "News Overview", "News Overview", "News Übersicht",
 			CONTENT_UUID);
 		contentUuid = content.getUuid();
 
@@ -271,14 +271,14 @@ public class TestDataProvider {
 		addContent(tx, folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!");
 		addContent(tx, folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", NEWS_2015_UUID);
 
-		HibNode concorde = addContent(tx, folders.get("products"), "Concorde",
+		Node concorde = addContent(tx, folders.get("products"), "Concorde",
 			"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
 			"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.");
 		tagDao.addTag(concorde, tags.get("plane"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("twinjet"), project.getLatestBranch());
 		tagDao.addTag(concorde, tags.get("red"), project.getLatestBranch());
 
-		HibNode hondaNR = addContent(tx, folders.get("products"), "Honda NR",
+		Node hondaNR = addContent(tx, folders.get("products"), "Honda NR",
 			"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
 			"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.");
 		tagDao.addTag(hondaNR, tags.get("vehicle"), project.getLatestBranch());
@@ -290,18 +290,18 @@ public class TestDataProvider {
 	private void addFolderStructure(Tx tx) {
 		TagDao tagDao = tx.tagDao();
 
-		HibNode baseNode = project.getBaseNode();
+		Node baseNode = project.getBaseNode();
 		// rootNode.addProject(project);
 
-		HibNode news = addFolder(tx, baseNode, "News", "Neuigkeiten", NEWS_UUID);
-		HibNode news2015 = addFolder(tx, news, "2015", null);
+		Node news = addFolder(tx, baseNode, "News", "Neuigkeiten", NEWS_UUID);
+		Node news2015 = addFolder(tx, news, "2015", null);
 		if (getSize() == FULL) {
 			tagDao.addTag(news2015, tags.get("car"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("bike"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("plane"), project.getLatestBranch());
 			tagDao.addTag(news2015, tags.get("jeep"), project.getLatestBranch());
 
-			HibNode news2014 = addFolder(tx, news, "2014", null);
+			Node news2014 = addFolder(tx, news, "2014", null);
 			addFolder(tx, news2014, "March", "März");
 
 			addFolder(tx, baseNode, "Products", "Produkte");
@@ -312,8 +312,8 @@ public class TestDataProvider {
 
 	private void addTags() {
 
-		HibTagFamily colorTags = tagFamilies.get("colors");
-		HibTagFamily basicTags = tagFamilies.get("basic");
+		TagFamily colorTags = tagFamilies.get("colors");
+		TagFamily basicTags = tagFamilies.get("basic");
 
 		// Tags for categories
 		addTag("Vehicle", basicTags);
@@ -341,9 +341,9 @@ public class TestDataProvider {
 		String groupName = username + "_group";
 		String roleName = username + "_role";
 
-		HibUser user = userDao.findByUsername(username);
-		HibGroup group = groupDao.findByName(groupName);
-		HibRole role = roleDao.findByName(roleName);
+		User user = userDao.findByUsername(username);
+		Group group = groupDao.findByName(groupName);
+		Role role = roleDao.findByName(roleName);
 		String password = "test123";
 
 		if (user == null) {
@@ -408,7 +408,7 @@ public class TestDataProvider {
 		if (project.findLanguageByTag(getGerman()) == null) {
 			project.addLanguage(tx.languageDao().findByLanguageTag(getGerman()));
 		}		
-		HibUser jobUser = userInfo.getUser();
+		User jobUser = userInfo.getUser();
 		//schemaDao.assign(getSchemaContainer("folder"), project, jobUser, batch); // already done
 		schemaDao.assign(getSchemaContainer("content"), project, jobUser, batch);
 		schemaDao.assign(getSchemaContainer("binary_content"), project, jobUser, batch);
@@ -417,13 +417,13 @@ public class TestDataProvider {
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
-			HibGroup guestGroup = groupDao.findByName("guests");
+			Group guestGroup = groupDao.findByName("guests");
 			if (guestGroup == null) {
 				guestGroup = groupDao.create("guests", userInfo.getUser());
 			}
 			groups.put("guests", guestGroup);
 
-			HibRole guestRole = roleDao.findByName("guest_role");
+			Role guestRole = roleDao.findByName("guest_role");
 			if (guestRole == null) {
 				guestRole = roleDao.create("guest_role", userInfo.getUser());				
 			}
@@ -431,7 +431,7 @@ public class TestDataProvider {
 			roles.put(guestRole.getName(), guestRole);
 
 			// Extra User
-			HibUser user = userDao.findByName("guest");
+			User user = userDao.findByName("guest");
 			if (user == null) {
 				user = userDao.create("guest", userInfo.getUser());
 				userDao.addGroup(user, guestGroup);
@@ -441,13 +441,13 @@ public class TestDataProvider {
 			}
 			users.put(user.getUsername(), user);
 
-			HibGroup group = groupDao.findByName("extra_group");
+			Group group = groupDao.findByName("extra_group");
 			if (group == null) {
 				group = groupDao.create("extra_group", userInfo.getUser());
 			}
 			groups.put(group.getName(), group);
 
-			HibRole role = roleDao.findByName("extra_role");
+			Role role = roleDao.findByName("extra_role");
 			if (role == null) {
 				role = roleDao.create("extra_role", userInfo.getUser());
 			}
@@ -462,11 +462,11 @@ public class TestDataProvider {
 
 	public void addTagFamilies() {
 		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
-		HibTagFamily basicTagFamily = tagFamilyDao.create(getProject(), "basic", userInfo.getUser());
+		TagFamily basicTagFamily = tagFamilyDao.create(getProject(), "basic", userInfo.getUser());
 		basicTagFamily.setDescription("Description for basic tag family");
 		tagFamilies.put("basic", basicTagFamily);
 
-		HibTagFamily colorTagFamily = tagFamilyDao.create(getProject(), "colors", userInfo.getUser());
+		TagFamily colorTagFamily = tagFamilyDao.create(getProject(), "colors", userInfo.getUser());
 		colorTagFamily.setDescription("Description for color tag family");
 		tagFamilies.put("colors", colorTagFamily);
 	}
@@ -480,15 +480,15 @@ public class TestDataProvider {
 		SchemaDao schemaDao = Tx.get().schemaDao();
 
 		// folder
-		HibSchema folderSchemaContainer = schemaDao.findByName("folder");
+		Schema folderSchemaContainer = schemaDao.findByName("folder");
 		schemaContainers.put("folder", folderSchemaContainer);
 
 		// content
-		HibSchema contentSchemaContainer = schemaDao.findByName("content");
+		Schema contentSchemaContainer = schemaDao.findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
 		// binary_content
-		HibSchema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
+		Schema binaryContentSchemaContainer = schemaDao.findByName("binary_content");
 		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 	}
 
@@ -510,7 +510,7 @@ public class TestDataProvider {
 	private void addVCardMicroschema() throws MeshJsonException {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		HibMicroschema vcardMicroschemaContainer = microschemaDao.findByName("vcard");
+		Microschema vcardMicroschemaContainer = microschemaDao.findByName("vcard");
 		if (vcardMicroschemaContainer == null) {
 
 			MicroschemaVersionModel vcardMicroschema = new MicroschemaModelImpl();
@@ -556,7 +556,7 @@ public class TestDataProvider {
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
-		HibMicroschema microschema = microschemaDao.findByName("captionedImage");
+		Microschema microschema = microschemaDao.findByName("captionedImage");
 		if (microschema == null) {
 			MicroschemaVersionModel captionedImageMicroschema = new MicroschemaModelImpl();
 			captionedImageMicroschema.setName("captionedImage");
@@ -580,24 +580,24 @@ public class TestDataProvider {
 		microschemaDao.assign(microschema, project, user(), createBatch());
 	}
 
-	public HibNode addFolder(Tx tx, HibNode rootNode, String englishName, String germanName) {
+	public Node addFolder(Tx tx, Node rootNode, String englishName, String germanName) {
 		return addFolder(tx, rootNode, englishName, germanName, null);
 	}
 
-	public HibNode addFolder(Tx tx, HibNode rootNode, String englishName, String germanName, String uuid) {
+	public Node addFolder(Tx tx, Node rootNode, String englishName, String germanName, String uuid) {
 		NodeDao nodeDao = tx.nodeDao();
 		ContentDao contentDao = tx.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		HibSchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
-		HibBranch branch = project.getLatestBranch();
-		HibNode folderNode;
+		SchemaVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
+		Branch branch = project.getLatestBranch();
+		Node folderNode;
 		if (uuid == null) {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project);
 		} else {
 			folderNode = nodeDao.create(rootNode, userInfo.getUser(), schemaVersion, project, branch, uuid);
 		}
 		if (germanName != null) {
-			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(folderNode, german,
+			NodeFieldContainer germanContainer = contentDao.createFieldContainer(folderNode, german,
 				branch, userInfo.getUser());
 			germanContainer.createString("slug").setString(germanName);
 			contentDao.updateDisplayFieldValue(germanContainer);
@@ -605,7 +605,7 @@ public class TestDataProvider {
 			contentDao.publish(folderNode, ac, getGerman(), branch, getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			HibNodeFieldContainer englishContainer = contentDao.createFieldContainer(folderNode, english,
+			NodeFieldContainer englishContainer = contentDao.createFieldContainer(folderNode, english,
 				branch, userInfo.getUser());
 			englishContainer.createString("name").setString(englishName);
 			englishContainer.createString("slug").setString(englishName);
@@ -625,31 +625,31 @@ public class TestDataProvider {
 		return folderNode;
 	}
 
-	public HibTag addTag(String name) {
+	public Tag addTag(String name) {
 		return addTag(name, getTagFamily("demo"));
 	}
 
-	public HibTag addTag(String name, HibTagFamily tagFamily) {
+	public Tag addTag(String name, TagFamily tagFamily) {
 		TagDao tagDao = Tx.get().tagDao();
 		if (name == null || StringUtils.isEmpty(name)) {
 			throw new RuntimeException("Name for tag empty");
 		}
-		HibTag tag = tagDao.create(tagFamily, name, project, userInfo.getUser());
+		Tag tag = tagDao.create(tagFamily, name, project, userInfo.getUser());
 		tags.put(name.toLowerCase(), tag);
 		return tag;
 	}
 
-	private HibNode addContent(Tx tx, HibNode parentNode, String name, String englishContent, String germanContent) {
+	private Node addContent(Tx tx, Node parentNode, String name, String englishContent, String germanContent) {
 		return addContent(tx, parentNode, name, englishContent, germanContent, null);
 	}
 
-	private HibNode addContent(Tx tx, HibNode parentNode, String name, String englishContent, String germanContent,
+	private Node addContent(Tx tx, Node parentNode, String name, String englishContent, String germanContent,
 		String uuid) {
 		NodeDao nodeDao = tx.nodeDao();
 		ContentDao contentDao = tx.contentDao();
 		InternalActionContext ac = new NodeMigrationActionContextImpl();
-		HibBranch branch = project.getLatestBranch();
-		HibNode node;
+		Branch branch = project.getLatestBranch();
+		Node node;
 		if (uuid == null) {
 			node = nodeDao.create(parentNode, userInfo.getUser(), schemaContainers.get("content").getLatestVersion(),
 				project);
@@ -658,7 +658,7 @@ public class TestDataProvider {
 				project, branch, uuid);
 		}
 		if (englishContent != null) {
-			HibNodeFieldContainer englishContainer = contentDao.createFieldContainer(node, english,
+			NodeFieldContainer englishContainer = contentDao.createFieldContainer(node, english,
 				branch, userInfo.getUser());
 			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
@@ -670,7 +670,7 @@ public class TestDataProvider {
 		}
 
 		if (germanContent != null) {
-			HibNodeFieldContainer germanContainer = contentDao.createFieldContainer(node, german, branch,
+			NodeFieldContainer germanContainer = contentDao.createFieldContainer(node, german, branch,
 				userInfo.getUser());
 			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
@@ -718,7 +718,7 @@ public class TestDataProvider {
 		return french;
 	}
 
-	public HibProject getProject() {
+	public Project getProject() {
 		Tx.maybeGet().ifPresent(tx -> {
 			project = tx.<CommonTx>unwrap().load(project.getId(), tx.<CommonTx>unwrap().projectDao().getPersistenceClass());
 		});
@@ -730,42 +730,42 @@ public class TestDataProvider {
 	}
 
 	@Getter
-	public HibNode getFolder(String name) {
+	public Node getFolder(String name) {
 		return getBaseElement(name, folders);
 	}
 
 	@Getter
-	public HibTagFamily getTagFamily(String key) {
+	public TagFamily getTagFamily(String key) {
 		return getBaseElement(key, tagFamilies);
 	}
 
 	@Getter
-	public HibNode getContent(String name) {
+	public Node getContent(String name) {
 		return getBaseElement(name, contents);
 	}
 
 	@Getter
-	public HibTag getTag(String name) {
+	public Tag getTag(String name) {
 		return getBaseElement(name, tags);
 	}
 
 	@Getter
-	public HibSchema getSchemaContainer(String name) {
+	public Schema getSchemaContainer(String name) {
 		return getBaseElement(name, schemaContainers);
 	}
 
 	@Getter
-	public HibMicroschema getMicroschemaContainer(String name) {
+	public Microschema getMicroschemaContainer(String name) {
 		return getBaseElement(name, microschemaContainers);
 	}
 
 	@Getter
-	public HibRole getRole(String name) {
+	public Role getRole(String name) {
 		return getBaseElement(name, roles);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends HibBaseElement> T getBaseElement(String name, Map<String, T> cache) {
+	private <T extends BaseElement> T getBaseElement(String name, Map<String, T> cache) {
 		Tx.maybeGet().ifPresent(tx -> {
 			T element = cache.get(name);
 			CommonTx ctx = tx.unwrap();
@@ -775,43 +775,43 @@ public class TestDataProvider {
 		return cache.get(name);
 	}
 
-	private <T extends HibBaseElement> Map<String, T> getBaseElements(Map<String, T> cache) {
+	private <T extends BaseElement> Map<String, T> getBaseElements(Map<String, T> cache) {
 		return cache.keySet().stream().map(key -> Pair.of(key, getBaseElement(key, cache))).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 	}
 
-	public Map<String, HibTag> getTags() {
+	public Map<String, Tag> getTags() {
 		return getBaseElements(tags);
 	}
 
-	public Map<String, HibNode> getContents() {
+	public Map<String, Node> getContents() {
 		return getBaseElements(contents);
 	}
 
-	public Map<String, HibNode> getFolders() {
+	public Map<String, Node> getFolders() {
 		return getBaseElements(folders);
 	}
 
-	public Map<String, HibUser> getUsers() {
+	public Map<String, User> getUsers() {
 		return getBaseElements(users);
 	}
 
-	public Map<String, HibGroup> getGroups() {
+	public Map<String, Group> getGroups() {
 		return getBaseElements(groups);
 	}
 
-	public Map<String, HibRole> getRoles() {
+	public Map<String, Role> getRoles() {
 		return getBaseElements(roles);
 	}
 
-	public Map<String, HibSchema> getSchemaContainers() {
+	public Map<String, Schema> getSchemaContainers() {
 		return getBaseElements(schemaContainers);
 	}
 
-	public Map<String, HibMicroschema> getMicroschemaContainers() {
+	public Map<String, Microschema> getMicroschemaContainers() {
 		return getBaseElements(microschemaContainers);
 	}
 
-	public Map<String, HibTagFamily> getTagFamilies() {
+	public Map<String, TagFamily> getTagFamilies() {
 		return getBaseElements(tagFamilies);
 	}
 
@@ -825,21 +825,21 @@ public class TestDataProvider {
 	}
 
 	@Getter
-	public HibRole role() {
+	public Role role() {
 		return getUserInfo().getRole();
 	}
 
 	@Getter
-	public HibUser user() {
+	public User user() {
 		return getUserInfo().getUser();
 	}
 
 	@Getter
-	public HibGroup group() {
+	public Group group() {
 		return getUserInfo().getGroup();
 	}
 
-	public HibRole getAnonymousRole() {
+	public Role getAnonymousRole() {
 		return getRole("anonymous");
 	}
 

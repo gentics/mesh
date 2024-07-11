@@ -19,7 +19,7 @@ import com.gentics.mesh.core.binary.impl.TikaBinaryProcessor;
 import com.gentics.mesh.core.binary.impl.TikaResult;
 import com.gentics.mesh.core.data.binary.Binaries;
 import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -70,7 +70,7 @@ public class ExtractPlainText extends AbstractHighLevelChange {
 			final String filename = storage.get().getFilePath(binary.getUuid());
 			File uploadFile = new File(filename);
 			if (uploadFile.exists()) {
-				Result<? extends HibBinaryField> fields = binaryDao.findFields(binary);
+				Result<? extends BinaryField> fields = binaryDao.findFields(binary);
 				Map<String, TikaResult> results = new HashMap<>();
 
 				fields.forEach(field -> {

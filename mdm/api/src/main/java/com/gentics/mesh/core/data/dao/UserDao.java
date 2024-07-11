@@ -4,16 +4,16 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.common.PermissionInfoModel;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -22,7 +22,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 /**
  * DAO for user operations.
  */
-public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, UserResponse> {
+public interface UserDao extends DaoGlobal<User>, DaoTransformable<User, UserResponse> {
 
 	/**
 	 * Return the sub etag for the given user.
@@ -31,7 +31,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param ac
 	 * @return
 	 */
-	String getSubETag(HibUser user, InternalActionContext ac);
+	String getSubETag(User user, InternalActionContext ac);
 
 	/**
 	 * Check the permission on the given element.
@@ -41,7 +41,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param permission
 	 * @return
 	 */
-	boolean hasPermission(HibUser user, HibBaseElement element, InternalPermission permission);
+	boolean hasPermission(User user, BaseElement element, InternalPermission permission);
 
 	/**
 	 * Check whether the user has the given permission on the element with the given id.
@@ -51,7 +51,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param permission
 	 * @return
 	 */
-	boolean hasPermissionForId(HibUser user, Object elementId, InternalPermission permission);
+	boolean hasPermissionForId(User user, Object elementId, InternalPermission permission);
 
 	/**
 	 * Check whether the user is allowed to read the given node. Internally this check the currently configured version scope and check for
@@ -62,7 +62,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param node
 	 * @return
 	 */
-	boolean canReadNode(HibUser user, InternalActionContext ac, HibNode node);
+	boolean canReadNode(User user, InternalActionContext ac, Node node);
 
 	/**
 	 * Return the permission info object for the given vertex.
@@ -71,7 +71,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param element
 	 * @return
 	 */
-	PermissionInfo getPermissionInfo(HibUser user, HibBaseElement element);
+	PermissionInfoModel getPermissionInfo(User user, BaseElement element);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.
@@ -79,10 +79,10 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param element
 	 * @return
 	 */
-	Set<InternalPermission> getPermissions(HibUser user, HibBaseElement element);
+	Set<InternalPermission> getPermissions(User user, BaseElement element);
 
 	/**
-	 * Same as {@link HibUser#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
+	 * Same as {@link User#update(InternalActionContext, EventQueueBatch)}, but does not actually perform any changes.
 	 *
 	 * Useful to check if any changes have to be made.
 	 *
@@ -90,7 +90,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param ac
 	 * @return true if the user would have been modified
 	 */
-	boolean updateDry(HibUser user, InternalActionContext ac);
+	boolean updateDry(User user, InternalActionContext ac);
 
 	/**
 	 * Create the user with the given uuid.
@@ -100,7 +100,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param uuid
 	 * @return
 	 */
-	HibUser create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	User create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Create a new user with the given username and assign it to this aggregation node.
@@ -111,7 +111,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            User that is used to create creator and editor references
 	 * @return
 	 */
-	default HibUser create(String username, HibUser creator) {
+	default User create(String username, User creator) {
 		return create(username, creator, null);
 	}
 
@@ -126,7 +126,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Optional uuid
 	 * @return
 	 */
-	HibUser create(String username, HibUser creator, String uuid);
+	User create(String username, User creator, String uuid);
 
 	/**
 	 * Inherit the permissions of the source elment to the target element.
@@ -139,7 +139,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Element for which the perms should be applied
 	 * @return
 	 */
-	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target);
+	User inheritRolePermissions(User user, BaseElement source, BaseElement target);
 
 	/**
 	 * Inherit the permissions of the source elment to the collection of target elements.
@@ -152,11 +152,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Elements for which the perms should be applied
 	 * @return
 	 */
-	HibUser inheritRolePermissions(HibUser user, HibBaseElement source, Collection<? extends HibBaseElement> targets);
+	User inheritRolePermissions(User user, BaseElement source, Collection<? extends BaseElement> targets);
 
 	/**
 	 * Set the plaintext password. Internally the password string will be hashed and the password hash will be set. This will also set
-	 * {@link HibUser#setForcedPasswordChange(boolean)} to false.
+	 * {@link User#setForcedPasswordChange(boolean)} to false.
 	 *
 	 * @param user
 	 * @param password
@@ -164,7 +164,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 */
 	// TODO change this to an async call since hashing of the password is
 	// blocking
-	HibUser setPassword(HibUser user, String password);
+	User setPassword(User user, String password);
 
 	/**
 	 * Find the user with the given username.
@@ -172,7 +172,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param username
 	 * @return
 	 */
-	HibUser findByUsername(String username);
+	User findByUsername(String username);
 
 	/**
 	 * Find the mesh auth user with the given username.
@@ -200,7 +200,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            maximum allowed token age in minutes
 	 * @return
 	 */
-	default boolean isResetTokenValid(HibUser user, String token, int maxTokenAgeMins) {
+	default boolean isResetTokenValid(User user, String token, int maxTokenAgeMins) {
 		Long resetTokenIssueTimestamp = user.getResetTokenIssueTimestamp();
 		if (token == null || resetTokenIssueTimestamp == null) {
 			return false;
@@ -224,7 +224,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param group
 	 * @return Fluent API
 	 */
-	HibUser addGroup(HibUser user, HibGroup group);
+	User addGroup(User user, Group group);
 
 	/**
 	 * Load the roles of the user.
@@ -232,7 +232,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param user
 	 * @return
 	 */
-	Iterable<? extends HibRole> getRoles(HibUser user);
+	Iterable<? extends Role> getRoles(User user);
 
 	/**
 	 * Load the groups of the user.
@@ -240,7 +240,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param user
 	 * @return
 	 */
-	Result<? extends HibGroup> getGroups(HibUser user);
+	Result<? extends Group> getGroups(User user);
 
 	/**
 	 * Load the effective roles for user via the shortcut edges.
@@ -250,7 +250,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
+	Page<? extends Role> getRolesViaShortcut(User fromUser, User authUser, PagingParameters pagingInfo);
 
 	/**
 	 * Return the page of groups which the user is part of.
@@ -263,7 +263,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Paging to be applied
 	 * @return
 	 */
-	Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo);
+	Page<? extends Group> getGroups(User fromUser, User authUser, PagingParameters pagingInfo);
 
 	/**
 	 * This method will set CRUD permissions to the target node for all roles that would grant the given permission on the node. The method is most often used
@@ -283,11 +283,11 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            Node to which the CRUD permissions will be assigned.
 	 * @return Fluent API
 	 */
-	HibUser addCRUDPermissionOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode);
+	User addCRUDPermissionOnRole(User user, BaseElement sourceNode, InternalPermission permission, BaseElement targetNode);
 
 	/**
 	 * This method adds additional permissions to the target node. The roles are selected like in method
-	 * {@link #addCRUDPermissionOnRole(HibUser, HasPermissions, InternalPermission, MeshVertex)} .
+	 * {@link #addCRUDPermissionOnRole(User, HasPermissions, InternalPermission, MeshVertex)} .
 	 *
 	 * @param user
 	 * @param sourceNode
@@ -300,7 +300,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 *            permissions to grant
 	 * @return Fluent API
 	 */
-	HibUser addPermissionsOnRole(HibUser user, HibBaseElement sourceNode, InternalPermission permission, HibBaseElement targetNode,
+	User addPermissionsOnRole(User user, BaseElement sourceNode, InternalPermission permission, BaseElement targetNode,
 		InternalPermission... toGrant);
 
 	/**
@@ -312,7 +312,7 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	boolean hasReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
+	boolean hasReadPermission(User user, NodeFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
@@ -322,18 +322,18 @@ public interface UserDao extends DaoGlobal<HibUser>, DaoTransformable<HibUser, U
 	 * @param branchUuid
 	 * @param requestedVersion
 	 */
-	void failOnNoReadPermission(HibUser user, HibNodeFieldContainer container, String branchUuid, String requestedVersion);
+	void failOnNoReadPermission(User user, NodeFieldContainer container, String branchUuid, String requestedVersion);
 
 	/**
 	 * A CRC32 hash of the users {@link #getRoles roles}.
 	 *
 	 * @return A hash of the users roles
 	 */
-	String getRolesHash(HibUser user);
+	String getRolesHash(User user);
 
 	/**
 	 * Set the user password hash and update forced password change flag
 	 * @param passwordHash
 	 */
-	void updatePasswordHash(HibUser user, String passwordHash);
+	void updatePasswordHash(User user, String passwordHash);
 }

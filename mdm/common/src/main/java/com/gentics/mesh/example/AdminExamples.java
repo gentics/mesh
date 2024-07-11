@@ -8,14 +8,14 @@ import java.util.stream.Stream;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfoModel;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfigModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -34,13 +34,13 @@ public class AdminExamples {
 	public ClusterStatusResponse createClusterStatusResponse() {
 		ClusterStatusResponse result = new ClusterStatusResponse();
 		Stream.of(
-			new ClusterInstanceInfo()
+			new ClusterInstanceInfoModel()
 				.setAddress("127.0.0.1:2424")
 				.setName("node1")
 				.setStatus("ONLINE")
 				.setStartDate("2019-11-04T13:54:59.131Z")
 				.setRole("MASTER"),
-			new ClusterInstanceInfo()
+			new ClusterInstanceInfoModel()
 				.setAddress("127.0.0.1:2425")
 				.setName("node2")
 				.setStatus("ONLINE")
@@ -86,7 +86,7 @@ public class AdminExamples {
 
 	public ConsistencyCheckResponse createConsistencyCheckResponse(boolean repaired) {
 		ConsistencyCheckResponse response = new ConsistencyCheckResponse();
-		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(UUID_1).setDescription(
+		response.getInconsistencies().add(new InconsistencyInfoModel().setSeverity(InconsistencySeverity.LOW).setElementUuid(UUID_1).setDescription(
 			"A dangling field container has been found.").setRepairAction(RepairAction.DELETE).setRepaired(repaired));
 		return response;
 	}
@@ -95,9 +95,9 @@ public class AdminExamples {
 		ClusterConfigResponse response = new ClusterConfigResponse();
 		response.setWriteQuorum("majority");
 		response.setReadQuorum(1);
-		response.getServers().add(new ClusterServerConfig().setName("master-1").setRole(ServerRole.MASTER));
-		response.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
-		response.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
+		response.getServers().add(new ClusterServerConfigModel().setName("master-1").setRole(ServerRole.MASTER));
+		response.getServers().add(new ClusterServerConfigModel().setName("replica-1").setRole(ServerRole.REPLICA));
+		response.getServers().add(new ClusterServerConfigModel().setName("replica-2").setRole(ServerRole.REPLICA));
 		return response;
 	}
 
@@ -105,9 +105,9 @@ public class AdminExamples {
 		ClusterConfigRequest request = new ClusterConfigRequest();
 		request.setWriteQuorum("1");
 		request.setReadQuorum(1);
-		request.getServers().add(new ClusterServerConfig().setName("master-1").setRole(ServerRole.MASTER));
-		request.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
-		request.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
+		request.getServers().add(new ClusterServerConfigModel().setName("master-1").setRole(ServerRole.MASTER));
+		request.getServers().add(new ClusterServerConfigModel().setName("replica-1").setRole(ServerRole.REPLICA));
+		request.getServers().add(new ClusterServerConfigModel().setName("replica-2").setRole(ServerRole.REPLICA));
 		return request;
 	}
 
@@ -119,14 +119,14 @@ public class AdminExamples {
 		return response;
 	}
 
-	public CoordinatorConfig createCoordinatorConfig() {
-		CoordinatorConfig config = new CoordinatorConfig();
+	public CoordinatorConfigModel createCoordinatorConfig() {
+		CoordinatorConfigModel config = new CoordinatorConfigModel();
 		config.setMode(CoordinatorMode.CUD);
 		return config;
 	}
 
-	public CoordinatorConfig createCoordinatorConfigRequest() {
-		CoordinatorConfig config = new CoordinatorConfig();
+	public CoordinatorConfigModel createCoordinatorConfigRequest() {
+		CoordinatorConfigModel config = new CoordinatorConfigModel();
 		config.setMode(CoordinatorMode.DISABLED);
 		return config;
 	}

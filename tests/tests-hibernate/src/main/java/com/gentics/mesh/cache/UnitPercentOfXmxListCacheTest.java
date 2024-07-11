@@ -4,7 +4,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gentics.mesh.cache.CacheStatus;
+import com.gentics.mesh.cache.CacheStatusModel;
 import com.gentics.mesh.test.MeshTestSetting;
 
 @MeshTestSetting(testSize = FULL, startServer = true, customOptionChanger = UnitPercentOfXmxListCacheTest.class)
@@ -21,7 +21,7 @@ public class UnitPercentOfXmxListCacheTest extends AbstractAutoOptionListCacheTe
 	}
 
 	@Override
-	protected void checkStats(CacheStatus stats) {
+	protected void checkStats(CacheStatusModel stats) {
 		long maxJvmMemory = Runtime.getRuntime().maxMemory();
 		long allowedJvmMemory = maxJvmMemory / 100 * size();
 		assertEquals(size() + unit(), stats.getSetup());

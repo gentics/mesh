@@ -7,11 +7,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.Field;
 import com.gentics.mesh.core.data.dao.PersistingS3BinaryDao;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.hibernate.data.domain.HibS3BinaryImpl;
@@ -32,7 +32,7 @@ import io.vertx.core.Vertx;
  *
  */
 @Singleton
-public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implements PersistingS3BinaryDao {
+public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3Binary> implements PersistingS3BinaryDao {
 
     private final S3HibBinariesImpl s3HibBinaries;
 
@@ -47,7 +47,7 @@ public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implem
         return s3HibBinaries;
     }
 
-    public S3HibBinaryField getField(UUID contentUuid, String fieldKey) {
+    public S3BinaryField getField(UUID contentUuid, String fieldKey) {
         return em().createNamedQuery("s3binaryfieldref.getByContentAndFieldKey", HibS3BinaryFieldImpl.class)
                 .setParameter("contentUuid", contentUuid)
                 .setParameter("fieldKey", fieldKey)
@@ -56,8 +56,8 @@ public class S3BinaryDaoImpl extends AbstractImageDataHibDao<S3HibBinary> implem
                 .orElse(null);
     }
 
-    public void removeField(BulkActionContext bac, HibField field) {
-        S3HibBinaryField s3BinaryRef = (S3HibBinaryField) field;
+    public void removeField(BulkActionContext bac, Field field) {
+        S3BinaryField s3BinaryRef = (S3BinaryField) field;
         HibS3BinaryImpl s3Binary = (HibS3BinaryImpl) s3BinaryRef.getBinary();
 
         em().remove(s3BinaryRef);

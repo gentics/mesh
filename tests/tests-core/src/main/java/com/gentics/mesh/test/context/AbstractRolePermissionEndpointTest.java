@@ -14,9 +14,9 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -157,8 +157,8 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		tx(tx -> {
-			HibRole adminObj = role("admin");
-			HibRole testRoleObj = role();
+			Role adminObj = role("admin");
+			Role testRoleObj = role();
 
 			// revoke the permission on the admin role
 			tx.roleDao().revokePermissions(testRoleObj, adminObj, READ_PERM);
@@ -195,8 +195,8 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 		RoleReference testRole = tx(() -> role().transformToReference());
 
 		tx(tx -> {
-			HibRole adminObj = role("admin");
-			HibRole testRoleObj = role();
+			Role adminObj = role("admin");
+			Role testRoleObj = role();
 
 			// revoke the permission on the admin role
 			tx.roleDao().revokePermissions(testRoleObj, adminObj, READ_PERM);
@@ -365,7 +365,7 @@ public abstract class AbstractRolePermissionEndpointTest extends AbstractMeshTes
 	 * Get the tested element (this method assumes a running transaction)
 	 * @return tested element
 	 */
-	protected abstract HibBaseElement getTestedElement();
+	protected abstract BaseElement getTestedElement();
 
 	/**
 	 * Get the uuid of the tested element

@@ -1,6 +1,6 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.NamedElement;
 
 /**
  * Cache for named elements.
@@ -9,6 +9,6 @@ import com.gentics.mesh.core.data.HibNamedElement;
  *
  * @param <V>
  */
-public interface NameCache<V extends HibNamedElement> extends MeshCache<String, V> {
+public interface NameCache<V extends NamedElement> extends MeshCache<String, V> {
 
 }

@@ -6,7 +6,7 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.example.ExampleUuids.MICROSCHEMA_UUID;
 
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -16,8 +16,8 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 
 public class MicroschemaExamples extends AbstractExamples {
 
-	public BranchInfoMicroschemaList createMicroschemaReferenceList() {
-		BranchInfoMicroschemaList microschemas = new BranchInfoMicroschemaList();
+	public BranchInfoMicroschemaListModel createMicroschemaReferenceList() {
+		BranchInfoMicroschemaListModel microschemas = new BranchInfoMicroschemaListModel();
 		microschemas.add(getMicroschemaReference("vcard", "2.0"));
 		microschemas.add(getMicroschemaReference("geolocation", "1.0"));
 		return microschemas;

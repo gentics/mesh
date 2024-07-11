@@ -15,11 +15,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -50,15 +50,15 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			UserDao userDao = tx.userDao();
 			GroupDao groupDao = tx.groupDao();
 
-			HibGroup group = groupDao.create("test group", user());
-			HibUser user = userDao.create("testuser", user());
+			Group group = groupDao.create("test group", user());
+			User user = userDao.create("testuser", user());
 			groupDao.addUser(group, user);
 			groupDao.addUser(group, user);
 			groupDao.addUser(group, user);
 
 			assertEquals("The group should contain one member.", 1, groupDao.getUsers(group).count());
 
-			HibUser userOfGroup = groupDao.getUsers(group).iterator().next();
+			User userOfGroup = groupDao.getUsers(group).iterator().next();
 			assertEquals("Username did not match the expected one.", user.getUsername(), userOfGroup.getUsername());
 		}
 	}
@@ -71,7 +71,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 			GroupDao groupDao = tx.groupDao();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends HibGroup> page = groupDao.findAll(ac, new PagingParametersImpl(1, 19L));
+			Page<? extends Group> page = groupDao.findAll(ac, new PagingParametersImpl(1, 19L));
 
 			assertEquals(groupCount, page.getTotalElements());
 			assertEquals(groupCount, page.getSize());
@@ -116,7 +116,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindByUUID() {
 		try (Tx tx = tx()) {
-			HibGroup group = tx.groupDao().findByUuid(group().getUuid());
+			Group group = tx.groupDao().findByUuid(group().getUuid());
 			assertNotNull(group);
 		}
 	}
@@ -141,7 +141,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = groupDao.create("newGroup", user());
+			Group group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			String uuid = group.getUuid();
 			groupDao.delete(group, createBulkContext());
@@ -156,9 +156,9 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
 			GroupDao groupDao = tx.groupDao();
-			HibUser user = user();
+			User user = user();
 			InternalActionContext ac = mockActionContext();
-			HibGroup group = groupDao.create("newGroup", user);
+			Group group = groupDao.create("newGroup", user);
 			assertFalse(userDao.hasPermission(user, group, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user, tx.data().permissionRoots().group(), group);
 			ac.data().clear();
@@ -171,7 +171,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testRead() {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = group();
+			Group group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(groupDao.getUsers(group));
 			assertEquals(1, groupDao.getUsers(group).count());
@@ -184,7 +184,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testCreate() {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = groupDao.create("newGroup", user());
+			Group group = groupDao.create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
 		}
@@ -195,7 +195,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = groupDao.create("newGroup", user());
+			Group group = groupDao.create("newGroup", user());
 
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());

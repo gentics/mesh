@@ -13,15 +13,15 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
@@ -53,12 +53,12 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibNodeField testField = container.createNode(NODE_FIELD, node);
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeField testField = container.createNode(NODE_FIELD, node);
 
-			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode(NODE_FIELD)).as("cloned field").isNotNull();
@@ -70,17 +70,17 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibNodeField field = container.createNode(NODE_FIELD, node);
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeField field = container.createNode(NODE_FIELD, node);
 			assertNotNull(field);
 			assertEquals(NODE_FIELD, field.getFieldKey());
-			HibNode loadedNode = field.getNode();
+			Node loadedNode = field.getNode();
 			assertNotNull(loadedNode);
 			assertEquals(node.getUuid(), loadedNode.getUuid());
 
-			HibNodeField loadedField = container.getNode(NODE_FIELD);
+			NodeField loadedField = container.getNode(NODE_FIELD);
 			assertNotNull(loadedField);
 			assertNotNull(loadedField.getNode());
 			assertEquals(node.getUuid(), loadedField.getNode().getUuid());
@@ -90,17 +90,17 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		HibNode newsNode = folder("news");
+		Node newsNode = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 
 			// 1. Create the node field schema and add it to the schema of the node
 			prepareTypedSchema(node, createFieldSchema(true), false);
 			tx.commit();
 			// 2. Add the node reference to the node fields
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createNode(NODE_FIELD, newsNode);
@@ -114,7 +114,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 			assertNotNull(response);
 
-			NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD);
+			NodeFieldModel deserializedNodeField = response.getFields().getNodeField(NODE_FIELD);
 			assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}", deserializedNodeField);
 			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 		}
@@ -124,11 +124,11 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(
+			NodeFieldContainer container = CoreTestUtils.createContainer(
 					createFieldSchema("fieldA", true), createFieldSchema("fieldB", true), createFieldSchema("fieldC", true));
-			HibNodeField fieldA = container.createNode("fieldA", folder("2015"));
-			HibNodeField fieldB = container.createNode("fieldB", folder("2014"));
-			HibNodeField fieldC = container.createNode("fieldC", folder("2015"));
+			NodeField fieldA = container.createNode("fieldA", folder("2015"));
+			NodeField fieldB = container.createNode("fieldB", folder("2014"));
+			NodeField fieldC = container.createNode("fieldC", folder("2015"));
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 
 			assertFalse("The field should not be equal to a non-string field", fieldA.equals("bogus"));
@@ -141,10 +141,10 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibNodeField fieldA = container.createNode(NODE_FIELD, content());
-			assertFalse(fieldA.equals((Field) null));
-			assertFalse(fieldA.equals((HibNodeField) null));
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeField fieldA = container.createNode(NODE_FIELD, content());
+			assertFalse(fieldA.equals((FieldModel) null));
+			assertFalse(fieldA.equals((NodeField) null));
 		}
 	}
 
@@ -152,8 +152,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			HibNodeField fieldA = container.createNode(NODE_FIELD, content());
+			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			NodeField fieldA = container.createNode(NODE_FIELD, content());
 
 			// graph set - rest set - same value - different type
 			assertFalse("The field should not be equal to a string rest field. Even if it has the same value",
@@ -216,7 +216,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 				field.setUuid(content().getUuid());
 				updateContainer(ac, container, NODE_FIELD, field);
 			}, (container) -> {
-				HibNodeField field = container.getNode(NODE_FIELD);
+				NodeField field = container.getNode(NODE_FIELD);
 				assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
 				assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
 			});

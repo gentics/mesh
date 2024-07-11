@@ -8,7 +8,7 @@ import javax.inject.Named;
 import com.gentics.mesh.RestAPIVersion;
 import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.env.PluginEnvironment;
@@ -54,7 +54,7 @@ public class PluginEnvironmentImpl implements PluginEnvironment {
 	@Override
 	public String adminToken() {
 		return db.tx(tx -> {
-			HibUser admin = tx.userDao().findByUsername("admin");
+			User admin = tx.userDao().findByUsername("admin");
 			// TODO: Use dedicated tokenCode - See https://github.com/gentics/mesh/issues/412
 			return authProvider.get().generateAPIToken(admin, null, null);
 		});

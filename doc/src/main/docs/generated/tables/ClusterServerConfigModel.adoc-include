@@ -1,0 +1,20 @@
+[options="header",cols="10%,10%,10%,70%"]
+|======
+
+| Property
+| Mandatory 
+| Type
+| Description
+
+
+| name
+| true
+| string
+| Name of the server.
+
+| role
+| false
+| string
+| Role of the server which can be MASTER or REPLICA.
+
+|======

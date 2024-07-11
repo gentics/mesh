@@ -10,9 +10,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.contentoperation.ContentKey;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
@@ -29,8 +29,8 @@ public class DatabaseLimitsTest extends AbstractMeshTest {
 			BranchDao branchDao = tx.branchDao();
 			int limit = limitModifier.apply(HibernateUtil.inQueriesLimit());			
 			EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
-			HibBranch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
-			HibSchemaVersion version = schemaContainers().entrySet().stream().findAny().get().getValue().getLatestVersion();
+			Branch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
+			SchemaVersion version = schemaContainers().entrySet().stream().findAny().get().getValue().getLatestVersion();
 			branchDao.assignSchemaVersion(branch, user(), version, batch);
 			Set<ContentKey> edges = LongStream.range(0, limit)
 					.mapToObj(i -> new ContentKey(UUIDUtil.toJavaUuid(UUIDUtil.randomUUID()), (UUID) version.getId(), ReferenceType.FIELD))

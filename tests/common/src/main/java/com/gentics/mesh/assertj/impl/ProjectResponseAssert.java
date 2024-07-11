@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 
@@ -15,7 +15,7 @@ public class ProjectResponseAssert extends AbstractMeshAssert<ProjectResponseAss
 		super(actual, ProjectResponseAssert.class);
 	}
 
-	public ProjectResponseAssert matches(HibProject project) {
+	public ProjectResponseAssert matches(Project project) {
 		assertGenericNode(project, actual);
 		assertNotNull(actual.getRootNode());
 		assertEquals(project.getName(), actual.getName());

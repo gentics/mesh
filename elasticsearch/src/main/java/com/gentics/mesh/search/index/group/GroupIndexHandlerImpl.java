@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
@@ -33,7 +33,7 @@ import io.reactivex.Flowable;
  * Handler for the elastic search group index.
  */
 @Singleton
-public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implements GroupIndexHandler {
+public class GroupIndexHandlerImpl extends AbstractIndexHandler<Group> implements GroupIndexHandler {
 
 	protected final GroupTransformer transformer;
 
@@ -53,8 +53,8 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 	}
 
 	@Override
-	public Class<HibGroup> getElementClass() {
-		return HibGroup.class;
+	public Class<Group> getElementClass() {
+		return Group.class;
 	}
 
 	@Override
@@ -76,39 +76,39 @@ public class GroupIndexHandlerImpl extends AbstractIndexHandler<HibGroup> implem
 
 	@Override
 	public Map<String, Optional<IndexInfo>> getIndices() {
-		String indexName = HibGroup.composeIndexName();
+		String indexName = Group.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "group");
 		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(HibGroup.composeIndexName());
+		return Collections.singleton(Group.composeIndexName());
 	}
 
 	@Override
-	public Function<String, HibGroup> elementLoader() {
+	public Function<String, Group> elementLoader() {
 		return (uuid) -> Tx.get().groupDao().findByUuid(uuid);
 	}
 
 	@Override
-	public Function<Collection<String>, Stream<Pair<String, HibGroup>>> elementsLoader() {
+	public Function<Collection<String>, Stream<Pair<String, Group>>> elementsLoader() {
 		return (uuids) -> Tx.get().groupDao().findByUuids(uuids);
 	}
 
 	@Override
-	public Stream<? extends HibGroup> loadAllElements() {
+	public Stream<? extends Group> loadAllElements() {
 		return Tx.get().groupDao().findAll().stream();
 	}
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(HibGroup.composeIndexName(), null, indexPattern);
+		return diffAndSync(Group.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, HibGroup.composeIndexName());
+		return filterIndicesByType(indices, Group.composeIndexName());
 	}
 
 }

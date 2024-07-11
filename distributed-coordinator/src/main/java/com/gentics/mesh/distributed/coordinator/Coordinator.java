@@ -5,7 +5,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 
@@ -48,8 +48,8 @@ public class Coordinator {
 	}
 
 	@Getter
-	public CoordinatorConfig loadConfig() {
-		return new CoordinatorConfig().setMode(mode);
+	public CoordinatorConfigModel loadConfig() {
+		return new CoordinatorConfigModel().setMode(mode);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class Coordinator {
 	 * 
 	 * @param config
 	 */
-	public void updateConfig(CoordinatorConfig config) {
+	public void updateConfig(CoordinatorConfigModel config) {
 		CoordinatorMode newMode = config.getMode();
 		if (newMode != null) {
 			this.mode = newMode;

@@ -1,11 +1,11 @@
 package com.gentics.mesh.search.index.user;
 
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 
 /**
  * Index handler for user entities.
  */
-public interface UserIndexHandler extends IndexHandler<HibUser> {
+public interface UserIndexHandler extends IndexHandler<User> {
 
 }

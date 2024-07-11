@@ -43,9 +43,9 @@ import org.slf4j.Logger;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
@@ -242,7 +242,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 	}
 
 	@Override
-	public String getPhysicalTableName(HibFieldSchemaVersionElement<?,?,?,?,?> version) {
+	public String getPhysicalTableName(FieldSchemaVersionElement<?,?,?,?,?> version) {
 		return getPhysicalTableName(version, getPhysicalNamingStrategy(), getSessionMetadataIntegrator().getJdbcEnvironment(), getHibernateDialect());
 	}
 
@@ -257,7 +257,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 	}
 
 	@Override
-	public String getPhysicalTableName(HibFieldSchemaVersionElement<?,?,?,?,?> version, PhysicalNamingStrategy physicalTableNameStrategy, JdbcEnvironment jdbcEnvironment, Dialect dialect) {
+	public String getPhysicalTableName(FieldSchemaVersionElement<?,?,?,?,?> version, PhysicalNamingStrategy physicalTableNameStrategy, JdbcEnvironment jdbcEnvironment, Dialect dialect) {
 		return getPhysicalTableNameIdentifier((UUID) version.getId(), physicalTableNameStrategy, jdbcEnvironment).render(dialect);
 	}
 
@@ -355,7 +355,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 	}
 
 	@Override
-	public long deleteContentEdgesByProject(EntityManager em, HibProject project) {
+	public long deleteContentEdgesByProject(EntityManager em, Project project) {
 		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_PROJECT + ")")
 				.setParameter("project", project)
 				.executeUpdate();
@@ -369,7 +369,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 	}
 
 	@Override
-	public long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids) {
+	public long deleteContentEdgesByBranchUuids(EntityManager em, Branch branch, Collection<UUID> uuids) {
 		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_NODE_UUIDS_BRANCH + ")")
 				.setParameter("nodesUuid", uuids)
 				.setParameter("branch", branch)

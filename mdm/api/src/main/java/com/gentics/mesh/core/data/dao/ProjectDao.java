@@ -1,15 +1,15 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -18,9 +18,9 @@ import com.gentics.mesh.event.Assignment;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
- * DAO for {@link HibProject}.
+ * DAO for {@link Project}.
  */
-public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibProject, ProjectResponse> {
+public interface ProjectDao extends DaoGlobal<Project>, DaoTransformable<Project, ProjectResponse> {
 
 	/**
 	 * Create the base node of the project using the user as a reference for the editor and creator fields.
@@ -32,21 +32,21 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * 
 	 * @return Created base node
 	 */
-	HibNode createBaseNode(HibProject project, HibUser creator, HibSchemaVersion schemaVersion);
+	Node createBaseNode(Project project, User creator, SchemaVersion schemaVersion);
 
 	/**
 	 * Return the tagFamily permission root for the project. This method will create a root when no one could be found.
 	 *
 	 * @return
 	 */
-	HibBaseElement getTagFamilyPermissionRoot(HibProject project);
+	BaseElement getTagFamilyPermissionRoot(Project project);
 
 	/**
 	 * Return the branch permission root of the project. Internally this method will create the root when it has not yet been created.
 	 *
 	 * @return Branch root element
 	 */
-	HibBaseElement getBranchPermissionRoot(HibProject project);
+	BaseElement getBranchPermissionRoot(Project project);
 
 	/**
 	 * Find the project by name.
@@ -56,7 +56,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param perm
 	 * @return
 	 */
-	HibProject findByName(InternalActionContext ac, String projectName, InternalPermission perm);
+	Project findByName(InternalActionContext ac, String projectName, InternalPermission perm);
 
 	/**
 	 * Create the project.
@@ -66,7 +66,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param uuid
 	 * @return
 	 */
-	HibProject create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	Project create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Create a project.
@@ -81,8 +81,8 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param batch
 	 * @return
 	 */
-	default HibProject create(String projectName, String hostname, Boolean ssl, String pathPrefix, HibUser creator,
-		HibSchemaVersion schemaVersion, EventQueueBatch batch) {
+	default Project create(String projectName, String hostname, Boolean ssl, String pathPrefix, User creator,
+		SchemaVersion schemaVersion, EventQueueBatch batch) {
 		return create(projectName, hostname, ssl, pathPrefix, creator, schemaVersion, null, batch);
 	}
 
@@ -99,7 +99,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param batch
 	 * @return
 	 */
-	HibProject create(String name, String hostname, Boolean ssl, String pathPrefix, HibUser creator, HibSchemaVersion schemaVersion,
+	Project create(String name, String hostname, Boolean ssl, String pathPrefix, User creator, SchemaVersion schemaVersion,
 		String uuid, EventQueueBatch batch);
 
 	/**
@@ -113,7 +113,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 *            Assignment or unassignment
 	 * @return
 	 */
-	ProjectSchemaEventModel onSchemaAssignEvent(HibProject project, HibSchema schema, Assignment assignment);
+	ProjectSchemaEventModel onSchemaAssignEvent(Project project, Schema schema, Assignment assignment);
 
 	/**
 	 * Create a microschema assign event for the given input values.
@@ -126,7 +126,7 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 *            Assignment or unassignment
 	 * @return
 	 */
-	ProjectMicroschemaEventModel onMicroschemaAssignEvent(HibProject project, HibMicroschema microschema, Assignment assignment);
+	ProjectMicroschemaEventModel onMicroschemaAssignEvent(Project project, Microschema microschema, Assignment assignment);
 
 	/**
 	 * Return the sub etag for the project.
@@ -135,19 +135,19 @@ public interface ProjectDao extends DaoGlobal<HibProject>, DaoTransformable<HibP
 	 * @param ac
 	 * @return
 	 */
-	String getSubETag(HibProject project, InternalActionContext ac);
+	String getSubETag(Project project, InternalActionContext ac);
 
 	/**
 	 * Find all the nodes belonging to the project.
 	 * 
 	 * @return
 	 */
-	Result<? extends HibNode> findNodes(HibProject project);
+	Result<? extends Node> findNodes(Project project);
 
 	/**
 	 * Find all the languages assigned to the project.
 	 * 
 	 * @return
 	 */
-	Result<? extends HibLanguage> findLanguages(HibProject project);
+	Result<? extends Language> findLanguages(Project project);
 }

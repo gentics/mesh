@@ -19,14 +19,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.rest.node.field.ListField;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.ListFieldModel;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
+import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.AbstractFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
@@ -236,10 +236,10 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Micronode object or null if the value could not be converted
 	 */
-	public MicronodeField toMicronode(Object value) {
+	public MicronodeFieldModel toMicronode(Object value) {
 		value = firstIfList(value);
-		if (value instanceof MicronodeField) {
-			return (MicronodeField) value;
+		if (value instanceof MicronodeFieldModel) {
+			return (MicronodeFieldModel) value;
 		} else {
 			return null;
 		}
@@ -252,7 +252,7 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return List of micronodes or null if the value could not be converted
 	 */
-	public MicronodeFieldList toMicronodeList(Object value) {
+	public MicronodeFieldListModel toMicronodeList(Object value) {
 		return listField(MicronodeFieldListImpl::new, this::toMicronode, value);
 	}
 
@@ -263,10 +263,10 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Node or null if the value could not be converted
 	 */
-	public NodeField toNode(Object value) {
+	public NodeFieldModel toNode(Object value) {
 		value = firstIfList(value);
-		if (value instanceof NodeField) {
-			return (NodeField) value;
+		if (value instanceof NodeFieldModel) {
+			return (NodeFieldModel) value;
 		} else if (value instanceof NodeFieldListItem) {
 			return new NodeFieldImpl().setUuid(((NodeFieldListItem) value).getUuid());
 		} else {
@@ -275,7 +275,7 @@ public class TypeConverter {
 	}
 
 	private NodeFieldListItem toNodeFieldListItem(Object value) {
-		NodeField field = toNode(value);
+		NodeFieldModel field = toNode(value);
 		if (field == null) {
 			return null;
 		} else {
@@ -290,7 +290,7 @@ public class TypeConverter {
 	 *            Value to be converted
 	 * @return Array of nodes or null if the value could not be converted
 	 */
-	public NodeFieldList toNodeList(Object value) {
+	public NodeFieldListModel toNodeList(Object value) {
 		return listField(NodeFieldListImpl::new, this::toNodeFieldListItem, value);
 	}
 
@@ -321,10 +321,10 @@ public class TypeConverter {
 
 	@SuppressWarnings("unchecked")
 	private Stream<Object> toStream(Object value) {
-		if (value instanceof ListField) {
-			value = ((ListField<?>) value).getItems();
-		} else if (value instanceof FieldList) {
-			value = ((FieldList<?>) value).getItems();
+		if (value instanceof ListFieldModel) {
+			value = ((ListFieldModel<?>) value).getItems();
+		} else if (value instanceof FieldListModel) {
+			value = ((FieldListModel<?>) value).getItems();
 		}
 
 		if (value == null) {

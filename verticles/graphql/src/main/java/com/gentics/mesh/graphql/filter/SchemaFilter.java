@@ -7,8 +7,8 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -19,7 +19,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 /**
  * Filter schemas.
  */
-public class SchemaFilter extends SchemaElementFilter<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion> {
+public class SchemaFilter extends SchemaElementFilter<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion> {
 
 	private static final ElementType ELEMENT = ElementType.SCHEMA;
 	private static final String NAME = "SchemaFilter";
@@ -33,8 +33,8 @@ public class SchemaFilter extends SchemaElementFilter<SchemaResponse, SchemaVers
 	}
 
 	@Override
-	protected List<FilterField<HibSchema, ?>> getFilters() {
-		List<FilterField<HibSchema, ?>> filters = super.getFilters();
+	protected List<FilterField<Schema, ?>> getFilters() {
+		List<FilterField<Schema, ?>> filters = super.getFilters();
 		filters.add(new MappedFilter<>(getEntityType().name(), "isContainer", "Filters by schema container flag", BooleanFilter.filter(), schema -> getLatestVersion(schema).getContainer()));
 		return filters;
 	}

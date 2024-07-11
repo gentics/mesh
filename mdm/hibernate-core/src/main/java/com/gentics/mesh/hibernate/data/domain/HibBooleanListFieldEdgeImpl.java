@@ -8,7 +8,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.BooleanField;
 import com.gentics.mesh.database.HibernateTx;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 		@Index(columnList = "listUuid")
 })
 public class HibBooleanListFieldEdgeImpl 
-		extends AbstractHibPrimitiveListFieldEdgeImpl<HibBooleanField, Boolean> implements HibBooleanField, Serializable {
+		extends AbstractHibPrimitiveListFieldEdgeImpl<BooleanField, Boolean> implements BooleanField, Serializable {
 
 	private static final long serialVersionUID = -1506906653905104325L;
 

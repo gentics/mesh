@@ -10,14 +10,14 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -34,9 +34,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testNoDiffByValue() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertNoDiff(list);
@@ -48,9 +48,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffByValue() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue2");
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
@@ -61,12 +61,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testNoDiffStringFieldList() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			HibStringFieldList listA = containerA.createStringList("dummy");
+			NodeFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
 
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			HibStringFieldList listB = containerB.createStringList("dummy");
+			NodeFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringFieldList listB = containerB.createStringList("dummy");
 			listB.addItem(listB.createString("test123"));
 
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
@@ -78,12 +78,12 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffStringFieldList() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			HibStringFieldList listA = containerA.createStringList("dummy");
+			NodeFieldContainer containerA = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringFieldList listA = containerA.createStringList("dummy");
 			listA.addItem(listA.createString("test123"));
 
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
-			HibStringFieldList listB = containerB.createStringList("dummy");
+			NodeFieldContainer containerB = createContainer(FieldUtil.createListFieldSchema("dummy").setListType("string"));
+			StringFieldList listB = containerB.createStringList("dummy");
 			listB.addItem(listB.createString("test1234"));
 
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
@@ -97,10 +97,10 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	@Test
 	public void testDiffMicronodeField() throws IOException {
 		MicronodeFieldSchema micronodeField = FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard");
-		HibMicroschemaVersion version = tx(tx -> {
+		MicroschemaVersion version = tx(tx -> {
 			// Create microschema vcard
-			HibMicroschema schemaContainer = createMicroschema(tx);
-			HibMicroschemaVersion version1 = createMicroschemaVersion(tx, schemaContainer, v -> {
+			Microschema schemaContainer = createMicroschema(tx);
+			MicroschemaVersion version1 = createMicroschemaVersion(tx, schemaContainer, v -> {
 				schemaContainer.setLatestVersion(v);
 				MicroschemaVersionModel microschema = new MicroschemaModelImpl();
 				microschema.setName("vcard");
@@ -114,15 +114,15 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 		});
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(micronodeField);
+			NodeFieldContainer containerA = createContainer(micronodeField);
 
-			HibMicronodeField micronodeA = containerA.createMicronode("micronodeField", version);
+			MicronodeField micronodeA = containerA.createMicronode("micronodeField", version);
 			micronodeA.getMicronode().createString("firstName").setString("firstnameValue");
 			micronodeA.getMicronode().createString("lastName").setString("lastnameValue");
 
-			HibNodeFieldContainer containerB = createContainer(
+			NodeFieldContainer containerB = createContainer(
 				FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
-			HibMicronodeField micronodeB = containerB.createMicronode("micronodeField", version);
+			MicronodeField micronodeB = containerB.createMicronode("micronodeField", version);
 			micronodeB.getMicronode().createString("firstName").setString("firstnameValue");
 			micronodeB.getMicronode().createString("lastName").setString("lastnameValue-CHANGED");
 
@@ -140,9 +140,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testNoDiffByValuesNull() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString(null);
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertNoDiff(list);
@@ -154,9 +154,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffByValueNonNull() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue2");
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
@@ -168,9 +168,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffByValueNonNull2() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString(null);
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);
@@ -182,9 +182,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffBySchemaFieldRemoved() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			HibNodeFieldContainer containerB = createContainer();
+			NodeFieldContainer containerB = createContainer();
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.REMOVED);
 		}
@@ -195,8 +195,8 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffBySchemaFieldAdded() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer();
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer();
+			NodeFieldContainer containerB = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerB.createString("dummy").setString("someValue");
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.ADDED);
@@ -208,9 +208,9 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 	public void testDiffBySchemaFieldTypeChanged() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
+			NodeFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
-			HibNodeFieldContainer containerB = createContainer(FieldUtil.createHtmlFieldSchema("dummy"));
+			NodeFieldContainer containerB = createContainer(FieldUtil.createHtmlFieldSchema("dummy"));
 			containerB.createHTML("dummy").setHtml("someValue");
 			List<FieldContainerChange> list = contentDao.compareTo(containerA, containerB);
 			assertChanges(list, FieldChangeTypes.UPDATED);

@@ -14,21 +14,21 @@ import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.context.impl.DummyEventQueueBatch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibMicronode;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.database.HibernateTx;
@@ -87,18 +87,18 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 
 	@Test
 	public void testRecursiveNodeDeletion() {
-		HibSchema fatSchema = createFatSchema();
-		HibMicroschema fatMicroschema = createFatMicroschema();
-		HibProject projectToTest = tx(() -> createProject("projectToTest", fatSchema.getName()));
-		HibNode sourceNode = tx(() -> {
+		Schema fatSchema = createFatSchema();
+		Microschema fatMicroschema = createFatMicroschema();
+		Project projectToTest = tx(() -> createProject("projectToTest", fatSchema.getName()));
+		Node sourceNode = tx(() -> {
 			NodeDao nodeDao = Tx.get().nodeDao();
 			Tx.get().microschemaDao().assign(fatMicroschema, projectToTest, user(), new DummyEventQueueBatch());
 			ContentDao contentDao = Tx.get().contentDao();
 
-			HibNode refNode = nodeDao.create(projectToTest, user(), fatSchema.getLatestVersion());
-			HibNode source = nodeDao.create(projectToTest, user(), fatSchema.getLatestVersion());
+			Node refNode = nodeDao.create(projectToTest, user(), fatSchema.getLatestVersion());
+			Node source = nodeDao.create(projectToTest, user(), fatSchema.getLatestVersion());
 			HibNodeFieldContainerImpl sourceContainer = (HibNodeFieldContainerImpl) contentDao.createFieldContainer(source, "en", projectToTest.getLatestBranch(), user());
-			HibNode parentNode = source;
+			Node parentNode = source;
 
 			// create 10 nodes with containers
 			for (int i = 0; i < 10; i++) {
@@ -140,17 +140,17 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeDeletionByProject() {
-		HibSchema fatSchema = createFatSchema();
-		HibMicroschema fatMicroschema = createFatMicroschema();
-		HibProject projectToBeDeleted = tx(() -> createProject("projectToBeDeleted", fatSchema.getName()));
-		HibProject projectToStay = tx(() -> createProject("projectToStay", fatSchema.getName()));
+		Schema fatSchema = createFatSchema();
+		Microschema fatMicroschema = createFatMicroschema();
+		Project projectToBeDeleted = tx(() -> createProject("projectToBeDeleted", fatSchema.getName()));
+		Project projectToStay = tx(() -> createProject("projectToStay", fatSchema.getName()));
 
 		tx(() -> {
 			NodeDao nodeDao = Tx.get().nodeDao();
 			Tx.get().microschemaDao().assign(fatMicroschema, projectToBeDeleted, user(), new DummyEventQueueBatch());
 			ContentDao contentDao = Tx.get().contentDao();
-			HibNode node = nodeDao.create(projectToBeDeleted, user(), fatSchema.getLatestVersion());
-			HibNode refNode = nodeDao.create(projectToBeDeleted, user(), fatSchema.getLatestVersion());
+			Node node = nodeDao.create(projectToBeDeleted, user(), fatSchema.getLatestVersion());
+			Node refNode = nodeDao.create(projectToBeDeleted, user(), fatSchema.getLatestVersion());
 
 			// create 10 containers
 			for (int i = 0; i < 10; i++) {
@@ -170,8 +170,8 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 			NodeDao nodeDao = Tx.get().nodeDao();
 			Tx.get().microschemaDao().assign(fatMicroschema, projectToStay, user(), new DummyEventQueueBatch());
 			ContentDao contentDao = Tx.get().contentDao();
-			HibNode node = nodeDao.create(projectToStay, user(), fatSchema.getLatestVersion());
-			HibNode refNode = nodeDao.create(projectToStay, user(), fatSchema.getLatestVersion());
+			Node node = nodeDao.create(projectToStay, user(), fatSchema.getLatestVersion());
+			Node refNode = nodeDao.create(projectToStay, user(), fatSchema.getLatestVersion());
 
 			// create 10 containers
 			for (int i = 0; i < 10; i++) {
@@ -236,11 +236,11 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 		});
 	}
 
-	private HibSchema createFatSchema() {
+	private Schema createFatSchema() {
 		return tx(() -> {
-			HibSchema schema = createSchema(Tx.get());
+			Schema schema = createSchema(Tx.get());
 			schema.setName("testSchema");
-			HibSchemaVersion schemaVersion = createSchemaVersion(Tx.get(), schema, version -> {
+			SchemaVersion schemaVersion = createSchemaVersion(Tx.get(), schema, version -> {
 				CoreTestUtils.fillSchemaVersion(version, schema, "testSchema", "1.0", fieldSchemas);
 			});
 			schema.setLatestVersion(schemaVersion);
@@ -249,12 +249,12 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 		});
 	}
 
-	private HibMicroschema createFatMicroschema() {
+	private Microschema createFatMicroschema() {
 		return tx(() -> {
 			final String microschemaName = "testMicroschema";
-			HibMicroschema microschema = createMicroschema(Tx.get());
+			Microschema microschema = createMicroschema(Tx.get());
 			microschema.setName(microschemaName);
-			HibMicroschemaVersion microschemaVersion = createMicroschemaVersion(Tx.get(), microschema, version -> {
+			MicroschemaVersion microschemaVersion = createMicroschemaVersion(Tx.get(), microschema, version -> {
 				CoreTestUtils.fillMicroschemaVersion(version, microschema, microschemaName, "1.0", microFieldSchemas);
 			});
 			microschema.setLatestVersion(microschemaVersion);
@@ -263,15 +263,15 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 		});
 	}
 
-	private void fillContainer(HibNodeFieldContainerImpl container, HibNode refNode, HibMicroschemaVersion version) {
+	private void fillContainer(HibNodeFieldContainerImpl container, Node refNode, MicroschemaVersion version) {
 		container.createNode("nodeField", refNode);
 		fillCommon(container, refNode);
 
-		HibMicronodeField microField = container.createMicronode("microField", version);
+		MicronodeField microField = container.createMicronode("microField", version);
 		HibMicronodeContainerImpl micronode = (HibMicronodeContainerImpl) microField.getMicronode();
 		fillCommon(micronode, refNode);
 
-		HibMicronodeFieldList microListField = container.createMicronodeList("microListField");
+		MicronodeFieldList microListField = container.createMicronodeList("microListField");
 		HibMicronodeContainerImpl micronodeListItem = (HibMicronodeContainerImpl) microListField.createMicronode(version);
 		fillCommon(micronodeListItem, refNode);
 
@@ -279,35 +279,35 @@ public class NodeDaoImplTest extends AbstractMeshTest {
 		container.createS3Binary("s3BinaryField", createS3Binary());
 	}
 
-	private void fillCommon(HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, HibNode refNode) {
+	private void fillCommon(HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, Node refNode) {
 		container.createNode("nodeField", refNode);
 
-		HibStringFieldList stringListField = container.createStringList("stringListField");
+		StringFieldList stringListField = container.createStringList("stringListField");
 		stringListField.createString("1");
 		stringListField.createString("2");
 		stringListField.createString("3");
 
-		HibHtmlFieldList htmlListField = container.createHTMLList("htmlListField");
+		HtmlFieldList htmlListField = container.createHTMLList("htmlListField");
 		htmlListField.createHTML("1");
 		htmlListField.createHTML("2");
 		htmlListField.createHTML("3");
 
-		HibNumberFieldList numberListField = container.createNumberList("numberListField");
+		NumberFieldList numberListField = container.createNumberList("numberListField");
 		numberListField.createNumber(1);
 		numberListField.createNumber(2);
 		numberListField.createNumber(3);
 
-		HibDateFieldList dateListField = container.createDateList("dateListField");
+		DateFieldList dateListField = container.createDateList("dateListField");
 		dateListField.createDate(System.currentTimeMillis() - 3000);
 		dateListField.createDate(System.currentTimeMillis() - 2000);
 		dateListField.createDate(System.currentTimeMillis() - 1000);
 
-		HibBooleanFieldList boolListField = container.createBooleanList("boolListField");
+		BooleanFieldList boolListField = container.createBooleanList("boolListField");
 		boolListField.createBoolean(true);
 		boolListField.createBoolean(false);
 		boolListField.createBoolean(true);
 
-		HibNodeFieldList nodeListField = container.createNodeList("nodeListField");
+		NodeFieldList nodeListField = container.createNodeList("nodeListField");
 		nodeListField.createNode(refNode);
 	}
 

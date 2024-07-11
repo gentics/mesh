@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaElement;
 
 /**
  * Assert for a schema container
  */
-public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, HibFieldSchemaElement<?, ?, ?, ?, ?>> {
+public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert, FieldSchemaElement<?, ?, ?, ?, ?>> {
 
-	public SchemaContainerAssert(HibFieldSchemaElement<?, ?, ?, ?, ?> actual) {
+	public SchemaContainerAssert(FieldSchemaElement<?, ?, ?, ?, ?> actual) {
 		super(actual, SchemaContainerAssert.class);
 	}
 
@@ -21,7 +21,7 @@ public class SchemaContainerAssert extends AbstractAssert<SchemaContainerAssert,
 	 * @param container
 	 * @return
 	 */
-	public SchemaContainerAssert equals(HibFieldSchemaElement<?, ?, ?, ?, ?> container) {
+	public SchemaContainerAssert equals(FieldSchemaElement<?, ?, ?, ?, ?> container) {
 		assertThat(actual.getName()).as(descriptionText() + " Name").isEqualTo(container.getName());
 		return this;
 	}

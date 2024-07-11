@@ -13,14 +13,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
@@ -38,26 +38,26 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "project")
 @ElementTypeKey(ElementType.PROJECT)
-public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectResponse> implements HibProject, Serializable {
+public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectResponse> implements Project, Serializable {
 
 	private static final long serialVersionUID = 10348507855724965L;
 
 	@ManyToMany(targetEntity = HibLanguageImpl.class, fetch = FetchType.LAZY)
-	private Set<HibLanguage> languages = new HashSet<>();
+	private Set<Language> languages = new HashSet<>();
 
 	@OneToMany(mappedBy = "project", targetEntity = HibBranchImpl.class, fetch = FetchType.LAZY)
-	private Set<HibBranch> branches = new HashSet<>();
+	private Set<Branch> branches = new HashSet<>();
 
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@ManyToMany(targetEntity = HibSchemaImpl.class, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	private Set<HibSchema> schemas = new HashSet<>();
+	private Set<Schema> schemas = new HashSet<>();
 
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@ManyToMany(targetEntity = HibMicroschemaImpl.class, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-	private Set<HibMicroschema> microschemas = new HashSet<>();
+	private Set<Microschema> microschemas = new HashSet<>();
 
 	@OneToOne(targetEntity = HibNodeImpl.class, fetch = FetchType.LAZY)
-	private HibNode baseNode;
+	private Node baseNode;
 
 	@OneToOne
 	private HibBranchImpl latestBranch;
@@ -69,41 +69,41 @@ public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectRespons
 	private Set<HibPermissionRootImpl> roots = new HashSet<>();
 
 	@OneToMany(mappedBy = "project", targetEntity = HibTagFamilyImpl.class)
-	private Set<HibTagFamily> tagFamilies = new HashSet<>();
+	private Set<TagFamily> tagFamilies = new HashSet<>();
 
-	public Set<HibBranch> getBranches() {
+	public Set<Branch> getBranches() {
 		return branches;
 	}
 
 	@Override
-	public Result<? extends HibSchema> getSchemas() {
+	public Result<? extends Schema> getSchemas() {
 		return new TraversalResult<>(schemas);
 	}
 
 	@Override
-	public Result<? extends HibMicroschema> getMicroschemas() {
+	public Result<? extends Microschema> getMicroschemas() {
 		return new TraversalResult<>(microschemas);
 	}
 
-	public Set<HibSchema> getHibSchemas() {
+	public Set<Schema> getHibSchemas() {
 		return schemas;
 	}
 
-	public Set<HibMicroschema> getHibMicroschemas() {
+	public Set<Microschema> getHibMicroschemas() {
 		return microschemas;
 	}
 
-	public Set<HibBranch> getHibBranches() {
+	public Set<Branch> getHibBranches() {
 		return branches;
 	}
 
 	@Override
-	public HibBranch getLatestBranch() {
+	public Branch getLatestBranch() {
 		return latestBranch;
 	}
 
 	@Override
-	public HibBranch getInitialBranch() {
+	public Branch getInitialBranch() {
 		return initialBranch;
 	}
 
@@ -117,74 +117,74 @@ public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectRespons
 	}
 
 	@Override
-	public HibBaseElement getBranchPermissionRoot() {
+	public BaseElement getBranchPermissionRoot() {
 		return CommonTx.get().projectDao().getBranchPermissionRoot(this);
 	}
 
 	@Override
-	public HibBaseElement getTagFamilyPermissionRoot() {
+	public BaseElement getTagFamilyPermissionRoot() {
 		return CommonTx.get().projectDao().getTagFamilyPermissionRoot(this);
 	}
 
 	@Override
-	public HibNode getBaseNode() {
+	public Node getBaseNode() {
 		return baseNode;
 	}
 
 	@Override
-	public void setBaseNode(HibNode baseNode) {
+	public void setBaseNode(Node baseNode) {
 		this.baseNode = baseNode;
 	}
 
 	@Override
-	public HibBaseElement getSchemaPermissionRoot() {
+	public BaseElement getSchemaPermissionRoot() {
 		return  CommonTx.get().projectDao().getSchemaContainerPermissionRoot(this);
 	}
 
 	@Override
-	public HibBaseElement getNodePermissionRoot() {
+	public BaseElement getNodePermissionRoot() {
 		return CommonTx.get().projectDao().getNodePermissionRoot(this);
 	}
 
 	@Override
-	public Result<? extends HibLanguage> getLanguages() {
+	public Result<? extends Language> getLanguages() {
 		return new TraversalResult<>(getHibLanguages());
 	}
 
 	@Override
-	public void removeLanguage(HibLanguage language) {
+	public void removeLanguage(Language language) {
 		getHibLanguages().remove(language);
 	}
 
 	@Override
-	public void addLanguage(HibLanguage language) {
+	public void addLanguage(Language language) {
 		getHibLanguages().add(language);
 	}
 
-	public Set<HibLanguage> getHibLanguages() {
+	public Set<Language> getHibLanguages() {
 		return languages;
 	}
 
-	public void addBranch(HibBranch branch) {
+	public void addBranch(Branch branch) {
 		branches.add(branch);
 		branch.setProject(this);
 	}
 
-	public void removeBranch(HibBranch branch) {
+	public void removeBranch(Branch branch) {
 		branch.setProject(null);
 		branches.remove(branch);
 	}
 
-	public Set<HibTagFamily> getTagFamilies() {
+	public Set<TagFamily> getTagFamilies() {
 		return tagFamilies;
 	}
 
-	public void addTagFamily(HibTagFamily tagFamily) {
+	public void addTagFamily(TagFamily tagFamily) {
 		tagFamilies.add(tagFamily);
 		tagFamily.setProject(this);
 	}
 
-	public void removeTagFamily(HibTagFamily tagFamily) {
+	public void removeTagFamily(TagFamily tagFamily) {
 		tagFamilies.remove(tagFamily);
 		tagFamily.setProject(null);
 	}
@@ -194,7 +194,7 @@ public class HibProjectImpl extends AbstractHibUserTrackedElement<ProjectRespons
 	}
 
 	@Override
-	public HibLanguage findLanguageByTag(String languageTag) {
+	public Language findLanguageByTag(String languageTag) {
 		return Optional.ofNullable(languages).stream().flatMap(Set::stream).filter(l -> l.getLanguageTag().equals(languageTag)).findAny().orElse(null);
 	}
 }

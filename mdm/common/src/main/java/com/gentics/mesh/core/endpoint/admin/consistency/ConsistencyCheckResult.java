@@ -3,7 +3,7 @@ package com.gentics.mesh.core.endpoint.admin.consistency;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 
@@ -16,13 +16,13 @@ public class ConsistencyCheckResult {
 
 	private long repairCount = 0;
 
-	private List<InconsistencyInfo> results = new ArrayList<>(MAX_RESULTS);
+	private List<InconsistencyInfoModel> results = new ArrayList<>(MAX_RESULTS);
 
 	public long getRepairCount() {
 		return repairCount;
 	}
 
-	public List<InconsistencyInfo> getResults() {
+	public List<InconsistencyInfoModel> getResults() {
 		return results;
 	}
 
@@ -34,7 +34,7 @@ public class ConsistencyCheckResult {
 	 * @param severity
 	 */
 	public void addInconsistency(String msg, String uuid, InconsistencySeverity severity) {
-		addInconsistency(new InconsistencyInfo().setDescription(msg).setElementUuid(uuid).setSeverity(severity));
+		addInconsistency(new InconsistencyInfoModel().setDescription(msg).setElementUuid(uuid).setSeverity(severity));
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class ConsistencyCheckResult {
 	 * 
 	 * @param info
 	 */
-	public void addInconsistency(InconsistencyInfo info) {
+	public void addInconsistency(InconsistencyInfoModel info) {
 		if (info.isRepaired()) {
 			repairCount++;
 		}
@@ -68,7 +68,7 @@ public class ConsistencyCheckResult {
 	 */
 	public void addInconsistency(String msg, String uuid, InconsistencySeverity severity, boolean repaired, RepairAction action) {
 		addInconsistency(
-			new InconsistencyInfo().setDescription(msg).setElementUuid(uuid).setSeverity(severity).setRepaired(repaired).setRepairAction(action));
+			new InconsistencyInfoModel().setDescription(msg).setElementUuid(uuid).setSeverity(severity).setRepaired(repaired).setRepairAction(action));
 	}
 
 	/**

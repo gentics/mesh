@@ -32,7 +32,7 @@ public class ImageVariantRequest implements ImageManipulation, RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.")
-	private FocalPoint focalPoint;
+	private FocalPointModel focalPoint;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The image focal point zoom factor.")
@@ -117,7 +117,7 @@ public class ImageVariantRequest implements ImageManipulation, RestModel {
 	}
 
 	@Override
-	public FocalPoint getFocalPoint() {
+	public FocalPointModel getFocalPoint() {
 		return focalPoint;
 	}
 
@@ -127,7 +127,7 @@ public class ImageVariantRequest implements ImageManipulation, RestModel {
 	}
 
 	@Override
-	public ImageVariantRequest setFocalPoint(FocalPoint point) {
+	public ImageVariantRequest setFocalPoint(FocalPointModel point) {
 		this.focalPoint = point;
 		return this;
 	}

@@ -8,9 +8,9 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -33,10 +33,10 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
 
-			HibFieldTypeChange change = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
+			FieldTypeChange change = (FieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			change.setFieldName("name");
 			assertEquals("name", change.getFieldName());
 		} catch (MeshSchemaException e) {
@@ -53,8 +53,8 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
 				StringFieldSchema stringField = new StringFieldSchemaImpl();
 				stringField.setName("stringField");
 				stringField.setRequired(true);
@@ -62,7 +62,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 				v.setSchema(schemaModel);
 			});
 
-			HibFieldTypeChange fieldTypeUpdate = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
+			FieldTypeChange fieldTypeUpdate = (FieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeUpdate.setFieldName("stringField");
 			fieldTypeUpdate.setType("html");
 
@@ -85,8 +85,8 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
 				StringFieldSchema stringField = new StringFieldSchemaImpl();
 				stringField.setName("stringField");
 				stringField.setRequired(true);
@@ -95,7 +95,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 				v.setSchema(schemaModel);
 			});
 
-			HibFieldTypeChange fieldTypeUpdate = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
+			FieldTypeChange fieldTypeUpdate = (FieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeUpdate.setFieldName("stringField");
 			fieldTypeUpdate.setType("list");
 			fieldTypeUpdate.setListType("html");
@@ -122,12 +122,12 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
 
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
-			HibFieldTypeChange change = (HibFieldTypeChange) ctx.schemaDao().createChange(version, model);
+			FieldTypeChange change = (FieldTypeChange) ctx.schemaDao().createChange(version, model);
 			change.updateFromRest(model);
 
 			assertEquals("testField", change.getFieldName());
@@ -146,10 +146,10 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
 			schemaModel.setName("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {});
 
-			HibFieldTypeChange change = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
+			FieldTypeChange change = (FieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			change.setFieldName("test");
 			change.setListType("html");
 			change.setType("list");

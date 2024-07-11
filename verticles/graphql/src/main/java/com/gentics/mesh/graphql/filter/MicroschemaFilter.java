@@ -2,8 +2,8 @@ package com.gentics.mesh.graphql.filter;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -14,7 +14,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 /**
  * Microschema filter.
  */
-public class MicroschemaFilter extends SchemaElementFilter<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion> {
+public class MicroschemaFilter extends SchemaElementFilter<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion> {
 
 		private static final ElementType ELEMENT = ElementType.MICROSCHEMA;
 		private static final String NAME = "MicroschemaFilter";

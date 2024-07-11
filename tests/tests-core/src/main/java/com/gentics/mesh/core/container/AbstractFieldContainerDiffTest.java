@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -16,7 +16,7 @@ import com.gentics.mesh.util.CoreTestUtils;
 
 public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 
-	protected HibNodeFieldContainer createContainer(FieldSchema...fields) {
+	protected NodeFieldContainer createContainer(FieldSchema...fields) {
 		return CoreTestUtils.createContainer(fields);
 	}
 

@@ -1,10 +1,10 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 
 /**
  * Cache for project name lookups.
  */
-public interface ProjectNameCache extends NameCache<HibProject> {
+public interface ProjectNameCache extends NameCache<Project> {
 
 }

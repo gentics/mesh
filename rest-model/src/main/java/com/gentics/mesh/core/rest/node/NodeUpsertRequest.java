@@ -5,7 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 /**
  * POJO for a node create/update request.
  */
-public class NodeUpsertRequest implements FieldContainer {
+public class NodeUpsertRequest implements FieldContainerModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the parent node in which the node will be created. The uuid of this object must be set.")

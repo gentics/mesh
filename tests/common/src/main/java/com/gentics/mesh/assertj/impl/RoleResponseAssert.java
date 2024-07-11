@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 
@@ -15,7 +15,7 @@ public class RoleResponseAssert extends AbstractMeshAssert<RoleResponseAssert, R
 		super(actual, RoleResponseAssert.class);
 	}
 
-	public RoleResponseAssert matches(HibRole role) {
+	public RoleResponseAssert matches(Role role) {
 		assertGenericNode(role, actual);
 		assertEquals(role.getName(), actual.getName());
 		assertNotNull(actual.getGroups());

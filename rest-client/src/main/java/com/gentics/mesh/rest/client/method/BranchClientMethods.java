@@ -4,8 +4,8 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
@@ -81,7 +81,7 @@ public interface BranchClientMethods {
 	 * @param branchUuid
 	 * @return
 	 */
-	MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid);
+	MeshRequest<BranchInfoSchemaListModel> getBranchSchemaVersions(String projectName, String branchUuid);
 
 	/**
 	 * Assign the given schema versions to the branch.
@@ -91,7 +91,7 @@ public interface BranchClientMethods {
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid, BranchInfoSchemaList schemaVersionReferences);
+	MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid, BranchInfoSchemaListModel schemaVersionReferences);
 
 	/**
 	 * Assign the given schema versions to the branch.
@@ -101,7 +101,7 @@ public interface BranchClientMethods {
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid, SchemaReference... schemaVersionReferences);
+	MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid, SchemaReference... schemaVersionReferences);
 
 	/**
 	 * Get microschema versions assigned to a branch.
@@ -110,7 +110,7 @@ public interface BranchClientMethods {
 	 * @param branchUuid
 	 * @return
 	 */
-	MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid);
+	MeshRequest<BranchInfoMicroschemaListModel> getBranchMicroschemaVersions(String projectName, String branchUuid);
 
 	/**
 	 * Assign the given microschema versions to the branch.
@@ -120,8 +120,8 @@ public interface BranchClientMethods {
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
-			BranchInfoMicroschemaList microschemaVersionReferences);
+	MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+			BranchInfoMicroschemaListModel microschemaVersionReferences);
 
 	/**
 	 * Assign the given microschema versions to the branch.
@@ -131,7 +131,7 @@ public interface BranchClientMethods {
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+	MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 			MicroschemaReference... microschemaVersionReferences);
 
 	/**

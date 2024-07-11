@@ -27,11 +27,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.nesting.NodeField;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -39,8 +39,8 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -73,13 +73,13 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		HibNode node = folder("2015");
-		List<HibNode> targetNodes = Arrays.asList(folder("news"), folder("deals"));
+		Node node = folder("2015");
+		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 		for (int i = 0; i < 20; i++) {
-			HibNode newValue = targetNodes.get(i % 2);
+			Node newValue = targetNodes.get(i % 2);
 
-			HibNode oldValue = null;
-			HibNodeFieldContainer container = null;
+			Node oldValue = null;
+			NodeFieldContainer container = null;
 
 			try (Tx tx = tx()) {					
 				container = tx.contentDao().getFieldContainer(node, "en");
@@ -101,7 +101,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		HibNode target = folder("news");
+		Node target = folder("news");
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		String oldNumber = firstResponse.getVersion();
 
@@ -114,7 +114,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		HibNode target = folder("news");
+		Node target = folder("news");
 
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 		String oldVersion = firstResponse.getVersion();
@@ -126,8 +126,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
-			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			Node node = folder("2015");
+			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNode(FIELD_NAME)).isNotNull();
@@ -153,7 +153,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testDeleteField() {
-		HibNode target = folder("deals");
+		Node target = folder("deals");
 		String targetUuid = tx(() -> target.getUuid());
 
 		NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(targetUuid));
@@ -211,11 +211,11 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		HibNode node = folder("news");
+		Node node = folder("news");
 		String nodeUuid = tx(() -> node.getUuid());
-		HibNode node2 = folder("deals");
+		Node node2 = folder("deals");
 		String node2Uuid = tx(() -> node2.getUuid());
-		HibNode updatedNode = folder("2015");
+		Node updatedNode = folder("2015");
 		String updatedNodeUuid = tx(() -> updatedNode.getUuid());
 
 		// Load the node so that we can use it to prepare the update request
@@ -270,12 +270,12 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		HibNode newsNode = folder("news");
+		Node newsNode = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createNode(FIELD_NAME, newsNode);
@@ -283,19 +283,19 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		}
 
 		NodeResponse response = readNode(folder("2015"));
-		NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
+		NodeFieldModel deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 	}
 
 	@Test
 	public void testReadNodeWithResolveLinks() throws IOException {
-		HibNode newsNode = folder("news");
+		Node newsNode = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createNode(FIELD_NAME, newsNode);
@@ -310,7 +310,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			() -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), parameters, new VersioningParametersImpl().draft()));
 
 		// Check whether the field contains the languagePath
-		NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
+		NodeFieldModel deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 		assertNotNull(deserializedNodeField.getPath());
@@ -321,7 +321,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (Field) null);
+		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
 		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 		assertNull(
 			"The expanded node field within the response should be null since we created the node without providing any field information.",
@@ -330,13 +330,13 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
-		HibNode referencedNode = folder("news");
+		Node referencedNode = folder("news");
 
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 			// Create test field
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createNode(FIELD_NAME, referencedNode);
@@ -356,19 +356,19 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
-		HibNode node = tx(tx -> {
+		Node node = tx(tx -> {
 			ContentDao contentDao = tx.contentDao();
 			RoleDao roleDao = tx.roleDao();
 			// Revoke the permission to the referenced node
-			HibNode referencedNode = folder("news");
+			Node referencedNode = folder("news");
 			roleDao.revokePermissions(role(), referencedNode, InternalPermission.READ_PERM);
 
-			HibNode node1 = folder("2015");
+			Node node1 = folder("2015");
 
 			prepareTypedSchema(node1, FieldUtil.createNodeFieldSchema(FIELD_NAME), false);
 			tx.commit();
 			// Create test field
-			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node1, english());
+			NodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node1, english());
 
 			container.createNode(FIELD_NAME, referencedNode);
 
@@ -385,13 +385,13 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
-		HibNode newsNode = folder("news");
+		Node newsNode = folder("news");
 
 		// Create test field
 		try (Tx tx = tx()) {
-			HibNode node = folder("2015");
+			Node node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
-			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createNode(FIELD_NAME, newsNode);
@@ -400,7 +400,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		// 1. Read node with collapsed fields and check that the collapsed node field can be read
 		NodeResponse responseCollapsed = readNode(folder("2015"));
-		NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);
+		NodeFieldModel deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);
 		assertNotNull(deserializedNodeField);
 		assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 
@@ -426,7 +426,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithLanguageFallback() throws IOException {
-		HibNode folder = folder("2015");
+		Node folder = folder("2015");
 		try (Tx tx = tx()) {
 			prepareTypedSchema(schemaContainer("folder"), List.of(FieldUtil.createNodeFieldSchema(FIELD_NAME)), Optional.empty());
 			tx.success();
@@ -478,8 +478,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return node value (may be null)
 	 */
-	protected HibNode getNodeValue(HibNodeFieldContainer container, String fieldName) {
-		HibNodeField field = container.getNode(fieldName);
+	protected Node getNodeValue(NodeFieldContainer container, String fieldName) {
+		NodeField field = container.getNode(fieldName);
 		return field != null ? field.getNode() : null;
 	}
 

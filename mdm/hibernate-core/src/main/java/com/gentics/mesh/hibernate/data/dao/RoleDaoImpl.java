@@ -29,13 +29,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.dao.PersistingRoleDao;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.group.Group;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
@@ -65,16 +65,16 @@ import io.vertx.core.Vertx;
  *
  */
 @Singleton
-public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, HibRoleImpl> implements PersistingRoleDao {
+public class RoleDaoImpl extends AbstractHibDaoGlobal<Role, RoleResponse, HibRoleImpl> implements PersistingRoleDao {
 	
 	@Inject
-	public RoleDaoImpl(DaoHelper<HibRole, HibRoleImpl> daoHelper, HibPermissionRoots permissionRoots,
+	public RoleDaoImpl(DaoHelper<Role, HibRoleImpl> daoHelper, HibPermissionRoots permissionRoots,
 			CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory, Lazy<Vertx> vertx) {
 		super(daoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 	}
 
 	@Override
-	public boolean grantRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+	public boolean grantRolePermissions(Role role, BaseElement element, InternalPermission... permissions) {
 		Optional<HibPermissionImpl> existingPermission = getEntityPermission(role, element);
 		if (existingPermission.isPresent()) {
 			if (requiresPermissionChange(existingPermission.get(), permissions)) {
@@ -96,16 +96,16 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public boolean grantRolePermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive,
+	public boolean grantRolePermissions(Set<Role> roles, BaseElement element, boolean exclusive,
 			InternalPermission... permissions) {
 		boolean permissionGranted = false;
 
 		// if we need to set exclusive permissions, we need to load existing permissions on all roles, otherwise only on the roles that we want to change
 		Set<HibPermissionImpl> existingSet = exclusive ? getEntityPermission(element) : getEntityPermission(roles, element);
-		Map<HibRole, HibPermissionImpl> existingMap = existingSet.stream()
+		Map<Role, HibPermissionImpl> existingMap = existingSet.stream()
 				.collect(Collectors.toMap(HibPermissionImpl::getRole, Function.identity()));
 
-		for (HibRole role : roles) {
+		for (Role role : roles) {
 			Optional<HibPermissionImpl> existingPermission = Optional.ofNullable(existingMap.get(role));
 
 			if (existingPermission.isPresent()) {
@@ -141,9 +141,9 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public boolean grantRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive,
+	public boolean grantRolePermissionsWithUuids(Set<String> roleUuids, BaseElement element, boolean exclusive,
 			InternalPermission... permissions) {
-		Set<HibRole> roles = findByUuids(roleUuids).map(Pair::getRight).filter(role -> role != null).collect(Collectors.toSet());
+		Set<Role> roles = findByUuids(roleUuids).map(Pair::getRight).filter(role -> role != null).collect(Collectors.toSet());
 
 		return grantRolePermissions(roles, element, exclusive, permissions);
 	}
@@ -157,7 +157,7 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public boolean revokeRolePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions) {
+	public boolean revokeRolePermissions(Role role, BaseElement element, InternalPermission... permissions) {
 		boolean permissionRevoked = false;
 		Optional<HibPermissionImpl> toUpdate = getEntityPermission(role, element);
 		if (toUpdate.isEmpty()) {
@@ -176,14 +176,14 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public boolean revokeRolePermissions(Set<HibRole> roles, HibBaseElement element,
+	public boolean revokeRolePermissions(Set<Role> roles, BaseElement element,
 			InternalPermission... permissions) {
 		boolean permissionRevoked = false;
 		Set<HibPermissionImpl> existingSet = getEntityPermission(roles, element);
-		Map<HibRole, HibPermissionImpl> existingMap = existingSet.stream()
+		Map<Role, HibPermissionImpl> existingMap = existingSet.stream()
 				.collect(Collectors.toMap(HibPermissionImpl::getRole, Function.identity()));
 
-		for (HibRole role : roles) {
+		for (Role role : roles) {
 			Optional<HibPermissionImpl> existingPermission = Optional.ofNullable(existingMap.get(role));
 
 			if (!existingPermission.isEmpty()) {
@@ -203,32 +203,32 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public boolean revokeRolePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element,
+	public boolean revokeRolePermissionsWithUuids(Set<String> roleUuids, BaseElement element,
 			InternalPermission... permissions) {
-		Set<HibRole> roles = findByUuids(roleUuids).map(Pair::getRight).filter(role -> role != null).collect(Collectors.toSet());
+		Set<Role> roles = findByUuids(roleUuids).map(Pair::getRight).filter(role -> role != null).collect(Collectors.toSet());
 		return revokeRolePermissions(roles, element, permissions);
 	}
 
 	@Override
-	public Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element) {
+	public Set<InternalPermission> getPermissions(Role role, BaseElement element) {
 		return getEntityPermission(role, element)
 			.map(HibPermissionImpl::getPermissions)
 			.orElse(Collections.emptySet());
 	}
 
 	@Override
-	public Map<HibRole, Set<InternalPermission>> getPermissions(Set<HibRole> roles, HibBaseElement element) {
+	public Map<Role, Set<InternalPermission>> getPermissions(Set<Role> roles, BaseElement element) {
 		if (CollectionUtils.isEmpty(roles)) {
 			return Collections.emptyMap();
 		}
-		Map<HibRole, Set<InternalPermission>> permissionMap = new HashMap<>();
-		for (HibRole role : roles) {
+		Map<Role, Set<InternalPermission>> permissionMap = new HashMap<>();
+		for (Role role : roles) {
 			permissionMap.put(role, new HashSet<>());
 		}
 
 		boolean includePublishPermissions = element.hasPublishPermissions();
 		for (HibPermissionImpl perm : getEntityPermission(roles, element)) {
-			HibRole role = perm.getRole();
+			Role role = perm.getRole();
 			permissionMap.computeIfAbsent(role, key -> new HashSet<>()).addAll(perm.getPermissions());
 			if (!includePublishPermissions) {
 				permissionMap.get(role).removeAll(
@@ -240,18 +240,18 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement element) {
+	public boolean hasPermission(Role role, InternalPermission permission, BaseElement element) {
 		return getEntityPermission(role, element)
 			.map(perm -> perm.hasPermission(permission))
 			.orElse(false);
 	}
 
-	private Optional<HibPermissionImpl> getEntityPermission(HibRole role, HibBaseElement element) {
+	private Optional<HibPermissionImpl> getEntityPermission(Role role, BaseElement element) {
 		HibPermissionPK primaryKey = new HibPermissionPK((UUID) element.getId(), role);
 		return Optional.ofNullable(em().find(HibPermissionImpl.class, primaryKey));
 	}
 
-	private Set<HibPermissionImpl> getEntityPermission(HibBaseElement element) {
+	private Set<HibPermissionImpl> getEntityPermission(BaseElement element) {
 		return em()
 			.createQuery("select p from permission p where element = :element", HibPermissionImpl.class)
 			.setParameter("element", UUIDUtil.toJavaUuid(element.getUuid()))
@@ -259,29 +259,29 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 			.collect(Collectors.toSet());
 	}
 
-	private Set<HibPermissionImpl> getEntityPermission(Set<HibRole> roles, HibBaseElement element) {
+	private Set<HibPermissionImpl> getEntityPermission(Set<Role> roles, BaseElement element) {
 		Set<HibPermissionImpl> permSet = new HashSet<>(getEntityPermission(element));
 		permSet.removeIf(perm -> !roles.contains(perm.getRole()));
 		return permSet;
 	}
 
 	@Override
-	public void addRole(HibRole role) {
+	public void addRole(Role role) {
 		em().persist(role);
 	}
 
 	@Override
-	public void removeRole(HibRole role) {
+	public void removeRole(Role role) {
 		em().remove(role);
 	}
 
 	@Override
-	public Result<? extends HibGroup> getGroups(HibRole role) {
+	public Result<? extends Group> getGroups(Role role) {
 		return new TraversalResult<>(role.getGroups());
 	}
 
 	@Override
-	public Page<? extends HibGroup> getGroups(HibRole role, HibUser authUser, PagingParameters pagingInfo) {
+	public Page<? extends Group> getGroups(Role role, User authUser, PagingParameters pagingInfo) {
 		CriteriaQuery<HibGroupImpl> query = cb().createQuery(HibGroupImpl.class);
 		Metamodel metamodel = em().getMetamodel();
 		EntityType<HibRoleImpl> rootMetamodel = metamodel.entity(HibRoleImpl.class);
@@ -295,7 +295,7 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission) {
+	public Set<String> getRoleUuidsForPerm(BaseElement element, InternalPermission permission) {
 		return em()
 			.createQuery("select p.role.dbUuid" +
 					" from permission p" +
@@ -309,23 +309,23 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	}
 
 	@Override
-	public HibRole beforeDeletedFromDatabase(HibRole element) {
+	public Role beforeDeletedFromDatabase(Role element) {
 		HibRoleImpl role = (HibRoleImpl) element;
 		role.removeGroups();
 		return role;
 	}
 
 	@Override
-	public HibRole findByName(String name) {
+	public Role findByName(String name) {
 		return HibernateTx.get().data().mesh().roleNameCache().get(name, roleName -> {
 			return super.findByName(roleName);
 		});
 	}
 
 	@Override
-	public Stream<Pair<String, HibRole>> findByNames(Collection<String> names) {
+	public Stream<Pair<String, Role>> findByNames(Collection<String> names) {
 		return SplittingUtils.splitAndMergeInList(names, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
-			return em().createQuery("select r from role r where r.name in :names", HibRole.class)
+			return em().createQuery("select r from role r where r.name in :names", Role.class)
 				.setParameter("names", slice)
 				.getResultStream()
 				.map(t -> Pair.of(t.getName(), t))
@@ -336,11 +336,11 @@ public class RoleDaoImpl extends AbstractHibDaoGlobal<HibRole, RoleResponse, Hib
 	@Override
 	public Set<Triple<String, String, Object>> findAll(InternalActionContext ac) {
 		List<Tuple> resultList = null;
-		HibUser user = ac.getUser();
+		User user = ac.getUser();
 		if (user.isAdmin()) {
 			resultList = em().createNamedQuery("role.findAllForAdmin", Tuple.class).getResultList();
 		} else {
-			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			resultList = SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(0), slice -> em().createNamedQuery("role.findAll", Tuple.class)
 					.setParameter("roles", slice)
 					.getResultList());

@@ -8,15 +8,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -84,17 +84,17 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 		db.singleTxWriteLock(
 			(batch, tx) -> {
 				CommonTx ctx = tx.unwrap();
-				HibProject project = tx.getProject(ac);
-				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
+				Project project = tx.getProject(ac);
+				Language language = tx.languageDao().findByLanguageTag(project, languageTag);
 
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
-				HibBranch branch = tx.getBranch(ac);
+				Branch branch = tx.getBranch(ac);
 				NodeDao nodeDao = tx.nodeDao();
-				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
-				HibNodeFieldContainer nodeFieldContainer = ctx.contentDao().findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+				NodeFieldContainer nodeFieldContainer = ctx.contentDao().findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 
 				if (nodeFieldContainer == null) {
 					throw error(BAD_REQUEST, "object_not_found_for_uuid_version", nodeUuid, nodeVersion);
@@ -110,7 +110,7 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 					throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 				}
 
-				HibBinaryField binaryField = nodeFieldContainer.getBinary(fieldName);
+				BinaryField binaryField = nodeFieldContainer.getBinary(fieldName);
 
 				if (binaryField == null) {
 					throw error(BAD_REQUEST, "error_binaryfield_not_found_with_name", fieldName);
@@ -125,7 +125,7 @@ public class AbstractBinaryUploadHandler extends AbstractHandler {
 				}
 
 				BinaryCheckUpdateRequest request = ac.fromJson(BinaryCheckUpdateRequest.class);
-				HibBinary binary = binaryField.getBinary();
+				Binary binary = binaryField.getBinary();
 
 				binary.setCheckStatus(request.getStatus());
 

@@ -8,8 +8,8 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
-import com.gentics.mesh.core.rest.job.warning.JobWarning;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.job.warning.JobWarningModel;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 
 /**
  * POJO for job information.
@@ -18,7 +18,7 @@ public class JobResponse extends AbstractResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("User reference of the creator of the element.")
-	private UserReference creator;
+	private UserReferenceModel creator;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted created date string.")
@@ -62,7 +62,7 @@ public class JobResponse extends AbstractResponse {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of warnings which were encoutered while executing the job.")
-	private List<JobWarning> warnings = new ArrayList<>();
+	private List<JobWarningModel> warnings = new ArrayList<>();
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
@@ -115,7 +115,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @return
 	 */
-	public UserReference getCreator() {
+	public UserReferenceModel getCreator() {
 		return creator;
 	}
 
@@ -124,7 +124,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @param creator
 	 */
-	public void setCreator(UserReference creator) {
+	public void setCreator(UserReferenceModel creator) {
 		this.creator = creator;
 	}
 
@@ -224,7 +224,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @return
 	 */
-	public List<JobWarning> getWarnings() {
+	public List<JobWarningModel> getWarnings() {
 		return warnings;
 	}
 
@@ -233,7 +233,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @param warning
 	 */
-	public void addWarning(JobWarning warning) {
+	public void addWarning(JobWarningModel warning) {
 		this.warnings.add(warning);
 	}
 
@@ -242,7 +242,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @param warnings
 	 */
-	public void setWarnings(List<JobWarning> warnings) {
+	public void setWarnings(List<JobWarningModel> warnings) {
 		this.warnings = warnings;
 	}
 }

@@ -32,16 +32,16 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.group.Group;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -58,9 +58,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
 import com.gentics.mesh.core.rest.node.version.NodeVersionsResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -117,15 +117,15 @@ import io.vertx.test.core.TestUtils;
 
 public interface TestHelper extends EventHelper, ClientHelper {
 
-	default HibRole role() {
+	default Role role() {
 		return data().role();
 	}
 
-	default HibRole role(String name) {
+	default Role role(String name) {
 		return data().getRole(name);
 	}
 
-	default HibUser getRequestUser() {
+	default User getRequestUser() {
 		return data().getUserInfo().getUser();
 	}
 
@@ -133,11 +133,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return MeshAuthUserImpl.create(db(), getRequestUser());
 	}
 
-	default HibRole anonymousRole() {
+	default Role anonymousRole() {
 		return data().getAnonymousRole();
 	}
 
-	default HibGroup group() {
+	default Group group() {
 		return data().getUserInfo().getGroup();
 	}
 
@@ -206,7 +206,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return getTestContext().getHttpsPort();
 	}
 
-	default HibNode folder(String key) {
+	default Node folder(String key) {
 		return data().getFolder(key);
 	}
 
@@ -219,35 +219,35 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return tx(() -> folder("news").getUuid());
 	}
 
-	default HibNode content(String key) {
+	default Node content(String key) {
 		return data().getContent(key);
 	}
 
-	default Map<String, HibTagFamily> tagFamilies() {
+	default Map<String, TagFamily> tagFamilies() {
 		return data().getTagFamilies();
 	}
 
-	default HibTagFamily tagFamily(String key) {
+	default TagFamily tagFamily(String key) {
 		return data().getTagFamily(key);
 	}
 
-	default HibTag tag(String key) {
+	default Tag tag(String key) {
 		return data().getTag(key);
 	}
 
-	default HibSchema schemaContainer(String key) {
+	default Schema schemaContainer(String key) {
 		return data().getSchemaContainer(key);
 	}
 
-	default Map<String, HibSchema> schemaContainers() {
+	default Map<String, Schema> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
-	default Map<String, HibRole> roles() {
+	default Map<String, Role> roles() {
 		return data().getRoles();
 	}
 
-	default Map<String, ? extends HibTag> tags() {
+	default Map<String, ? extends Tag> tags() {
 		return data().getTags();
 	}
 
@@ -267,15 +267,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return "fr";
 	}
 
-	default Map<String, HibGroup> groups() {
+	default Map<String, Group> groups() {
 		return data().getGroups();
 	}
 
-	default Map<String, HibMicroschema> microschemaContainers() {
+	default Map<String, Microschema> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default HibMicroschema microschemaContainer(String key) {
+	default Microschema microschemaContainer(String key) {
 		return data().getMicroschemaContainers().get(key);
 	}
 
@@ -300,7 +300,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 *
 	 * @return
 	 */
-	default HibNode content() {
+	default Node content() {
 		return data().getContent("news overview");
 	}
 
@@ -383,12 +383,12 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return call(() -> client().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
 	}
 
-	default MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
+	default MeshRequest<NodeResponse> createNodeAsync(String fieldKey, FieldModel field) {
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		return createNodeAsync(parentNodeUuid, fieldKey, field);
 	}
 
-	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, Field field) {
+	default public MeshRequest<NodeResponse> createNodeAsync(String parentNodeUuid, String fieldKey, FieldModel field) {
 		tx(tx -> {
 			prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
 				.map(TestHelper::fieldIntoSchema)
@@ -414,7 +414,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return createNode(parent.getUuid(), "slug", new StringFieldImpl().setString(RandomStringUtils.randomAlphabetic(5)));
 	}
 
-	default public NodeResponse createNode(String fieldKey, Field field) {
+	default public NodeResponse createNode(String fieldKey, FieldModel field) {
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> createNodeAsync(parentNodeUuid, fieldKey, field));
 		assertNotNull("The response could not be found in the result of the future.", response);
@@ -424,7 +424,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return response;
 	}
 
-	default public NodeResponse createNode(String parentNodeUuid, String fieldKey, Field field) {
+	default public NodeResponse createNode(String parentNodeUuid, String fieldKey, FieldModel field) {
 		NodeResponse response = call(() -> createNodeAsync(parentNodeUuid, fieldKey, field));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		if (fieldKey != null) {
@@ -433,14 +433,14 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return response;
 	}
 
-	default int uploadImage(HibNode node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+	default int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
 		return upload(node, buffer, languageTag, fieldname, filename, contentType);
 	}
 
-	default int upload(HibNode node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+	default int upload(Node node, Buffer buffer, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		String uuid = tx(() -> node.getUuid());
 		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(node, languageTag).getVersion(); });
 		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname,
@@ -620,7 +620,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param binaryFieldName
 	 * @throws IOException
 	 */
-	default public void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
+	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		prepareSchema(node, mimeTypeWhitelist, binaryFieldName, null);
 	}
 
@@ -633,7 +633,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param checkServiceUrl
 	 * @throws IOException
 	 */
-	default void prepareSchema(HibNode node, String mimeTypeWhitelist, String binaryFieldName, String checkServiceUrl) throws IOException {
+	default void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName, String checkServiceUrl) throws IOException {
 		prepareTypedSchema(node, new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setCheckServiceUrl(checkServiceUrl).setName(binaryFieldName).setLabel("Binary content"), true);
 	}
 
@@ -644,15 +644,15 @@ public interface TestHelper extends EventHelper, ClientHelper {
 	 * @param fieldSchema filled field
 	 * @throws IOException
 	 */
-	default public void prepareTypedSchema(HibNode node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
+	default public void prepareTypedSchema(Node node, FieldSchema fieldSchema, boolean setAsSegmentField) throws IOException {
 		prepareTypedSchema(node.getSchemaContainer(), List.of(fieldSchema), setAsSegmentField ? Optional.of(fieldSchema.getName()) : Optional.empty());
 	}
 
-	default public void prepareTypedSchema(HibNode node, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
+	default public void prepareTypedSchema(Node node, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
 		prepareTypedSchema(node.getSchemaContainer(), fieldSchemas, maybeSegmentFieldKey);
 	}
 
-	default public void prepareTypedSchema(HibSchema schemaContainer, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
+	default public void prepareTypedSchema(Schema schemaContainer, List<FieldSchema> fieldSchemas, Optional<String> maybeSegmentFieldKey) throws IOException {
 		SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
 		fieldSchemas.stream()
 			.filter(fieldSchema -> schema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
@@ -668,7 +668,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	default public void prepareTypedMicroschema(HibMicroschema microschemaContainer, List<FieldSchema> fieldSchemas) throws IOException {
+	default public void prepareTypedMicroschema(Microschema microschemaContainer, List<FieldSchema> fieldSchemas) throws IOException {
 		MicroschemaVersionModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		fieldSchemas.stream()
 			.filter(fieldSchema -> microschema.getFields().stream().filter(f -> f.getName().equals(fieldSchema.getName())).findAny().isEmpty())
@@ -679,13 +679,13 @@ public interface TestHelper extends EventHelper, ClientHelper {
  		actions().updateSchemaVersion(microschemaContainer.getLatestVersion());
 	}
 
-	default public MeshRequest<NodeResponse> uploadRandomData(HibNode node, String languageTag, String fieldKey, int binaryLen, String contentType,
+	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
 		String fileName) {
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return uploadData(buffer, node, languageTag, fieldKey, contentType, fileName);
 	}
 
-	default MeshRequest<NodeResponse> uploadData(Buffer data, HibNode node, String languageTag, String fieldKey, String contentType,
+	default MeshRequest<NodeResponse> uploadData(Buffer data, Node node, String languageTag, String fieldKey, String contentType,
 												 String fileName) {
 		String uuid = tx(() -> node.getUuid());
 		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(tx.nodeDao().findByUuidGlobal(uuid), "en").getVersion(); });
@@ -711,11 +711,11 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		}
 	}
 
-	default public NodeResponse uploadImage(HibNode node, String languageTag, String fieldName) throws IOException {
+	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		return uploadImageType(node, languageTag, fieldName, "jpg", "jpeg");
 	}
 
-	default public NodeResponse uploadImageType(HibNode node, String languageTag, String fieldName, String extension, String mimeSubtype) throws IOException {
+	default public NodeResponse uploadImageType(Node node, String languageTag, String fieldName, String extension, String mimeSubtype) throws IOException {
 		String contentType = "image/" + mimeSubtype;
 		String fileName = "blume." + StringUtils.removeStart(extension, ".");
 		try (Tx tx = tx()) {
@@ -790,7 +790,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return client;
 	}
 
-	default public HibSchema getSchemaContainer() {
+	default public Schema getSchemaContainer() {
 		return data().getSchemaContainer("content");
 	}
 
@@ -798,7 +798,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return mesh().bulkProvider().get();
 	}
 
-	default public Map<String, HibUser> users() {
+	default public Map<String, User> users() {
 		return data().getUsers();
 	}
 
@@ -945,7 +945,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		return threadMXBean.dumpAllThreads(true, true).length;
 	}
 
-	static FieldSchema fieldIntoSchema(Field field) {
+	static FieldSchema fieldIntoSchema(FieldModel field) {
 		FieldTypes type = FieldTypes.valueByName(field.getType());
 		switch(type) {
 		case BINARY:
@@ -967,7 +967,7 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		case STRING:
 			return new StringFieldSchemaImpl();
 		case LIST:
-			FieldList<?> fieldList = (FieldList<?>) field;
+			FieldListModel<?> fieldList = (FieldListModel<?>) field;
 			return new ListFieldSchemaImpl().setListType(fieldList.getItemType());
 		default:
 			break;
@@ -975,8 +975,8 @@ public interface TestHelper extends EventHelper, ClientHelper {
 		throw new IllegalArgumentException("Unsupported Field type: " + field.getType());
 	}
 
-	default String getDisplayName(HibNode node, String branchUuid) {
-		HibNodeFieldContainer content = Tx.get().contentDao().findVersion(node, Arrays.asList("en"), branchUuid, "draft");
+	default String getDisplayName(Node node, String branchUuid) {
+		NodeFieldContainer content = Tx.get().contentDao().findVersion(node, Arrays.asList("en"), branchUuid, "draft");
 		String displayName = content.getDisplayFieldValue();
 		if (StringUtils.isEmpty(displayName)) {
 			displayName = "unnamed node (" + node.getUuid() + ")";

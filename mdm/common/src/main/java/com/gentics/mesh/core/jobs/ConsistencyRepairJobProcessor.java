@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 
@@ -27,7 +27,7 @@ public class ConsistencyRepairJobProcessor extends AbstractConsistencyCheckProce
 	}
 
 	@Override
-	public Completable process(HibJob job) {
+	public Completable process(Job job) {
 		return process(job, true);
 	}
 }

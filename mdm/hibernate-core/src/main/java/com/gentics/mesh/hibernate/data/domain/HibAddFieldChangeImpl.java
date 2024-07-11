@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.io.Serializable;
 
-import com.gentics.mesh.core.data.schema.HibAddFieldChange;
+import com.gentics.mesh.core.data.schema.AddFieldChange;
 
 import jakarta.persistence.Entity;
 
@@ -13,7 +13,7 @@ import jakarta.persistence.Entity;
  *
  */
 @Entity(name = "addfieldchangechange")
-public class HibAddFieldChangeImpl extends AbstractHibSchemaFieldChange implements HibAddFieldChange, Serializable {
+public class HibAddFieldChangeImpl extends AbstractHibSchemaFieldChange implements AddFieldChange, Serializable {
 
 	private static final long serialVersionUID = -8774037600788639829L;
 

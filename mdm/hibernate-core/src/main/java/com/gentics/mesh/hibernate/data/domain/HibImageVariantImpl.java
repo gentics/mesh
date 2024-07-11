@@ -24,10 +24,10 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.binary.HibImageVariantSetter;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.database.HibernateTx;
@@ -178,7 +178,7 @@ public class HibImageVariantImpl extends AbstractImageDataImpl implements HibIma
 	protected ResizeMode resizeMode;
 
 	@ManyToOne(fetch = FetchType.LAZY, targetEntity = HibBinaryImpl.class)
-	protected HibBinary binary;
+	protected Binary binary;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "binary_field_variant", inverseJoinColumns = {@JoinColumn(name = "fields_dbUuid")}, joinColumns = {@JoinColumn(name = "variants_dbUuid")})
@@ -190,12 +190,12 @@ public class HibImageVariantImpl extends AbstractImageDataImpl implements HibIma
 	}
 
 	@Override
-	public HibBinary getBinary() {
+	public Binary getBinary() {
 		return binary;
 	}
 
 	@Override
-	public Result<? extends HibBinaryField> findFields() {
+	public Result<? extends BinaryField> findFields() {
 		return new TraversalResult<>(fields);
 	}
 
@@ -260,61 +260,61 @@ public class HibImageVariantImpl extends AbstractImageDataImpl implements HibIma
 	}
 
 	@Override
-	public HibImageVariant setCropWidth(Integer cropWidth) {
+	public ImageVariant setCropWidth(Integer cropWidth) {
 		this.cropWidth = cropWidth;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setCropHeight(Integer cropHeight) {
+	public ImageVariant setCropHeight(Integer cropHeight) {
 		this.cropHeight = cropHeight;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setAuto(boolean auto) {
+	public ImageVariant setAuto(boolean auto) {
 		this.auto = auto;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setResizeMode(ResizeMode resize) {
+	public ImageVariant setResizeMode(ResizeMode resize) {
 		this.resizeMode = resize;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setCropMode(CropMode crop) {
+	public ImageVariant setCropMode(CropMode crop) {
 		this.cropMode = crop;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setCropStartY(Integer cropY) {
+	public ImageVariant setCropStartY(Integer cropY) {
 		this.cropY = cropY;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setCropStartX(Integer cropX) {
+	public ImageVariant setCropStartX(Integer cropX) {
 		this.cropX = cropX;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setFocalPointZoom(Float fpz) {
+	public ImageVariant setFocalPointZoom(Float fpz) {
 		this.fpz = fpz;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setFocalPointY(Float fpy) {
+	public ImageVariant setFocalPointY(Float fpy) {
 		this.fpy = fpy;
 		return this;
 	}
 
 	@Override
-	public HibImageVariant setFocalPointX(Float fpx) {
+	public ImageVariant setFocalPointX(Float fpx) {
 		this.fpx = fpx;
 		return this;
 	}
@@ -331,7 +331,7 @@ public class HibImageVariantImpl extends AbstractImageDataImpl implements HibIma
 		return this;
 	}
 
-	public void setBinary(HibBinary binary) {
+	public void setBinary(Binary binary) {
 		this.binary = binary;
 	}
 

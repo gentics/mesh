@@ -2,7 +2,7 @@ package com.gentics.mesh.core.rest.test;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadataModel;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -11,7 +11,7 @@ public class UnwrapTest {
 	@Test
 	public void testUnwrap() {
 		BinaryFieldImpl model = new BinaryFieldImpl();
-		BinaryMetadata metadata = new BinaryMetadata();
+		BinaryMetadataModel metadata = new BinaryMetadataModel();
 		metadata.setLocation(42.0, 41.0);
 		metadata.add("ene", "muh");
 		metadata.add("name", "muhue2");

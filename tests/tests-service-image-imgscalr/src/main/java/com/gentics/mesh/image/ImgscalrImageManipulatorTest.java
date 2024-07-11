@@ -33,7 +33,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.Binary;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -79,7 +79,7 @@ public class ImgscalrImageManipulatorTest extends AbstractImageTest {
 		checkImages((imageName, width, height, color, refImage, path, bs) -> {
 			log.debug("Handling " + imageName);
 
-			HibBinary hb = createMockedBinary(path);
+			Binary hb = createMockedBinary(path);
 			try {
 				when(mockedBinaryStorage.openBlockingStream(null)).then(uuid -> ImageTestUtil.class.getResourceAsStream(path));
 			} catch (IOException e) {

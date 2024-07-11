@@ -19,9 +19,9 @@ import jakarta.persistence.OneToOne;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
@@ -35,36 +35,36 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = HibMicroschemaImpl.TABLE_NAME)
 @ElementTypeKey(ElementType.MICROSCHEMA)
-public class HibMicroschemaImpl extends AbstractHibUserTrackedElement<MicroschemaResponse> implements HibMicroschema, Serializable {
+public class HibMicroschemaImpl extends AbstractHibUserTrackedElement<MicroschemaResponse> implements Microschema, Serializable {
 
 	private static final long serialVersionUID = 6185066222311338821L;
 
 	public static final String TABLE_NAME = "microschema";
 
 	@ManyToMany(mappedBy = "microschemas", targetEntity = HibProjectImpl.class, fetch = FetchType.LAZY)
-	private Set<HibProject> projects = new HashSet<>();
+	private Set<Project> projects = new HashSet<>();
 
 	@OneToOne(targetEntity = HibMicroschemaVersionImpl.class)
-	private HibMicroschemaVersion latestVersion;
+	private MicroschemaVersion latestVersion;
 
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@OneToMany(mappedBy = "microschema", targetEntity = HibMicroschemaVersionImpl.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private Set<HibMicroschemaVersion> versions = new HashSet<>();
+	private Set<MicroschemaVersion> versions = new HashSet<>();
 
 	@Override
-	public HibMicroschemaVersion getLatestVersion() {
+	public MicroschemaVersion getLatestVersion() {
 		return latestVersion;
 	}
 
 	@Override
-	public void setLatestVersion(HibMicroschemaVersion version) {
+	public void setLatestVersion(MicroschemaVersion version) {
 		if (version != null) {
 			versions.add(version);
 		}
 		this.latestVersion = version;
 	}
 
-	public Iterable<HibProject> getLinkedProjects() {
+	public Iterable<Project> getLinkedProjects() {
 		return Collections.unmodifiableSet(projects);
 	}
 
@@ -75,7 +75,7 @@ public class HibMicroschemaImpl extends AbstractHibUserTrackedElement<Microschem
 		if (version == null || version.equals("draft")) {
 			return getLatestVersion().transformToRestSync(ac, level, languageTags);
 		} else {
-			HibMicroschemaVersion foundVersion = Tx.get().microschemaDao().findVersionByRev(this, version);
+			MicroschemaVersion foundVersion = Tx.get().microschemaDao().findVersionByRev(this, version);
 			if (foundVersion == null) {
 				throw error(NOT_FOUND, "object_not_found_for_uuid_version", getUuid(), version);
 			}
@@ -83,15 +83,15 @@ public class HibMicroschemaImpl extends AbstractHibUserTrackedElement<Microschem
 		}
 	}
 
-	public Set<HibMicroschemaVersion> getVersions() {
+	public Set<MicroschemaVersion> getVersions() {
 		return versions;
 	}
 
-	public void setVersions(Set<HibMicroschemaVersion> versions) {
+	public void setVersions(Set<MicroschemaVersion> versions) {
 		this.versions = versions;
 	}
 
-	public Set<HibProject> getProjects() {
+	public Set<Project> getProjects() {
 		return projects;
 	}
 }

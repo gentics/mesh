@@ -34,9 +34,9 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -72,7 +72,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteLastLanguageFromNode() throws Exception {
 		grantAdmin();
-		HibNode node = folder("news");
+		Node node = folder("news");
 		String branchName = "newBranch";
 
 		waitForLatestJob(() -> {
@@ -86,7 +86,7 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
 			assertThat(nodeDao.getChildren(node, initialBranchUuid())).as("The node must have children").isNotEmpty();
-			for (HibNode child : nodeDao.getChildren(node, initialBranchUuid())) {
+			for (Node child : nodeDao.getChildren(node, initialBranchUuid())) {
 				collectUuids(child, childrenUuids);
 			}
 		}
@@ -247,11 +247,11 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteForBranch() throws Exception {
-		HibNode node = content("concorde");
+		Node node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 
 		// Create new branch
-		HibBranch newBranch = tx(() -> createBranch("newbranch"));
+		Branch newBranch = tx(() -> createBranch("newbranch"));
 
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 		context.setNewBranch(newBranch);
@@ -277,17 +277,17 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	@Test
 	@Ignore
 	public void testDeletePublishedForBranch() throws Exception {
-		HibNode node = content("concorde");
+		Node node = content("concorde");
 		String uuid = tx(() -> node.getUuid());
 
-		HibBranch newBranch = tx(tx -> {
+		Branch newBranch = tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			// Publish the node
 			BulkActionContext bac = createBulkContext();
 			nodeDao.publish(node, mockActionContext(), bac);
 
 			// Create new branch
-			HibBranch b = createBranch("newbranch");
+			Branch b = createBranch("newbranch");
 
 			// Migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -318,12 +318,12 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeleteBaseNode() throws Exception {
 		try (Tx tx = tx()) {
-			HibNode node = project().getBaseNode();
+			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
 			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-			HibNode foundNode = tx.nodeDao().findByUuid(project(), uuid);
+			Node foundNode = tx.nodeDao().findByUuid(project(), uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
 	}
@@ -621,10 +621,10 @@ public class NodeDeleteEndpointTest extends AbstractMeshTest {
 	 * @param child
 	 * @param childrenUuids
 	 */
-	private void collectUuids(HibNode child, Set<String> childrenUuids) {
+	private void collectUuids(Node child, Set<String> childrenUuids) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		childrenUuids.add(child.getUuid());
-		for (HibNode subchild : nodeDao.getChildren(child, initialBranchUuid())) {
+		for (Node subchild : nodeDao.getChildren(child, initialBranchUuid())) {
 			collectUuids(subchild, childrenUuids);
 		}
 	}

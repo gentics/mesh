@@ -23,7 +23,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
@@ -202,7 +202,7 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			final String content = String.format("{{mesh.link('%s'%s)}}", contentUuid,
 					linkLanguage != null ? ", '" + linkLanguage + "'" : "");
-			HibProject project = tx.projectDao().findByUuid(projectUuid);
+			Project project = tx.projectDao().findByUuid(projectUuid);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project);
 			ac.setParameter(VersioningParameters.BRANCH_QUERY_PARAM_KEY, PROJECT_NAME);
 			String replacedContent = replacer.replace(ac, branchUuid, ContainerType.DRAFT, content, linkType, PROJECT_NAME, Arrays.asList(language));
@@ -235,7 +235,7 @@ public class LinkReplacerVariationTest extends AbstractMeshTest {
 			String composed = String.format("link1: %s, link2: %s, link3: %s, link4: %s", link, notFoundLink, linkDe, linkEn);
 			String expectedForComposed = String.format("link1: %s, link2: %s, link3: %s, link4: %s", expected, expectedNotFound, expectedForDe, expectedForEn);
 
-			HibProject project = tx.projectDao().findByUuid(projectUuid);
+			Project project = tx.projectDao().findByUuid(projectUuid);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project);
 			ac.setParameter(VersioningParameters.BRANCH_QUERY_PARAM_KEY, PROJECT_NAME);
 

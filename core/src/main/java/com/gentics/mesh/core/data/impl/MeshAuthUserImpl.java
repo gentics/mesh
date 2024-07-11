@@ -2,15 +2,14 @@ package com.gentics.mesh.core.data.impl;
 
 import java.util.Objects;
 
-import io.vertx.ext.auth.authorization.Authorization;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 
 import io.vertx.core.AsyncResult;
@@ -19,19 +18,19 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AuthProvider;
-import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authorization.Authorization;
 
 /**
- * Wraps a {@link HibUser} to implement {@link MeshAuthUser}.
+ * Wraps a {@link User} to implement {@link MeshAuthUser}.
  * 
  * @see MeshAuthUser
  */
 public class MeshAuthUserImpl implements MeshAuthUser {
 
 	private final Database db;
-	private final HibUser delegate;
+	private final User delegate;
 
-	private MeshAuthUserImpl(Database db, HibUser user) {
+	private MeshAuthUserImpl(Database db, User user) {
 		this.db = db;
 		this.delegate = user;
 	}
@@ -43,7 +42,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	 * @param user
 	 * @return
 	 */
-	public static MeshAuthUserImpl create(Database db, HibUser user) {
+	public static MeshAuthUserImpl create(Database db, User user) {
 		Objects.requireNonNull(db);
 		if (user == null) {
 			return null;
@@ -68,7 +67,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 
 			JsonArray rolesArray = new JsonArray();
 			user.put("roles", rolesArray);
-			for (HibRole role : userDao.getRoles(delegate)) {
+			for (Role role : userDao.getRoles(delegate)) {
 				JsonObject roleJson = new JsonObject();
 				roleJson.put("uuid", role.getUuid());
 				roleJson.put("name", role.getName());
@@ -77,14 +76,14 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 
 			JsonArray groupsArray = new JsonArray();
 			user.put("groups", groupsArray);
-			for (HibGroup group : userDao.getGroups(delegate)) {
+			for (Group group : userDao.getGroups(delegate)) {
 				JsonObject groupJson = new JsonObject();
 				groupJson.put("uuid", group.getUuid());
 				groupJson.put("name", group.getName());
 				groupsArray.add(groupJson);
 			}
 
-			HibNode reference = delegate.getReferencedNode();
+			Node reference = delegate.getReferencedNode();
 			if (reference != null) {
 				user.put("nodeReference", reference.getUuid());
 			}
@@ -98,7 +97,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public User merge(User user) {
+	public io.vertx.ext.auth.User merge(io.vertx.ext.auth.User user) {
 		throw new NotImplementedException();
 	}
 
@@ -108,12 +107,12 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public User isAuthorized(Authorization authorization, Handler<AsyncResult<Boolean>> handler) {
+	public io.vertx.ext.auth.User isAuthorized(Authorization authorization, Handler<AsyncResult<Boolean>> handler) {
 		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 
 	@Override
-	public User clearCache() {
+	public io.vertx.ext.auth.User clearCache() {
 		throw new NotImplementedException();
 	}
 
@@ -127,7 +126,7 @@ public class MeshAuthUserImpl implements MeshAuthUser {
 		throw new NotImplementedException();
 	}
 
-	public HibUser getDelegate() {
+	public User getDelegate() {
 		return delegate;
 	}
 

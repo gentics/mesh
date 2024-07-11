@@ -1,6 +1,6 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 
 /**
  * Tagfamily name cache.
@@ -8,6 +8,6 @@ import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
  * @author plyhun
  *
  */
-public interface TagFamilyNameCache extends NameCache<HibTagFamily> {
+public interface TagFamilyNameCache extends NameCache<TagFamily> {
 
 }

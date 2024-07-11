@@ -12,10 +12,10 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.schema.HibFieldTypeChange;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.schema.HibUpdateFieldChange;
+import com.gentics.mesh.core.data.schema.FieldTypeChange;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.UpdateFieldChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
@@ -59,8 +59,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			CommonTx ctx = tx.unwrap();
 			SchemaModelImpl schemaModel = new SchemaModelImpl();
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> v.setSchema(schemaModel));
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> v.setSchema(schemaModel));
 			SchemaModel updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
 			assertEquals("No changes were specified. No modification should happen.", schemaModel, updatedSchema);
@@ -74,8 +74,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
 				NumberFieldSchema numberField = new NumberFieldSchemaImpl();
 				numberField.setName("testField");
 				numberField.setRequired(true);
@@ -85,7 +85,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 				v.setSchema(schemaModel);
 			});
 
-			HibFieldTypeChange fieldTypeChange = (HibFieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
+			FieldTypeChange fieldTypeChange = (FieldTypeChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.CHANGEFIELDTYPE);
 			fieldTypeChange.setFieldName("testField");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
@@ -107,8 +107,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
 				StringFieldSchema stringField = new StringFieldSchemaImpl();
 				stringField.setAllowedValues("blub");
 				stringField.setName("stringField");
@@ -119,7 +119,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 				v.setSchema(schemaModel);
 			});
 
-			HibUpdateFieldChange stringFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange stringFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
 			version.setNextChange(stringFieldUpdate);
@@ -140,8 +140,8 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			// 1. Create schema
 			SchemaModelImpl schemaModel = new SchemaModelImpl("testschema");
-			HibSchema schema = ctx.schemaDao().create(schemaModel, user());
-			HibSchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
+			Schema schema = ctx.schemaDao().create(schemaModel, user());
+			SchemaVersion version = ctx.schemaDao().createPersistedVersion(schema, v -> {
 				BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 				binaryField.setName("binaryField");
 				binaryField.setAllowedMimeTypes("oldTypes");
@@ -196,53 +196,53 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			});
 
 			// 2. Create schema field update change
-			HibUpdateFieldChange binaryFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange binaryFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			binaryFieldUpdate.setFieldName("binaryField");
 			binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
 			binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			version.setNextChange(binaryFieldUpdate);
 
-			HibUpdateFieldChange nodeFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange nodeFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			nodeFieldUpdate.setFieldName("nodeField");
 			nodeFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "schemaA", "schemaB" });
 			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
-			HibUpdateFieldChange stringFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange stringFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			stringFieldUpdate.setIndexOptions(IndexOptionHelper.getRawFieldOption());
 			nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
-			HibUpdateFieldChange htmlFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange htmlFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.ELASTICSEARCH_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
-			HibUpdateFieldChange numberFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange numberFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			numberFieldUpdate.setFieldName("numberField");
 			numberFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
-			HibUpdateFieldChange dateFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange dateFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			dateFieldUpdate.setFieldName("dateField");
 			dateFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			numberFieldUpdate.setNextChange(dateFieldUpdate);
 
-			HibUpdateFieldChange booleanFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange booleanFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			booleanFieldUpdate.setFieldName("booleanField");
 			booleanFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
-			HibUpdateFieldChange micronodeFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange micronodeFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			micronodeFieldUpdate.setFieldName("micronodeField");
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
-			HibUpdateFieldChange listFieldUpdate = (HibUpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
+			UpdateFieldChange listFieldUpdate = (UpdateFieldChange) ctx.schemaDao().createPersistedChange(version, SchemaChangeOperation.UPDATEFIELD);
 			listFieldUpdate.setFieldName("listField");
 			listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });

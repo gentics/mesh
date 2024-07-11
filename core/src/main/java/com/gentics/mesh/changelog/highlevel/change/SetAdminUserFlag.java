@@ -5,9 +5,9 @@ import javax.inject.Inject;
 import com.gentics.mesh.changelog.highlevel.AbstractHighLevelChange;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -44,12 +44,12 @@ public class SetAdminUserFlag extends AbstractHighLevelChange {
 	@Override
 	public void apply() {
 		GroupDao groupDao = Tx.get().groupDao();
-		for (HibRole role : Tx.get().roleDao().findAll()) {
+		for (Role role : Tx.get().roleDao().findAll()) {
 			if (!"admin".equals(role.getName())) {
 				continue;
 			}
-			for (HibGroup group : role.getGroups()) {
-				for (HibUser user : groupDao.getUsers(group)) {
+			for (Group group : role.getGroups()) {
+				for (User user : groupDao.getUsers(group)) {
 					log.info("Setting admin flag for user " + user.getUsername());
 					user.setAdmin(true);
 				}

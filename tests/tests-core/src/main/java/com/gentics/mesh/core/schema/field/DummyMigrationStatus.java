@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.schema.field;
 
-import com.gentics.mesh.core.data.branch.HibBranchVersionAssignment;
+import com.gentics.mesh.core.data.branch.BranchVersionAssignment;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.job.JobStatus;
-import com.gentics.mesh.core.rest.job.JobWarningList;
+import com.gentics.mesh.core.rest.job.JobWarningListModel;
 
 /**
  * Wrapper for migration status for tests.
@@ -31,7 +31,7 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public MigrationStatusHandler done(JobWarningList warningList) {
+	public MigrationStatusHandler done(JobWarningListModel warningList) {
 		return this;
 	}
 
@@ -41,7 +41,7 @@ public class DummyMigrationStatus implements MigrationStatusHandler {
 	}
 
 	@Override
-	public void setVersionEdge(HibBranchVersionAssignment versionEdge) {
+	public void setVersionEdge(BranchVersionAssignment versionEdge) {
 
 	}
 

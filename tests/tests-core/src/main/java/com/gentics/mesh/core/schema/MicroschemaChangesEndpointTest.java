@@ -12,10 +12,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -49,9 +49,9 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveField() throws Exception {
 		// 1. Create node that uses the microschema
-		HibMicroschema microschemaContainer = microschemaContainer("vcard");
-		HibNode node = createMicronodeNode();
-		HibMicroschemaVersion beforeVersion = tx(() -> microschemaContainer.getLatestVersion());
+		Microschema microschemaContainer = microschemaContainer("vcard");
+		Node node = createMicronodeNode();
+		MicroschemaVersion beforeVersion = tx(() -> microschemaContainer.getLatestVersion());
 		assertNull("The microschema should not yet have any changes", tx(() -> microschemaContainer.getLatestVersion().getNextChange()));
 
 		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
@@ -74,19 +74,19 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		// 4. Assert migrated node
 		try (Tx tx = tx()) {
-			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
+			MicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
-			HibNodeFieldContainer fieldContainer = tx.contentDao().getFieldContainer(node, "en");
+			NodeFieldContainer fieldContainer = tx.contentDao().getFieldContainer(node, "en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
 	}
 
 	@Test
 	public void testAddField() throws Exception {
-		HibMicroschema microschemaContainer = microschemaContainer("vcard");
+		Microschema microschemaContainer = microschemaContainer("vcard");
 
 		// 1. Setup changes
-		HibMicroschemaVersion beforeVersion;
+		MicroschemaVersion beforeVersion;
 		try (Tx tx = tx()) {
 			beforeVersion = microschemaContainer.getLatestVersion();
 			assertNull("The microschema should not yet have any changes", beforeVersion.getNextChange());
@@ -106,7 +106,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		});
 
 		try (Tx tx = tx()) {
-			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
+			MicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertNotNull("The change should have been added to the schema.", reloaded.getNextChange());
 			assertNotNull("The container should now have a new version", reloaded.getNextVersion());
 		}
@@ -118,7 +118,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		final String newName = "new_name";
 
 		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
-		HibMicroschemaVersion beforeVersion = tx(() -> data().getMicroschemaContainer("vcard").getLatestVersion());
+		MicroschemaVersion beforeVersion = tx(() -> data().getMicroschemaContainer("vcard").getLatestVersion());
 
 		expect(MICROSCHEMA_UPDATED).match(1, MeshElementEventModelImpl.class, event -> {
 			assertThat(event).hasName(newName).hasUuid(vcardUuid);
@@ -137,7 +137,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
-			HibMicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
+			MicroschemaVersion reloaded = CommonTx.get().load(beforeVersion.getId(), tx().<CommonTx>unwrap().microschemaDao().getVersionPersistenceClass());
 			assertEquals("The name of the microschema was not updated", newName, reloaded.getNextVersion().getName());
 		}
 	}
@@ -147,7 +147,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			String name = "captionedImage";
 			String originalSchemaName = "vcard";
-			HibMicroschema microschema = microschemaContainers().get(originalSchemaName);
+			Microschema microschema = microschemaContainers().get(originalSchemaName);
 			assertNotNull(microschema);
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName(name);
@@ -157,7 +157,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		}
 	}
 
-	private HibNode createMicronodeNode() {
+	private Node createMicronodeNode() {
 
 		// 1. Update folder schema
 		tx(() -> {
@@ -180,7 +180,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		NodeResponse response = createNode("micronodeField", micronode);
 
 		return tx(tx -> {
-			HibNode node = tx.nodeDao().findByUuid(project(), response.getUuid());
+			Node node = tx.nodeDao().findByUuid(project(), response.getUuid());
 			assertNotNull("The node should have been created.", node);
 			assertNotNull("The node should have a micronode graph field", tx.contentDao().getFieldContainer(node, "en").getMicronode("micronodeField"));
 			return node;

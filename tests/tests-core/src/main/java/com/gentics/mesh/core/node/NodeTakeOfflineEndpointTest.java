@@ -17,9 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -76,7 +76,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeOffline() {
-		HibNode node = folder("products");
+		Node node = folder("products");
 		String nodeUuid = tx(() -> node.getUuid());
 		String schemaUuid = tx(() -> schemaContainer("folder").getUuid());
 		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
@@ -120,7 +120,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeNodeLanguageOffline() {
 		try (Tx tx = tx()) {
-			HibNode node = folder("products");
+			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			// 1. Take all nodes offline
@@ -148,7 +148,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeOfflineNoPermission() {
-		HibNode node;
+		Node node;
 		String nodeUuid;
 		try (Tx tx = tx()) {
 			node = folder("products");
@@ -171,7 +171,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeLanguageOfflineNoPermission() {
-		HibNode node;
+		Node node;
 		String nodeUuid;
 
 		try (Tx tx = tx()) {
@@ -192,7 +192,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineNodeOffline() {
 		try (Tx tx = tx()) {
-			HibNode node = folder("products");
+			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -208,7 +208,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineNodeLanguageOffline() {
 		try (Tx tx = tx()) {
-			HibNode node = folder("products");
+			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			assertThat(call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
@@ -229,7 +229,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineEmptyLanguage() {
 		try (Tx tx = tx()) {
-			HibNode node = folder("products");
+			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
@@ -239,8 +239,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeOfflineWithOnlineChild() {
 		try (Tx tx = tx()) {
-			HibNode news = folder("news");
-			HibNode news2015 = folder("2015");
+			Node news = folder("news");
+			Node news2015 = folder("2015");
 
 			call(() -> client().publishNode(PROJECT_NAME, news.getUuid()));
 			call(() -> client().publishNode(PROJECT_NAME, news2015.getUuid()));
@@ -265,10 +265,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineForBranch() {
-		HibNode news = folder("news");
-		HibBranch initialBranch = db().tx(() -> latestBranch());
+		Node news = folder("news");
+		Branch initialBranch = db().tx(() -> latestBranch());
 
-		HibBranch newBranch = createBranch("newbranch", true);
+		Branch newBranch = createBranch("newbranch", true);
 
 		try (Tx tx = tx()) {
 			// publish in initial and new branch
@@ -309,7 +309,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// 2. Take folder /news offline - This should fail since folder /news/2015 is still published
 		db().tx(() -> {
 			// 1. Take folder offline
-			HibNode node = folder("news");
+			Node node = folder("news");
 			String branchName = getBranch().getName();
 			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published", folder("2015").getUuid(), node.getUuid(), branchName);
 			return null;
@@ -326,7 +326,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		// 4. Take folder /news offline - It should work since all child nodes have been taken offline
 		db().tx(() -> {
 			// 1. Take folder offline
-			HibNode node = folder("news");
+			Node node = folder("news");
 			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()));
 			return null;
 		});

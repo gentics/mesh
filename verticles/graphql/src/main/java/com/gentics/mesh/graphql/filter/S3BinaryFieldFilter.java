@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 
-public class S3BinaryFieldFilter extends ImageDataFieldFilter<S3HibBinary, S3HibBinaryField> {
+public class S3BinaryFieldFilter extends ImageDataFieldFilter<S3Binary, S3BinaryField> {
 
 	private static Map<String, S3BinaryFieldFilter> instances = Collections.synchronizedMap(new HashMap<>());
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.mock;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_VERSION;
 import static com.gentics.mesh.shared.SharedKeys.API_VERSION_CONTEXT_KEY;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -16,8 +16,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -39,22 +39,22 @@ public final class Mocks {
 
 	}
 
-	public static InternalActionContext getMockedInternalActionContext(String query, HibUser user, HibProject project) {
+	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
 		return getMockedInternalActionContext(query, user, project, null);
 	}
 
-	public static <T> InternalActionContext getMockedInternalActionContext(String query, HibUser user, HibProject project, T body) {
+	public static <T> InternalActionContext getMockedInternalActionContext(String query, User user, Project project, T body) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null, body));
 		ac.data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 		ac.put(API_VERSION_CONTEXT_KEY, CURRENT_API_VERSION);
 		return ac;
 	}
 
-	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, HibUser user, HibProject project) {
+	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, User user, Project project) {
 		return getMockedRoutingContext(query, noInternalMap, user, project, null);
 	}
 
-	public static <T> RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, HibUser user, HibProject project, T body) {
+	public static <T> RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, User user, Project project, T body) {
 		Map<String, Object> map = new HashMap<>();
 		if (noInternalMap) {
 			map = null;

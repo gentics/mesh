@@ -21,8 +21,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.group.GroupRoleAssignModel;
@@ -45,8 +45,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
-			HibRole extraRole = roleDao.create("extraRole", user());
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			Role extraRole = roleDao.create("extraRole", user());
+			Group group = groupDao.findByUuid(group().getUuid());
 			groupDao.addRole(group, extraRole);
 			groupDao.mergeIntoPersisted(group);
 
@@ -74,7 +74,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		// revoke read permission on the extra role
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibRole extraRole = roleDao.findByUuid(roleUuid);
+			Role extraRole = roleDao.findByUuid(roleUuid);
 			roleDao.revokePermissions(role(), extraRole, READ_PERM);
 			tx.success();
 		}
@@ -94,7 +94,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupDao = tx.groupDao();
 
-			HibRole extraRole = roleDao.create(roleName, user());
+			Role extraRole = roleDao.create(roleName, user());
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
 			assertEquals(1, groupDao.getRoles(group()).count());
 			return extraRole.getUuid();
@@ -145,7 +145,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddNoPermissionRoleToGroup() throws Exception {
 		String roleUuid;
-		HibRole extraRole;
+		Role extraRole;
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
 			RoleDao roleDao = tx.roleDao();
@@ -192,8 +192,8 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
-			HibRole extraRole = roleDao.create(roleName, user());
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			Role extraRole = roleDao.create(roleName, user());
+			Group group = groupDao.findByUuid(group().getUuid());
 			groupDao.addRole(group, extraRole);
 			groupDao.mergeIntoPersisted(group);
 			roleDao.grantPermissions(role(), extraRole, READ_PERM);
@@ -238,7 +238,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
-		HibRole extraRole;
+		Role extraRole;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 
@@ -254,18 +254,18 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			Group group = groupDao.findByUuid(group().getUuid());
 			assertTrue("Role should be assigned to group.", groupDao.hasRole(group, tx.roleDao().findByUuid(extraRole.getUuid())));
 		}
 	}
 
 	@Test
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
-		HibRole extraRole;
+		Role extraRole;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 
-			HibGroup group = group();
+			Group group = group();
 			extraRole = roleDao.create("extraRole", user());
 			roleDao.revokePermissions(role(), group, UPDATE_PERM);
 			tx.success();
@@ -291,12 +291,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
-		HibRole extraRole;
+		Role extraRole;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			PersistingGroupDao groupDao = tx.<CommonTx>unwrap().groupDao();
 
-			HibGroup group = group();
+			Group group = group();
 			extraRole = roleDao.create("extraRole", user());
 			groupDao.addRole(group, extraRole);
 			groupDao.mergeIntoPersisted(group);
@@ -311,7 +311,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			Group group = groupDao.findByUuid(group().getUuid());
 			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 			assertThat(restGroup).matches(group());
 			assertTrue("Role should now be assigned to group.", groupDao.hasRole(group, tx.roleDao().findByUuid(extraRole.getUuid())));
@@ -324,7 +324,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			HibGroup group = groupDao.findByUuid(group().getUuid());
+			Group group = groupDao.findByUuid(group().getUuid());
 			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 			assertThat(restGroup).matches(group());
 			assertFalse("Role should now no longer be assigned to group.", groupDao.hasRole(group, tx.roleDao().findByUuid(extraRole.getUuid())));
@@ -335,12 +335,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
 		String extraRoleUuid;
-		HibRole extraRole;
+		Role extraRole;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			GroupDao groupDao = tx.groupDao();
 
-			HibGroup group = group();
+			Group group = group();
 			extraRole = roleDao.create("extraRole", user());
 			extraRoleUuid = extraRole.getUuid();
 			groupDao.addRole(group, extraRole);

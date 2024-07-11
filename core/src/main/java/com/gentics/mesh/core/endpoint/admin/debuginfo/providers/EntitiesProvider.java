@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.db.Database;
@@ -62,7 +62,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 	}
 
 	private <
-			T extends HibCoreElement<? extends RestModel>, 
+			T extends CoreElement<? extends RestModel>, 
 			D extends DaoGlobal<T> & DaoTransformable<T, ? extends RestModel>
 		> Flowable<DebugInfoEntry> rootElements(
 				InternalActionContext ac, Function<Tx, D> root, String filename
@@ -72,7 +72,7 @@ public class EntitiesProvider implements DebugInfoProvider {
 			.toFlowable();
 	}
 	
-	private <T extends HibCoreElement<? extends RestModel>> String rootToString(InternalActionContext ac, Stream<? extends T> stream, DaoTransformable<T, ? extends RestModel> dao) {
+	private <T extends CoreElement<? extends RestModel>> String rootToString(InternalActionContext ac, Stream<? extends T> stream, DaoTransformable<T, ? extends RestModel> dao) {
 		return JsonUtil.toJson(
 			stream.map(element -> dao.transformToRestSync(element, ac, 0))
 				.collect(Collectors.toList()), false);

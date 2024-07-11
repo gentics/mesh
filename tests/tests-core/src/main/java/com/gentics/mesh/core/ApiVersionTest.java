@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static com.gentics.mesh.MeshVersion.CURRENT_API_VERSION;
+import static com.gentics.mesh.MeshVersions.CURRENT_API_VERSION;
 import static com.gentics.mesh.test.ElasticsearchTestMode.NONE;
 import static com.gentics.mesh.test.TestSize.FULL;
 

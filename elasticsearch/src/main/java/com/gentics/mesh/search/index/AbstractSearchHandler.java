@@ -29,13 +29,13 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActions;
-import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.CoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T>
  */
-public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM extends RestModel> implements SearchHandler<T, RM> {
+public abstract class AbstractSearchHandler<T extends CoreElement<RM>, RM extends RestModel> implements SearchHandler<T, RM> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 
@@ -115,10 +115,10 @@ public abstract class AbstractSearchHandler<T extends HibCoreElement<RM>, RM ext
 
 			JsonArray filter = new JsonArray();
 			db.tx(tx -> {
-				HibUser user = ac.getUser();
+				User user = ac.getUser();
 				if (!user.isAdmin()) {
 					JsonArray roleUuids = new JsonArray();
-					for (HibRole role : tx.userDao().getRoles(ac.getUser())) {
+					for (Role role : tx.userDao().getRoles(ac.getUser())) {
 						roleUuids.add(role.getUuid());
 					}
 					filter.add(new JsonObject().put("terms", new JsonObject().put("_roleUuids", roleUuids)));

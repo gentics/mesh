@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.event.AbstractMeshEventModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 
 /**
  * POJO for user<->group assignment events.
@@ -17,7 +17,7 @@ public class GroupUserAssignModel extends AbstractMeshEventModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the user which was assigned/unassgned from/to the group.")
-	private UserReference user;
+	private UserReferenceModel user;
 
 	public GroupUserAssignModel() {
 	}
@@ -30,11 +30,11 @@ public class GroupUserAssignModel extends AbstractMeshEventModel {
 		this.group = group;
 	}
 
-	public UserReference getUser() {
+	public UserReferenceModel getUser() {
 		return user;
 	}
 
-	public void setUser(UserReference user) {
+	public void setUser(UserReferenceModel user) {
 		this.user = user;
 	}
 

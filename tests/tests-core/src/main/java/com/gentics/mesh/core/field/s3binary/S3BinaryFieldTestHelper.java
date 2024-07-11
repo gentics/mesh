@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.s3binary;
 
-import com.gentics.mesh.core.data.s3binary.S3HibBinary;
-import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3BinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
@@ -22,8 +22,8 @@ public interface S3BinaryFieldTestHelper {
 	};
 
 	final DataProvider FILL_BASIC = (container, name) -> {
-		S3HibBinary s3binary = Tx.get().s3binaries().create(UUIDUtil.randomUUID(), container.getUuid() + "/s3", FILENAME).runInExistingTx(Tx.get());
-		S3HibBinaryField field = container.createS3Binary(name, s3binary);
+		S3Binary s3binary = Tx.get().s3binaries().create(UUIDUtil.randomUUID(), container.getUuid() + "/s3", FILENAME).runInExistingTx(Tx.get());
+		S3BinaryField field = container.createS3Binary(name, s3binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
 	};

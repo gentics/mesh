@@ -2,12 +2,12 @@ package com.gentics.mesh.core.rest.node.field.impl;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.NumberFieldModel;
 
 /**
- * @see NumberField
+ * @see NumberFieldModel
  */
-public class NumberFieldImpl implements NumberField {
+public class NumberFieldImpl implements NumberFieldModel {
 
 	@JsonPropertyDescription("Number field value")
 	private Number number;
@@ -18,7 +18,7 @@ public class NumberFieldImpl implements NumberField {
 	}
 
 	@Override
-	public NumberField setNumber(Number number) {
+	public NumberFieldModel setNumber(Number number) {
 		this.number = number;
 		return this;
 	}

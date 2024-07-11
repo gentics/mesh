@@ -9,9 +9,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
@@ -24,33 +24,33 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "tag")
 @ElementTypeKey(ElementType.TAG)
-public class HibTagImpl extends AbstractHibUserTrackedElement<TagResponse> implements HibTag, Serializable {
+public class HibTagImpl extends AbstractHibUserTrackedElement<TagResponse> implements Tag, Serializable {
 
 	private static final long serialVersionUID = -3121676186452994502L;
 
 	@ManyToOne(targetEntity = HibTagFamilyImpl.class)
-	private HibTagFamily tagFamily;
+	private TagFamily tagFamily;
 
 	@ManyToOne(targetEntity = HibProjectImpl.class)
-	private HibProject project;
+	private Project project;
 
 	@Override
-	public HibTagFamily getTagFamily() {
+	public TagFamily getTagFamily() {
 		return tagFamily;
 	}
 
 	@Override
-	public void setTagFamily(HibTagFamily tagFamily) {
+	public void setTagFamily(TagFamily tagFamily) {
 		this.tagFamily = tagFamily;
 	}
 
 	@Override
-	public HibProject getProject() {
+	public Project getProject() {
 		return project;
 	}
 
 	@Override
-	public void setProject(HibProject project) {
+	public void setProject(Project project) {
 		this.project = project;
 	}
 }

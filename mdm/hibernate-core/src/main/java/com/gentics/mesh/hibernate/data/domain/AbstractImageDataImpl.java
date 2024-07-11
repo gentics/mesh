@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.HibImageDataElement;
+import com.gentics.mesh.core.data.ImageDataElement;
 
 /**
  * Common part of a binary entity.
@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.HibImageDataElement;
  *
  */
 @MappedSuperclass
-public abstract class AbstractImageDataImpl extends AbstractHibBaseElement implements HibImageDataElement {
+public abstract class AbstractImageDataImpl extends AbstractHibBaseElement implements ImageDataElement {
 
 	protected long fileSize;
 	protected Integer imageHeight;

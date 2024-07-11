@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.dao;
 
 import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.dao.Dao;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.database.CurrentTransaction;
@@ -21,7 +21,7 @@ import jakarta.persistence.EntityManager;
  *
  * @param <T>
  */
-public abstract class AbstractHibDao<T extends HibBaseElement> implements Dao<T>, HibQueryFieldMapper {
+public abstract class AbstractHibDao<T extends BaseElement> implements Dao<T>, HibQueryFieldMapper {
 
 	protected final Lazy<Vertx> vertx;
 	protected final HibPermissionRoots permissionRoots;

@@ -14,14 +14,14 @@ import java.util.function.Consumer;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -29,8 +29,8 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -54,7 +54,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		return tx.<CommonTx>unwrap().contentDao();
 	}
 
-	protected Tuple<HibNode, HibNodeFieldContainer> createNode(boolean isRequiredField, String segmentField) {
+	protected Tuple<Node, NodeFieldContainer> createNode(boolean isRequiredField, String segmentField) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -64,20 +64,20 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		if (segmentField != null) {
 			schema.setSegmentField(segmentField);
 		}
-		HibSchema container = CommonTx.get().schemaDao().create(schema, null, null, false);
-		HibSchemaVersion version = container.getLatestVersion();
+		Schema container = CommonTx.get().schemaDao().create(schema, null, null, false);
+		SchemaVersion version = container.getLatestVersion();
 		Tx.get().commit();
-		HibNode node = nodeDao.create(project(), user(), version);
-		HibBranch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
+		Node node = nodeDao.create(project(), user(), version);
+		Branch branch = branchDao.findByUuid(initialBranch().getProject(), initialBranch().getUuid());
 		nodeDao.setParentNode(node, branch.getUuid(), nodeDao.findByUuidGlobal(project().getBaseNode().getUuid()));
 		EventQueueBatch batch = Mockito.mock(EventQueueBatch.class);
 		Tx.get().branchDao().assignSchemaVersion(branch, user(), version, batch);
-		HibNodeFieldContainer nodeContainer = Tx.get().contentDao().createFieldContainer(node, english(), branch, user());
+		NodeFieldContainer nodeContainer = Tx.get().contentDao().createFieldContainer(node, english(), branch, user());
 
 		return Tuple.tuple(node, nodeContainer);
 	}
 
-	protected NodeResponse transform(HibNode node) throws Exception {
+	protected NodeResponse transform(Node node) throws Exception {
 		String json = getJson(node);
 		assertNotNull(json);
 		NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
@@ -85,7 +85,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		return response;
 	}
 
-	protected SchemaModel prepareNode(HibNode node, String listName, String listType) {
+	protected SchemaModel prepareNode(Node node, String listName, String listType) {
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
 		nodeListFieldSchema.setName(listName);
 		nodeListFieldSchema.setListType(listType);
@@ -98,15 +98,15 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void assertList(int expectedItems, String fieldKey, String listType, NodeResponse response) {
-		Field deserializedList = response.getFields().getField(fieldKey, FieldTypes.LIST, listType, false);
+		FieldModel deserializedList = response.getFields().getField(fieldKey, FieldTypes.LIST, listType, false);
 		assertNotNull(deserializedList);
-		FieldList<?> listField = (FieldList<?>) deserializedList;
+		FieldListModel<?> listField = (FieldListModel<?>) deserializedList;
 		assertEquals("The list of type {" + listType + "} did not contain the expected amount of items.", expectedItems, listField.getItems().size());
 	}
 
 	protected void invokeRemoveFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider dummyFieldCreator,
-			Consumer<HibNodeFieldContainer> updater) {
-		HibNodeFieldContainer container = createNode(false, null).v2();
+			Consumer<NodeFieldContainer> updater) {
+		NodeFieldContainer container = createNode(false, null).v2();
 		dummyFieldCreator.set(container, fieldName);
 		updater.accept(container);
 		assertNull("The field should have been deleted by setting it to null", fetcher.fetch(container, fieldName));
@@ -114,7 +114,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 
 	protected void invokeUpdateFromRestTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
 		InternalActionContext ac = mockActionContext();
-		HibNodeFieldContainer container = createNode(false, null).v2();
+		NodeFieldContainer container = createNode(false, null).v2();
 		updateContainer(ac, container, fieldName, null);
 		assertNull("No field should have been created", fetcher.fetch(container, fieldName));
 	}
@@ -129,8 +129,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Action which updates the given node using a null value
 	 */
 	protected void invokeRemoveRequiredFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
-			Consumer<HibNodeFieldContainer> updater) {
-		HibNodeFieldContainer container = createNode(true, null).v2();
+			Consumer<NodeFieldContainer> updater) {
+		NodeFieldContainer container = createNode(true, null).v2();
 		createDummyData.set(container, fieldName);
 		try {
 			updater.accept(container);
@@ -142,8 +142,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeRemoveSegmentFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
-			Consumer<HibNodeFieldContainer> updater) {
-		HibNodeFieldContainer container = createNode(false, fieldName).v2();
+			Consumer<NodeFieldContainer> updater) {
+		NodeFieldContainer container = createNode(false, fieldName).v2();
 		createDummyData.set(container, fieldName);
 		updater.accept(container);
 	}
@@ -161,7 +161,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 * @param expectError
 	 */
 	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher, boolean expectError) {
-		HibNodeFieldContainer container = createNode(true, null).v2();
+		NodeFieldContainer container = createNode(true, null).v2();
 		try {
 			InternalActionContext ac = mockActionContext();
 			updateContainer(ac, container, fieldName, null);
@@ -190,8 +190,8 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Action which will assert the update
 	 */
 	protected void invokeUpdateFromRestValidSimpleValueTestcase(String fieldName, DataProvider createDummyData,
-			Consumer<HibNodeFieldContainer> updater, Consumer<HibNodeFieldContainer> asserter) {
-		HibNodeFieldContainer container = createNode(false, null).v2();
+			Consumer<NodeFieldContainer> updater, Consumer<NodeFieldContainer> asserter) {
+		NodeFieldContainer container = createNode(false, null).v2();
 		createDummyData.set(container, fieldName);
 		updater.accept(container);
 		asserter.accept(container);
@@ -209,7 +209,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Field to be added to the update model
 	 * @return
 	 */
-	protected void updateContainer(InternalActionContext ac, HibNodeFieldContainer container, String fieldKey, Field field) {
+	protected void updateContainer(InternalActionContext ac, NodeFieldContainer container, String fieldKey, FieldModel field) {
 		FieldMap fieldMap = new FieldMapImpl();
 		fieldMap.put(fieldKey, field);
 		if (field != null) {

@@ -3,7 +3,7 @@ package com.gentics.mesh.parameter;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ImageRect;
@@ -138,13 +138,13 @@ public interface ImageManipulationParameters extends ImageManipulation, Paramete
 	}
 
 	@Override
-	default FocalPoint getFocalPoint() {
+	default FocalPointModel getFocalPoint() {
 		String x = getParameter(FOCAL_POINT_X_QUERY_PARAM_KEY);
 		String y = getParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY);
 		// If either x or y has not been set, use the center of the image for the respective focal point part.
 		Float fpx = x != null ? Float.valueOf(x) : 0.5F;
 		Float fpy = y != null ? Float.valueOf(y) : 0.5F;
-		return new FocalPoint(fpx, fpy);
+		return new FocalPointModel(fpx, fpy);
 	}
 
 	@Override
@@ -158,7 +158,7 @@ public interface ImageManipulationParameters extends ImageManipulation, Paramete
 	}
 
 	@Override
-	default ImageManipulationParameters setFocalPoint(FocalPoint point) {
+	default ImageManipulationParameters setFocalPoint(FocalPointModel point) {
 		if (point == null) {
 			setParameter(FOCAL_POINT_X_QUERY_PARAM_KEY, null);
 			setParameter(FOCAL_POINT_Y_QUERY_PARAM_KEY, null);
@@ -171,7 +171,7 @@ public interface ImageManipulationParameters extends ImageManipulation, Paramete
 
 	@Override
 	default ImageManipulationParameters setFocalPoint(float x, float y) {
-		return setFocalPoint(new FocalPoint(x, y));
+		return setFocalPoint(new FocalPointModel(x, y));
 	}
 
 	@Override

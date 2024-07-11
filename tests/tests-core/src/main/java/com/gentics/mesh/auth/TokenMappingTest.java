@@ -30,9 +30,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.auth.oauth2.CannotWriteException;
 import com.gentics.mesh.auth.oauth2.MeshOAuth2ServiceImpl;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.TxAction2;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -44,7 +44,7 @@ import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.user.UserReference;
+import com.gentics.mesh.core.rest.user.UserReferenceModel;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.plugin.auth.MappingResult;
@@ -140,9 +140,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	@Before
 	public void setup() {
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
+			User admin = tx.userDao().findByName("admin");
 			assertThat(admin).as("Admin User").isNotNull();
-			HibUser testUser = tx.userDao().create(TESTUSER_NAME, admin);
+			User testUser = tx.userDao().create(TESTUSER_NAME, admin);
 			testUser.setFirstname(TESTUSER_NAME);
 			testUser.setLastname(TESTUSER_NAME);
 			assertThat(testUser).as("Test User").isNotNull();
@@ -179,7 +179,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	public void testMapExistingRole() {
 		String mappedRoleName = "mapped_role";
 		tx (tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
+			User admin = tx.userDao().findByName("admin");
 			tx.roleDao().create(mappedRoleName, admin);
 		});
 
@@ -217,7 +217,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	public void testMapExistingGroup() {
 		String mappedGroupName = "mapped_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
+			User admin = tx.userDao().findByName("admin");
 			tx.groupDao().create(mappedGroupName, admin);
 		});
 
@@ -239,9 +239,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	public void testMapAssignedGroup() {
 		String mappedGroupName = "mapped_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup group = tx.groupDao().create(mappedGroupName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group group = tx.groupDao().create(mappedGroupName, admin);
 			tx.userDao().addGroup(testUser, group);
 		});
 
@@ -286,7 +286,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String mappedRoleName = "mapped_role";
 		String existingGroupName = "existing_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
+			User admin = tx.userDao().findByName("admin");
 			tx.groupDao().create(existingGroupName, admin);
 		});
 
@@ -311,7 +311,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String mappedGroupName = "mapped_group";
 		String mappedRoleName = "mapped_role";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
+			User admin = tx.userDao().findByName("admin");
 			tx.roleDao().create(mappedRoleName, admin);
 		});
 
@@ -334,9 +334,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String existingRoleName = "existing_role";
 		String existingGroupName = "existing_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup group = tx.groupDao().create(existingGroupName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group group = tx.groupDao().create(existingGroupName, admin);
 			tx.roleDao().create(existingRoleName, admin);
 			tx.userDao().addGroup(testUser, group);
 		});
@@ -358,9 +358,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String existingRoleName = "existing_role";
 		String existingGroupName = "existing_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup group = tx.groupDao().create(existingGroupName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group group = tx.groupDao().create(existingGroupName, admin);
 			tx.roleDao().create(existingRoleName, admin);
 			tx.userDao().addGroup(testUser, group);
 		});
@@ -394,10 +394,10 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String roleName5 = "mapped_role5";
 
 		tx (tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibGroup group3 = tx.groupDao().create(groupName3, admin);
+			User admin = tx.userDao().findByName("admin");
+			Group group3 = tx.groupDao().create(groupName3, admin);
 
-			HibRole role2 = tx.roleDao().create(roleName2, admin);
+			Role role2 = tx.roleDao().create(roleName2, admin);
 			tx.roleDao().create(roleName4, admin);
 
 			tx.groupDao().addRole(group3, role2);
@@ -465,9 +465,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String mappedGroupName = "mapped_group";
 		String otherGroupName = "other_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup group = tx.groupDao().create(otherGroupName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group group = tx.groupDao().create(otherGroupName, admin);
 			tx.userDao().addGroup(testUser, group);
 		});
 
@@ -491,9 +491,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String otherRoleName = "other_role";
 		String mappedGroupName = "mapped_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibGroup group = tx.groupDao().create(mappedGroupName, admin);
-			HibRole role = tx.roleDao().create(otherRoleName, admin);
+			User admin = tx.userDao().findByName("admin");
+			Group group = tx.groupDao().create(mappedGroupName, admin);
+			Role role = tx.roleDao().create(otherRoleName, admin);
 			tx.groupDao().addRole(group, role);
 		});
 
@@ -561,10 +561,10 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String assignedGroupName = "assigned_group";
 		String filteredGroupName = "filtered_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup assignedGroup = tx.groupDao().create(assignedGroupName, admin);
-			HibGroup filteredGroup = tx.groupDao().create(filteredGroupName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group assignedGroup = tx.groupDao().create(assignedGroupName, admin);
+			Group filteredGroup = tx.groupDao().create(filteredGroupName, admin);
 			tx.userDao().addGroup(testUser, assignedGroup);
 			tx.userDao().addGroup(testUser, filteredGroup);
 		});
@@ -587,9 +587,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	public void testGroupFilterExistingGroup() {
 		String existingGroupName = "existing_group";
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup group = tx.groupDao().create(existingGroupName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group group = tx.groupDao().create(existingGroupName, admin);
 			tx.userDao().addGroup(testUser, group);
 		});
 
@@ -616,12 +616,12 @@ public class TokenMappingTest extends AbstractMeshTest {
 		String filteredRoleName = "filtered_role";
 
 		tx(tx -> {
-			HibUser admin = tx.userDao().findByName("admin");
-			HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
-			HibGroup assignedGroup = tx.groupDao().create(assignedGroupName, admin);
-			HibGroup filteredGroup = tx.groupDao().create(filteredGroupName, admin);
-			HibRole assignedRole = tx.roleDao().create(assignedRoleName, admin);
-			HibRole filteredRole = tx.roleDao().create(filteredRoleName, admin);
+			User admin = tx.userDao().findByName("admin");
+			User testUser = tx.userDao().findByName(TESTUSER_NAME);
+			Group assignedGroup = tx.groupDao().create(assignedGroupName, admin);
+			Group filteredGroup = tx.groupDao().create(filteredGroupName, admin);
+			Role assignedRole = tx.roleDao().create(assignedRoleName, admin);
+			Role filteredRole = tx.roleDao().create(filteredRoleName, admin);
 			tx.userDao().addGroup(testUser, assignedGroup);
 			tx.userDao().addGroup(testUser, filteredGroup);
 			tx.groupDao().addRole(assignedGroup, assignedRole);
@@ -675,7 +675,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 * @param user user reference
 	 * @return model
 	 */
-	protected MeshEventModel event(MeshEvent event, GroupReference group, UserReference user) {
+	protected MeshEventModel event(MeshEvent event, GroupReference group, UserReferenceModel user) {
 		GroupUserAssignModel model = new GroupUserAssignModel();
 		model.setEvent(event);
 		model.setGroup(group);
@@ -720,8 +720,8 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 * Create a reference to the test user
 	 * @return user reference
 	 */
-	protected UserReference testUserRef() {
-		return new UserReference().setFirstName(TESTUSER_NAME).setLastName(TESTUSER_NAME);
+	protected UserReferenceModel testUserRef() {
+		return new UserReferenceModel().setFirstName(TESTUSER_NAME).setLastName(TESTUSER_NAME);
 	}
 
 	/**
@@ -731,7 +731,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 roleExists(String name) {
 		return tx -> {
-			HibRole role = tx.roleDao().findByName(name);
+			Role role = tx.roleDao().findByName(name);
 			assertThat(role).as("Role " + name).isNotNull();
 		};
 	}
@@ -743,7 +743,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 roleDoesNotExist(String name) {
 		return tx -> {
-			HibRole role = tx.roleDao().findByName(name);
+			Role role = tx.roleDao().findByName(name);
 			assertThat(role).as("Role " + name).isNull();
 		};
 	}
@@ -756,9 +756,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 roleHasGroups(String roleName, String...groupNames) {
 		return tx -> {
-			HibRole role = tx.roleDao().findByName(roleName);
+			Role role = tx.roleDao().findByName(roleName);
 			assertThat(role).as("Role " + roleName).isNotNull();
-			List<String> assignedGroupNames = role.getGroups().stream().map(HibGroup::getName).collect(Collectors.toList());
+			List<String> assignedGroupNames = role.getGroups().stream().map(Group::getName).collect(Collectors.toList());
 			assertThat(assignedGroupNames).as("Groups assigned to role " + roleName).containsOnly(groupNames);
 		};
 	}
@@ -770,7 +770,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 groupExists(String name) {
 		return tx -> {
-			HibGroup group = tx.groupDao().findByName(name);
+			Group group = tx.groupDao().findByName(name);
 			assertThat(group).as("Group " + name).isNotNull();
 		};
 	}
@@ -782,7 +782,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 groupDoesNotExist(String name) {
 		return tx -> {
-			HibGroup group = tx.groupDao().findByName(name);
+			Group group = tx.groupDao().findByName(name);
 			assertThat(group).as("Group " + name).isNull();
 		};
 	}
@@ -795,9 +795,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 groupHasRoles(String groupName, String...roleNames) {
 		return tx -> {
-			HibGroup group = tx.groupDao().findByName(groupName);
+			Group group = tx.groupDao().findByName(groupName);
 			assertThat(group).as("Group " + groupName).isNotNull();
-			List<String> assignedRoleNames = tx.groupDao().getRoles(group).stream().map(HibRole::getName).collect(Collectors.toList());
+			List<String> assignedRoleNames = tx.groupDao().getRoles(group).stream().map(Role::getName).collect(Collectors.toList());
 			assertThat(assignedRoleNames).as("Roles assigned to group " + groupName).containsOnly(roleNames);
 		};
 	}
@@ -810,9 +810,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 groupHasUsers(String groupName, String...userNames) {
 		return tx -> {
-			HibGroup group = tx.groupDao().findByName(groupName);
+			Group group = tx.groupDao().findByName(groupName);
 			assertThat(group).as("Group " + groupName).isNotNull();
-			List<String> assignedUserNames = tx.groupDao().getUsers(group).stream().map(HibUser::getUsername).collect(Collectors.toList());
+			List<String> assignedUserNames = tx.groupDao().getUsers(group).stream().map(User::getUsername).collect(Collectors.toList());
 			assertThat(assignedUserNames).as("Users assigned to group " + groupName).containsOnly(userNames);
 		};
 	}
@@ -825,9 +825,9 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 */
 	protected TxAction2 userHasGroups(String userName, String...groupNames) {
 		return tx -> {
-			HibUser user = tx.userDao().findByName(userName);
+			User user = tx.userDao().findByName(userName);
 			assertThat(user).as("User " + userName).isNotNull();
-			List<String> assignedGroupNames = tx.userDao().getGroups(user).stream().map(HibGroup::getName).collect(Collectors.toList());
+			List<String> assignedGroupNames = tx.userDao().getGroups(user).stream().map(Group::getName).collect(Collectors.toList());
 			assertThat(assignedGroupNames).as("Groups assigned to user " + userName).containsOnly(groupNames);
 		};
 	}
@@ -977,8 +977,8 @@ public class TokenMappingTest extends AbstractMeshTest {
 			List<MeshEventModel> caughtEvents = new ArrayList<>();
 			boolean success = tx(tx -> {
 				EventQueueBatch eqb = tx.createBatch();
-				HibUser admin = tx.userDao().findByName("admin");
-				HibUser testUser = tx.userDao().findByName(TESTUSER_NAME);
+				User admin = tx.userDao().findByName("admin");
+				User testUser = tx.userDao().findByName(TESTUSER_NAME);
 
 				try {
 					service.handleMappingResult(tx, eqb, result, testUser, admin);

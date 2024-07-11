@@ -7,7 +7,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.db.CommonTx;
@@ -67,13 +67,13 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 			.flatMapPublisher(Flowable::fromIterable);
 	}
 
-	private Flowable<String> getSchemastatus(HibBranch branch) {
+	private Flowable<String> getSchemastatus(Branch branch) {
 		return db.singleTx(() -> branchCrudHandler.getSchemaVersionsInfo(CommonTx.get().branchDao().mergeIntoPersisted(branch.getProject(), branch)))
 			.map(o -> o.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson()))
 			.toFlowable();
 	}
 
-	private Flowable<String> getMicroschemastatus(HibBranch branch) {
+	private Flowable<String> getMicroschemastatus(Branch branch) {
 		return db.singleTx(() -> branchCrudHandler.getMicroschemaVersions(CommonTx.get().branchDao().mergeIntoPersisted(branch.getProject(), branch)))
 			.map(o -> o.toJson(boot.mesh().getOptions().getHttpServerOptions().isMinifyJson()))
 			.toFlowable();
@@ -82,9 +82,9 @@ public class MigrationStatusProvider implements DebugInfoProvider {
 	private static class ProjectBranch {
 		private final String projectName;
 		private final String branchName;
-		private final HibBranch branch;
+		private final Branch branch;
 
-		private ProjectBranch(String projectName, String branchName, HibBranch branch) {
+		private ProjectBranch(String projectName, String branchName, Branch branch) {
 			this.projectName = projectName;
 			this.branchName = branchName;
 			this.branch = branch;

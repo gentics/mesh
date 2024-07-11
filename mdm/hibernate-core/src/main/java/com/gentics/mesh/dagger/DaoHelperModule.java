@@ -1,19 +1,19 @@
 package com.gentics.mesh.dagger;
 
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.hibernate.data.dao.DaoHelper;
 import com.gentics.mesh.hibernate.data.dao.DaoHelperFactory;
 import com.gentics.mesh.hibernate.data.dao.RootDaoHelper;
@@ -48,107 +48,107 @@ import dagger.Provides;
 public class DaoHelperModule {
 
 	@Provides
-	DaoHelper<HibUser, HibUserImpl> user(DaoHelperFactory factory) {
+	DaoHelper<User, HibUserImpl> user(DaoHelperFactory factory) {
 		return factory.create(HibUserImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibGroup, HibGroupImpl> group(DaoHelperFactory factory) {
+	DaoHelper<Group, HibGroupImpl> group(DaoHelperFactory factory) {
 		return factory.create(HibGroupImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibRole, HibRoleImpl> role(DaoHelperFactory factory) {
+	DaoHelper<Role, HibRoleImpl> role(DaoHelperFactory factory) {
 		return factory.create(HibRoleImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibSchema, HibSchemaImpl> schema(DaoHelperFactory factory) {
+	DaoHelper<Schema, HibSchemaImpl> schema(DaoHelperFactory factory) {
 		return factory.create(HibSchemaImpl.class);
 	}
 	@Provides
-	DaoHelper<HibSchemaVersion, HibSchemaVersionImpl> schemaVersion(DaoHelperFactory factory) {
+	DaoHelper<SchemaVersion, HibSchemaVersionImpl> schemaVersion(DaoHelperFactory factory) {
 		return factory.create(HibSchemaVersionImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibMicroschema, HibMicroschemaImpl> microschema(DaoHelperFactory factory) {
+	DaoHelper<Microschema, HibMicroschemaImpl> microschema(DaoHelperFactory factory) {
 		return factory.create(HibMicroschemaImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibMicroschemaVersion, HibMicroschemaVersionImpl> microschemaVersion(DaoHelperFactory factory) {
+	DaoHelper<MicroschemaVersion, HibMicroschemaVersionImpl> microschemaVersion(DaoHelperFactory factory) {
 		return factory.create(HibMicroschemaVersionImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibProject, HibProjectImpl> project(DaoHelperFactory factory) {
+	DaoHelper<Project, HibProjectImpl> project(DaoHelperFactory factory) {
 		return factory.create(HibProjectImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibBranch, HibBranchImpl> branch(DaoHelperFactory factory) {
+	DaoHelper<Branch, HibBranchImpl> branch(DaoHelperFactory factory) {
 		return factory.create(HibBranchImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibNode, HibNodeImpl> node(DaoHelperFactory factory) {
+	DaoHelper<Node, HibNodeImpl> node(DaoHelperFactory factory) {
 		return factory.create(HibNodeImpl.class);
 	}
 	
 	@Provides
-	DaoHelper<HibLanguage, HibLanguageImpl> language(DaoHelperFactory factory) {
+	DaoHelper<Language, HibLanguageImpl> language(DaoHelperFactory factory) {
 		return factory.create(HibLanguageImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibJob, HibJobImpl> job(DaoHelperFactory factory) {
+	DaoHelper<Job, HibJobImpl> job(DaoHelperFactory factory) {
 		return factory.create(HibJobImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibTag, HibTagImpl> tag(DaoHelperFactory factory) {
+	DaoHelper<Tag, HibTagImpl> tag(DaoHelperFactory factory) {
 		return factory.create(HibTagImpl.class);
 	}
 
 	@Provides
-	DaoHelper<HibTagFamily, HibTagFamilyImpl> tagFamily(DaoHelperFactory factory) {
+	DaoHelper<TagFamily, HibTagFamilyImpl> tagFamily(DaoHelperFactory factory) {
 		return factory.create(HibTagFamilyImpl.class);
 	}
 
 	@Provides
-	RootDaoHelper<HibNode, HibNodeImpl, HibProject, HibProjectImpl> nodeRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
-		DaoHelper<HibNode, HibNodeImpl> daoHelper = node(daoHelperFactory);
+	RootDaoHelper<Node, HibNodeImpl, Project, HibProjectImpl> nodeRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
+		DaoHelper<Node, HibNodeImpl> daoHelper = node(daoHelperFactory);
 		return factory.create(daoHelper, new FieldJoin(daoHelper.getDomainClass(), HibProjectImpl.class, "project"));
 	}
 
 	@Provides
-	RootDaoHelper<HibBranch, HibBranchImpl, HibProject, HibProjectImpl> branchRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
-		DaoHelper<HibBranch, HibBranchImpl> daoHelper = branch(daoHelperFactory);
+	RootDaoHelper<Branch, HibBranchImpl, Project, HibProjectImpl> branchRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
+		DaoHelper<Branch, HibBranchImpl> daoHelper = branch(daoHelperFactory);
 		return factory.create(daoHelper, new FieldJoin(daoHelper.getDomainClass(), HibProjectImpl.class, "project"));
 	}
 
 	@Provides
-	RootDaoHelper<HibTag, HibTagImpl, HibTagFamily, HibTagFamilyImpl> tagRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
-		DaoHelper<HibTag, HibTagImpl> daoHelper = tag(daoHelperFactory);
+	RootDaoHelper<Tag, HibTagImpl, TagFamily, HibTagFamilyImpl> tagRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
+		DaoHelper<Tag, HibTagImpl> daoHelper = tag(daoHelperFactory);
 		return factory.create(daoHelper, new FieldJoin(daoHelper.getDomainClass(), HibTagFamilyImpl.class, "tagFamily"));
 	}
 
 	@Provides
-	RootDaoHelper<HibTagFamily, HibTagFamilyImpl, HibProject, HibProjectImpl> tagFamilyRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
-		DaoHelper<HibTagFamily, HibTagFamilyImpl> daoHelper = tagFamily(daoHelperFactory);
+	RootDaoHelper<TagFamily, HibTagFamilyImpl, Project, HibProjectImpl> tagFamilyRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
+		DaoHelper<TagFamily, HibTagFamilyImpl> daoHelper = tagFamily(daoHelperFactory);
 		return factory.create(daoHelper, new FieldJoin(daoHelper.getDomainClass(), HibProjectImpl.class, "project"));
 	}
 
 	@Provides
-	RootDaoHelper<HibSchema, HibSchemaImpl, HibProject, HibProjectImpl> schemaRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
-		DaoHelper<HibSchema, HibSchemaImpl> daoHelper = schema(daoHelperFactory);
+	RootDaoHelper<Schema, HibSchemaImpl, Project, HibProjectImpl> schemaRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
+		DaoHelper<Schema, HibSchemaImpl> daoHelper = schema(daoHelperFactory);
 		return factory.create(daoHelper, new CrossTableJoin(daoHelper.getDomainClass(), HibProjectImpl.class, "project_schema", "projects", "schemas"));
 	}
 
 	@Provides
-	RootDaoHelper<HibMicroschema, HibMicroschemaImpl, HibProject, HibProjectImpl> microSchemaRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
-		DaoHelper<HibMicroschema, HibMicroschemaImpl> daoHelper = microschema(daoHelperFactory);
+	RootDaoHelper<Microschema, HibMicroschemaImpl, Project, HibProjectImpl> microSchemaRoot(RootDaoHelperFactory factory, DaoHelperFactory daoHelperFactory) {
+		DaoHelper<Microschema, HibMicroschemaImpl> daoHelper = microschema(daoHelperFactory);
 		return factory.create(daoHelper, new CrossTableJoin(daoHelper.getDomainClass(), HibProjectImpl.class, "project_microschema", "projects", "microschemas"));
 	}
 }

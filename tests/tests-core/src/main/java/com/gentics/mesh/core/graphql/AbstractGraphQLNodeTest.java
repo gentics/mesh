@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tag.Tag;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.StringFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -35,7 +35,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 
 		// Delete all other tags
 		tx(tx -> {
-			for (HibTag tag : tags().values()) {
+			for (Tag tag : tags().values()) {
 				if (tag.getName().equals("blue")) {
 					continue;
 				} else {
@@ -61,7 +61,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
 
 		// level 1 - A [en]
-		StringField level1A = FieldUtil.createStringField("level1A");
+		StringFieldModel level1A = FieldUtil.createStringField("level1A");
 		NodeCreateRequest level1ANodeCreateRequest = new NodeCreateRequest();
 		level1ANodeCreateRequest.setParentNodeUuid(baseNodeUuid);
 		level1ANodeCreateRequest.setSchemaName(SCHEMA_NAME);
@@ -71,7 +71,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 		testNodeUuids.add(NODE_1A_UUID);
 
 		// level 1 - B [en]
-		StringField level1B = FieldUtil.createStringField("level1B");
+		StringFieldModel level1B = FieldUtil.createStringField("level1B");
 		NodeFieldImpl node1A = FieldUtil.createNodeField(NODE_1A_UUID);
 		NodeFieldListImpl node1AList = FieldUtil.createNodeListField(NODE_1A_UUID, NODE_1A_UUID);
 		NodeCreateRequest level1BNodeCreateRequest = new NodeCreateRequest();
@@ -85,7 +85,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 		testNodeUuids.add(NODE_1B_UUID);
 
 		// level 1 - C [en]
-		StringField level1C = FieldUtil.createStringField("level1C");
+		StringFieldModel level1C = FieldUtil.createStringField("level1C");
 		NodeFieldImpl node1B = FieldUtil.createNodeField(NODE_1B_UUID);
 		NodeFieldListImpl node1BList = FieldUtil.createNodeListField(NODE_1B_UUID, NODE_1B_UUID);
 		NodeCreateRequest level1CNodeCreateRequest = new NodeCreateRequest();
@@ -100,7 +100,7 @@ public abstract class AbstractGraphQLNodeTest extends AbstractMeshTest {
 
 		// level 2 [en]
 		for (int i = 0; i < 10; i++) {
-			StringField level2i = FieldUtil.createStringField("level2-" + i);
+			StringFieldModel level2i = FieldUtil.createStringField("level2-" + i);
 			NodeFieldListImpl node1AB = FieldUtil.createNodeListField(NODE_1A_UUID, NODE_1B_UUID);
 			NodeCreateRequest subNodeCreateRequest = new NodeCreateRequest();
 			subNodeCreateRequest.setParentNodeUuid(NODE_1B_UUID);

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.context;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.project.Project;
 
 /**
  * The registry allows to load and store domain specific elements in the context. The implementation of the registry contains the storage specific details and
@@ -16,7 +16,7 @@ public interface ContextDataRegistry {
 	 * @param ac
 	 * @return Project or null if no project has been specified in the given context.
 	 */
-	HibProject getProject(InternalActionContext ac);
+	Project getProject(InternalActionContext ac);
 
 	/**
 	 * Store the project information in the given context.
@@ -24,7 +24,7 @@ public interface ContextDataRegistry {
 	 * @param ac
 	 * @param project
 	 */
-	void setProject(InternalActionContext ac, HibProject project);
+	void setProject(InternalActionContext ac, Project project);
 
 	/**
 	 * Return the branch that may be specified in this action context as query parameter. This method will fail, if no project is set, or if the specified
@@ -35,5 +35,5 @@ public interface ContextDataRegistry {
 	 *            project for overriding the project set in the action context
 	 * @return branch
 	 */
-	HibBranch getBranch(InternalActionContext ac, HibProject project);
+	Branch getBranch(InternalActionContext ac, Project project);
 }

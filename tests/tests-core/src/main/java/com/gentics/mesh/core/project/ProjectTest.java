@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -63,8 +63,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreate() {
 		try (Tx tx = tx()) {
-			HibProject project = createProject("test", "folder");
-			HibProject project2 = tx.projectDao().findByName(project.getName());
+			Project project = createProject("test", "folder");
+			Project project2 = tx.projectDao().findByName(project.getName());
 			assertNotNull(project2);
 			assertEquals("test", project2.getName());
 			assertEquals(project.getUuid(), project2.getUuid());
@@ -76,7 +76,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testDelete() throws Exception {
 		BulkActionContext bac = createBulkContext();
 		try (Tx tx = tx()) {
-			HibProject project = Tx.get().projectDao().findByUuid(project().getUuid());
+			Project project = Tx.get().projectDao().findByUuid(project().getUuid());
 			tx.projectDao().delete(project, bac);
 			assertElement(tx.projectDao(), projectUuid(), false);
 		}
@@ -97,7 +97,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends HibProject> page = tx.projectDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends Project> page = tx.projectDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}
@@ -124,7 +124,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			HibProject project = tx.projectDao().findByUuid(projectUuid());
+			Project project = tx.projectDao().findByUuid(projectUuid());
 			assertNotNull(project);
 			project = tx.projectDao().findByUuid("bogus");
 			assertNull(project);
@@ -135,7 +135,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
-			HibProject project = project();
+			Project project = project();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			ProjectResponse response = tx.projectDao().transformToRestSync(project, ac, 0);
@@ -149,13 +149,13 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreateDelete() throws Exception {
 		String uuid = tx(tx -> {
-			HibProject project = createProject("newProject", "folder");
+			Project project = createProject("newProject", "folder");
 			assertNotNull(project);
 			return project.getUuid();
 		});
 
 		tx(tx -> {
-			HibProject foundProject = tx.projectDao().findByUuid(uuid);
+			Project foundProject = tx.projectDao().findByUuid(uuid);
 			assertNotNull(foundProject);
 			BulkActionContext bac = createBulkContext();
 			tx.projectDao().delete(foundProject, bac);
@@ -175,7 +175,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			// 1. Give the user create on the project root
 			roleDao.grantPermissions(role(), tx.data().permissionRoots().project(), CREATE_PERM);
 			// 2. Create the project
-			HibProject project = createProject("TestProject", "folder");
+			Project project = createProject("TestProject", "folder");
 			assertFalse("The user should not have create permissions on the project.", userDao.hasPermission(user(), project, CREATE_PERM));
 			userDao.inheritRolePermissions(user(), tx.data().permissionRoots().project(), project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
@@ -190,7 +190,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testRead() {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			HibProject project = project();
+			Project project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
 			assertNotNull(project.getBaseNode());
@@ -202,7 +202,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdate() {
 		try (Tx tx = tx()) {
-			HibProject project = project();
+			Project project = project();
 			project.setName("new Name");
 			assertEquals("new Name", project.getName());
 
@@ -215,7 +215,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			HibProject newProject = createProject("newProject", "folder");
+			Project newProject = createProject("newProject", "folder");
 			testPermission(InternalPermission.READ_PERM, newProject);
 		}
 	}
@@ -224,7 +224,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			HibProject newProject = createProject("newProject", "folder");
+			Project newProject = createProject("newProject", "folder");
 			testPermission(InternalPermission.DELETE_PERM, newProject);
 		}
 	}
@@ -233,7 +233,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			HibProject newProject = createProject("newProject", "folder");
+			Project newProject = createProject("newProject", "folder");
 			testPermission(InternalPermission.UPDATE_PERM, newProject);
 		}
 	}
@@ -242,7 +242,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			HibProject newProject = createProject("newProject", "folder");
+			Project newProject = createProject("newProject", "folder");
 			testPermission(InternalPermission.CREATE_PERM, newProject);
 		}
 	}
@@ -287,7 +287,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		}
 
 		tx(tx -> {
-			HibProject project = tx.projectDao().findByUuid(project().getUuid());
+			Project project = tx.projectDao().findByUuid(project().getUuid());
 			tx.projectDao().delete(project, bac);
 		});
 

@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.Element;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
@@ -83,7 +83,7 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param element
 	 */
-	void reload(HibElement element);
+	void reload(Element element);
 
 	/**
 	 * Return the vendor name.
@@ -222,7 +222,7 @@ public interface Database extends TxFactory {
 	 * @param clazz
 	 * @return
 	 */
-	long count(Class<? extends HibBaseElement> clazz);
+	long count(Class<? extends BaseElement> clazz);
 
 	/**
 	 * Return the element version.
@@ -230,7 +230,7 @@ public interface Database extends TxFactory {
 	 * @param element
 	 * @return
 	 */
-	String getElementVersion(HibElement element);
+	String getElementVersion(Element element);
 
 	/**
 	 * Locate all vertices for the given type.
@@ -238,7 +238,7 @@ public interface Database extends TxFactory {
 	 * @param classOfVertex
 	 * @return
 	 */
-	<T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> classOfVertex);
+	<T extends Element> Iterator<? extends T> getElementsForType(Class<T> classOfVertex);
 
 	/**
 	 * Check if DB is ready for serve.

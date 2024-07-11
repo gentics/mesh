@@ -1,8 +1,8 @@
 package com.gentics.mesh.cache;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.HibNamedBaseElement;
-import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.NamedBaseElement;
+import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
  *
  * @param <V>
  */
-public abstract class AbstractNameCache<V extends HibNamedBaseElement> extends AbstractMeshCache<String, V> implements NameCache<V> {
+public abstract class AbstractNameCache<V extends NamedBaseElement> extends AbstractMeshCache<String, V> implements NameCache<V> {
 
 	public static final long CACHE_SIZE = 100;
 
@@ -41,7 +41,7 @@ public abstract class AbstractNameCache<V extends HibNamedBaseElement> extends A
 		super(createCache(name, events, factory, maxSize), registry, maxSize);
 	}
 
-	protected static <V extends HibNamedElement> EventAwareCache<String, V> createCache(String name, MeshEvent[] events, EventAwareCacheFactory factory, long maxSize) {
+	protected static <V extends NamedElement> EventAwareCache<String, V> createCache(String name, MeshEvent[] events, EventAwareCacheFactory factory, long maxSize) {
 		return factory.<String, V>builder()
 			.events(events)
 			.action((event, cache) -> {

@@ -8,7 +8,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HtmlField;
 import com.gentics.mesh.database.HibernateTx;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -29,8 +29,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 }, indexes = {
 		@Index(columnList = "listUuid")
 })
-public class HibHtmlListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<HibHtmlField, String>
-		implements HibHtmlField, Serializable {
+public class HibHtmlListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<HtmlField, String>
+		implements HtmlField, Serializable {
 
 	private static final long serialVersionUID = -6611123692017623250L;
 

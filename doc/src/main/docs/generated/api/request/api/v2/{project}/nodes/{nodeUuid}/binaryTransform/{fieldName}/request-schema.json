@@ -51,7 +51,7 @@
     },
     "focalPoint" : {
       "type" : "object",
-      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
+      "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPointModel",
       "description" : "Optional new focal point for the transformed image.",
       "properties" : {
         "x" : {

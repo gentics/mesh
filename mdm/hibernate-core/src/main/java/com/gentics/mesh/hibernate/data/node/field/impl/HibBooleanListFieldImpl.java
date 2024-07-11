@@ -6,10 +6,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.core.data.HibField;
-import com.gentics.mesh.core.data.HibFieldContainer;
-import com.gentics.mesh.core.data.node.field.HibBooleanField;
-import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.Field;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.node.field.BooleanField;
+import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.database.HibernateTx;
@@ -23,8 +23,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibBooleanListFieldImpl 
-			extends AbstractHibHomogenicPrimitiveListFieldImpl<HibBooleanListFieldEdgeImpl, HibBooleanField, BooleanFieldListImpl, Boolean> 
-			implements HibBooleanFieldList {
+			extends AbstractHibHomogenicPrimitiveListFieldImpl<HibBooleanListFieldEdgeImpl, BooleanField, BooleanFieldListImpl, Boolean> 
+			implements BooleanFieldList {
 
 	protected HibBooleanListFieldImpl(HibernateTx tx, String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent) {
 		super(tx, fieldKey, parent, HibBooleanListFieldEdgeImpl.class);
@@ -35,7 +35,7 @@ public class HibBooleanListFieldImpl
 	}
 
 	@Override
-	public HibField cloneTo(HibFieldContainer container) {
+	public Field cloneTo(FieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?,?,?,?,?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.LIST);
@@ -44,7 +44,7 @@ public class HibBooleanListFieldImpl
 	}
 
 	@Override
-	public HibBooleanField createBoolean(Boolean value) {
+	public BooleanField createBoolean(Boolean value) {
 		if (value == null) {
 			return null;
 		}
@@ -57,7 +57,7 @@ public class HibBooleanListFieldImpl
 	}
 
 	@Override
-	public HibBooleanField getBoolean(int index) {
+	public BooleanField getBoolean(int index) {
 		return get(index);
 	}
 
@@ -80,7 +80,7 @@ public class HibBooleanListFieldImpl
 	}
 
 	@Override
-	protected Boolean getValue(HibBooleanField field) {
+	protected Boolean getValue(BooleanField field) {
 		return field.getBoolean();
 	}
 

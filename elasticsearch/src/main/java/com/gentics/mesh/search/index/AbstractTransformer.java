@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.user.HibCreatorTracking;
-import com.gentics.mesh.core.data.user.HibEditorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.user.CreatorTracking;
+import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 
 import io.vertx.core.json.JsonObject;
@@ -61,15 +61,15 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param element
 	 *            Element which will be used to load the basic references
 	 */
-	protected void addBasicReferences(JsonObject document, HibBaseElement element) {
+	protected void addBasicReferences(JsonObject document, BaseElement element) {
 		document.put("uuid", element.getUuid());
-		if (element instanceof HibCreatorTracking) {
-			HibCreatorTracking createdVertex = (HibCreatorTracking) element;
+		if (element instanceof CreatorTracking) {
+			CreatorTracking createdVertex = (CreatorTracking) element;
 			addUser(document, "creator", createdVertex.getCreator());
 			document.put("created", createdVertex.getCreationDate());
 		}
-		if (element instanceof HibEditorTracking) {
-			HibEditorTracking editedVertex = (HibEditorTracking) element;
+		if (element instanceof EditorTracking) {
+			EditorTracking editedVertex = (EditorTracking) element;
 			addUser(document, "editor", editedVertex.getEditor());
 			document.put("edited", editedVertex.getLastEditedDate());
 		}
@@ -81,10 +81,10 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param tags
 	 */
-	public void addTags(JsonObject document, Iterable<? extends HibTag> tags) {
+	public void addTags(JsonObject document, Iterable<? extends Tag> tags) {
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
-		for (HibTag tag : tags) {
+		for (Tag tag : tags) {
 			tagUuids.add(tag.getUuid());
 			tagNames.add(tag.getName());
 		}
@@ -102,7 +102,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param key
 	 * @param user
 	 */
-	protected void addUser(JsonObject document, String key, HibUser user) {
+	protected void addUser(JsonObject document, String key, User user) {
 		if (user != null) {
 			// TODO make sure field names match response UserResponse field names..
 			JsonObject userFields = new JsonObject();
@@ -118,7 +118,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param element
 	 */
-	protected void addPermissionInfo(JsonObject document, HibBaseElement element) {
+	protected void addPermissionInfo(JsonObject document, BaseElement element) {
 		RoleDao roleDao = Tx.get().roleDao();
 		Set<String> roleUuids = roleDao.getRoleUuidsForPerm(element, InternalPermission.READ_PERM);
 		List<String> roleUuidsList = new ArrayList<>(roleUuids);
@@ -126,7 +126,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	}
 
 	@Override
-	public JsonObject toPermissionPartial(HibBaseElement element) {
+	public JsonObject toPermissionPartial(BaseElement element) {
 		JsonObject document = new JsonObject();
 		addPermissionInfo(document, element);
 		return document;
@@ -138,7 +138,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param project
 	 */
-	protected void addProject(JsonObject document, HibProject project) {
+	protected void addProject(JsonObject document, Project project) {
 		if (project != null) {
 			Map<String, String> projectFields = new HashMap<>();
 			projectFields.put("name", project.getName());

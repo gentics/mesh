@@ -14,12 +14,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -53,25 +53,25 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 		// .username
 		root.field(newFieldDefinition().name("username").description("The username of the user").type(GraphQLString).dataFetcher((env) -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			return user.getUsername();
 		}));
 
 		// .firstname
 		root.field(newFieldDefinition().name("firstname").description("The firstname of the user").type(GraphQLString).dataFetcher((env) -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			return user.getFirstname();
 		}));
 
 		// .lastname
 		root.field(newFieldDefinition().name("lastname").description("The lastname of the user").type(GraphQLString).dataFetcher((env -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			return user.getLastname();
 		})));
 
 		// .emailAddress
 		root.field(newFieldDefinition().name("emailAddress").description("The email of the user").type(GraphQLString).dataFetcher((env) -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			return user.getEmailAddress();
 		}));
 
@@ -80,7 +80,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			.name("forcedPasswordChange")
 			.description("When true, the user needs to change their password on the next login.")
 			.type(GraphQLBoolean).dataFetcher((env) -> {
-				HibUser user = env.getSource();
+				User user = env.getSource();
 				return user.isForcedPasswordChange();
 			}));
 
@@ -89,13 +89,13 @@ public class UserTypeProvider extends AbstractTypeProvider {
 			.name("admin")
 			.description("Flag which indicates whether the user has admin privileges.")
 			.type(GraphQLBoolean).dataFetcher((env) -> {
-				HibUser user = env.getSource();
+				User user = env.getSource();
 				return user.isAdmin();
 			}));
 
 		// .groups
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			GraphQLContext gc = env.getContext();
 			UserDao userDao = Tx.get().userDao();
 
@@ -104,7 +104,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 		// .roles
 		root.field(newPagingFieldWithFetcher("roles", "Roles the user has", env -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			GraphQLContext gc = env.getContext();
 			UserDao userDao = Tx.get().userDao();
 
@@ -113,7 +113,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 		// .rolesHash
 		root.field(newFieldDefinition().name("rolesHash").description("Hash of the users roles").type(GraphQLString).dataFetcher((env) -> {
-			HibUser user = env.getSource();
+			User user = env.getSource();
 			return Tx.get().userDao().getRolesHash(user);
 		}));
 
@@ -128,9 +128,9 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				ContentDao contentDao = tx.contentDao();
 				PersistingUserDao userDao = tx.userDao();
 				GraphQLContext gc = env.getContext();
-				HibUser user = tx.load(env.<HibUser>getSource().getId(), userDao.getPersistenceClass());
+				User user = tx.load(env.<User>getSource().getId(), userDao.getPersistenceClass());
 				
-				HibNode node = user.getReferencedNode();
+				Node node = user.getReferencedNode();
 				if (node == null) {
 					return null;
 				}
@@ -144,7 +144,7 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				List<String> languageTags = getLanguageArgument(env);
 				ContainerType type = getNodeVersion(env);
 
-				HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+				NodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 				return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 			}));
 

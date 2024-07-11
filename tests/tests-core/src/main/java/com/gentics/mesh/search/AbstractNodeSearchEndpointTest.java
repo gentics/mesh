@@ -13,15 +13,15 @@ import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
 
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -85,7 +85,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	}
 
 	protected void addNumberSpeedFieldToOneNode(Number number) {
-		HibNode node = tx(() -> content("concorde"));
+		Node node = tx(() -> content("concorde"));
 		tx(() -> {
 			SchemaVersionModel schema = content("concorde").getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new NumberFieldSchemaImpl().setName("speed"));
@@ -103,8 +103,8 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode field to the tested content
 	 */
 	protected void addMicronodeField() {
-		HibNode node = tx(() -> {
-			HibNode nodeTmp = content("concorde");
+		Node node = tx(() -> {
+			Node nodeTmp = content("concorde");
 
 			SchemaModel schema = nodeTmp.getSchemaContainer().getLatestVersion().getSchema();
 			MicronodeFieldSchemaImpl vcardFieldSchema = new MicronodeFieldSchemaImpl();
@@ -135,7 +135,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a micronode list field to the tested content
 	 */
 	protected void addMicronodeListField() {
-		HibNode node = tx(() -> content("concorde"));
+		Node node = tx(() -> content("concorde"));
 
 		// Update the schema
 		tx(() -> {
@@ -148,7 +148,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 			actions().updateSchemaVersion(content("concorde").getSchemaContainer().getLatestVersion());
 		});
 
-		FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
+		FieldListModel<MicronodeFieldModel> listField = new MicronodeFieldListImpl();
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
@@ -174,7 +174,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMultiESTest
 	 * Add a node list field to the tested content
 	 */
 	protected void addNodeListField() {
-		HibNode node = tx(() -> content("concorde"));
+		Node node = tx(() -> content("concorde"));
 
 		// Update the schema
 		tx(() -> {

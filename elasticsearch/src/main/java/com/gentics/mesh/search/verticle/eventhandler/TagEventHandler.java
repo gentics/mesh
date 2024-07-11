@@ -17,8 +17,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.data.tag.HibTag;
-import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tagfamily.TagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
@@ -61,8 +61,8 @@ public class TagEventHandler implements EventHandler {
 			if (event == TAG_CREATED || event == TAG_UPDATED) {
 				return helper.getDb().tx(tx -> {
 					// We also need to update the tag family
-					Optional<HibTag> tag = entities.tag.getElement(model);
-					Optional<HibTagFamily> tagFamily = tag.map(HibTag::getTagFamily);
+					Optional<Tag> tag = entities.tag.getElement(model);
+					Optional<TagFamily> tagFamily = tag.map(Tag::getTagFamily);
 
 					return concat(
 						tag.stream().map(t -> entities.createRequest(t, projectUuid)),
@@ -77,7 +77,7 @@ public class TagEventHandler implements EventHandler {
 				if (EventCauseHelper.isProjectDeleteCause(model)) {
 					return Flowable.empty();
 				} else {
-					return Flowable.just(helper.deleteDocumentRequest(HibTag.composeIndexName(projectUuid), model.getUuid(), complianceMode));
+					return Flowable.just(helper.deleteDocumentRequest(Tag.composeIndexName(projectUuid), model.getUuid(), complianceMode));
 				}
 
 			} else {
@@ -86,7 +86,7 @@ public class TagEventHandler implements EventHandler {
 		});
 	}
 
-	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, HibTag tag) {
+	private Stream<CreateDocumentRequest> taggedNodes(MeshProjectElementEventModel model, Tag tag) {
 		Tx tx = Tx.get();
 		return findElementByUuidStream(tx.projectDao(), model.getProject().getUuid())
 			.flatMap(project -> tx.branchDao().findAll(project).stream()

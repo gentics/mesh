@@ -11,9 +11,9 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.job.HibVersionPurgeJob;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.VersionPurgeJob;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
@@ -40,12 +40,12 @@ public class VersionPurgeJobProcessor implements SingleJobProcessor {
 	}
 
 	@Override
-	public Completable process(HibJob job) {
-		HibVersionPurgeJob purgeJob = (HibVersionPurgeJob) job;
+	public Completable process(Job job) {
+		VersionPurgeJob purgeJob = (VersionPurgeJob) job;
 		ProjectVersionPurgeHandler handler = db.tx(tx -> {
 			return tx.<CommonTx>unwrap().data().mesh().projectVersionPurgeHandler();
 		});
-		HibProject project = db.tx(purgeJob::getProject);
+		Project project = db.tx(purgeJob::getProject);
 		Optional<ZonedDateTime> maxAge = db.tx(purgeJob::getMaxAge);
 		return handler.purgeVersions(project, maxAge.orElse(null))
 				.doOnComplete(() -> {

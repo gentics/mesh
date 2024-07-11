@@ -6,9 +6,9 @@ import static org.junit.Assert.assertNull;
 import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.node.field.Field;
-import com.gentics.mesh.core.rest.node.field.list.FieldList;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
+import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 
@@ -61,13 +61,13 @@ public class MicronodeResponseAssert extends AbstractAssert<MicronodeResponseAss
 				break;
 			case "list":
 
-				Field field = actual.getFields().getField(key, fieldSchema);
-				if (field instanceof NodeFieldList) {
+				FieldModel field = actual.getFields().getField(key, fieldSchema);
+				if (field instanceof NodeFieldListModel) {
 					// compare list of nodes by comparing their uuids
-					assertThat(((NodeFieldList) field).getItems()).usingElementComparator((a, b) -> {
+					assertThat(((NodeFieldListModel) field).getItems()).usingElementComparator((a, b) -> {
 						return a.getUuid().compareTo(b.getUuid());
 					}).containsExactlyElementsOf(expected.getFields().getNodeFieldList(key).getItems());
-				} else if (field instanceof FieldList) {
+				} else if (field instanceof FieldListModel) {
 					//TODO handle lists
 //					assertThat(((FieldList<?>) field).getItems())
 //							.containsExactlyElementsOf(expected.getFields().get(key, FieldList.class).getItems());

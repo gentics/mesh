@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.MicroschemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -74,10 +74,10 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
 			GraphQLContext gc = env.getContext();
-			HibMicroschema microschema = env.getSource();
+			Microschema microschema = env.getSource();
 			UserDao userDao = Tx.get().userDao();
 			return microschema.findReferencedBranches().keySet().stream()
-				.map(HibBranch::getProject)
+				.map(Branch::getProject)
 				.distinct()
 				.filter(it -> userDao.hasPermission(gc.getUser(), it, InternalPermission.READ_PERM))
 				.collect(Collectors.toList());
@@ -115,13 +115,13 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 	private MicroschemaModelImpl loadModelWithFallback(DataFetchingEnvironment env) {
 		Object source = env.getSource();
-		if (source instanceof HibMicroschema) {
-			HibMicroschema schema = env.getSource();
+		if (source instanceof Microschema) {
+			Microschema schema = env.getSource();
 			MicroschemaModelImpl model = JsonUtil.readValue(schema.getLatestVersion().getJson(), MicroschemaModelImpl.class);
 			return model;
 		}
-		if (source instanceof HibMicroschemaVersion) {
-			HibMicroschemaVersion schema = env.getSource();
+		if (source instanceof MicroschemaVersion) {
+			MicroschemaVersion schema = env.getSource();
 			MicroschemaModelImpl model = JsonUtil.readValue(schema.getJson(), MicroschemaModelImpl.class);
 			return model;
 		}

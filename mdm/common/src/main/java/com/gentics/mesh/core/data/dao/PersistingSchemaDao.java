@@ -19,15 +19,15 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HibBaseElement;
-import com.gentics.mesh.core.data.branch.HibBranch;
-import com.gentics.mesh.core.data.node.HibNode;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.schema.HibMicroschema;
-import com.gentics.mesh.core.data.schema.HibSchema;
-import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -53,7 +53,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingSchemaDao 
 			extends SchemaDao, 
-			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, PersistingNamedEntityDao<HibSchema> {
+			PersistingContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion, SchemaModel>, PersistingNamedEntityDao<Schema> {
 
 	/**
 	 * Create the schema.
@@ -63,10 +63,10 @@ public interface PersistingSchemaDao
 	 * @param uuid
 	 * @return
 	 */
-	default HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibUser requestUser = ac.getUser();
+	default Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		User requestUser = ac.getUser();
 		UserDao userDao = Tx.get().userDao();
-		HibBaseElement schemaRoot = CommonTx.get().data().permissionRoots().schema();
+		BaseElement schemaRoot = CommonTx.get().data().permissionRoots().schema();
 
 		SchemaVersionModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
@@ -74,7 +74,7 @@ public interface PersistingSchemaDao
 		if (!userDao.hasPermission(requestUser, schemaRoot, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", schemaRoot.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
-		HibSchema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
+		Schema container = create(requestModel, requestUser, uuid, ac.getSchemaUpdateParameters().isStrictValidation());
 		userDao.inheritRolePermissions(requestUser, schemaRoot, container);
 		mergeIntoPersisted(container);
 		return container;
@@ -87,7 +87,7 @@ public interface PersistingSchemaDao
 	 *            reference
 	 * @return Resolved container version
 	 */
-	default HibSchemaVersion fromReference(SchemaReference reference) {
+	default SchemaVersion fromReference(SchemaReference reference) {
 		return fromReference(null, reference);
 	}
 
@@ -98,7 +98,7 @@ public interface PersistingSchemaDao
 	 * @param reference
 	 * @return
 	 */
-	default HibSchemaVersion fromReference(HibProject project, SchemaReference reference) {
+	default SchemaVersion fromReference(Project project, SchemaReference reference) {
 		if (reference == null) {
 			throw error(INTERNAL_SERVER_ERROR, "Missing schema reference");
 		}
@@ -107,7 +107,7 @@ public interface PersistingSchemaDao
 		String schemaVersion = reference.getVersion();
 
 		// Prefer the name over the uuid
-		HibSchema schemaContainer = null;
+		Schema schemaContainer = null;
 		if (!isEmpty(schemaName)) {
 			if (project != null) {
 				schemaContainer = findByName(project, schemaName);
@@ -130,7 +130,7 @@ public interface PersistingSchemaDao
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
 		} else {
-			HibSchemaVersion foundVersion = findVersionByRev(schemaContainer, schemaVersion);
+			SchemaVersion foundVersion = findVersionByRev(schemaContainer, schemaVersion);
 			if (foundVersion == null) {
 				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
 					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
@@ -152,7 +152,7 @@ public interface PersistingSchemaDao
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid) {
+	default Schema create(SchemaVersionModel schema, User creator, String uuid) {
 		return create(schema, creator, uuid, false);
 	}	
 
@@ -166,7 +166,7 @@ public interface PersistingSchemaDao
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default HibSchema create(SchemaVersionModel schema, HibUser creator) throws MeshSchemaException {
+	default Schema create(SchemaVersionModel schema, User creator) throws MeshSchemaException {
 		return create(schema, creator, null);
 	}
 
@@ -184,7 +184,7 @@ public interface PersistingSchemaDao
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
+	default Schema create(SchemaVersionModel schema, User creator, String uuid, boolean validate) {
 		MicroschemaDao microschemaDao = Tx.get().microschemaDao();
 
 		// TODO FIXME - We need to skip the validation check if the instance is creating a clustered instance because vert.x is not yet ready.
@@ -194,21 +194,21 @@ public interface PersistingSchemaDao
 		}
 
 		String name = schema.getName();
-		HibSchema conflictingSchema = findByName(name);
+		Schema conflictingSchema = findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		HibMicroschema conflictingMicroschema = microschemaDao.findByName(name);
+		Microschema conflictingMicroschema = microschemaDao.findByName(name);
 		if (conflictingMicroschema != null) {
 			throw conflict(conflictingMicroschema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		HibSchema container = createPersisted(uuid, s -> {
+		Schema container = createPersisted(uuid, s -> {
 			s.setCreated(creator);
 			s.setName(schema.getName());
 		});
-		HibSchemaVersion version = createPersistedVersion(container, v -> {
+		SchemaVersion version = createPersistedVersion(container, v -> {
 			// set the initial version
 			schema.setVersion("1.0");
 			v.setSchema(schema);
@@ -229,7 +229,7 @@ public interface PersistingSchemaDao
 	 * @param schema
 	 * @return
 	 */
-	default Result<HibProject> findLinkedProjects(HibSchema schema) {
+	default Result<Project> findLinkedProjects(Schema schema) {
 		return new TraversalResult<>(Tx.get().projectDao()
 				.findAll().stream().filter(project -> isLinkedToProject(schema, project)));
 	}
@@ -239,7 +239,7 @@ public interface PersistingSchemaDao
 	 * 
 	 * @return
 	 */
-	default Stream<ProjectSchemaEventModel> assignEvents(HibSchema schema, Assignment assigned) {
+	default Stream<ProjectSchemaEventModel> assignEvents(Schema schema, Assignment assigned) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		return findLinkedProjects(schema)
 			.stream()
@@ -255,7 +255,7 @@ public interface PersistingSchemaDao
 	 * @param batch
 	 */
 	@Override
-	default void assign(HibSchema schemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
+	default void assign(Schema schemaContainer, Project project, User user, EventQueueBatch batch) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -271,14 +271,14 @@ public interface PersistingSchemaDao
 				addItem(project, schemaContainer);
 	
 				// Assign the latest schema version to all branches of the project
-				for (HibBranch branch : branchDao.findAll(project)) {
+				for (Branch branch : branchDao.findAll(project)) {
 					branchDao.assignSchemaVersion(branch, user, schemaContainer.getLatestVersion(), batch);
 				}
 			});
 	}
 
 	@Override
-	default void unassign(HibSchema schema, HibProject project, EventQueueBatch batch) {
+	default void unassign(Schema schema, Project project, EventQueueBatch batch) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -286,21 +286,21 @@ public interface PersistingSchemaDao
 		removeItem(project, schema);
 
 		// unassign the schema from all branches
-		for (HibBranch branch : branchDao.findAll(project)) {
+		for (Branch branch : branchDao.findAll(project)) {
 			branch.unassignSchema(schema);
 		}
 	}
 
 	@Override
-	default void delete(HibSchema schema, BulkActionContext bac) {
+	default void delete(Schema schema, BulkActionContext bac) {
 		// Check whether the schema is currently being referenced by nodes.
-		Iterator<? extends HibNode> it = getNodes(schema).iterator();
+		Iterator<? extends Node> it = getNodes(schema).iterator();
 		if (!it.hasNext()) {
 
 			assignEvents(schema, UNASSIGNED).forEach(bac::add);
 			bac.add(schema.onDeleted());
 
-			for (HibSchemaVersion v : findAllVersions(schema)) {
+			for (SchemaVersion v : findAllVersions(schema)) {
 				deleteVersion(v, bac);
 			}
 			deletePersisted(schema);
@@ -310,7 +310,7 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default void delete(HibProject root, HibSchema element, BulkActionContext bac) {
+	default void delete(Project root, Schema element, BulkActionContext bac) {
 		unassign(element, root, bac.batch());
 		assignEvents(element, UNASSIGNED).forEach(bac::add);
 		// TODO should we delete the schema completely?
@@ -337,8 +337,8 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default HibSchema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		HibSchema schema = create(ac, batch, uuid);
+	default Schema create(Project root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		Schema schema = create(ac, batch, uuid);
 		assign(schema, root, ac.getUser(), batch);
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		projectDao.mergeIntoPersisted(root);
@@ -347,18 +347,18 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default SchemaResponse transformToRestSync(HibSchema element, InternalActionContext ac, int level,
+	default SchemaResponse transformToRestSync(Schema element, InternalActionContext ac, int level,
 			String... languageTags) {
 		return element.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
-	default boolean update(HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Schema element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for schemas. Please start a schema migration");
 	}
 
 	@Override
-	default boolean update(HibProject project, HibSchema element, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(Project project, Schema element, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the item, if it does not belong to the requested branch.
 		if (project.getSchemas().stream().noneMatch(schema -> element.getUuid().equals(schema.getUuid()))) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", element.getUuid());
@@ -367,7 +367,7 @@ public interface PersistingSchemaDao
 	}
 
 	@Override
-	default boolean isLinkedToProject(HibSchema schema, HibProject project) {
+	default boolean isLinkedToProject(Schema schema, Project project) {
 		return contains(project, schema);
 	}
 

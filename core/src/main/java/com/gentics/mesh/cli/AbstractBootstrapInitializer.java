@@ -27,23 +27,23 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.MeshVersions;
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.changelog.highlevel.HighLevelChangelogSystem;
-import com.gentics.mesh.core.data.HibLanguage;
-import com.gentics.mesh.core.data.HibMeshVersion;
+import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.MeshVersion;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.HibGroup;
-import com.gentics.mesh.core.data.project.HibProject;
-import com.gentics.mesh.core.data.role.HibRole;
-import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.schema.Schema;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -152,7 +152,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 
 	// TODO: Changing the role name or deleting the role would cause code that utilizes this field to break.
 	// This is however a rare case.
-	protected HibRole anonymousRole;
+	protected Role anonymousRole;
 
 	protected MeshImpl mesh;
 
@@ -254,7 +254,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			RoleDao roleDao = tx.roleDao();
 
 			// Verify that an admin user exists
-			HibUser adminUser = userDao.findByUsername(ADMIN_USERNAME);
+			User adminUser = userDao.findByUsername(ADMIN_USERNAME);
 			if (adminUser == null) {
 				adminUser = userDao.create(ADMIN_USERNAME, adminUser);
 				adminUser.setAdmin(true);
@@ -288,7 +288,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			}
 
 			// Content
-			HibSchema contentSchemaContainer = schemaDao.findByName("content");
+			Schema contentSchemaContainer = schemaDao.findByName("content");
 			if (contentSchemaContainer == null) {
 				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("content");
@@ -324,7 +324,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			}
 
 			// Folder
-			HibSchema folderSchemaContainer = schemaDao.findByName("folder");
+			Schema folderSchemaContainer = schemaDao.findByName("folder");
 			if (folderSchemaContainer == null) {
 				SchemaVersionModel schema = new SchemaModelImpl();
 				schema.setName("folder");
@@ -348,7 +348,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			}
 
 			// Binary content for images and other downloads
-			HibSchema binarySchemaContainer = schemaDao.findByName("binary_content");
+			Schema binarySchemaContainer = schemaDao.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
 				SchemaVersionModel schema = new SchemaModelImpl();
@@ -372,14 +372,14 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				log.debug("Created schema container {" + schema.getName() + "} uuid: {" + binarySchemaContainer.getUuid() + "}");
 			}
 
-			HibGroup adminGroup = groupDao.findByName("admin");
+			Group adminGroup = groupDao.findByName("admin");
 			if (adminGroup == null) {
 				adminGroup = groupDao.create("admin", adminUser);
 				groupDao.addUser(adminGroup, adminUser);
 				log.debug("Created admin group {" + adminGroup.getUuid() + "}");
 			}
 
-			HibRole adminRole = roleDao.findByName("admin");
+			Role adminRole = roleDao.findByName("admin");
 			if (adminRole == null) {
 				adminRole = roleDao.create("admin", adminUser);
 				groupDao.addRole(adminGroup, adminRole);
@@ -403,7 +403,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		options = prepareMeshOptions(options);
 
 		addDebugInfoLogAppender(options);
-		db().init(MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+		db().init(MeshVersions.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 
 		if (isClustered) {
 			initCluster(options, flags, isInitMode);
@@ -603,7 +603,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		// Load the verticles
 		List<String> initialProjects = db().tx(tx -> {
 			return tx.projectDao().findAll().stream()
-				.map(HibProject::getName)
+				.map(Project::getName)
 				.collect(Collectors.toList());
 		});
 
@@ -667,7 +667,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 		return Completable.defer(() -> {
 			db().tx(tx -> {
 				UserDao userDao = tx.userDao();
-				HibUser adminUser = userDao.findByName(ADMIN_USERNAME);
+				User adminUser = userDao.findByName(ADMIN_USERNAME);
 				if (adminUser != null) {
 					userDao.setPassword(adminUser, password);
 					adminUser.setAdmin(true);
@@ -705,7 +705,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
 		}
 		db().tx(tx -> {
-			HibMeshVersion meshVersion = tx.data().meshVersion();
+			MeshVersion meshVersion = tx.data().meshVersion();
 			String graphVersion = meshVersion.getMeshVersion();
 
 			// Check whether the information was already saved once. Otherwise set it.
@@ -785,7 +785,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	 * @return
 	 */
 	@Override
-	public HibRole anonymousRole() {
+	public Role anonymousRole() {
 		if (anonymousRole == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Load the role if it has not been yet loaded
@@ -835,7 +835,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (HibLanguage l : Tx.get().languageDao().findAll()) {
+			for (Language l : Tx.get().languageDao().findAll()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}
@@ -876,7 +876,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 				initOptionalData(tx, isEmptyInstallation);
 
 				// Verify that an anonymous user exists
-				HibUser anonymousUser = userDao.findByUsername("anonymous");
+				User anonymousUser = userDao.findByUsername("anonymous");
 				if (anonymousUser == null) {
 					anonymousUser = userDao.create("anonymous", anonymousUser);
 					anonymousUser.setCreator(anonymousUser);
@@ -887,7 +887,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
 				}
 
-				HibGroup anonymousGroup = groupDao.findByName("anonymous");
+				Group anonymousGroup = groupDao.findByName("anonymous");
 				if (anonymousGroup == null) {
 					anonymousGroup = groupDao.create("anonymous", anonymousUser);
 					groupDao.addUser(anonymousGroup, anonymousUser);
@@ -919,7 +919,7 @@ public abstract class AbstractBootstrapInitializer implements BootstrapInitializ
 			String languageTag = entry.getKey();
 			String languageName = entry.getValue().getName();
 			String languageNativeName = entry.getValue().getNativeName();
-			HibLanguage language = Tx.get().languageDao().findByLanguageTag(languageTag);
+			Language language = Tx.get().languageDao().findByLanguageTag(languageTag);
 			if (language == null) {
 				language = root.create(languageName, languageTag);
 				language.setNativeName(languageNativeName);

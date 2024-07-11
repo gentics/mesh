@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.core.data.HibImageDataElement;
-import com.gentics.mesh.core.data.node.field.HibImageDataField;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.data.ImageDataElement;
+import com.gentics.mesh.core.data.node.field.ImageDataField;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.database.connector.QueryUtils;
 
@@ -27,7 +27,7 @@ import jakarta.persistence.MappedSuperclass;
  * @param <B>
  */
 @MappedSuperclass
-public abstract class AbstractBinaryFieldEdgeImpl<B extends HibImageDataElement> extends AbstractFieldEdgeImpl<UUID> implements HibImageDataField  {
+public abstract class AbstractBinaryFieldEdgeImpl<B extends ImageDataElement> extends AbstractFieldEdgeImpl<UUID> implements ImageDataField  {
 
 	public static final int METADATA_PROPERTY_LENGTH = QueryUtils.DEFAULT_STRING_LENGTH;
 
@@ -143,15 +143,15 @@ public abstract class AbstractBinaryFieldEdgeImpl<B extends HibImageDataElement>
 	}
 
 	@Override
-	public FocalPoint getImageFocalPoint() {
+	public FocalPointModel getImageFocalPoint() {
 		if (focalPointX == null || focalPointY == null) {
 			return null;
 		}
-		return new FocalPoint(focalPointX, focalPointY);
+		return new FocalPointModel(focalPointX, focalPointY);
 	}
 
 	@Override
-	public AbstractBinaryFieldEdgeImpl<B> setImageFocalPoint(FocalPoint point) {
+	public AbstractBinaryFieldEdgeImpl<B> setImageFocalPoint(FocalPointModel point) {
 		if (point != null) {
 			focalPointX = point.getX();
 			focalPointY = point.getY();

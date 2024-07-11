@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.parameter.client.PublishParametersImpl;
@@ -42,7 +42,7 @@ public class GraphQLAnonymousPermissionTest extends AbstractMeshTest {
 	@Test
 	public void testReadViaAnonymous() throws Throwable {
 		final String QUERY_NAME = "anonymous-perm-query." + version;
-		final HibNode node = folder("news");
+		final Node node = folder("news");
 		final String tagUuid = tx(() -> tag("red").getUuid());
 		final String tagFamilyUuid = tx(() -> tag("red").getTagFamily().getUuid());
 		final String nodeUuid = tx(() -> node.getUuid());

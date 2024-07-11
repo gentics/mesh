@@ -14,7 +14,7 @@ import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.RouterStorageRegistryImpl;
@@ -85,13 +85,13 @@ public class DistributedEventManager {
 		});
 
 		// React on project creates
-		eb.consumer(HibProject.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnCreated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project create event");
 			handleClusterTopologyUpdate(handler);
 		});
 
 		// React on project updates
-		eb.consumer(HibProject.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
+		eb.consumer(Project.TYPE_INFO.getOnUpdated().getAddress(), (Message<JsonObject> handler) -> {
 			log.info("Received project update event.");
 			handleClusterTopologyUpdate(handler);
 		});
@@ -130,7 +130,7 @@ public class DistributedEventManager {
 			for (RouterStorage rs : routerStorageRegistry.getInstances()) {
 				Map<String, Router> registeredProjectRouters = rs.root().apiRouter().projectsRouter().getProjectRouters();
 				// Load all projects and check whether they are already registered
-				for (HibProject project : tx.projectDao().findAll()) {
+				for (Project project : tx.projectDao().findAll()) {
 					if (registeredProjectRouters.containsKey(project.getName())) {
 						continue;
 					} else {

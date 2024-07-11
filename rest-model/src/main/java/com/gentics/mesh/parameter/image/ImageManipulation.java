@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.NumberUtils.toInteger;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.util.NumberUtils;
@@ -200,7 +200,7 @@ public interface ImageManipulation {
 	 *
 	 * @return
 	 */
-	FocalPoint getFocalPoint();
+	FocalPointModel getFocalPoint();
 
 	/**
 	 * Get the focal point zoom factor.
@@ -215,7 +215,7 @@ public interface ImageManipulation {
 	 * @param point
 	 * @return Fluent API
 	 */
-	ImageManipulation setFocalPoint(FocalPoint point);
+	ImageManipulation setFocalPoint(FocalPointModel point);
 
 	/**
 	 * Set the focal point.
@@ -225,7 +225,7 @@ public interface ImageManipulation {
 	 * @return Fluent API
 	 */
 	default ImageManipulation setFocalPoint(float x, float y) {
-		return setFocalPoint(new FocalPoint(x, y));
+		return setFocalPoint(new FocalPointModel(x, y));
 	}
 
 	/**

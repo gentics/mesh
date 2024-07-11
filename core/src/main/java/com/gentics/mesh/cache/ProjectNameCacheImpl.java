@@ -10,14 +10,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
  * @see ProjectNameCache
  */
 @Singleton
-public class ProjectNameCacheImpl extends AbstractNameCache<HibProject> implements ProjectNameCache {
+public class ProjectNameCacheImpl extends AbstractNameCache<Project> implements ProjectNameCache {
 
 	@Inject
 	public ProjectNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {

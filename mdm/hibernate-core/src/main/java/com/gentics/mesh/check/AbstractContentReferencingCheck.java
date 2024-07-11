@@ -3,7 +3,7 @@ package com.gentics.mesh.check;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.database.HibernateTx;
@@ -48,7 +48,7 @@ public abstract class AbstractContentReferencingCheck extends AbstractHibernateC
 		if (countResult instanceof Number) {
 			long count = ((Number) countResult).longValue();
 			if (count > 0) {
-				InconsistencyInfo info = new InconsistencyInfo()
+				InconsistencyInfoModel info = new InconsistencyInfoModel()
 						.setDescription(String.format("Table %s contains %d records, that reference records, which do not exist in table %s", refTableName, count, contentTable))
 						.setElementUuid(versionUuid)
 						.setSeverity(InconsistencySeverity.LOW)

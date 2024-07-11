@@ -26,9 +26,9 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.NodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -133,7 +133,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 		String oldVersion = firstResponse.getVersion();
-		BinaryField binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
+		BinaryFieldModel binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
 
 		// 2. Update the node using the loaded binary field data
 		NodeResponse secondResponse = updateNode(FIELD_NAME, binaryField);
@@ -167,8 +167,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			HibNode node = folder("2015");
-			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			Node node = folder("2015");
+			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBinary(FIELD_NAME)).isNotNull();

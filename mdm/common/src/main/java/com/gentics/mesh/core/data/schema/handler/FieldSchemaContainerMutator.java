@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.schema.handler;
 
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -21,10 +21,10 @@ public class FieldSchemaContainerMutator {
 	 *            Graph element that provides the chain of changes and the field container that should be mutated
 	 * @return
 	 */
-	public <RM extends FieldSchemaContainerVersion> RM apply(HibFieldSchemaVersionElement<?, RM, ?, ?, ?> containerVersion) {
+	public <RM extends FieldSchemaContainerVersion> RM apply(FieldSchemaVersionElement<?, RM, ?, ?, ?> containerVersion) {
 		RM oldSchema = containerVersion.getSchema();
 		CommonTx.get().data().mesh().serverSchemaStorage().remove(oldSchema);
-		HibSchemaChange<?> change = containerVersion.getNextChange();
+		SchemaChange<?> change = containerVersion.getNextChange();
 		while (change != null) {
 			oldSchema = change.apply(oldSchema);
 			change = change.getNextChange();

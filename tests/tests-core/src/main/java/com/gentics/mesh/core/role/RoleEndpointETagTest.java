@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.GenericParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -45,7 +45,7 @@ public class RoleEndpointETagTest extends AbstractMeshTest {
 	public void testReadOne() {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			HibRole role = role();
+			Role role = role();
 			String responseEtag = callETag(() -> client().findRoleByUuid(role.getUuid()));
 			String etag = roleDao.getETag(role, mockActionContext());
 			assertEquals(etag, responseEtag);

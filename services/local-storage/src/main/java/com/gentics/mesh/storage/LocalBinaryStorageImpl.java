@@ -15,7 +15,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.data.storage.AbstractBinaryStorage;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -186,7 +186,7 @@ public class LocalBinaryStorageImpl extends AbstractBinaryStorage implements Loc
 	}
 
 	@Override
-	public boolean exists(HibBinaryField field) {
+	public boolean exists(BinaryField field) {
 		String uuid = field.getBinary().getUuid();
 		return new File(getFilePath(uuid)).exists();
 	}

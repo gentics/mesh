@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
 
 /**
  * Assert for a schema container version
  */
-public class SchemaContainerVersionAssert extends AbstractAssert<SchemaContainerVersionAssert, HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> {
+public class SchemaContainerVersionAssert extends AbstractAssert<SchemaContainerVersionAssert, FieldSchemaVersionElement<?, ?, ?, ?, ?>> {
 
-	public SchemaContainerVersionAssert(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> actual) {
+	public SchemaContainerVersionAssert(FieldSchemaVersionElement<?, ?, ?, ?, ?> actual) {
 		super(actual, SchemaContainerVersionAssert.class);
 	}
 
@@ -21,7 +21,7 @@ public class SchemaContainerVersionAssert extends AbstractAssert<SchemaContainer
 	 * @param containerVersion
 	 * @return
 	 */
-	public SchemaContainerVersionAssert equals(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
+	public SchemaContainerVersionAssert equals(FieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		assertThat(actual.getName()).as(descriptionText() + " Name").isEqualTo(containerVersion.getName());
 		assertThat(actual.getVersion()).as(descriptionText() + " Version").isEqualTo(containerVersion.getVersion());
 		return this;

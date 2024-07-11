@@ -15,13 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.binary.HibBinary;
-import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.ImageVariant;
 import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
-import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.BinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
-import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -40,7 +40,7 @@ import io.vertx.core.Vertx;
 import jakarta.persistence.TypedQuery;
 
 @Singleton
-public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant> implements PersistingImageVariantDao {
+public class ImageVariantDaoImpl extends AbstractImageDataHibDao<ImageVariant> implements PersistingImageVariantDao {
 
 	private static final Logger log = LoggerFactory.getLogger(ImageVariantDaoImpl.class);
 
@@ -62,12 +62,12 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public Result<? extends HibImageVariant> getVariants(HibBinaryField binaryField, InternalActionContext ac) {
+	public Result<? extends ImageVariant> getVariants(BinaryField binaryField, InternalActionContext ac) {
 		return binaryField.getImageVariants();
 	}
 
 	@Override
-	public HibImageVariant getVariant(HibBinaryField binaryField, ImageManipulation variant, InternalActionContext ac) {
+	public ImageVariant getVariant(BinaryField binaryField, ImageManipulation variant, InternalActionContext ac) {
 		String queryName = "imagevariant_find_by_manipulation_field_no_auto";
 		boolean noAuto = true;
 		if (variant.getHeight() == null) {
@@ -86,7 +86,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public HibImageVariant createPersistedVariant(HibBinary binary, ImageVariantRequest request, Consumer<HibImageVariant> inflater) {
+	public ImageVariant createPersistedVariant(Binary binary, ImageVariantRequest request, Consumer<ImageVariant> inflater) {
 		HibernateTx hibTx = HibernateTx.get();
 		HibImageVariantImpl variant = hibTx.create(HibImageVariantImpl.class);
 		inflater.accept(variant);
@@ -107,7 +107,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public boolean deletePersistedVariant(HibBinary binary, HibImageVariant variant, boolean throwOnInUse) {
+	public boolean deletePersistedVariant(Binary binary, ImageVariant variant, boolean throwOnInUse) {
 		if (variant.findFields().hasNext()) {
 			if (throwOnInUse) {
 				throw error(BAD_REQUEST, "image_error_variant_in_use", variant.getKey());
@@ -123,8 +123,8 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public Result<? extends HibImageVariant> getVariants(HibBinary binary, InternalActionContext ac) {
-		Set<HibImageVariant> variants = ((HibBinaryImpl) binary).getVariants();
+	public Result<? extends ImageVariant> getVariants(Binary binary, InternalActionContext ac) {
+		Set<ImageVariant> variants = ((HibBinaryImpl) binary).getVariants();
 		if (variants != null) {
 			return new TraversalResult<>(variants);
 		} else {
@@ -133,7 +133,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public HibImageVariant getVariant(HibBinary binary, ImageManipulation variant, InternalActionContext ac) {
+	public ImageVariant getVariant(Binary binary, ImageManipulation variant, InternalActionContext ac) {
 		String queryName = "imagevariant_find_by_manipulation_binary_no_auto";
 		boolean noAuto = true;
 		if (variant.getHeight() == null) {
@@ -152,8 +152,8 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public void attachVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnExisting) {
-		HibBinary binary = binaryField.getBinary();
+	public void attachVariant(BinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnExisting) {
+		Binary binary = binaryField.getBinary();
 		HibImageVariantImpl variant = (HibImageVariantImpl) getVariant(binaryField, request, ac);
 		if (variant != null) {
 			if (throwOnExisting) {
@@ -168,7 +168,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 		attachVariant(binaryField, variant, throwOnExisting);
 	}
 
-	public void attachVariant(HibBinaryField binaryField, HibImageVariantImpl variant, boolean throwOnExisting) {
+	public void attachVariant(BinaryField binaryField, HibImageVariantImpl variant, boolean throwOnExisting) {
 		HibBinaryFieldBase base = (HibBinaryFieldBase) binaryField;
 		variant.addField(base.getEdge(), throwOnExisting);
 		em().merge(variant);
@@ -177,7 +177,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	}
 
 	@Override
-	public void detachVariant(HibBinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnAbsent) {
+	public void detachVariant(BinaryField binaryField, ImageVariantRequest request, InternalActionContext ac, boolean throwOnAbsent) {
 		HibImageVariantImpl variant = (HibImageVariantImpl) getVariant(binaryField, request, ac);
 		detachVariant(binaryField, variant, request.getCacheKey(), ac, throwOnAbsent);
 	}
@@ -203,8 +203,8 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 	 * @param ac
 	 * @param throwOnAbsent
 	 */
-	public void detachVariant(HibBinaryField binaryField, HibImageVariantImpl variant, String keyForLogging, InternalActionContext ac, boolean throwOnAbsent) {
-		HibBinary binary = binaryField.getBinary();
+	public void detachVariant(BinaryField binaryField, HibImageVariantImpl variant, String keyForLogging, InternalActionContext ac, boolean throwOnAbsent) {
+		Binary binary = binaryField.getBinary();
 		if (variant == null) {
 			if (throwOnAbsent) {
 				throw error(BAD_REQUEST, "Requested variant `{}` of field `{}` not found", keyForLogging, binaryField.getFieldKey());
@@ -247,7 +247,7 @@ public class ImageVariantDaoImpl extends AbstractImageDataHibDao<HibImageVariant
 		Float fpx = null;
 		Float fpy = null;
 		if (variant.hasFocalPoint()) {
-			FocalPoint point = variant.getFocalPoint();
+			FocalPointModel point = variant.getFocalPoint();
 			fpx = point.getX();
 			fpy = point.getY();
 		}

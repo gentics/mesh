@@ -12,11 +12,11 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.BranchMigrationContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
-import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.Branch;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
-import com.gentics.mesh.core.data.job.HibJob;
-import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.project.Project;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -52,14 +52,14 @@ public class BranchJobProcessor implements SingleJobProcessor {
 	 * @param status
 	 * @return
 	 */
-	private BranchMigrationMeshEventModel createEvent(HibJob job, MeshEvent event, JobStatus status) {
+	private BranchMigrationMeshEventModel createEvent(Job job, MeshEvent event, JobStatus status) {
 		BranchMigrationMeshEventModel model = new BranchMigrationMeshEventModel();
 		model.setEvent(event);
 
-		HibBranch newBranch = job.getBranch();
+		Branch newBranch = job.getBranch();
 		model.setBranch(newBranch.transformToReference());
 
-		HibProject project = newBranch.getProject();
+		Project project = newBranch.getProject();
 		model.setProject(project.transformToReference());
 
 		model.setStatus(status);
@@ -67,18 +67,18 @@ public class BranchJobProcessor implements SingleJobProcessor {
 		return model;
 	}
 
-	private BranchMigrationContext prepareContext(HibJob job) {
+	private BranchMigrationContext prepareContext(Job job) {
 		MigrationStatusHandlerImpl status = new MigrationStatusHandlerImpl(job.getUuid());
 		log.debug("Preparing branch migration job");
 		try {
 			return db.tx(tx -> {
-				HibJob hibJob = CommonTx.get().jobDao().mergeIntoPersisted(job);
+				Job hibJob = CommonTx.get().jobDao().mergeIntoPersisted(job);
 				BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 				context.setStatus(status);
 
 				tx.createBatch().add(createEvent(job, BRANCH_MIGRATION_START, STARTING)).dispatch();
 
-				HibBranch newBranch = hibJob.getBranch();
+				Branch newBranch = hibJob.getBranch();
 				if (newBranch == null) {
 					throw error(BAD_REQUEST, "Branch for job {" + job.getUuid() + "} cannot be found.");
 				}
@@ -87,7 +87,7 @@ public class BranchJobProcessor implements SingleJobProcessor {
 				}
 				context.setNewBranch(newBranch);
 
-				HibBranch oldBranch = newBranch.getPreviousBranch();
+				Branch oldBranch = newBranch.getPreviousBranch();
 				if (oldBranch == null) {
 					throw error(BAD_REQUEST, "Branch {" + newBranch.getName() + "} does not have previous branch");
 				}
@@ -115,7 +115,7 @@ public class BranchJobProcessor implements SingleJobProcessor {
 	}
 
 	@Override
-	public Completable process(HibJob job) {
+	public Completable process(Job job) {
 		BranchMigration handler = db.tx(tx -> {
 			return tx.<CommonTx>unwrap().data().mesh().branchMigrationHandler();
 		});
@@ -126,7 +126,7 @@ public class BranchJobProcessor implements SingleJobProcessor {
 						db.tx(() -> {
 							// Job is nullable in the case of some unit tests
 							if (job != null) {
-								HibJob latest = jobDao.findByUuid(job.getUuid());
+								Job latest = jobDao.findByUuid(job.getUuid());
 								finalizeMigration(latest, context);
 							}
 							context.getStatus().done();
@@ -135,7 +135,7 @@ public class BranchJobProcessor implements SingleJobProcessor {
 						db.tx(tx -> {
 							// Job is nullable in the case of some unit tests
 							if (job != null) {
-								HibJob latest = jobDao.findByUuid(job.getUuid());
+								Job latest = jobDao.findByUuid(job.getUuid());
 								tx.createBatch().add(createEvent(latest, BRANCH_MIGRATION_FINISHED, FAILED)).dispatch();
 							}
 							context.getStatus().error(err, "Error in branch migration.");							
@@ -144,11 +144,11 @@ public class BranchJobProcessor implements SingleJobProcessor {
 		});
 	}
 
-	private void finalizeMigration(HibJob job, BranchMigrationContext context) {
+	private void finalizeMigration(Job job, BranchMigrationContext context) {
 		// Mark branch as active & migrated
 		db.tx(() -> {
 			PersistingBranchDao persistingBranchDao = CommonTx.get().branchDao();
-			HibBranch branch = job.getBranch();
+			Branch branch = job.getBranch();
 			branch.setActive(true);
 			branch.setMigrated(true);
 			persistingBranchDao.mergeIntoPersisted(branch.getProject(), branch);

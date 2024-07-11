@@ -3,11 +3,11 @@ package com.gentics.mesh.hibernate.data.dao;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.BaseElement;
 import com.gentics.mesh.core.data.generic.UserProperties;
-import com.gentics.mesh.core.data.user.HibCreatorTracking;
-import com.gentics.mesh.core.data.user.HibEditorTracking;
-import com.gentics.mesh.core.data.user.HibUser;
+import com.gentics.mesh.core.data.user.CreatorTracking;
+import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.user.User;
 
 /**
  * A helper component implementation for getting user properties from an entity element.
@@ -23,32 +23,32 @@ public class HibernateUserPropertiesImpl implements UserProperties {
 	}
 
 	@Override
-	public HibUser getCreator(HibBaseElement element) {
-		if (element instanceof HibCreatorTracking) {
-			return ((HibCreatorTracking) element).getCreator();
+	public User getCreator(BaseElement element) {
+		if (element instanceof CreatorTracking) {
+			return ((CreatorTracking) element).getCreator();
 		}
 		return null;
 	}
 
 	@Override
-	public HibUser getEditor(HibBaseElement element) {
-		if (element instanceof HibEditorTracking) {
-			return ((HibEditorTracking) element).getEditor();
+	public User getEditor(BaseElement element) {
+		if (element instanceof EditorTracking) {
+			return ((EditorTracking) element).getEditor();
 		}
 		return null;
 	}
 
 	@Override
-	public void setCreator(HibBaseElement element, HibUser user) {
-		if (element instanceof HibCreatorTracking) {
-			((HibCreatorTracking) element).setCreator(user);
+	public void setCreator(BaseElement element, User user) {
+		if (element instanceof CreatorTracking) {
+			((CreatorTracking) element).setCreator(user);
 		}		
 	}
 
 	@Override
-	public void setEditor(HibBaseElement element, HibUser user) {
-		if (element instanceof HibEditorTracking) {
-			((HibEditorTracking) element).setEditor(user);
+	public void setEditor(BaseElement element, User user) {
+		if (element instanceof EditorTracking) {
+			((EditorTracking) element).setEditor(user);
 		}
 	}	
 }

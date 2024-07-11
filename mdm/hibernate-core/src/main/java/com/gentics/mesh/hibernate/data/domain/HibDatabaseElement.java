@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.Element;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
 import com.gentics.mesh.util.ETag;
@@ -11,7 +11,7 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Interface for all uuid based elements
  */
-public interface HibDatabaseElement extends HibElement {
+public interface HibDatabaseElement extends Element {
 	/**
 	 * Gets the internal uuid.
 	 * @return

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.node.field.StringFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -50,7 +50,7 @@ public class RestModelTest extends AbstractMeshTest {
 
 		meshDagger().serverSchemaStorage().addSchema(getDummySchema());
 		NodeResponse response = new NodeResponse();
-		StringField stringField = new StringFieldImpl();
+		StringFieldModel stringField = new StringFieldImpl();
 		stringField.setString("some text");
 
 		FieldMap fields = new FieldMapImpl();
@@ -97,11 +97,11 @@ public class RestModelTest extends AbstractMeshTest {
 		request.setLanguage("en");
 		request.setParentNodeUuid(UUIDUtil.randomUUID());
 
-		StringField stringField = new StringFieldImpl();
+		StringFieldModel stringField = new StringFieldImpl();
 		stringField.setString("some text");
 		request.getFields().put("name", stringField);
 
-		StringField titleField = new StringFieldImpl();
+		StringFieldModel titleField = new StringFieldImpl();
 		titleField.setString("The awesome title");
 		request.getFields().put("title", titleField);
 
