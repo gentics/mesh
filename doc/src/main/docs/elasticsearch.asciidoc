@@ -82,6 +82,26 @@ Levels:
 * `ES_7` - Support Elasticsearch 7.x
 * `ES_8` - Support Elasticsearch 8.x
 
+=== Required settings
+
+Settings for Elasticsearch versions, which are needed so Gentics Mesh works correctly.
+
+==== Elasticsearch 8.x
+
+The `destructive_requires_name` setting must be set to `false` otherwise Gentics Mesh cannot delete certain indices.
+
+This is a cluster setting which can be set permanently with a PUT request to `/_cluster/settings`:
+
+```
+{
+    "persistent": {
+        "action": {
+           "destructive_requires_name": false
+        }
+    }
+}
+```
+
 == Security
 
 Gentics Mesh supports basic authentication and TLS in-transit encrypted connections for Elasticsearch communication.
