@@ -2,7 +2,7 @@ package com.gentics.mesh.plugin.gcms;
 
 import com.gentics.mesh.plugin.gcms.config.GCMSPluginConfig;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import io.vertx.core.json.JsonObject;
@@ -30,8 +30,7 @@ public abstract class AbstractGCMSPluginTest extends AbstractPluginLocalIntegrat
 	}
 
 	@Rule
-	public final MeshLocalServer server = new OrientDBMeshLocalServer()
-		.withInMemoryMode()
+	public final MeshLocalServer server = new HibernateMeshLocalServer()
 		.withPlugin(GCMSTestPlugin.class, "gcmsPlugin")
 		.waitForStartup();
 

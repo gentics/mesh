@@ -3,7 +3,7 @@ package com.gentics.mesh.plugin.test.common.util;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.MeshVersions;
 
 /**
  * Utility class which helps with selection and handling of Gentics Mesh versions and docker image locations.
@@ -42,7 +42,7 @@ public final class MeshVersionUtil {
 	 * @return
 	 */
 	public static String getMatchingImage() {
-		String version = MeshVersion.getPlainVersion();
+		String version = MeshVersions.getPlainVersion();
 		if (isOSS(version)) {
 			return OSS_IMAGE + ":" + version;
 		} else {

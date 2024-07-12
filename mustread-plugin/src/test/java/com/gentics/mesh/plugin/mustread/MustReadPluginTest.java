@@ -32,15 +32,15 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import com.gentics.mesh.plugin.mustread.config.ProjectConfig;
 import com.gentics.mesh.plugin.mustread.controller.SchemaController;
 import com.gentics.mesh.plugin.mustread.helper.JsonHelper;
 import com.gentics.mesh.plugin.mustread.object.User;
 import com.gentics.mesh.plugin.mustread.plugin.MustReadTestPlugin;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.local.MeshLocalServer;
@@ -53,8 +53,7 @@ public class MustReadPluginTest extends AbstractPluginLocalIntegrationTest imple
 	private static final String testDir = "target/test-must-read-plugin";
 
 	@ClassRule
-	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
-		.withInMemoryMode()
+	public static final MeshLocalServer server = new HibernateMeshLocalServer()
 		.withPlugin(MustReadTestPlugin.class, API_NAME)
 		.withNodeName("test-mesh")
 		.waitForStartup();
@@ -114,7 +113,7 @@ public class MustReadPluginTest extends AbstractPluginLocalIntegrationTest imple
 	}
 
 	private static MeshOptions createMeshOptions() {
-		MeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class);
+		MeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class);
 
 		options.setPluginDirectory(testDir);
 		options.getAuthenticationOptions().setKeystorePassword("ABC");

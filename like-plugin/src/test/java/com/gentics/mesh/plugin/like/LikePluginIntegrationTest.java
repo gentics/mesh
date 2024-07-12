@@ -53,7 +53,7 @@ import com.gentics.mesh.plugin.like.model.StatisticsResponse;
 import com.gentics.mesh.plugin.like.model.Type;
 import com.gentics.mesh.plugin.like.service.SchemaService;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 
@@ -73,8 +73,7 @@ public class LikePluginIntegrationTest extends AbstractPluginLocalIntegrationTes
 	private final static String PROJECT_NAME = "testproject";
 
 	@ClassRule
-	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
-		.withInMemoryMode()
+	public static final MeshLocalServer server = new HibernateMeshLocalServer()
 		.waitForStartup();
 
 	private static ProjectResponse project;

@@ -43,7 +43,7 @@ import com.gentics.mesh.plugin.forms.service.FormService;
 import com.gentics.mesh.plugin.forms.service.SchemaService;
 import com.gentics.mesh.plugin.forms.test.ResponseWithCookies;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.test.local.MeshLocalServer;
 import com.gentics.mesh.util.URIUtils;
@@ -77,8 +77,7 @@ public abstract class AbstractFormsPluginIntegrationTest extends AbstractPluginL
 	protected final static String PROJECT_PATH_PREFIX = "/testprefix";
 
 	@ClassRule
-	public static final MeshLocalServer server = new OrientDBMeshLocalServer()
-		.withInMemoryMode()
+	public static final MeshLocalServer server = new HibernateMeshLocalServer()
 		.waitForStartup();
 
 	@Rule
