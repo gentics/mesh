@@ -12,7 +12,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfigModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
@@ -119,14 +119,14 @@ public class AdminExamples {
 		return response;
 	}
 
-	public CoordinatorConfigModel createCoordinatorConfig() {
-		CoordinatorConfigModel config = new CoordinatorConfigModel();
+	public CoordinatorConfig createCoordinatorConfig() {
+		CoordinatorConfig config = new CoordinatorConfig();
 		config.setMode(CoordinatorMode.CUD);
 		return config;
 	}
 
-	public CoordinatorConfigModel createCoordinatorConfigRequest() {
-		CoordinatorConfigModel config = new CoordinatorConfigModel();
+	public CoordinatorConfig createCoordinatorConfigRequest() {
+		CoordinatorConfig config = new CoordinatorConfig();
 		config.setMode(CoordinatorMode.DISABLED);
 		return config;
 	}

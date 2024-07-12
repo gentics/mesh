@@ -9,13 +9,13 @@ import com.gentics.mesh.etc.config.cluster.CoordinatorMode;
 /**
  * Configuration model for the coordination layer feature.
  */
-public class CoordinatorConfigModel implements RestModel {
+public class CoordinatorConfig implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Coordinator mode which can be set to DISABLED to disable coordination, to CUD to handle only modifying requests or to ALL to handle all requests.")
 	private CoordinatorMode mode;
 
-	public CoordinatorConfigModel() {
+	public CoordinatorConfig() {
 	}
 
 	public CoordinatorMode getMode() {
@@ -23,7 +23,7 @@ public class CoordinatorConfigModel implements RestModel {
 	}
 
 	@Setter
-	public CoordinatorConfigModel setMode(CoordinatorMode mode) {
+	public CoordinatorConfig setMode(CoordinatorMode mode) {
 		this.mode = mode;
 		return this;
 	}

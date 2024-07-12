@@ -21,7 +21,7 @@ import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -348,7 +348,7 @@ public abstract class AdminHandler extends AbstractHandler {
 				if (user != null && !user.isAdmin()) {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
-				CoordinatorConfigModel request = ac.fromJson(CoordinatorConfigModel.class);
+				CoordinatorConfig request = ac.fromJson(CoordinatorConfig.class);
 				coordinator.updateConfig(request);
 				return coordinator.loadConfig();
 			}, model -> ac.send(model, OK));

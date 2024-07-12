@@ -42,7 +42,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.NodeChildrenInfoModel;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -96,8 +96,8 @@ public class NodeExamples extends AbstractExamples {
 		languagePaths.put("de", MeshVersions.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
 		nodeResponse.setLanguagePaths(languagePaths);
 		nodeResponse.setChildrenInfo(new HashMap<>());
-		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfoModel().setCount(1).setSchemaUuid(UUID_2));
-		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfoModel().setCount(5).setSchemaUuid(UUID_3));
+		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(UUID_2));
+		nodeResponse.getChildrenInfo().put("folder", new NodeChildrenInfo().setCount(5).setSchemaUuid(UUID_3));
 
 		FieldMap fields = new FieldMapImpl();
 		fields.put("name", createStringField("Name for language tag de-DE"));

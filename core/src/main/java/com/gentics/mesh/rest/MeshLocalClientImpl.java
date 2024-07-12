@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfigModel;
+import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.localconfig.LocalConfigModel;
@@ -1894,12 +1894,12 @@ public class MeshLocalClientImpl implements MeshLocalClient {
 	}
 
 	@Override
-	public MeshRequest<CoordinatorConfigModel> loadCoordinationConfig() {
+	public MeshRequest<CoordinatorConfig> loadCoordinationConfig() {
 		return null;
 	}
 
 	@Override
-	public MeshRequest<CoordinatorConfigModel> updateCoordinationConfig(CoordinatorConfigModel coordinatorConfig) {
+	public MeshRequest<CoordinatorConfig> updateCoordinationConfig(CoordinatorConfig coordinatorConfig) {
 		return null;
 	}
 
