@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.node.version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.annotation.Setter;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * Response POJO which is used in {@link NodeVersionsResponse} to return information about a single version.
@@ -12,7 +12,7 @@ public class VersionInfo {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("User reference of the creator of the element.")
-	private UserReferenceModel creator;
+	private UserReference creator;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted created date string.")
@@ -47,12 +47,12 @@ public class VersionInfo {
 		return this;
 	}
 
-	public UserReferenceModel getCreator() {
+	public UserReference getCreator() {
 		return creator;
 	}
 
 	@Setter
-	public VersionInfo setCreator(UserReferenceModel creator) {
+	public VersionInfo setCreator(UserReference creator) {
 		this.creator = creator;
 		return this;
 	}

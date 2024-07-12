@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -228,7 +228,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param roleUuid
 	 * @return
 	 */
-	PermissionInfoModel getRolePermissions(BaseElement element, InternalActionContext ac, String roleUuid);
+	PermissionInfo getRolePermissions(BaseElement element, InternalActionContext ac, String roleUuid);
 
 	/**
 	 * Set the role permission for the given element.

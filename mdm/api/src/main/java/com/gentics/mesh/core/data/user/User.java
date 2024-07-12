@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.ReferenceableElement;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.handler.VersionUtils;
 import com.gentics.mesh.util.DateUtils;
@@ -24,7 +24,7 @@ import com.gentics.mesh.util.DateUtils;
 /**
  * Domain model for user.
  */
-public interface User extends CoreElement<UserResponse>, ReferenceableElement<UserReferenceModel>, UserTracking, BucketableElement, NamedBaseElement {
+public interface User extends CoreElement<UserResponse>, ReferenceableElement<UserReference>, UserTracking, BucketableElement, NamedBaseElement {
 
 	TypeInfo TYPE_INFO = new TypeInfo(ElementType.USER, USER_CREATED, USER_UPDATED, USER_DELETED);
 
@@ -144,7 +144,7 @@ public interface User extends CoreElement<UserResponse>, ReferenceableElement<Us
 	 * 
 	 * @return
 	 */
-	UserReferenceModel transformToReference();
+	UserReference transformToReference();
 
 	/**
 	 * Return the timestamp at which the reset token was issued.

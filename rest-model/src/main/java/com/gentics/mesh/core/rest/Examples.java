@@ -34,7 +34,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * Utility class which can be used to generate REST model examples.
@@ -254,8 +254,8 @@ public final class Examples {
 		return ref;
 	}
 
-	public static UserReferenceModel userRef() {
-		UserReferenceModel ref = new UserReferenceModel();
+	public static UserReference userRef() {
+		UserReference ref = new UserReference();
 		ref.setUuid(uuid4());
 		ref.setFirstName("Joe");
 		ref.setLastName("Doe");

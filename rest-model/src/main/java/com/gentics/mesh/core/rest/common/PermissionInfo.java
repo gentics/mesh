@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 /**
  * Permission information
  */
-public class PermissionInfoModel implements RestModel {
+public class PermissionInfo implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the create permission is granted.")
@@ -48,12 +48,12 @@ public class PermissionInfoModel implements RestModel {
 	private Boolean readPublished;
 
 	/**
-	 * Return a basic {@link PermissionInfoModel} which indicates no perms have been granted.
+	 * Return a basic {@link PermissionInfo} which indicates no perms have been granted.
 	 * 
 	 * @return
 	 */
-	public static PermissionInfoModel noPermissions() {
-		return new PermissionInfoModel()
+	public static PermissionInfo noPermissions() {
+		return new PermissionInfo()
 			.setOthers(false);
 	}
 
@@ -67,7 +67,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param read
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setRead(Boolean read) {
+	public PermissionInfo setRead(Boolean read) {
 		this.read = read;
 		return this;
 	}
@@ -87,7 +87,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param create
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setCreate(Boolean create) {
+	public PermissionInfo setCreate(Boolean create) {
 		this.create = create;
 		return this;
 	}
@@ -107,7 +107,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param delete
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setDelete(Boolean delete) {
+	public PermissionInfo setDelete(Boolean delete) {
 		this.delete = delete;
 		return this;
 	}
@@ -127,7 +127,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param publish
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setPublish(Boolean publish) {
+	public PermissionInfo setPublish(Boolean publish) {
 		this.publish = publish;
 		return this;
 	}
@@ -147,7 +147,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param readPublished
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setReadPublished(Boolean readPublished) {
+	public PermissionInfo setReadPublished(Boolean readPublished) {
 		this.readPublished = readPublished;
 		return this;
 	}
@@ -162,7 +162,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param update
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setUpdate(Boolean update) {
+	public PermissionInfo setUpdate(Boolean update) {
 		this.update = update;
 		return this;
 	}
@@ -183,7 +183,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param permission
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel add(Permission permission) {
+	public PermissionInfo add(Permission permission) {
 		set(permission, true);
 		return this;
 	}
@@ -195,7 +195,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param flag
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel set(Permission perm, boolean flag) {
+	public PermissionInfo set(Permission perm, boolean flag) {
 		switch (perm) {
 		case CREATE:
 			create = flag;
@@ -227,7 +227,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param flag
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setOthers(boolean flag) {
+	public PermissionInfo setOthers(boolean flag) {
 		return setOthers(flag, true);
 	}
 
@@ -237,7 +237,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param flag
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel setOthers(boolean flag, boolean includePublishPermissions) {
+	public PermissionInfo setOthers(boolean flag, boolean includePublishPermissions) {
 		if (create == null) {
 			create = flag;
 		}
@@ -354,7 +354,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param iterable
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel fromIterable(Iterable<Permission> iterable) {
+	public PermissionInfo fromIterable(Iterable<Permission> iterable) {
 		create = false;
 		read = false;
 		update = false;
@@ -373,7 +373,7 @@ public class PermissionInfoModel implements RestModel {
 	 * @param iterable
 	 * @return Fluent API
 	 */
-	public PermissionInfoModel fromArray(Permission... iterable) {
+	public PermissionInfo fromArray(Permission... iterable) {
 		create = false;
 		read = false;
 		update = false;

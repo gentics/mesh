@@ -63,7 +63,7 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
@@ -516,7 +516,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			response = call(() -> client().findProjectByUuid(uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(response.getRootNode().getPath());
 
-			PermissionInfoModel permissions = response.getPermissions();
+			PermissionInfo permissions = response.getPermissions();
 			assertTrue(permissions.hasPerm(CREATE));
 			assertTrue(permissions.hasPerm(READ));
 			assertTrue(permissions.hasPerm(UPDATE));

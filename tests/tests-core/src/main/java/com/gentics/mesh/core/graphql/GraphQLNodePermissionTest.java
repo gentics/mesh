@@ -21,7 +21,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -137,7 +137,7 @@ public class GraphQLNodePermissionTest extends AbstractGraphQLNodeTest {
 	private void applyVariations() {
 		// Apply permissions for test run
 		RolePermissionRequest permRequest = new RolePermissionRequest();
-		PermissionInfoModel permissionsInfo = permRequest.getPermissions();
+		PermissionInfo permissionsInfo = permRequest.getPermissions();
 		switch (perm) {
 		case ONLY_READ:
 			permissionsInfo.set(Permission.READ, true);

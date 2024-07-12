@@ -24,7 +24,7 @@ import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.database.HibernateTx;
@@ -144,8 +144,8 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public UserReferenceModel transformToReference() {
-		return new UserReferenceModel()
+	public UserReference transformToReference() {
+		return new UserReference()
 			.setFirstName(firstname)
 			.setLastName(lastname)
 			.setUuid(getUuid());

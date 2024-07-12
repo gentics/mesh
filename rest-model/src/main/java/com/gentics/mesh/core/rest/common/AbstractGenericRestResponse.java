@@ -5,7 +5,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.parameter.RolePermissionParameters;
 
 /**
@@ -15,7 +15,7 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("User reference of the creator of the element.")
-	private UserReferenceModel creator;
+	private UserReference creator;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted created date string.")
@@ -23,27 +23,27 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("User reference of the editor of the element.")
-	private UserReferenceModel editor;
+	private UserReference editor;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted edited date string.")
 	private String edited;
 
 	@JsonProperty(value = "permissions", required = true)
-	private PermissionInfoModel permissions;
+	private PermissionInfo permissions;
 
 	@JsonPropertyDescription("Permission information for provided role. This property will only be populated if a "
 			+ RolePermissionParameters.ROLE_PERMISSION_QUERY_PARAM_KEY + " query parameter has been specified.")
 	@JsonProperty(value = "rolePerms", required = false)
-	private PermissionInfoModel rolePerms;
+	private PermissionInfo rolePerms;
 
 	@Override
-	public UserReferenceModel getCreator() {
+	public UserReference getCreator() {
 		return creator;
 	}
 
 	@Override
-	public void setCreator(UserReferenceModel creator) {
+	public void setCreator(UserReference creator) {
 		this.creator = creator;
 	}
 
@@ -58,12 +58,12 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	}
 
 	@Override
-	public UserReferenceModel getEditor() {
+	public UserReference getEditor() {
 		return editor;
 	}
 
 	@Override
-	public void setEditor(UserReferenceModel editor) {
+	public void setEditor(UserReference editor) {
 		this.editor = editor;
 	}
 
@@ -78,12 +78,12 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	}
 
 	@Override
-	public PermissionInfoModel getPermissions() {
+	public PermissionInfo getPermissions() {
 		return permissions;
 	}
 
 	@Override
-	public void setPermissions(PermissionInfoModel permissions) {
+	public void setPermissions(PermissionInfo permissions) {
 		this.permissions = permissions;
 	}
 
@@ -91,7 +91,7 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	@JsonIgnore
 	public void setPermissions(Permission... permissions) {
 		if (this.permissions == null) {
-			this.permissions = new PermissionInfoModel();
+			this.permissions = new PermissionInfo();
 		}
 		for (Permission permission : Arrays.asList(permissions)) {
 			getPermissions().set(permission, true);
@@ -100,12 +100,12 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	}
 
 	@Override
-	public PermissionInfoModel getRolePerms() {
+	public PermissionInfo getRolePerms() {
 		return rolePerms;
 	}
 
 	@Override
-	public void setRolePerms(PermissionInfoModel rolePerms) {
+	public void setRolePerms(PermissionInfo rolePerms) {
 		this.rolePerms = rolePerms;
 	}
 
@@ -113,7 +113,7 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	@JsonIgnore
 	public void setRolePerms(Permission... permissions) {
 		if (rolePerms == null) {
-			rolePerms = new PermissionInfoModel();
+			rolePerms = new PermissionInfo();
 		}
 		for (Permission permission : Arrays.asList(permissions)) {
 			rolePerms.set(permission, true);

@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 /**
  * GraphQL error REST model.
  */
-public class GraphQLErrorModel implements RestModel {
+public class GraphQLError implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The error message.")
@@ -50,7 +50,7 @@ public class GraphQLErrorModel implements RestModel {
 	 * @param message
 	 * @return Fluent API
 	 */
-	public GraphQLErrorModel setMessage(String message) {
+	public GraphQLError setMessage(String message) {
 		this.message = message;
 		return this;
 	}
@@ -70,7 +70,7 @@ public class GraphQLErrorModel implements RestModel {
 	 * @param type
 	 * @return Fluent API
 	 */
-	public GraphQLErrorModel setType(String type) {
+	public GraphQLError setType(String type) {
 		this.type = type;
 		return this;
 	}
@@ -90,7 +90,7 @@ public class GraphQLErrorModel implements RestModel {
 	 * @param elementId
 	 * @return Fluent API
 	 */
-	public GraphQLErrorModel setElementId(String elementId) {
+	public GraphQLError setElementId(String elementId) {
 		this.elementId = elementId;
 		return this;
 	}
@@ -110,7 +110,7 @@ public class GraphQLErrorModel implements RestModel {
 	 * @param elementType
 	 * @return Fluent API
 	 */
-	public GraphQLErrorModel setElementType(String elementType) {
+	public GraphQLError setElementType(String elementType) {
 		this.elementType = elementType;
 		return this;
 	}
@@ -130,7 +130,7 @@ public class GraphQLErrorModel implements RestModel {
 	 * @param locations
 	 * @return
 	 */
-	public GraphQLErrorModel setLocations(List<ErrorLocationModel> locations) {
+	public GraphQLError setLocations(List<ErrorLocationModel> locations) {
 		this.locations = locations;
 		return this;
 	}
@@ -150,7 +150,7 @@ public class GraphQLErrorModel implements RestModel {
 	 * @param path
 	 * @return Fluent API
 	 */
-	public GraphQLErrorModel setPath(String path) {
+	public GraphQLError setPath(String path) {
 		this.path = path;
 		return this;
 	}

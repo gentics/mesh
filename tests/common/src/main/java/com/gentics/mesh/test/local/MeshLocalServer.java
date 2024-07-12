@@ -41,8 +41,6 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private boolean clustering = false;
 
-	private boolean isInMemory = false;
-
 	private List<Tuple<Class<? extends MeshPlugin>, String>> plugins = new ArrayList<>();
 
 	private Mesh mesh;
@@ -71,7 +69,6 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		this.httpPort = com.gentics.mesh.test.util.TestUtils.getRandomPort();
 		System.setProperty("mesh.confDirName", basePath + "/config");
 
-		String[] args = new String[] {};
 		if (nodeName != null) {
 			meshOptions.setNodeName(nodeName);
 		}

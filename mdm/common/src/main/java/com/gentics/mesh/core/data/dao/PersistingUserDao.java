@@ -39,7 +39,7 @@ import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectReference;
@@ -380,8 +380,8 @@ public interface PersistingUserDao extends UserDao, PersistingDaoGlobal<User>, P
 	 * @param element
 	 * @return
 	 */
-	default PermissionInfoModel getPermissionInfo(User user, BaseElement element) {
-		PermissionInfoModel info = new PermissionInfoModel();
+	default PermissionInfo getPermissionInfo(User user, BaseElement element) {
+		PermissionInfo info = new PermissionInfo();
 		Set<InternalPermission> permissions = getPermissions(user, element);
 		for (InternalPermission perm : permissions) {
 			info.set(perm.getRestPerm(), true);

@@ -2,7 +2,7 @@ package com.gentics.mesh.core.graphql;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -84,7 +84,7 @@ public class GraphQLPublishedMatchingDraftNodePermissionTest extends AbstractGra
     public void setupPermissions() {
         // Apply permissions for test run
         RolePermissionRequest permRequest = new RolePermissionRequest();
-        PermissionInfoModel permissionsInfo = permRequest.getPermissions();
+        PermissionInfo permissionsInfo = permRequest.getPermissions();
         permissionsInfo.set(Permission.READ_PUBLISHED, true);
         permissionsInfo.setOthers(false);
         permRequest.setRecursive(true);
