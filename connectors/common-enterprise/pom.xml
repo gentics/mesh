@@ -34,7 +34,7 @@
 		<dependency>
 			<groupId>com.gentics</groupId>
 			<artifactId>license-checker</artifactId>
-			<version>${license.checker.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
