@@ -71,7 +71,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -1865,7 +1865,7 @@ public class DaoHelper<T extends BaseElement, D extends T> {
 		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
 			if (!(ac instanceof NodeMigrationActionContextImpl)) {
-				PermissionInfoModel permissionInfo = getPermissionForUser(ac.getUser())
+				PermissionInfo permissionInfo = getPermissionForUser(ac.getUser())
 					.map(hibPermission -> {
 						if (elementType.equals(ElementType.NODE)) {
 							return hibPermission.getPermissionInfo();
@@ -1873,7 +1873,7 @@ public class DaoHelper<T extends BaseElement, D extends T> {
 							return hibPermission.getPermissionInfoWithoutPublish();
 						}
 					})
-					.orElseGet(PermissionInfoModel::noPermissions);
+					.orElseGet(PermissionInfo::noPermissions);
 				model.setPermissions(permissionInfo);
 			}
 		}

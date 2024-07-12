@@ -42,9 +42,9 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -72,7 +72,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testTransformToReference() throws Exception {
 		try (Tx tx = tx()) {
 			User user = user();
-			UserReferenceModel reference = user.transformToReference();
+			UserReference reference = user.transformToReference();
 			assertNotNull(reference);
 			assertEquals(user.getUuid(), reference.getUuid());
 			assertEquals(user.getFirstname(), reference.getFirstName());
@@ -210,7 +210,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			long start = System.currentTimeMillis();
 			int nChecks = 10000;
 			for (int i = 0; i < nChecks; i++) {
-				PermissionInfoModel loadedPermInfo = userDao.getPermissionInfo(user(), content());
+				PermissionInfo loadedPermInfo = userDao.getPermissionInfo(user(), content());
 				assertThat(loadedPermInfo).hasPerm(perms);
 				// assertNotNull(ac.data().get("permissions:" + language.getUuid()));
 			}

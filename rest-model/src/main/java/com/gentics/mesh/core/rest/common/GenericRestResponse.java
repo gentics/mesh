@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.rest.common;
 
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * Common interface for typical REST responses which return entity information.
@@ -12,14 +12,14 @@ public interface GenericRestResponse extends RestResponse {
 	 * 
 	 * @return Creator user reference
 	 */
-	UserReferenceModel getCreator();
+	UserReference getCreator();
 
 	/**
 	 * Set the creator user reference.
 	 * 
 	 * @param creator
 	 */
-	void setCreator(UserReferenceModel creator);
+	void setCreator(UserReference creator);
 
 	/**
 	 * Return the creation date in an ISO-8601 format.
@@ -41,14 +41,14 @@ public interface GenericRestResponse extends RestResponse {
 	 * 
 	 * @return Editor user reference.
 	 */
-	UserReferenceModel getEditor();
+	UserReference getEditor();
 
 	/**
 	 * Set the editor user reference.
 	 * 
 	 * @param editor
 	 */
-	void setEditor(UserReferenceModel editor);
+	void setEditor(UserReference editor);
 
 	/**
 	 * Return the last edited date in an ISO-8601 format.
@@ -69,14 +69,14 @@ public interface GenericRestResponse extends RestResponse {
 	 * 
 	 * @return
 	 */
-	PermissionInfoModel getPermissions();
+	PermissionInfo getPermissions();
 
 	/**
 	 * Set the permissions for the element.
 	 * 
 	 * @param permissions
 	 */
-	void setPermissions(PermissionInfoModel permissions);
+	void setPermissions(PermissionInfo permissions);
 
 	/**
 	 * Set specific granted permissions for the element. Permissions which are not included will be set to false.
@@ -90,14 +90,14 @@ public interface GenericRestResponse extends RestResponse {
 	 * 
 	 * @return
 	 */
-	PermissionInfoModel getRolePerms();
+	PermissionInfo getRolePerms();
 
 	/**
 	 * Set the role permissions for the element.
 	 * 
 	 * @param rolePerms
 	 */
-	void setRolePerms(PermissionInfoModel rolePerms);
+	void setRolePerms(PermissionInfo rolePerms);
 
 	/**
 	 * 

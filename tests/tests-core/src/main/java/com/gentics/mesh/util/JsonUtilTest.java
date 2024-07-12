@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -117,7 +117,7 @@ public class JsonUtilTest {
 	@Test
 	public void testPermMap() {
 		UserResponse group = new UserResponse();
-		PermissionInfoModel info = new PermissionInfoModel();
+		PermissionInfo info = new PermissionInfo();
 		info.setOthers(false);
 		info.set(READ, true);
 		info.setCreate(true);

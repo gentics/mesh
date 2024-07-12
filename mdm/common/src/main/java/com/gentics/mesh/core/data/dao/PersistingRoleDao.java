@@ -33,7 +33,7 @@ import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
@@ -234,11 +234,11 @@ public interface PersistingRoleDao extends RoleDao, PersistingDaoGlobal<Role>, P
 	}
 
 	@Override
-	default PermissionInfoModel getRolePermissions(BaseElement element, InternalActionContext ac, String roleUuid) {
+	default PermissionInfo getRolePermissions(BaseElement element, InternalActionContext ac, String roleUuid) {
 		if (!isEmpty(roleUuid)) {
 			Role role = loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
-				PermissionInfoModel permissionInfo = new PermissionInfoModel();
+				PermissionInfo permissionInfo = new PermissionInfo();
 				Set<InternalPermission> permSet = getPermissions(role, element);
 				for (InternalPermission permission : permSet) {
 					permissionInfo.set(permission.getRestPerm(), true);

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.job.warning.JobWarningModel;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * POJO for job information.
@@ -18,7 +18,7 @@ public class JobResponse extends AbstractResponse {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("User reference of the creator of the element.")
-	private UserReferenceModel creator;
+	private UserReference creator;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO8601 formatted created date string.")
@@ -115,7 +115,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @return
 	 */
-	public UserReferenceModel getCreator() {
+	public UserReference getCreator() {
 		return creator;
 	}
 
@@ -124,7 +124,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @param creator
 	 */
-	public void setCreator(UserReferenceModel creator) {
+	public void setCreator(UserReference creator) {
 		this.creator = creator;
 	}
 

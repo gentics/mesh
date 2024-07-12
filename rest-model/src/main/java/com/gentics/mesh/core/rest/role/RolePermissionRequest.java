@@ -3,7 +3,7 @@ package com.gentics.mesh.core.rest.role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.Permission;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -14,7 +14,7 @@ public class RolePermissionRequest implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Set of permissions which should be applied.")
-	private PermissionInfoModel permissions = new PermissionInfoModel();
+	private PermissionInfo permissions = new PermissionInfo();
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether the permission update should be applied recursively.")
@@ -28,7 +28,7 @@ public class RolePermissionRequest implements RestModel {
 	 *
 	 * @return
 	 */
-	public PermissionInfoModel getPermissions() {
+	public PermissionInfo getPermissions() {
 		return permissions;
 	}
 
@@ -61,7 +61,7 @@ public class RolePermissionRequest implements RestModel {
 	 */
 	public static RolePermissionRequest withPermissions(Permission... permissions) {
 		RolePermissionRequest rolePermissionRequest = new RolePermissionRequest();
-		PermissionInfoModel permissionsInfo = rolePermissionRequest.getPermissions();
+		PermissionInfo permissionsInfo = rolePermissionRequest.getPermissions();
 		for (Permission permission : permissions) {
 			permissionsInfo.set(permission, true);
 		}

@@ -22,7 +22,7 @@ import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.impl.MeshElementEventModelImpl;
@@ -144,7 +144,7 @@ public interface CoreElement<T extends RestModel> extends TransformableElement<T
 		if (fields.has("perms")) {
 			// When this is a node migration, do not set user permissions
 			if (!(ac instanceof NodeMigrationActionContext)) {
-				PermissionInfoModel permissionInfo = Tx.get().userDao().getPermissionInfo(ac.getUser(), this);
+				PermissionInfo permissionInfo = Tx.get().userDao().getPermissionInfo(ac.getUser(), this);
 				model.setPermissions(permissionInfo);
 			}
 		}

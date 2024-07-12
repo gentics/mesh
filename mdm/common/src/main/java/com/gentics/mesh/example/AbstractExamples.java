@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
  * Abstract class which contains commonly used method to handle example REST Model POJO's.
@@ -80,8 +80,8 @@ public abstract class AbstractExamples {
 	 * 
 	 * @return
 	 */
-	public UserReferenceModel createUserReference() {
-		UserReferenceModel reference = new UserReferenceModel();
+	public UserReference createUserReference() {
+		UserReference reference = new UserReference();
 		reference.setUuid(USER_EDITOR_UUID);
 		reference.setFirstName("Joe");
 		reference.setLastName("Doe");

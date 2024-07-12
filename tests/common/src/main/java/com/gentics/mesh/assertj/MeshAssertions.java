@@ -56,7 +56,7 @@ import com.gentics.mesh.core.data.schema.FieldSchemaElement;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
@@ -213,7 +213,7 @@ public class MeshAssertions extends Assertions {
 		return new PublishStatusModelAssert(actual);
 	}
 
-	public static PermissionInfoAssert assertThat(PermissionInfoModel actual) {
+	public static PermissionInfoAssert assertThat(PermissionInfo actual) {
 		return new PermissionInfoAssert(actual);
 	}
 

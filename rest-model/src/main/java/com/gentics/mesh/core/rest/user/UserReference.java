@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 /**
  * A user reference is a basic rest model POJO that contains a reference to a user in form of the firstname/lastname and the user uuid.
  */
-public class UserReferenceModel implements RestModel {
+public class UserReference implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Firstname of the user")
@@ -36,7 +36,7 @@ public class UserReferenceModel implements RestModel {
 	 * @param firstName
 	 * @return Fluent API
 	 */
-	public UserReferenceModel setFirstName(String firstName) {
+	public UserReference setFirstName(String firstName) {
 		this.firstName = firstName;
 		return this;
 	}
@@ -56,7 +56,7 @@ public class UserReferenceModel implements RestModel {
 	 * @param lastName
 	 * @return
 	 */
-	public UserReferenceModel setLastName(String lastName) {
+	public UserReference setLastName(String lastName) {
 		this.lastName = lastName;
 		return this;
 	}
@@ -76,7 +76,7 @@ public class UserReferenceModel implements RestModel {
 	 * @param uuid
 	 * @return
 	 */
-	public UserReferenceModel setUuid(String uuid) {
+	public UserReference setUuid(String uuid) {
 		this.uuid = uuid;
 		return this;
 	}

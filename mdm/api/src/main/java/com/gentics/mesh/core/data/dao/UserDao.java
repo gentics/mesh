@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.Role;
 import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -71,7 +71,7 @@ public interface UserDao extends DaoGlobal<User>, DaoTransformable<User, UserRes
 	 * @param element
 	 * @return
 	 */
-	PermissionInfoModel getPermissionInfo(User user, BaseElement element);
+	PermissionInfo getPermissionInfo(User user, BaseElement element);
 
 	/**
 	 * Return a set of permissions which the user got for the given vertex.

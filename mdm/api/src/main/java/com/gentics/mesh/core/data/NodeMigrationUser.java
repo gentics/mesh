@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.user.User;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.value.FieldsSet;
 
@@ -21,7 +21,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 public class NodeMigrationUser implements User {
 
 	@Override
-	public UserReferenceModel transformToReference() {
+	public UserReference transformToReference() {
 		return null;
 	}
 

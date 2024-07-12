@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.ClientSchemaStorage;
@@ -32,7 +32,7 @@ public class UserRestTest {
 		clientSchemaStorage.addSchema(schema);
 
 		UserResponse response = new UserResponse();
-		response.setCreator(new UserReferenceModel().setFirstName("Joe").setLastName("Doe").setUuid(UUIDUtil.randomUUID()));
+		response.setCreator(new UserReference().setFirstName("Joe").setLastName("Doe").setUuid(UUIDUtil.randomUUID()));
 
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(UUIDUtil.randomUUID());

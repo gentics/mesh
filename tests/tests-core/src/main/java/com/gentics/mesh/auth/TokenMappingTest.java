@@ -44,7 +44,7 @@ import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.plugin.auth.MappingResult;
@@ -675,7 +675,7 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 * @param user user reference
 	 * @return model
 	 */
-	protected MeshEventModel event(MeshEvent event, GroupReference group, UserReferenceModel user) {
+	protected MeshEventModel event(MeshEvent event, GroupReference group, UserReference user) {
 		GroupUserAssignModel model = new GroupUserAssignModel();
 		model.setEvent(event);
 		model.setGroup(group);
@@ -720,8 +720,8 @@ public class TokenMappingTest extends AbstractMeshTest {
 	 * Create a reference to the test user
 	 * @return user reference
 	 */
-	protected UserReferenceModel testUserRef() {
-		return new UserReferenceModel().setFirstName(TESTUSER_NAME).setLastName(TESTUSER_NAME);
+	protected UserReference testUserRef() {
+		return new UserReference().setFirstName(TESTUSER_NAME).setLastName(TESTUSER_NAME);
 	}
 
 	/**

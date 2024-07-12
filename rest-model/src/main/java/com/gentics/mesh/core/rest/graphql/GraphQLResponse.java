@@ -22,7 +22,7 @@ public class GraphQLResponse implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Array of errors which were encoutered when handling the query.")
-	private List<GraphQLErrorModel> errors;
+	private List<GraphQLError> errors;
 
 	/**
 	 * Return the response data.
@@ -49,7 +49,7 @@ public class GraphQLResponse implements RestModel {
 	 * 
 	 * @return
 	 */
-	public List<GraphQLErrorModel> getErrors() {
+	public List<GraphQLError> getErrors() {
 		return errors;
 	}
 
@@ -58,7 +58,7 @@ public class GraphQLResponse implements RestModel {
 	 * 
 	 * @param errors
 	 */
-	public void setErrors(List<GraphQLErrorModel> errors) {
+	public void setErrors(List<GraphQLError> errors) {
 		this.errors = errors;
 	}
 }

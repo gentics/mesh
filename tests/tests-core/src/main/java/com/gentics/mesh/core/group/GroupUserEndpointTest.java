@@ -33,7 +33,7 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.event.group.GroupUserAssignModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.core.rest.user.UserReferenceModel;
+import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -131,7 +131,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertEquals("The group name was not set.", groupName, groupRef.getName());
 			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
 
-			UserReferenceModel userRef = event.getUser();
+			UserReference userRef = event.getUser();
 			assertNotNull(userRef);
 			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
 			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());
@@ -247,7 +247,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertEquals("The group name was not set.", groupName, groupRef.getName());
 			assertEquals("The group uuid was not set.", groupUuid, groupRef.getUuid());
 
-			UserReferenceModel userRef = event.getUser();
+			UserReference userRef = event.getUser();
 			assertNotNull(userRef);
 			assertEquals("The user uuid was not set.", extraUserUuid, userRef.getUuid());
 			assertEquals("The user firstname was not set.", userFirstname, userRef.getFirstName());

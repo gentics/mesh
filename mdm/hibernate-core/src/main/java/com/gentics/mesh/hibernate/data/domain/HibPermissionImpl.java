@@ -18,7 +18,7 @@ import jakarta.persistence.ManyToOne;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.rest.common.PermissionInfoModel;
+import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.hibernate.data.domain.keys.HibPermissionPK;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cache;
@@ -175,16 +175,16 @@ public class HibPermissionImpl implements Serializable {
 		this.type = type;
 	}
 
-	public PermissionInfoModel getPermissionInfoWithoutPublish() {
-		return new PermissionInfoModel()
+	public PermissionInfo getPermissionInfoWithoutPublish() {
+		return new PermissionInfo()
 			.setCreate(createPerm)
 			.setRead(readPerm)
 			.setUpdate(updatePerm)
 			.setDelete(deletePerm);
 	}
 
-	public PermissionInfoModel getPermissionInfo() {
-		return new PermissionInfoModel()
+	public PermissionInfo getPermissionInfo() {
+		return new PermissionInfo()
 			.setCreate(createPerm)
 			.setRead(readPerm)
 			.setUpdate(updatePerm)
