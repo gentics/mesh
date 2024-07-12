@@ -78,7 +78,7 @@ import com.gentics.mesh.core.rest.event.node.NodeTaggedEventModel;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.NodeChildrenInfoModel;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -517,15 +517,15 @@ public interface PersistingNodeDao extends NodeDao, PersistingRootDao<Project, N
 	 *            Rest model which will be updated
 	 */
 	private void setChildrenInfo(Node node, InternalActionContext ac, Branch branch, NodeResponse restNode) {
-		Map<String, NodeChildrenInfoModel> childrenInfo = new HashMap<>();
+		Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 		UserDao userDao = Tx.get().userDao();
 
 		for (Node child : getChildren(node, branch.getUuid())) {
 			if (userDao.hasPermission(ac.getUser(), child, READ_PERM)) {
 				String schemaName = child.getSchemaContainer().getName();
-				NodeChildrenInfoModel info = childrenInfo.get(schemaName);
+				NodeChildrenInfo info = childrenInfo.get(schemaName);
 				if (info == null) {
-					info = new NodeChildrenInfoModel();
+					info = new NodeChildrenInfo();
 					String schemaUuid = child.getSchemaContainer().getUuid();
 					info.setSchemaUuid(schemaUuid);
 					info.setCount(1);

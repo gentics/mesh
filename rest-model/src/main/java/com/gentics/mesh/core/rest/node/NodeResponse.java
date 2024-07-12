@@ -56,7 +56,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 */
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Object which contains information about child elements.")
-	private Map<String, NodeChildrenInfoModel> childrenInfo;
+	private Map<String, NodeChildrenInfo> childrenInfo;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node.")
@@ -151,7 +151,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Map<String, NodeChildrenInfoModel> getChildrenInfo() {
+	public Map<String, NodeChildrenInfo> getChildrenInfo() {
 		return childrenInfo;
 	}
 
@@ -160,7 +160,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @param childrenInfo
 	 */
-	public void setChildrenInfo(Map<String, NodeChildrenInfoModel> childrenInfo) {
+	public void setChildrenInfo(Map<String, NodeChildrenInfo> childrenInfo) {
 		this.childrenInfo = childrenInfo;
 	}
 

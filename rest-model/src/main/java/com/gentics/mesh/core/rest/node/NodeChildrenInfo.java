@@ -8,7 +8,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 /**
  * REST model for the node children field.
  */
-public class NodeChildrenInfoModel implements RestModel {
+public class NodeChildrenInfo implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node child")
@@ -23,7 +23,7 @@ public class NodeChildrenInfoModel implements RestModel {
 	}
 
 	@Setter
-	public NodeChildrenInfoModel setSchemaUuid(String schemaUuid) {
+	public NodeChildrenInfo setSchemaUuid(String schemaUuid) {
 		this.schemaUuid = schemaUuid;
 		return this;
 	}
@@ -33,7 +33,7 @@ public class NodeChildrenInfoModel implements RestModel {
 	}
 
 	@Setter
-	public NodeChildrenInfoModel setCount(long count) {
+	public NodeChildrenInfo setCount(long count) {
 		this.count = count;
 		return this;
 	}
