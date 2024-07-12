@@ -2,6 +2,7 @@ package com.gentics.mesh.test.local;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -15,7 +16,16 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.AWSTestMode;
+import com.gentics.mesh.test.ElasticsearchTestMode;
+import com.gentics.mesh.test.MeshCoreOptionChanger;
+import com.gentics.mesh.test.MeshOptionChanger;
+import com.gentics.mesh.test.MeshOptionChanger.NoOptionChanger;
+import com.gentics.mesh.test.MeshTestContextProvider;
 import com.gentics.mesh.test.MeshTestServer;
+import com.gentics.mesh.test.MeshTestSetting;
+import com.gentics.mesh.test.SSLTestMode;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.util.Tuple;
 
 public class MeshLocalServer extends TestWatcher implements MeshTestServer {
@@ -41,11 +51,15 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 
 	private boolean clustering = false;
 
+	private boolean isInMemory = false;
+
 	private List<Tuple<Class<? extends MeshPlugin>, String>> plugins = new ArrayList<>();
 
 	private Mesh mesh;
 
 	private MeshOptions meshOptions;
+
+	private MeshTestContextProvider contextProvider;
 
 	/**
 	 * Create a new local server.
@@ -53,16 +67,28 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 	 * @param clusterName
 	 * @param initCluster
 	 */
-	public MeshLocalServer(MeshOptions meshOptions) {
+	public MeshLocalServer(MeshTestContextProvider contextProvider) {
 		if (inUse) {
 			throw new RuntimeException("The MeshLocalServer rule can't be used twice in the same JVM.");
 		}
 		inUse = true;
-		this.meshOptions = meshOptions;
+		this.contextProvider = contextProvider;
+		this.meshOptions = contextProvider.getOptions();
+	}
+
+	@Override
+	protected void finished(Description description) {
+		super.finished(description);
+		contextProvider.getInstanceProvider().teardownStorage();
 	}
 
 	@Override
 	protected void starting(Description description) {
+		try {
+			contextProvider.getInstanceProvider().initPhysicalStorage(testSetting);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 		String basePath = "target/" + nodeName;
 		prepareFolder(basePath);
 
@@ -252,4 +278,81 @@ public class MeshLocalServer extends TestWatcher implements MeshTestServer {
 		return meshOptions;
 	}
 
+	protected final MeshTestSetting testSetting = new MeshTestSetting() {
+		
+		@Override
+		public Class<? extends Annotation> annotationType() {
+			return null;
+		}
+		
+		@Override
+		public boolean useKeycloak() {
+			return false;
+		}
+		
+		@Override
+		public TestSize testSize() {
+			return TestSize.FULL;
+		}
+		
+		@Override
+		public boolean synchronizeWrites() {
+			return false;
+		}
+		
+		@Override
+		public boolean startStorageServer() {
+			return true;
+		}
+		
+		@Override
+		public boolean startServer() {
+			return false;
+		}
+		
+		@Override
+		public SSLTestMode ssl() {
+			return SSLTestMode.OFF;
+		}
+		
+		@Override
+		public boolean resetBetweenTests() {
+			return false;
+		}
+		
+		@Override
+		public MeshCoreOptionChanger optionChanger() {
+			return MeshCoreOptionChanger.NO_CHANGE;
+		}
+		
+		@Override
+		public boolean monitoring() {
+			return false;
+		}
+		
+		@Override
+		public boolean inMemoryDB() {
+			return isInMemory;
+		}
+		
+		@Override
+		public ElasticsearchTestMode elasticsearch() {
+			return ElasticsearchTestMode.NONE;
+		}
+		
+		@Override
+		public Class<? extends MeshOptionChanger> customOptionChanger() {
+			return NoOptionChanger.class;
+		}
+		
+		@Override
+		public boolean clusterMode() {
+			return clustering;
+		}
+		
+		@Override
+		public AWSTestMode awsContainer() {
+			return AWSTestMode.NONE;
+		}
+	};
 }
