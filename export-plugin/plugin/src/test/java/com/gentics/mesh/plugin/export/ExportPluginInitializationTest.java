@@ -13,8 +13,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.plugin.PluginStatus;
 import com.gentics.mesh.dagger.MeshComponent;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
-import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
+import com.gentics.mesh.impl.HibernateMeshFactoryImpl;
 
 public class ExportPluginInitializationTest {
 
@@ -24,14 +24,13 @@ public class ExportPluginInitializationTest {
 	public static void init() {
 		File logbackFile = new File("config", "logback.xml");
 		System.setProperty("logback.configurationFile", logbackFile.getAbsolutePath());
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class);;
+		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class);;
 
 		options
 			.setAdminPassword("admin")
 			.setForceInitialAdminPasswordReset(false);
-		options.getStorageOptions().setDirectory(null);
 
-		mesh = new MeshFactoryImpl().create(options);
+		mesh = new HibernateMeshFactoryImpl().create(options);
 
 		mesh.rxRun().blockingAwait(200, TimeUnit.SECONDS);
 	}

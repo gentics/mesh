@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.NodeChildrenInfoModel;
+import com.gentics.mesh.core.rest.node.NodeChildrenInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
@@ -55,11 +55,11 @@ public class NodeResponseDelegate implements JsonSerializable {
 		return delegate.getSchema();
 	}
 
-	public Map<String, NodeChildrenInfoModel> getChildrenInfo() {
+	public Map<String, NodeChildrenInfo> getChildrenInfo() {
 		return delegate.getChildrenInfo();
 	}
 
-	public void setChildrenInfo(Map<String, NodeChildrenInfoModel> childrenInfo) {
+	public void setChildrenInfo(Map<String, NodeChildrenInfo> childrenInfo) {
 		delegate.setChildrenInfo(childrenInfo);
 	}
 

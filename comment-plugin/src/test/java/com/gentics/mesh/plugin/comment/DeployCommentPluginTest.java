@@ -1,11 +1,13 @@
 package com.gentics.mesh.plugin.comment;
 
-import com.gentics.mesh.Mesh;
-import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.etc.config.OrientDBMeshOptions;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 public class DeployCommentPluginTest {
 
@@ -14,7 +16,7 @@ public class DeployCommentPluginTest {
 	@Ignore("Intended for manual testing")
 	public void testCommentDeployment() {
 		final int httpPort = 8092;
-		OrientDBMeshOptions options = OptionsLoader.createOrloadOptions(OrientDBMeshOptions.class,
+		HibernateMeshOptions options = OptionsLoader.createOrloadOptions(HibernateMeshOptions.class,
 				null);
 		options.getHttpServerOptions().setPort(httpPort);
 		options.setAdminPassword("admin")

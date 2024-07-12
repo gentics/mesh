@@ -1,18 +1,25 @@
 package com.gentics.mesh.plugin.export.util;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.MicronodeField;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.plugin.export.model.BooleanMapping;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Stream;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
+import com.gentics.mesh.plugin.export.model.BooleanMapping;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class Utils {
     private Utils() {}
@@ -174,10 +181,10 @@ public class Utils {
             try {
                 // Will throw an error if the field is not the correct type.
                 // Which is fine, as we will just ignore it then.
-                MicronodeFieldList list = node.getFields().getMicronodeFieldList(fieldName);
+                MicronodeFieldListModel list = node.getFields().getMicronodeFieldList(fieldName);
                 Map<String, String> items = new HashMap<>();
 
-                for (MicronodeField microNode : list.getItems()) {
+                for (MicronodeFieldModel microNode : list.getItems()) {
                     try {
                         // Same as above
                         String id = microNode.getFields().getStringField("id").getString();

@@ -9,7 +9,7 @@ import com.gentics.mesh.test.local.MeshLocalServer;
 import com.gentics.mesh.enterprise.core.HSQLMemoryTestContextProvider;
 
 /**
- * OrientDB specific extension to {@link MeshLocalServer}
+ * Hibernate specific extension to {@link MeshLocalServer}
  */
 public class HibernateMeshLocalServer extends MeshLocalServer {
 

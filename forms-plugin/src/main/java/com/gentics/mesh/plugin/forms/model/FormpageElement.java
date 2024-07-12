@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -44,7 +44,7 @@ public class FormpageElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainerModel container, MultiMap postedData, boolean errors) {
 		String value = getSingleFormData(postedData);
 		if ("1".equals(value)) {
 			container.getFields().put(getName(), new BooleanFieldImpl().setValue(!errors));
@@ -52,7 +52,7 @@ public class FormpageElement extends FormElement {
 	}
 
 	@Override
-	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
+	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
 		BooleanFieldImpl field = container.getFields().getBooleanField(getName());
 		if (field != null && field.getValue() == Boolean.TRUE) {
 			object.put(key.apply(this), "1");
