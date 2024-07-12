@@ -1,7 +1,5 @@
 package com.gentics.mesh.plugin.comment.testclient;
 
-import com.gentics.mesh.core.rest.lang.LanguageListResponse;
-import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import java.io.InputStream;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -20,8 +18,8 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
@@ -35,6 +33,8 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.core.rest.lang.LanguageListResponse;
+import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -628,35 +628,35 @@ public abstract class AbstractTestClient implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoSchemaListModel> getBranchSchemaVersions(String projectName, String branchUuid) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
-		BranchInfoSchemaList schemaVersionReferences) {
+	public MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid,
+		BranchInfoSchemaListModel schemaVersionReferences) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
+	public MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid,
 		SchemaReference... schemaVersionReferences) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoMicroschemaListModel> getBranchMicroschemaVersions(String projectName, String branchUuid) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
-		BranchInfoMicroschemaList microschemaVersionReferences) {
+	public MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+		BranchInfoMicroschemaListModel microschemaVersionReferences) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+	public MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 		MicroschemaReference... microschemaVersionReferences) {
 		throw new NotImplementedException();
 	}
