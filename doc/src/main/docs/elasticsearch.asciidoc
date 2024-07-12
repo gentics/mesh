@@ -88,19 +88,7 @@ Settings for Elasticsearch versions, which are needed so Gentics Mesh works corr
 
 ==== Elasticsearch 8.x
 
-The `destructive_requires_name` setting must be set to `false` otherwise Gentics Mesh cannot delete certain indices.
-
-This is a cluster setting which can be set permanently with a PUT request to `/_cluster/settings`:
-
-```
-{
-    "persistent": {
-        "action": {
-           "destructive_requires_name": false
-        }
-    }
-}
-```
+The `action.destructive_requires_name` setting must be set to `false` otherwise Gentics Mesh cannot delete certain indices.
 
 == Security
 
