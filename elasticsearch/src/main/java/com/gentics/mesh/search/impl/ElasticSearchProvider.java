@@ -97,8 +97,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public ElasticSearchProvider init() {
-
-        return this;
+		return this;
 	}
 
 	@Override
@@ -124,11 +123,11 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		JsonObject tokenizer = new JsonObject();
 
-        if (complianceMode == ComplianceMode.ES_8) {
-            tokenizer.put("type", "ngram");
-        } else {
-            tokenizer.put("type", "nGram");
-        }
+		if (complianceMode == ComplianceMode.ES_8) {
+			tokenizer.put("type", "ngram");
+		} else {
+			tokenizer.put("type", "nGram");
+		}
 
 		tokenizer.put("min_gram", "3");
 		tokenizer.put("max_gram", "3");

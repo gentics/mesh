@@ -26,7 +26,7 @@
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>5.5.7</spring.security.version>
 		<ferma.version>${project.version}</ferma.version>
-		<elasticsearch.client.version>1.2.0-SNAPSHOT</elasticsearch.client.version>
+		<elasticsearch.client.version>1.1.1</elasticsearch.client.version>
 		<orientdb.version>3.2.10</orientdb.version>
 		<hazelcast.version>3.12.13</hazelcast.version>
 		<jackson.version>2.17.0</jackson.version>
