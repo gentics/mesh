@@ -256,20 +256,20 @@ stage("Setup Build Environment") {
 			stage("Maven Build") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
-							def extraFlags = ""
 							if (Boolean.valueOf(params.runDeployTesting)) {
-							extraFlags += " -Dmaven.test.skip -am -pl server"
+							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -B -DskipTests -Dmaven.test.skip -am -pl server clean install"
 							}
-						if (Boolean.valueOf(params.runDeploy)) {
+						} else if (Boolean.valueOf(params.runDeploy)) {
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
+								sh "mvn -U -B -DskipTests -Dgpg.skip=false clean deploy"
 							}
 						} else {
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -B -DskipTests ${extraFlags} clean package"
+								sh "mvn -B -DskipTests clean package"
 						}
 					}
 					}
