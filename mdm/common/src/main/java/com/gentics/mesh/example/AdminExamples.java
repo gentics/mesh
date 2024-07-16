@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorMasterResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
@@ -86,7 +86,7 @@ public class AdminExamples {
 
 	public ConsistencyCheckResponse createConsistencyCheckResponse(boolean repaired) {
 		ConsistencyCheckResponse response = new ConsistencyCheckResponse();
-		response.getInconsistencies().add(new InconsistencyInfoModel().setSeverity(InconsistencySeverity.LOW).setElementUuid(UUID_1).setDescription(
+		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(UUID_1).setDescription(
 			"A dangling field container has been found.").setRepairAction(RepairAction.DELETE).setRepaired(repaired));
 		return response;
 	}

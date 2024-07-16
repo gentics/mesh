@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.schema.SchemaVersion;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.result.Result;
@@ -131,7 +131,7 @@ public class ContentRefCheck extends AbstractHibernateConsistencyCheck {
 		if (countResult instanceof Number) {
 			long count = Number.class.cast(countResult).longValue();
 			if (count > 0) {
-				InconsistencyInfoModel info = new InconsistencyInfoModel()
+				InconsistencyInfo info = new InconsistencyInfo()
 						.setDescription(String.format(
 								"Table %s contains %d records, that reference records, which do not exist in tables %s",
 								sourceTable, count, targets))

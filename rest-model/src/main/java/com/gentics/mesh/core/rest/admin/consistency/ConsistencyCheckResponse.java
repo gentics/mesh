@@ -32,13 +32,13 @@ public class ConsistencyCheckResponse implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of found inconsistencies.")
-	private List<InconsistencyInfoModel> inconsistencies = new ArrayList<>(MAX_ENTRIES);
+	private List<InconsistencyInfo> inconsistencies = new ArrayList<>(MAX_ENTRIES);
 
 	public ConsistencyRating getResult() {
 		return getInconsistencies().isEmpty() ? ConsistencyRating.CONSISTENT : ConsistencyRating.INCONSISTENT;
 	}
 
-	public List<InconsistencyInfoModel> getInconsistencies() {
+	public List<InconsistencyInfo> getInconsistencies() {
 		return inconsistencies;
 	}
 
@@ -52,7 +52,7 @@ public class ConsistencyCheckResponse implements RestModel {
 	 * @param repairAction
 	 */
 	public void addInconsistency(String description, String uuid, InconsistencySeverity severity, boolean repaired, RepairAction repairAction) {
-		addInconsistency(new InconsistencyInfoModel().setDescription(description).setElementUuid(uuid).setSeverity(severity).setRepaired(repaired)
+		addInconsistency(new InconsistencyInfo().setDescription(description).setElementUuid(uuid).setSeverity(severity).setRepaired(repaired)
 			.setRepairAction(repairAction));
 	}
 
@@ -72,7 +72,7 @@ public class ConsistencyCheckResponse implements RestModel {
 	 * 
 	 * @param info
 	 */
-	public void addInconsistency(InconsistencyInfoModel info) {
+	public void addInconsistency(InconsistencyInfo info) {
 		// Don't add more entries if the limit has been exceeded.
 		if (reachedLimit()) {
 			outputTruncated = true;

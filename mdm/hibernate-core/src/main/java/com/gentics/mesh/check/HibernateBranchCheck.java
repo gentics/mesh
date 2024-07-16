@@ -22,7 +22,7 @@ import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckResult;
-import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfoModel;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
 import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.admin.consistency.RepairAction;
 import com.gentics.mesh.core.result.Result;
@@ -50,7 +50,7 @@ public class HibernateBranchCheck extends AbstractHibernateConsistencyCheck {
 			for (Branch branch : branchDao.findAll(project)) {
 				NodeFieldContainer content = contentDao.findVersion(baseNode, languageTags, branch.getUuid(), "draft");
 				if (content == null) {
-					InconsistencyInfoModel info = new InconsistencyInfoModel()
+					InconsistencyInfo info = new InconsistencyInfo()
 						.setDescription("Branch does not contain the project root node")
 						.setElementUuid(branch.getUuid())
 						.setSeverity(InconsistencySeverity.HIGH)
