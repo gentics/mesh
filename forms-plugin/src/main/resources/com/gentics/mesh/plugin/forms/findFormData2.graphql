@@ -1,0 +1,18 @@
+query ($perPage: Long = 9999, $page: Long = 1) {
+  nodes (perPage: $perPage page: $page {{{ sorting }}} filter: {schema: {is: {{{ schemaName }}} } {{{ fieldFilter }}} }) {
+    elements {
+      uuid
+      version
+      fields {
+        ... on {{{ schemaName }}} {
+          {{{ fieldNames }}}
+          errors
+        }
+      }
+    }
+    totalCount
+    currentPage
+    pageCount
+    perPage
+  }
+}

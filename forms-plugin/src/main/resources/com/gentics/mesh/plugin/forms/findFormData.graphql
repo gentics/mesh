@@ -1,4 +1,4 @@
-query ($query: String, $perPage: Long = -1, $page: Long = 1) {
+query ($query: String, $perPage: Long = 9999, $page: Long = 1) {
   nodes (query: $query, perPage: $perPage, page: $page) {
     elements {
       uuid

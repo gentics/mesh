@@ -3,6 +3,9 @@ package com.gentics.mesh.plugin.forms.service;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.rest.SortOrder;
+import com.github.jknack.handlebars.internal.lang3.StringUtils;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -22,6 +25,8 @@ public class PagingService {
 	public JsonObject extractPagingParams(RoutingContext rc) {
 		Integer page;
 		Integer perPage;
+		String sortBy;
+		SortOrder sortOrder;
 		try {
 			page = Integer.parseInt(rc.request().getParam("page"));
 		} catch (NumberFormatException ex) {
@@ -32,12 +37,21 @@ public class PagingService {
 		} catch (NumberFormatException ex) {
 			perPage = null;
 		}
+		sortBy = rc.request().getParam("sortBy");
+		sortOrder = SortOrder.valueOfName(rc.request().getParam("sortOrder"));
+		
 		JsonObject pagingParams = new JsonObject();
 		if (page != null) {
 			pagingParams.put("page", page);
 		}
 		if (perPage != null) {
 			pagingParams.put("perPage", perPage);
+		}
+		if (StringUtils.isNotBlank(sortBy)) {
+			pagingParams.put("sortBy", sortBy);
+		}
+		if (sortOrder != null) {
+			pagingParams.put("sortOrder", sortOrder);
 		}
 		return pagingParams;
 	}

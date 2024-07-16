@@ -1,0 +1,1 @@
+Forms Plugin: The form lookup is now avoiding using Elasticsearch wherever possible. This can also be set via plugin configuration @forceNoES@ flag. 

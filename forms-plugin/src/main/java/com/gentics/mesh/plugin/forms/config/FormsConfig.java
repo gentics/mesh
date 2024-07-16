@@ -48,6 +48,8 @@ public class FormsConfig extends LicenseConfiguration {
 
 	private boolean validateElements = false;
 
+	private boolean forceNoES = true;
+
 	@JsonProperty("poll")
 	private PollOptions pollOptions = new PollOptions();
 
@@ -191,6 +193,14 @@ public class FormsConfig extends LicenseConfiguration {
 
 	public void setValidateElements(boolean validateElements) {
 		this.validateElements = validateElements;
+	}
+
+	public boolean isForceNoES() {
+		return forceNoES;
+	}
+
+	public void setForceNoES(boolean forceNoES) {
+		this.forceNoES = forceNoES;
 	}
 
 	public Map<String, Object> getCustom() {

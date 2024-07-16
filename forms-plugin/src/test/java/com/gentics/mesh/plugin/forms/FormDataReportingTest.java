@@ -21,7 +21,6 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -361,7 +360,6 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	}
 
 	@Test
-	@Ignore("Test requires Elasticsearch")
 	public void testListFormData() throws IOException {
 		String uuid = createForm("inputfield.json");
 
@@ -387,7 +385,11 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 				.get()
 				.build();
 		Response response = client().newCall(loadRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		} else {
+			assertForbidden(response);
+		}
 
 		// TODO more assertions
 	}
@@ -397,7 +399,6 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 	 * @throws IOException
 	 */
 	@Test
-	@Ignore("Test requires Elasticsearch")
 	public void testFindFormData() throws IOException {
 		String uuid = createForm("inputfield.json");
 
@@ -414,9 +415,43 @@ public class FormDataReportingTest extends AbstractFormsPluginIntegrationTest {
 			setFormOffline(uuid, "en", true, true);
 		}
 
-		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two")).get().build();
+		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two")).headers(auth(permission)).get().build();
 		Response response = client().newCall(findRequest).execute();
-		assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		} else {
+			assertForbidden(response);
+		}
+	}
+
+	/**
+	 * Test finding form data
+	 * @throws IOException
+	 */
+	@Test
+	public void testFindFormDataBackSorted() throws IOException {
+		String uuid = createForm("inputfield.json");
+
+		for (String value : Arrays.asList("one", "two", "three")) {
+			RequestBody requestBody = new MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+					.addFormDataPart("input1", value)
+					.build();
+			Request postRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data")).post(requestBody).build();
+			client().newCall(postRequest).execute();
+		}
+
+		if (!online) {
+			setFormOffline(uuid, "en", true, true);
+		}
+
+		Request findRequest = new Request.Builder().url(projectUrl("/forms/" + uuid + "/data?q=two&sortBy=created&sortOrder=desc")).headers(auth(permission)).get().build();
+		Response response = client().newCall(findRequest).execute();
+		if (permission) {
+			assertThat(response.isSuccessful()).as(String.format("Response success %d (%s)", response.code(), response.message())).isTrue();
+		} else {
+			assertForbidden(response);
+		}
 	}
 
 	/**

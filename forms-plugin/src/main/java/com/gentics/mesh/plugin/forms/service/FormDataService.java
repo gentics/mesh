@@ -36,9 +36,12 @@ import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -92,8 +95,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
@@ -866,7 +867,7 @@ public class FormDataService {
 			.flatMap(langFallback -> formService.load(projectName, formUuid, langFallback))
 			.flatMap(formService::toForm)
 			.flatMap(form -> {
-				GraphQLRequest graphQlRequest = getDataGraphQlRequest(form, query, pagingParams);
+				GraphQLRequest graphQlRequest = getDataGraphQlRequest(form, query, pagingParams, configuration.isForceNoES());
 				VersioningParameters params = new VersioningParametersImpl();
 
 				if (publishedOnly) {
@@ -902,12 +903,40 @@ public class FormDataService {
 	 * @return a GraphQLRequest
 	 * @throws IOException if loading the ElasticSearch or GraphQL query fails
 	 */
-	private GraphQLRequest getDataGraphQlRequest(Form form, String query, JsonObject pagingParams) throws IOException {
-		String rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), StandardCharsets.UTF_8);
-		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer())
-			.put("query", assembleFindFormDataESQuery(form.getUuid(), query).toString());
+	private GraphQLRequest getDataGraphQlRequest(Form form, String query, JsonObject pagingParams, boolean forceNoES) throws IOException {
+		JsonObject graphQLParams = new JsonObject(pagingParams.toBuffer());
 		Map<String, String> context = new HashMap<>();
 
+		String rawGraphQLQuery;
+		if (StringUtils.isNotBlank(query) && !forceNoES) {
+			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), StandardCharsets.UTF_8);
+			graphQLParams.put("query", assembleFindFormDataESQuery(form.getUuid(), query).toString());
+		} else {
+			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData2.graphql"), StandardCharsets.UTF_8);
+			if (pagingParams.containsKey("sortBy")) {
+				SortOrder order = SortOrder.valueOf(Objects.toString(pagingParams.getValue("sortOrder"))) ;
+				String sortBy = pagingParams.getString("sortBy").replace(" ", "_");
+				if (order == null || order == SortOrder.UNSORTED) {
+					order = SortOrder.ASCENDING ;
+				}
+				context.put("sorting", "sort: { " + sortBy + ": " + order.name() + " }");
+			} else {
+				// TODO should we sort by default?
+				context.put("sorting", "sort: { created: ASCENDING }");
+			}
+			if (forceNoES && StringUtils.isNotBlank(query)) {
+				String filter = form.getElements().stream().map(element -> {
+					if (element.isMultivalue()) {
+						return element.getGraphQLName() + ": {anyMatch: {like: \"%" + query + "%\"}}";
+					} else {
+						return element.getGraphQLName() + ": {like: \"%" + query + "%\"}";
+					}
+				}).collect(Collectors.joining(" ", " fields: {" + SchemaService.getSchemaName(form.getUuid()) + ":{or: { ", " }}} "));
+				context.put("fieldFilter", filter);
+			} else {
+				context.put("fieldFilter", StringUtils.EMPTY);
+			}			
+		}
 		context.put("schemaName", SchemaService.getSchemaName(form.getUuid()));
 		context.put("fieldNames", String.join("\n", form.getReportableElementNamesForGraphQL()));
 
