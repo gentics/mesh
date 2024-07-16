@@ -7,7 +7,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 /**
  * POJO which describes a found inconsistency.
  */
-public class InconsistencyInfoModel implements RestModel {
+public class InconsistencyInfo implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Description of the inconsistency.")
@@ -44,7 +44,7 @@ public class InconsistencyInfoModel implements RestModel {
 	 * @param description
 	 * @return Fluent API
 	 */
-	public InconsistencyInfoModel setDescription(String description) {
+	public InconsistencyInfo setDescription(String description) {
 		this.description = description;
 		return this;
 	}
@@ -64,7 +64,7 @@ public class InconsistencyInfoModel implements RestModel {
 	 * @param severity
 	 * @return Fluent API
 	 */
-	public InconsistencyInfoModel setSeverity(InconsistencySeverity severity) {
+	public InconsistencyInfo setSeverity(InconsistencySeverity severity) {
 		this.severity = severity;
 		return this;
 	}
@@ -84,7 +84,7 @@ public class InconsistencyInfoModel implements RestModel {
 	 * @param elementUuid
 	 * @return Fluent API
 	 */
-	public InconsistencyInfoModel setElementUuid(String elementUuid) {
+	public InconsistencyInfo setElementUuid(String elementUuid) {
 		this.elementUuid = elementUuid;
 		return this;
 	}
@@ -104,7 +104,7 @@ public class InconsistencyInfoModel implements RestModel {
 	 * @param repaired
 	 * @return Fluent API
 	 */
-	public InconsistencyInfoModel setRepaired(boolean repaired) {
+	public InconsistencyInfo setRepaired(boolean repaired) {
 		this.repaired = repaired;
 		return this;
 	}
@@ -123,7 +123,7 @@ public class InconsistencyInfoModel implements RestModel {
 	 * 
 	 * @param repairAction
 	 */
-	public InconsistencyInfoModel setRepairAction(RepairAction repairAction) {
+	public InconsistencyInfo setRepairAction(RepairAction repairAction) {
 		this.repairAction = repairAction;
 		return this;
 	}

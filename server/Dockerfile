@@ -5,7 +5,7 @@ ENV MESH_PLUGIN_DIR=/plugins
 ENV MESH_BINARY_DIR=/uploads
 ENV MESH_TEMP_DIR=/tmp
 ENV HOME=/mesh
-ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=256"
+ENV JAVA_TOOL_OPTIONS="-Xms512m -Xmx512m"
 
 EXPOSE 8080
 EXPOSE 8443
@@ -33,5 +33,5 @@ VOLUME /plugins
 VOLUME /keystore
 VOLUME /config
 
-CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "--add-opens java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
+CMD [ "java", "-Djna.tmpdir=/tmp/.jna", "-Duser.dir=/mesh", "--add-opens", "java.base/java.util=ALL-UNNAMED", "-jar" , "mesh.jar"]
 HEALTHCHECK --start-period=60s --interval=10s --retries=2 CMD ["sh", "live.sh"]

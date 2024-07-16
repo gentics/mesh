@@ -7,12 +7,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.annotation.Getter;
 import com.gentics.mesh.annotation.Setter;
 import com.gentics.mesh.doc.GenerateDocumentation;
+import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 import com.gentics.mesh.etc.config.hibernate.HibernateCacheConfig;
 import com.gentics.mesh.etc.config.hibernate.HibernateStorageOptions;
-import com.gentics.mesh.etc.config.CacheConfig;
-import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.etc.config.NativeQueryFiltering;
-import com.gentics.mesh.etc.config.env.EnvironmentVariable;
 
  /**
   * Top level Mesh Hibernate config POJO.
