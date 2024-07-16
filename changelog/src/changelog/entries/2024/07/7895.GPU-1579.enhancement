@@ -1,0 +1,1 @@
+Core: The storage layer has been replaced from the included OrientDB to the Hibernate ORM based solution, allowing the usage of 3rd party SQL RDBMS as a structured data storage. The supported database for Mesh OSS is MariaDB 10.7+. 
