@@ -468,7 +468,7 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 
 	protected Properties getConnectorProperties() throws IOException {
 		Properties buildProperties = new Properties();
-		buildProperties.load(Mesh.class.getResourceAsStream("/connector.build.properties"));
+		buildProperties.load(getClass().getResourceAsStream("/connector.build.properties"));
 		return buildProperties;
 	}
 
