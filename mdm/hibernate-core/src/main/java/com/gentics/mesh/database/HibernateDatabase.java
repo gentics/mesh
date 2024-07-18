@@ -517,7 +517,7 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
         if (StringUtils.isNotBlank(storageOptions.getConnectionPassword())) {
             info.put("password", storageOptions.getConnectionPassword());
         }
-		return driver.connect(storageOptions.getConnectionUrl() + storageOptions.getDatabaseName() + storageOptions.getConnectionUrlExtraParams(), info);
+		return driver.connect(databaseConnector.getConnectionUrl(), info);
 	}
 
 	/**

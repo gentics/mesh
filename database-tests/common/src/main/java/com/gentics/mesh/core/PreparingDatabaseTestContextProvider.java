@@ -27,6 +27,7 @@ public abstract class PreparingDatabaseTestContextProvider<T extends PreparingDa
 	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
 		current = getDatabaseContainer().take();
+		options.getStorageOptions().setDatabaseAddress("localhost:" + getDatabaseContainer().getMappedPort());
 	}
 
 	@Override

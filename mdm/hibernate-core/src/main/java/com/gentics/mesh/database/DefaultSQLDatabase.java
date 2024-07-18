@@ -53,8 +53,7 @@ public class DefaultSQLDatabase implements DatabaseProvider {
 		optionBuilder
 			.put(AvailableSettings.CONNECTION_PROVIDER, HikariCPConnectionProvider.class.getName())
 			.put(AvailableSettings.JAKARTA_JDBC_DRIVER, databaseConnector.getJdbcDriverClass().getName())
-			.put(AvailableSettings.JAKARTA_JDBC_URL, options.getStorageOptions().getConnectionUrl() 
-					+ options.getStorageOptions().getDatabaseName() + options.getStorageOptions().getConnectionUrlExtraParams())
+			.put(AvailableSettings.JAKARTA_JDBC_URL, databaseConnector.getConnectionUrl())
 			.put(AvailableSettings.JAKARTA_JDBC_USER, options.getStorageOptions().getConnectionUsername())
 			.put(AvailableSettings.JAKARTA_JDBC_PASSWORD, options.getStorageOptions().getConnectionPassword())
 			.put("hibernate.connection.useUnicode", "true")

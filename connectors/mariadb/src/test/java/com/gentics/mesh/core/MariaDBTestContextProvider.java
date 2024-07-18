@@ -19,7 +19,6 @@ public class MariaDBTestContextProvider extends PreparingDatabaseTestContextProv
 	@Override
 	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
-		options.getStorageOptions().setConnectionUrl("jdbc:mariadb://localhost:" + getDatabaseContainer().getMappedPort() + "/");
 		options.getStorageOptions().setDatabaseName(current);
 		options.getStorageOptions().setConnectionUsername(DatabaseContainer.DEFAULT_USERNAME);
 		options.getStorageOptions().setConnectionPassword(DatabaseContainer.DEFAULT_PASSWORD);

@@ -46,7 +46,7 @@ public class HibernateStorageOptions implements Option {
 	public static final long DEFAULT_STALE_TX_CHECK_INTERVAL_MS = 10_000;
 
 	public static final String MESH_JDBC_DRIVER_CLASS = "MESH_JDBC_DRIVER_CLASS";
-	public static final String MESH_JDBC_CONNECTION_URL = "MESH_JDBC_CONNECTION_URL";
+	public static final String MESH_DATABASE_ADDRESS = "MESH_DATABASE_ADDRESS";
 	public static final String MESH_JDBC_CONNECTION_URL_EXTRA_PARAMS = "MESH_JDBC_CONNECTION_URL_EXTRA_PARAMS";
 	public static final String MESH_JDBC_DATABASE_NAME = "MESH_JDBC_DATABASE_NAME";
 	public static final String MESH_JDBC_DIALECT_CLASS = "MESH_JDBC_DIALECT_CLASS";
@@ -56,7 +56,6 @@ public class HibernateStorageOptions implements Option {
 	public static final String MESH_DB_SYNC_WRITES_ENV = "MESH_DB_SYNC_WRITES";
 	public static final String MESH_DB_SYNC_WRITES_TIMEOUT_ENV = "MESH_DB_SYNC_WRITES_TIMEOUT";
 	public static final String MESH_DB_SQL_PARAMETERS_LIMIT_ENV = "MESH_DB_SQL_PARAMETERS_LIMIT";
-	public static final String MESH_DB_EXPORT_DIRECTORY_ENV = "MESH_DB_EXPORT_DIRECTORY";
 	public static final String MESH_DB_CONNECTOR_CLASSPATH = "MESH_DB_CONNECTOR_CLASSPATH";
 	public static final NativeQueryFiltering DEFAULT_NATIVE_QUERY_FILTERING = NativeQueryFiltering.ON_DEMAND;
 
@@ -77,11 +76,6 @@ public class HibernateStorageOptions implements Option {
 	@JsonPropertyDescription("Enables the native database level filtering for queries. Default: ON_DEMAND")
 	@EnvironmentVariable(name = MESH_HIBERNATE_NATIVE_QUERY_FILTERING, description = "Override the configured native query filtering.")
 	private NativeQueryFiltering nativeQueryFiltering = DEFAULT_NATIVE_QUERY_FILTERING;
-
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Path to the database export directory.")
-	@EnvironmentVariable(name = MESH_DB_EXPORT_DIRECTORY_ENV, description = "Override the graph database export directory.")
-	private String exportDirectory = DEFAULT_EXPORT_DIRECTORY;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Transaction retry count.")
@@ -104,9 +98,9 @@ public class HibernateStorageOptions implements Option {
 	private String dialectClass;
 	
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("JDBC connection URL.")
-	@EnvironmentVariable(name = MESH_JDBC_CONNECTION_URL, description = "Override the default JDBC connection URL.")
-	private String connectionUrl;
+	@JsonPropertyDescription("Database address in HOST<:PORT> format.")
+	@EnvironmentVariable(name = MESH_DATABASE_ADDRESS, description = "Override the database address.")
+	private String databaseAddress;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("JDBC connection URL extra parameters.")
@@ -253,13 +247,13 @@ public class HibernateStorageOptions implements Option {
 		return this;
 	}
 
-	public String getConnectionUrl() {
-		return connectionUrl;
+	public String getDatabaseAddress() {
+		return databaseAddress;
 	}
 
 	@Setter
-	public HibernateStorageOptions setConnectionUrl(String connectionUrl) {
-		this.connectionUrl = connectionUrl;
+	public HibernateStorageOptions setDatabaseAddress(String databaseAddress) {
+		this.databaseAddress = databaseAddress;
 		return this;
 	}
 
@@ -380,16 +374,6 @@ public class HibernateStorageOptions implements Option {
 	@Setter
 	public HibernateStorageOptions setJdbcBatchSize(long jdbcBatchSize) {
 		this.jdbcBatchSize = jdbcBatchSize;
-		return this;
-	}
-
-	public String getExportDirectory() {
-		return exportDirectory;
-	}
-
-	@Setter
-	public HibernateStorageOptions setExportDirectory(String exportDirectory) {
-		this.exportDirectory = exportDirectory;
 		return this;
 	}
 

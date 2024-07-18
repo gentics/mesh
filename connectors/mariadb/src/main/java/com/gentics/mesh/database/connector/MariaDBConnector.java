@@ -29,6 +29,14 @@ public class MariaDBConnector extends AbstractDatabaseConnector {
 	}
 
 	@Override
+	public String getConnectionUrl() {
+		return "jdbc:mariadb://" 
+				+ options.getStorageOptions().getDatabaseAddress() + "/"
+				+ options.getStorageOptions().getDatabaseName() + "?"
+				+ options.getStorageOptions().getConnectionUrlExtraParams();
+	}
+
+	@Override
 	public int getQueryParametersCountLimit() {
 		return 999;
 	}

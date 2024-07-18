@@ -159,18 +159,12 @@ public abstract class ManagedDatabaseTestContextProvider extends HibernateTestCo
 	@Override
 	public void fillMeshOptions(HibernateMeshOptions meshOptions) {
 		this.meshOptions = meshOptions;
-		meshOptions.getStorageOptions().setConnectionUrl(getConnectionUrl());
+		meshOptions.getStorageOptions().setDatabaseAddress(dbSettings.getHost() + ":" + dbSettings.getPort());
 		meshOptions.getStorageOptions().setConnectionUrlExtraParams(getConnectionUrlExtraParams());
 		meshOptions.getStorageOptions().setDatabaseName(dbSettings.getDatabase());
 		meshOptions.getStorageOptions().setConnectionUsername(getConnectionUsername());
 		meshOptions.getStorageOptions().setConnectionPassword(dbSettings.getPassword());
 	}
-
-	/**
-	 * Get the connection URL to the test DB
-	 * @return connection URL
-	 */
-	protected abstract String getConnectionUrl();
 
 	/**
 	 * Get the extra URL parameters for the test DB
