@@ -20,7 +20,6 @@ public class OracleTestContextProvider extends PreparingDatabaseTestContextProvi
 	@Override
 	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
-		options.getStorageOptions().setConnectionUrl("jdbc:oracle:thin:@localhost:" + getDatabaseContainer().getMappedPort() + "/");
 		options.getStorageOptions().setDatabaseName(DatabaseContainer.DEFAULT_DATABASE);
 		options.getStorageOptions().setConnectionUsername(current);
 		options.getStorageOptions().setConnectionPassword(DatabaseContainer.DEFAULT_PASSWORD);

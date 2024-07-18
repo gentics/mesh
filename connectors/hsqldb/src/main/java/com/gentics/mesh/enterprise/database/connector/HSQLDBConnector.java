@@ -18,6 +18,14 @@ public class HSQLDBConnector extends AbstractEnterpriseDatabaseConnector {
 	}
 
 	@Override
+	public String getConnectionUrl() {
+		return (StringUtils.isNotBlank(options.getStorageOptions().getDatabaseAddress()) 
+				? ("jdbc:hsqldb:hsql://" + options.getStorageOptions().getDatabaseAddress() + "/" + options.getStorageOptions().getDatabaseName())
+				: "jdbc:hsqldb:mem:tsg"
+			);
+	}
+
+	@Override
 	public int getQueryParametersCountLimit() {
 		return Short.MAX_VALUE;
 	}

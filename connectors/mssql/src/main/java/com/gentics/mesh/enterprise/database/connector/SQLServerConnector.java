@@ -2,6 +2,8 @@ package com.gentics.mesh.enterprise.database.connector;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.enterprise.hibernate.dialect.SqlServerUnicodeDialect;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
@@ -15,6 +17,16 @@ public class SQLServerConnector extends AbstractEnterpriseDatabaseConnector {
 
 	public SQLServerConnector(HibernateMeshOptions options) {
 		super(options);
+	}
+
+	@Override
+	public String getConnectionUrl() {
+		return "jdbc:sqlserver://" + options.getStorageOptions().getDatabaseAddress() 
+				+ ";databaseName=" + options.getStorageOptions().getDatabaseName() + ";"
+				+ (StringUtils.isNotBlank(options.getStorageOptions().getConnectionUrlExtraParams())
+						? options.getStorageOptions().getConnectionUrlExtraParams()
+						: "encrypt=false"
+					);
 	}
 
 	@Override

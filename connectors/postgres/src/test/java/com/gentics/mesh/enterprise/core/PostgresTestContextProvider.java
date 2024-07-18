@@ -20,8 +20,7 @@ public class PostgresTestContextProvider extends PreparingDatabaseTestContextPro
 	@Override
 	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
-		options.getStorageOptions().setConnectionUrl("jdbc:postgresql://localhost:" + getDatabaseContainer().getMappedPort() + "/");
-		options.getStorageOptions().setConnectionUrlExtraParams("?autosave=always&currentSchema=" + current);
+		options.getStorageOptions().setConnectionUrlExtraParams("autosave=always&currentSchema=" + current);
 		options.getStorageOptions().setDatabaseName(DatabaseContainer.DEFAULT_DATABASE);
 		options.getStorageOptions().setConnectionUsername(DatabaseContainer.DEFAULT_USERNAME);
 		options.getStorageOptions().setConnectionPassword(DatabaseContainer.DEFAULT_PASSWORD);

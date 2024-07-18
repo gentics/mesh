@@ -20,10 +20,8 @@ public class SQLServerTestContextProvider extends PreparingDatabaseTestContextPr
 	@Override
 	public void fillMeshOptions(HibernateMeshOptions options) {
 		super.fillMeshOptions(options);
-		options.getStorageOptions().setConnectionUrl("jdbc:sqlserver://localhost:" + getDatabaseContainer().getMappedPort() + ";databaseName=");
 		options.getStorageOptions().setDatabaseName(current);
-		options.getStorageOptions().setConnectionUrlExtraParams(";encrypt=false");
-        options.getStorageOptions().setConnectionUsername("SA");
+		options.getStorageOptions().setConnectionUsername("SA");
 		options.getStorageOptions().setConnectionPassword(DatabaseContainer.DEFAULT_PASSWORD);
 	}
 }

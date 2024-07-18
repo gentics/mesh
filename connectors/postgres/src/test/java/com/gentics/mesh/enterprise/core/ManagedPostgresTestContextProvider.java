@@ -9,10 +9,6 @@ import com.gentics.mesh.enterprise.database.connector.PostgreSQLConnector;
  */
 @ManagedBy(name = "postgres", connector = PostgreSQLConnector.class)
 public class ManagedPostgresTestContextProvider extends ManagedDatabaseTestContextProvider {
-	@Override
-	protected String getConnectionUrl() {
-		return "jdbc:postgresql://" + dbSettings.getHost() + ":" + dbSettings.getPort() + "/";
-	}
 
 	@Override
 	protected String getConnectionUrlExtraParams() {

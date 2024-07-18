@@ -11,11 +11,6 @@ import com.gentics.mesh.enterprise.database.connector.OracleConnector;
 public class ManagedOracleTestContextProvider extends ManagedDatabaseTestContextProvider {
 
 	@Override
-	protected String getConnectionUrl() {
-		return "jdbc:oracle:thin:@" + dbSettings.getHost() + ":" + dbSettings.getPort() + "/";
-	}
-
-	@Override
 	protected String getConnectionUsername() {
 		return dbSettings.getSchema();
 	}

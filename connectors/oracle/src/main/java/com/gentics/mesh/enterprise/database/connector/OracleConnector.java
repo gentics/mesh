@@ -28,6 +28,11 @@ public class OracleConnector extends AbstractEnterpriseDatabaseConnector {
 	}
 
 	@Override
+	public String getConnectionUrl() {
+		return "jdbc:oracle:thin:@" + options.getStorageOptions().getDatabaseAddress() + "/" + options.getStorageOptions().getDatabaseName();
+	}
+
+	@Override
 	public String installCount(String sqlQuery) {
 		return "SELECT COUNT(1) FROM ( " + sqlQuery + " ) ";
 	}

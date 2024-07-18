@@ -2,6 +2,8 @@ package com.gentics.mesh.enterprise.database.connector;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.enterprise.hibernate.dialect.PostgresDuplicationAwareDialect;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
@@ -13,6 +15,17 @@ public class PostgreSQLConnector extends AbstractEnterpriseDatabaseConnector {
 
 	public PostgreSQLConnector(HibernateMeshOptions options) {
 		super(options);
+	}
+
+	@Override
+	public String getConnectionUrl() {
+		return "jdbc:postgresql://" 
+				+ options.getStorageOptions().getDatabaseAddress() + "/"
+				+ options.getStorageOptions().getDatabaseName() + "?"
+				+ (StringUtils.isNotBlank(options.getStorageOptions().getConnectionUrlExtraParams()) 
+						? options.getStorageOptions().getConnectionUrlExtraParams() 
+						: "autosave=always&currentSchema=" + options.getStorageOptions().getDatabaseName()
+					);
 	}
 
 	@Override

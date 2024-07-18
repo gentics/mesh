@@ -7,7 +7,6 @@ public interface HSQLMemoryEnterpriseOptionsProvider extends HibernateMeshOption
 
 	@Override
 	default void fillMeshOptions(HibernateMeshOptions meshOptions) {		
-		meshOptions.getStorageOptions().setConnectionUrl("jdbc:hsqldb:mem:tsg");
 		meshOptions.getStorageOptions().setConnectionUsername("sa");
 		meshOptions.getStorageOptions().setConnectionPassword("");
 	}

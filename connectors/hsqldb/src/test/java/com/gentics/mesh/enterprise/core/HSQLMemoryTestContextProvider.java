@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.HibernateTestContextProvider;
 import com.gentics.mesh.core.HibernateTestUtils;
 import com.gentics.mesh.core.db.Database;
@@ -37,9 +39,10 @@ public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider 
 		server = new InMemoryDatabase();
 		if (settings.inMemoryDB() || settings.startStorageServer()) {
 			int port = HibernateTestUtils.pickLocalPort(false);
-			meshOptions.getStorageOptions().setConnectionUrl("jdbc:hsqldb:hsql://localhost:" + port + "/");
+			meshOptions.getStorageOptions().setDatabaseAddress("localhost:" + port);
 			server.start(meshOptions.getStorageOptions().getDatabaseName(), port, Optional.ofNullable(directory), false);
 		} else {
+			meshOptions.getStorageOptions().setDatabaseAddress(StringUtils.EMPTY);
 			server = null;
 		}
 	}

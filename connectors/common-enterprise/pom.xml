@@ -34,7 +34,6 @@
 		<dependency>
 			<groupId>com.gentics</groupId>
 			<artifactId>license-checker</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
