@@ -7,7 +7,9 @@ mvn -pl changelog install
 ////
 
 [[v3.0.0-SNAPSHOT]]
-== 3.0.0-SNAPSHOT (11.07.2024)
+== 3.0.0-SNAPSHOT (18.07.2024)
+
+icon:plus[] Core: The storage layer has been replaced from the included OrientDB to the Hibernate ORM based solution, allowing the usage of 3rd party SQL RDBMS as a structured data storage. The supported database for Mesh OSS is MariaDB 10.7+. 
 
 icon:plus[] The logging system has been revisited, getting rid of the deprecations, checking the messages and levels for consistency.
 
