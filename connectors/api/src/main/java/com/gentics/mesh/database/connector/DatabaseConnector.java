@@ -76,4 +76,11 @@ public interface DatabaseConnector extends QueryUtils {
 	 * @return fluent
 	 */
 	DatabaseConnector setOptions(HibernateMeshOptions options);
+
+	/**
+	 * Get the JDBC full connection URL
+	 * 
+	 * @return
+	 */
+	String getConnectionUrl();
 }

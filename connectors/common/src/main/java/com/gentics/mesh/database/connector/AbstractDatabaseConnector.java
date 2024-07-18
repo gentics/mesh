@@ -40,7 +40,6 @@ import org.hibernate.query.spi.Limit;
 import org.hibernate.type.spi.TypeConfiguration;
 import org.slf4j.Logger;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.contentoperation.ContentColumn;
 import com.gentics.mesh.contentoperation.JoinedContentColumn;
 import com.gentics.mesh.core.data.branch.Branch;

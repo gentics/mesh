@@ -8,8 +8,4 @@ import com.gentics.mesh.database.connector.MariaDBConnector;
 @ManagedBy(name = "mariadb", connector = MariaDBConnector.class)
 public class ManagedMariaDBTestContextProvider extends ManagedDatabaseTestContextProvider implements MariaDBTestContextProviderBase {
 
-	@Override
-	protected String getConnectionUrl() {
-		return "jdbc:mariadb://" + dbSettings.getHost() + ":" + dbSettings.getPort() + "/";
-	}
 }
