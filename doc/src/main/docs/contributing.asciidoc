@@ -255,14 +255,6 @@ NOTE: Avoid wrapping transactions in your tests around code which invokes REST c
 Additional to `Mockito` and `JUnit` the `AssertJ` tool is used to create fluent readable custom assertions. 
 The `MeshAssertions`` class should be used to add new custom assertions.
 
-== Database Changelog
-
-The `mesh-changelog-system` module contains the https://github.com/gentics/mesh/tree/master/changelog-system[database changelog system]. Sometimes the graph database structure needs to be altered. This can be done by adding a changelog entry to the https://github.com/gentics/mesh/tree/master/changelog-system[mesh-changelog-system].
-
-NOTE: These kind of changes will alter the database structure and thus not be able to be executed online.
-      A cluster of Gentics Mesh instances is required to split and later to reform. 
-      An entry should be added to the `CHANGELOG.adoc` file which informs the users about this change.
-
 == TL;DR
 
 The short form for the inpatient:

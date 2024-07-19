@@ -603,11 +603,6 @@
 			</dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
-				<artifactId>tests-mesh-changelog-system</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.gentics.mesh</groupId>
 				<artifactId>tests-mesh-elasticsearch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
