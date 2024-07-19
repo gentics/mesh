@@ -1,0 +1,1 @@
+Keycloak: A retry mechanism has been added, tolerating slowly starting or loosely reachable Keycloak.
