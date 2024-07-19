@@ -1,1 +1,0 @@
-Core: Configuring `fieldContainerCacheSize` with a memory size or percentage could cause a NullPointerException when handling nodes containing micronodes. This has been fixed.

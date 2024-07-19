@@ -15,8 +15,8 @@ include::content/docs/variables.adoc-include[]
 
 = Gentics Mesh Changelog
 
-[[support_orientdb]]
-== Support for OrientDB
+[[no_orientdb]]
+== OrientDB is gone
 
 Starting with version 3.0.0 OrientDB is no longer part of Gentics Mesh, and is replaced by RDBMS-based solutions. The integration with link:https://mariadb.org/[MariaDB] is available for public use.
 
