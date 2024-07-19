@@ -3,8 +3,9 @@ package com.gentics.mesh.plugin.forms.service;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gentics.mesh.core.rest.SortOrder;
-import com.github.jknack.handlebars.internal.lang3.StringUtils;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
