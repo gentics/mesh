@@ -1,1 +1,0 @@
-SQL: Batch loading of node reference fields has been introduced, to speed up the dedicated GraphQL requests.

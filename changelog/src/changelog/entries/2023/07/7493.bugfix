@@ -1,1 +1,0 @@
-Core: Some indices have been added to node parent edge entity to speed up fetching of node children.

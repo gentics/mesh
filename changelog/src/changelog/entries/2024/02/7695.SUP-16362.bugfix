@@ -1,1 +1,0 @@
-Core: Calculation of the memory consumption of cached Strings has been improved to better reflect the real memory consumption. Before this fix, the calculated memory consumption could be too small resulting in the cache using much more memory than the configured maximum size.

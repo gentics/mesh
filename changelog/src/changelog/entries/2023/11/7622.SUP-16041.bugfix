@@ -1,2 +1,0 @@
-SQL: An error in indexing of the named entities disclosed the ability to create several entity instances with the same name. Affected entities are: project, schema, microschema, tag, tag family, branch, group, user, role, language. This has been fixed. 
-The already existing duplicated entities are fixed on first boot by renaming according to the pattern `dedup_<old_name>_<uuid>`.

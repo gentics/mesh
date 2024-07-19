@@ -1,1 +1,0 @@
-Core: A repair mechanism for `Content reference consistency check` has been improved to use off-transactional mechanism, to improve Mesh and database resource consumption.
