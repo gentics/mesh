@@ -920,9 +920,10 @@ public class FormDataService {
 					order = SortOrder.ASCENDING ;
 				}
 				context.put("sorting", "sort: { " + sortBy + ": " + order.name() + " }");
+			} else if (configuration.getDefaultSortOrder() != null && StringUtils.isNotEmpty(configuration.getDefaultSortBy())) {
+				context.put("sorting", "sort: { " + configuration.getDefaultSortBy().replace(" ", "_") + ": " + configuration.getDefaultSortOrder().name() + " }");
 			} else {
-				// TODO should we sort by default?
-				context.put("sorting", "sort: { created: ASCENDING }");
+				context.put("sorting", StringUtils.EMPTY);
 			}
 			if (forceNoES && StringUtils.isNotBlank(query)) {
 				String filter = form.getElements().stream().map(element -> {
