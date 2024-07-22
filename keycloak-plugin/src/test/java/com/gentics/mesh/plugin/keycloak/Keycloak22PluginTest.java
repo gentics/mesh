@@ -11,7 +11,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import com.gentics.mesh.plugin.keycloak.config.KeycloakPluginConfig;
 import com.gentics.mesh.test.docker.KeycloakContainer;
 
-public class Keycloak22PluginTest  extends AbstractKeycloakPluginTest {
+public class Keycloak22PluginTest extends AbstractKeycloakPluginTest {
 
 	static {
 		realmUrlPrefix = StringUtils.EMPTY;
