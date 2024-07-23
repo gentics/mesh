@@ -29,7 +29,6 @@
 		<dependency>
 			<groupId>com.gentics</groupId>
 			<artifactId>license-checker</artifactId>
-			<version>${license.checker.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
@@ -69,6 +68,26 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
+					<execution>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.gentics.mesh.enterprise</groupId>
+									<artifactId>mesh-enterprise-database-connector-common</artifactId>
+									<!-- https://issues.apache.org/jira/browse/MDEP-732 -->
+									<!-- <type>test-jar</type> -->
+									<classifier>tests</classifier>
+									<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+									<includes>**/*</includes>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
 					<execution>
 						<?m2e ignore?>
 						<id>copy-sharedlib-dependencies</id>

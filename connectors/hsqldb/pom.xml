@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-    <parent>
+	<parent>
 		<groupId>com.gentics.mesh.enterprise</groupId>
 		<artifactId>mesh-enterprise-database-connectors</artifactId>
 		<version>3.0.0-SNAPSHOT</version>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.gentics.mesh.enterprise</groupId>
 			<artifactId>mesh-enterprise-database-connector-common</artifactId>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
@@ -64,6 +64,26 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.gentics.mesh.enterprise</groupId>
+									<artifactId>mesh-enterprise-database-connector-common</artifactId>
+									<!-- https://issues.apache.org/jira/browse/MDEP-732 -->
+									<!-- <type>test-jar</type> -->
+									<classifier>tests</classifier>
+									<outputDirectory>${project.build.directory}/test-classes</outputDirectory>
+									<includes>**/*</includes>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
 						<?m2e ignore?>
 						<id>copy-sharedlib-dependencies</id>
 						<phase>package</phase>
@@ -74,7 +94,8 @@
 							<excludeScope>test</excludeScope>
 							<includeScope>runtime</includeScope>
 							<excludeGroupIds>com.gentics.mesh</excludeGroupIds>
-							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
+							<outputDirectory>
+								${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -90,19 +111,20 @@
 						</goals>
 						<configuration>
 							<filters>
-			                    <filter>
-			                        <artifact>*:*</artifact>
-			                        <excludes>
-			                            <exclude>META-INF/*.SF</exclude>
-			                            <exclude>META-INF/*.DSA</exclude>
-			                            <exclude>META-INF/*.RSA</exclude>
-			                        </excludes>
-			                    </filter>
-			                </filters>
-			                <transformers>
-				                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-			                </transformers>
-			                <artifactSet>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+							</transformers>
+							<artifactSet>
 								<excludes>
 									<exclude>com.gentics.mesh:*</exclude>
 									<exclude>org.hibernate:*</exclude>
@@ -126,12 +148,17 @@
 						<dependency>com.gentics.mesh:tests-mesh-changelog-system</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
+						<dependency>
+							com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
+						<dependency>
+							com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
+						<dependency>
+							com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
+						<dependency>
+							com.gentics.mesh:tests-mesh-service-local-storage</dependency>
+						<dependency>
+							com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
 						<dependency>com.gentics.mesh:mesh-database-tests-common</dependency>
 					</dependenciesToScan>

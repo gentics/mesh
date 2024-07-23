@@ -1,0 +1,46 @@
+{
+    "dv":{
+        "name":"Divehi; Dhivehi; Maldivian;",
+        "nativeName":"ދިވެހި"
+    },
+    "nl":{
+        "name":"Dutch",
+        "nativeName":"Nederlands, Vlaams"
+    },
+    "de":{
+        "name":"German",
+        "nativeName":"Deutsch"
+    },
+    "en":{
+        "name":"English",
+        "nativeName":"English"
+    },
+    "ja":{
+        "name":"Japanese",
+        "nativeName":"日本語 (にほんご／にっぽんご)"
+    },
+    "zh":{
+        "name":"Chinese",
+        "nativeName":"中文 (Zhōngwén), 汉语, 漢語"
+    },
+    "ko":{
+        "name":"Korean",
+        "nativeName":"한국어 (韓國語), 조선말 (朝鮮語)"
+    },
+    "fr":{
+        "name":"French",
+        "nativeName":"français, langue française"
+    },
+    "it":{
+        "name":"Italian",
+        "nativeName":"Italiano"
+    },
+    "uk":{
+    	"name":"Ukrainian",
+    	"nativeName":"Українська"
+    },
+    "hi":{
+    	"name":"Hindi",
+    	"nativeName":"हिन्दी, हिंदी"
+    }
+}
