@@ -129,7 +129,6 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 		return MeshTablePrefixStrategy.class;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Dialect getHibernateDialect() {
 		return metadataExtractorIntegrator.isInitialized() ? metadataExtractorIntegrator.getDialect() : instantiate((Class<Dialect>) getHibernateDialectClass(), () -> getHibernateDialect());
@@ -141,16 +140,16 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 			Properties properties = getConnectorProperties();
 			String version = properties.getProperty("connector.version");
 			String timestamp = properties.getProperty("connector.build.timestamp");
-			return "connector: " + getClass().getCanonicalName() 
-					+ " / driver: " + getJdbcDriverClass().getCanonicalName() 
-					+ " / dialect: " + getHibernateDialectClass().getCanonicalName() 
-					+ " / version: " + version 
-					+ " / built at " + DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(Instant.parse(timestamp), ZoneId.systemDefault()));
+			return "\n\tconnector: " + getClass().getCanonicalName() 
+					+ "\n\tdriver: " + getJdbcDriverClass().getCanonicalName() 
+					+ "\n\tdialect: " + getHibernateDialectClass().getCanonicalName() 
+					+ "\n\tversion: " + version 
+					+ "\n\tbuilt at: " + DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(Instant.parse(timestamp), ZoneId.systemDefault()));
 		} catch (IOException e) {
 			log.warn("Could not get the connector build information", e);
-			return "connector: " + getClass().getCanonicalName() 
-					+ " / driver: " + getJdbcDriverClass().getCanonicalName() 
-					+ " / dialect: " + getHibernateDialectClass().getCanonicalName();
+			return "\n\tconnector: " + getClass().getCanonicalName() 
+					+ "\n\tdriver: " + getJdbcDriverClass().getCanonicalName() 
+					+ "\n\tdialect: " + getHibernateDialectClass().getCanonicalName();
 		}
 	}
 
