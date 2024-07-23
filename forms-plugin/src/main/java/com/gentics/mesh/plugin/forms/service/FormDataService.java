@@ -912,7 +912,7 @@ public class FormDataService {
 			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData.graphql"), StandardCharsets.UTF_8);
 			graphQLParams.put("query", assembleFindFormDataESQuery(form.getUuid(), query).toString());
 		} else {
-			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormData2.graphql"), StandardCharsets.UTF_8);
+			rawGraphQLQuery = IOUtils.toString(FormsPlugin.class.getResource("findFormDataNoES.graphql"), StandardCharsets.UTF_8);
 			if (pagingParams.containsKey("sortBy")) {
 				SortOrder order = SortOrder.valueOf(Objects.toString(pagingParams.getValue("sortOrder"))) ;
 				String sortBy = pagingParams.getString("sortBy").replace(" ", "_");
