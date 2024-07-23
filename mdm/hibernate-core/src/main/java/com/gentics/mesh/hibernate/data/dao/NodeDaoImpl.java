@@ -555,8 +555,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<Node, NodeResponse, HibNodeI
 					.map(nodeContentParent -> new NodeContent(nodeContentParent.getNode(), 
 						nodeContentParent.getContent() != null 
 							? nodeContentParent.getContent() 
-							: contentDao.findVersion(nodeContentParent.getNode(), 
-						ac, languageTags, type), languageTags, type))
+							: contentDao.findVersion(nodeContentParent.getNode(), languageTags, UUIDUtil.toShortUuid(branchUuid), type.getHumanCode()), languageTags, type))
 					.filter(content -> content.getContainer() != null);
 		} else {
 			return PersistingNodeDao.super.findAllContent(project, ac, languageTags, type, paging, maybeFilter);
@@ -654,9 +653,12 @@ public class NodeDaoImpl extends AbstractHibRootDao<Node, NodeResponse, HibNodeI
 		// Fill sorting, if applicable
 		if (!countOnly && PersistingRootDao.shouldSort(paging)) {
 			String clause = paging.getSort().entrySet().stream()
-					.map(entry -> maybeContainerLanguages
-							.map(columnsExplicitlyRequested -> entry.getKey())
-							.orElseGet(() -> databaseConnector.makeSortAlias(databaseConnector.findSortAlias(entry.getKey())) + " " + entry.getValue().getValue()))
+					.map(entry -> {
+						String alias = databaseConnector.findSortAlias(entry.getKey());
+						return maybeContainerLanguages
+								.map(columnsExplicitlyRequested -> alias + " " + entry.getValue().getValue())
+								.orElseGet(() -> databaseConnector.makeSortAlias(alias) + " " + entry.getValue().getValue());
+					})
 					.collect(Collectors.joining(", "));
 			if (maybeContainerLanguages.isEmpty()) {
 				select.setGroupBy(" group by " + nodeColumns.stream().collect(Collectors.joining(", ")));
