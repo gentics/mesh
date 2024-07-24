@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.rest.common.ContainerType.INITIAL;
 import static com.gentics.mesh.core.rest.common.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.common.ContainerType.forVersion;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -419,13 +418,6 @@ public interface ContentDao {
 
 		// TODO refactor the type handling and don't return INITIAL.
 		ContainerType type = forVersion(version);
-
-		if (languageTags != null && languageTags.size() > 1) {
-			// Refer to the default language as the last one
-			String defaultLanguage = Tx.get().data().options().getDefaultLanguage();
-			languageTags = languageTags.stream().filter(tag -> !tag.equals(defaultLanguage)).collect(Collectors.toCollection(ArrayList::new));
-			languageTags.add(defaultLanguage);
-		}
 
 		for (String languageTag : languageTags) {
 
