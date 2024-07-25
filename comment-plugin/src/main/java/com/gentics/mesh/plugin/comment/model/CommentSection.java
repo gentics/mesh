@@ -1,12 +1,11 @@
 package com.gentics.mesh.plugin.comment.model;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.plugin.comment.model.delegate.NodeResponseDelegate;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.comment.model.delegate.NodeResponseDelegate;
 
 /**
  * The comment section represents the root element for a comment tree. A section is linked to the node which references the comments.

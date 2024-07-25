@@ -5,8 +5,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.NodeField;
-import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.plugin.comment.model.delegate.NodeResponseDelegate;
 
 public class EffectiveCommentSection extends NodeResponseDelegate {

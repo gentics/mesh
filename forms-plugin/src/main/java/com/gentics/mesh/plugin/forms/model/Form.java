@@ -1,24 +1,5 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.plugin.forms.config.FormsConfig;
-import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
-import com.gentics.mesh.plugin.forms.config.SecurityOptions;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jsoup.Jsoup;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +17,29 @@ import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jsoup.Jsoup;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.plugin.forms.config.FormsConfig;
+import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
+import com.gentics.mesh.plugin.forms.config.SecurityOptions;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
 
 /**
  * Form
@@ -379,7 +383,7 @@ public class Form implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true, if validation errors were detected
 	 */
-	public void addFields(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addFields(FieldContainerModel container, MultiMap postedData, boolean errors) {
 		flattened().filter(FormElement::isActive).forEach(elem -> {
 			elem.addField(container, postedData, errors);
 		});
@@ -552,7 +556,7 @@ public class Form implements RestModel {
 	 * @param container form data node
 	 * @return form data json
 	 */
-	public JsonObject getFormDataJson(FieldContainer container) {
+	public JsonObject getFormDataJson(FieldContainerModel container) {
 		String errorsJson = container.getFields().getStringField(ERRORS_FIELD_NAME).getString();
 		JsonObject errors = (errorsJson != null && !"".equals(errorsJson)) ? new JsonObject(errorsJson) : new JsonObject();
 
@@ -579,7 +583,7 @@ public class Form implements RestModel {
 	 * @param formData The form data node containing
 	 * @return The {@code results} object for fluent API.
 	 */
-	public JsonObject gatherPollResults(JsonObject results, FieldContainer formData) {
+	public JsonObject gatherPollResults(JsonObject results, FieldContainerModel formData) {
 		flattened().forEach(elem -> {
 			String name = elem.getName();
 
@@ -600,7 +604,7 @@ public class Form implements RestModel {
 	 * @param container form data node
 	 * @return form data json
 	 */
-	public JsonArray getReportableFormData(FieldContainer container) {
+	public JsonArray getReportableFormData(FieldContainerModel container) {
 		return getReportableFormData(container, ignored -> true);
 	}
 
@@ -610,7 +614,7 @@ public class Form implements RestModel {
 	 * @param filter additional filter for form elements
 	 * @return form data json
 	 */
-	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter) {
+	public JsonArray getReportableFormData(FieldContainerModel container, Predicate<FormElement> filter) {
 		JsonArray array = new JsonArray();
 
 		flattened()

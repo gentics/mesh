@@ -41,8 +41,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
 import com.gentics.mesh.core.rest.SortOrder;
-import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -1120,7 +1120,7 @@ public class FormDataService {
 	 */
 	private Single<NodeResponse> saveFormData(String projectName, NodeResponse formNode, String dataFolderUuid, NodeResponse formDataNode, Form form,
 		MultiMap postedData, Map<String, ValidationError> errors) {
-		FieldContainer container = null;
+		FieldContainerModel container = null;
 		NodeCreateRequest createRequest = null;
 		NodeUpdateRequest updateRequest = null;
 

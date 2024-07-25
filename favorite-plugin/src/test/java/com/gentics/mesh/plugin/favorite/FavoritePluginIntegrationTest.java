@@ -12,7 +12,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.plugin.test.common.AbstractPluginLocalIntegrationTest;
-import com.gentics.mesh.plugin.test.common.OrientDBMeshLocalServer;
+import com.gentics.mesh.plugin.test.common.HibernateMeshLocalServer;
 import com.gentics.mesh.plugin.test.common.util.PluginTestUtil;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.local.MeshLocalServer;
@@ -27,8 +27,7 @@ public class FavoritePluginIntegrationTest extends AbstractPluginLocalIntegratio
 	private static FavoritePluginClient client;
 
 	@ClassRule
-	public final static MeshLocalServer server = new OrientDBMeshLocalServer()
-			.withInMemoryMode()
+	public final static MeshLocalServer server = new HibernateMeshLocalServer()
 			.waitForStartup();
 
 	@BeforeClass

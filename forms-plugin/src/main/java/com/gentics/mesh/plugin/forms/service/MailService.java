@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.plugin.common.TemplateWrapper;
 import com.gentics.mesh.plugin.common.dagger.AdminClient;
@@ -235,7 +235,7 @@ public class MailService {
 			.filter(element -> element instanceof FileElement)
 			.map(FormElement::getName)
 			.filter(name -> {
-				BinaryField field = formDataNode.getFields().getBinaryField(name);
+				BinaryFieldModel field = formDataNode.getFields().getBinaryField(name);
 				return (field != null && field.hasValues());
 			})
 			.collect(Collectors.toList());

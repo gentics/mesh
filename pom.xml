@@ -4,20 +4,20 @@
 
 	<groupId>com.gentics.mesh.plugin.commercial</groupId>
 	<artifactId>mesh-commercial-plugins</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<artifactId>mesh-plugin-parent</artifactId>
 		<groupId>com.gentics.mesh</groupId>
-		<version>2.1.0</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<plugin.license>Commercial</plugin.license>
 		<plugin.author>Gentics</plugin.author>
 		<!--  Don't forget to also update dependencyManagement section! -->
-		<mesh.version>2.2.0-SNAPSHOT</mesh.version>
+		<mesh.version>3.0.0-SNAPSHOT</mesh.version>
 		<netty.version>4.1.108.Final</netty.version>
 		<jackson.version>2.17.0</jackson.version>
 		<license.checker.version>1.0.0</license.checker.version>

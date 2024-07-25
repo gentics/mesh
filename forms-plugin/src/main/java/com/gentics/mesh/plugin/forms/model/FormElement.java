@@ -1,9 +1,28 @@
 package com.gentics.mesh.plugin.forms.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.rest.common.FieldContainerModel;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -19,23 +38,7 @@ import com.gentics.mesh.plugin.forms.service.FormDataService;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Abstract form element
@@ -348,7 +351,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true if validation errors were detected
 	 */
-	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainerModel container, MultiMap postedData, boolean errors) {
 		if (skipElement(postedData)) {
 			return;
 		}
@@ -404,7 +407,7 @@ public abstract class FormElement implements RestModel {
 	 * @param results The {@code JsonObject} to gather results into
 	 * @param formData The form data node to get values from
 	 */
-	public void addPollData(JsonObject results, FieldContainer formData) {
+	public void addPollData(JsonObject results, FieldContainerModel formData) {
 		if (!results.containsKey("type")) {
 			results.put("type", getType());
 		}
@@ -430,7 +433,7 @@ public abstract class FormElement implements RestModel {
 	 * @param container field container
 	 * @param key key function
 	 */
-	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
+	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
 		if (isMultivalue()) {
 			StringFieldListImpl field = container.getFields().getStringFieldList(getName());
 			if (field != null) {

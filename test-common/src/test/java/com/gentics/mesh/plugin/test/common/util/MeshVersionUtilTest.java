@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.mesh.MeshVersion;
+import com.gentics.mesh.MeshVersions;
 
 public class MeshVersionUtilTest {
 
@@ -22,7 +22,7 @@ public class MeshVersionUtilTest {
 	@Test
 	public void testMatchingImage() {
 		String image = MeshVersionUtil.getMatchingImage();
-		if (MeshVersionUtil.isOSS(MeshVersion.getPlainVersion())) {
+		if (MeshVersionUtil.isOSS(MeshVersions.getPlainVersion())) {
 			assertThat(image).startsWith("gentics/mesh");
 		} else {
 			assertThat(image).startsWith("docker");

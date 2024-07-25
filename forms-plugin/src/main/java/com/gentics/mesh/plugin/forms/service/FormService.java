@@ -24,6 +24,8 @@ import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -34,7 +36,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
-import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.NumberFieldModel;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -78,8 +80,6 @@ import io.reactivex.Single;
 import io.reactivex.functions.BiConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
@@ -689,7 +689,7 @@ public class FormService {
 	public Single<JsonObject> getFormSchemaWithCmsId(String projectName, String formUuid) {
 		Single<Optional<SchemaResponse>> schema = schemaService.loadSchemaByName(getSchemaName(formUuid), true);
 		return Single.zip(schema, load(projectName, formUuid), (formSchemaResponse, formNodeResponse) -> {
-			NumberField cmsIdField = formNodeResponse.getFields().getNumberField("cms_id");
+			NumberFieldModel cmsIdField = formNodeResponse.getFields().getNumberField("cms_id");
 			JsonObject formSchema = new JsonObject(formSchemaResponse.get().toJson());
 			return formSchema.put("cms_id", cmsIdField != null ? cmsIdField.getNumber() : null);
 		});
