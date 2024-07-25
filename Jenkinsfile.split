@@ -256,7 +256,7 @@ stage("Setup Build Environment") {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -B -DskipTests -Dmaven.test.skip -am -pl server clean install"
+								sh "mvn -B -DskipTests -Dmaven.test.skip -am -pl 'server,:mesh-database-connector-mariadb' clean install"
 							}
 						} else if (Boolean.valueOf(params.runDeploy)) {
 							echo "Setup of GPG"
