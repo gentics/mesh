@@ -45,10 +45,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-database-connector-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-database-connector-mariadb</artifactId>
 			<version>${mesh.version}</version>
 		</dependency>
