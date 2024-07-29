@@ -3,8 +3,8 @@ package com.gentics.mesh.enterprise.database.connector;
 import java.util.Collection;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.database.connector.AbstractDatabaseConnector;
 import com.gentics.mesh.enterprise.server.license.LicenseService;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
@@ -28,7 +28,7 @@ public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDataba
 	}
 
 	@Override
-	public long deleteContentEdgesByProject(EntityManager em, Project project) {
+	public long deleteContentEdgesByProject(EntityManager em, HibProject project) {
 		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_PROJECT + ")")
 				.setParameter("project", project)
 				.executeUpdate();
@@ -42,7 +42,7 @@ public abstract class AbstractEnterpriseDatabaseConnector extends AbstractDataba
 	}
 
 	@Override
-	public long deleteContentEdgesByBranchUuids(EntityManager em, Branch branch, Collection<UUID> uuids) {
+	public long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids) {
 		return em.createQuery(DELETE_BY_ELEMENT_IN + "(" + FIND_BY_NODE_UUIDS_BRANCH + ")")
 				.setParameter("nodesUuid", uuids)
 				.setParameter("branch", branch)
