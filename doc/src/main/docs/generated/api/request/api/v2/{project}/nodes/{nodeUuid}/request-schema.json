@@ -184,7 +184,7 @@
               },
               "focalPoint" : {
                 "type" : "object",
-                "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPointModel",
+                "id" : "urn:jsonschema:com:gentics:mesh:core:rest:node:field:image:FocalPoint",
                 "description" : "The image focal point, containing factors of the image width/height. The value 0.5 is the center of the image.",
                 "properties" : {
                   "x" : {

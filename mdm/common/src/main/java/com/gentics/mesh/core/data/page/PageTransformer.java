@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -21,10 +21,10 @@ import com.gentics.mesh.util.ETag;
  */
 @Singleton
 public class PageTransformer {
-	private final Map<ElementType, DaoTransformable<CoreElement<? extends RestModel>, RestModel>> daos;
+	private final Map<ElementType, DaoTransformable<HibCoreElement<? extends RestModel>, RestModel>> daos;
 
 	@Inject
-	public PageTransformer(Map<ElementType, DaoTransformable<CoreElement<? extends RestModel>, RestModel>> daos) {
+	public PageTransformer(Map<ElementType, DaoTransformable<HibCoreElement<? extends RestModel>, RestModel>> daos) {
 		this.daos = daos;
 	}
 
@@ -36,11 +36,11 @@ public class PageTransformer {
 	 * @param level Level of depth to be used for nested element transformation
 	 * @return
 	 */
-	public ListResponse<RestModel> transformToRestSync(Page<? extends CoreElement<? extends RestModel>> page, InternalActionContext ac, int level) {
+	public ListResponse<RestModel> transformToRestSync(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac, int level) {
 		if (page.getSize() > 0) {
-			CoreElement<? extends RestModel> element = page.getWrappedList().get(0);
+			HibCoreElement<? extends RestModel> element = page.getWrappedList().get(0);
 			ElementType type = element.getTypeInfo().getType();
-			DaoTransformable<CoreElement<? extends RestModel>, RestModel> dao = daos.get(type);
+			DaoTransformable<HibCoreElement<? extends RestModel>, RestModel> dao = daos.get(type);
 			dao.beforeTransformToRestSync(page, ac);
 		}
 
@@ -59,7 +59,7 @@ public class PageTransformer {
 	 * @param level Level of depth to be used for nested element transformation
 	 * @return
 	 */
-	public Stream<RestModel> transformToRestSync(Stream<? extends CoreElement<? extends RestModel>> stream, InternalActionContext ac, int level) {
+	public Stream<RestModel> transformToRestSync(Stream<? extends HibCoreElement<? extends RestModel>> stream, InternalActionContext ac, int level) {
 		return stream.map(element -> daos.get(element.getTypeInfo().getType())
 				.transformToRestSync(element, ac, level));
 	}
@@ -75,19 +75,19 @@ public class PageTransformer {
 	 * @param ac
 	 * @return
 	 */
-	public String getETag(Page<? extends CoreElement<? extends RestModel>> page, InternalActionContext ac) {
+	public String getETag(Page<? extends HibCoreElement<? extends RestModel>> page, InternalActionContext ac) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(page.getTotalElements());
 		builder.append(page.getNumber());
 		builder.append(page.getPerPage());
 		if (page.getSize() > 0) {
-			CoreElement<? extends RestModel> element = page.getWrappedList().get(0);
+			HibCoreElement<? extends RestModel> element = page.getWrappedList().get(0);
 			ElementType type = element.getTypeInfo().getType();
-			DaoTransformable<CoreElement<? extends RestModel>, RestModel> dao = daos.get(type);
+			DaoTransformable<HibCoreElement<? extends RestModel>, RestModel> dao = daos.get(type);
 			dao.beforeGetETagForPage(page, ac);
 		}
 
-		for (CoreElement<? extends RestModel> element : page) {
+		for (HibCoreElement<? extends RestModel> element : page) {
 			builder.append("-");
 			String eTag = daos.get(element.getTypeInfo().getType())
 				.getETag(element, ac);

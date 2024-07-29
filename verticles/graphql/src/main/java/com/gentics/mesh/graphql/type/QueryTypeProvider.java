@@ -52,17 +52,17 @@ import com.gentics.graphqlfilter.Sorting;
 import com.gentics.mesh.cache.GraphQLSchemaCache;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.action.DAOActionsCollection;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -249,7 +249,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		}
 
 		GraphQLContext gc = env.getContext();
-		Project project = tx.getProject(gc);
+		HibProject project = tx.getProject(gc);
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 		List<GraphQLError> errors = new ArrayList<>();
@@ -264,7 +264,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				} else {
 					// The node was found, check the permissions.
 					try {
-						return (Node) gc.requiresPerm(node.getRight(), READ_PERM, READ_PUBLISHED_PERM);
+						return (HibNode) gc.requiresPerm(node.getRight(), READ_PERM, READ_PUBLISHED_PERM);
 					} catch (PermissionException e) {
 						error = e;
 					}
@@ -276,7 +276,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			})
 			.filter(Objects::nonNull)
 			.map(node -> {
-				NodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+				HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 				return new NodeContent(node, container, languageTags, type);
 			})
 			.filter(content -> content.getContainer() != null)
@@ -298,7 +298,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		if (uuid != null) {
 			NodeDao nodeDao = tx.nodeDao();
 			GraphQLContext gc = env.getContext();
-			Node node = nodeDao.findByUuid(tx.getProject(gc), uuid);
+			HibNode node = nodeDao.findByUuid(tx.getProject(gc), uuid);
 			if (node == null) {
 				// TODO Throw graphql aware not found exception
 				return null;
@@ -307,7 +307,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			ContainerType type = getNodeVersion(env);
 
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
-			NodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+			HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 
 			return createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 		}
@@ -324,8 +324,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 			// TODO HIB
 			PathSegment graphSegment = pathResult.getLast();
-			NodeFieldContainer container = graphSegment.getContainer();
-			Node nodeOfContainer = contentDao.getNode(container);
+			HibNodeFieldContainer container = graphSegment.getContainer();
+			HibNode nodeOfContainer = contentDao.getNode(container);
 
 			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> langs = new ArrayList<>();
@@ -345,7 +345,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object userMeFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		User requestUser = gc.getUser();
+		HibUser requestUser = gc.getUser();
 		// No need to check for permissions. The user should always be able to read himself
 		return requestUser;
 	}
@@ -358,7 +358,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Project project = Tx.get().getProject(gc);
+		HibProject project = Tx.get().getProject(gc);
 		return gc.requiresPerm(project, READ_PERM);
 	}
 
@@ -370,7 +370,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public Object branchFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch branch = Tx.get().getBranch(gc);
+		HibBranch branch = Tx.get().getBranch(gc);
 		return gc.requiresPerm(branch, READ_PERM);
 	}
 
@@ -384,13 +384,13 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		Tx tx = Tx.get();
 		ContentDao contentDao = tx.contentDao();
 		GraphQLContext gc = env.getContext();
-		Project project = tx.getProject(gc);
+		HibProject project = tx.getProject(gc);
 		if (project != null) {
-			Node node = project.getBaseNode();
+			HibNode node = project.getBaseNode();
 			ContainerType type = getNodeVersion(env);
 			gc.requiresPerm(node, READ_PUBLISHED_PERM, READ_PERM);
 			List<String> languageTags = getLanguageArgument(env);
-			NodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+			HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 
 			return createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 		}
@@ -615,7 +615,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		String cacheKey = getCacheKey(context);
 
 		return cache.get(cacheKey, key -> {
-			Project project = Tx.get().getProject(context);
+			HibProject project = Tx.get().getProject(context);
 			graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
 			Set<GraphQLType> additionalTypes = new HashSet<>();
 
@@ -714,8 +714,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return cache key
 	 */
 	protected String getCacheKey(GraphQLContext context) {
-		Project project = Tx.get().getProject(context);
-		Branch branch = Tx.get().getBranch(context);
+		HibProject project = Tx.get().getProject(context);
+		HibBranch branch = Tx.get().getBranch(context);
 
 		return String.format("%s-%s-%d", project.getUuid(), branch.getUuid(), context.getApiVersion());
 	}

@@ -13,7 +13,7 @@ import com.gentics.mesh.cache.CacheRegistry;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.admin.AdminHandler;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheckHandler;
@@ -50,7 +50,7 @@ public class HibAdminHandler extends AdminHandler {
 	@Override
 	public void handleCacheClear(InternalActionContext ac) {
 		utils.syncTx(ac, tx -> {
-			User user = ac.getUser();
+			HibUser user = ac.getUser();
 			if (user != null && !user.isAdmin()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}

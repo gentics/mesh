@@ -3,7 +3,7 @@ package com.gentics.mesh.search.verticle.entity;
 import java.util.Optional;
 
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
 import com.gentics.mesh.search.index.Transformer;
@@ -29,6 +29,6 @@ public class SimpleMeshEntity<T> extends MeshEntity<T> {
 
 	@Override
 	public Optional<JsonObject> getPermissionPartial(PermissionChangedEventModelImpl event) {
-		return getElement(event).map(element -> transformer.toPermissionPartial((BaseElement) element));
+		return getElement(event).map(element -> transformer.toPermissionPartial((HibBaseElement) element));
 	}
 }

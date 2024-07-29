@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -163,7 +163,7 @@ public class JsonUtilTest {
 	public void testNodeJson() throws JsonParseException, JsonMappingException, IOException {
 		NodeResponse node = new NodeResponse();
 
-		StringFieldModel stringField = FieldUtil.createStringField("test");
+		StringField stringField = FieldUtil.createStringField("test");
 		stringField.setString("testtext");
 		FieldMap fields = new FieldMapImpl();
 		fields.put("test", stringField);
@@ -179,7 +179,7 @@ public class JsonUtilTest {
 		String json2 = node2.toJson();
 		System.out.println("From Deserialized POJO: " + json2);
 
-		StringFieldModel field = node2.getFields().getStringField("test");
+		StringField field = node2.getFields().getStringField("test");
 		assertNotNull(field);
 		assertEquals("testtext", field.getString());
 	}

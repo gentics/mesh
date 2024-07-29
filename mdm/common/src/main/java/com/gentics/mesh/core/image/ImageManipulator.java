@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.field.BinaryField;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.image.ImageManipulation;
 
@@ -26,7 +26,7 @@ public interface ImageManipulator {
 	 * @param parameters
 	 * @return The path to the resized file.
 	 */
-	Single<String> handleResize(Binary binary, ImageManipulation parameters);
+	Single<String> handleResize(HibBinary binary, ImageManipulation parameters);
 
 	/**
 	 * Resize the given s3 binary data and return the result.
@@ -93,10 +93,10 @@ public interface ImageManipulator {
 	 * @param binaryField field requesting the variant
 	 * @return
 	 */
-	static <T extends ImageManipulation> T applyDefaultManipulation(T imageParams, BinaryField binaryField) {
+	static <T extends ImageManipulation> T applyDefaultManipulation(T imageParams, HibBinaryField binaryField) {
 		// We can maybe enhance the parameters using stored parameters.
 		if (!imageParams.hasFocalPoint()) {
-			FocalPointModel fp = binaryField.getImageFocalPoint();
+			FocalPoint fp = binaryField.getImageFocalPoint();
 			if (fp != null) {
 				imageParams.setFocalPoint(fp);
 			}
@@ -112,7 +112,7 @@ public interface ImageManipulator {
 	 * @param binary origin
 	 * @return
 	 */
-	static <T extends ImageManipulation> T applyDefaultManipulation(T imageParams, Binary binary) {
+	static <T extends ImageManipulation> T applyDefaultManipulation(T imageParams, HibBinary binary) {
 		Integer originalHeight = binary.getImageHeight();
 		Integer originalWidth = binary.getImageWidth();
 

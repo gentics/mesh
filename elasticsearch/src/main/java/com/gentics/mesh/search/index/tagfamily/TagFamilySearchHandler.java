@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -16,7 +16,7 @@ import com.gentics.mesh.util.SearchWaitUtil;
  * Elasticsearch handler for search operations on the tag family indices.
  */
 @Singleton
-public class TagFamilySearchHandler extends AbstractSearchHandler<TagFamily, TagFamilyResponse> {
+public class TagFamilySearchHandler extends AbstractSearchHandler<HibTagFamily, TagFamilyResponse> {
 
 	@Inject
 	public TagFamilySearchHandler(Database db, SearchProvider searchProvider, TagFamilyIndexHandlerImpl indexHandler, MeshOptions options, TagFamilyDAOActions actions, SearchWaitUtil waitUtil) {

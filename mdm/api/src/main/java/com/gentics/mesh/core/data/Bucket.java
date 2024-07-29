@@ -49,7 +49,7 @@ public class Bucket {
 	 * 
 	 * @return
 	 */
-	public Predicate<BucketableElement> filter() {
+	public Predicate<HibBucketableElement> filter() {
 		return element -> {
 			Integer bucketId = element.getBucketId();
 			return isWithin(bucketId);

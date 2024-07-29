@@ -11,8 +11,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.CoreElement;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -127,7 +127,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 			roleExamples.getRoleListResponse(), false);
 
 		registerHandler("nodes", (uuid) -> {
-			Node node = Tx.get().nodeDao().findByUuidGlobal(uuid);
+			HibNode node = Tx.get().nodeDao().findByUuidGlobal(uuid);
 			return node;
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
@@ -208,7 +208,7 @@ public class SearchEndpointImpl extends AbstractInternalEndpoint implements Sear
 	 * @param classOfRL
 	 *            Class of matching list response
 	 */
-	private <T extends CoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
+	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse,
 		boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();

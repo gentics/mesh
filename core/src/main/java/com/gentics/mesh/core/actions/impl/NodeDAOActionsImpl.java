@@ -15,12 +15,12 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -38,7 +38,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Node loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	public HibNode loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		NodeDao nodeDao = ctx.tx().nodeDao();
 		if (perm == null) {
 			return nodeDao.findByUuid(ctx.project(), uuid);
@@ -48,7 +48,7 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Node loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+	public HibNode loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		NodeDao nodeDao = ctx.tx().nodeDao();
 		if (perm == null) {
 			return nodeDao.findByName(ctx.project(), name);
@@ -58,57 +58,57 @@ public class NodeDAOActionsImpl implements NodeDAOActions {
 	}
 
 	@Override
-	public Page<? extends Node> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		NodeDao nodeDao = ctx.tx().nodeDao();
 		return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Node> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Node> extraFilter) {
+	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibNode> extraFilter) {
 		NodeDao nodeDao = ctx.tx().nodeDao();
 		return nodeDao.findAll(ctx.project(), ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
-	public boolean update(Tx tx, Node node, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibNode node, InternalActionContext ac, EventQueueBatch batch) {
 		NodeDao nodeDao = tx.nodeDao();
 		return nodeDao.update(tx.getProject(ac), node, ac, batch);
 	}
 
 	@Override
-	public Node create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibNode create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		NodeDao nodeDao = tx.nodeDao();
-		Project project = tx.getProject(ac);
+		HibProject project = tx.getProject(ac);
 		return nodeDao.create(project, ac, batch, uuid);
 	}
 
 	@Override
-	public void delete(Tx tx, Node node, BulkActionContext bac) {
+	public void delete(Tx tx, HibNode node, BulkActionContext bac) {
 		NodeDao nodeDao = tx.nodeDao();
 		nodeDao.delete(node, bac, false, true);
 	}
 
 	@Override
-	public NodeResponse transformToRestSync(Tx tx, Node node, InternalActionContext ac, int level, String... languageTags) {
+	public NodeResponse transformToRestSync(Tx tx, HibNode node, InternalActionContext ac, int level, String... languageTags) {
 		NodeDao nodeDao = tx.nodeDao();
 		return nodeDao.transformToRestSync(node, ac, level, languageTags);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, Node node) {
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibNode node) {
 		NodeDao nodeDao = tx.nodeDao();
 		return nodeDao.getAPIPath(node, ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, Node node) {
+	public String getETag(Tx tx, InternalActionContext ac, HibNode node) {
 		NodeDao nodeDao = tx.nodeDao();
 		return nodeDao.getETag(node, ac);
 	}
 
 	@Override
-	public Page<? extends Node> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
-		Stream<? extends Node> stream = ctx.tx().nodeDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter));
+	public Page<? extends HibNode> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		Stream<? extends HibNode> stream = ctx.tx().nodeDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter));
 		if (PersistingRootDao.shouldPage(pagingInfo)) {
 			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, 
 					ctx.tx().nodeDao().countAllContent(ctx.project(), ctx.ac(), ctx.ac().getNodeParameters().getLanguageList(ctx.tx().data().options()), ContainerType.DRAFT, Optional.ofNullable(extraFilter)));

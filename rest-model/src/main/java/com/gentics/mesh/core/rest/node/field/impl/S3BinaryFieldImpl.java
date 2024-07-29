@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.S3BinaryFieldModel;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
-import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadataModel;
+import com.gentics.mesh.core.rest.node.field.S3BinaryField;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
+import com.gentics.mesh.core.rest.node.field.s3binary.S3BinaryMetadata;
 
 /**
- * @see S3BinaryFieldModel
+ * @see S3BinaryField
  */
-public class S3BinaryFieldImpl implements S3BinaryFieldModel {
+public class S3BinaryFieldImpl implements S3BinaryField {
 
     @JsonIgnore
     @Override
@@ -49,11 +49,11 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.")
-    private FocalPointModel focalPoint;
+    private FocalPoint focalPoint;
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("Metadata of the upload. This object may contain exif data of images or meta data from PDF files.")
-    private S3BinaryMetadataModel metadata;
+    private S3BinaryMetadata metadata;
 
     @JsonProperty(required = false)
     @JsonPropertyDescription("Plain text content of the upload. This can be the text content of a word or PDF document.")
@@ -69,7 +69,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setS3binaryUuid(String uuid) {
+    public S3BinaryField setS3binaryUuid(String uuid) {
         this.s3binaryUuid = uuid;
         return this;
     }
@@ -80,7 +80,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setS3ObjectKey(String s3ObjectKey) {
+    public S3BinaryField setS3ObjectKey(String s3ObjectKey) {
         this.s3ObjectKey = s3ObjectKey;
         return this;
     }
@@ -91,7 +91,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setFileSize(Long fileSize) {
+    public S3BinaryField setFileSize(Long fileSize) {
         this.fileSize = fileSize;
         return this;
     }
@@ -102,7 +102,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setHeight(Integer height) {
+    public S3BinaryField setHeight(Integer height) {
         this.height = height;
         return this;
     }
@@ -113,7 +113,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setWidth(Integer width) {
+    public S3BinaryField setWidth(Integer width) {
         this.width = width;
         return this;
     }
@@ -124,7 +124,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setMimeType(String mimeType) {
+    public S3BinaryField setMimeType(String mimeType) {
         this.mimeType = mimeType;
         return this;
     }
@@ -135,7 +135,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setFileName(String fileName) {
+    public S3BinaryField setFileName(String fileName) {
         this.fileName = fileName;
         return this;
     }
@@ -146,29 +146,29 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setDominantColor(String dominantColor) {
+    public S3BinaryField setDominantColor(String dominantColor) {
         this.dominantColor = dominantColor;
         return this;
     }
 
     @Override
-    public FocalPointModel getFocalPoint() {
+    public FocalPoint getFocalPoint() {
         return focalPoint;
     }
 
     @Override
-    public S3BinaryFieldModel setFocalPoint(FocalPointModel point) {
+    public S3BinaryField setFocalPoint(FocalPoint point) {
         this.focalPoint = point;
         return this;
     }
 
     @Override
-    public S3BinaryMetadataModel getMetadata() {
+    public S3BinaryMetadata getMetadata() {
         return metadata;
     }
 
     @Override
-    public S3BinaryFieldModel setMetadata(S3BinaryMetadataModel metadata) {
+    public S3BinaryField setMetadata(S3BinaryMetadata metadata) {
         this.metadata = metadata;
         return this;
     }
@@ -179,7 +179,7 @@ public class S3BinaryFieldImpl implements S3BinaryFieldModel {
     }
 
     @Override
-    public S3BinaryFieldModel setPlainText(String text) {
+    public S3BinaryField setPlainText(String text) {
         this.plainText = text;
         return this;
     }

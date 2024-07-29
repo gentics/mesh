@@ -25,12 +25,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -66,7 +66,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = prepareSchema();
+		HibNode node = prepareSchema();
 
 		// Only grant read_published perm
 		try (Tx tx = tx()) {
@@ -93,7 +93,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = prepareSchema();
+		HibNode node = prepareSchema();
 
 		// Only grant read_published perm
 		revokeAdmin();
@@ -202,7 +202,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = prepareSchema();
+		HibNode node = prepareSchema();
 		NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 		String binaryUuid = response.getFields().getBinaryField("binary").getBinaryUuid();
 		assertNotNull(binaryUuid);
@@ -235,7 +235,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = prepareSchema();
+		HibNode node = prepareSchema();
 
 		try (Tx tx = tx()) {
 			// 1. Upload some binary data
@@ -253,7 +253,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "some \u01f92a file.dat";
-		Node node = prepareSchema();
+		HibNode node = prepareSchema();
 		String uuid = tx(() -> node.getUuid());
 
 		// 1. Upload some binary data
@@ -278,7 +278,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
-		Node node = prepareSchema();
+		HibNode node = prepareSchema();
 		VersionNumber version = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en").getVersion(); });
 		String uuid = tx(() -> node.getUuid());
 
@@ -333,7 +333,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 		// Update the stored focalpoint
 		NodeUpdateRequest nodeUpdateRequest = node2.toRequest();
-		BinaryFieldModel field = nodeUpdateRequest.getFields().getBinaryField("binary");
+		BinaryField field = nodeUpdateRequest.getFields().getBinaryField("binary");
 		field.setFocalPoint(0.4f, 0.2f);
 		nodeUpdateRequest.getFields().put("binary", field);
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest));
@@ -348,7 +348,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 	public void testUploadImagesConcurrently() throws IOException {
 		String parentUuid;
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			parentUuid = node.getUuid();
 			tx.success();
 		}
@@ -407,8 +407,8 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			.ignoreElements().blockingAwait();
 	}
 
-	private Node prepareSchema() throws IOException {
-		Node node = folder("news");
+	private HibNode prepareSchema() throws IOException {
+		HibNode node = folder("news");
 
 		try (Tx tx = tx()) {
 			prepareSchema(node, "", "binary");

@@ -16,15 +16,15 @@ import java.util.stream.IntStream;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -71,7 +71,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
@@ -110,14 +110,14 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
 			Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
-		NodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
+		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
-			final NodeFieldContainer currentContainer = container;
+			final HibNodeFieldContainer currentContainer = container;
 			List<Number> oldValue = tx(() -> getListValues(currentContainer::getNumberList, FIELD_NAME));
 			List<Number> newValue = valueCombinations.get(i % valueCombinations.size());
 
@@ -132,7 +132,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			try (Tx tx = tx()) {
 				ContentDao contentDao = tx.contentDao();
-				NodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
+				HibNodeFieldContainer newContainerVersion = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container::getNumberList, FIELD_NAME));
 				container = newContainerVersion;
@@ -145,7 +145,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		NumberFieldListImpl list = new NumberFieldListImpl();
 		list.add(42);
@@ -160,7 +160,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();

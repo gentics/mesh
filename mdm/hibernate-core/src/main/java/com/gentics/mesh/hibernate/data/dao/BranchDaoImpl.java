@@ -17,15 +17,15 @@ import org.hibernate.jpa.QueryHints;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.branch.BranchMicroschemaVersion;
-import com.gentics.mesh.core.data.branch.BranchSchemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
 import com.gentics.mesh.core.data.dao.PersistingBranchDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -55,10 +55,10 @@ import jakarta.persistence.TypedQuery;
  *
  */
 @Singleton
-public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, HibBranchImpl, Project, HibProjectImpl> implements PersistingBranchDao {
+public class BranchDaoImpl extends AbstractHibRootDao<HibBranch, BranchResponse, HibBranchImpl, HibProject, HibProjectImpl> implements PersistingBranchDao {
 
 	@Inject
-	public BranchDaoImpl(RootDaoHelper<Branch, HibBranchImpl, Project, HibProjectImpl> rootDaoHelper,
+	public BranchDaoImpl(RootDaoHelper<HibBranch, HibBranchImpl, HibProject, HibProjectImpl> rootDaoHelper,
 						 HibPermissionRoots permissionRoots, CommonDaoHelper commonDaoHelper,
 						 CurrentTransaction currentTransaction, EventFactory eventFactory,
 						 Lazy<Vertx> vertx) {
@@ -66,7 +66,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public Branch createPersisted(Project root, String uuid, Consumer<Branch> inflater) {
+	public HibBranch createPersisted(HibProject root, String uuid, Consumer<HibBranch> inflater) {
 		HibBranchImpl branch = daoHelper.create(uuid, b -> {
 			b.setProject(root);
 			inflater.accept(b);
@@ -76,7 +76,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public void onRootDeleted(Project root, BulkActionContext bac) {
+	public void onRootDeleted(HibProject root, BulkActionContext bac) {
 		// before deleting all branches of the project, unset the initial and latest branch in the project
 		HibProjectImpl hibProject = (HibProjectImpl) root;
 		hibProject.setInitialBranch(null);
@@ -89,7 +89,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public void deletePersisted(Project root, Branch entity) {
+	public void deletePersisted(HibProject root, HibBranch entity) {
 		em().createQuery("select j from job j where j.branch = :branch", HibJobImpl.class)
 				.setParameter("branch", entity)
 				.getResultStream()
@@ -98,7 +98,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public Result<? extends Branch> findAll(Project project) {
+	public Result<? extends HibBranch> findAll(HibProject project) {
 		Stream<HibBranchImpl> branches = em().createNamedQuery("branch.findFromProject", HibBranchImpl.class)
 				.setParameter("project", project)
 				.getResultStream();
@@ -107,22 +107,22 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public Page<? extends Branch> findAll(Project project, InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo) {
 		return rootDaoHelper.findAllInRoot(project, ac, pagingInfo, Optional.empty(), null, true);
 	}
 
 	@Override
-	public Page<? extends Branch> findAll(Project project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<Branch> extraFilter) {
+	public Page<? extends HibBranch> findAll(HibProject project, InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibBranch> extraFilter) {
 		return rootDaoHelper.findAllInRoot(project, ac, pagingInfo, Optional.empty(), extraFilter, true);
 	}
 
 	@Override
-	public Function<Branch, Project> rootGetter() {
-		return Branch::getProject;
+	public Function<HibBranch, HibProject> rootGetter() {
+		return HibBranch::getProject;
 	}
 
 	@Override
-	public Branch findByName(Project project, String name) {
+	public HibBranch findByName(HibProject project, String name) {
 		return HibernateTx.get().data().mesh().branchCache().get(getCacheKey(project, name), key -> {
 			return firstOrNull(
 					em().createQuery("select b from branch b where b.name = :name and b.project = :project", HibBranchImpl.class)
@@ -134,36 +134,36 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public Branch findConflictingBranch(Branch branch, String name) {
+	public HibBranch findConflictingBranch(HibBranch branch, String name) {
 		return daoHelper.findByName(name);
 	}
 
 	@Override
-	public String getAPIPath(Branch branch, InternalActionContext ac) {
+	public String getAPIPath(HibBranch branch, InternalActionContext ac) {
 		return branch.getAPIPath(ac);
 	}
 
 	@Override
-	public BranchSchemaVersion connectToSchemaVersion(Branch branch, SchemaVersion version) {
+	public HibBranchSchemaVersion connectToSchemaVersion(HibBranch branch, HibSchemaVersion version) {
 		HibBranchSchemaVersionEdgeImpl schemaVersion = ((HibBranchImpl) branch).addSchemaVersion((HibSchemaVersionImpl) version);
 		em().persist(schemaVersion);
 		return schemaVersion;
 	}
 
 	@Override
-	public BranchMicroschemaVersion connectToMicroschemaVersion(Branch branch, MicroschemaVersion version) {
+	public HibBranchMicroschemaVersion connectToMicroschemaVersion(HibBranch branch, HibMicroschemaVersion version) {
 		HibBranchMicroschemaVersionEdgeImpl microschemaVersion = ((HibBranchImpl) branch).addMicroschemaVersion((HibMicroschemaVersionImpl) version);
 		em().persist(microschemaVersion);
 		return microschemaVersion;
 	}
 
 	@Override
-	public Branch getLatestBranch(Project project) {
+	public HibBranch getLatestBranch(HibProject project) {
 		return project.getLatestBranch();
 	}
 
 	@Override
-	public Stream<? extends Branch> findAllStream(Project root, InternalActionContext ac,
+	public Stream<? extends HibBranch> findAllStream(HibProject root, InternalActionContext ac,
 													 InternalPermission permission, PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		// TODO FIXME this fix belongs to PersistingTagDao
 		if (paging == null) {
@@ -173,7 +173,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public long countAll(Project root, InternalActionContext ac, InternalPermission permission,
+	public long countAll(HibProject root, InternalActionContext ac, InternalPermission permission,
 			PagingParameters paging, Optional<FilterOperation<?>> maybeFilter) {
 		// TODO FIXME this fix belongs to PersistingTagDao
 		if (paging == null) {
@@ -183,33 +183,33 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public Page<? extends Branch> findAllNoPerm(Project root, InternalActionContext ac,
+	public Page<? extends HibBranch> findAllNoPerm(HibProject root, InternalActionContext ac,
 												   PagingParameters pagingInfo) {
 		return rootDaoHelper.findAllInRoot(root, ac, pagingInfo, Optional.empty(), null, false);
 	}
 
 	@Override
-	public void addItem(Project root, Branch item) {
+	public void addItem(HibProject root, HibBranch item) {
 		((HibProjectImpl) root).addBranch(item);
 	}
 
 	@Override
-	public void removeItem(Project root, Branch item) {
+	public void removeItem(HibProject root, HibBranch item) {
 		((HibProjectImpl) root).removeBranch(item);
 	}
 
 	@Override
-	public Class<? extends Branch> getPersistenceClass(Project root) {
+	public Class<? extends HibBranch> getPersistenceClass(HibProject root) {
 		return HibBranchImpl.class;
 	}
 
 	@Override
-	public Branch mergeIntoPersisted(Project root, Branch entity) {
+	public HibBranch mergeIntoPersisted(HibProject root, HibBranch entity) {
 		return em().merge(entity);
 	}
 
 	@Override
-	public BranchSchemaVersion findBranchSchemaEdge(Branch branch, SchemaVersion schemaVersion) {
+	public HibBranchSchemaVersion findBranchSchemaEdge(HibBranch branch, HibSchemaVersion schemaVersion) {
 		TypedQuery<HibBranchSchemaVersionEdgeImpl> query = em().createQuery("select v from branch b " +
 								"join b.schemaVersions v " +
 								"where b = :branch and v.version.dbUuid = :schemaVersionDbUuid",
@@ -221,7 +221,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public BranchMicroschemaVersion findBranchMicroschemaEdge(Branch branch, MicroschemaVersion microschemaVersion) {
+	public HibBranchMicroschemaVersion findBranchMicroschemaEdge(HibBranch branch, HibMicroschemaVersion microschemaVersion) {
 		TypedQuery<HibBranchMicroschemaVersionEdgeImpl> query = em().createQuery("select v from branch b " +
 								"join b.microschemaVersions v " +
 								"where b = :branch and v.version.dbUuid = :microSchemaVersionDbUuid",
@@ -233,7 +233,7 @@ public class BranchDaoImpl extends AbstractHibRootDao<Branch, BranchResponse, Hi
 	}
 
 	@Override
-	public Branch getInitialBranch(Project project) {
+	public HibBranch getInitialBranch(HibProject project) {
 		return ((HibProjectImpl)project).getInitialBranch();
 	}
 }

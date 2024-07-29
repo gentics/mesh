@@ -1,11 +1,11 @@
 package com.gentics.mesh.hibernate.data.dao.helpers;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
  * Common join definition
  */
-public abstract class AbstractRootJoin<CHILDIMPL extends BaseElement, ROOTIMPL extends BaseElement> implements RootJoin<CHILDIMPL, ROOTIMPL> {
+public abstract class AbstractRootJoin<CHILDIMPL extends HibBaseElement, ROOTIMPL extends HibBaseElement> implements RootJoin<CHILDIMPL, ROOTIMPL> {
 
 	protected final Class<CHILDIMPL> domainClass;
 	protected final Class<ROOTIMPL> rootClass;

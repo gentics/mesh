@@ -12,14 +12,14 @@ import org.apache.commons.collections4.IteratorUtils;
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.PersistingSchemaDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -58,25 +58,25 @@ import jakarta.persistence.TypedQuery;
  */
 @Singleton
 public class SchemaDaoImpl 
-		extends AbstractHibContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion, SchemaModel, HibSchemaImpl, HibSchemaVersionImpl> 
+		extends AbstractHibContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel, HibSchemaImpl, HibSchemaVersionImpl> 
 		implements PersistingSchemaDao {
 
 	private final ContentStorage contentStorage;
 	private final DatabaseConnector databaseConnector;
 
 	@Inject
-	public SchemaDaoImpl(RootDaoHelper<Schema, HibSchemaImpl, Project, HibProjectImpl> rootDaoHelper, HibPermissionRoots permissionRoots,
+	public SchemaDaoImpl(RootDaoHelper<HibSchema, HibSchemaImpl, HibProject, HibProjectImpl> rootDaoHelper, HibPermissionRoots permissionRoots,
 			CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory, DatabaseConnector databaseConnector,
-			DaoHelper<SchemaVersion, HibSchemaVersionImpl> versionDaoHelper, Lazy<Vertx> vertx, ContentStorage contentStorage) {
+			DaoHelper<HibSchemaVersion, HibSchemaVersionImpl> versionDaoHelper, Lazy<Vertx> vertx, ContentStorage contentStorage) {
 		super(rootDaoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, versionDaoHelper, vertx);
 		this.contentStorage = contentStorage;
 		this.databaseConnector = databaseConnector;
 	}
 
 	@Override
-	public Schema create(SchemaVersionModel schema, User creator, String uuid, boolean validate) {
-		Schema container = PersistingSchemaDao.super.create(schema, creator, uuid, validate);
-		SchemaVersion version = container.getLatestVersion();
+	public HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) {
+		HibSchema container = PersistingSchemaDao.super.create(schema, creator, uuid, validate);
+		HibSchemaVersion version = container.getLatestVersion();
 
 		currentTransaction.getEntityManager().persist(version);
 		currentTransaction.getEntityManager().persist(container);
@@ -84,26 +84,26 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public Result<? extends Schema> findAll(Project root) {
+	public Result<? extends HibSchema> findAll(HibProject root) {
 		return new TraversalResult<>(root.getSchemas());
 	}
 
 	@Override
-	public void addItem(Project root, Schema item) {
+	public void addItem(HibProject root, HibSchema item) {
 		((HibProjectImpl) root).getHibSchemas().add(item);
 		((HibSchemaImpl) item).getProjects().add(root);
 		em().merge(root);
 	}
 
 	@Override
-	public void removeItem(Project root, Schema item) {
+	public void removeItem(HibProject root, HibSchema item) {
 		((HibProjectImpl) root).getHibSchemas().remove(item);
 		((HibSchemaImpl) item).getProjects().remove(root);
 		em().merge(root);
 	}
 
 	@Override
-	public Result<? extends Node> getNodes(Schema schema) {
+	public Result<? extends HibNode> getNodes(HibSchema schema) {
 		Stream<HibNodeImpl> nodes = em().createNamedQuery("node.findBySchema", HibNodeImpl.class)
 				.setParameter("schema", schema)
 				.getResultStream();
@@ -112,12 +112,12 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public Result<Project> findLinkedProjects(Schema schema) {
+	public Result<HibProject> findLinkedProjects(HibSchema schema) {
 		return new TraversalResult<>(((HibSchemaImpl) schema).getLinkedProjects());
 	}
 
 	@Override
-	public Result<? extends NodeFieldContainer> findDraftFieldContainers(SchemaVersion version,
+	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version,
 			String branchUuid, long limit) {
 		TypedQuery<HibNodeFieldContainerEdgeImpl> query = em().createNamedQuery("contentEdge.findByBranchVersionAndType", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
@@ -132,9 +132,9 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public Result<? extends Node> findNodes(SchemaVersion version, String branchUuid, User user,
+	public Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user,
 			ContainerType type) {
-		Schema schema = version.getSchemaContainer();
+		HibSchema schema = version.getSchemaContainer();
 
 		if (user.isAdmin()) {
 			return new TraversalResult<>(em().createNamedQuery("node.findBySchemaBranchTypeForAdmin", HibNodeImpl.class)
@@ -142,7 +142,7 @@ public class SchemaDaoImpl
 					.setParameter("type", type)
 					.setParameter("schemaUuid", schema.getId()).getResultList());
 		} else {
-			List<Role> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
+			List<HibRole> roles = IteratorUtils.toList(Tx.get().userDao().getRoles(user).iterator());
 			return new TraversalResult<>(SplittingUtils.splitAndMergeInList(roles, HibernateUtil.inQueriesLimitForSplitting(3), slice -> em().createNamedQuery("node.findBySchemaBranchType", HibNodeImpl.class)
 					.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 					.setParameter("type", type)
@@ -153,7 +153,7 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public Stream<? extends NodeFieldContainer> getFieldContainers(SchemaVersion version, String branchUuid) {
+	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid) {
 		List<HibNodeFieldContainerEdgeImpl> edges = em().createNamedQuery("contentEdge.findByBranchAndVersion", HibNodeFieldContainerEdgeImpl.class)
 				.setParameter("branchUuid", UUIDUtil.toJavaUuid(branchUuid))
 				.setParameter("versionUuid", version.getId())
@@ -166,7 +166,7 @@ public class SchemaDaoImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Stream<? extends NodeFieldContainer> getFieldContainers(SchemaVersion version, String branchUuid,
+	public Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid,
 			Bucket bucket) {
 
 		String nativeQuery = "select distinct edge.* from " + MeshTablePrefixStrategy.TABLE_NAME_PREFIX + "nodefieldcontainer edge "
@@ -189,7 +189,7 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public Class<? extends SchemaVersion> getVersionPersistenceClass() {
+	public Class<? extends HibSchemaVersion> getVersionPersistenceClass() {
 		return HibSchemaVersionImpl.class;
 	}
 
@@ -204,7 +204,7 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public Schema beforeDeletedFromDatabase(Schema element) {
+	public HibSchema beforeDeletedFromDatabase(HibSchema element) {
 		HibSchemaImpl schema = (HibSchemaImpl) element;
 		schema.getVersions().forEach(v -> v.setSchemaContainer(null));
 		schema.getVersions().clear();
@@ -215,14 +215,14 @@ public class SchemaDaoImpl
 	}
 
 	@Override
-	public SchemaVersion createPersistedVersion(Schema container, Consumer<SchemaVersion> inflater) {
-		SchemaVersion version = super.createPersistedVersion(container, inflater);
+	public HibSchemaVersion createPersistedVersion(HibSchema container, Consumer<HibSchemaVersion> inflater) {
+		HibSchemaVersion version = super.createPersistedVersion(container, inflater);
 		HibernateTx.get().contentDao().createContentTable(version);
 		return version;
 	}
 
 	@Override
-	public void beforeVersionDeletedFromDatabase(SchemaVersion version) {
+	public void beforeVersionDeletedFromDatabase(HibSchemaVersion version) {
 		HibernateTx tx = HibernateTx.get();
 
 		// Drop references from the branches

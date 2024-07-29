@@ -13,7 +13,7 @@ import com.gentics.mesh.core.action.RoleDAOActions;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -30,7 +30,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Role loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	public HibRole loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		RoleDao roleDao = ctx.tx().roleDao();
 		if (perm == null) {
 			return roleDao.findByUuid(uuid);
@@ -40,7 +40,7 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Role loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+	public HibRole loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		RoleDao roleDao = ctx.tx().roleDao();
 		if (perm == null) {
 			return roleDao.findByName(name);
@@ -50,49 +50,49 @@ public class RoleDAOActionsImpl implements RoleDAOActions {
 	}
 
 	@Override
-	public Page<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Role> extraFilter) {
+	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibRole> extraFilter) {
 		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo, role -> {
 			return extraFilter.test(role);
 		});
 	}
 
 	@Override
-	public Role create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibRole create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		return tx.roleDao().create(ac, batch, uuid);
 	}
 
 	@Override
-	public boolean update(Tx tx, Role role, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibRole role, InternalActionContext ac, EventQueueBatch batch) {
 		return tx.roleDao().update(role, ac, batch);
 	}
 
 	@Override
-	public void delete(Tx tx, Role role, BulkActionContext bac) {
+	public void delete(Tx tx, HibRole role, BulkActionContext bac) {
 		tx.roleDao().delete(role, bac);
 	}
 
 	@Override
-	public RoleResponse transformToRestSync(Tx tx, Role role, InternalActionContext ac, int level, String... languageTags) {
+	public RoleResponse transformToRestSync(Tx tx, HibRole role, InternalActionContext ac, int level, String... languageTags) {
 		return tx.roleDao().transformToRestSync(role, ac, 0);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, Role role) {
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibRole role) {
 		return role.getAPIPath(ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, Role role) {
+	public String getETag(Tx tx, InternalActionContext ac, HibRole role) {
 		return role.getETag(ac);
 	}
 
 	@Override
-	public Page<? extends Role> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+	public Page<? extends HibRole> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().roleDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

@@ -27,9 +27,9 @@ import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.NodeDAOActions;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * Collection of handlers which are used to deal with search requests.
  */
 @Singleton
-public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse> {
+public class NodeSearchHandler extends AbstractSearchHandler<HibNode, NodeResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchHandler.class);
 
@@ -152,15 +152,15 @@ public class NodeSearchHandler extends AbstractSearchHandler<Node, NodeResponse>
 
 				// batch-load the nodes and contents for each language and collect results in contentMap
 				langUuids.entrySet().stream().forEach(entry -> {
-					Language language = tx.languageDao().findByLanguageTag(tx.getProject(ac), entry.getKey());
+					HibLanguage language = tx.languageDao().findByLanguageTag(tx.getProject(ac), entry.getKey());
 					if (language == null) {
 						log.warn("Could not find language {" + entry.getKey() + "}");
 						return;
 					}
-					Map<String, Node> nodes = tx.nodeDao().findByUuids(tx.getProject(ac), entry.getValue())
+					Map<String, HibNode> nodes = tx.nodeDao().findByUuids(tx.getProject(ac), entry.getValue())
 							.filter(pair -> pair.getValue() != null)
 							.collect(Collectors.toMap(Pair::getKey, Pair::getValue));
-					Map<Node, NodeFieldContainer> containers = tx.contentDao().getFieldsContainers(nodes.values(), entry.getKey(), tx.getBranch(ac), type);
+					Map<HibNode, HibNodeFieldContainer> containers = tx.contentDao().getFieldsContainers(nodes.values(), entry.getKey(), tx.getBranch(ac), type);
 					uuidLangList.stream().forEach(uuidLang -> {
 						String uuid = uuidLang.getKey();
 						Optional.ofNullable(nodes.get(uuid)).flatMap(node -> Optional.ofNullable(containers.get(node))).ifPresent(container -> {

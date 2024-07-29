@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.gentics.mesh.MeshVersions;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -28,7 +28,7 @@ public class MeshRestAPITest extends AbstractMeshTest {
 
 		HttpClient client = vertx().createHttpClient(options);
 		CompletableFuture<String> future = new CompletableFuture<>();
-		client.request(HttpMethod.POST, MeshVersions.CURRENT_API_BASE_PATH + "/test")
+		client.request(HttpMethod.POST, MeshVersion.CURRENT_API_BASE_PATH + "/test")
 				.compose(request -> request.send())
 				.onComplete(response -> {
 					response.result().bodyHandler(bh -> {

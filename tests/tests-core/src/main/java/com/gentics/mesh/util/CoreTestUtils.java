@@ -7,11 +7,11 @@ import java.util.UUID;
 import org.apache.commons.lang.RandomStringUtils;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -34,16 +34,16 @@ public final class CoreTestUtils {
 	private CoreTestUtils() {
 	}
 
-	public static NodeFieldContainer createContainer() {
+	public static HibNodeFieldContainer createContainer() {
 		return createContainer(FieldUtil.createStringFieldSchema("dummy"));
 	}
 
-	public static NodeFieldContainer createContainer(FieldSchema... fields) {
+	public static HibNodeFieldContainer createContainer(FieldSchema... fields) {
 		CommonTx ctx = CommonTx.get();
 		// 1. Setup schema
 		SchemaVersionModel schema = createSchema(fields);
-		Schema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
-		SchemaVersion version = schemaContainer.getLatestVersion();
+		HibSchema schemaContainer = ctx.schemaDao().create(schema, null, null, false);
+		HibSchemaVersion version = schemaContainer.getLatestVersion();
 		ctx.commit();
 		return ctx.contentDao().createPersisted(UUID.randomUUID().toString(), version, null, null, new VersionNumber(), null);
 	}
@@ -68,13 +68,13 @@ public final class CoreTestUtils {
 	 *            list of schema fields
 	 * @return schema container
 	 */
-	public static SchemaVersion createSchemaVersion(Schema container, String name, String version, FieldSchema... fields) {
-		SchemaVersion sversion = CommonTx.get().schemaDao().createPersistedVersion(container, v -> fillSchemaVersion(v, container, name, version, fields));
+	public static HibSchemaVersion createSchemaVersion(HibSchema container, String name, String version, FieldSchema... fields) {
+		HibSchemaVersion sversion = CommonTx.get().schemaDao().createPersistedVersion(container, v -> fillSchemaVersion(v, container, name, version, fields));
 		Tx.get().commit();
 		return sversion;
 	}
 
-	public static SchemaVersion fillSchemaVersion(SchemaVersion containerVersion, Schema container, String name, String versionName, FieldSchema... fields) {
+	public static HibSchemaVersion fillSchemaVersion(HibSchemaVersion containerVersion, HibSchema container, String name, String versionName, FieldSchema... fields) {
 		SchemaVersionModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.setVersion(versionName);
@@ -92,7 +92,7 @@ public final class CoreTestUtils {
 		return containerVersion;
 	}
 
-	public static MicroschemaVersion fillMicroschemaVersion(MicroschemaVersion microschemaVersion, Microschema microschema, String name, String versionName, FieldSchema... fields) {
+	public static HibMicroschemaVersion fillMicroschemaVersion(HibMicroschemaVersion microschemaVersion, HibMicroschema microschema, String name, String versionName, FieldSchema... fields) {
 		MicroschemaVersionModel model = new MicroschemaModelImpl();
 		model.setName(name);
 		model.setVersion(versionName);

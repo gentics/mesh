@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.jobs;
 
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import io.reactivex.Completable;
 
 /**
@@ -12,5 +12,5 @@ public interface SingleJobProcessor {
 	 * process a job
 	 * @return completable
 	 */
-	Completable process(Job job);
+	Completable process(HibJob job);
 }

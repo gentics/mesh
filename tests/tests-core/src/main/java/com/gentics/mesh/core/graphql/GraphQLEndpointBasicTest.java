@@ -13,7 +13,7 @@ import org.json.JSONException;
 import org.junit.Test;
 
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -39,7 +39,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	@Test
 	public void testIntrospection() throws IOException {
 		try (Tx tx = tx()) {
-			for (Microschema microschema : tx.microschemaDao().findAll()) {
+			for (HibMicroschema microschema : tx.microschemaDao().findAll()) {
 				tx.microschemaDao().delete(microschema, new DummyBulkActionContext());
 			}
 			tx.success();

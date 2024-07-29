@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.MeshVersions;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -41,7 +41,7 @@ public class VersionHandlerImpl implements VersionHandler {
 		matcher.find();
 		try {
 			int version = Integer.parseInt(matcher.group(1));
-			if (version < 1 || version > MeshVersions.CURRENT_API_VERSION) {
+			if (version < 1 || version > MeshVersion.CURRENT_API_VERSION) {
 				throw notFoundError(strVersion);
 			}
 			return version;
@@ -51,6 +51,6 @@ public class VersionHandlerImpl implements VersionHandler {
 	}
 
 	private GenericRestException notFoundError(String strVersion) {
-		return error(HttpResponseStatus.NOT_FOUND, "error_version_not_found", strVersion, "v" + MeshVersions.CURRENT_API_VERSION);
+		return error(HttpResponseStatus.NOT_FOUND, "error_version_not_found", strVersion, "v" + MeshVersion.CURRENT_API_VERSION);
 	}
 }

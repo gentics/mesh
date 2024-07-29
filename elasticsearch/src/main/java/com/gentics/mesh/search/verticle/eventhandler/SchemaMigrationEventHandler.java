@@ -14,12 +14,12 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -92,20 +92,20 @@ public class SchemaMigrationEventHandler implements EventHandler {
 	 */
 	public Flowable<SearchRequest> migrationStart(BranchSchemaAssignEventModel model) {
 		Map<String, Optional<IndexInfo>> map = helper.getDb().transactional(tx -> {
-			Project project = tx.projectDao().findByUuid(model.getProject().getUuid());
-			Branch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
-			SchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
+			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
+			HibSchemaVersion schema = getNewSchemaVersion(model).runInExistingTx(tx);
 			return nodeIndexHandler.getIndices(project, branch, schema).runInExistingTx(tx);
 		}).runInNewTx();
 
 		return toRequests(map);
 	}
 
-	private Transactional<SchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
+	private Transactional<HibSchemaVersion> getNewSchemaVersion(BranchSchemaAssignEventModel model) {
 		return helper.getDb().transactional(tx -> {
 			SchemaDao schemaDao = tx.schemaDao();
 			SchemaReference schema = model.getSchema();
-			Schema container = schemaDao.findByUuid(schema.getUuid());
+			HibSchema container = schemaDao.findByUuid(schema.getUuid());
 			return schemaDao.findVersionByUuid(container, schema.getVersionUuid());
 		});
 	}

@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.util.StreamUtil;
 
-public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, NodeFieldContainer> {
+public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGraphFieldContainerAssert, HibNodeFieldContainer> {
 
-	public NodeGraphFieldContainerAssert(NodeFieldContainer actual) {
+	public NodeGraphFieldContainerAssert(HibNodeFieldContainer actual) {
 		super(actual, NodeGraphFieldContainerAssert.class);
 	}
 
@@ -26,7 +26,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 *            schema container
 	 * @return fluent API
 	 */
-	public NodeGraphFieldContainerAssert isOf(SchemaVersion schemaVersion) {
+	public NodeGraphFieldContainerAssert isOf(HibSchemaVersion schemaVersion) {
 		assertThat(actual.getSchemaContainerVersion().getVersion()).as("Schema version").isEqualTo(schemaVersion.getVersion());
 		assertThat(actual.getSchemaContainerVersion().getUuid()).as("Schema version Uuid").isEqualTo(schemaVersion.getUuid());
 		return this;
@@ -70,9 +70,9 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @param container
 	 * @return fluent API
 	 */
-	public NodeGraphFieldContainerAssert hasNext(NodeFieldContainer container) {
+	public NodeGraphFieldContainerAssert hasNext(HibNodeFieldContainer container) {
 		ContentDao contentDao = Tx.get().contentDao();
-		List<NodeFieldContainer> next = StreamUtil.toStream(contentDao.getNextVersions(actual)).collect(Collectors.toList());
+		List<HibNodeFieldContainer> next = StreamUtil.toStream(contentDao.getNextVersions(actual)).collect(Collectors.toList());
 		assertThat(next).as(descriptionText() + " next container").isNotNull().contains(container);
 		return this;
 	}
@@ -83,7 +83,7 @@ public class NodeGraphFieldContainerAssert extends AbstractObjectAssert<NodeGrap
 	 * @param container
 	 * @return fluent API
 	 */
-	public NodeGraphFieldContainerAssert hasPrevious(NodeFieldContainer container) {
+	public NodeGraphFieldContainerAssert hasPrevious(HibNodeFieldContainer container) {
 		assertThat(actual.getPreviousVersion()).as(descriptionText() + " previous container").isNotNull()
 				.isEqualTo(container);
 		return this;

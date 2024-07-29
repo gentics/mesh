@@ -29,10 +29,10 @@ import org.junit.rules.Timeout;
 import com.gentics.mesh.cli.AbstractBootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -104,14 +104,14 @@ public abstract class AbstractMeshTest implements TestHttpMethods, TestGraphHelp
 		return this.httpClient;
 	}
 
-	public String getJson(Node node) throws Exception {
+	public String getJson(HibNode node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		return tx(tx -> {
 			return tx.nodeDao().transformToRestSync(node, ac, 0).toJson(false);
 		});
 	}
 
-	protected void testPermission(InternalPermission perm, BaseElement element) {
+	protected void testPermission(InternalPermission perm, HibBaseElement element) {
 		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {

@@ -18,9 +18,9 @@ import jakarta.persistence.EntityManager;
 import com.gentics.mesh.contentoperation.ContentKey;
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.project.maintenance.ProjectVersionPurgeHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -70,23 +70,23 @@ public class HibProjectVersionPurge implements ProjectVersionPurgeHandler {
 	/**
 	 * Create a purge completable.
 	 */
-	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
+	public Completable purgeVersions(HibProject project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> purgeVersionsInternal(project, maxAge));
 	}
 
-	private void purgeVersionsInternal(Project project, ZonedDateTime maxAge) {
+	private void purgeVersionsInternal(HibProject project, ZonedDateTime maxAge) {
 		ArrayDeque<UUID> nodesUuid = db.tx(() -> nodeDao.findAllUuids(project).collect(Collectors.toCollection(ArrayDeque::new)));
 
 		AtomicInteger deletedCount = new AtomicInteger();
 		while (!nodesUuid.isEmpty()) {
 			db.tx(() -> {
 				EntityManager em = HibernateTx.get().entityManager();
-				Set<Node> nodesBatch = fetchNextNodeBatch(nodesUuid);
+				Set<HibNode> nodesBatch = fetchNextNodeBatch(nodesUuid);
 				List<HibNodeFieldContainerImpl> currentContainers = contentDao.getFieldsContainers(nodesBatch, ContainerType.INITIAL);
 				do {
 					// 1. find containers key to be deleted in next loop iteration
 					Set<ContentKey> nextContentKeys = SplittingUtils.splitAndMergeInSet(
-							currentContainers.stream().map(NodeFieldContainer::getId).collect(Collectors.toSet()), 
+							currentContainers.stream().map(HibNodeFieldContainer::getId).collect(Collectors.toSet()), 
 							HibernateUtil.inQueriesLimitForSplitting(1), 
 							slice -> em.createNamedQuery("containerversions.findNextByIds", HibNodeFieldContainerVersionsEdgeImpl.class)
 								.setParameter("contentUuids", slice)
@@ -95,7 +95,7 @@ public class HibProjectVersionPurge implements ProjectVersionPurgeHandler {
 								.collect(Collectors.toSet()));
 
 					// 2. delete current purgeable containers
-					List<NodeFieldContainer> toPurge = currentContainers.stream()
+					List<HibNodeFieldContainer> toPurge = currentContainers.stream()
 							.filter(container -> isPurgeable(container, maxAge))
 							.collect(Collectors.toList());
 					contentDao.purge(toPurge, bulkProvider.get());
@@ -111,13 +111,13 @@ public class HibProjectVersionPurge implements ProjectVersionPurgeHandler {
 		}
 	}
 
-	private Set<Node> fetchNextNodeBatch(Queue<UUID> queue) {
+	private Set<HibNode> fetchNextNodeBatch(Queue<UUID> queue) {
 		int batchSize = options.getVersionPurgeMaxBatchSize();
 		List<UUID> nodesUuid = CollectionUtil.pollMany(queue, batchSize);
 		return new HashSet<>(nodeDao.loadNodesWithEdges(nodesUuid));
 	}
 
-	private boolean isPurgeable(NodeFieldContainer container, ZonedDateTime maxAge) {
+	private boolean isPurgeable(HibNodeFieldContainer container, ZonedDateTime maxAge) {
 		Long editTs = container.getLastEditedTimestamp();
 		ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
 		if (maxAge != null && editDate.isAfter(maxAge)) {

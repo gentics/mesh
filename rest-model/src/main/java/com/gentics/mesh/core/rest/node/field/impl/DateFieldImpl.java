@@ -2,12 +2,12 @@ package com.gentics.mesh.core.rest.node.field.impl;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.DateFieldModel;
+import com.gentics.mesh.core.rest.node.field.DateField;
 
 /**
- * @see DateFieldModel
+ * @see DateField
  */
-public class DateFieldImpl implements DateFieldModel {
+public class DateFieldImpl implements DateField {
 
 	@JsonPropertyDescription("ISO8601 formatted date field value")
 	private String date;
@@ -18,7 +18,7 @@ public class DateFieldImpl implements DateFieldModel {
 	}
 
 	@Override
-	public DateFieldModel setDate(String date) {
+	public DateField setDate(String date) {
 		this.date = date;
 		return this;
 	}

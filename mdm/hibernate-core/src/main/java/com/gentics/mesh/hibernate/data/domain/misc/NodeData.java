@@ -1,8 +1,8 @@
 package com.gentics.mesh.hibernate.data.domain.misc;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainerEdge;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.hibernate.data.domain.HibBranchNodeParent;
 
 /**
@@ -13,12 +13,12 @@ import com.gentics.mesh.hibernate.data.domain.HibBranchNodeParent;
  */
 public class NodeData {
 
-	private final Node node;
+	private final HibNode node;
 	private final HibBranchNodeParent parentEdge;
-	private final NodeFieldContainerEdge container;
-	private final NodeFieldContainer content;
+	private final HibNodeFieldContainerEdge container;
+	private final HibNodeFieldContainer content;
 
-	public NodeData(Node node, HibBranchNodeParent parentEdge, NodeFieldContainerEdge container, NodeFieldContainer content) {
+	public NodeData(HibNode node, HibBranchNodeParent parentEdge, HibNodeFieldContainerEdge container, HibNodeFieldContainer content) {
 		super();
 		this.node = node;
 		this.parentEdge = parentEdge;
@@ -26,7 +26,7 @@ public class NodeData {
 		this.content = content;
 	}
 
-	public Node getNode() {
+	public HibNode getNode() {
 		return node;
 	}
 
@@ -34,11 +34,11 @@ public class NodeData {
 		return parentEdge;
 	}
 
-	public NodeFieldContainerEdge getContainer() {
+	public HibNodeFieldContainerEdge getContainer() {
 		return container;
 	}
 
-	public NodeFieldContainer getContent() {
+	public HibNodeFieldContainer getContent() {
 		return content;
 	}
 }

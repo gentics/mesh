@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.field;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 
 @FunctionalInterface
 public interface FieldFetcher {
 
 	/**
-	 * Return the {@link Field} of the given content.
+	 * Return the {@link HibField} of the given content.
 	 * 
 	 * @param container
 	 *            Content
@@ -15,5 +15,5 @@ public interface FieldFetcher {
 	 *            Name of the field
 	 * @return Found graph field
 	 */
-	Field fetch(FieldContainer container, String name);
+	HibField fetch(HibFieldContainer container, String name);
 }

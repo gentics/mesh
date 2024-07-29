@@ -25,7 +25,7 @@
       "description" : "Array of errors which were encoutered when handling the query.",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:GraphQLErrorModel",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:GraphQLError",
         "properties" : {
           "message" : {
             "type" : "string",
@@ -50,7 +50,7 @@
             "description" : "List of locations which are related to the error.",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:ErrorLocationModel",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:graphql:ErrorLocation",
               "properties" : {
                 "line" : {
                   "type" : "integer",

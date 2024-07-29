@@ -14,14 +14,14 @@ import java.util.List;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -53,20 +53,20 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	public void testFieldTransformation() throws Exception {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			prepareNode(node, NUMBER_LIST, "number");
 
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			NumberFieldList numberList = container.createNumberList(NUMBER_LIST);
+			HibNumberFieldList numberList = container.createNumberList(NUMBER_LIST);
 			numberList.createNumber(1);
 			numberList.createNumber(1.11);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			NodeResponse response = transform(node);
 			assertList(2, NUMBER_LIST, "number", response);
 		}
@@ -77,8 +77,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			NumberFieldList list = container.createNumberList(NUMBER_LIST);
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList list = container.createNumberList(NUMBER_LIST);
 
 			list.createNumber(1);
 			assertEquals(1, list.getList().size());
@@ -95,8 +95,8 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testBulkFieldUpdate() throws Exception {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			NumberFieldList list = container.createNumberList(NUMBER_LIST);
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList list = container.createNumberList(NUMBER_LIST);
 			List<Number> params = List.of(9,8,7,6,5,4,3,2,1,0);
 			list.createNumbers(params);
 			assertEquals(10, list.getSize());
@@ -109,12 +109,12 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			NumberFieldList testField = container.createNumberList(NUMBER_LIST);
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList testField = container.createNumberList(NUMBER_LIST);
 			testField.createNumber(47);
 			testField.createNumber(11);
 
-			NodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			testField.cloneTo(otherContainer);
 
 			assertTrue(otherContainer.getNumberList(NUMBER_LIST).equals(testField));
@@ -125,9 +125,9 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
-			NumberFieldList fieldA = container.createNumberList("fieldA");
-			NumberFieldList fieldB = container.createNumberList("fieldB");
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
+			HibNumberFieldList fieldA = container.createNumberList("fieldA");
+			HibNumberFieldList fieldB = container.createNumberList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.addItem(fieldA.createNumber(42L));
 			assertTrue("The field should  still be equal to itself", fieldA.equals(fieldA));
@@ -143,10 +143,10 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			NumberFieldList fieldA = container.createNumberList(NUMBER_LIST);
-			assertFalse(fieldA.equals((FieldModel) null));
-			assertFalse(fieldA.equals((NumberFieldList) null));
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNumberFieldList fieldA = container.createNumberList(NUMBER_LIST);
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((HibNumberFieldList) null));
 		}
 	}
 
@@ -154,11 +154,11 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 			Long dummyValue = 4200L;
 
 			// rest null - graph null
-			NumberFieldList fieldA = container.createNumberList(NUMBER_LIST);
+			HibNumberFieldList fieldA = container.createNumberList(NUMBER_LIST);
 
 			NumberFieldListImpl restField = new NumberFieldListImpl();
 			assertTrue("Both fields should be equal to eachother since both values are null", fieldA.equals(restField));
@@ -229,7 +229,7 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				field.getItems().add(43L);
 				updateContainer(ac, container, NUMBER_LIST, field);
 			}, (container) -> {
-				NumberFieldList field = container.getNumberList(NUMBER_LIST);
+				HibNumberFieldList field = container.getNumberList(NUMBER_LIST);
 				assertNotNull("The graph field {" + NUMBER_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
 				assertEquals("The list item of the field was not updated.", 42L, field.getList().get(0).getNumber().longValue());

@@ -5,12 +5,12 @@ import static com.gentics.mesh.rest.client.AbstractMeshRestHttpClient.getQuery;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.gentics.mesh.MeshVersions;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.AbstractInternalActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.BaseMeshComponent;
@@ -113,7 +113,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public User getUser() {
+	public HibUser getUser() {
 		return user.getDelegate();
 	}
 
@@ -200,7 +200,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 */
 	public void setProject(String projectName) {
 		BaseMeshComponent mesh = boot.mesh().internal();
-		Project project = mesh.database().tx(tx -> {
+		HibProject project = mesh.database().tx(tx -> {
 			return tx.projectDao().findByName(projectName);
 		});
 		data().put(SharedKeys.PROJECT_CONTEXT_KEY, project);
@@ -263,7 +263,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 
 	@Override
 	public int getApiVersion() {
-		return MeshVersions.CURRENT_API_VERSION;
+		return MeshVersion.CURRENT_API_VERSION;
 	}
 
 	@Override

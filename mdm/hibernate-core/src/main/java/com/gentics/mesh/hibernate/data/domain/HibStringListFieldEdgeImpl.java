@@ -10,7 +10,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.gentics.mesh.core.data.node.field.StringField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.database.HibernateTx;
 
 /**
@@ -29,8 +29,8 @@ import com.gentics.mesh.database.HibernateTx;
 }, indexes = {
 		@Index(columnList = "listUuid")
 })
-public class HibStringListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<StringField, String>
-		implements StringField, Serializable {
+public class HibStringListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<HibStringField, String>
+		implements HibStringField, Serializable {
 
 	private static final long serialVersionUID = -8019702371631385160L;
 

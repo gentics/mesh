@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 /**
@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
  *            REST model type of the field
  */
 @FunctionalInterface
-public interface FieldTransformer<T extends FieldModel> {
+public interface FieldTransformer<T extends Field> {
 
 	/**
 	 * Load the field with the given key from the container and transform it to its rest representation.
@@ -34,7 +34,7 @@ public interface FieldTransformer<T extends FieldModel> {
 	 * @param parentNode
 	 * @return
 	 */
-	T transform(FieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
-				int level, Supplier<Node> parentNode);
+	T transform(HibFieldContainer container, InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags,
+				int level, Supplier<HibNode> parentNode);
 
 }

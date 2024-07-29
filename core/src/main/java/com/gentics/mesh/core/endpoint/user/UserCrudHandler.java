@@ -16,10 +16,10 @@ import com.gentics.mesh.auth.provider.MeshJWTAuthProvider;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.UserDAOActions;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * Handler which contains methods for user related requests.
  */
 @Singleton
-public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
+public class UserCrudHandler extends AbstractCrudHandler<HibUser, UserResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(UserCrudHandler.class);
 
@@ -75,10 +75,10 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 				// 1. Load the user that should be used - read perm implies that the
 				// user is able to read the attached permissions
-				User user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
+				HibUser user = userDao.loadObjectByUuid(ac, userUuid, READ_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				BaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
+				HibBaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
 				if (targetElement == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 				}
@@ -110,7 +110,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = tx.userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
 				// 2. Generate a new token and store it for the user
 				UserResetTokenResponse tokenResponse = db.tx(() -> {
@@ -143,7 +143,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				UserAPITokenResponse apiKeyRespose = db.tx(() -> {
@@ -175,7 +175,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, tx -> {
 				// 1. Load the user that should be used
-				User user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
+				HibUser user = tx.userDao().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 				// 2. Generate the API key for the user
 				GenericMessageResponse message = db.tx(() -> {

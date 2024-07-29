@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.test.Assert;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -125,7 +125,7 @@ public class ImageManipulationParametersTest {
 		}
 
 		ImageManipulationParametersImpl request = new ImageManipulationParametersImpl();
-		request.setFocalPoint(new FocalPointModel(0.1f, 0.2f));
+		request.setFocalPoint(new FocalPoint(0.1f, 0.2f));
 		request.validate();
 	}
 

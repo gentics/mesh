@@ -18,10 +18,10 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -153,7 +153,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 			.setParentNodeUuid(getProject().getRootNode().getUuid())
 			.setLanguage("en")
 			.setFields(FieldMap.of(
-				"name", StringFieldModel.of("testNode"),
+				"name", StringField.of("testNode"),
 				"phone", phoneNumber("+43", "1234567"),
 				"locations", new MicronodeFieldListImpl().setItems(Arrays.asList(
 					location("aut", "vienna"),
@@ -169,7 +169,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 
 	private NodeResponse addLocation(NodeResponse node, MicronodeResponse location, boolean publish) {
 		NodeUpdateRequest updateRequest = node.toRequest();
-		MicronodeFieldListModel locations = updateRequest.getFields().getMicronodeFieldList("locations");
+		MicronodeFieldList locations = updateRequest.getFields().getMicronodeFieldList("locations");
 		locations.getItems().add(location);
 		updateRequest.getFields().put("locations", locations);
 		NodeResponse nodeResponse = client().updateNode(PROJECT_NAME, node.getUuid(), updateRequest).blockingGet();
@@ -188,7 +188,7 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 				.as("Locations of version " + version).usingElementComparator(this::compareLocations).containsOnly(expected);
 	}
 
-	private int compareLocations(MicronodeFieldModel a, MicronodeFieldModel b) {
+	private int compareLocations(MicronodeField a, MicronodeField b) {
 		int cmp = getValue(a.getFields(), "country").compareTo(getValue(b.getFields(), "country"));
 		if (cmp != 0) {
 			return cmp;
@@ -206,8 +206,8 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 		MicronodeResponse micronodeResponse = new MicronodeResponse();
 		micronodeResponse.setMicroschema(new MicroschemaReferenceImpl().setName("phonenumber"));
 		FieldMap fields = micronodeResponse.getFields();
-		fields.put("countrycode", StringFieldModel.of(countryCode));
-		fields.put("number", StringFieldModel.of(number));
+		fields.put("countrycode", StringField.of(countryCode));
+		fields.put("number", StringField.of(number));
 		return micronodeResponse;
 	}
 
@@ -215,8 +215,8 @@ public class MicroschemaMigrationTest extends AbstractMeshTest {
 		MicronodeResponse micronodeResponse = new MicronodeResponse();
 		micronodeResponse.setMicroschema(new MicroschemaReferenceImpl().setName("location"));
 		FieldMap fields = micronodeResponse.getFields();
-		fields.put("country", StringFieldModel.of(country));
-		fields.put("city", StringFieldModel.of(city));
+		fields.put("country", StringField.of(country));
+		fields.put("city", StringField.of(city));
 		return micronodeResponse;
 	}
 

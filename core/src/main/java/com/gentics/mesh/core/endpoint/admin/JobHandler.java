@@ -25,13 +25,13 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.core.action.JobDAOActions;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.JobDao;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * REST handler for job endpoint operations.
  */
 @Singleton
-public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
+public class JobHandler extends AbstractCrudHandler<HibJob, JobResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(JobHandler.class);
 
@@ -76,19 +76,19 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
 			JobParameters jobParameters = ac.getJobParameters();
-			Predicate<Job> filter = null;
+			Predicate<HibJob> filter = null;
 			if (!jobParameters.isEmpty()) {
-				List<Pair<Set<String>, Function<Job, String>>> props = new ArrayList<>();
+				List<Pair<Set<String>, Function<HibJob, String>>> props = new ArrayList<>();
 				props.add(Pair.of(jobParameters.getBranchName(), job -> {
-					Branch branch = job.getBranch();
+					HibBranch branch = job.getBranch();
 					return branch != null ? branch.getName() : null;
 				}));
 				props.add(Pair.of(jobParameters.getBranchUuid(), job -> {
-					Branch branch = job.getBranch();
+					HibBranch branch = job.getBranch();
 					return branch != null ? branch.getUuid() : null;
 				}));
 				props.add(Pair.of(jobParameters.getSchemaName(), job -> {
-					SchemaVersion toSchemaVersion = job.getToSchemaVersion();
+					HibSchemaVersion toSchemaVersion = job.getToSchemaVersion();
 					if (toSchemaVersion != null) {
 						return toSchemaVersion.getSchemaContainer().getName();
 					} else {
@@ -96,7 +96,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					}
 				}));
 				props.add(Pair.of(jobParameters.getSchemaUuid(), job -> {
-					SchemaVersion toSchemaVersion = job.getToSchemaVersion();
+					HibSchemaVersion toSchemaVersion = job.getToSchemaVersion();
 					if (toSchemaVersion != null) {
 						return toSchemaVersion.getSchemaContainer().getUuid();
 					} else {
@@ -104,7 +104,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					}
 				}));
 				props.add(Pair.of(jobParameters.getMicroschemaName(), job -> {
-					MicroschemaVersion toVersion = job.getToMicroschemaVersion();
+					HibMicroschemaVersion toVersion = job.getToMicroschemaVersion();
 					if (toVersion != null) {
 						return toVersion.getSchemaContainer().getName();
 					} else {
@@ -112,7 +112,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					}
 				}));
 				props.add(Pair.of(jobParameters.getMicroschemaUuid(), job -> {
-					MicroschemaVersion toVersion = job.getToMicroschemaVersion();
+					HibMicroschemaVersion toVersion = job.getToMicroschemaVersion();
 					if (toVersion != null) {
 						return toVersion.getSchemaContainer().getUuid();
 					} else {
@@ -142,7 +142,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					if (!jobParameters.getType().isEmpty() && !jobParameters.getType().contains(job.getType())) {
 						return false;
 					}
-					for (Pair<Set<String>, Function<Job, String>> prop : props) {
+					for (Pair<Set<String>, Function<HibJob, String>> prop : props) {
 						if (!prop.getLeft().isEmpty() && !prop.getLeft().contains(prop.getRight().apply(job))) {
 							return false;
 						}
@@ -150,7 +150,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					return true;
 				};
 			}
-			Page<? extends Job> page = root.findAllNoPerm(ac, pagingInfo, filter);
+			Page<? extends HibJob> page = root.findAllNoPerm(ac, pagingInfo, filter);
 
 			// Handle etag
 			if (ac.getGenericParameters().getETag()) {
@@ -174,7 +174,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				JobDao root = tx.jobDao();
-				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				HibJob job = root.loadObjectByUuidNoPerm(uuid, true);
 				db.tx(() -> {
 					if (job.hasFailed()) {
 						root.delete(job, new DummyBulkActionContext());
@@ -196,7 +196,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			JobDao jobDao = tx.jobDao();
-			Job job = jobDao.loadObjectByUuidNoPerm(uuid, true);
+			HibJob job = jobDao.loadObjectByUuidNoPerm(uuid, true);
 			String etag = jobDao.getETag(job, ac);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {
@@ -224,7 +224,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
 			JobDao root = tx.jobDao();
-			Job job = root.loadObjectByUuidNoPerm(uuid, true);
+			HibJob job = root.loadObjectByUuidNoPerm(uuid, true);
 			db.tx(() -> {
 				job.resetJob();
 			});
@@ -246,7 +246,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 					throw error(FORBIDDEN, "error_admin_permission_required");
 				}
 				JobDao root = tx.jobDao();
-				Job job = root.loadObjectByUuidNoPerm(uuid, true);
+				HibJob job = root.loadObjectByUuidNoPerm(uuid, true);
 				db.tx(() -> {
 					JobStatus status = job.getStatus();
 					if (status == FAILED || status == UNKNOWN) {

@@ -16,15 +16,15 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.DateField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.DateFieldModel;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -48,7 +48,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
 		assertNull(field);
 	}
@@ -58,10 +58,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
-			NodeFieldContainer container;
+			HibNodeFieldContainer container;
 			Long oldValue;
 
 			try (Tx tx = tx()) {
@@ -96,7 +96,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		NodeResponse secondResponse;
 
 		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
@@ -110,7 +110,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
@@ -153,8 +153,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return date value (may be null)
 	 */
-	protected Long getDateValue(NodeFieldContainer container, String fieldName) {
-		DateField field = container.getDate(fieldName);
+	protected Long getDateValue(HibNodeFieldContainer container, String fieldName) {
+		HibDateField field = container.getDate(fieldName);
 		return field != null ? field.getDate() : null;
 	}
 
@@ -163,7 +163,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testCreateNodeWithField() {
 		Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 		NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-		DateFieldModel field = response.getFields().getDateField(FIELD_NAME);
+		DateField field = response.getFields().getDateField(FIELD_NAME);
 		assertEquals(toISO8601(nowEpoch), field.getDate());
 	}
 
@@ -172,12 +172,12 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		Long nowEpoch;
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 
 			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
@@ -185,7 +185,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		}
 
 		NodeResponse response = readNode(folder("2015"));
-		DateFieldModel deserializedDateField = response.getFields().getDateField(FIELD_NAME);
+		DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
 		assertNotNull(deserializedDateField);
 		assertEquals(toISO8601(nowEpoch), deserializedDateField.getDate());
 	}

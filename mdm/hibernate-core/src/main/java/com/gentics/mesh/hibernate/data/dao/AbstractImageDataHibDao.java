@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.dao;
 
-import com.gentics.mesh.core.data.ImageDataElement;
+import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.hibernate.data.permission.HibPermissionRoots;
@@ -9,7 +9,7 @@ import com.gentics.mesh.hibernate.event.EventFactory;
 import dagger.Lazy;
 import io.vertx.core.Vertx;
 
-public abstract class AbstractImageDataHibDao<T extends ImageDataElement> extends AbstractHibDao<T> {
+public abstract class AbstractImageDataHibDao<T extends HibImageDataElement> extends AbstractHibDao<T> {
 
 	
 

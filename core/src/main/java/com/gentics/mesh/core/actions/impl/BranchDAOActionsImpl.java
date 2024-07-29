@@ -13,7 +13,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
 import com.gentics.mesh.core.action.DAOActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.page.Page;
@@ -36,7 +36,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public Branch loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+	public HibBranch loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
 		BranchDao branchDao = ctx.tx().branchDao();
 		if (perm == null) {
 			return branchDao.findByUuid(ctx.project(), uuid);
@@ -46,7 +46,7 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public Branch loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+	public HibBranch loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		if (perm == null) {
 			BranchDao branchDao = ctx.tx().branchDao();
 			return branchDao.findByName(ctx.project(), name);
@@ -56,55 +56,55 @@ public class BranchDAOActionsImpl implements BranchDAOActions {
 	}
 
 	@Override
-	public Page<? extends Branch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		BranchDao branchDao = ctx.tx().branchDao();
 		return branchDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Branch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Branch> extraFilter) {
+	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibBranch> extraFilter) {
 		BranchDao branchDao = ctx.tx().branchDao();
 		return branchDao.findAll(ctx.project(), ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
-	public Branch create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibBranch create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		BranchDao branchDao = tx.branchDao();
 		return branchDao.create(tx.getProject(ac), ac, batch, uuid);
 	}
 
 	@Override
-	public boolean update(Tx tx, Branch branch, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibBranch branch, InternalActionContext ac, EventQueueBatch batch) {
 		BranchDao branchDao = tx.branchDao();
 		return branchDao.update(tx.getProject(ac), branch, ac, batch);
 	}
 
 	@Override
-	public void delete(Tx tx, Branch element, BulkActionContext bac) {
+	public void delete(Tx tx, HibBranch element, BulkActionContext bac) {
 		throw new RuntimeException("Branches are currently not deletable");
 	}
 
 	@Override
-	public BranchResponse transformToRestSync(Tx tx, Branch branch, InternalActionContext ac, int level, String... languageTags) {
+	public BranchResponse transformToRestSync(Tx tx, HibBranch branch, InternalActionContext ac, int level, String... languageTags) {
 		BranchDao branchDao = tx.branchDao();
 		return branchDao.transformToRestSync(branch, ac, level, languageTags);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, Branch branch) {
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibBranch branch) {
 		BranchDao branchDao = tx.branchDao();
 		return branchDao.getAPIPath(branch, ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, Branch branch) {
+	public String getETag(Tx tx, InternalActionContext ac, HibBranch branch) {
 		BranchDao branchDao = tx.branchDao();
 		return branchDao.getETag(branch, ac);
 	}
 
 	@Override
-	public Page<? extends Branch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
-		Stream<? extends Branch> stream = ctx.tx().branchDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter));
+	public Page<? extends HibBranch> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+		Stream<? extends HibBranch> stream = ctx.tx().branchDao().findAllStream(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter));
 		if (PersistingRootDao.shouldPage(pagingInfo)) {
 			return new PageImpl<>(stream.collect(Collectors.toList()), pagingInfo, 
 					ctx.tx().branchDao().countAll(ctx.project(), ctx.ac(), InternalPermission.READ_PERM, pagingInfo, Optional.ofNullable(extraFilter)));

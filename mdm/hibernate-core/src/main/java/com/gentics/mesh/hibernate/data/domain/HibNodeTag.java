@@ -13,9 +13,9 @@ import jakarta.persistence.MapsId;
 
 import org.hibernate.annotations.Target;
 
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.tag.HibTag;
 
 /**
  * Node-Tag edge.
@@ -35,17 +35,17 @@ public class HibNodeTag implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("nodeUUID")
     @Target(HibNodeImpl.class)
-    private Node node;
+    private HibNode node;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("tagUUID")
     @Target(HibTagImpl.class)
-    private Tag tag;
+    private HibTag tag;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("branchUUID")
     @Target(HibBranchImpl.class)
-    private Branch branch;
+    private HibBranch branch;
 
     public HibNodeTag() {}
 
@@ -64,27 +64,27 @@ public class HibNodeTag implements Serializable {
         this.id = id;
     }
 
-    public Node getNode() {
+    public HibNode getNode() {
         return node;
     }
 
-    public void setNode(Node node) {
+    public void setNode(HibNode node) {
         this.node = node;
     }
 
-    public Tag getTag() {
+    public HibTag getTag() {
         return tag;
     }
 
-    public void setTag(Tag tag) {
+    public void setTag(HibTag tag) {
         this.tag = tag;
     }
 
-    public Branch getBranch() {
+    public HibBranch getBranch() {
         return branch;
     }
 
-    public void setBranch(Branch branch) {
+    public void setBranch(HibBranch branch) {
         this.branch = branch;
     }
 

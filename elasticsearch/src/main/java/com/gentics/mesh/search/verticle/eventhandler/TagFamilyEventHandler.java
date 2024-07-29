@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshProjectElementEventModel;
@@ -60,7 +60,7 @@ public class TagFamilyEventHandler implements EventHandler {
 				return helper.getDb().tx(tx -> {
 					TagDao tagDao = tx.tagDao();
 					// We also need to update all tags of this family
-					Optional<TagFamily> tagFamily = entities.tagFamily.getElement(model);
+					Optional<HibTagFamily> tagFamily = entities.tagFamily.getElement(model);
 
 					Stream<SearchRequest> tagFamilyUpdate = tagFamily.stream()
 						.map(tf -> entities.createRequest(tf, projectUuid));
@@ -84,7 +84,7 @@ public class TagFamilyEventHandler implements EventHandler {
 				} else {
 					// TODO Update related elements.
 					// At the moment we cannot look up related elements, because the element was already deleted.
-					return Flowable.just(helper.deleteDocumentRequest(TagFamily.composeIndexName(projectUuid), model.getUuid(), complianceMode));
+					return Flowable.just(helper.deleteDocumentRequest(HibTagFamily.composeIndexName(projectUuid), model.getUuid(), complianceMode));
 				}
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
@@ -99,7 +99,7 @@ public class TagFamilyEventHandler implements EventHandler {
 	 * @param tagFamily
 	 * @return
 	 */
-	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, TagFamily tagFamily) {
+	private Stream<SearchRequest> createNodeUpdates(MeshProjectElementEventModel model, HibTagFamily tagFamily) {
 		Tx tx = Tx.get();
 		return findElementByUuidStream(tx.projectDao(), model.getProject().getUuid())
 			.flatMap(project -> tx.branchDao().findAll(project).stream()

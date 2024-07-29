@@ -39,18 +39,18 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -79,7 +79,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
+			HibTagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			assertNotNull(tagFamily);
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()));
 			assertNotNull(response);
@@ -92,7 +92,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
+			HibTagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			String uuid = tagFamily.getUuid();
 
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid,
@@ -111,8 +111,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			Role role = role();
-			TagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
+			HibRole role = role();
+			HibTagFamily tagFamily = tagFamilyDao.findAll(project()).iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
 			roleDao.revokePermissions(role, tagFamily, READ_PERM);
@@ -126,7 +126,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	public void testReadMultiple2() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			String uuid = tagFamily.getUuid();
 			call(() -> client().findTags(PROJECT_NAME, uuid));
 		}
@@ -159,7 +159,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// one will not be listed.
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 
-			TagFamily noPermTagFamily = tagFamilyDao.create(project(), "noPermTagFamily", user());
+			HibTagFamily noPermTagFamily = tagFamilyDao.create(project(), "noPermTagFamily", user());
 			String noPermTagUUID = noPermTagFamily.getUuid();
 			// TODO check whether the project reference should be moved from generic class
 			// into node mesh class and thus not be available for tags
@@ -344,7 +344,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		TagFamily basicTagFamily = tagFamily("basic");
+		HibTagFamily basicTagFamily = tagFamily("basic");
 		String tagFamilyUuid = tx(() -> basicTagFamily.getUuid());
 		try (Tx tx = tx()) {
 			assertNotNull(tx.<CommonTx>unwrap().tagFamilyDao().findByUuid(project(), tagFamilyUuid));
@@ -361,10 +361,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		});
 
 		// TODO Assert for tags
-		List<? extends Tag> tags = tx(tx -> {
+		List<? extends HibTag> tags = tx(tx -> {
 			return tx.tagDao().findAll(basicTagFamily).list();
 		});
-		List<String> tagUuids = tx(() -> tags.stream().map(Tag::getUuid).collect(Collectors.toList()));
+		List<String> tagUuids = tx(() -> tags.stream().map(HibTag::getUuid).collect(Collectors.toList()));
 
 		Set<String> taggedDraftContentUuids = new HashSet<>();
 		Set<String> taggedPublishedContentUuids = new HashSet<>();
@@ -387,11 +387,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(TagFamily.composeIndexName(projectUuid()),
-				TagFamily.composeDocumentId(tagFamilyUuid));
+		assertThat(trackingSearchProvider()).hasDelete(HibTagFamily.composeIndexName(projectUuid()),
+				HibTagFamily.composeDocumentId(tagFamilyUuid));
 		for (String tagUuid : tagUuids) {
-			assertThat(trackingSearchProvider()).hasDelete(Tag.composeIndexName(projectUuid()),
-					Tag.composeDocumentId(tagUuid));
+			assertThat(trackingSearchProvider()).hasDelete(HibTag.composeIndexName(projectUuid()),
+					HibTag.composeDocumentId(tagUuid));
 		}
 
 		// The TagFamily and the tags must be deleted
@@ -408,10 +408,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		TagFamily basicTagFamily = tagFamily("basic");
+		HibTagFamily basicTagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Role role = role();
+			HibRole role = role();
 			roleDao.revokePermissions(role, basicTagFamily, DELETE_PERM);
 			tx.success();
 		}
@@ -481,10 +481,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testUpdateNodeIndex() {
-		Project project = project();
-		TagFamily tagfamily = tagFamily("basic");
+		HibProject project = project();
+		HibTagFamily tagfamily = tagFamily("basic");
 		String tagFamilyUuid = tx(() -> tagfamily.getUuid());
-		Branch branch = tx(() -> initialBranch());
+		HibBranch branch = tx(() -> initialBranch());
 
 		expect(TAG_FAMILY_UPDATED).one();
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
@@ -500,14 +500,14 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
 
-			for (Tag tag : tagDao.findAll(tagfamily)) {
+			for (HibTag tag : tagDao.findAll(tagfamily)) {
 				storeCount++;
-				for (Node node : tagDao.getNodes(tag, branch)) {
+				for (HibNode node : tagDao.getNodes(tag, branch)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
 						for (ContainerType containerType : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-							for (NodeFieldContainer fieldContainer : tx.contentDao().getFieldContainers(node, branch, containerType)) {
-								SchemaVersion schema = node.getSchemaContainer().getLatestVersion();
+							for (HibNodeFieldContainer fieldContainer : tx.contentDao().getFieldContainers(node, branch, containerType)) {
+								HibSchemaVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(trackingSearchProvider()).hasStore(
 										ContentDao.composeIndexName(project.getUuid(), branch.getUuid(),
@@ -538,7 +538,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testUpdateByUUIDWithoutPerm() {
 		String uuid;
 		String name;
-		TagFamily tagFamily = tagFamily("basic");
+		HibTagFamily tagFamily = tagFamily("basic");
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			uuid = tagFamily.getUuid();

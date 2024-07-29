@@ -12,15 +12,15 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.NumberField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -34,7 +34,7 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
 		assertNull("The field should be null since we did not specify a field when executing the creation call", field);
 	}
@@ -42,9 +42,9 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Test
 	public void testCreateNodeWithWrongFieldType() {
 		String fieldKey = FIELD_NAME;
-		StringFieldModel field = new StringFieldImpl().setString("text");
+		StringField field = new StringFieldImpl().setString("text");
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setParentNodeUuid(node.getUuid());
 		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -60,9 +60,9 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
-			NodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
+			HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 			Number oldValue;
 			Number newValue;
 			try (Tx tx = tx()) {
@@ -115,8 +115,8 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
-			Node node = folder("2015");
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNode node = folder("2015");
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumber(FIELD_NAME)).isNotNull();
@@ -151,14 +151,14 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 
-			NumberField numberField = container.createNumber(FIELD_NAME);
+			HibNumberField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(100.9f);
 			tx.success();
 		}
@@ -177,8 +177,8 @@ public class NumberFieldEndpointTest extends AbstractNumberFieldEndpointTest {
 	 *            field name
 	 * @return number value (may be null)
 	 */
-	protected Number getNumberValue(NodeFieldContainer container, String fieldName) {
-		NumberField field = container.getNumber(fieldName);
+	protected Number getNumberValue(HibNodeFieldContainer container, String fieldName) {
+		HibNumberField field = container.getNumber(fieldName);
 		return field != null ? field.getNumber() : null;
 	}
 

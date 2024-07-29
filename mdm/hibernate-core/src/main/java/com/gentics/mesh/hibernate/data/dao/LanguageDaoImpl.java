@@ -12,12 +12,12 @@ import org.hibernate.jpa.QueryHints;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.PersistingLanguageDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
 import com.gentics.mesh.database.CurrentTransaction;
@@ -37,34 +37,34 @@ import io.vertx.core.Vertx;
  *
  */
 @Singleton
-public class LanguageDaoImpl extends AbstractHibDaoGlobal<Language, LanguageResponse, HibLanguageImpl> implements PersistingLanguageDao {
+public class LanguageDaoImpl extends AbstractHibDaoGlobal<HibLanguage, LanguageResponse, HibLanguageImpl> implements PersistingLanguageDao {
 
 	@Inject
-	public LanguageDaoImpl(DaoHelper<Language, HibLanguageImpl> daoHelper, HibPermissionRoots permissionRoots,
+	public LanguageDaoImpl(DaoHelper<HibLanguage, HibLanguageImpl> daoHelper, HibPermissionRoots permissionRoots,
 			CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory,
 			Lazy<Vertx> vertx) {
 		super(daoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 	}
 
 	@Override
-	public Language findByLanguageTag(String tag) {
+	public HibLanguage findByLanguageTag(String tag) {
 		return firstOrNull(em().createQuery("select l from language l where l.languageTag = :tag", HibLanguageImpl.class)
 				.setParameter("tag", tag)
 				.setHint(QueryHints.HINT_CACHEABLE, true));
 	}
 
 	@Override
-	public void delete(Language element, BulkActionContext bac) {
+	public void delete(HibLanguage element, BulkActionContext bac) {
 		throw new NotImplementedException("Languages cannot be deleted");
 	}
 
 	@Override
-	public boolean update(Language element, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Languages cannot be updated");
 	}
 
 	@Override
-	public Language findByLanguageTag(Project project, String tag) {
+	public HibLanguage findByLanguageTag(HibProject project, String tag) {
 		return firstOrNull(em().createQuery("select l from project p join p.languages l where p = :project and l.languageTag = :tag", HibLanguageImpl.class)
 				.setParameter("tag", tag)
 				.setParameter("project", project)
@@ -72,7 +72,7 @@ public class LanguageDaoImpl extends AbstractHibDaoGlobal<Language, LanguageResp
 	}
 
 	@Override
-	public Page<? extends Language> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public Page<? extends HibLanguage> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return PersistingRootDao.shouldSort(pagingInfo) 
 				? daoHelper.findAll(ac, null, pagingInfo, Optional.empty()) 
 				: daoHelper.findAll(ac, pagingInfo, null, false);

@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.HtmlFieldModel;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
 
 /**
- * @see HtmlFieldModel
+ * @see HtmlField
  */
-public class HtmlFieldImpl implements HtmlFieldModel {
+public class HtmlFieldImpl implements HtmlField {
 
 	private String html;
 

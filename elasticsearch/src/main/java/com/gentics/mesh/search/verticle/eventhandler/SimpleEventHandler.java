@@ -7,7 +7,7 @@ import java.util.Collection;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * @param <T>
  */
 @ParametersAreNonnullByDefault
-public class SimpleEventHandler<T extends BaseElement> implements EventHandler {
+public class SimpleEventHandler<T extends HibBaseElement> implements EventHandler {
 	private static final Logger log = LoggerFactory.getLogger(SimpleEventHandler.class);
 
 	private final MeshHelper helper;

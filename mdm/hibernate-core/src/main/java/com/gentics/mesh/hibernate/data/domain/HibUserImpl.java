@@ -18,9 +18,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -40,16 +40,16 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "user")
 @ElementTypeKey(ElementType.USER)
-public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> implements User, Serializable {
+public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> implements HibUser, Serializable {
 
 	private static final long serialVersionUID = -8445998784074594208L;
 
 	@ManyToMany(targetEntity = HibGroupImpl.class, fetch = FetchType.LAZY)
 	@JoinTable(name = "group_user", inverseJoinColumns = {@JoinColumn(name = "groups_dbUuid")}, joinColumns = {@JoinColumn(name = "users_dbUuid")})
-	private Set<Group> groups = new HashSet<>();
+	private Set<HibGroup> groups = new HashSet<>();
 	
 	@OneToOne(targetEntity = HibNodeImpl.class, fetch = FetchType.LAZY)
-	private Node referencedNode;
+	private HibNode referencedNode;
 
 	private String firstname;
 
@@ -90,7 +90,7 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public User setLastname(String lastname) {
+	public HibUser setLastname(String lastname) {
 		this.lastname = lastname;
 		return this;
 	}
@@ -123,7 +123,7 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public User disable() {
+	public HibUser disable() {
 		this.enabled = false;
 		return this;
 	}
@@ -134,12 +134,12 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public User enable() {
+	public HibUser enable() {
 		this.enabled = true;
 		return this;
 	}
 
-	public Stream<Group> getGroups() {
+	public Stream<HibGroup> getGroups() {
 		return groups.stream();
 	}
 
@@ -157,14 +157,14 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public User invalidateResetToken() {
+	public HibUser invalidateResetToken() {
 		setResetToken(null);
 		setResetTokenIssueTimestamp(null);
 		return this;
 	}
 
 	@Override
-	public User setPasswordHash(String hash) {
+	public HibUser setPasswordHash(String hash) {
 		this.passwordHash = hash;
 		return this;
 	}
@@ -175,7 +175,7 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public User setForcedPasswordChange(boolean force) {
+	public HibUser setForcedPasswordChange(boolean force) {
 		this.forcedPasswordChange = force;
 		return this;
 	}
@@ -207,25 +207,25 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public User setResetToken(String token) {
+	public HibUser setResetToken(String token) {
 		resetToken = token;
 		return this;
 	}
 
 	@Override
-	public User setAPITokenId(String code) {
+	public HibUser setAPITokenId(String code) {
 		apiTokenId = code;
 		return this;
 	}
 
 	@Override
-	public User setResetTokenIssueTimestamp(Long timestamp) {
+	public HibUser setResetTokenIssueTimestamp(Long timestamp) {
 		resetTokenIssueTimestamp = timestamp;
 		return this;
 	}
 
 	@Override
-	public User setAPITokenIssueTimestamp() {
+	public HibUser setAPITokenIssueTimestamp() {
 		apiTokenIssueTimestamp = System.currentTimeMillis();
 		return this;
 	}
@@ -236,12 +236,12 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 	}
 
 	@Override
-	public Node getReferencedNode() {
+	public HibNode getReferencedNode() {
 		return referencedNode;
 	}
 
 	@Override
-	public User setReferencedNode(Node node) {
+	public HibUser setReferencedNode(HibNode node) {
 		referencedNode = node;
 		return this;
 	}
@@ -276,7 +276,7 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 		groups.clear();
 	}
 
-	public void addGroup(Group group) {
+	public void addGroup(HibGroup group) {
 		getGroups().filter(g -> g.getId().equals(group.getId())).findAny().ifPresentOrElse(u -> {}, () -> {
 			groups.add(group);
 		});
@@ -284,6 +284,6 @@ public class HibUserImpl extends AbstractHibUserTrackedElement<UserResponse> imp
 
 	@Override
 	public String getSubETag(InternalActionContext ac) {
-		return User.super.getSubETag(ac);
+		return HibUser.super.getSubETag(ac);
 	}
 }

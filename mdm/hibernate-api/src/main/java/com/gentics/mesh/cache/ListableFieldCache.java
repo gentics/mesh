@@ -3,14 +3,14 @@ package com.gentics.mesh.cache;
 import java.util.List;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
+import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 
 /**
  * Interface for the cache containing values of list fields
  *
- * @param <U> type of the {@link ListableField} implementation
+ * @param <U> type of the {@link HibListableField} implementation
  */
-public interface ListableFieldCache<U extends ListableField> extends MeshCache<UUID, List<? extends U>> {
+public interface ListableFieldCache<U extends HibListableField> extends MeshCache<UUID, List<? extends U>> {
 	/**
 	 * Put the given list into the cache
 	 * @param listUuid list UUID (cache key)

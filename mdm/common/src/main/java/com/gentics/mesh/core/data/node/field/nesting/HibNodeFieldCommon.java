@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
+import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.parameter.LinkType;
@@ -24,28 +24,28 @@ import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
 /**
- * Common implementations for {@link NodeField}.
+ * Common implementations for {@link HibNodeField}.
  * 
  * @author plyhun
  *
  */
-public interface HibNodeFieldCommon extends NodeField {
+public interface HibNodeFieldCommon extends HibNodeField {
 
 	@Override
-	default NodeFieldModel transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
+	default NodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
 		// if (getNode() != null) {
 		NodeParameters parameters = ac.getNodeParameters();
 		UserDao userDao = Tx.get().userDao();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
-		Node node = getNode();
+		HibNode node = getNode();
 
 		// Check whether the user is allowed to read the node reference
 		if (node == null || !userDao.canReadNode(ac.getUser(), ac, node)) {
 			return null;
 		}
 
-		if (expandField && level < Node.MAX_TRANSFORMATION_LEVEL) {
+		if (expandField && level < HibNode.MAX_TRANSFORMATION_LEVEL) {
 			return Tx.get().nodeDao().transformToRestSync(node, ac, level, languageTags.toArray(new String[languageTags.size()]));
 		} else {
 			NodeFieldImpl nodeField = new NodeFieldImpl();
@@ -56,7 +56,7 @@ public interface HibNodeFieldCommon extends NodeField {
 				ContentDao contentDao = tx.contentDao();
 
 				WebRootLinkReplacer linkReplacer = CommonTx.get().data().mesh().webRootLinkReplacer();
-				Branch branch = tx.getBranch(ac);
+				HibBranch branch = tx.getBranch(ac);
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language
@@ -65,7 +65,7 @@ public interface HibNodeFieldCommon extends NodeField {
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
-				for (FieldContainer currentFieldContainer : contentDao.getFieldContainers(node, branch, containerType)) {
+				for (HibFieldContainer currentFieldContainer : contentDao.getFieldContainers(node, branch, containerType)) {
 					String currLanguage = currentFieldContainer.getLanguageTag();
 					String languagePath = linkReplacer.resolve(ac, branch.getUuid(), containerType, node, type, currLanguage);
 					languagePaths.put(currLanguage, languagePath);
@@ -85,9 +85,9 @@ public interface HibNodeFieldCommon extends NodeField {
 	 * @return
 	 */
 	default boolean nodeFieldEquals(Object obj) {
-		if (obj instanceof NodeField) {
-			Node nodeA = getNode();
-			Node nodeB = ((NodeField) obj).getNode();
+		if (obj instanceof HibNodeField) {
+			HibNode nodeA = getNode();
+			HibNode nodeB = ((HibNodeField) obj).getNode();
 			return CompareUtils.equals(nodeA, nodeB);
 		}
 		if (obj instanceof NodeFieldListItem) {
@@ -96,9 +96,9 @@ public interface HibNodeFieldCommon extends NodeField {
 			// getNode can't be null since this is in fact an edge
 			return CompareUtils.equals(restItem.getUuid(), getNode().getUuid());
 		}
-		if (obj instanceof NodeFieldModel) {
-			NodeFieldModel nodeRestField = ((NodeFieldModel) obj);
-			Node nodeA = getNode();
+		if (obj instanceof NodeField) {
+			NodeField nodeRestField = ((NodeField) obj);
+			HibNode nodeA = getNode();
 			String nodeUuid = nodeRestField.getUuid();
 			// The node graph field is a edge so getNode should never be null. Lets check it anyways.
 			if (nodeA != null) {

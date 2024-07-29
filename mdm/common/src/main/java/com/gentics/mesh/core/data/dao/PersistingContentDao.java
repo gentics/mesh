@@ -32,23 +32,23 @@ import org.apache.commons.lang3.StringUtils;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.DeletableField;
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainerEdge;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibDeletableField;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
-import com.gentics.mesh.core.data.node.field.DisplayField;
-import com.gentics.mesh.core.data.node.field.StringField;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibDisplayField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.MeshEvent;
@@ -59,7 +59,7 @@ import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.node.version.VersionInfo;
@@ -97,14 +97,14 @@ public interface PersistingContentDao extends ContentDao {
 	 *
 	 * @return
 	 */
-	Node getParentNode(NodeFieldContainer container, String branchUuid);
+	HibNode getParentNode(HibNodeFieldContainer container, String branchUuid);
 
 	/**
 	 * Delete the distinct field explicitly.
 	 * 
 	 * @param field
 	 */
-	void deleteField(DeletableField field);
+	void deleteField(HibDeletableField field);
 
 	/**
 	 * Get a field container version, that is not attached to a storage, 
@@ -114,7 +114,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param field
 	 * @return
 	 */
-	default Field detachField(Field field) {
+	default HibField detachField(HibField field) {
 		return field;
 	}
 
@@ -129,13 +129,13 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param setInitial @Override
 	is this branch initial for the project?
 	 */
-	default void migrateContainerOntoBranch(NodeFieldContainer container, Branch newBranch, Node node, EventQueueBatch batch, ContainerType containerType, boolean setInitial) {
+	default void migrateContainerOntoBranch(HibNodeFieldContainer container, HibBranch newBranch, HibNode node, EventQueueBatch batch, ContainerType containerType, boolean setInitial) {
 		if (setInitial) {
 			createContainerEdge(node, container, newBranch, container.getLanguageTag(), INITIAL);
 		}
-		NodeFieldContainerEdge edge = createContainerEdge(node, container, newBranch, container.getLanguageTag(), containerType);
+		HibNodeFieldContainerEdge edge = createContainerEdge(node, container, newBranch, container.getLanguageTag(), containerType);
 		String value = getSegmentFieldValue(container);
-		Node parent = CommonTx.get().nodeDao().getParentNode(node, newBranch.getUuid());
+		HibNode parent = CommonTx.get().nodeDao().getParentNode(node, newBranch.getUuid());
 		if (value != null) {
 			edge.setSegmentInfo(parent, value);
 		} else {
@@ -152,13 +152,13 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param segment
 	 * @return
 	 */
-	default PathSegment getSegment(Node node, String branchUuid, ContainerType type, String segment) {
+	default PathSegment getSegment(HibNode node, String branchUuid, ContainerType type, String segment) {
 		// Check the different language versions
-		for (NodeFieldContainer container : getFieldContainers(node, branchUuid, type)) {
+		for (HibNodeFieldContainer container : getFieldContainers(node, branchUuid, type)) {
 			SchemaModel schema = getSchemaContainerVersion(container).getSchema();
 			String segmentFieldName = schema.getSegmentField();
 			// First check whether a string field exists for the given name
-			StringField field = container.getString(segmentFieldName);
+			HibStringField field = container.getString(segmentFieldName);
 			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
@@ -168,7 +168,7 @@ public interface PersistingContentDao extends ContentDao {
 
 			// No luck yet - lets check whether a binary field matches the
 			// segmentField
-			BinaryField binaryField = container.getBinary(segmentFieldName);
+			HibBinaryField binaryField = container.getBinary(segmentFieldName);
 			if (binaryField == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
@@ -181,7 +181,7 @@ public interface PersistingContentDao extends ContentDao {
 				}
 			}
 			// No luck yet - lets check whether a S3 binary field matches the segmentField
-			S3BinaryField s3Binary = container.getS3Binary(segmentFieldName);
+			S3HibBinaryField s3Binary = container.getS3Binary(segmentFieldName);
 			if (s3Binary == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("The node {" + node.getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
@@ -202,7 +202,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * 
 	 * @return
 	 */
-	Stream<? extends Micronode> findAllMicronodes();
+	Stream<? extends HibMicronode> findAllMicronodes();
 
 	/**
 	 * Create a container in the persisted storage, according to the root node.
@@ -215,7 +215,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param editor optional user
 	 * @return
 	 */
-	NodeFieldContainer createPersisted(String nodeUUID, SchemaVersion version, String uuid, String languageTag, VersionNumber versionNumber, User editor);
+	HibNodeFieldContainer createPersisted(String nodeUUID, HibSchemaVersion version, String uuid, String languageTag, VersionNumber versionNumber, HibUser editor);
 
 	/**
 	 * Connect fresh container to the node.
@@ -226,11 +226,11 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param languageTag
 	 * @param handleDraftEdge
 	 */
-	default void connectFieldContainer(Node node, NodeFieldContainer newContainer, Branch branch, String languageTag, boolean handleDraftEdge) {
+	default void connectFieldContainer(HibNode node, HibNodeFieldContainer newContainer, HibBranch branch, String languageTag, boolean handleDraftEdge) {
 		String branchUuid = branch.getUuid();
 
 		if (handleDraftEdge) {
-			NodeFieldContainerEdge oldDraftEdge = getEdge(node, languageTag, branchUuid, DRAFT);
+			HibNodeFieldContainerEdge oldDraftEdge = getEdge(node, languageTag, branchUuid, DRAFT);
 			String segmentInfo = null;
 			if (oldDraftEdge != null) {
 				segmentInfo = oldDraftEdge.getSegmentInfo();
@@ -241,7 +241,7 @@ public interface PersistingContentDao extends ContentDao {
 				removeEdge(oldDraftEdge);
 			}
 			// create a new draft edge
-			NodeFieldContainerEdge newDraftEdge = createContainerEdge(node, newContainer, branchUuid, languageTag, DRAFT);
+			HibNodeFieldContainerEdge newDraftEdge = createContainerEdge(node, newContainer, branchUuid, languageTag, DRAFT);
 			if (!StringUtils.isEmpty(segmentInfo)) {
 				newDraftEdge.setSegmentInfo(segmentInfo);
 			}
@@ -265,7 +265,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param initial
 	 * @return
 	 */
-	NodeFieldContainerEdge createContainerEdge(Node node, NodeFieldContainer container, Branch branch,
+	HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, HibBranch branch,
 			String languageTag, ContainerType initial);
 
 	/**
@@ -273,7 +273,7 @@ public interface PersistingContentDao extends ContentDao {
 	 *
 	 * @param edge
 	 */
-	void removeEdge(NodeFieldContainerEdge edge);
+	void removeEdge(HibNodeFieldContainerEdge edge);
 
 	/**
 	 * Find the node edge with the given parameters: language, branch, type
@@ -284,7 +284,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	NodeFieldContainerEdge getEdge(Node node, String languageTag, String branchUuid, ContainerType type);
+	HibNodeFieldContainerEdge getEdge(HibNode node, String languageTag, String branchUuid, ContainerType type);
 
 	/**
 	 * Get the content container the edge is pointing to
@@ -292,41 +292,41 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param edge
 	 * @return
 	 */
-	NodeFieldContainer getFieldContainerOfEdge(NodeFieldContainerEdge edge);
+	HibNodeFieldContainer getFieldContainerOfEdge(HibNodeFieldContainerEdge edge);
 
-	default NodeFieldContainerEdge createContainerEdge(Node node, NodeFieldContainer container, String branchUUID, String languageTag, ContainerType initial) {
-		Branch branch = Tx.get().branchDao().findByUuid(node.getProject(), branchUUID);
+	default HibNodeFieldContainerEdge createContainerEdge(HibNode node, HibNodeFieldContainer container, String branchUUID, String languageTag, ContainerType initial) {
+		HibBranch branch = Tx.get().branchDao().findByUuid(node.getProject(), branchUUID);
 		return createContainerEdge(node, container, branch, languageTag, initial);
 	}
 
 	@Override
-	default NodeFieldContainer createFieldContainer(Node node, String languageTag, Branch branch, User editor) {
+	default HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor) {
 		return createFieldContainer(node, languageTag, branch, editor, null, true);
 	}
 
 	@Override
-	default NodeFieldContainer createFirstFieldContainerForNode(Node node, String languageTag, Branch branch, User editor) {
-		SchemaVersion version = branch.findLatestSchemaVersion(node.getSchemaContainer());
-		NodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, new VersionNumber(), editor);
+	default HibNodeFieldContainer createFirstFieldContainerForNode(HibNode node, String languageTag, HibBranch branch, HibUser editor) {
+		HibSchemaVersion version = branch.findLatestSchemaVersion(node.getSchemaContainer());
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, new VersionNumber(), editor);
 		connectFieldContainer(node, newContainer, branch, languageTag, true);
 
 		return newContainer;
 	}
 
 	@Override
-	default NodeFieldContainer createFieldContainer(Node node, String languageTag, Branch branch, User editor, NodeFieldContainer original,
+	default HibNodeFieldContainer createFieldContainer(HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
 													   boolean handleDraftEdge) {
 		// We need create a new container with no reference, if an original is not provided.
 		// So use the latest version available to use.
-		SchemaVersion version = Objects.isNull(original)
+		HibSchemaVersion version = Objects.isNull(original)
 				? branch.findLatestSchemaVersion(node.getSchemaContainer())
 				: getSchemaContainerVersion(original) ;
 		return createFieldContainer(version, node, languageTag, branch, editor, original, handleDraftEdge);
 	}
 
-	private NodeFieldContainer createFieldContainer(SchemaVersion version, Node node, String languageTag, Branch branch, User editor, NodeFieldContainer original,
+	private HibNodeFieldContainer createFieldContainer(HibSchemaVersion version, HibNode node, String languageTag, HibBranch branch, HibUser editor, HibNodeFieldContainer original,
 		boolean handleDraftEdge) {
-		NodeFieldContainer previous = null;
+		HibNodeFieldContainer previous = null;
 
 		// check whether there is a current draft version
 		if (handleDraftEdge) {
@@ -335,7 +335,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		// Create the new container
 		VersionNumber versionNumber = previous != null ? previous.getVersion().nextDraft() : new VersionNumber();
-		NodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, versionNumber, editor);
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, versionNumber, editor);
 
 		if (previous != null) {
 			// set the next version number
@@ -359,11 +359,11 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default NodeFieldContainer createEmptyFieldContainer(SchemaVersion version, Node node, User editor, String languageTag, Branch branch) {
-		NodeFieldContainer previous = getFieldContainer(node, languageTag, branch, DRAFT);
+	default HibNodeFieldContainer createEmptyFieldContainer(HibSchemaVersion version, HibNode node, HibUser editor, String languageTag, HibBranch branch) {
+		HibNodeFieldContainer previous = getFieldContainer(node, languageTag, branch, DRAFT);
 
 		VersionNumber versionNumber = previous != null ? previous.getVersion().nextDraft() : new VersionNumber();
-		NodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, versionNumber, editor);
+		HibNodeFieldContainer newContainer = createPersisted(node.getUuid(), version, null, languageTag, versionNumber, editor);
 
 		if (previous != null) {
 			previous.setNextVersion(newContainer);
@@ -377,23 +377,23 @@ public interface PersistingContentDao extends ContentDao {
 	}
 	
     @Override
-	default Result<NodeFieldContainer> getDraftFieldContainers(Node node) {
+	default Result<HibNodeFieldContainer> getDraftFieldContainers(HibNode node) {
 		// FIX ME: We should not rely on specific branches.
 		return getFieldContainers(node, CommonTx.get().branchDao().getLatestBranch(node.getProject()), DRAFT);
 	}
 
     @Override
-	default Result<NodeFieldContainer> getFieldContainers(Node node, Branch branch, ContainerType type) {
+	default Result<HibNodeFieldContainer> getFieldContainers(HibNode node, HibBranch branch, ContainerType type) {
 		return getFieldContainers(node, branch.getUuid(), type);
 	}
 
 	@Override
-	default void deleteLanguageContainer(Node node, InternalActionContext ac, Branch branch, String languageTag, BulkActionContext bac,
+	default void deleteLanguageContainer(HibNode node, InternalActionContext ac, HibBranch branch, String languageTag, BulkActionContext bac,
 										 boolean failForLastContainer) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
-		NodeFieldContainer container = getFieldContainer(node, languageTag, branch, PUBLISHED);
+		HibNodeFieldContainer container = getFieldContainer(node, languageTag, branch, PUBLISHED);
 		if (container != null) {
 			nodeDao.takeOffline(node, ac, bac, branch, languageTag);
 		}
@@ -407,14 +407,14 @@ public interface PersistingContentDao extends ContentDao {
 		// No need to delete the published variant because if the container was published the take offline call handled it
 
 		// starting with the old draft, delete all GFC that have no next and are not draft (for other branches)
-		NodeFieldContainer dangling = container;
+		HibNodeFieldContainer dangling = container;
 		while (dangling != null && !isDraft(dangling) && !dangling.hasNextVersion()) {
-			NodeFieldContainer toDelete = dangling;
+			HibNodeFieldContainer toDelete = dangling;
 			dangling = toDelete.getPreviousVersion();
 			delete(toDelete, bac);
 		}
 
-		NodeFieldContainer initial = getFieldContainer(node, languageTag, branch, INITIAL);
+		HibNodeFieldContainer initial = getFieldContainer(node, languageTag, branch, INITIAL);
 		if (initial != null) {
 			// Remove the initial edge
 			nodeDao.removeInitialFieldContainerEdge(node, initial, branch.getUuid());
@@ -422,11 +422,11 @@ public interface PersistingContentDao extends ContentDao {
 			// starting with the old initial, delete all GFC that have no previous and are not initial (for other branches)
 			dangling = initial;
 			while (dangling != null && !isInitial(dangling) && !dangling.hasPreviousVersion()) {
-				NodeFieldContainer toDelete = dangling;
+				HibNodeFieldContainer toDelete = dangling;
 				// since the GFC "toDelete" was only used by this branch, it can not have more than one "next" GFC
 				// (multiple "next" would have to belong to different branches, and for every branch, there would have to be
 				// an INITIAL, which would have to be either this GFC or a previous)
-				Iterator<NodeFieldContainer> danglingIterator = getNextVersions(toDelete).iterator();
+				Iterator<HibNodeFieldContainer> danglingIterator = getNextVersions(toDelete).iterator();
 				dangling = danglingIterator.hasNext() ? danglingIterator.next() : null;
 				delete(toDelete, bac, false);
 			}
@@ -435,8 +435,8 @@ public interface PersistingContentDao extends ContentDao {
 		// 3. Check whether this was be the last container of the node for this branch
 		DeleteParameters parameters = ac.getDeleteParameters();
 		if (failForLastContainer) {
-			Result<NodeFieldContainer> draftContainers = getFieldContainers(node, branch.getUuid(), DRAFT);
-			Result<NodeFieldContainer> publishContainers = getFieldContainers(node, branch.getUuid(), PUBLISHED);
+			Result<HibNodeFieldContainer> draftContainers = getFieldContainers(node, branch.getUuid(), DRAFT);
+			Result<HibNodeFieldContainer> publishContainers = getFieldContainers(node, branch.getUuid(), PUBLISHED);
 			boolean wasLastContainer = !draftContainers.iterator().hasNext() && !publishContainers.iterator().hasNext();
 
 			if (!parameters.isRecursive() && wasLastContainer) {
@@ -451,11 +451,11 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
     @Override
-    default NodeFieldContainer publish(Node node, InternalActionContext ac, String languageTag, Branch branch, User user) {
+    default HibNodeFieldContainer publish(HibNode node, InternalActionContext ac, String languageTag, HibBranch branch, HibUser user) {
 		String branchUuid = branch.getUuid();
 
 		// create published version
-		NodeFieldContainer newVersion = createFieldContainer(node, languageTag, branch, user);
+		HibNodeFieldContainer newVersion = createFieldContainer(node, languageTag, branch, user);
 		Tx.get().contentDao().setVersion(newVersion, newVersion.getVersion().nextPublished());
 
 		Tx.get().nodeDao().setPublished(node, ac, newVersion, branchUuid);
@@ -463,37 +463,37 @@ public interface PersistingContentDao extends ContentDao {
     }
 
 	@Override
-	default NodeMeshEventModel onDeleted(NodeFieldContainer container, String branchUuid, ContainerType type) {
+	default NodeMeshEventModel onDeleted(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		return createEvent(NODE_CONTENT_DELETED, container, branchUuid, type);
 	}
 
 	@Override
-	default NodeMeshEventModel onUpdated(NodeFieldContainer container, String branchUuid, ContainerType type) {
+	default NodeMeshEventModel onUpdated(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		return createEvent(NODE_UPDATED, container, branchUuid, type);
 	}
 
 	@Override
-	default NodeMeshEventModel onCreated(NodeFieldContainer container, String branchUuid, ContainerType type) {
+	default NodeMeshEventModel onCreated(HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		return createEvent(NODE_CONTENT_CREATED, container, branchUuid, type);
 	}
 
 	@Override
-	default NodeMeshEventModel onTakenOffline(NodeFieldContainer container, String branchUuid) {
+	default NodeMeshEventModel onTakenOffline(HibNodeFieldContainer container, String branchUuid) {
 		return createEvent(NODE_UNPUBLISHED, container, branchUuid, ContainerType.PUBLISHED);
 	}
 
 	@Override
-	default NodeMeshEventModel onPublish(NodeFieldContainer container, String branchUuid) {
+	default NodeMeshEventModel onPublish(HibNodeFieldContainer container, String branchUuid) {
 		return createEvent(NODE_PUBLISHED, container, branchUuid, ContainerType.PUBLISHED);
 	}
 
 	@Override
-	default VersionInfo transformToVersionInfo(NodeFieldContainer container, InternalActionContext ac) {
+	default VersionInfo transformToVersionInfo(HibNodeFieldContainer container, InternalActionContext ac) {
 		String branchUuid = Tx.get().getBranch(ac).getUuid();
 		VersionInfo info = new VersionInfo();
 		info.setVersion(container.getVersion().getFullVersion());
 		info.setCreated(container.getLastEditedDate());
-		User editor = container.getEditor();
+		HibUser editor = container.getEditor();
 		if (editor != null) {
 			info.setCreator(editor.transformToReference());
 		}
@@ -515,36 +515,36 @@ public interface PersistingContentDao extends ContentDao {
 	 *            Type of the node content if known
 	 * @return Created model
 	 */
-	private NodeMeshEventModel createEvent(MeshEvent event, NodeFieldContainer container, String branchUuid, ContainerType type) {
+	private NodeMeshEventModel createEvent(MeshEvent event, HibNodeFieldContainer container, String branchUuid, ContainerType type) {
 		NodeMeshEventModel model = new NodeMeshEventModel();
 		model.setEvent(event);
-		Node node = getParentNode(container, branchUuid);
+		HibNode node = getParentNode(container, branchUuid);
 		String nodeUuid = node.getUuid();
 		model.setUuid(nodeUuid);
 		model.setBranchUuid(branchUuid);
 		model.setLanguageTag(container.getLanguageTag());
 		model.setType(type);
-		SchemaVersion version = getSchemaContainerVersion(container);
+		HibSchemaVersion version = getSchemaContainerVersion(container);
 		if (version != null) {
 			model.setSchema(version.transformToReference());
 		}
-		Project project = node.getProject();
+		HibProject project = node.getProject();
 		model.setProject(project.transformToReference());
 		return model;
 	}
 
 	@Override
-	default void updateWebrootPathInfo(NodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts) {
+	default void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, String branchUuid, String conflictI18n, boolean checkForConflicts) {
 		Set<String> urlFieldValues = getUrlFieldValues(content).collect(Collectors.toSet());
-		Iterator<? extends NodeFieldContainerEdge> it = getContainerEdges(content, DRAFT, branchUuid);
+		Iterator<? extends HibNodeFieldContainerEdge> it = getContainerEdges(content, DRAFT, branchUuid);
 		if (it.hasNext()) {
-			NodeFieldContainerEdge draftEdge = it.next();
+			HibNodeFieldContainerEdge draftEdge = it.next();
 			updateWebrootPathInfo(content, ac, draftEdge, branchUuid, conflictI18n, DRAFT);
 			updateWebrootUrlFieldsInfo(content, draftEdge, branchUuid, urlFieldValues, DRAFT, checkForConflicts);
 		}
 		it = getContainerEdges(content, PUBLISHED, branchUuid);
 		if (it.hasNext()) {
-			NodeFieldContainerEdge publishEdge = it.next();
+			HibNodeFieldContainerEdge publishEdge = it.next();
 			updateWebrootPathInfo(content, ac, publishEdge, branchUuid, conflictI18n, PUBLISHED);
 			updateWebrootUrlFieldsInfo(content, publishEdge, branchUuid, urlFieldValues, PUBLISHED, checkForConflicts);
 		}
@@ -554,16 +554,16 @@ public interface PersistingContentDao extends ContentDao {
 	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
 	 */
 	@Override
-	default void updateDisplayFieldValue(NodeFieldContainer container) {
+	default void updateDisplayFieldValue(HibNodeFieldContainer container) {
 		// TODO use schema storage instead
 		SchemaModel schema = container.getSchemaContainerVersion().getSchema();
 		String displayFieldName = schema.getDisplayField();
 		FieldSchema fieldSchema = schema.getField(displayFieldName);
 		// Only update the display field value if the field can be located
 		if (fieldSchema != null) {
-			Field field = container.getField(fieldSchema);
-			if (field != null && field instanceof DisplayField) {
-				DisplayField displayField = (DisplayField) field;
+			HibField field = container.getField(fieldSchema);
+			if (field != null && field instanceof HibDisplayField) {
+				HibDisplayField displayField = (HibDisplayField) field;
 				setDisplayFieldValue(container, displayField.getDisplayName());
 				return;
 			}
@@ -578,7 +578,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param container
 	 * @param value
 	 */
-	void setDisplayFieldValue(NodeFieldContainer container, String value);
+	void setDisplayFieldValue(HibNodeFieldContainer container, String value);
 
 	/**
 	 * Update the webroot path info (checking for uniqueness before)
@@ -593,10 +593,10 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param type
 	 *            edge type
 	 */
-	private void updateWebrootPathInfo(NodeFieldContainer content, InternalActionContext ac, NodeFieldContainerEdge edge, String branchUuid, String conflictI18n,
+	private void updateWebrootPathInfo(HibNodeFieldContainer content, InternalActionContext ac, HibNodeFieldContainerEdge edge, String branchUuid, String conflictI18n,
 										 ContainerType type) {
 		final int MAX_NUMBER = 255;
-		Node node = getNode(content);
+		HibNode node = getNode(content);
 		String segmentFieldName = getSchemaContainerVersion(content).getSchema().getSegmentField();
 		String languageTag = getLanguageTag(content);
 
@@ -642,7 +642,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param type
 	 * @param languageTag
 	 */
-	default void postfixPathSegment(Node node, String branchUuid, ContainerType type, String languageTag) {
+	default void postfixPathSegment(HibNode node, String branchUuid, ContainerType type, String languageTag) {
 		NodeDao nodeDao = Tx.get().nodeDao();
 		// Check whether this node is the base node.
 		if (nodeDao.getParentNode(node, branchUuid) == null) {
@@ -650,7 +650,7 @@ public interface PersistingContentDao extends ContentDao {
 		}
 
 		// Find the first matching container and fallback to other listed languages
-		NodeFieldContainer container = getFieldContainer(node, languageTag, branchUuid, type);
+		HibNodeFieldContainer container = getFieldContainer(node, languageTag, branchUuid, type);
 		if (container != null) {
 			postfixSegmentFieldValue(container);
 		}
@@ -668,7 +668,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param type
 	 * @return
 	 */
-	private boolean updateWebrootPathInfo(NodeFieldContainer content, Node node, NodeFieldContainerEdge edge, String branchUuid, String segmentFieldName,
+	private boolean updateWebrootPathInfo(HibNodeFieldContainer content, HibNode node, HibNodeFieldContainerEdge edge, String branchUuid, String segmentFieldName,
 										  String conflictI18n,
 										  ContainerType type) {
 		NodeDao nodeDao = Tx.get().nodeDao();
@@ -679,7 +679,7 @@ public interface PersistingContentDao extends ContentDao {
 		// The webroot uniqueness will be checked by validating that the string [segmentValue-branchUuid-parentNodeUuid] is only listed once within the given
 		// specific index for (drafts or published nodes). Segment field should also be set, otherwise the segment info is treated as outdated and is subject to reset.
 		if (segment != null && StringUtils.isNotBlank(segmentFieldName)) {
-			Node parentNode = nodeDao.getParentNode(node, branchUuid);
+			HibNode parentNode = nodeDao.getParentNode(node, branchUuid);
 			String segmentInfo = composeSegmentInfo(parentNode, segment);
 
 			String currentSegmentInfo = edge.getSegmentInfo();
@@ -688,10 +688,10 @@ public interface PersistingContentDao extends ContentDao {
 			}
 
 			// check for uniqueness of webroot path
-			NodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootPath(content, segmentInfo, branchUuid, type, edge);
+			HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootPath(content, segmentInfo, branchUuid, type, edge);
 			if (conflictingEdge != null) {
-				Node conflictingNode = conflictingEdge.getNode();
-				NodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
+				HibNode conflictingNode = conflictingEdge.getNode();
+				HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
 				if (log.isDebugEnabled()) {
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid()
 							+ "}");
@@ -709,7 +709,7 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default String composeSegmentInfo(Node parentNode, String segment) {
+	default String composeSegmentInfo(HibNode parentNode, String segment) {
 		return parentNode == null ? "" : parentNode.getUuid() + segment;
 	}
 
@@ -723,13 +723,13 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param type
 	 * @param checkForConflicts true when the check for conflicting values must be done, false if not
 	 */
-	private void updateWebrootUrlFieldsInfo(NodeFieldContainer content, NodeFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type, boolean checkForConflicts) {
+	private void updateWebrootUrlFieldsInfo(HibNodeFieldContainer content, HibNodeFieldContainerEdge edge, String branchUuid, Set<String> urlFieldValues, ContainerType type, boolean checkForConflicts) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
 			if (checkForConflicts) {
-				NodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValues, branchUuid, type);
+				HibNodeFieldContainerEdge conflictingEdge = getConflictingEdgeOfWebrootField(content, edge, urlFieldValues, branchUuid, type);
 				if (conflictingEdge != null) {
-					NodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
-					Node conflictingNode = conflictingEdge.getNode();
+					HibNodeFieldContainer conflictingContainer = conflictingEdge.getNodeContainer();
+					HibNode conflictingNode = conflictingEdge.getNode();
 					if (log.isDebugEnabled()) {
 						log.debug(
 								"Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} of node {" + conflictingNode.getUuid());
@@ -754,7 +754,7 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default Stream<String> getUrlFieldValues(NodeFieldContainer content) {
+	default Stream<String> getUrlFieldValues(HibNodeFieldContainer content) {
 		SchemaVersionModel schema = getSchemaContainerVersion(content).getSchema();
 
 		List<String> urlFields = schema.getUrlFields();
@@ -770,9 +770,9 @@ public interface PersistingContentDao extends ContentDao {
 				)
 				.flatMap(urlField -> {
 					FieldSchema fieldSchema = schema.getField(urlField);
-					Field field = content.getField(fieldSchema);
-					if (field instanceof StringField) {
-						StringField stringField = (StringField) field;
+					HibField field = content.getField(fieldSchema);
+					if (field instanceof HibStringField) {
+						HibStringField stringField = (HibStringField) field;
 						String value = stringField.getString();
 						if (StringUtils.isBlank(value)) {
 							return Stream.empty();
@@ -780,11 +780,11 @@ public interface PersistingContentDao extends ContentDao {
 							return Stream.of(value);
 						}
 					}
-					if (field instanceof StringFieldList) {
-						StringFieldList stringListField = (StringFieldList) field;
+					if (field instanceof HibStringFieldList) {
+						HibStringFieldList stringListField = (HibStringFieldList) field;
 						return stringListField.getList().stream()
 								.flatMap(listField -> Optional.ofNullable(listField)
-										.map(StringField::getString)
+										.map(HibStringField::getString)
 										.filter(StringUtils::isNotBlank)
 										.stream());
 					}
@@ -794,14 +794,14 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default String getPathSegment(Node node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
+	default String getPathSegment(HibNode node, String branchUuid, ContainerType type, boolean anyLanguage, String... languageTag) {
 		// Check whether this node is the base node.
 		if (node.getParentNode(branchUuid) == null) {
 			return "";
 		}
 
 		// Find the first matching container and fallback to other listed languages
-		NodeFieldContainer container = null;
+		HibNodeFieldContainer container = null;
 		for (String tag : languageTag) {
 			if ((container = getFieldContainer(node, tag, branchUuid, type)) != null) {
 				break;
@@ -809,7 +809,7 @@ public interface PersistingContentDao extends ContentDao {
 		}
 
 		if (container == null && anyLanguage) {
-			Result<? extends NodeFieldContainerEdge> traversal = getFieldEdges(node, branchUuid, type);
+			Result<? extends HibNodeFieldContainerEdge> traversal = getFieldEdges(node, branchUuid, type);
 
 			if (traversal.hasNext()) {
 				container = traversal.next().getNodeContainer();
@@ -823,7 +823,7 @@ public interface PersistingContentDao extends ContentDao {
 
 	}
 
-	default String getSegmentFieldValue(NodeFieldContainer content) {
+	default String getSegmentFieldValue(HibNodeFieldContainer content) {
 		SchemaVersionModel schema = getSchemaContainerVersion(content).getSchema();
 		String segmentFieldKey = schema.getSegmentField();
 		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
@@ -856,8 +856,8 @@ public interface PersistingContentDao extends ContentDao {
 		return null;
 	}
 
-	private String getStringField(NodeFieldContainer content, String segmentFieldKey) {
-		StringField stringField = content.getString(segmentFieldKey);
+	private String getStringField(HibNodeFieldContainer content, String segmentFieldKey) {
+		HibStringField stringField = content.getString(segmentFieldKey);
 		if (stringField != null) {
 			return stringField.getString();
 		}
@@ -865,7 +865,7 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default void postfixSegmentFieldValue(NodeFieldContainer content) {
+	default void postfixSegmentFieldValue(HibNodeFieldContainer content) {
 		String segmentFieldKey = getSchemaContainerVersion(content).getSchema().getSegmentField();
 		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
 		if (segmentFieldKey == null) {
@@ -873,7 +873,7 @@ public interface PersistingContentDao extends ContentDao {
 		}
 
 		// 2. Try to load the path segment using the string field
-		StringField stringField = content.getString(segmentFieldKey);
+		HibStringField stringField = content.getString(segmentFieldKey);
 		if (stringField != null) {
 			String oldValue = stringField.getString();
 			if (oldValue != null) {
@@ -883,7 +883,7 @@ public interface PersistingContentDao extends ContentDao {
 
 		// 3. Try to load the path segment using the binary field since the string field could not be found
 		if (stringField == null) {
-			BinaryField binaryField = content.getBinary(segmentFieldKey);
+			HibBinaryField binaryField = content.getBinary(segmentFieldKey);
 			if (binaryField != null) {
 				binaryField.postfixFileName();
 			}
@@ -891,7 +891,7 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default List<FieldContainerChange> compareTo(NodeFieldContainer content, NodeFieldContainer container) {
+	default List<FieldContainerChange> compareTo(HibNodeFieldContainer content, HibNodeFieldContainer container) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
 		SchemaModel schemaA = getSchemaContainerVersion(content).getSchema();
@@ -932,8 +932,8 @@ public interface PersistingContentDao extends ContentDao {
 			// Check whether the field type is different in between both schemas
 			if (fieldSchemaA.getType().equals(fieldSchemaB.getType())) {
 				// Check content
-				Field fieldA = content.getField(fieldSchemaA);
-				Field fieldB = container.getField(fieldSchemaB);
+				HibField fieldA = content.getField(fieldSchemaA);
+				HibField fieldB = container.getField(fieldSchemaB);
 				// Handle null cases. The field may not have been created yet.
 				if (fieldA != null && fieldB == null) {
 					// Field only exists in A
@@ -956,7 +956,7 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default List<FieldContainerChange> compareTo(NodeFieldContainer content, FieldMap fieldMap) {
+	default List<FieldContainerChange> compareTo(HibNodeFieldContainer content, FieldMap fieldMap) {
 		List<FieldContainerChange> changes = new ArrayList<>();
 
 		SchemaModel schemaA = getSchemaContainerVersion(content).getSchema();
@@ -966,8 +966,8 @@ public interface PersistingContentDao extends ContentDao {
 		for (String fieldName : fieldSchemaMap.keySet()) {
 			FieldSchema fieldSchema = fieldSchemaMap.get(fieldName);
 			// Check content
-			Field fieldA = content.getField(fieldSchema);
-			FieldModel fieldB = fieldMap.getField(fieldName, fieldSchema);
+			HibField fieldA = content.getField(fieldSchema);
+			Field fieldB = fieldMap.getField(fieldName, fieldSchema);
 			// Handle null cases. The field may not have been created yet.
 			if (fieldA != null && fieldB == null && fieldMap.hasField(fieldName)) {
 				// Field only exists in A
@@ -988,14 +988,14 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default Path getPath(NodeFieldContainer content, InternalActionContext ac) {
+	default Path getPath(HibNodeFieldContainer content, InternalActionContext ac) {
 		Path nodePath = new PathImpl();
 		nodePath.addSegment(new PathSegmentImpl(content, null, getLanguageTag(content), null));
 		return nodePath;
 	}
 
 	@Override
-	default void deleteFromBranch(NodeFieldContainer content, Branch branch, BulkActionContext bac) {
+	default void deleteFromBranch(HibNodeFieldContainer content, HibBranch branch, BulkActionContext bac) {
 		String branchUuid = branch.getUuid();
 
 		bac.batch().add(onDeleted(content, branchUuid, DRAFT));
@@ -1003,27 +1003,27 @@ public interface PersistingContentDao extends ContentDao {
 			bac.batch().add(onDeleted(content, branchUuid, PUBLISHED));
 		}
 
-		Node node = getNode(content);
-		NodeFieldContainerEdge draft = getEdge(node, content.getLanguageTag(), branch.getUuid(), DRAFT);
+		HibNode node = getNode(content);
+		HibNodeFieldContainerEdge draft = getEdge(node, content.getLanguageTag(), branch.getUuid(), DRAFT);
 		if (draft != null) {
 			removeEdge(draft);	
 		}
 
-		NodeFieldContainerEdge published = getEdge(node, content.getLanguageTag(), branch.getUuid(), PUBLISHED);
+		HibNodeFieldContainerEdge published = getEdge(node, content.getLanguageTag(), branch.getUuid(), PUBLISHED);
 		if (published != null) {
 			removeEdge(published);	
 		}
 	}
 
 	@Override
-	default void purge(NodeFieldContainer content, BulkActionContext bac) {
+	default void purge(HibNodeFieldContainer content, BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Purging container {" + content.getUuid() + "} for version {" + content.getVersion() + "}");
 		}
 		// Link the previous to the next to isolate the old container
-		NodeFieldContainer beforePrev = content.getPreviousVersion();
+		HibNodeFieldContainer beforePrev = content.getPreviousVersion();
 		if (beforePrev != null) {
-			for (NodeFieldContainer afterPrev : content.getNextVersions()) {
+			for (HibNodeFieldContainer afterPrev : content.getNextVersions()) {
 				beforePrev.setNextVersion(afterPrev);
 			}
 		}
@@ -1031,23 +1031,23 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default boolean isAutoPurgeEnabled(NodeFieldContainer content) {
-		SchemaVersion schema = getSchemaContainerVersion(content);
+	default boolean isAutoPurgeEnabled(HibNodeFieldContainer content) {
+		HibSchemaVersion schema = getSchemaContainerVersion(content);
 		return schema.isAutoPurgeEnabled();
 	}
 
 	@Override
-	default String getETag(NodeFieldContainer content, InternalActionContext ac) {
+	default String getETag(HibNodeFieldContainer content, InternalActionContext ac) {
 		return content.getETag(ac);
 	}
 
 	@Override
-	default Result<NodeFieldContainer> versions(NodeFieldContainer content) {
-		return new TraversalResult<>(StreamUtil.untilNull(() -> content, NodeFieldContainer::getPreviousVersion));
+	default Result<HibNodeFieldContainer> versions(HibNodeFieldContainer content) {
+		return new TraversalResult<>(StreamUtil.untilNull(() -> content, HibNodeFieldContainer::getPreviousVersion));
 	}
 
 	@Override
-	default NodeFieldListItem toListItem(Node node, InternalActionContext ac, String[] languageTags) {
+	default NodeFieldListItem toListItem(HibNode node, InternalActionContext ac, String[] languageTags) {
 		CommonTx tx = CommonTx.get();
 		// Create the rest field and populate the fields
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(node.getUuid());
@@ -1061,13 +1061,13 @@ public interface PersistingContentDao extends ContentDao {
 	}
 
 	@Override
-	default FieldMap getFieldMap(NodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags) {
+	default FieldMap getFieldMap(HibNodeFieldContainer fieldContainer, InternalActionContext ac, SchemaModel schema, int level, List<String> containerLanguageTags) {
 		com.gentics.mesh.core.rest.node.FieldMap fields = new FieldMapImpl();
 		for (FieldSchema fieldEntry : schema.getFields()) {
 			// boolean expandField =
 			// fieldsToExpand.contains(fieldEntry.getName()) ||
 			// ac.getExpandAllFlag();
-			FieldModel restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
+			Field restField = fieldContainer.getRestField(ac, fieldEntry.getName(), fieldEntry, containerLanguageTags, level);
 			if (fieldEntry.isRequired() && restField == null) {
 				// TODO i18n
 				// throw error(BAD_REQUEST, "The field {" +
@@ -1097,7 +1097,7 @@ public interface PersistingContentDao extends ContentDao {
 	 * @param branchUuid
 	 * @return true if it matches the type, false if not
 	 */
-	default boolean isType(NodeFieldContainerEdge edge, ContainerType type, String branchUuid) {
+	default boolean isType(HibNodeFieldContainerEdge edge, ContainerType type, String branchUuid) {
 		return edge.getType().equals(type) && edge.getBranchUuid().equals(branchUuid);
 	}		
 }

@@ -16,7 +16,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.test.MeshOptionsTypeUnawareContext;
 
@@ -34,10 +34,10 @@ public class TikaBinaryProcessorTest implements MeshOptionsTypeUnawareContext {
 		TikaBinaryProcessor processor = new TikaBinaryProcessor(lazy, getOptions(), mockDb());
 		FileUpload ul = mockUpload("test.pdf", "application/pdf");
 
-		Maybe<Consumer<BinaryField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
+		Maybe<Consumer<HibBinaryField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
 
-		Consumer<BinaryField> consumer = result.blockingGet();
-		BinaryField field = Mockito.mock(BinaryField.class);
+		Consumer<HibBinaryField> consumer = result.blockingGet();
+		HibBinaryField field = Mockito.mock(HibBinaryField.class);
 		consumer.accept(field);
 	}
 
@@ -71,10 +71,10 @@ public class TikaBinaryProcessorTest implements MeshOptionsTypeUnawareContext {
 		when(ul.uploadedFileName()).thenReturn(file.getAbsolutePath());
 		when(ul.contentType()).thenReturn("application/pdf");
 
-		Maybe<Consumer<BinaryField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
+		Maybe<Consumer<HibBinaryField>> result = processor.process(new BinaryDataProcessorContext(null, null, null, ul, "HASHSUM"));
 
-		Consumer<BinaryField> consumer = result.blockingGet();
-		BinaryField field = Mockito.mock(BinaryField.class);
+		Consumer<HibBinaryField> consumer = result.blockingGet();
+		HibBinaryField field = Mockito.mock(HibBinaryField.class);
 		consumer.accept(field);
 	}
 

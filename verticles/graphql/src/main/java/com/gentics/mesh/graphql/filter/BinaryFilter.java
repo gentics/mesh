@@ -5,7 +5,7 @@ import java.util.List;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 /**
@@ -14,7 +14,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
  * @author plyhun
  *
  */
-public class BinaryFilter extends ImageDataFilter<Binary> {
+public class BinaryFilter extends ImageDataFilter<HibBinary> {
 
 	private static final String NAME = "BinaryFilter";
 
@@ -41,8 +41,8 @@ public class BinaryFilter extends ImageDataFilter<Binary> {
 	}
 
 	@Override
-	public List<FilterField<Binary, ?>> getFilters() {
-		List<FilterField<Binary, ?>> filters = super.getFilters();
+	public List<FilterField<HibBinary, ?>> getFilters() {
+		List<FilterField<HibBinary, ?>> filters = super.getFilters();
 		filters.add(new MappedFilter<>(owner, "checksum", "Filters by SHA512 checksum", StringFilter.filter(),
 				content -> content == null ? null : content.getSHA512Sum()));
 //		filters.add(new MappedFilter<>(owner, "variants", "Filters by image variants", 

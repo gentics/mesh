@@ -1,6 +1,6 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.group.HibGroup;
 
 /**
  * Cache for group name lookups.
@@ -8,6 +8,6 @@ import com.gentics.mesh.core.data.group.Group;
  * @author plyhun
  *
  */
-public interface GroupNameCache extends NameCache<Group> {
+public interface GroupNameCache extends NameCache<HibGroup> {
 
 }

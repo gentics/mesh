@@ -11,13 +11,13 @@ import java.util.stream.StreamSupport;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.CoreElement;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.user.CreatorTracking;
-import com.gentics.mesh.core.data.user.EditorTracking;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.user.HibCreatorTracking;
+import com.gentics.mesh.core.data.user.HibEditorTracking;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -27,8 +27,8 @@ import com.gentics.mesh.core.result.Result;
 /**
  * Assert for Node
  */
-public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
-	public NodeAssert(Node actual) {
+public class NodeAssert extends AbstractAssert<NodeAssert, HibNode> {
+	public NodeAssert(HibNode actual) {
 		super(actual, NodeAssert.class);
 	}
 
@@ -39,7 +39,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            schema container
 	 * @return fluent API
 	 */
-	public NodeAssert isOf(Schema schemaContainer) {
+	public NodeAssert isOf(HibSchema schemaContainer) {
 		assertThat(actual.getSchemaContainer()).as(descriptionText() + " Schema").isEqualTo(schemaContainer);
 		return this;
 	}
@@ -79,10 +79,10 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasChildren(Branch branch, Node... nodes) {
+	public NodeAssert hasChildren(HibBranch branch, HibNode... nodes) {
 		NodeDao nodeDao = Tx.get().nodeDao();
-		Stream<? extends Node> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
-		List<Node> list = stream.collect(Collectors.toList());
+		Stream<? extends HibNode> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
+		List<HibNode> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").contains(nodes);
 		return this;
 	}
@@ -94,10 +94,10 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            branch
 	 * @return fluent API
 	 */
-	public NodeAssert hasNoChildren(Branch branch) {
+	public NodeAssert hasNoChildren(HibBranch branch) {
 		NodeDao nodeDao = Tx.get().nodeDao();
-		Stream<? extends Node> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
-		List<Node> list = stream.collect(Collectors.toList());
+		Stream<? extends HibNode> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
+		List<HibNode> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").hasSize(0);
 		return this;
 	}
@@ -111,10 +111,10 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasOnlyChildren(Branch branch, Node... nodes) {
+	public NodeAssert hasOnlyChildren(HibBranch branch, HibNode... nodes) {
 		NodeDao nodeDao = Tx.get().nodeDao();
-		Stream<? extends Node> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
-		List<Node> list = stream.collect(Collectors.toList());
+		Stream<? extends HibNode> stream = StreamSupport.stream(nodeDao.getChildren(actual, branch.getUuid()).spliterator(), false);
+		List<HibNode> list = stream.collect(Collectors.toList());
 		assertThat(list).as(descriptionText() + " children").usingElementComparatorOnFields("uuid").containsOnly(nodes);
 		return this;
 	}
@@ -128,10 +128,10 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasNotChildren(Branch branch, Node... nodes) {
+	public NodeAssert hasNotChildren(HibBranch branch, HibNode... nodes) {
 		NodeDao nodeDao = Tx.get().nodeDao();
-		Result<? extends Node> children = nodeDao.getChildren(actual, branch.getUuid());
-		List<Node> childrenNodes = (List<Node>) children.list();
+		Result<? extends HibNode> children = nodeDao.getChildren(actual, branch.getUuid());
+		List<HibNode> childrenNodes = (List<HibNode>) children.list();
 		assertThat(childrenNodes)
 			.as(descriptionText() + " children")
 			.usingElementComparatorOnFields("uuid")
@@ -156,7 +156,7 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 
 	public NodeAssert matches(NodeResponse restNode) {
 		assertGenericNode(actual, restNode);
-		Schema schema = actual.getSchemaContainer();
+		HibSchema schema = actual.getSchemaContainer();
 		assertNotNull("The schema of the test object should not be null. No further assertion can be verified.", schema);
 		assertEquals(schema.getName(), restNode.getSchema().getName());
 		assertEquals(schema.getUuid(), restNode.getSchema().getUuid());
@@ -165,23 +165,23 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 		return this;
 	}
 
-	public void assertGenericNode(CoreElement<?> node, AbstractGenericRestResponse model) {
+	public void assertGenericNode(HibCoreElement<?> node, AbstractGenericRestResponse model) {
 		assertNotNull(node);
 		assertNotNull(model);
 		assertNotNull("UUID field was not set in the rest response.", model.getUuid());
 		assertEquals("The uuids should not be different", node.getUuid(), model.getUuid());
 		assertNotNull("Permissions field was not set in the rest response.", model.getPermissions());
-		if (node instanceof EditorTracking) {
+		if (node instanceof HibEditorTracking) {
 			assertNotNull("Editor field was not set in the rest response.", model.getEditor());
-			EditorTracking editedNode = (EditorTracking) node;
+			HibEditorTracking editedNode = (HibEditorTracking) node;
 			assertNotNull("The editor of the graph node was not set.", editedNode.getEditor());
 			assertEquals(editedNode.getEditor().getFirstname(), model.getEditor());
 			assertEquals(editedNode.getEditor().getLastname(), model.getEditor().getLastName());
 			assertEquals(editedNode.getEditor().getUuid(), model.getEditor().getUuid());
 		}
-		if (node instanceof CreatorTracking && ((CreatorTracking) node).getCreator() != null) {
+		if (node instanceof HibCreatorTracking && ((HibCreatorTracking) node).getCreator() != null) {
 			assertNotNull("Creator field was not set in the rest response.", model.getCreator());
-			CreatorTracking createdNode = (CreatorTracking) node;
+			HibCreatorTracking createdNode = (HibCreatorTracking) node;
 			assertEquals(createdNode.getCreator().getFirstname(), model.getCreator().getFirstName());
 			assertEquals(createdNode.getCreator().getLastname(), model.getCreator().getLastName());
 			assertEquals(createdNode.getCreator().getUuid(), model.getCreator().getUuid());

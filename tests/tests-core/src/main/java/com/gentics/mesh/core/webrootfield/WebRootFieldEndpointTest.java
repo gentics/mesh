@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.webrootfield;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.parameter.LinkType.MEDIUM;
@@ -29,14 +29,14 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.job.JobStatus;
@@ -61,7 +61,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		String nodeUuid = tx(() -> node.getUuid());
 		String path = "/News/2015";
 
@@ -73,7 +73,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadFolderContentFieldByPathAndResolveLinks() throws Exception {
-		Node content = content("news_2015");
+		HibNode content = content("news_2015");
 		NodeResponse response = call(() -> client().findNodeByUuid(projectName(), content.getUuid()));
 		NodeUpdateRequest updateRequest = response.toRequest();
 		updateRequest.getFields()
@@ -106,7 +106,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = content("news_2015");
+			HibNode node = content("news_2015");
 			String contentField = restField.getResponseAsPlainText();
 			assertEquals(contentDao.getFieldContainer(node, "en").getHtml("content").getHTML(), contentField);
 		}
@@ -114,14 +114,14 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
-		Node nodeRef = null;
+		HibNode nodeRef = null;
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
 
-			Node parentNode = folder("2015");
+			HibNode parentNode = folder("2015");
 			// Update content schema and add node field
-			Schema folderSchema = schemaContainer("folder");
+			HibSchema folderSchema = schemaContainer("folder");
 			SchemaVersionModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			prepareTypedSchema(folderSchema, schema.getFields(), Optional.empty());
@@ -131,12 +131,12 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 			mesh().serverSchemaStorage().addSchema(schema);
 
 			// Create content which is only german
-			Schema contentSchema = schemaContainer("content");
+			HibSchema contentSchema = schemaContainer("content");
 			nodeRef = nodeDao.create(parentNode, user(), contentSchema.getLatestVersion(), project());
 
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			roleDao.grantPermissions(role(), nodeRef, InternalPermission.values());
-			NodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(nodeRef, german(),
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(nodeRef, german(),
 					project().getLatestBranch(), user());
 			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
@@ -309,7 +309,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 		String uuid;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Node newsFolder = folder("2015");
+			HibNode newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			roleDao.revokePermissions(role(), newsFolder, READ_PERM);
 			roleDao.revokePermissions(role(), newsFolder, READ_PUBLISHED_PERM);
@@ -598,7 +598,7 @@ public class WebRootFieldEndpointTest extends AbstractMeshTest {
 	 * @param language language
 	 * @param newName  new name
 	 */
-	protected void updateName(Node node, Branch branch, String language, String newName) {
+	protected void updateName(HibNode node, HibBranch branch, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.getFields().put("name", FieldUtil.createStringField(newName));

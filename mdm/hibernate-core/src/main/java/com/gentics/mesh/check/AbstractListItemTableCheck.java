@@ -7,10 +7,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.consistency.ConsistencyCheck;
@@ -51,19 +51,19 @@ public abstract class AbstractListItemTableCheck extends AbstractContentReferenc
 		// check whether the table contains any entries, that reference inexistent contents
 
 		// check for schemas
-		Result<? extends Schema> schemas = schemaDao.findAll();
-		for (Schema schema : schemas) {
-			Iterable<? extends SchemaVersion> versions = schemaDao.findAllVersions(schema);
-			for (SchemaVersion version : versions) {
+		Result<? extends HibSchema> schemas = schemaDao.findAll();
+		for (HibSchema schema : schemas) {
+			Iterable<? extends HibSchemaVersion> versions = schemaDao.findAllVersions(schema);
+			for (HibSchemaVersion version : versions) {
 				checkCount(em, result, version.getUuid(), "containeruuid", "containerversionuuid");
 			}
 		}
 
 		// check for microschemas
-		Result<? extends Microschema> microschemas = microschemaDao.findAll();
-		for (Microschema microschema : microschemas) {
-			Iterable<? extends MicroschemaVersion> versions = microschemaDao.findAllVersions(microschema);
-			for (MicroschemaVersion version : versions) {
+		Result<? extends HibMicroschema> microschemas = microschemaDao.findAll();
+		for (HibMicroschema microschema : microschemas) {
+			Iterable<? extends HibMicroschemaVersion> versions = microschemaDao.findAllVersions(microschema);
+			for (HibMicroschemaVersion version : versions) {
 				checkCount(em, result, version.getUuid(), "containeruuid", "containerversionuuid");
 
 				// micronodes might be referenced also with other columns

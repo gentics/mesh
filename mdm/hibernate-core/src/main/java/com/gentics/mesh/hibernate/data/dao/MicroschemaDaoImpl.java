@@ -12,15 +12,15 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.PersistingMicroschemaDao;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
@@ -59,15 +59,15 @@ import io.vertx.core.Vertx;
 @Singleton
 public class MicroschemaDaoImpl 
 		extends AbstractHibContainerDao<MicroschemaResponse, MicroschemaVersionModel, 
-		MicroschemaReference, Microschema, 
-		MicroschemaVersion, MicroschemaModel, HibMicroschemaImpl, HibMicroschemaVersionImpl> 
+		MicroschemaReference, HibMicroschema, 
+		HibMicroschemaVersion, MicroschemaModel, HibMicroschemaImpl, HibMicroschemaVersionImpl> 
 		implements PersistingMicroschemaDao {
 
 	private final ContentStorage contentStorage;
 
 	@Inject
-	public MicroschemaDaoImpl(RootDaoHelper<Microschema, HibMicroschemaImpl, Project, HibProjectImpl> rootDaoHelper,
-							  DaoHelper<MicroschemaVersion, HibMicroschemaVersionImpl> daoHelperVersion,
+	public MicroschemaDaoImpl(RootDaoHelper<HibMicroschema, HibMicroschemaImpl, HibProject, HibProjectImpl> rootDaoHelper,
+							  DaoHelper<HibMicroschemaVersion, HibMicroschemaVersionImpl> daoHelperVersion,
 							  HibPermissionRoots permissionRoots, CommonDaoHelper commonDaoHelper,
 							  CurrentTransaction currentTransaction, EventFactory eventFactory,
 							  Lazy<Vertx> vertx, ContentStorage contentStorage) {
@@ -76,27 +76,27 @@ public class MicroschemaDaoImpl
 	}
 
 	@Override
-	public Microschema create(MicroschemaVersionModel microschema, User creator, String uuid, EventQueueBatch batch) {
-		Microschema container = PersistingMicroschemaDao.super.create(microschema, creator, uuid, batch);
+	public HibMicroschema create(MicroschemaVersionModel microschema, HibUser creator, String uuid, EventQueueBatch batch) {
+		HibMicroschema container = PersistingMicroschemaDao.super.create(microschema, creator, uuid, batch);
 		em().persist(container.getLatestVersion());
 		em().persist(container);
 		return container;
 	}
 
 	@Override
-	public Result<? extends Microschema> findAll(Project root) {
+	public Result<? extends HibMicroschema> findAll(HibProject root) {
 		return new TraversalResult<>(((HibProjectImpl) root).getMicroschemas());
 	}
 
 	@Override
-	public void addItem(Project root, Microschema item) {
+	public void addItem(HibProject root, HibMicroschema item) {
 		((HibMicroschemaImpl) item).getProjects().add(root);
 		((HibProjectImpl) root).getHibMicroschemas().add(item);
 		em().merge(root);
 	}
 
 	@Override
-	public void removeItem(Project root, Microschema item) {
+	public void removeItem(HibProject root, HibMicroschema item) {
 		((HibProjectImpl) root).getHibMicroschemas().remove(item);
 		((HibMicroschemaImpl) item).getProjects().remove(root);
 		em().merge(root);
@@ -104,7 +104,7 @@ public class MicroschemaDaoImpl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Result<? extends NodeFieldContainer> findDraftFieldContainers(MicroschemaVersion version,
+	public Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibMicroschemaVersion version,
 			String branchUuid) {
 		// Step 1: Fetch all container uuids which have a reference to a micronode with the provided version
 		List<UUID> havingMicronodeField = em().createNamedQuery("micronodefieldref.findByVersion")
@@ -136,12 +136,12 @@ public class MicroschemaDaoImpl
 	}
 
 	@Override
-	public Result<Project> findLinkedProjects(Microschema schema) {
+	public Result<HibProject> findLinkedProjects(HibMicroschema schema) {
 		return new TraversalResult<>(((HibMicroschemaImpl) schema).getLinkedProjects());
 	}
 
 	@Override
-	public Class<? extends MicroschemaVersion> getVersionPersistenceClass() {
+	public Class<? extends HibMicroschemaVersion> getVersionPersistenceClass() {
 		return HibMicroschemaVersionImpl.class;
 	}
 
@@ -156,14 +156,14 @@ public class MicroschemaDaoImpl
 	}
 
 	@Override
-	public void deleteVersion(MicroschemaVersion version, BulkActionContext bac) {
+	public void deleteVersion(HibMicroschemaVersion version, BulkActionContext bac) {
 		HibernateTx tx = HibernateTx.get();
 
 		// Delete referenced jobs
-		for (Job job : version.referencedJobsViaFrom()) {
+		for (HibJob job : version.referencedJobsViaFrom()) {
 			tx.jobDao().delete(job, bac);
 		}
-		for (Job job : version.referencedJobsViaTo()) {
+		for (HibJob job : version.referencedJobsViaTo()) {
 			tx.jobDao().delete(job, bac);
 		}
 
@@ -194,7 +194,7 @@ public class MicroschemaDaoImpl
 	}
 
 	@Override
-	public Microschema beforeDeletedFromDatabase(Microschema element) {
+	public HibMicroschema beforeDeletedFromDatabase(HibMicroschema element) {
 		HibMicroschemaImpl microschema = (HibMicroschemaImpl) element;
 		microschema.getVersions().forEach(v -> v.setSchemaContainer(null));
 		microschema.getVersions().clear();
@@ -205,19 +205,19 @@ public class MicroschemaDaoImpl
 	}
 
 	@Override
-	public MicroschemaVersion createPersistedVersion(Microschema container, Consumer<MicroschemaVersion> inflater) {
-		MicroschemaVersion version = super.createPersistedVersion(container, inflater);
+	public HibMicroschemaVersion createPersistedVersion(HibMicroschema container, Consumer<HibMicroschemaVersion> inflater) {
+		HibMicroschemaVersion version = super.createPersistedVersion(container, inflater);
 		HibernateTx.get().contentDao().createContentTable(version);
 		return version;
 	}
 
 	@Override
-	public Result<? extends Micronode> findMicronodes(MicroschemaVersion version) {
+	public Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version) {
 		return new TraversalResult<>(HibernateTx.get().contentDao().getFieldsContainers(version));
 	}
 
 	@Override
-	public void beforeVersionDeletedFromDatabase(MicroschemaVersion version) {
+	public void beforeVersionDeletedFromDatabase(HibMicroschemaVersion version) {
 		em().createQuery("delete from branch_microschema_version_edge bmve where bmve.version = :version")
 				.setParameter("version", version)
 				.executeUpdate();
@@ -229,7 +229,7 @@ public class MicroschemaDaoImpl
 	 * @param version
 	 * @return
 	 */
-	public List<MicroschemaVersion> findMicroschemasRelatedToVersion(SchemaVersion version) {
+	public List<HibMicroschemaVersion> findMicroschemasRelatedToVersion(HibSchemaVersion version) {
 		Set<String> microschemaNames = new HashSet<>();
 		for (FieldSchema field : version.getSchema().getFields()) {
 			if (field instanceof MicronodeFieldSchema) {

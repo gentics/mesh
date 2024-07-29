@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.DELETE_PERM;
@@ -51,12 +51,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -128,7 +128,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 2. Fake an old issue timestamp
 		tx(tx -> {
-			User user1 = tx.userDao().findByUuid(uuid);
+			HibUser user1 = tx.userDao().findByUuid(uuid);
 			user1.setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60);
 			return tx.<CommonTx>unwrap().userDao().mergeIntoPersisted(user1);
 		});
@@ -178,7 +178,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())));
 
 		// 4. Assert that the password was updated
-		User updatedUser = tx(tx -> { return tx.userDao().findByUuid(uuid); });
+		HibUser updatedUser = tx(tx -> { return tx.userDao().findByUuid(uuid); });
 		String newHash = tx(updatedUser::getPasswordHash);
 		assertNull("The token code should have been set to null since it is now used up", tx(updatedUser::getResetToken));
 
@@ -353,7 +353,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		tx((tx) -> {
 			RoleDao roleDao = tx.roleDao();
-			User user = user();
+			HibUser user = user();
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			tx.success();
 		});
@@ -363,7 +363,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadPermissions() {
-		TagFamily tagFamily;
+		HibTagFamily tagFamily;
 		String pathToElement;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
@@ -408,11 +408,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			GroupDao groupDao = tx.groupDao();
 			UserDao userDao = tx.userDao();
 
-			User user = user();
+			HibUser user = user();
 			assertEquals(1, userDao.getGroups(user).count());
 
 			for (int i = 0; i < 10; i++) {
-				Group extraGroup = groupDao.create("group_" + i, user());
+				HibGroup extraGroup = groupDao.create("group_" + i, user());
 				tx.groupDao().addUser(extraGroup, user());
 			}
 			assertEquals(11, userDao.getGroups(user()).count());
@@ -444,7 +444,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			User user = user();
+			HibUser user = user();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
 			roleDao.revokePermissions(role(), user, READ_PERM);
 			tx.success();
@@ -524,14 +524,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			for (int i = 0; i < nUsers; i++) {
 				String username = "testuser_" + i;
-				User user = userDao.create(username, user());
+				HibUser user = userDao.create(username, user());
 				groupDao.addUser(group(), user);
 				user.setLastname("should_be_listed");
 				user.setFirstname("should_be_listed");
 				user.setEmailAddress("should_be_listed");
 				roleDao.grantPermissions(role(), user, READ_PERM);
 			}
-			User invisibleUser = userDao.create("should_not_be_listed", user());
+			HibUser invisibleUser = userDao.create("should_not_be_listed", user());
 			invisibleUser.setLastname("should_not_be_listed");
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
@@ -642,14 +642,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
 		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", tx.userDao().findByUsername(oldName));
-			User reloadedUser = tx.userDao().findByUsername(newName);
+			HibUser reloadedUser = tx.userDao().findByUsername(newName);
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -679,7 +679,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
 			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(oldUsername));
-			User reloadedUser = userDao.findByUsername(username);
+			HibUser reloadedUser = userDao.findByUsername(username);
 			assertNotNull(reloadedUser);
 			assertEquals(lastname, reloadedUser.getLastname());
 			assertEquals(firstname, reloadedUser.getFirstname());
@@ -701,7 +701,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateUserAndSetNodeReference() throws Exception {
 		String nodeUuid = tx(() -> folder("news").getUuid());
 		String userUuid = userUuid();
-		User user = user();
+		HibUser user = user();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		String username = tx(() -> user.getUsername());
 		try (Tx tx = tx()) {
@@ -725,7 +725,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(username));
-			User reloadedUser = userDao.findByUsername("dummy_user_changed");
+			HibUser reloadedUser = userDao.findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -740,7 +740,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String nodeUuid = tx(() -> folder("news").getUuid());
 		String nodeUuid2 = tx(() -> folder("2015").getUuid());
 		String userUuid = userUuid();
-		User user = user();
+		HibUser user = user();
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		String username = tx(() -> user.getUsername());
 		try (Tx tx = tx()) {
@@ -769,7 +769,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", userDao.findByUsername(username));
-			User reloadedUser = userDao.findByUsername("dummy_user_changed");
+			HibUser reloadedUser = userDao.findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -824,7 +824,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String nodeUuid;
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
-			Node node = folder("news");
+			HibNode node = folder("news");
 			nodeUuid = node.getUuid();
 			assertTrue(userDao.hasPermission(user(), node, READ_PERM));
 			tx.success();
@@ -851,7 +851,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadUserListWithExpandedNodeReference() {
 		UserResponse userCreateResponse = tx(() -> {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			NodeReference reference = new NodeReference();
 			reference.setUuid(node.getUuid());
@@ -867,7 +867,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100L), new NodeParametersImpl()
 				.setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
@@ -885,7 +885,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid;
 		UserCreateRequest newUser;
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 			folderUuid = node.getUuid();
 
 			NodeReference reference = new NodeReference();
@@ -913,7 +913,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
 		try (Tx tx = tx()) {
-			Node node = folder("news");
+			HibNode node = folder("news");
 
 			NodeReference reference = new NodeReference();
 			reference.setProjectName("bogus_name");
@@ -1048,7 +1048,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			User reloadedUser = tx.userDao().findByUuid(uuid);
+			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
 			assertEquals("The hash should not be different and thus the password stays old.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
@@ -1072,7 +1072,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			User reloadedUser = tx.userDao().findByUuid(uuid);
+			HibUser reloadedUser = tx.userDao().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
@@ -1083,7 +1083,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid;
 		String oldHash;
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			username = user.getUsername();
 			uuid = user.getUuid();
 			oldHash = user.getPasswordHash();
@@ -1097,7 +1097,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(restUser).matches(updateRequest);
 
 		try (Tx tx = tx()) {
-			User reloadedUser = tx.userDao().findByUsername(username);
+			HibUser reloadedUser = tx.userDao().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
@@ -1107,7 +1107,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String oldHash;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			User user = user();
+			HibUser user = user();
 			oldHash = user.getPasswordHash();
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			tx.success();
@@ -1118,7 +1118,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			User reloadedUser = tx.userDao().findByUuid(userUuid());
+			HibUser reloadedUser = tx.userDao().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -1129,7 +1129,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String oldHash;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			User user = user();
+			HibUser user = user();
 			oldHash = user.getPasswordHash();
 			roleDao.revokePermissions(role(), user, UPDATE_PERM);
 			// updatedUser.addGroup(group().getName());
@@ -1144,7 +1144,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid(), UPDATE_PERM.getRestPerm().getName());
 
 		try (Tx tx = tx()) {
-			User reloadedUser = tx.userDao().findByUuid(userUuid());
+			HibUser reloadedUser = tx.userDao().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user().getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user().getLastname(), reloadedUser.getLastname());
@@ -1158,7 +1158,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			UserDao userDao = tx.userDao();
 
 			// Create an user with a conflicting username
-			User user = userDao.create("existing_username", user());
+			HibUser user = userDao.create("existing_username", user());
 			userDao.addGroup(user, group());
 			tx.success();
 		}
@@ -1185,7 +1185,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			UserDao userDao = tx.userDao();
 
 			// Create an user with a conflicting username
-			User user = userDao.create("existing_username", user());
+			HibUser user = userDao.create("existing_username", user());
 			userDao.addGroup(user, group());
 
 			// Add update permission to group in order to create the user in
@@ -1310,7 +1310,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx2 = tx()) {
 			assertThat(restUser).matches(request);
 
-			User user = tx2.userDao().findByUuid(restUser.getUuid());
+			HibUser user = tx2.userDao().findByUuid(restUser.getUuid());
 			assertThat(restUser).matches(user);
 		}
 	}
@@ -1450,7 +1450,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			UserResponse restUser = call(() -> client().createUser(newUser));
 			waitForSearchIdleEvent();
 
-			assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), restUser.getUuid());
+			assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), restUser.getUuid());
 			assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			trackingSearchProvider().reset();
 
@@ -1467,14 +1467,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			waitForSearchIdleEvent();
 
 			try (Tx tx2 = tx()) {
-				User loadedUser = tx2.userDao().findByUuid(uuid);
+				HibUser loadedUser = tx2.userDao().findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
 			// Load the user again and check whether it is disabled
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
-			assertThat(trackingSearchProvider()).hasDelete(User.composeIndexName(), uuid);
+			assertThat(trackingSearchProvider()).hasDelete(HibUser.composeIndexName(), uuid);
 			assertThat(trackingSearchProvider()).hasEvents(0, 0, 1, 0, 0);
 		}
 
@@ -1497,11 +1497,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
 
-			User user = userDao.create("extraUser", user());
+			HibUser user = userDao.create("extraUser", user());
 			userDao.addGroup(user, group());
 			uuid = user.getUuid();
 			assertNotNull(uuid);
-			Role role = tx(() -> tx.roleDao().findByUuid(role().getUuid()));
+			HibRole role = tx(() -> tx.roleDao().findByUuid(role().getUuid()));
 			roleDao.grantPermissions(role, user, UPDATE_PERM, CREATE_PERM, READ_PERM);
 			tx.success();
 		}
@@ -1529,15 +1529,15 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			Role role = roleDao.findByUuid(role().getUuid());
+			HibRole role = roleDao.findByUuid(role().getUuid());
 
 			String name = "extraUser";
-			User extraUser = userDao.create(name, user());
+			HibUser extraUser = userDao.create(name, user());
 			userDao.addGroup(extraUser, group());
 			uuid = extraUser.getUuid();
 			roleDao.grantPermissions(role, extraUser, DELETE_PERM);
 			assertTrue(roleDao.hasPermission(role, DELETE_PERM, extraUser));
-			User user = userDao.findByUuid(uuid);
+			HibUser user = userDao.findByUuid(uuid);
 			assertEquals(1, userDao.getGroups(user).count());
 			assertTrue("The user should be enabled", user.isEnabled());
 			tx.success();
@@ -1578,7 +1578,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		MeshResponse<UserResponse> response = client().createUser(request).getResponse().blockingGet();
 		try (Tx tx = tx()) {
-			User user = tx.userDao().findByUsername(name);
+			HibUser user = tx.userDao().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);
@@ -1599,7 +1599,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setHeader(HOST.toString(), "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.getResponse().blockingGet();
 		try (Tx tx = tx()) {
-			User user = tx.userDao().findByUsername(name);
+			HibUser user = tx.userDao().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getStatusCode());
 			String location = response.getHeader(LOCATION.toString()).orElse(null);

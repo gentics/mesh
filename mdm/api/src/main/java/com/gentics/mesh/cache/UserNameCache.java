@@ -1,6 +1,6 @@
 package com.gentics.mesh.cache;
 
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 
 /**
  * User Name cache.
@@ -8,6 +8,6 @@ import com.gentics.mesh.core.data.user.User;
  * @author plyhun
  *
  */
-public interface UserNameCache extends NameCache<User> {
+public interface UserNameCache extends NameCache<HibUser> {
 
 }

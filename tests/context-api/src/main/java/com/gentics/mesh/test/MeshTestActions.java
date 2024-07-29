@@ -1,6 +1,6 @@
 package com.gentics.mesh.test;
 
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 
 /**
  * The container for the implementation-dependent test actions.
@@ -17,5 +17,5 @@ public interface MeshTestActions {
 	 * @param version
 	 * @return
 	 */
-	public <SCV extends FieldSchemaVersionElement<?,?,?,?,?>> SCV updateSchemaVersion(SCV version);
+	public <SCV extends HibFieldSchemaVersionElement<?,?,?,?,?>> SCV updateSchemaVersion(SCV version);
 }

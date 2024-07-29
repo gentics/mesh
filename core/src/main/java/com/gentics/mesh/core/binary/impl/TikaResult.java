@@ -3,7 +3,7 @@ package com.gentics.mesh.core.binary.impl;
 import java.util.Map;
 import java.util.Optional;
 
-import com.gentics.mesh.core.rest.node.field.binary.LocationModel;
+import com.gentics.mesh.core.rest.node.field.binary.Location;
 
 /**
  * POJO for the result of a Tika parsing operation.
@@ -12,15 +12,15 @@ public class TikaResult {
 
 	private Optional<String> plainText;
 	private Map<String, String> metadata;
-	private LocationModel loc;
+	private Location loc;
 
-	public TikaResult(Map<String, String> metadata, Optional<String> plainText, LocationModel loc) {
+	public TikaResult(Map<String, String> metadata, Optional<String> plainText, Location loc) {
 		this.metadata = metadata;
 		this.plainText = plainText;
 		this.loc = loc;
 	}
 
-	public LocationModel getLoc() {
+	public Location getLoc() {
 		return loc;
 	}
 

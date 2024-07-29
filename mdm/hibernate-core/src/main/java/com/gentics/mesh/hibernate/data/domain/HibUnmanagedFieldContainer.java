@@ -22,36 +22,36 @@ import com.gentics.mesh.contentoperation.DynamicContentColumn;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
-import com.gentics.mesh.core.data.node.field.BooleanField;
-import com.gentics.mesh.core.data.node.field.DateField;
-import com.gentics.mesh.core.data.node.field.HtmlField;
-import com.gentics.mesh.core.data.node.field.NumberField;
-import com.gentics.mesh.core.data.node.field.StringField;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.MicronodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
-import com.gentics.mesh.core.data.schema.FieldSchemaElement;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibMicronodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -98,8 +98,8 @@ public interface HibUnmanagedFieldContainer<
 		R extends FieldSchemaContainer, 
 		RM extends FieldSchemaContainerVersion, 
 		RE extends NameUuidReference<RE>, 
-		SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
-		SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>> extends HibFieldContainerBase {
+		SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+		SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>> extends HibFieldContainerBase {
 	
 	public static final Logger log = getLogger(HibUnmanagedFieldContainer.class);
 
@@ -108,7 +108,7 @@ public interface HibUnmanagedFieldContainer<
 	 * 
 	 * @return
 	 */
-	Node getNode();
+	HibNode getNode();
 
 	/**
 	 * Find and set the the schema version by given UUID.
@@ -227,7 +227,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default Field getField(FieldSchema fieldSchema) {
+	default HibField getField(FieldSchema fieldSchema) {
 		HibFieldTypes type = HibFieldTypes.fromFieldSchema(fieldSchema);
 		if (type != null) {
 			return type.getField(this, fieldSchema);
@@ -237,7 +237,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default StringField getString(String key) {
+	default HibStringField getString(String key) {
 		return getFieldValueFromNullableColumn(key, FieldTypes.STRING, HibStringFieldImpl::new);
 	}
 
@@ -253,7 +253,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default BinaryField createBinary(String key, Binary binary) {
+	default HibBinaryField createBinary(String key, HibBinary binary) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.BINARY);
 		ensureOldReferenceRemoved(tx, key, this::getBinary, false);
@@ -276,7 +276,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default S3BinaryField createS3Binary(String key, S3Binary binary) {
+	default S3HibBinaryField createS3Binary(String key, S3HibBinary binary) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.S3BINARY);
 		ensureOldReferenceRemoved(tx, key, this::getS3Binary, false);
@@ -293,7 +293,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default NodeField createNode(String key, Node node) {
+	default HibNodeField createNode(String key, HibNode node) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.NODE);
 		ensureOldReferenceRemoved(tx, key, this::getNode, false);
@@ -305,52 +305,52 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default DateField getDate(String key) {
+	default HibDateField getDate(String key) {
 		return getFieldValueFromNullableColumn(key, FieldTypes.DATE, HibDateFieldImpl::new);
 	}
 
 	@Override
-	default NumberField getNumber(String key) {
+	default HibNumberField getNumber(String key) {
 		return getFieldValueFromNullableColumn(key, FieldTypes.NUMBER, HibNumberFieldImpl::new);
 	}
 
 	@Override
-	default HtmlField getHtml(String key) {
+	default HibHtmlField getHtml(String key) {
 		return getFieldValueFromNullableColumn(key, FieldTypes.HTML, HibHtmlFieldImpl::new);
 	}
 
 	@Override
-	default BooleanField getBoolean(String key) {
+	default HibBooleanField getBoolean(String key) {
 		return getFieldValueFromNullableColumn(key, FieldTypes.BOOLEAN, HibBooleanFieldImpl::new);
 	}
 
 	@Override
-	default BooleanField createBoolean(String key) {
+	default HibBooleanField createBoolean(String key) {
 		ensureColumnExists(key, FieldTypes.BOOLEAN);
 		return new HibBooleanFieldImpl(key, this, null);
 	}
 
 	@Override
-	default StringField createString(String key) {
+	default HibStringField createString(String key) {
 		ensureColumnExists(key, FieldTypes.STRING);
 		return new HibStringFieldImpl(key, this, null);
 	}
 
 	@Override
-	default NumberField createNumber(String key) {
+	default HibNumberField createNumber(String key) {
 		ensureColumnExists(key, FieldTypes.NUMBER);
 		return new HibNumberFieldImpl(key, this, null);
 
 	}
 
 	@Override
-	default DateField createDate(String key) {
+	default HibDateField createDate(String key) {
 		ensureColumnExists(key, FieldTypes.DATE);
 		return new HibDateFieldImpl(key, this, (Instant) null);
 	}
 
 	@Override
-	default HtmlField createHTML(String key) {
+	default HibHtmlField createHTML(String key) {
 		ensureColumnExists(key, FieldTypes.HTML);
 		return new HibHtmlFieldImpl(key, this, null);
 	}
@@ -361,12 +361,12 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default MicronodeField createMicronode(String key, MicroschemaVersion microschemaVersion) {
+	default HibMicronodeField createMicronode(String key, HibMicroschemaVersion microschemaVersion) {
 		HibernateTx tx = HibernateTx.get();
 
 		// 1. Copy existing micronode
 		HibMicronodeFieldImpl existing = getMicronode(key);
-		Micronode existingMicronode = null;
+		HibMicronode existingMicronode = null;
 		if (existing != null) {
 			existingMicronode = existing.getMicronode();
 			// existing.getMicronode().delete();
@@ -398,7 +398,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default MicronodeField createEmptyMicronode(String key, MicroschemaVersion microschemaVersion) {
+	default HibMicronodeField createEmptyMicronode(String key, HibMicroschemaVersion microschemaVersion) {
 		HibernateTx tx = HibernateTx.get();
 
 		ensureColumnExists(key, FieldTypes.MICRONODE);
@@ -427,7 +427,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default DateFieldList createDateList(String key) {
+	default HibDateFieldList createDateList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getDateList, false);
@@ -440,7 +440,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default HtmlFieldList createHTMLList(String key) {
+	default HibHtmlFieldList createHTMLList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getHTMLList, false);
@@ -453,7 +453,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default NumberFieldList createNumberList(String key) {
+	default HibNumberFieldList createNumberList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getNumberList, false);
@@ -466,7 +466,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default NodeFieldList createNodeList(String key) {
+	default HibNodeFieldList createNodeList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getNodeList, false);
@@ -479,7 +479,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default StringFieldList createStringList(String key) {
+	default HibStringFieldList createStringList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getStringList, false);
@@ -492,7 +492,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default BooleanFieldList createBooleanList(String key) {
+	default HibBooleanFieldList createBooleanList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getBooleanList, false);
@@ -505,7 +505,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default MicronodeFieldList createMicronodeList(String key) {
+	default HibMicronodeFieldList createMicronodeList(String key) {
 		HibernateTx tx = HibernateTx.get();
 		ensureColumnExists(key, FieldTypes.LIST);
 		ensureOldReferenceRemoved(tx, key, this::getMicronodeList, false);
@@ -613,7 +613,7 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default FieldModel getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
+	default Field getRestField(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
 			List<String> languageTags, int level) {
 		HibFieldTypes type = HibFieldTypes.fromFieldSchema(fieldSchema);
 		if (type != null) {
@@ -624,10 +624,10 @@ public interface HibUnmanagedFieldContainer<
 	}
 
 	@Override
-	default void removeField(Field field) {
+	default void removeField(HibField field) {
 		if (field != null) {
 			String fieldKey = field.getFieldKey();
-			Field existing = getField(fieldKey);
+			HibField existing = getField(fieldKey);
 			if (existing != null) {
 				if (existing.equals(field)) {
 					removeField(fieldKey);

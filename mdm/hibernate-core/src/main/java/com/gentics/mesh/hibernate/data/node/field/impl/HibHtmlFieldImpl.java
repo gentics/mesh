@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
-import com.gentics.mesh.core.data.node.field.HtmlField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 
@@ -10,7 +10,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public class HibHtmlFieldImpl extends AbstractBasicHibField<String> implements HtmlField {
+public class HibHtmlFieldImpl extends AbstractBasicHibField<String> implements HibHtmlField {
 
 	public HibHtmlFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, String value) {
 		super(fieldKey, parent, FieldTypes.HTML, value);

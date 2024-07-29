@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.hibernate.data.PermissionType;
 import com.gentics.mesh.hibernate.data.domain.HibPermissionRootImpl;
@@ -54,7 +54,7 @@ public class TypeInfoUtilTest {
 	}
 
 	@ElementTypeKey(ElementType.JOB)
-	private static class TestClassWithAnnotation implements BaseElement {
+	private static class TestClassWithAnnotation implements HibBaseElement {
 
 		@Override
 		public void setUuid(String uuid) {
@@ -77,7 +77,7 @@ public class TypeInfoUtilTest {
 		}
 	}
 
-	private static class TestClassWithoutAnnotation implements BaseElement {
+	private static class TestClassWithoutAnnotation implements HibBaseElement {
 
 		@Override
 		public void setUuid(String uuid) {

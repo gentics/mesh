@@ -2,12 +2,12 @@ package com.gentics.mesh.core.rest.node.field.impl;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 
 /**
- * @see StringFieldModel
+ * @see StringField
  */
-public class StringFieldImpl implements StringFieldModel {
+public class StringFieldImpl implements StringField {
 
 	@JsonPropertyDescription("String field value")
 	private String string;
@@ -18,7 +18,7 @@ public class StringFieldImpl implements StringFieldModel {
 	}
 
 	@Override
-	public StringFieldModel setString(String text) {
+	public StringField setString(String text) {
 		this.string = text;
 		return this;
 	}

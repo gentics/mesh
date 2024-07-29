@@ -14,7 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
@@ -40,7 +40,7 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 	@Test
 	public void testSingleStringField() {
 		addSchema(new StringFieldSchemaImpl().setName("url"));
-		NodeResponse referencedNode = addNode(FieldMap.of("url", StringFieldModel.of("/some/test/url")));
+		NodeResponse referencedNode = addNode(FieldMap.of("url", StringField.of("/some/test/url")));
 		String result = resolveLink(referencedNode);
 		assertThat(result).isEqualTo("/some/test/url");
 		String resultUuid = client().webroot(PROJECT_NAME, result).blockingGet().getNodeUuid();
@@ -50,7 +50,7 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 	@Test
 	public void testMultipleStringFields() {
 		addSchema(new StringFieldSchemaImpl().setName("url"), new StringFieldSchemaImpl().setName("url2"));
-		NodeResponse referencedNode = addNode(FieldMap.of("url2", StringFieldModel.of("/some/test/url")));
+		NodeResponse referencedNode = addNode(FieldMap.of("url2", StringField.of("/some/test/url")));
 		String result = resolveLink(referencedNode);
 		assertThat(result).isEqualTo("/some/test/url");
 		String resultUuid = client().webroot(PROJECT_NAME, result).blockingGet().getNodeUuid();
@@ -94,7 +94,7 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 	public void testMixedFields() {
 		addSchema(new ListFieldSchemaImpl().setListType("string").setName("urls"), new StringFieldSchemaImpl().setName("url"));
 		NodeResponse referencedNode = addNode(FieldMap.of(
-			"url", StringFieldModel.of("/some/test/url")
+			"url", StringField.of("/some/test/url")
 		));
 		String result = resolveLink(referencedNode);
 		assertThat(result).isEqualTo("/some/test/url");
@@ -128,8 +128,8 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 		NodeResponse parentNode = client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
 
 		NodeResponse referencedNode = addNode(parentNode.getUuid(), FieldMap.of(
-			"url", StringFieldModel.of("/some/test/url"),
-			"slug", StringFieldModel.of("testSlug")
+			"url", StringField.of("/some/test/url"),
+			"slug", StringField.of("testSlug")
 		));
 
 		String result = resolveLink(referencedNode);
@@ -162,7 +162,7 @@ public class ResolveUrlFieldsTest extends AbstractMeshTest {
 		request.setParentNodeUuid(parentNodeUuid);
 		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.setLanguage("en");
-		request.setFields(FieldMap.of("content", StringFieldModel.of(createLink(referencedNode.getUuid()))));
+		request.setFields(FieldMap.of("content", StringField.of(createLink(referencedNode.getUuid()))));
 		return client().createNode(PROJECT_NAME, request).blockingGet();
 	}
 

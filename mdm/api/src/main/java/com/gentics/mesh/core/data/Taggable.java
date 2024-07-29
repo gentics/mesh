@@ -15,10 +15,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -34,7 +34,7 @@ public interface Taggable {
 	 * 
 	 * @return Project of the element
 	 */
-	Project getProject();
+	HibProject getProject();
 
 	/**
 	 * Extract the tags to be set from the TagListUpdateRequest which is expected to be in the body of the action context.
@@ -43,7 +43,7 @@ public interface Taggable {
 	 * @param batch search queue batch
 	 * @return list of tags
 	 */
-	default List<Tag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
+	default List<HibTag> getTagsToSet(InternalActionContext ac, EventQueueBatch batch) {
 		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		return getTagsToSet(request.getTags(), ac, batch);
 	}
@@ -55,14 +55,14 @@ public interface Taggable {
 	 * @param batch
 	 * @return
 	 */
-	default List<Tag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
-		List<Tag> tags = new ArrayList<>();
-		Project project = getProject();
+	default List<HibTag> getTagsToSet(List<TagReference> list, InternalActionContext ac, EventQueueBatch batch) {
+		List<HibTag> tags = new ArrayList<>();
+		HibProject project = getProject();
 		UserDao userDao = Tx.get().userDao();
 		TagDao tagDao = Tx.get().tagDao();
 		TagFamilyDao tagFamilyDao = Tx.get().tagFamilyDao();
 
-		User user = ac.getUser();
+		HibUser user = ac.getUser();
 		for (TagReference tagReference : list) {
 			if (!tagReference.isSet()) {
 				throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
@@ -71,14 +71,14 @@ public interface Taggable {
 				throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
 			}
 			// 1. Locate the tag family
-			TagFamily tagFamily = tagFamilyDao.findByName(project, tagReference.getTagFamily());
+			HibTagFamily tagFamily = tagFamilyDao.findByName(project, tagReference.getTagFamily());
 			// Tag Family could not be found so lets create a new one
 			if (tagFamily == null) {
 				throw error(NOT_FOUND, "tagfamily_not_found", tagReference.getTagFamily());
 			}
 			// 2. The uuid was specified so lets try to load the tag this way
 			if (!isEmpty(tagReference.getUuid())) {
-				Tag tag = tagDao.findByUuid(tagFamily, tagReference.getUuid());
+				HibTag tag = tagDao.findByUuid(tagFamily, tagReference.getUuid());
 				if (tag == null) {
 					throw error(NOT_FOUND, "tag_not_found", tagReference.getUuid());
 				}
@@ -87,7 +87,7 @@ public interface Taggable {
 				}
 				tags.add(tag);
 			} else {
-				Tag tag = tagDao.findByName(tagFamily, tagReference.getName());
+				HibTag tag = tagDao.findByName(tagFamily, tagReference.getName());
 				// Tag with name could not be found so create it
 				if (tag == null) {
 					if (userDao.hasPermission(user, tagFamily, CREATE_PERM)) {

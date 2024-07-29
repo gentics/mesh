@@ -10,7 +10,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.contentoperation.ContentStorage;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.impl.BranchMigrationImpl;
@@ -45,10 +45,10 @@ public class HibBranchMigration extends BranchMigrationImpl {
 	}
 
 	@Override
-	public List<? extends Node> beforeBatchMigration(List<? extends Node> nodes) {
+	public List<? extends HibNode> beforeBatchMigration(List<? extends HibNode> nodes) {
 		NodeDaoImpl nodeDao = HibernateTx.get().nodeDao();
 		// load nodes with their content edges and tags to the persistence context
-		List<? extends Node> hibNodes = nodeDao.loadNodesWithEdgesAndTags(nodes.stream().map(n -> (UUID) n.getId()).collect(Collectors.toList()));
+		List<? extends HibNode> hibNodes = nodeDao.loadNodesWithEdgesAndTags(nodes.stream().map(n -> (UUID) n.getId()).collect(Collectors.toList()));
 
 		// load all draft and published containers
 		Set<HibNodeFieldContainerEdgeImpl> edges = hibNodes.stream()

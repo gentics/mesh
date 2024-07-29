@@ -37,12 +37,12 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.GroupDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -80,7 +80,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
+		assertThat(trackingSearchProvider()).hasStore(HibGroup.composeIndexName(), restGroup.getUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		trackingSearchProvider().clear().blockingAwait();
 
@@ -119,12 +119,12 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasStore(HibGroup.composeIndexName(), uuid);
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = tx.groupDao().findByUuid(uuid);
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -145,7 +145,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			BaseElement root = tx.data().permissionRoots().group();
+			HibBaseElement root = tx.data().permissionRoots().group();
 			roleDao.grantPermissions(role(), root, CREATE_PERM);
 			tx.success();
 		}
@@ -194,7 +194,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
-			Group foundGroup = tx.groupDao().findByUuid(restGroup.getUuid());
+			HibGroup foundGroup = tx.groupDao().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			call(() -> client().findGroupByUuid(restGroup.getUuid()));
@@ -225,7 +225,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
 			UserDao userDao = tx.userDao();
-			BaseElement root = tx.data().permissionRoots().group();
+			HibBaseElement root = tx.data().permissionRoots().group();
 
 			roleDao.revokePermissions(role(), root, CREATE_PERM);
 			assertFalse("The create permission to the groups root node should have been revoked.", userDao.hasPermission(user(), root, CREATE_PERM));
@@ -267,7 +267,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			// Create and save some groups
 			groupDao.create(extraGroupName, user());
 			for (int i = 0; i < nGroups; i++) {
-				Group group = groupDao.create("group_" + i, user());
+				HibGroup group = groupDao.create("group_" + i, user());
 				roleDao.grantPermissions(role(), group, READ_PERM);
 			}
 			tx.success();
@@ -351,7 +351,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Group group = group();
+			HibGroup group = group();
 			roleDao.revokePermissions(role(), group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 			tx.success();
@@ -383,13 +383,13 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
-		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
+		assertThat(trackingSearchProvider()).hasStore(HibGroup.composeIndexName(), groupUuid);
+		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(2, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = tx.groupDao().findByUuid(groupUuid);
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -417,7 +417,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		String oldName;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Group group = group();
+			HibGroup group = group();
 			oldName = group.getName();
 			roleDao.grantPermissions(role(), group, UPDATE_PERM);
 			tx.success();
@@ -426,7 +426,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().updateGroup(groupUuid(), request), BAD_REQUEST, "error_name_must_be_set");
 
 		try (Tx tx = tx()) {
-			Group reloadedGroup = tx.groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid());
 			assertEquals("The group should not have been updated", oldName, reloadedGroup.getName());
 		}
 	}
@@ -442,7 +442,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 
 		try (Tx tx = tx()) {
-			Group reloadedGroup = tx.groupDao().findByUuid(groupUuid());
+			HibGroup reloadedGroup = tx.groupDao().findByUuid(groupUuid());
 			assertEquals("The group should be the same", name, reloadedGroup.getName());
 		}
 	}
@@ -467,7 +467,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			GroupDao groupDao = tx.groupDao();
-			Group reloadedGroup = groupDao.findByUuid(group().getUuid());
+			HibGroup reloadedGroup = groupDao.findByUuid(group().getUuid());
 			assertEquals("The group should not have been updated", group().getName(), reloadedGroup.getName());
 		}
 
@@ -520,8 +520,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		awaitEvents();
 		waitForSearchIdleEvent();
 
-		assertThat(trackingSearchProvider()).hasDelete(Group.composeIndexName(), uuid);
-		assertThat(trackingSearchProvider()).hasStore(User.composeIndexName(), userUuid());
+		assertThat(trackingSearchProvider()).hasDelete(HibGroup.composeIndexName(), uuid);
+		assertThat(trackingSearchProvider()).hasStore(HibUser.composeIndexName(), userUuid());
 		assertThat(trackingSearchProvider()).hasEvents(1, 0, 1, 0, 0);
 
 		try (Tx tx = tx()) {

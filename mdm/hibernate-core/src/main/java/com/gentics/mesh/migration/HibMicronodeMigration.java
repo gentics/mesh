@@ -11,8 +11,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.impl.MicronodeMigrationImpl;
@@ -42,7 +42,7 @@ public class HibMicronodeMigration extends MicronodeMigrationImpl {
 		super(db, binaryFieldHandler, metrics, batchProvider, writeLock, options, delegator);
 	}
 
-	public void beforeBatchMigration(List<? extends NodeFieldContainer> containerList, InternalActionContext ac) {
+	public void beforeBatchMigration(List<? extends HibNodeFieldContainer> containerList, InternalActionContext ac) {
 		// preload all nodes (and their edges) in the persistence context with one query
 		// so that during the migration we don't need to fetch it again
 		List<UUID> nodeUuids = containerList.stream()
@@ -51,7 +51,7 @@ public class HibMicronodeMigration extends MicronodeMigrationImpl {
 				.collect(Collectors.toList());
 
 		NodeDaoImpl nodeDao = HibernateTx.get().nodeDao();
-		List<? extends Node> nodes = nodeDao.loadNodesWithEdges(nodeUuids);
+		List<? extends HibNode> nodes = nodeDao.loadNodesWithEdges(nodeUuids);
 
 		// wire parent loader, so that we use a single query to fetch the parent of all the nodes
 		// since the parent of the node won't change during the migration, it is safe to do so

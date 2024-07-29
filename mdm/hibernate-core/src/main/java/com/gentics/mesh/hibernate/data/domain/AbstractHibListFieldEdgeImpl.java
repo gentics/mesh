@@ -14,9 +14,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.node.field.HibListFieldEdge;
@@ -34,7 +34,7 @@ import com.gentics.mesh.util.UUIDUtil;
  */
 @MappedSuperclass
 public abstract class AbstractHibListFieldEdgeImpl<U> 
-			extends AbstractFieldEdgeImpl<U> implements ListableField, HibListFieldEdge<U> {
+			extends AbstractFieldEdgeImpl<U> implements HibListableField, HibListFieldEdge<U> {
 
 	private static final String QUERY_ITEMS_BY_KEY_CONTENT_TYPE = "select l "
 			+ " from %s l "
@@ -94,7 +94,7 @@ public abstract class AbstractHibListFieldEdgeImpl<U>
 	}
 
 	/**
-	 * Make a {@link ListableField} representation of this item.
+	 * Make a {@link HibListableField} representation of this item.
 	 * 
 	 * @return
 	 */
@@ -214,7 +214,7 @@ public abstract class AbstractHibListFieldEdgeImpl<U>
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
+	public HibField cloneTo(HibFieldContainer container) {
 		throw new IllegalStateException("Cannot directly clone a list field item");
 	}
 

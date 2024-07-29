@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import com.gentics.mesh.core.binary.AbstractBinaryProcessor;
 import com.gentics.mesh.core.binary.BinaryDataProcessorContext;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.util.NodeUtil;
 
@@ -39,13 +39,14 @@ public class BasicImageDataProcessor extends AbstractBinaryProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<BinaryField>> process(BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<HibBinaryField>> process(BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
-			Consumer<BinaryField> consumer = field -> {
-				log.debug("Setting info to binary field {} - {}", field.getFieldKey(), info);
+			Consumer<HibBinaryField> consumer = field -> {
+
+				log.info("Setting info to binary field " + field.getFieldKey() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
-				Binary binary = field.getBinary();
+				HibBinary binary = field.getBinary();
 				binary.setImageHeight(info.getHeight());
 				binary.setImageWidth(info.getWidth());
 			};

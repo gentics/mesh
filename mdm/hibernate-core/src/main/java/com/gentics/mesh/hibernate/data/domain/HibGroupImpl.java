@@ -20,9 +20,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -51,17 +51,17 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 })
 @Entity(name = "group")
 @ElementTypeKey(ElementType.GROUP)
-public class HibGroupImpl extends AbstractHibUserTrackedElement<GroupResponse> implements Group, Serializable {
+public class HibGroupImpl extends AbstractHibUserTrackedElement<GroupResponse> implements HibGroup, Serializable {
 
 	private static final long serialVersionUID = -4625309053762578939L;
 
 	@ManyToMany(targetEntity = HibUserImpl.class, fetch = FetchType.LAZY)
 	@JoinTable(name = "group_user", inverseJoinColumns = {@JoinColumn(name = "users_dbUuid")}, joinColumns = {@JoinColumn(name = "groups_dbUuid")})
-	private Set<User> users = new HashSet<>();
+	private Set<HibUser> users = new HashSet<>();
 
 	@ManyToMany(targetEntity = HibRoleImpl.class, fetch = FetchType.LAZY)
 	@JoinTable(name = "group_role", inverseJoinColumns = {@JoinColumn(name = "roles_dbUuid")}, joinColumns = {@JoinColumn(name = "groups_dbUuid")})
-	private Set<Role> roles = new HashSet<>();
+	private Set<HibRole> roles = new HashSet<>();
 
 	@Override
 	public GroupReference transformToReference() {
@@ -85,31 +85,31 @@ public class HibGroupImpl extends AbstractHibUserTrackedElement<GroupResponse> i
 		return HibernateTx.get().groupDao().onDeleted(this);
 	}
 
-	public Stream<User> getUsers() {
+	public Stream<HibUser> getUsers() {
 		return users.stream();
 	}
 
-	public void addUser(User user) {
+	public void addUser(HibUser user) {
 		getUsers().filter(u -> u.getId().equals(user.getId())).findAny().ifPresentOrElse(u -> {}, () -> {
 			users.add(user);
 		});
 	}
 
-	public void removeUser(User user) {
+	public void removeUser(HibUser user) {
 		HibernateUtil.dropGroupUserConnection(HibernateTx.get().entityManager(), user, this);
 	}
 
-	public void addRole(Role role) {
+	public void addRole(HibRole role) {
 		getRoles().filter(r -> r.getId().equals(role.getId())).findAny().ifPresentOrElse(u -> {}, () -> {
 			roles.add(role);
 		});
 	}
 
-	public void removeRole(Role role) {
+	public void removeRole(HibRole role) {
 		HibernateUtil.dropGroupRoleConnection(HibernateTx.get().entityManager(), role, this);
 	}
 
-	public Stream<Role> getRoles() {
+	public Stream<HibRole> getRoles() {
 		return roles.stream();
 	}
 

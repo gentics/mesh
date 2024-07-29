@@ -3,7 +3,7 @@ package com.gentics.mesh.hibernate.data.dao.helpers;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.database.connector.DatabaseConnector;
 import com.gentics.mesh.query.NativeJoin;
@@ -16,7 +16,7 @@ import jakarta.persistence.metamodel.EntityType;
 /**
  * Many-to-one join.
  */
-public class FieldJoin<CHILDIMPL extends BaseElement, ROOTIMPL extends BaseElement> extends AbstractRootJoin<CHILDIMPL, ROOTIMPL> implements RootJoin<CHILDIMPL, ROOTIMPL> {
+public class FieldJoin<CHILDIMPL extends HibBaseElement, ROOTIMPL extends HibBaseElement> extends AbstractRootJoin<CHILDIMPL, ROOTIMPL> implements RootJoin<CHILDIMPL, ROOTIMPL> {
 	
 	private final String fieldName;
 
@@ -26,7 +26,7 @@ public class FieldJoin<CHILDIMPL extends BaseElement, ROOTIMPL extends BaseEleme
 	}
 
 	@Override
-	public NativeJoin makeJoin(String myAlias, BaseElement root) {
+	public NativeJoin makeJoin(String myAlias, HibBaseElement root) {
 		DatabaseConnector dc = HibernateTx.get().data().getDatabaseConnector();
 		String rootAlias = makeAlias(dc.maybeGetDatabaseEntityName(root.getClass()).get());
 		NativeJoin mj = new NativeJoin();

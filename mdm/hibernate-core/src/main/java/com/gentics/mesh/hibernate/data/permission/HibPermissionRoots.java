@@ -3,9 +3,9 @@ package com.gentics.mesh.hibernate.data.permission;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.database.CurrentTransaction;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.PermissionType;
@@ -36,53 +36,53 @@ public class HibPermissionRoots implements PermissionRoots {
 	}
 
 	@Override
-	public BaseElement project() {
+	public HibBaseElement project() {
 		project = lazyGet(project, PermissionType.PROJECT);
 		return project;
 	}
 
 	@Override
-	public BaseElement user() {
+	public HibBaseElement user() {
 		user = lazyGet(user, PermissionType.USER);
 		return user;
 	}
 
 	@Override
-	public BaseElement group() {
+	public HibBaseElement group() {
 		group = lazyGet(group, PermissionType.GROUP);
 		return group;
 	}
 
 	@Override
-	public BaseElement role() {
+	public HibBaseElement role() {
 		role = lazyGet(role, PermissionType.ROLE);
 		return role;
 	}
 
 	@Override
-	public BaseElement microschema() {
+	public HibBaseElement microschema() {
 		microschema = lazyGet(microschema, PermissionType.MICROSCHEMA);
 		return microschema;
 	}
 
 	@Override
-	public BaseElement schema() {
+	public HibBaseElement schema() {
 		schema = lazyGet(schema, PermissionType.SCHEMA);
 		return schema;
 	}
 
 	@Override
-	public BaseElement mesh() {
+	public HibBaseElement mesh() {
 		mesh = lazyGet(mesh, PermissionType.MESH);
 		return mesh;
 	}
 
-	public BaseElement buildPermissionRootWithParent(Project parent, String urlPath) {
+	public HibBaseElement buildPermissionRootWithParent(HibProject parent, String urlPath) {
 		PermissionType permissionType = PermissionType.fromUrlStringPath(urlPath);
 		return buildPermissionRootWithParent(parent, permissionType);
 	}
 
-	public BaseElement buildPermissionRootWithParent(Project parent, PermissionType permissionType) {
+	public HibBaseElement buildPermissionRootWithParent(HibProject parent, PermissionType permissionType) {
 		return currentTransaction.getEntityManager()
 				.createQuery("from permissionroot where type = :type and parent = :parent", HibPermissionRootImpl.class)
 				.setParameter("type", permissionType)
@@ -92,7 +92,7 @@ public class HibPermissionRoots implements PermissionRoots {
 				.orElseGet(() -> createPermissionRoot(parent, permissionType));
 	}
 
-	private HibPermissionRootImpl createPermissionRoot(Project root, PermissionType permissionType) {
+	private HibPermissionRootImpl createPermissionRoot(HibProject root, PermissionType permissionType) {
 		HibernateTx hibTx = HibernateTx.get();
 		HibPermissionRootImpl permissionRoot = hibTx.create(HibPermissionRootImpl.class);
 		permissionRoot.setType(permissionType);

@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import jakarta.persistence.Entity;
 
-import com.gentics.mesh.core.data.branch.BranchMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.database.HibernateTx;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  */
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "branch_microschema_version_edge")
-public class HibBranchMicroschemaVersionEdgeImpl extends AbstractHibBranchSchemaVersion<HibMicroschemaVersionImpl> implements BranchMicroschemaVersion, Serializable {
+public class HibBranchMicroschemaVersionEdgeImpl extends AbstractHibBranchSchemaVersion<HibMicroschemaVersionImpl> implements HibBranchMicroschemaVersion, Serializable {
 
 	private static final long serialVersionUID = -6414277073271044788L;
 
@@ -31,7 +31,7 @@ public class HibBranchMicroschemaVersionEdgeImpl extends AbstractHibBranchSchema
 	}
 
 	@Override
-	public MicroschemaVersion getMicroschemaContainerVersion() {
+	public HibMicroschemaVersion getMicroschemaContainerVersion() {
 		return getVersion();
 	}
 }

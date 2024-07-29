@@ -21,13 +21,13 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -178,7 +178,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 	public JsonObject fieldMapping;
 
 	@Parameter(2)
-	public FieldModel nodeField;
+	public Field nodeField;
 
 	@Parameter(3)
 	public Function<String, JsonObject> searchQuery;
@@ -224,7 +224,7 @@ public class MicroschemaMappingTest extends AbstractMeshTest {
 		ComplianceMode mode = options().getSearchOptions().getComplianceMode();
 
 		tx(() -> {
-			Branch branch = latestBranch();
+			HibBranch branch = latestBranch();
 			JsonObject schemaMapping = provider.getMapping(this.schema, branch, null).get();
 			if (mode == ComplianceMode.ES_6) {
 				schemaMapping = schemaMapping.getJsonObject(DEFAULT_TYPE);

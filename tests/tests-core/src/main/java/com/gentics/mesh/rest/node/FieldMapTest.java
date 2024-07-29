@@ -19,22 +19,22 @@ import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
-import com.gentics.mesh.core.rest.node.field.BooleanFieldModel;
-import com.gentics.mesh.core.rest.node.field.DateFieldModel;
-import com.gentics.mesh.core.rest.node.field.HtmlFieldModel;
-import com.gentics.mesh.core.rest.node.field.MicronodeFieldModel;
-import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
-import com.gentics.mesh.core.rest.node.field.NumberFieldModel;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.BooleanField;
+import com.gentics.mesh.core.rest.node.field.DateField;
+import com.gentics.mesh.core.rest.node.field.HtmlField;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.NumberField;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -177,7 +177,7 @@ public class FieldMapTest {
 
 	private void assertMap(FieldMap fieldMap) {
 
-		StringFieldModel stringField = fieldMap.getField("stringField", FieldTypes.STRING, null, false);
+		StringField stringField = fieldMap.getField("stringField", FieldTypes.STRING, null, false);
 		assertNotNull(stringField);
 		assertNotNull(fieldMap.getStringField("stringField"));
 
@@ -185,49 +185,49 @@ public class FieldMapTest {
 				fieldMap.getField("stringFieldNullValue", FieldTypes.STRING, null, false));
 		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getStringField("stringFieldNull"));
 
-		HtmlFieldModel htmlField = fieldMap.getField("htmlField", FieldTypes.HTML, null, false);
+		HtmlField htmlField = fieldMap.getField("htmlField", FieldTypes.HTML, null, false);
 		assertNotNull(htmlField);
 		assertNotNull(fieldMap.getHtmlField("htmlField"));
 
 		assertNull(fieldMap.getField("htmlFieldNullValue", FieldTypes.HTML, null, false));
 		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getHtmlField("htmlFieldNull"));
 
-		BooleanFieldModel booleanField = fieldMap.getField("booleanField", FieldTypes.BOOLEAN, null, false);
+		BooleanField booleanField = fieldMap.getField("booleanField", FieldTypes.BOOLEAN, null, false);
 		assertNotNull(booleanField);
 		assertNotNull(fieldMap.getBooleanField("booleanField"));
 
 		assertNull(fieldMap.getField("booleanFieldNullValue", FieldTypes.BOOLEAN, null, false));
 		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getBooleanField("booleanFieldNull"));
 
-		DateFieldModel dateField = fieldMap.getField("dateField", FieldTypes.DATE, null, false);
+		DateField dateField = fieldMap.getField("dateField", FieldTypes.DATE, null, false);
 		assertNotNull(dateField);
 		assertNotNull(fieldMap.getDateField("dateField"));
 
 		assertNull(fieldMap.getField("numberFieldNullValue", FieldTypes.NUMBER, null, false));
 		assertNull("The field was explicitly set to null and should be null but it was not.", fieldMap.getNumberField("numberFieldNull"));
 
-		NodeFieldModel nodeField = fieldMap.getField("nodeField", FieldTypes.NODE, null, false);
+		NodeField nodeField = fieldMap.getField("nodeField", FieldTypes.NODE, null, false);
 		assertNotNull(nodeField);
 		assertNotNull(fieldMap.getNodeField("nodeField"));
 
 		assertNull("The field was explicitly set to null and should be null but it was not.",
 				fieldMap.getField("nodeFieldNullValue", FieldTypes.NODE, null, false));
 
-		MicronodeFieldModel micronodeField = fieldMap.getField("micronodeField", FieldTypes.MICRONODE, null, false);
+		MicronodeField micronodeField = fieldMap.getField("micronodeField", FieldTypes.MICRONODE, null, false);
 		assertNotNull(micronodeField);
 		assertNotNull(fieldMap.getMicronodeField("micronodeField"));
 
-		MicronodeFieldModel micronodeFieldNull = fieldMap.getField("micronodeFieldNull", FieldTypes.MICRONODE, null, false);
+		MicronodeField micronodeFieldNull = fieldMap.getField("micronodeFieldNull", FieldTypes.MICRONODE, null, false);
 		assertNull(micronodeFieldNull);
 
-		NumberFieldModel numberField = fieldMap.getField("numberField", FieldTypes.NUMBER, null, false);
+		NumberField numberField = fieldMap.getField("numberField", FieldTypes.NUMBER, null, false);
 		assertNotNull(numberField);
 		assertNotNull(fieldMap.getNumberField("numberField"));
 
 		assertNull(fieldMap.getField("numberFieldNull", FieldTypes.NUMBER, null, false));
 		assertNull(fieldMap.getField("numberFieldNullValue", FieldTypes.NUMBER, null, false));
 
-		BinaryFieldModel binaryField = fieldMap.getField("binaryField", FieldTypes.BINARY, null, false);
+		BinaryField binaryField = fieldMap.getField("binaryField", FieldTypes.BINARY, null, false);
 		assertNotNull(fieldMap.getBinaryField("binaryField"));
 		assertNotNull(binaryField);
 
@@ -252,11 +252,11 @@ public class FieldMapTest {
 		assertNotNull(stringList);
 		assertEquals(3, stringList.getItems().size());
 
-		NodeFieldListModel nodeList = fieldMap.getNodeFieldList("nodeListField");
+		NodeFieldList nodeList = fieldMap.getNodeFieldList("nodeListField");
 		assertNotNull(nodeList);
 		assertEquals(3, nodeList.getItems().size());
 
-		FieldListModel<MicronodeFieldModel> micronodeList = fieldMap.getMicronodeFieldList("micronodeListField");
+		FieldList<MicronodeField> micronodeList = fieldMap.getMicronodeFieldList("micronodeListField");
 		assertNotNull(micronodeList);
 		assertEquals(3, micronodeList.getItems().size());
 

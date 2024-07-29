@@ -15,9 +15,9 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.database.HibernateTx;
 
 /**
@@ -71,20 +71,20 @@ public class HibMicronodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> imple
 	private static final long serialVersionUID = -2372898533722905670L;
 
 	@ManyToOne(optional = false, fetch = FetchType.LAZY, targetEntity = HibMicroschemaVersionImpl.class)
-	private MicroschemaVersion microschemaVersion;
+	private HibMicroschemaVersion microschemaVersion;
 
 	public HibMicronodeFieldEdgeImpl() {
 	}
 
 	protected HibMicronodeFieldEdgeImpl(
-				HibernateTx tx, String fieldKey, UUID micronodeUuid, MicroschemaVersion microschemaVersion,
+				HibernateTx tx, String fieldKey, UUID micronodeUuid, HibMicroschemaVersion microschemaVersion,
 				HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		super(tx, fieldKey, micronodeUuid, parentFieldContainer);
 		this.microschemaVersion = microschemaVersion;
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
+	public HibField cloneTo(HibFieldContainer container) {
 		HibMicronodeFieldEdgeImpl field = new HibMicronodeFieldEdgeImpl(
 				HibernateTx.get(), getFieldKey(), 
 				valueOrUuid, microschemaVersion, (HibUnmanagedFieldContainer<?,?,?,?,?>) container);
@@ -129,7 +129,7 @@ public class HibMicronodeFieldEdgeImpl extends AbstractFieldEdgeImpl<UUID> imple
 	}
 
 	@Override
-	public MicroschemaVersion getMicroschemaVersion() {
+	public HibMicroschemaVersion getMicroschemaVersion() {
 		return microschemaVersion;
 	}
 }

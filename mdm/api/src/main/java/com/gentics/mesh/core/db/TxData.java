@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.db;
 
-import com.gentics.mesh.core.data.MeshVersion;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
@@ -26,7 +26,7 @@ public interface TxData {
 	 * 
 	 * @return
 	 */
-	MeshVersion meshVersion();
+	HibMeshVersion meshVersion();
 
 	/**
 	 * References to permission root elements.

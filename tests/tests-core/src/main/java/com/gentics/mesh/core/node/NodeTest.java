@@ -30,21 +30,21 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.context.impl.LocalActionContextImpl;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
@@ -73,7 +73,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformToReference() throws Exception {
 		try (Tx tx = tx()) {
-			Node node = content();
+			HibNode node = content();
 			InternalActionContext ac = mockActionContext("?version=draft");
 			NodeReference reference = tx.nodeDao().transformToReference(node, ac);
 			assertNotNull(reference);
@@ -87,7 +87,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDao nodeDao = tx.nodeDao();
 			ContentDao contentDao = tx.contentDao();
 
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			InternalActionContext ac = mockActionContext();
 			String path = nodeDao.getPath(newsNode, ac, project().getLatestBranch().getUuid(), ContainerType.DRAFT, english());
 			assertEquals("/News/News%20Overview.en.html", path);
@@ -101,13 +101,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testMeshNodeStructure() {
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			assertNotNull(newsNode);
-			Node newSubNode;
+			HibNode newSubNode;
 			newSubNode = nodeDao.create(newsNode, user(), getSchemaContainer().getLatestVersion(), project());
 
 			assertEquals(1, size(nodeDao.getChildren(newsNode)));
-			Node firstChild = nodeDao.getChildren(newsNode).iterator().next();
+			HibNode firstChild = nodeDao.getChildren(newsNode).iterator().next();
 			assertEquals(newSubNode.getUuid(), firstChild.getUuid());
 		}
 	}
@@ -117,16 +117,16 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			TagDao tagDao = tx.tagDao();
 
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			assertNotNull(newsNode);
 
-			Tag carTag = tag("car");
+			HibTag carTag = tag("car");
 			assertNotNull(carTag);
 
 			tagDao.addTag(newsNode, carTag, project().getLatestBranch());
 
 			assertEquals(1, tagDao.getTags(newsNode, project().getLatestBranch()).count());
-			Tag firstTag = tagDao.getTags(newsNode, project().getLatestBranch()).iterator().next();
+			HibTag firstTag = tagDao.getTags(newsNode, project().getLatestBranch()).iterator().next();
 			assertEquals(carTag.getUuid(), firstTag.getUuid());
 		}
 	}
@@ -138,7 +138,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDao nodeDao = tx.nodeDao();
 
 			InternalActionContext ac = mockActionContext("version=draft");
-			Page<? extends Node> page = nodeDao.findAll(project(), ac, new PagingParametersImpl(1, 10L));
+			Page<? extends HibNode> page = nodeDao.findAll(project(), ac, new PagingParametersImpl(1, 10L));
 
 			assertEquals(getNodeCount(), page.getTotalElements());
 			assertEquals(10, page.getSize());
@@ -154,11 +154,11 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String german = german();
 			InternalActionContext ac = mockActionContext("lang=de,en&version=draft");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
-			NodeFieldContainer germanFields = contentDao.getLatestDraftFieldContainer(newsNode, german);
+			HibNodeFieldContainer germanFields = contentDao.getLatestDraftFieldContainer(newsNode, german);
 			String expectedDisplayName = germanFields.getString(newsNode.getSchemaContainer().getLatestVersion().getSchema().getDisplayField())
 				.getString();
 			assertEquals("The display name value did not match up", expectedDisplayName, nodeDao.getDisplayName(newsNode, ac));
@@ -183,8 +183,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRootNode() {
 		try (Tx tx = tx()) {
-			Project project = project();
-			Node root = project.getBaseNode();
+			HibProject project = project();
+			HibNode root = project.getBaseNode();
 			assertNotNull(root);
 		}
 	}
@@ -200,8 +200,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
-			Node node = tx.nodeDao().findByUuid(project(), newsNode.getUuid());
+			HibNode newsNode = content("news overview");
+			HibNode node = tx.nodeDao().findByUuid(project(), newsNode.getUuid());
 			assertNotNull(node);
 			assertEquals(newsNode.getUuid(), node.getUuid());
 		}
@@ -214,7 +214,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			NodeDao nodeDao = tx.nodeDao();
 
 			InternalActionContext ac = mockActionContext("lang=en&version=draft");
-			Node newsNode = content("concorde");
+			HibNode newsNode = content("concorde");
 
 			NodeResponse response = nodeDao.transformToRestSync(newsNode, ac, 0);
 			String json = response.toJson();
@@ -239,8 +239,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCreateDelete() {
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			Node folder = folder("2015");
-			Node subNode = nodeDao.create(folder, user(), getSchemaContainer().getLatestVersion(), project());
+			HibNode folder = folder("2015");
+			HibNode subNode = nodeDao.create(folder, user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
 			BulkActionContext context = createBulkContext();
 			InternalActionContext ac = mockActionContext("");
@@ -254,7 +254,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
 			UserDao userDao = tx.userDao();
-			Node node = nodeDao.create(folder("2015"), user(), getSchemaContainer().getLatestVersion(), project());
+			HibNode node = nodeDao.create(folder("2015"), user(), getSchemaContainer().getLatestVersion(), project());
 			InternalActionContext ac = mockActionContext("");
 			assertFalse(userDao.hasPermission(user(), node, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), folder("2015"), node);
@@ -267,10 +267,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testRead() throws IOException {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			assertEquals("folder", node.getSchemaContainer().getLatestVersion().getSchema().getName());
 			assertTrue(node.getSchemaContainer().getLatestVersion().getSchema().getContainer());
-			NodeFieldContainer englishVersion = tx.contentDao().getFieldContainer(node, "en");
+			HibNodeFieldContainer englishVersion = tx.contentDao().getFieldContainer(node, "en");
 			assertNotNull(englishVersion);
 		}
 	}
@@ -281,10 +281,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			NodeDao nodeDao = tx.nodeDao();
-			User user = user();
-			Node parentNode = folder("2015");
-			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
-			Node node = nodeDao.create(parentNode, user, schemaVersion, project());
+			HibUser user = user();
+			HibNode parentNode = folder("2015");
+			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			HibNode node = nodeDao.create(parentNode, user, schemaVersion, project());
 			long ts = System.currentTimeMillis();
 			node.setCreationTimestamp(ts);
 			Long creationTimeStamp = node.getCreationTimestamp();
@@ -294,7 +294,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			String english = english();
 			String german = german();
 
-			NodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english,
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english,
 				node.getProject().getLatestBranch(), user);
 			schemaVersion.getSchema().addField(new StringFieldSchemaImpl().setName("name"));
 			actions().updateSchemaVersion(schemaVersion);
@@ -304,16 +304,16 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user.getUuid(), englishContainer.getEditor().getUuid());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
-			List<NodeFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftFieldContainers(node));
+			List<HibNodeFieldContainer> allProperties = TestUtils.toList(contentDao.getDraftFieldContainers(node));
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
-			NodeFieldContainer germanContainer = tx.contentDao().createFieldContainer(node, german, node.getProject().getLatestBranch(),
+			HibNodeFieldContainer germanContainer = tx.contentDao().createFieldContainer(node, german, node.getProject().getLatestBranch(),
 				user);
 			germanContainer.createHTML("content").setHtml("german content");
 			assertEquals(2, TestUtils.size(contentDao.getDraftFieldContainers(node)));
 
-			NodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english);
+			HibNodeFieldContainer container = contentDao.getLatestDraftFieldContainer(node, english);
 			assertNotNull(container);
 			String text = container.getHtml("content").getHTML();
 			assertNotNull(text);
@@ -325,7 +325,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Node node = Tx.get().nodeDao().findByUuidGlobal(folder("news").getUuid());
+			HibNode node = Tx.get().nodeDao().findByUuidGlobal(folder("news").getUuid());
 			String uuid = node.getUuid();
 			MeshAssert.assertElement(tx.nodeDao(), project(), uuid, true);
 			InternalActionContext ac = mockActionContext("");
@@ -343,10 +343,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testUpdate() {
 		try (Tx tx = tx()) {
-			Node node = content();
+			HibNode node = content();
 			try (Tx tx2 = tx()) {
 				UserDao userDao = tx2.userDao();
-				User newUser = userDao.create("newUser", user());
+				HibUser newUser = userDao.create("newUser", user());
 				userDao.addGroup(newUser, group());
 				assertEquals(user().getUuid(), node.getCreator().getUuid());
 				System.out.println(newUser.getUuid());
@@ -401,17 +401,17 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		// 1. create folder with subfolder and subsubfolder
 		tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
-			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
 			folderUuid.set(folder.getUuid());
-			Node subFolder = nodeDao.create(folder, user(), folderSchema, project);
+			HibNode subFolder = nodeDao.create(folder, user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
 			subFolderUuid.set(subFolder.getUuid());
-			Node subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
+			HibNode subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
 				.setString("SubSubFolder");
 			subSubFolderUuid.set(subSubFolder.getUuid());
@@ -419,9 +419,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		// 2. delete folder for initial release
 		tx(tx -> {
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Node subFolder = tx.nodeDao().findByUuid(project, subFolderUuid.get());
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibNode subFolder = tx.nodeDao().findByUuid(project, subFolderUuid.get());
 
 			InternalActionContext ac = mockActionContext("");
 			ac.getDeleteParameters().setRecursive(true);
@@ -430,15 +430,15 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		// 3. assert that subfolder and subsubfolder were deleted
 		tx(tx -> {
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			Node folder = tx.nodeDao().findByUuid(project, folderUuid.get());
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibNode folder = tx.nodeDao().findByUuid(project, folderUuid.get());
 
 			// assert that folder does not have children
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
 
 			// assert that folders are gone
-			List<String> nodeUuids = tx.nodeDao().findAll(project).stream().map(Node::getUuid).collect(Collectors.toList());
+			List<String> nodeUuids = tx.nodeDao().findAll(project).stream().map(HibNode::getUuid).collect(Collectors.toList());
 			assertThat(nodeUuids).as("All nodes").contains(folderUuid.get()).doesNotContain(subFolderUuid.get(), subSubFolderUuid.get());
 		});
 	}
@@ -446,25 +446,25 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testDeleteWithChildrenInBranch() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Branch initialBranch = reloadBranch(initialBranch());
-			Project project = tx.projectDao().findByUuid(projectUuid());
+			HibBranch initialBranch = reloadBranch(initialBranch());
+			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			NodeDao nodeDao = tx.nodeDao();
 			BulkActionContext bac = createBulkContext();
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder with subfolder and subsubfolder
-			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
-			Node subFolder = nodeDao.create(folder, user(), folderSchema, project);
+			HibNode subFolder = nodeDao.create(folder, user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(subFolder, english(), initialBranch, user()).createString("name").setString("SubFolder");
 			String subFolderUuid = subFolder.getUuid();
-			Node subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
+			HibNode subSubFolder = nodeDao.create(subFolder, user(), folderSchema, project);
 			tx.contentDao().createFieldContainer(subSubFolder, english(), initialBranch, user()).createString("name")
 				.setString("SubSubFolder");
 			String subSubFolderUuid = subSubFolder.getUuid();
 
 			// 2. create a new branch
-			Branch newBranch = createBranch("newbranch");
+			HibBranch newBranch = createBranch("newbranch");
 
 			// 3. migrate nodes
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -503,7 +503,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertThat(subFolder).as("subFolder").hasNoChildren(newBranch);
 
 			// 10. assert for initial branch
-			List<Node> nodes = new ArrayList<>();
+			List<HibNode> nodes = new ArrayList<>();
 			nodeDao.findAll(project, mockActionContext("release=" + initialBranch.getName()), new PagingParametersImpl(1, 10000L)).forEach(node -> nodes.add(node));
 			assertThat(nodes).as("Nodes in initial branch").usingElementComparatorOnFields("uuid").doesNotContain(subFolder, subSubFolder);
 			assertThat(folder).as("folder").hasNoChildren(initialBranch);
@@ -513,18 +513,18 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testDeletePublished() throws InvalidArgumentException {
-		Project project = project();
+		HibProject project = project();
 		BulkActionContext bac = createBulkContext();
 
 		try (Tx tx = tx()) {
-			Branch initialBranch = reloadBranch(initialBranch());
-			SchemaVersion folderSchema = Tx.get().schemaDao().findByUuid(schemaContainer("folder").getUuid()).getLatestVersion();
+			HibBranch initialBranch = reloadBranch(initialBranch());
+			HibSchemaVersion folderSchema = Tx.get().schemaDao().findByUuid(schemaContainer("folder").getUuid()).getLatestVersion();
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
 				NodeDao nodeDao = tx2.nodeDao();
 				RoleDao roleDao = tx2.roleDao();
-				Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac2 = createBulkContext();
 				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
 				tx.contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("Folder");
@@ -572,14 +572,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testDeletePublishedFromBranch() {
 		try (Tx tx = tx()) {
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
-			SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
+			HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
 
 			// 1. create folder and publish
 			String folderUuid = tx(tx2 -> {
 				NodeDao nodeDao = tx2.nodeDao();
-				Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+				HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 				BulkActionContext bac = createBulkContext();
 				RoleDao roleDao = tx.roleDao();
 				tx2.roleDao().grantPermissions(role(), folder, InternalPermission.READ_PERM, InternalPermission.READ_PUBLISHED_PERM);
@@ -589,7 +589,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 2. create new branch and migrate nodes
-			Branch newBranch = tx(() -> createBranch("newbranch"));
+			HibBranch newBranch = tx(() -> createBranch("newbranch"));
 			mesh().branchCache().clear();
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -636,14 +636,14 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testDeletePublishedFromBranch2() {
-		Project project = project();
-		Branch initialBranch = tx(() -> project.getInitialBranch());
-		SchemaVersion folderSchema = tx(() -> schemaContainer("folder").getLatestVersion());
+		HibProject project = project();
+		HibBranch initialBranch = tx(() -> project.getInitialBranch());
+		HibSchemaVersion folderSchema = tx(() -> schemaContainer("folder").getLatestVersion());
 		PersistingNodeDao nodeDao = tx(() -> CommonTx.get().nodeDao());
 
 		// creates two container for the initial branch
-		Node node = tx(tx -> {
-			Node folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
+		HibNode node = tx(tx -> {
+			HibNode folder = nodeDao.create(project.getBaseNode(), user(), folderSchema, project);
 			tx().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("1");
 			tx().contentDao().createFieldContainer(folder, english(), initialBranch, user()).createString("name").setString("2");
 			RoleDao roleDao = tx.roleDao();
@@ -652,7 +652,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		});
 
 		// create a new branch
-		Branch newBranch = tx(() -> createBranch("newbranch"));
+		HibBranch newBranch = tx(() -> createBranch("newbranch"));
 		mesh().branchCache().clear();
 
 		BranchMigrationContextImpl context = new BranchMigrationContextImpl();
@@ -662,7 +662,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		// create 2 more containers for the initial branch
 		tx(tx -> {
-			Node reAttachedNode = nodeDao.mergeIntoPersisted(project, node);
+			HibNode reAttachedNode = nodeDao.mergeIntoPersisted(project, node);
 			tx().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("3");
 			tx().contentDao().createFieldContainer(reAttachedNode, english(), initialBranch, user()).createString("name").setString("4");
 		});
@@ -671,7 +671,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		// create 3 more containers for the new branch
 		tx(tx -> {
-			Node reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
+			HibNode reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
 			tx().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("3");
 			tx().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("4");
 			tx().contentDao().createFieldContainer(reAttachedNode, english(), newBranch, user()).createString("name").setString("5");
@@ -681,7 +681,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 		// delete node from new branch
 		tx((tx) -> {
-			Node reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
+			HibNode reAttachedNode = nodeDao.findByUuidGlobal(node.getUuid());
 			tx.nodeDao().deleteFromBranch(reAttachedNode, mockActionContext(""), newBranch, new DummyBulkActionContext(), true);
 		});
 
@@ -693,7 +693,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 	}
 
 	/**
-	 * Test implementation of {@link NodeDao#getChildrenStream(Node, InternalActionContext, InternalPermission)}}.
+	 * Test implementation of {@link NodeDao#getChildrenStream(HibNode, InternalActionContext, InternalPermission)}}.
 	 * Check whether
 	 * <ol>
 	 * <li>All children in the given branch are returned</li>
@@ -708,7 +708,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		createChild(newsFolderUuid, "in both branches", initialBranchUuid);
 
 		String newBranchUuid = tx(() -> {
-			Branch newBranch = createBranch("newbranch");
+			HibBranch newBranch = createBranch("newbranch");
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
@@ -784,7 +784,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 		if (revoke.length > 0) {
 			tx(tx -> {
 				RoleDao roleDao = tx.roleDao();
-				Node node = tx.nodeDao().findByUuid(project(), nodeUuid);
+				HibNode node = tx.nodeDao().findByUuid(project(), nodeUuid);
 				for (InternalPermission perm : revoke) {
 					roleDao.revokePermissions(role(), node, perm);
 				}

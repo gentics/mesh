@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.endpoint.admin.consistency;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
  * Expected edge definition for the consistency check.
@@ -17,5 +17,5 @@ public interface Edge {
 	 * @param clazz
 	 * @return
 	 */
-	<N extends BaseElement> N follow(BaseElement v, String label, Class<N> clazz);
+	<N extends HibBaseElement> N follow(HibBaseElement v, String label, Class<N> clazz);
 }

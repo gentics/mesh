@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfoModel;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfigModel;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.admin.cluster.coordinator.CoordinatorConfig;
@@ -34,13 +34,13 @@ public class AdminExamples {
 	public ClusterStatusResponse createClusterStatusResponse() {
 		ClusterStatusResponse result = new ClusterStatusResponse();
 		Stream.of(
-			new ClusterInstanceInfoModel()
+			new ClusterInstanceInfo()
 				.setAddress("127.0.0.1:2424")
 				.setName("node1")
 				.setStatus("ONLINE")
 				.setStartDate("2019-11-04T13:54:59.131Z")
 				.setRole("MASTER"),
-			new ClusterInstanceInfoModel()
+			new ClusterInstanceInfo()
 				.setAddress("127.0.0.1:2425")
 				.setName("node2")
 				.setStatus("ONLINE")
@@ -95,9 +95,9 @@ public class AdminExamples {
 		ClusterConfigResponse response = new ClusterConfigResponse();
 		response.setWriteQuorum("majority");
 		response.setReadQuorum(1);
-		response.getServers().add(new ClusterServerConfigModel().setName("master-1").setRole(ServerRole.MASTER));
-		response.getServers().add(new ClusterServerConfigModel().setName("replica-1").setRole(ServerRole.REPLICA));
-		response.getServers().add(new ClusterServerConfigModel().setName("replica-2").setRole(ServerRole.REPLICA));
+		response.getServers().add(new ClusterServerConfig().setName("master-1").setRole(ServerRole.MASTER));
+		response.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
+		response.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
 		return response;
 	}
 
@@ -105,9 +105,9 @@ public class AdminExamples {
 		ClusterConfigRequest request = new ClusterConfigRequest();
 		request.setWriteQuorum("1");
 		request.setReadQuorum(1);
-		request.getServers().add(new ClusterServerConfigModel().setName("master-1").setRole(ServerRole.MASTER));
-		request.getServers().add(new ClusterServerConfigModel().setName("replica-1").setRole(ServerRole.REPLICA));
-		request.getServers().add(new ClusterServerConfigModel().setName("replica-2").setRole(ServerRole.REPLICA));
+		request.getServers().add(new ClusterServerConfig().setName("master-1").setRole(ServerRole.MASTER));
+		request.getServers().add(new ClusterServerConfig().setName("replica-1").setRole(ServerRole.REPLICA));
+		request.getServers().add(new ClusterServerConfig().setName("replica-2").setRole(ServerRole.REPLICA));
 		return request;
 	}
 

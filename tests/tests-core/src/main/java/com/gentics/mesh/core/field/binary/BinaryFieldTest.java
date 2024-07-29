@@ -19,19 +19,19 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.TransformationResult;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.image.ImageInfo;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -75,7 +75,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			while (input.length() < 32 * 1024) {
 				input = input.concat("Hallo");
 			}
-			Binary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
@@ -86,7 +86,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	public void testBinaryFieldBase641Char() {
 		try (Tx tx = tx()) {
 			String input = " ";
-			Binary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
 			mesh().binaryStorage().store(Flowable.just(Buffer.buffer(input)), binary.getUuid()).blockingAwait();
 			String base64 = tx.binaryDao().getBase64ContentSync(binary);
 			assertEquals(input.toString(), new String(BASE64.decode(base64)));
@@ -100,14 +100,14 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Update the schema and add a binary field
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			prepareTypedSchema(node, createFieldSchema(true), false);
 			tx.commit();
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			Binary binary = tx.binaries().create(hash, 10L).runInExistingTx(tx);
-			BinaryField field = container.createBinary(BINARY_FIELD, binary);
+			HibBinary binary = tx.binaries().create(hash, 10L).runInExistingTx(tx);
+			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
 			field.setMimeType("image/jpg");
 			binary.setImageHeight(200);
 			binary.setImageWidth(300);
@@ -115,13 +115,13 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		}
 
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			String json = getJson(node);
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
 			assertNotNull(response);
 
-			BinaryFieldModel deserializedNodeField = response.getFields().getBinaryField(BINARY_FIELD);
+			BinaryField deserializedNodeField = response.getFields().getBinaryField(BINARY_FIELD);
 			assertNotNull(deserializedNodeField);
 			assertEquals(hash, deserializedNodeField.getSha512sum());
 			assertEquals(200, deserializedNodeField.getHeight().intValue());
@@ -133,11 +133,11 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testFieldUpdate() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			Binary binary = tx.binaries().create(
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibBinary binary = tx.binaries().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
 				0L).runInExistingTx(tx);
-			BinaryField field = container.createBinary(BINARY_FIELD, binary);
+			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
 			field.getBinary().setSize(220);
 			assertNotNull(field);
 			assertEquals(BINARY_FIELD, field.getFieldKey());
@@ -148,8 +148,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.getBinary().setImageHeight(133);
 			field.getBinary().setImageWidth(7);
 
-			BinaryField loadedField = container.getBinary(BINARY_FIELD);
-			Binary loadedBinary = loadedField.getBinary();
+			HibBinaryField loadedField = container.getBinary(BINARY_FIELD);
+			HibBinary loadedBinary = loadedField.getBinary();
 			assertNotNull("The previously created field could not be found.", loadedField);
 			assertEquals(220, loadedBinary.getSize());
 
@@ -169,12 +169,12 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testClone() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
 
-			Binary binary = tx.binaries().create(
+			HibBinary binary = tx.binaries().create(
 				"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
 				0L).runInExistingTx(tx);
-			BinaryField field = container.createBinary(BINARY_FIELD, binary);
+			HibBinaryField field = container.createBinary(BINARY_FIELD, binary);
 			field.getBinary().setSize(220);
 			assertNotNull(field);
 			assertEquals(BINARY_FIELD, field.getFieldKey());
@@ -185,10 +185,10 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			field.getBinary().setImageHeight(133);
 			field.getBinary().setImageWidth(7);
 
-			NodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibNodeFieldContainer otherContainer = CoreTestUtils.createContainer(createFieldSchema(true));
 			field.cloneTo(otherContainer);
 
-			BinaryField clonedField = otherContainer.getBinary(BINARY_FIELD);
+			HibBinaryField clonedField = otherContainer.getBinary(BINARY_FIELD);
 			assertThat(clonedField).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(field, "outV", "id", "uuid", "element", "contentUuid", "dbUuid", "value", "parentContainer");
 			assertThat(clonedField.getBinary()).as("referenced binary of cloned field").isNotNull().isEqualToComparingFieldByField(field.getBinary());
 		}
@@ -198,11 +198,11 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEquals() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema("fieldA", true), createFieldSchema("fieldB", true));
 
-			Binary binary = tx.binaries().create(UUIDUtil.randomUUID(), 1L).runInExistingTx(tx);
-			BinaryField fieldA = container.createBinary("fieldA", binary);
-			BinaryField fieldB = container.createBinary("fieldB", binary);
+			HibBinary binary = tx.binaries().create(UUIDUtil.randomUUID(), 1L).runInExistingTx(tx);
+			HibBinaryField fieldA = container.createBinary("fieldA", binary);
+			HibBinaryField fieldB = container.createBinary("fieldB", binary);
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
 			fieldA.setFileName("someText");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -218,11 +218,11 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsNull() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			Binary binary = tx.binaries().create(UUIDUtil.randomUUID(), 0L).runInExistingTx(tx);
-			BinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
-			assertFalse(fieldA.equals((FieldModel) null));
-			assertFalse(fieldA.equals((BinaryField) null));
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibBinary binary = tx.binaries().create(UUIDUtil.randomUUID(), 0L).runInExistingTx(tx);
+			HibBinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
+			assertFalse(fieldA.equals((Field) null));
+			assertFalse(fieldA.equals((HibBinaryField) null));
 		}
 	}
 
@@ -230,9 +230,9 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Override
 	public void testEqualsRestField() {
 		try (Tx tx = tx()) {
-			NodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
-			Binary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
-			BinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
+			HibNodeFieldContainer container = CoreTestUtils.createContainer(createFieldSchema(true));
+			HibBinary binary = tx.binaries().create("hashsum", 1L).runInExistingTx(tx);
+			HibBinaryField fieldA = container.createBinary(BINARY_FIELD, binary);
 
 			// graph empty - rest empty
 			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl().setCheckStatus(BinaryCheckStatus.ACCEPTED)));
@@ -295,11 +295,11 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(BINARY_FIELD, FILL_BASIC, (container) -> {
-				BinaryFieldModel field = new BinaryFieldImpl();
+				BinaryField field = new BinaryFieldImpl();
 				field.setFileName("someFile.txt");
 				updateContainer(ac, container, BINARY_FIELD, field);
 			}, (container) -> {
-				BinaryField field = container.getBinary(BINARY_FIELD);
+				HibBinaryField field = container.getBinary(BINARY_FIELD);
 				assertNotNull("The graph field {" + BINARY_FIELD + "} could not be found.", field);
 				assertEquals("The html of the field was not updated.", "someFile.txt", field.getFileName());
 			});

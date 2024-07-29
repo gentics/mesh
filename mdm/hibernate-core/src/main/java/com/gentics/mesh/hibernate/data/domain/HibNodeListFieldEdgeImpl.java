@@ -13,7 +13,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.database.HibernateTx;
 
 /**
@@ -58,7 +58,7 @@ public class HibNodeListFieldEdgeImpl
 	public HibNodeListFieldEdgeImpl() {
 	}
 
-	public HibNodeListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, Node node, 
+	public HibNodeListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, HibNode node, 
 			HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		this(tx, listUuid, index, fieldKey, (UUID) node.getId(), parentFieldContainer);
 	}
@@ -83,7 +83,7 @@ public class HibNodeListFieldEdgeImpl
 	}
 
 	@Override
-	public Node getNode() {
+	public HibNode getNode() {
 		return HibernateTx.get().load(valueOrUuid, HibNodeImpl.class);
 	}
 

@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.BucketableElement;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -28,7 +28,7 @@ import io.reactivex.Flowable;
  *
  * @param <T>
  */
-public interface IndexHandler<T extends BaseElement> {
+public interface IndexHandler<T extends HibBaseElement> {
 	public final static Pattern MATCH_ALL = Pattern.compile(".*");
 
 	/**
@@ -74,7 +74,7 @@ public interface IndexHandler<T extends BaseElement> {
 	 * 
 	 * @return
 	 */
-	Class<? extends BucketableElement> getElementClass();
+	Class<? extends HibBucketableElement> getElementClass();
 
 	/**
 	 * Diff the elements within all indices that are handled by the index handler and synchronize the data.

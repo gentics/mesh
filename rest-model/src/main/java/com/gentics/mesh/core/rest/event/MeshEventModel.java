@@ -45,14 +45,14 @@ public interface MeshEventModel extends RestModel {
 	 *
 	 * @return
 	 */
-	EventCauseInfoModel getCause();
+	EventCauseInfo getCause();
 
 	/**
 	 * Set the cause info for the event.
 	 *
 	 * @param cause
 	 */
-	void setCause(EventCauseInfoModel cause);
+	void setCause(EventCauseInfo cause);
 
 	/**
 	 * Gets the body of an eventbus message as a POJO.

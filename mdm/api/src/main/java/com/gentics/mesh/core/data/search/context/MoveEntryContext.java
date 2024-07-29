@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.search.context;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 
 /**
@@ -43,7 +43,7 @@ public interface MoveEntryContext extends EntryContext {
 	 * 
 	 * @return
 	 */
-	NodeFieldContainer getOldContainer();
+	HibNodeFieldContainer getOldContainer();
 
 	/**
 	 * Set the old content reference.
@@ -51,14 +51,14 @@ public interface MoveEntryContext extends EntryContext {
 	 * @param container
 	 * @return Fluent API
 	 */
-	MoveEntryContext setOldContainer(NodeFieldContainer container);
+	MoveEntryContext setOldContainer(HibNodeFieldContainer container);
 
 	/**
 	 * Return the new content reference.
 	 * 
 	 * @return
 	 */
-	NodeFieldContainer getNewContainer();
+	HibNodeFieldContainer getNewContainer();
 
 	/**
 	 * Set the new content reference.
@@ -66,6 +66,6 @@ public interface MoveEntryContext extends EntryContext {
 	 * @param container
 	 * @return Fluent API
 	 */
-	MoveEntryContext setNewContainer(NodeFieldContainer container);
+	MoveEntryContext setNewContainer(HibNodeFieldContainer container);
 
 }

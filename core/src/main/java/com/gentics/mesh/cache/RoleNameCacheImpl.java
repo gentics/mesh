@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
  *
  */
 @Singleton
-public class RoleNameCacheImpl extends AbstractNameCache<Role> implements RoleNameCache {
+public class RoleNameCacheImpl extends AbstractNameCache<HibRole> implements RoleNameCache {
 
 	@Inject
 	public RoleNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {

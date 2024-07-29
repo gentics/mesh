@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.action.UserDAOActions;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -16,7 +16,7 @@ import com.gentics.mesh.util.SearchWaitUtil;
  * Handler for elasticsearch user index related queries.
  */
 @Singleton
-public class UserSearchHandler extends AbstractSearchHandler<User, UserResponse> {
+public class UserSearchHandler extends AbstractSearchHandler<HibUser, UserResponse> {
 
 	@Inject
 	public UserSearchHandler(Database db, SearchProvider searchProvider, MeshOptions options, UserIndexHandlerImpl indexHandler, UserDAOActions actions, SearchWaitUtil waitUtil) {

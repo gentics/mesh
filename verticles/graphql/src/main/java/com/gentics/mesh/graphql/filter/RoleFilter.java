@@ -7,12 +7,12 @@ import java.util.Optional;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.StartMainFilter;
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 
 /**
  * Filters roles in GraphQl. This filter should be used whenever a list of roles is returned.
  */
-public class RoleFilter extends EntityFilter<Role> {
+public class RoleFilter extends EntityFilter<HibRole> {
 
 	private static final ElementType ELEMENT = ElementType.ROLE;
 	private static final String NAME = "RoleFilter";
@@ -31,9 +31,9 @@ public class RoleFilter extends EntityFilter<Role> {
 	}
 
 	@Override
-	protected List<FilterField<Role, ?>> getFilters() {
+	protected List<FilterField<HibRole, ?>> getFilters() {
 		String owner = ELEMENT.name();
-		List<FilterField<Role, ?>> filters = new ArrayList<>();
+		List<FilterField<HibRole, ?>> filters = new ArrayList<>();
 		filters.add(CommonFields.hibNameFilter(owner));
 		filters.add(CommonFields.hibUuidFilter(owner));
 		filters.addAll(CommonFields.hibUserTrackingFilter(owner));

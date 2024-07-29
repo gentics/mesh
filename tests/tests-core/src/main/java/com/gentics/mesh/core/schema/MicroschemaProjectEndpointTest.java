@@ -18,8 +18,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -76,8 +76,8 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddMicroschemaToProjectWithPerm() throws Exception {
-		Project extraProject;
-		Microschema microschema = microschemaContainer("vcard");
+		HibProject extraProject;
+		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
@@ -106,10 +106,10 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	public void testAddMicroschemaToProjectWithoutPerm() throws Exception {
 		String projectUuid;
 		String microschemaUuid;
-		Project extraProject;
+		HibProject extraProject;
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Microschema microschema = microschemaContainer("vcard");
+			HibMicroschema microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
@@ -128,7 +128,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			MicroschemaDao microschemaDao = tx.microschemaDao();
 			// Reload the microschema and check for expected changes
-			Microschema microschema = microschemaContainer("vcard");
+			HibMicroschema microschema = microschemaContainer("vcard");
 
 			assertFalse("The microschema should not have been added to the extra project but it was",
 				microschemaDao.contains(extraProject, microschema));
@@ -138,8 +138,8 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 	// Microschema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveMicroschemaFromProjectWithPerm() throws Exception {
-		Project project = project();
-		Microschema microschema = microschemaContainer("vcard");
+		HibProject project = project();
+		HibMicroschema microschema = microschemaContainer("vcard");
 		String microschemaUuid = tx(() -> microschema.getUuid());
 		String microschemaName = "vcard";
 
@@ -172,8 +172,8 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveMicroschemaFromProjectWithoutPerm() throws Exception {
-		Project project = project();
-		Microschema microschema = microschemaContainer("vcard");
+		HibProject project = project();
+		HibMicroschema microschema = microschemaContainer("vcard");
 
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();

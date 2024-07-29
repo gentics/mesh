@@ -1,7 +1,7 @@
 package com.gentics.mesh.hibernate.util;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.hibernate.data.domain.HibPermissionRootImpl;
 import com.gentics.mesh.util.ExceptionUtil;
@@ -31,7 +31,7 @@ public final class TypeInfoUtil {
 		}
 	}
 
-	public static <T extends BaseElement> ElementType getType(T element) {
+	public static <T extends HibBaseElement> ElementType getType(T element) {
 		if (element == null) {
 			return null;
 		} else if (element instanceof HibPermissionRootImpl) {

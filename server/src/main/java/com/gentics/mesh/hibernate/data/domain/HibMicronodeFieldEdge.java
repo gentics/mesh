@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.domain;
 
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 
 /**
  * Some common state-independent functionality for micronode field edges.
@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
  * @author plyhun
  *
  */
-public interface HibMicronodeFieldEdge extends MicronodeField, HibFieldEdge {
+public interface HibMicronodeFieldEdge extends HibMicronodeField, HibFieldEdge {
 
 	@Override
 	default String getFieldKey() {

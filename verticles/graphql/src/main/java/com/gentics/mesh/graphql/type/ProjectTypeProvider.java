@@ -12,11 +12,11 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -62,13 +62,13 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	private DataFetcherResult<NodeContent> baseNodeFetcher(DataFetchingEnvironment env) {
 		ContentDao contentDao = Tx.get().contentDao();
 		GraphQLContext gc = env.getContext();
-		Project project = env.getSource();
-		Node node = project.getBaseNode();
+		HibProject project = env.getSource();
+		HibNode node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);
 
-		NodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
+		HibNodeFieldContainer container = contentDao.findVersion(node, gc, languageTags, type);
 		return NodeTypeProvider.createNodeContentWithSoftPermissions(env, gc, node, languageTags, type, container);
 	}
 
@@ -78,7 +78,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	 * @param project
 	 * @return
 	 */
-	public GraphQLObjectType createType(Project project) {
+	public GraphQLObjectType createType(HibProject project) {
 		Builder root = newObject();
 		root.name(PROJECT_TYPE_NAME);
 		interfaceTypeProvider.addCommonFields(root);

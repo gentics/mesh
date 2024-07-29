@@ -4,12 +4,12 @@ import java.util.stream.Stream;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -20,9 +20,9 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.event.EventQueueBatch;
 
 /**
- * DAO for {@link Schema}.
+ * DAO for {@link HibSchema}.
  */
-public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, Schema, SchemaVersion, SchemaModel>, RootDao<Project, Schema> {
+public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionModel, SchemaReference, HibSchema, HibSchemaVersion, SchemaModel>, RootDao<HibProject, HibSchema> {
 
 	/**
 	 * Create the schema.
@@ -32,7 +32,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param uuid
 	 * @return
 	 */
-	Schema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibSchema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Find the referenced schema container version. Throws an error, if the referenced schema container version can not be found
@@ -41,7 +41,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 *            reference
 	 * @return Resolved container version
 	 */
-	SchemaVersion fromReference(SchemaReference reference);
+	HibSchemaVersion fromReference(SchemaReference reference);
 
 	/**
 	 * Load the schema versions via the given reference.
@@ -50,7 +50,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param reference
 	 * @return
 	 */
-	SchemaVersion fromReference(Project project, SchemaReference reference);
+	HibSchemaVersion fromReference(HibProject project, SchemaReference reference);
 
 	/**
 	 * Create new schema container.
@@ -64,7 +64,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	Schema create(SchemaVersionModel schema, User creator, String uuid) throws MeshSchemaException;
+	HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid) throws MeshSchemaException;
 
 	/**
 	 * Create new schema container.
@@ -76,7 +76,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	default Schema create(SchemaVersionModel schema, User creator) throws MeshSchemaException {
+	default HibSchema create(SchemaVersionModel schema, HibUser creator) throws MeshSchemaException {
 		return create(schema, creator, null);
 	}
 
@@ -94,14 +94,14 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	Schema create(SchemaVersionModel schema, User creator, String uuid, boolean validate) throws MeshSchemaException;
+	HibSchema create(SchemaVersionModel schema, HibUser creator, String uuid, boolean validate) throws MeshSchemaException;
 
 	/**
 	 * Returns an iterable of nodes which are referencing the schema container.
 	 *
 	 * @return
 	 */
-	Result<? extends Node> getNodes(Schema schema);
+	Result<? extends HibNode> getNodes(HibSchema schema);
 
 	/**
 	 * Find all projects which reference the schema.
@@ -109,7 +109,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param schema
 	 * @return
 	 */
-	Result<Project> findLinkedProjects(Schema schema);
+	Result<HibProject> findLinkedProjects(HibSchema schema);
 
 	/**
 	 * Load all nodes, accessible in the given branch with Read Published permission.
@@ -120,10 +120,10 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param type content type
 	 * @return
 	 */
-	Result<? extends Node> findNodes(SchemaVersion version, String branchUuid, User user, ContainerType type);
+	Result<? extends HibNode> findNodes(HibSchemaVersion version, String branchUuid, HibUser user, ContainerType type);
 
 	/**
-	 * Return a stream for {@link NodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
 	 * 
 	 * @param versiSchemaDAOActions schemaActions();
 
@@ -132,10 +132,10 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 *            branch Uuid
 	 * @return
 	 */
-	Stream<? extends NodeFieldContainer> getFieldContainers(SchemaVersion version, String branchUuid);
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid);
 
 	/**
-	 * Return a stream for {@link NodeFieldContainer}'s that use this schema version and are versions for the given branch.
+	 * Return a stream for {@link HibNodeFieldContainer}'s that use this schema version and are versions for the given branch.
 	 * 
 	 * @param version
 	 * @param branchUuid
@@ -143,7 +143,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 *            Bucket to limit the selection by
 	 * @return
 	 */
-	Stream<? extends NodeFieldContainer> getFieldContainers(SchemaVersion version, String branchUuid, Bucket bucket);
+	Stream<? extends HibNodeFieldContainer> getFieldContainers(HibSchemaVersion version, String branchUuid, Bucket bucket);
 
 	/**
 	 * Load the limited portion of contents that use the given schema version for the given branch.
@@ -153,7 +153,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param limit limits the fetched entry number. if less than 1, limits are disabled
 	 * @return
 	 */
-	Result<? extends NodeFieldContainer> findDraftFieldContainers(SchemaVersion version, String branchUuid, long limit);
+	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid, long limit);
 
 	/**
 	 * Load the contents that use the given schema version for the given branch.
@@ -162,7 +162,7 @@ public interface SchemaDao extends ContainerDao<SchemaResponse, SchemaVersionMod
 	 * @param branchUuid
 	 * @return
 	 */
-	default Result<? extends NodeFieldContainer> findDraftFieldContainers(SchemaVersion version, String branchUuid) {
+	default Result<? extends HibNodeFieldContainer> findDraftFieldContainers(HibSchemaVersion version, String branchUuid) {
 		return findDraftFieldContainers(version, branchUuid, -1);
 	}
 }

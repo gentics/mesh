@@ -17,7 +17,7 @@ import jakarta.persistence.ManyToOne;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.hibernate.data.domain.keys.HibPermissionPK;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -42,7 +42,7 @@ public class HibPermissionImpl implements Serializable {
 
 	@Id
 	@ManyToOne(targetEntity = HibRoleImpl.class, fetch = FetchType.LAZY, optional = false)
-	private Role role;
+	private HibRole role;
 
 	@Enumerated(EnumType.STRING)
 	private ElementType type;
@@ -159,11 +159,11 @@ public class HibPermissionImpl implements Serializable {
 		this.element = element;
 	}
 
-	public Role getRole() {
+	public HibRole getRole() {
 		return role;
 	}
 
-	public void setRole(Role role) {
+	public void setRole(HibRole role) {
 		this.role = role;
 	}
 

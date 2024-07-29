@@ -1,6 +1,6 @@
 package com.gentics.mesh.rest.client;
 
-import com.gentics.mesh.MeshVersions;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestOkHttpClientImpl;
 import com.gentics.mesh.rest.client.method.*;
@@ -137,7 +137,7 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return
 	 */
 	public static String getPlainVersion() {
-		return MeshVersions.getPlainVersion();
+		return MeshVersion.getPlainVersion();
 	}
 
 	/**

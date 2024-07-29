@@ -6,39 +6,39 @@ import com.gentics.mesh.parameter.image.ImageManipulation;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
 /**
- * Setters for the {@link ImageVariant} instance
+ * Setters for the {@link HibImageVariant} instance
  * 
  * @author plyhun
  *
  */
-public interface HibImageVariantSetter extends ImageVariant {
+public interface HibImageVariantSetter extends HibImageVariant {
 
-	ImageVariant setAuto(boolean auto);
+	HibImageVariant setAuto(boolean auto);
 
-	ImageVariant setResizeMode(ResizeMode resize);
+	HibImageVariant setResizeMode(ResizeMode resize);
 
-	ImageVariant setCropMode(CropMode crop);
+	HibImageVariant setCropMode(CropMode crop);
 
-	ImageVariant setCropStartY(Integer cropY);
+	HibImageVariant setCropStartY(Integer cropY);
 
-	ImageVariant setCropStartX(Integer cropX);
+	HibImageVariant setCropStartX(Integer cropX);
 
-	ImageVariant setCropWidth(Integer cropWidth);
+	HibImageVariant setCropWidth(Integer cropWidth);
 
-	ImageVariant setCropHeight(Integer cropHeight);
+	HibImageVariant setCropHeight(Integer cropHeight);
 
-	ImageVariant setFocalPointZoom(Float fpz);
+	HibImageVariant setFocalPointZoom(Float fpz);
 
-	ImageVariant setFocalPointY(Float fpy);
+	HibImageVariant setFocalPointY(Float fpy);
 
-	ImageVariant setFocalPointX(Float fpx);
+	HibImageVariant setFocalPointX(Float fpx);
 
-	ImageVariant setHeight(Integer height);
+	HibImageVariant setHeight(Integer height);
 
-	ImageVariant setWidth(Integer width);
+	HibImageVariant setWidth(Integer width);
 
 	@Override
-	default ImageVariant fillFromManipulation(Binary binary, ImageManipulation variant) {
+	default HibImageVariant fillFromManipulation(HibBinary binary, ImageManipulation variant) {
 		if (variant.getRect() != null) {
 			setCropStartX(variant.getRect().getStartX());
 			setCropStartY(variant.getRect().getStartY());

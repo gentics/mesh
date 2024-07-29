@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.field;
 
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
 
 @FunctionalInterface
 public interface DataProvider {
-	void set(FieldContainer container, String name);
+	void set(HibFieldContainer container, String name);
 }

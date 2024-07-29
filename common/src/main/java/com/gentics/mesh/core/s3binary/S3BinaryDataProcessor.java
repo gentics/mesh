@@ -2,7 +2,7 @@ package com.gentics.mesh.core.s3binary;
 
 import java.util.function.Consumer;
 
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 
 import io.reactivex.Maybe;
 
@@ -25,6 +25,6 @@ public interface S3BinaryDataProcessor {
 	 * @param context
 	 * @return Modifier for the s3 binary graph field.
 	 */
-	Maybe<Consumer<S3BinaryField>> process(S3BinaryDataProcessorContext context);
+	Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext context);
 
 }

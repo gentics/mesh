@@ -11,9 +11,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.cache.CacheStatusModel;
+import com.gentics.mesh.cache.CacheStatus;
 import com.gentics.mesh.cache.ListableFieldCacheImpl;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
@@ -50,7 +50,7 @@ public abstract class AbstractAutoOptionListCacheTest extends AbstractMeshTest i
 	@Before
 	public void makeEmAll() {
 		boolean alreadyCreated = tx(() -> {
-			Schema schema = project().getBaseNode().getSchemaContainer();
+			HibSchema schema = project().getBaseNode().getSchemaContainer();
 			FieldSchema field = schema.getLatestVersion().getSchema().getField(DEFAULT_LIST_FIELD_KEY);
 			return field != null;
 		});
@@ -78,7 +78,7 @@ public abstract class AbstractAutoOptionListCacheTest extends AbstractMeshTest i
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 	}
 
-	protected void checkStats(CacheStatusModel stats) {
+	protected void checkStats(CacheStatus stats) {
 		String rawSize = size()  + unit();
 		long sizeAvg = parseRawSize(rawSize);
 		assertEquals(((HibernateMeshOptions) options()).getCacheConfig().getListFieldCacheSize(), stats.getSetup());
@@ -87,7 +87,7 @@ public abstract class AbstractAutoOptionListCacheTest extends AbstractMeshTest i
 		assertTrue(0 < stats.getCurrentSizeInUnits());
 	}
 
-	public CacheStatusModel getCacheStats() {
+	public CacheStatus getCacheStats() {
 		HibernateMeshComponent mesh = ((HibernateMeshComponent)mesh());
 		ListableFieldCacheImpl storage = mesh.listableFieldCacheStorage();
 		return storage.getStatus();
@@ -100,7 +100,7 @@ public abstract class AbstractAutoOptionListCacheTest extends AbstractMeshTest i
 		StringFieldListImpl field = node.getFields().getStringFieldList(DEFAULT_LIST_FIELD_KEY);
 		assertEquals("The node field did not contain the created list items", numOfItemsPerField, field.getItems().size());
 
-		CacheStatusModel stats = getCacheStats();
+		CacheStatus stats = getCacheStats();
 		checkStats(stats);
 	}
 

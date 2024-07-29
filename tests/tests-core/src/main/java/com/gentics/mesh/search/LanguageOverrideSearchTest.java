@@ -23,11 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -206,8 +206,8 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 		waitForSearchIdleEvent();
 
 		String microschemaHash = tx(tx -> {
-			Schema schema1 = tx.schemaDao().findByUuid(schema.getUuid());
-			SchemaVersion version = schema1.getLatestVersion();
+			HibSchema schema1 = tx.schemaDao().findByUuid(schema.getUuid());
+			HibSchemaVersion version = schema1.getLatestVersion();
 			return version.getMicroschemaVersionHash(initialBranch());
 		});
 
@@ -394,8 +394,8 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 			.setLanguage(language)
 			.setSchemaName("page")
 			.setFields(FieldMap.of(
-				"title", StringFieldModel.of(title),
-				"content", StringFieldModel.of(content)
+				"title", StringField.of(title),
+				"content", StringField.of(content)
 			));
 		NodeResponse nodeResponse = client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
 		createdPages.add(nodeResponse);
@@ -421,7 +421,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 			.setLanguage(language)
 			.setSchemaName("folder")
 			.setFields(FieldMap.of(
-				"name", StringFieldModel.of(name)
+				"name", StringField.of(name)
 			));
 		return client().createNode(PROJECT_NAME, nodeCreateRequest).blockingGet();
 	}
@@ -473,7 +473,7 @@ public class LanguageOverrideSearchTest extends AbstractMultiESTest {
 			BranchListResponse branches = client().findBranches(PROJECT_NAME).blockingGet();
 			BranchResponse branch = branches.getData().stream().filter(BranchResponse::getLatest).findFirst()
 					.orElseThrow(() -> new RuntimeException("Did not find latest branch for test project"));
-			BranchInfoSchemaListModel schemaVersions = client().getBranchSchemaVersions(PROJECT_NAME, branch.getUuid()).blockingGet();
+			BranchInfoSchemaList schemaVersions = client().getBranchSchemaVersions(PROJECT_NAME, branch.getUuid()).blockingGet();
 			BranchSchemaInfo info = schemaVersions.getSchemas().stream().filter(i -> StringUtils.equals(i.getUuid(), schemaUuid))
 					.findFirst()
 					.orElseThrow(() -> new RuntimeException("Did not find version of schema " + schemaUuid));

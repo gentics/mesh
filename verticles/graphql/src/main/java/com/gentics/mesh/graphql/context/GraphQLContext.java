@@ -4,8 +4,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.CoreElement;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -29,7 +29,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @return Provided element will be returned if at least one of the permissions grants access
 	 * @throws PermissionException
 	 */
-	<T extends CoreElement<?>> T requiresPerm(T element, InternalPermission... permission);
+	<T extends HibCoreElement<?>> T requiresPerm(T element, InternalPermission... permission);
 
 	/**
 	 * Check whether the current user of the context has read permission on the container (via type and parent node).
@@ -38,7 +38,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
 	 * @param type
 	 * @return
 	 */
-	boolean hasReadPerm(NodeFieldContainer container, ContainerType type);
+	boolean hasReadPerm(HibNodeFieldContainer container, ContainerType type);
 
 	/**
      * Check whether the current user of the context has read permission on the container (via type and parent node).
@@ -50,7 +50,7 @@ public interface GraphQLContext extends InternalActionContext, GraphQLPluginCont
      * @param type
      * @return An optional graphql permission error.
      */
-	Optional<GraphQLError> requiresReadPermSoft(NodeFieldContainer container, DataFetchingEnvironment env, ContainerType type);
+	Optional<GraphQLError> requiresReadPermSoft(HibNodeFieldContainer container, DataFetchingEnvironment env, ContainerType type);
 
 	/**
 	 * Check whether the content can be read by the current user. Please note that this method will not check READ perms on the node. It is only checking the content container of the node.

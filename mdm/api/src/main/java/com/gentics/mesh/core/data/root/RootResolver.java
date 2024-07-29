@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
  * Contains data structure dependent mechanisms.
@@ -16,5 +16,5 @@ public interface RootResolver {
 	 * @param pathToElement
 	 * @return Resolved element or null if no element could be found
 	 */
-	BaseElement resolvePathToElement(String pathToElement);
+	HibBaseElement resolvePathToElement(String pathToElement);
 }

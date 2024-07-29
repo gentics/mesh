@@ -6,15 +6,15 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 
 /**
  * Serializer for simplified field lists. The serializer will create a json array using the given field list items.
  */
-public class FieldListSerializer extends JsonSerializer<FieldListModel> {
+public class FieldListSerializer extends JsonSerializer<FieldList> {
 
 	@Override
-	public void serialize(FieldListModel value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+	public void serialize(FieldList value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
 		if (value == null || value.getItems() == null) {
 			gen.writeNull();
 		} else {

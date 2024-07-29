@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 import com.gentics.mesh.hibernate.dialect.MariaDBBinaryUuidDialect;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
@@ -50,7 +50,7 @@ public class MariaDBConnector extends AbstractDatabaseConnector {
 	}
 
 	@Override
-	public long deleteContentEdgesByProject(EntityManager em, Project project) {
+	public long deleteContentEdgesByProject(EntityManager em, HibProject project) {
 		List<UUID> uuids = em.createQuery(FIND_BY_PROJECT, UUID.class)
 			.setParameter("project", project)
 			.getResultList();
@@ -78,7 +78,7 @@ public class MariaDBConnector extends AbstractDatabaseConnector {
 	}
 
 	@Override
-	public long deleteContentEdgesByBranchUuids(EntityManager em, Branch branch, Collection<UUID> uuids) {
+	public long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids) {
 		List<UUID> childUuids = em.createQuery(FIND_BY_NODE_UUIDS_BRANCH, UUID.class)
 				.setParameter("nodesUuid", uuids)
 				.setParameter("branch", branch)

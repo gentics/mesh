@@ -18,10 +18,10 @@ import org.apache.commons.lang3.BooleanUtils;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.RoleDAOActions;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Handler for /api/v1/roles endpoint crud operations.
  */
-public class RoleCrudHandlerImpl extends AbstractCrudHandler<Role, RoleResponse> implements RoleCrudHandler {
+public class RoleCrudHandlerImpl extends AbstractCrudHandler<HibRole, RoleResponse> implements RoleCrudHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(RoleCrudHandlerImpl.class);
 
@@ -71,10 +71,10 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<Role, RoleResponse>
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
 			// 1. Load the role that should be used - read perm implies that the user is able to read the attached permissions
-			Role role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
+			HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, READ_PERM);
 
 			// 2. Resolve the path to element that is targeted
-			BaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
+			HibBaseElement targetElement = boot.rootResolver().resolvePathToElement(pathToElement);
 			if (targetElement == null) {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
@@ -117,10 +117,10 @@ public class RoleCrudHandlerImpl extends AbstractCrudHandler<Role, RoleResponse>
 
 				RoleDao roleDao = tx.roleDao();
 				// 1. Load the role that should be used
-				Role role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
+				HibRole role = roleDao.loadObjectByUuid(ac, roleUuid, UPDATE_PERM);
 
 				// 2. Resolve the path to element that is targeted
-				BaseElement element = boot.rootResolver().resolvePathToElement(pathToElement);
+				HibBaseElement element = boot.rootResolver().resolvePathToElement(pathToElement);
 
 				if (element == null) {
 					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);

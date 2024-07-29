@@ -5,7 +5,7 @@ import java.util.UUID;
 import jakarta.persistence.MappedSuperclass;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
+import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.database.HibernateTx;
 
 /**
@@ -17,7 +17,7 @@ import com.gentics.mesh.database.HibernateTx;
  * @param <U> a primitive value type
  */
 @MappedSuperclass
-public abstract class AbstractHibPrimitiveListFieldEdgeImpl<LF extends ListableField, U> 
+public abstract class AbstractHibPrimitiveListFieldEdgeImpl<LF extends HibListableField, U> 
 		extends AbstractHibListFieldEdgeImpl<U> {
 
 	public AbstractHibPrimitiveListFieldEdgeImpl() {

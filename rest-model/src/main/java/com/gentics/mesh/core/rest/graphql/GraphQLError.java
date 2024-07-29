@@ -29,7 +29,7 @@ public class GraphQLError implements RestModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of locations which are related to the error.")
-	private List<ErrorLocationModel> locations;
+	private List<ErrorLocation> locations;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Path of the error.")
@@ -120,7 +120,7 @@ public class GraphQLError implements RestModel {
 	 * 
 	 * @return
 	 */
-	public List<ErrorLocationModel> getLocations() {
+	public List<ErrorLocation> getLocations() {
 		return locations;
 	}
 
@@ -130,7 +130,7 @@ public class GraphQLError implements RestModel {
 	 * @param locations
 	 * @return
 	 */
-	public GraphQLError setLocations(List<ErrorLocationModel> locations) {
+	public GraphQLError setLocations(List<ErrorLocation> locations) {
 		this.locations = locations;
 		return this;
 	}

@@ -24,9 +24,9 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.branch.BranchMicroschemaVersion;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -72,7 +72,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	}
 
 	@Override
-	public Optional<JsonObject> getMapping(SchemaModel schema, Branch branch, String language) {
+	public Optional<JsonObject> getMapping(SchemaModel schema, HibBranch branch, String language) {
 		// 0. 'no index' schema flag check
 		if (schema.getNoIndex() != null && schema.getNoIndex()) {
 			return Optional.empty();
@@ -179,7 +179,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	 *            Field schema which will be used to construct the mapping info
 	 * @return Optional with the JSON object which contains the mapping info or it can be empty if the mapping should be omitted.
 	 */
-	public Optional<JsonObject> getFieldMapping(FieldSchema fieldSchema, Branch branch, String language) {
+	public Optional<JsonObject> getFieldMapping(FieldSchema fieldSchema, HibBranch branch, String language) {
 
 		// Create the mapping if the field is required.
 		// It may be required if the mapping mode is set to dynamic
@@ -257,7 +257,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		}
 	}
 
-	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, Branch branch, String language,
+	private void addMicronodeMapping(JsonObject fieldInfo, FieldSchema fieldSchema, HibBranch branch, String language,
 		JsonObject customIndexOptions) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
@@ -281,7 +281,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		}
 	}
 
-	private void addListFieldMapping(JsonObject fieldInfo, Branch branch, ListFieldSchemaImpl fieldSchema, String language,
+	private void addListFieldMapping(JsonObject fieldInfo, HibBranch branch, ListFieldSchemaImpl fieldSchema, String language,
 		JsonObject customIndexOptions) {
 		if (isStrictMode) {
 			fieldInfo.mergeIn(customIndexOptions);
@@ -446,7 +446,7 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 	 *            The branch for which the mapping should be created
 	 * @return An Properties-mapping for a microschema field.
 	 */
-	public JsonObject getMicroschemaMappingOptions(String[] allowed, Branch branch, String language) {
+	public JsonObject getMicroschemaMappingOptions(String[] allowed, HibBranch branch, String language) {
 		// Prevent Null-Pointers
 		if (allowed == null) {
 			allowed = new String[0];
@@ -475,8 +475,8 @@ public class NodeContainerMappingProviderImpl extends AbstractMappingProvider im
 		boolean shouldFilter = branch != null && !whitelist.isEmpty();
 
 		if (shouldFilter) {
-			for (BranchMicroschemaVersion assignment : branch.findAllLatestMicroschemaVersionEdges()) {
-				MicroschemaVersion version = assignment.getMicroschemaContainerVersion();
+			for (HibBranchMicroschemaVersion assignment : branch.findAllLatestMicroschemaVersionEdges()) {
+				HibMicroschemaVersion version = assignment.getMicroschemaContainerVersion();
 				MicroschemaVersionModel microschema = version.getSchema();
 				String microschemaName = microschema.getName();
 

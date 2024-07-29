@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
-import com.gentics.mesh.core.data.node.field.BooleanField;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
 
@@ -10,7 +10,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public class HibBooleanFieldImpl extends AbstractBasicHibField<Boolean> implements BooleanField {
+public class HibBooleanFieldImpl extends AbstractBasicHibField<Boolean> implements HibBooleanField {
 
 	public HibBooleanFieldImpl(String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent, Boolean value) {
 		super(fieldKey, parent, FieldTypes.BOOLEAN, value);

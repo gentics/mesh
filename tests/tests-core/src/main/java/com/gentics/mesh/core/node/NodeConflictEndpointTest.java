@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -17,16 +17,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.i18n.I18NUtil;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -44,7 +44,7 @@ import com.gentics.mesh.util.Tuple;
 @MeshTestSetting(testSize = FULL, startServer = true)
 public class NodeConflictEndpointTest extends AbstractMeshTest {
 
-	private Node getTestNode() {
+	private HibNode getTestNode() {
 		return content("concorde");
 	}
 
@@ -62,7 +62,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 		try (Tx trx = tx()) {
 
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -90,7 +90,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx trx = tx()) {
 
 			// Invoke an initial update on the node - Update Version 1.0 teaser -> 1.1
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "1.0");
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -136,7 +136,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			updateSchema();
-			NodeFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
+			HibNodeFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			tx.success();
@@ -157,10 +157,10 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private void initialRequest() {
 
-		Node node = getTestNode();
+		HibNode node = getTestNode();
 		String nodeUuid = tx(() -> node.getUuid());
 
-		NodeFieldContainer oldContainer = tx(tx -> { return tx.contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"); });
+		HibNodeFieldContainer oldContainer = tx(tx -> { return tx.contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.0"); });
 		NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
 		// Add micronode / string list
 		request.getFields().put("stringList", FieldUtil.createStringListField("a", "b", "c"));
@@ -175,7 +175,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			assertNotNull("The old version should have a new version 1.1", contentDao.getNextVersions(oldContainer).iterator().next());
-			NodeFieldContainer newContainer = contentDao.findVersion(node, "en", project().getLatestBranch().getUuid(), "1.1");
+			HibNodeFieldContainer newContainer = contentDao.findVersion(node, "en", project().getLatestBranch().getUuid(), "1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name", oldContainer
 				.getString("teaser").getString());
 			assertEquals("The name field value of the new container version should contain the expected value.", "1234", newContainer.getString(
@@ -188,7 +188,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private NodeUpdateRequest modifingRequest() {
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
@@ -201,7 +201,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
-			NodeFieldContainer createdVersion = trx.contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
+			HibNodeFieldContainer createdVersion = trx.contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.2");
 			assertNotNull("The graph field container for version 1.2 could not be found.", createdVersion);
 			return request;
@@ -217,7 +217,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	private void repeatRequest(NodeUpdateRequest request) {
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			// Add another field to the request in order to invoke an update. Otherwise no update would occure and no 1.3 would be created.
@@ -227,24 +227,24 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
-			NodeFieldContainer createdVersion = trx.contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
+			HibNode node = getTestNode();
+			HibNodeFieldContainer createdVersion = trx.contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.3");
 			assertNotNull("The graph field container for version 1.3 could not be found.", createdVersion);
-			NodeFieldContainer previousVersion = createdVersion.getPreviousVersion();
+			HibNodeFieldContainer previousVersion = createdVersion.getPreviousVersion();
 			assertNotNull("The graph field container for version 1.2 could not be found.", previousVersion);
 			assertEquals("The previous version of 1.3 should be 1.2", "1.2", previousVersion.getVersion().toString());
 
-			MicronodeField previousMicronode = previousVersion.getMicronode("micronode");
-			MicronodeField nextMicronode = createdVersion.getMicronode("micronode");
+			HibMicronodeField previousMicronode = previousVersion.getMicronode("micronode");
+			HibMicronodeField nextMicronode = createdVersion.getMicronode("micronode");
 
 			assertNotNull("Could not find the field within the previous version.", previousMicronode);
 			assertNotNull("Could not find the expected field in the created version.", nextMicronode);
 			assertEquals("Both fields should have the same uuid since both are referenced by the both versions.", nextMicronode.getMicronode()
 				.getUuid(), previousMicronode.getMicronode().getUuid());
 
-			StringFieldList previousStringList = previousVersion.getStringList("stringList");
-			StringFieldList nextStringList = createdVersion.getStringList("stringList");
+			HibStringFieldList previousStringList = previousVersion.getStringList("stringList");
+			HibStringFieldList nextStringList = createdVersion.getStringList("stringList");
 
 			assertNotNull("Could not find the field within the previous version.", previousStringList);
 			assertNotNull("Could not find the expected field in the created version.", nextStringList);
@@ -256,7 +256,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private void deletingRequest() {
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request4 = prepareNameFieldUpdateRequest("1234", "1.2");
@@ -266,8 +266,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertThat(restNode4).hasVersion("1.4");
 		}
 		try (Tx trx = tx()) {
-			Node node = getTestNode();
-			NodeFieldContainer createdVersion = trx.contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.4");
+			HibNode node = getTestNode();
+			HibNodeFieldContainer createdVersion = trx.contentDao().findVersion(node, "en", project().getLatestBranch().getUuid(), "1.4");
 			assertNotNull("The graph field container for version 0.5 could not be found.", createdVersion);
 			assertNull("The micronode should not exist in this version since we explicitly removed it.", createdVersion.getMicronode("micronode"));
 			assertNull("The string list should not exist in this version since we explicitly removed it via a null update request.", createdVersion
@@ -276,7 +276,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	private void updateSchema() {
-		Node node = getTestNode();
+		HibNode node = getTestNode();
 		ListFieldSchema stringListFieldSchema = new ListFieldSchemaImpl();
 		stringListFieldSchema.setName("stringList");
 		stringListFieldSchema.setListType("string");
@@ -304,7 +304,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			updateSchema();
-			NodeFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
+			HibNodeFieldContainer origContainer = contentDao.getLatestDraftFieldContainer(getTestNode(), english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			tx.success();
@@ -314,7 +314,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		initialRequest();
 
 		// Modify 1.1 and update micronode
-		Node node = getTestNode();
+		HibNode node = getTestNode();
 		try (Tx tx = tx()) {
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -328,7 +328,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.2");
 
-			NodeFieldContainer createdVersion = tx.contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
+			HibNodeFieldContainer createdVersion = tx.contentDao().findVersion(node, Arrays.asList("en"), project().getLatestBranch().getUuid(),
 				"1.2");
 			assertNotNull("The graph field container for version 0.3 could not be found.", createdVersion);
 		}
@@ -369,7 +369,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	public void testBogusVersionNumber() {
 		try (Tx trx = tx()) {
 
-			Node node = getTestNode();
+			HibNode node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");

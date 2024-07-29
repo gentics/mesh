@@ -23,17 +23,17 @@ import org.apache.tika.metadata.Metadata;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.binary.DocumentTikaParser;
 import com.gentics.mesh.core.binary.impl.TikaResult;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
-import com.gentics.mesh.core.rest.node.field.binary.LocationModel;
+import com.gentics.mesh.core.rest.node.field.binary.Location;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.S3BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.S3BinaryFieldSchema;
@@ -49,7 +49,7 @@ import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * This class can be used to parse binary data from {@link S3BinaryField} fields. Once parsed the processor will populate the field with additional meta data
+ * This class can be used to parse binary data from {@link S3HibBinaryField} fields. Once parsed the processor will populate the field with additional meta data
  * from the parsing result.
  */
 @Singleton
@@ -132,7 +132,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<S3BinaryField>> process(S3BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return getExtractOptions(ctx.getActionContext(), ctx.getNodeUuid(), ctx.getFieldName())
 			.flatMap(
@@ -153,12 +153,12 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 		return db.maybeTx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			ContentDao contentDao = tx.contentDao();
-			Project project = tx.getProject(ac);
-			Branch branch = tx.getBranch(ac);
-			Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
+			HibProject project = tx.getProject(ac);
+			HibBranch branch = tx.getBranch(ac);
+			HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, InternalPermission.UPDATE_PERM);
 
 			// Load the current latest draft
-			NodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
+			HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainers(node, branch, ContainerType.DRAFT).next();
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
 				.getSchema()
@@ -177,7 +177,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 		});
 	}
 
-	private Maybe<Consumer<S3BinaryField>> process(S3BinaryExtractOptions extractOptions, FileUpload upload) {
+	private Maybe<Consumer<S3HibBinaryField>> process(S3BinaryExtractOptions extractOptions, FileUpload upload) {
 		// Shortcut if no field specific options are specified and parsing is globally disabled
 		if (!options.getUploadOptions().isParser() && extractOptions == null) {
 			log.debug("Not parsing " + upload.fileName()
@@ -206,7 +206,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 				boolean parseMetadata = extractOptions == null || extractOptions.getMetadata();
 				TikaResult pr = parseFile(ins, len, parseMetadata);
 
-				Consumer<S3BinaryField> consumer = field -> {
+				Consumer<S3HibBinaryField> consumer = field -> {
 					pr.getMetadata().forEach((e, k) -> {
 						field.setMetadata(e, k);
 					});
@@ -252,7 +252,7 @@ public class TikaS3BinaryProcessor implements S3BinaryDataProcessor {
 	 */
 	public TikaResult parseFile(InputStream ins, int len, boolean parseMetadata) throws TikaException, IOException {
 
-		LocationModel loc = new LocationModel();
+		Location loc = new Location();
 		Map<String, String> fields = new HashMap<>();
 
 		Metadata metadata = new Metadata();

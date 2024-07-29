@@ -110,28 +110,28 @@ public final class FieldUtil {
 	 * @param stringValue
 	 * @return
 	 */
-	public static StringFieldModel createStringField(String stringValue) {
-		StringFieldModel field = new StringFieldImpl();
+	public static StringField createStringField(String stringValue) {
+		StringField field = new StringFieldImpl();
 		field.setString(stringValue);
 		return field;
 	}
 
-	public static HtmlFieldModel createHtmlField(String htmlValue) {
-		HtmlFieldModel field = new HtmlFieldImpl();
+	public static HtmlField createHtmlField(String htmlValue) {
+		HtmlField field = new HtmlFieldImpl();
 		field.setHTML(htmlValue);
 		return field;
 	}
 
-	public static BinaryFieldModel createBinaryField(String uuid, String fileName, String hashSum) {
-		BinaryFieldModel field = new BinaryFieldImpl();
+	public static BinaryField createBinaryField(String uuid, String fileName, String hashSum) {
+		BinaryField field = new BinaryFieldImpl();
 		field.setBinaryUuid(uuid);
 		field.setFileName(fileName);
 		field.setSha512sum(hashSum);
 		return field;
 	}
 
-	public static S3BinaryFieldModel createS3BinaryField(String fileName) {
-		S3BinaryFieldModel field = new S3BinaryFieldImpl();
+	public static S3BinaryField createS3BinaryField(String fileName) {
+		S3BinaryField field = new S3BinaryFieldImpl();
 		field.setFileName(fileName);
 		return field;
 	}
@@ -142,8 +142,8 @@ public final class FieldUtil {
 	 * @param numberValue
 	 * @return
 	 */
-	public static NumberFieldModel createNumberField(Number numberValue) {
-		NumberFieldModel field = new NumberFieldImpl();
+	public static NumberField createNumberField(Number numberValue) {
+		NumberField field = new NumberFieldImpl();
 		field.setNumber(numberValue);
 		return field;
 	}
@@ -154,14 +154,14 @@ public final class FieldUtil {
 	 * @param value
 	 * @return
 	 */
-	public static BooleanFieldModel createBooleanField(Boolean value) {
-		BooleanFieldModel field = new BooleanFieldImpl();
+	public static BooleanField createBooleanField(Boolean value) {
+		BooleanField field = new BooleanFieldImpl();
 		field.setValue(value);
 		return field;
 	}
 
-	public static DateFieldModel createDateField(String iso8601Date) {
-		DateFieldModel field = new DateFieldImpl();
+	public static DateField createDateField(String iso8601Date) {
+		DateField field = new DateFieldImpl();
 		field.setDate(iso8601Date);
 		return field;
 	}
@@ -227,13 +227,13 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeResponse createNewMicronodeField(String microschema, Tuple<String, FieldModel>... fields) {
+	public static MicronodeResponse createNewMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = new MicronodeResponse();
 		MicroschemaReferenceImpl microschemaReference = new MicroschemaReferenceImpl();
 		microschemaReference.setName(microschema);
 		field.setMicroschema(microschemaReference);
 
-		for (Tuple<String, FieldModel> tuple : fields) {
+		for (Tuple<String, Field> tuple : fields) {
 			field.getFields().put(tuple.v1(), tuple.v2());
 		}
 
@@ -241,14 +241,14 @@ public final class FieldUtil {
 	}
 
 	@SafeVarargs
-	public static MicronodeFieldModel createMicronodeField(String microschema, Tuple<String, FieldModel>... fields) {
+	public static MicronodeField createMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = createNewMicronodeField(microschema, fields);
 		return field;
 	}
 
-	public static FieldModel createMicronodeListField(MicronodeFieldModel... micronodes) {
+	public static Field createMicronodeListField(MicronodeField... micronodes) {
 		MicronodeFieldListImpl field = new MicronodeFieldListImpl();
-		for (MicronodeFieldModel micronode : micronodes) {
+		for (MicronodeField micronode : micronodes) {
 			field.add(micronode);
 		}
 		return field;

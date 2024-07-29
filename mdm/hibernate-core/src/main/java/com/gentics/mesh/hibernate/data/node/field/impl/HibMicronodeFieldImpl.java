@@ -3,10 +3,10 @@ package com.gentics.mesh.hibernate.data.node.field.impl;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.ContentInterceptor;
@@ -20,7 +20,7 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  * @author plyhun
  *
  */
-public class HibMicronodeFieldImpl extends AbstractReferenceHibField<HibMicronodeFieldEdgeImpl> implements MicronodeField {
+public class HibMicronodeFieldImpl extends AbstractReferenceHibField<HibMicronodeFieldEdgeImpl> implements HibMicronodeField {
 
 	public HibMicronodeFieldImpl(HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent,	HibMicronodeFieldEdgeImpl initialValue) {
 		super(initialValue.getFieldKey(), parent, FieldTypes.MICRONODE, initialValue);
@@ -31,7 +31,7 @@ public class HibMicronodeFieldImpl extends AbstractReferenceHibField<HibMicronod
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
+	public HibField cloneTo(HibFieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?,?,?,?,?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.MICRONODE);
@@ -43,7 +43,7 @@ public class HibMicronodeFieldImpl extends AbstractReferenceHibField<HibMicronod
 
 	@Override
 	public HibMicronodeContainerImpl getMicronode() {
-		Supplier<Micronode> defaultSupplier = () -> {
+		Supplier<HibMicronode> defaultSupplier = () -> {
 			HibMicronodeFieldEdgeImpl referenced = getReferencedEdge();
 			return referenced != null ? referenced.getMicronode() : null;
 		};
@@ -52,7 +52,7 @@ public class HibMicronodeFieldImpl extends AbstractReferenceHibField<HibMicronod
 		// use the default supplier, if the dataloader did not load the micronode
 		HibernateTx tx = HibernateTx.get();
 		ContentInterceptor contentInterceptor = tx.getContentInterceptor();
-		Micronode micronode = contentInterceptor.getDataLoaders().map(loaders -> loaders.getMicronode(this, defaultSupplier)).orElseGet(defaultSupplier);
+		HibMicronode micronode = contentInterceptor.getDataLoaders().map(loaders -> loaders.getMicronode(this, defaultSupplier)).orElseGet(defaultSupplier);
 
 		if (micronode instanceof HibMicronodeContainerImpl) {
 			return HibMicronodeContainerImpl.class.cast(micronode);

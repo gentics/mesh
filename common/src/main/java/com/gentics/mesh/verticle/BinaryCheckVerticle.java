@@ -1,9 +1,9 @@
 package com.gentics.mesh.verticle;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
@@ -119,17 +119,17 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 			ContentDao contentDao = tx.contentDao();
 
 			tx.binaryDao().findByCheckStatus(BinaryCheckStatus.POSTPONED).runInExistingTx(tx).forEach(binary -> {
-				Optional<? extends BinaryField> field = tx.binaryDao().findFields(binary).stream().findFirst();
+				Optional<? extends HibBinaryField> field = tx.binaryDao().findFields(binary).stream().findFirst();
 
 				if (field.isEmpty()) {
 					return;
 				}
 
-				BinaryField binaryField = field.get();
-				NodeFieldContainer nodeFieldContainer = contentDao.getNodeFieldContainer(binaryField);
+				HibBinaryField binaryField = field.get();
+				HibNodeFieldContainer nodeFieldContainer = contentDao.getNodeFieldContainer(binaryField);
 				BinaryFieldSchema fieldSchema = (BinaryFieldSchema) nodeFieldContainer.getFieldSchema(binaryField.getFieldKey());
 				String lang = nodeFieldContainer.getLanguageTag();
-				Node node = nodeFieldContainer.getNode();
+				HibNode node = nodeFieldContainer.getNode();
 				String project = node.getProject().getName();
 				String nodeUuid = node.getUuid();
 				String branchName = null;
@@ -163,7 +163,7 @@ public class BinaryCheckVerticle extends AbstractVerticle {
 
 	/**
 	 * If the check service URL is set for the binary field, the check request is performed and the
-	 * {@link com.gentics.mesh.core.rest.node.field.BinaryFieldModel#setCheckStatus(BinaryCheckStatus) check status} is
+	 * {@link com.gentics.mesh.core.rest.node.field.BinaryField#setCheckStatus(BinaryCheckStatus) check status} is
 	 * updated accordingly.
 	 *
 	 * @param ctx The binary check context to use

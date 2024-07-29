@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -24,7 +24,7 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 		super(actual, UserResponseAssert.class);
 	}
 
-	public UserResponseAssert matches(User user) {
+	public UserResponseAssert matches(HibUser user) {
 		assertNotNull("The user must not be null.", user);
 		assertNotNull("The restuser must not be null", actual);
 		// user = neo4jTemplate.fetch(user);

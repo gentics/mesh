@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.admin;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.MeshEvent.PLUGIN_REGISTERED;
 import static com.gentics.mesh.core.rest.plugin.PluginStatus.REGISTERED;

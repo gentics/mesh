@@ -14,7 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.DaoGlobal;
 import com.gentics.mesh.core.data.dao.DaoTransformable;
 import com.gentics.mesh.core.data.dao.PersistingDaoGlobal;
@@ -44,7 +44,7 @@ import io.vertx.core.Vertx;
  * @param <R>
  * @param <D>
  */
-public abstract class AbstractHibDaoGlobal<T extends CoreElement<R>, R extends RestModel, D extends T> 
+public abstract class AbstractHibDaoGlobal<T extends HibCoreElement<R>, R extends RestModel, D extends T> 
 		extends AbstractHibCoreDao<T, R, D> implements DaoGlobal<T>, DaoTransformable<T, R>, PersistingDaoGlobal<T> {
 	
 	public AbstractHibDaoGlobal(DaoHelper<T,D> daoHelper,

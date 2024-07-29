@@ -4,10 +4,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.node.field.nesting.HibNodeFieldCommon;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.database.HibernateTx;
@@ -33,7 +33,7 @@ public class HibNodeFieldImpl extends AbstractReferenceHibField<HibNodeFieldEdge
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
+	public HibField cloneTo(HibFieldContainer container) {
 		return getReferencedEdge() != null ? getReferencedEdge().cloneTo(container) : null;
 	}
 
@@ -43,9 +43,9 @@ public class HibNodeFieldImpl extends AbstractReferenceHibField<HibNodeFieldEdge
 	}
 
 	@Override
-	public Stream<? extends NodeFieldContainer> getReferencingContents(boolean lookupInContent, boolean lookupInMicronode) {
+	public Stream<? extends HibNodeFieldContainer> getReferencingContents(boolean lookupInContent, boolean lookupInMicronode) {
 		return Stream.of(getContainer())
-				.filter(content -> (lookupInContent && content instanceof NodeFieldContainer) || (lookupInMicronode && content instanceof Micronode))
+				.filter(content -> (lookupInContent && content instanceof HibNodeFieldContainer) || (lookupInMicronode && content instanceof HibMicronode))
 				.flatMap(HibFieldContainerBase::getNodeFieldContainers);
 	}
 

@@ -11,11 +11,11 @@ import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.core.data.AntivirableBinaryElement;
-import com.gentics.mesh.core.data.ImageDataElement;
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
+import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 
-public abstract class ImageDataFilter<T extends ImageDataElement> extends MainFilter<T> {
+public abstract class ImageDataFilter<T extends HibImageDataElement> extends MainFilter<T> {
 
 	protected final String owner;
 
@@ -36,7 +36,7 @@ public abstract class ImageDataFilter<T extends ImageDataElement> extends MainFi
 		filters.add(new MappedFilter<>(owner, "height", "Filters by height", NumberFilter.filter(),
 				content -> (content == null || content.getImageHeight() == null) ? null : new BigDecimal(content.getImageHeight())));
 		filters.add(new MappedFilter<>(owner, "checkStatus", "Filters by virus check status", EnumFilter.filter(BinaryCheckStatus.class),
-				content -> (content != null && content instanceof AntivirableBinaryElement) ? ((AntivirableBinaryElement) content).getCheckStatus() : null));
+				content -> (content != null && content instanceof HibAntivirableBinaryElement) ? ((HibAntivirableBinaryElement) content).getCheckStatus() : null));
 		return filters;
 	}
 

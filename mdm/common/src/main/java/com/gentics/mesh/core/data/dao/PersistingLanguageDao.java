@@ -9,8 +9,8 @@ import java.util.Collections;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -26,12 +26,12 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<Language>, PersistingNamedEntityDao<Language> {
+public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<HibLanguage>, PersistingNamedEntityDao<HibLanguage> {
 
 	static final Logger log = LoggerFactory.getLogger(PersistingLanguageDao.class);
 
-	default Language create(String languageName, String languageTag, String uuid) {
-		Language language = createPersisted(uuid, l -> {
+	default HibLanguage create(String languageName, String languageTag, String uuid) {
+		HibLanguage language = createPersisted(uuid, l -> {
 			l.setName(languageName);
 			l.setLanguageTag(languageTag);
 		});
@@ -40,7 +40,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 	}
 
 	@Override
-	default void assign(Language language, Project project, EventQueueBatch batch, boolean throwOnExisting) {
+	default void assign(HibLanguage language, HibProject project, EventQueueBatch batch, boolean throwOnExisting) {
 		project.getLanguages().stream()
 			.filter(l -> l.getLanguageTag().equals(language.getLanguageTag()))
 			.findAny()
@@ -56,7 +56,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 	}
 
 	@Override
-	default void unassign(Language language, Project project, EventQueueBatch batch, boolean throwOnInexisting) {
+	default void unassign(HibLanguage language, HibProject project, EventQueueBatch batch, boolean throwOnInexisting) {
 		project.getLanguages().stream()
 			.filter(l -> l.getLanguageTag().equals(language.getLanguageTag()))
 			.findAny()
@@ -76,7 +76,7 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 	}
 
 	@Override
-	default LanguageResponse transformToRestSync(Language element, InternalActionContext ac, int level,
+	default LanguageResponse transformToRestSync(HibLanguage element, InternalActionContext ac, int level,
 			String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
@@ -113,17 +113,17 @@ public interface PersistingLanguageDao extends LanguageDao, PersistingDaoGlobal<
 	}
 
 	@Override
-	default Language create(String languageName, String languageTag) {
+	default HibLanguage create(String languageName, String languageTag) {
 		return create(languageName, languageTag, null);
 	}
 
 	@Override
-	default boolean update(Language element, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
 		throw error(METHOD_NOT_ALLOWED, "error_language_update_forbidden");
 	}
 
 	@Override
-	default void delete(Language element, BulkActionContext bac) {
+	default void delete(HibLanguage element, BulkActionContext bac) {
 		throw error(METHOD_NOT_ALLOWED, "error_language_deletion_forbidden");
 	}
 }

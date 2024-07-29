@@ -16,13 +16,13 @@ import java.util.stream.StreamSupport;
 import com.gentics.mesh.cache.NameCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -42,18 +42,18 @@ import org.slf4j.LoggerFactory;
  * @author plyhun
  *
  */
-public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, PersistingNamedEntityDao<Tag> {
+public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<HibTag>, PersistingNamedEntityDao<HibTag> {
 
 	Logger log = LoggerFactory.getLogger(PersistingTagDao.class);
 
 	@Override
-	default Tag loadObjectByUuid(Branch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
-		Tag tag = branch.findTagByUuid(tagUuid);
+	default HibTag loadObjectByUuid(HibBranch branch, InternalActionContext ac, String tagUuid, InternalPermission perm) {
+		HibTag tag = branch.findTagByUuid(tagUuid);
 		return checkPerms(tag, tagUuid, ac, perm, true);
 	}
 
 	@Override
-	default Tag findByUuid(Project project, String uuid) {
+	default HibTag findByUuid(HibProject project, String uuid) {
 		return StreamSupport.stream(Tx.get().tagFamilyDao().findAll(project).spliterator(), false)
 			.map(tagFamily -> findByUuid(tagFamily, uuid))
 			.filter(Objects::nonNull)
@@ -62,7 +62,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default Tag loadObjectByUuid(Project project, InternalActionContext ac, String uuid, InternalPermission perm) {
+	default HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm) {
 		return loadObjectByUuid(project, ac, uuid, perm, true);
 	}
 
@@ -76,7 +76,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	 * @param errorIfNotFound
 	 * @return
 	 */
-	default Tag loadObjectByUuid(Project project, InternalActionContext ac, String uuid, InternalPermission perm,
+	default HibTag loadObjectByUuid(HibProject project, InternalActionContext ac, String uuid, InternalPermission perm,
 			boolean errorIfNotFound) {
 		return Tx.get().tagFamilyDao().findAllStream(project, ac, perm, ac.getPagingParameters(), Optional.empty())
 				.map(tagFamily -> loadObjectByUuid(tagFamily, ac, uuid, perm, false))
@@ -93,7 +93,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default boolean update(TagFamily tagFamily, Tag tag, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibTagFamily tagFamily, HibTag tag, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the item, if it does not belong to the requested root.
 		if (!tagFamily.getUuid().equals(tag.getProject().getUuid())) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", tag.getUuid());
@@ -101,7 +101,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 		return update(tag, ac, batch);
 	}
 
-	default String getSubETag(Tag tag, InternalActionContext ac) {
+	default String getSubETag(HibTag tag, InternalActionContext ac) {
 		Tx tx = Tx.get();
 		StringBuilder keyBuilder = new StringBuilder();
 		keyBuilder.append(tag.getLastEditedTimestamp());
@@ -110,9 +110,9 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default Tag create(TagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default HibTag create(HibTagFamily tagFamily, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		Tx tx = Tx.get();
-		Project project = tx.getProject(ac);
+		HibProject project = tx.getProject(ac);
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
 		if (isEmpty(tagName)) {
@@ -120,17 +120,17 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 		}
 
 		UserDao userDao = Tx.get().userDao();
-		User requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		if (!userDao.hasPermission(requestUser, tagFamily, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", tagFamily.getUuid(), CREATE_PERM.getRestPerm().getName());
 		}
 
-		Tag conflictingTag = findByName(tagFamily, tagName);
+		HibTag conflictingTag = findByName(tagFamily, tagName);
 		if (conflictingTag != null) {
 			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, tagFamily.getName());
 		}
 
-		Tag newTag = create(tagFamily, requestModel.getName(), project, requestUser, uuid);
+		HibTag newTag = create(tagFamily, requestModel.getName(), project, requestUser, uuid);
 		userDao.inheritRolePermissions(ac.getUser(), tagFamily, newTag);
 
 		tagFamily.addTag(newTag);
@@ -140,13 +140,13 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 
 
 	@Override
-	default Tag create(TagFamily tagFamily, String name, Project project, User creator) {
+	default HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator) {
 		return create(tagFamily, name, project, creator, null);
 	}
 
 	@Override
-	default Tag create(TagFamily tagFamily, String name, Project project, User creator, String uuid) {
-		Tag tag = createPersisted(uuid, t -> {
+	default HibTag create(HibTagFamily tagFamily, String name, HibProject project, HibUser creator, String uuid) {
+		HibTag tag = createPersisted(uuid, t -> {
 			t.setName(name);
 			t.setCreated(creator);
 			t.setProject(project);
@@ -165,16 +165,16 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default boolean update(Tag tag, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibTag tag, InternalActionContext ac, EventQueueBatch batch) {
 		TagUpdateRequest requestModel = ac.fromJson(TagUpdateRequest.class);
 		String newTagName = requestModel.getName();
 		if (isEmpty(newTagName)) {
 			throw error(BAD_REQUEST, "tag_name_not_set");
 		} else {
-			TagFamily tagFamily = tag.getTagFamily();
+			HibTagFamily tagFamily = tag.getTagFamily();
 
 			// Check for conflicts
-			Tag foundTagWithSameName = findByName(tagFamily, newTagName);
+			HibTag foundTagWithSameName = findByName(tagFamily, newTagName);
 			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(tag.getUuid())) {
 				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName, tagFamily
 						.getName());
@@ -192,7 +192,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default TagResponse transformToRestSync(Tag tag, InternalActionContext ac, int level, String... languageTags) {
+	default TagResponse transformToRestSync(HibTag tag, InternalActionContext ac, int level, String... languageTags) {
 		GenericParameters generic = ac.getGenericParameters();
 		FieldsSet fields = generic.getFields();
 
@@ -205,7 +205,7 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 			}
 		}
 		if (fields.has("tagFamily")) {
-			TagFamily tagFamily = tag.getTagFamily();
+			HibTagFamily tagFamily = tag.getTagFamily();
 			if (tagFamily != null) {
 				TagFamilyReference tagFamilyReference = new TagFamilyReference();
 				tagFamilyReference.setName(tagFamily.getName());
@@ -224,12 +224,12 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default void delete(TagFamily tagFamily, Tag tag, BulkActionContext bac) {
+	default void delete(HibTagFamily tagFamily, HibTag tag, BulkActionContext bac) {
 		delete(tag, bac);
 	}
 
 	@Override
-	default void delete(Tag tag, BulkActionContext bac) {
+	default void delete(HibTag tag, BulkActionContext bac) {
 		String uuid = tag.getUuid();
 		String name = tag.getName();
 		if (log.isDebugEnabled()) {
@@ -239,8 +239,8 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 
 		NodeDao nodeDao = Tx.get().nodeDao();
 		// For node which have been previously tagged we need to fire the untagged event.
-		for (Branch branch : Tx.get().branchDao().findAll(tag.getProject())) {
-			for (Node node : getNodes(tag, branch)) {
+		for (HibBranch branch : Tx.get().branchDao().findAll(tag.getProject())) {
+			for (HibNode node : getNodes(tag, branch)) {
 				bac.add(nodeDao.onTagged(node, tag, branch, UNASSIGNED));
 			}
 		}
@@ -249,12 +249,12 @@ public interface PersistingTagDao extends TagDao, PersistingDaoGlobal<Tag>, Pers
 	}
 
 	@Override
-	default void addTag(Node node, Tag tag, Branch branch) {
+	default void addTag(HibNode node, HibTag tag, HibBranch branch) {
 		node.addTag(tag, branch);
 	}
 
 	@Override
-	default Optional<NameCache<Tag>> maybeGetCache() {
+	default Optional<NameCache<HibTag>> maybeGetCache() {
 		return Tx.maybeGet().map(CommonTx.class::cast).map(tx -> tx.data().mesh().tagNameCache());
 	}
 }

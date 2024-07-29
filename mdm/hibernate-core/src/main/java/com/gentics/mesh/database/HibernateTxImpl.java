@@ -28,10 +28,10 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.action.TagFamilyDAOActions;
 import com.gentics.mesh.core.action.UserDAOActions;
 import com.gentics.mesh.core.context.ContextDataRegistry;
-import com.gentics.mesh.core.data.Element;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.dagger.tx.TransactionScope;
@@ -194,13 +194,13 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public Branch getBranch(InternalActionContext ac, Project project) {
+	public HibBranch getBranch(InternalActionContext ac, HibProject project) {
 		// if no project was given, we load the project from the context. This will make sure, that the
 		// project will be associated with the session
 		if (project == null) {
 			project = getProject(ac);
 		}
-		Branch branch = contextDataRegistry.getBranch(ac, project);
+		HibBranch branch = contextDataRegistry.getBranch(ac, project);
 		if (branch == null) {
 			return null;
 		}
@@ -209,8 +209,8 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public Project getProject(InternalActionContext ac) {
-		Project project = contextDataRegistry.getProject(ac);
+	public HibProject getProject(InternalActionContext ac) {
+		HibProject project = contextDataRegistry.getProject(ac);
 		if (project == null) {
 			return null;
 		}
@@ -378,7 +378,7 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public <T extends Element> T create(String uuid, Class<? extends T> classOfT, Consumer<T> inflater) {
+	public <T extends HibElement> T create(String uuid, Class<? extends T> classOfT, Consumer<T> inflater) {
 		HibTxData.assertUnused(uuid, data().permissionRoots());
 		try {
 			T instance = classOfT.getConstructor().newInstance();
@@ -398,7 +398,7 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public <T extends Element> T persist(T element) {
+	public <T extends HibElement> T persist(T element) {
 		if (em.contains(element)) {
 			element = em.merge(element);
 		} else {
@@ -408,13 +408,13 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public <T extends Element> void delete(T element) {
+	public <T extends HibElement> void delete(T element) {
 		em.remove(element);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Element, B extends T> Stream<T> loadAll(Class<B> classOfT) {
+	public <T extends HibElement, B extends T> Stream<T> loadAll(Class<B> classOfT) {
 		return (Stream<T>) HibernateUtil.loadAll(em, classOfT);
 	}
 
@@ -433,14 +433,14 @@ public class HibernateTxImpl implements HibernateTx {
 	}
 
 	@Override
-	public <T extends Element> long count(Class<? extends T> classOfT) {
+	public <T extends HibElement> long count(Class<? extends T> classOfT) {
 		CriteriaQuery<? extends T> query = em.getCriteriaBuilder().createQuery(classOfT);
 		query.from(classOfT);
 		return JpaUtil.count(em, query);
 	}
 
 	@Override
-	public <T extends Element> T load(Object id, Class<? extends T> classOfT) {
+	public <T extends HibElement> T load(Object id, Class<? extends T> classOfT) {
 		return em.find(classOfT, id);
 	}
 

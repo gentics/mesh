@@ -13,13 +13,13 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.util.Lazy;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -39,7 +39,7 @@ public class NodeReferenceIn {
 	private final Lazy<String> fieldName;
 	private final Lazy<String> micronodeFieldName;
 
-	private NodeReferenceIn(NodeContent node, NodeField nodeField) {
+	private NodeReferenceIn(NodeContent node, HibNodeField nodeField) {
 		this.node = node;
 		this.fieldName = new Lazy<>(nodeField::getFieldName);
 		this.micronodeFieldName = new Lazy<>(() -> nodeField.getMicronodeFieldName().orElse(null));
@@ -97,13 +97,13 @@ public class NodeReferenceIn {
 		String branchUuid = tx.getBranch(gc).getUuid();
 
 		// content per node
-		Map<Node, List<NodeContent>> nodeOriginalContent = contents.stream().collect(Collectors.groupingBy(NodeContent::getNode, Collectors.mapping(Function.identity(), Collectors.toList())));
+		Map<HibNode, List<NodeContent>> nodeOriginalContent = contents.stream().collect(Collectors.groupingBy(NodeContent::getNode, Collectors.mapping(Function.identity(), Collectors.toList())));
 
 		// field referencing node
-		Map<NodeField, Node> refNodes = contentDao.getInboundReferences(nodeOriginalContent.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		Map<HibNodeField, HibNode> refNodes = contentDao.getInboundReferences(nodeOriginalContent.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
 		// field belonging to the referencing content
-		Map<NodeField, Collection<NodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		Map<HibNodeField, Collection<HibNodeFieldContainer>> fieldReferencingContents = contentDao.getReferencingContents(refNodes.keySet()).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
 		if (tx.data().options().hasDatabaseLevelCache()) {
 			// Here we preload the content nodes to the cache for performance reasons.
@@ -114,7 +114,7 @@ public class NodeReferenceIn {
 			});
 		}
 
-		Map<NodeFieldContainer, Collection<? extends NodeFieldContainerEdge>> referencingContentEdges = contentDao.getContainerEdges(fieldReferencingContents.values().stream().flatMap(Collection::stream).collect(Collectors.toSet())).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+		Map<HibNodeFieldContainer, Collection<? extends HibNodeFieldContainerEdge>> referencingContentEdges = contentDao.getContainerEdges(fieldReferencingContents.values().stream().flatMap(Collection::stream).collect(Collectors.toSet())).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
 
 		return fieldReferencingContents.entrySet().stream()
 				// get all referencing content

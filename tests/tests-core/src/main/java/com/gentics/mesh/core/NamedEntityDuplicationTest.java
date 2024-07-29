@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NamedElement;
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -75,7 +75,7 @@ public class NamedEntityDuplicationTest extends AbstractMeshTest {
 		testDuplicate("microschema", (name, tx) -> tx.microschemaDao().create(new MicroschemaModelImpl().setName(name), user(), data().createBatch()));
 	}
 
-	protected <E extends NamedElement> void testDuplicate(String entityName, BiFunction<String, Tx, E> creator) {
+	protected <E extends HibNamedElement> void testDuplicate(String entityName, BiFunction<String, Tx, E> creator) {
 		String name = entityName + "_" + Long.toHexString(System.currentTimeMillis());
 
 		tx(tx -> {

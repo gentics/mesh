@@ -24,7 +24,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.BranchDAOActions;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.JobDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
@@ -33,17 +33,17 @@ import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 /**
  * CRUD Handler for Branches
  */
-public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchResponse> {
+public class BranchCrudHandler extends AbstractCrudHandler<HibBranch, BranchResponse> {
 
 	private static final Logger log = LoggerFactory.getLogger(BranchCrudHandler.class);
 
@@ -88,9 +88,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
-			Project project = tx.getProject(ac);
+			HibProject project = tx.getProject(ac);
 			BranchDao branchDao = tx.branchDao();
-			Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
+			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
 			return getSchemaVersionsInfo(branch);
 		}, model -> ac.send(model, OK));
 	}
@@ -106,17 +106,17 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (event, tx) -> {
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				BranchDao branchDao = tx.branchDao();
 				SchemaDao schemaDao = tx.schemaDao();
 
-				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				BranchInfoSchemaListModel schemaReferenceList = ac.fromJson(BranchInfoSchemaListModel.class);
+				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				BranchInfoSchemaList schemaReferenceList = ac.fromJson(BranchInfoSchemaList.class);
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
-					SchemaVersion version = schemaDao.fromReference(project, reference);
-					SchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
+					HibSchemaVersion version = schemaDao.fromReference(project, reference);
+					HibSchemaVersion assignedVersion = branch.findLatestSchemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "branch_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
@@ -141,9 +141,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		utils.syncTx(ac, tx -> {
-			Project project = tx.getProject(ac);
+			HibProject project = tx.getProject(ac);
 			BranchDao branchDao = tx.branchDao();
-			Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, InternalPermission.READ_PERM);
+			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, InternalPermission.READ_PERM);
 			return getMicroschemaVersions(branch);
 		}, model -> ac.send(model, OK));
 	}
@@ -160,19 +160,19 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (batch, tx) -> {
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				BranchDao branchDao = tx.branchDao();
-				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				BranchInfoMicroschemaListModel microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaListModel.class);
+				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				BranchInfoMicroschemaList microschemaReferenceList = ac.fromJson(BranchInfoMicroschemaList.class);
 				MicroschemaDao microschemaDao = tx.microschemaDao();
 
-				User user = ac.getUser();
+				HibUser user = ac.getUser();
 
 				// Transform the list of references into microschema container version vertices
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
-					MicroschemaVersion version = microschemaDao.fromReference(tx.getProject(ac), reference);
+					HibMicroschemaVersion version = microschemaDao.fromReference(tx.getProject(ac), reference);
 
-					MicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
+					HibMicroschemaVersion assignedVersion = branch.findLatestMicroschemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "branch_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 							version.getVersion());
@@ -193,7 +193,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 *            branch
 	 * @return single emitting the rest model
 	 */
-	public BranchInfoSchemaListModel getSchemaVersionsInfo(Branch branch) {
+	public BranchInfoSchemaList getSchemaVersionsInfo(HibBranch branch) {
 		List<BranchSchemaInfo> list = StreamUtil.toStream(branch.findAllLatestSchemaVersionEdges())
 			.map(edge -> {
 				SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
@@ -203,7 +203,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				return info;
 			}).collect(Collectors.toList());
 
-		return new BranchInfoSchemaListModel(list);
+		return new BranchInfoSchemaList(list);
 	}
 
 	/**
@@ -213,7 +213,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	 *            branch
 	 * @return single emitting the rest model
 	 */
-	public BranchInfoMicroschemaListModel getMicroschemaVersions(Branch branch) {
+	public BranchInfoMicroschemaList getMicroschemaVersions(HibBranch branch) {
 		List<BranchMicroschemaInfo> list = StreamUtil.toStream(branch.findAllLatestMicroschemaVersionEdges()).map(assignment -> {
 			MicroschemaReference reference = assignment.getMicroschemaContainerVersion().transformToReference();
 			BranchMicroschemaInfo info = new BranchMicroschemaInfo(reference);
@@ -222,7 +222,7 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 			return info;
 		}).collect(Collectors.toList());
 
-		return new BranchInfoMicroschemaListModel(list);
+		return new BranchInfoMicroschemaList(list);
 	}
 
 	/**
@@ -239,19 +239,19 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				BranchDao branchDao = tx.branchDao();
 				MicroschemaDao microschemaDao = tx.microschemaDao();
 
-				Project project = tx.getProject(ac);
-				Branch branch = branchDao.findByUuid(project, branchUuid);
+				HibProject project = tx.getProject(ac);
+				HibBranch branch = branchDao.findByUuid(project, branchUuid);
 
 				// Get all active versions and group by name
-				Collection<List<MicroschemaVersion>> versions = microschemaDao.findActiveSchemaVersions(branch).stream()
-					.collect(Collectors.groupingBy(MicroschemaVersion::getName)).values();
+				Collection<List<HibMicroschemaVersion>> versions = microschemaDao.findActiveSchemaVersions(branch).stream()
+					.collect(Collectors.groupingBy(HibMicroschemaVersion::getName)).values();
 
 				// Get latest versions of all active microschemas
-				Map<String, MicroschemaVersion> latestVersions = versions.stream()
+				Map<String, HibMicroschemaVersion> latestVersions = versions.stream()
 					.map(list -> {
 						return list.stream().max(Comparator.comparing(Function.identity())).get();
 					})
-					.collect(Collectors.toMap(MicroschemaVersion::getName, Function.identity()));
+					.collect(Collectors.toMap(HibMicroschemaVersion::getName, Function.identity()));
 
 				latestVersions.values().stream()
 					.flatMap(v -> {
@@ -285,19 +285,19 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 				BranchDao branchDao = tx.branchDao();
 				SchemaDao schemaDao = tx.schemaDao();
 
-				Project project = tx.getProject(ac);
-				Branch branch = branchDao.findByUuid(project, branchUuid);
+				HibProject project = tx.getProject(ac);
+				HibBranch branch = branchDao.findByUuid(project, branchUuid);
 
 				// Get all active versions and group by name
-				Collection<List<SchemaVersion>> versions = schemaDao.findActiveSchemaVersions(branch).stream()
-					.collect(Collectors.groupingBy(SchemaVersion::getName)).values();
+				Collection<List<HibSchemaVersion>> versions = schemaDao.findActiveSchemaVersions(branch).stream()
+					.collect(Collectors.groupingBy(HibSchemaVersion::getName)).values();
 
 				// Get latest versions of all active schemas
-				Map<String, SchemaVersion> latestVersions = versions.stream()
+				Map<String, HibSchemaVersion> latestVersions = versions.stream()
 					.map(list -> {
 						return list.stream().max(Comparator.comparing(Function.identity())).get();
 					})
-					.collect(Collectors.toMap(SchemaVersion::getName, Function.identity()));
+					.collect(Collectors.toMap(HibSchemaVersion::getName, Function.identity()));
 
 				latestVersions.values().stream()
 					.flatMap(v -> {
@@ -380,9 +380,9 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 	public void handleSetLatest(InternalActionContext ac, String branchUuid) {
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (event, tx) -> {
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				BranchDao branchDao = tx.branchDao();
-				Branch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
+				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
 
 				branch.setLatest();
 				event.add(branch.onSetLatest());
@@ -404,10 +404,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		validateParameter(uuid, "uuid");
 
 		utils.syncTx(ac, tx -> {
-			Project project = tx.getProject(ac);
+			HibProject project = tx.getProject(ac);
 			BranchDao branchDao = tx.branchDao();
-			Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
-			Page<? extends Tag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
+			HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, READ_PERM);
+			Page<? extends HibTag> tagPage = branch.getTags(ac.getUser(), ac.getPagingParameters());
 			return pageTransformer.transformToRestSync(tagPage, ac, 0);
 		}, model -> ac.send(model, OK));
 	}
@@ -428,12 +428,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (batch, tx) -> {
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				BranchDao branchDao = tx.branchDao();
 				TagDao tagDao = tx.tagDao();
 
-				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
+				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the branch is already tagged
 				if (branch.hasTag(tag)) {
@@ -466,12 +466,12 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (batch, tx) -> {
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				BranchDao branchDao = tx.branchDao();
 				TagDao tagDao = tx.tagDao();
 
-				Branch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
-				Tag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
+				HibBranch branch = branchDao.loadObjectByUuid(project, ac, uuid, UPDATE_PERM);
+				HibTag tag = tagDao.loadObjectByUuid(project, ac, tagUuid, READ_PERM);
 
 				// TODO check if the tag has already been removed
 
@@ -503,10 +503,10 @@ public class BranchCrudHandler extends AbstractCrudHandler<Branch, BranchRespons
 		try (WriteLock lock = writeLock.lock(ac)) {
 			utils.syncTx(ac, (batch, tx) -> {
 				BranchDao branchDao = tx.branchDao();
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 
-				Branch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
-				Page<? extends Tag> page = branch.updateTags(ac, batch);
+				HibBranch branch = branchDao.loadObjectByUuid(project, ac, branchUuid, UPDATE_PERM);
+				Page<? extends HibTag> page = branch.updateTags(ac, batch);
 
 				return pageTransformer.transformToRestSync(page, ac, 0);
 			}, model -> ac.send(model, OK));

@@ -8,10 +8,10 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -45,11 +45,11 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	}
 
 	@Override
-	public Completable purgeVersions(Project project, ZonedDateTime maxAge) {
+	public Completable purgeVersions(HibProject project, ZonedDateTime maxAge) {
 		return Completable.fromAction(() -> {
 			db.tx(tx -> {
 				BulkActionContext bac = bulkProvider.get();
-				for (Node node : tx.nodeDao().findAll(project)) {
+				for (HibNode node : tx.nodeDao().findAll(project)) {
 					purgeNode(tx, node, maxAge, bac);
 				}
 				bac.process(true);
@@ -57,9 +57,9 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 		});
 	}
 
-	private void purgeNode(Tx tx, Node node, ZonedDateTime maxAge, BulkActionContext bac) {
-		Iterable<? extends NodeFieldContainer> initials = tx.contentDao().getFieldContainers(node, ContainerType.INITIAL);
-		for (NodeFieldContainer initial : initials) {
+	private void purgeNode(Tx tx, HibNode node, ZonedDateTime maxAge, BulkActionContext bac) {
+		Iterable<? extends HibNodeFieldContainer> initials = tx.contentDao().getFieldContainers(node, ContainerType.INITIAL);
+		for (HibNodeFieldContainer initial : initials) {
 			Long counter = 0L;
 			purgeVersion(tx, counter, bac, initial, initial, false, maxAge);
 		}
@@ -80,12 +80,12 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 	 *            Flag which indicated whether the previous version has been removed
 	 * @param maxAge
 	 */
-	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, NodeFieldContainer lastRemaining, NodeFieldContainer version,
+	private void purgeVersion(Tx tx, Long txCounter, BulkActionContext bac, HibNodeFieldContainer lastRemaining, HibNodeFieldContainer version,
 		boolean previousRemoved, ZonedDateTime maxAge) {
 
 		ContentDao contentDao = tx.contentDao();
 		// We need to load some information first since we may remove the version in this step
-		List<NodeFieldContainer> nextVersions = Lists.newArrayList(contentDao.getNextVersions(version));
+		List<HibNodeFieldContainer> nextVersions = Lists.newArrayList(contentDao.getNextVersions(version));
 		boolean isNewerThanMaxAge = maxAge != null && !isOlderThanMaxAge(version, maxAge);
 		boolean isInTimeFrame = maxAge == null || isOlderThanMaxAge(version, maxAge);
 
@@ -119,13 +119,13 @@ public class ProjectVersionPurgeHandlerImpl implements ProjectVersionPurgeHandle
 			return;
 		} else {
 			// Continue with next versions
-			for (NodeFieldContainer next : nextVersions) {
+			for (HibNodeFieldContainer next : nextVersions) {
 				purgeVersion(tx, txCounter, bac, lastRemaining, next, previousRemoved, maxAge);
 			}
 		}
 	}
 
-	private boolean isOlderThanMaxAge(NodeFieldContainer version, ZonedDateTime maxAge) {
+	private boolean isOlderThanMaxAge(HibNodeFieldContainer version, ZonedDateTime maxAge) {
 		Long editTs = version.getLastEditedTimestamp();
 		ZonedDateTime editDate = DateUtils.toZonedDateTime(editTs);
 		ZonedDateTime maxDate = maxAge;

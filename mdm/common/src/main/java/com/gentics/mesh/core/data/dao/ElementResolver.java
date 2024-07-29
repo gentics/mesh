@@ -6,7 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import java.util.Stack;
 import java.util.function.BiFunction;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @param <B> base element type
  * @param <E> looked entity type
  */
-public interface ElementResolver<B extends BaseElement, E extends BaseElement> {
+public interface ElementResolver<B extends HibBaseElement, E extends HibBaseElement> {
 
 	public static final Logger log = LoggerFactory.getLogger(ElementResolver.class);
 
@@ -38,7 +38,7 @@ public interface ElementResolver<B extends BaseElement, E extends BaseElement> {
 	 * @param stack path parts
 	 * @return
 	 */
-	default BaseElement resolveToElement(BaseElement permissionRoot, B root, Stack<String> stack) {
+	default HibBaseElement resolveToElement(HibBaseElement permissionRoot, B root, Stack<String> stack) {
 		if (log.isDebugEnabled() && root != null) {
 			log.debug("Resolving for {" + root.getClass().getSimpleName() + "}.");
 			if (stack.isEmpty()) {

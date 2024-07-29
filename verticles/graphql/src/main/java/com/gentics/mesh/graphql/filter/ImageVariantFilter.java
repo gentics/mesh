@@ -9,7 +9,7 @@ import com.gentics.graphqlfilter.filter.EnumFilter;
 import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
-import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.parameter.image.CropMode;
 import com.gentics.mesh.parameter.image.ResizeMode;
 
@@ -19,7 +19,7 @@ import com.gentics.mesh.parameter.image.ResizeMode;
  * @author plyhun
  *
  */
-public class ImageVariantFilter extends ImageDataFilter<ImageVariant> {
+public class ImageVariantFilter extends ImageDataFilter<HibImageVariant> {
 
 	private static final Map<String, ImageVariantFilter> instances = new HashMap<>();
 
@@ -38,8 +38,8 @@ public class ImageVariantFilter extends ImageDataFilter<ImageVariant> {
 	}
 
 	@Override
-	public List<FilterField<ImageVariant, ?>> getFilters() {
-		List<FilterField<ImageVariant, ?>> filters = super.getFilters();
+	public List<FilterField<HibImageVariant, ?>> getFilters() {
+		List<FilterField<HibImageVariant, ?>> filters = super.getFilters();
 		filters.add(new MappedFilter<>(owner, "cropX", "Filters by crop X coordinate", NumberFilter.filter(),
 				content -> (content == null || content.getCropStartX() == null) ? null : content.getCropStartX()));
 		filters.add(new MappedFilter<>(owner, "cropY", "Filters by crop Y coordinate", NumberFilter.filter(),

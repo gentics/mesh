@@ -40,8 +40,8 @@ import org.hibernate.stat.HibernateQueryMetrics;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.Element;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibElement;
 import com.gentics.mesh.core.db.CommonDatabase;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
@@ -50,7 +50,7 @@ import com.gentics.mesh.core.db.TxAction;
 import com.gentics.mesh.core.db.cluster.ClusterManager;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigRequest;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterConfigResponse;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfigModel;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterServerConfig;
 import com.gentics.mesh.core.rest.admin.cluster.ServerRole;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.verticle.handler.WriteLock;
@@ -313,7 +313,7 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 			ClusterConfigResponse response = new ClusterConfigResponse();
 
 			clusterManager.getVertxClusterManager().getNodes().forEach(node -> {
-				ClusterServerConfigModel serverConfig = new ClusterServerConfigModel();
+				ClusterServerConfig serverConfig = new ClusterServerConfig();
 				serverConfig.setName(node);
 				serverConfig.setRole(ServerRole.MASTER); // all mesh nodes can write/read with hibernate
 
@@ -464,24 +464,24 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 	}
 
 	@Override
-	public void reload(Element element) {
+	public void reload(HibElement element) {
 		HibernateTx.get().entityManager().refresh(element, LockModeType.PESSIMISTIC_READ);
 	}
 
 	@Override
-	public long count(Class<? extends BaseElement> clazz) {
+	public long count(Class<? extends HibBaseElement> clazz) {
 		return tx(tx -> {
 			return tx.<CommonTx>unwrap().count(clazz);
 		});
 	}
 
 	@Override
-	public String getElementVersion(Element element) {
+	public String getElementVersion(HibElement element) {
 		return element.getElementVersion();
 	}
 
 	@Override
-	public <T extends Element> Iterator<? extends T> getElementsForType(Class<T> domainClass) {
+	public <T extends HibElement> Iterator<? extends T> getElementsForType(Class<T> domainClass) {
 		return tx(tx -> {
 			EntityManager em = tx.<HibernateTx>unwrap().entityManager();
 			CriteriaQuery<T> query = em.getCriteriaBuilder().createQuery(domainClass);

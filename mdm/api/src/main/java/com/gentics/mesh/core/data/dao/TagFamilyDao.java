@@ -1,17 +1,17 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * DAO for tag family operations.
  */
-public interface TagFamilyDao extends DaoGlobal<TagFamily>, DaoTransformable<TagFamily, TagFamilyResponse>, RootDao<Project, TagFamily> {
+public interface TagFamilyDao extends DaoGlobal<HibTagFamily>, DaoTransformable<HibTagFamily, TagFamilyResponse>, RootDao<HibProject, HibTagFamily> {
 
 	/**
 	 * Add the given tag to the tagfamily.
@@ -19,7 +19,7 @@ public interface TagFamilyDao extends DaoGlobal<TagFamily>, DaoTransformable<Tag
 	 * @param tagFamily
 	 * @param tag
 	 */
-	void addTag(TagFamily tagFamily, Tag tag);
+	void addTag(HibTagFamily tagFamily, HibTag tag);
 
 	/**
 	 * Remove the given tag from the tag family.
@@ -27,7 +27,7 @@ public interface TagFamilyDao extends DaoGlobal<TagFamily>, DaoTransformable<Tag
 	 * @param tagFamily
 	 * @param tag
 	 */
-	void removeTag(TagFamily tagFamily, Tag tag);
+	void removeTag(HibTagFamily tagFamily, HibTag tag);
 
 	/**
 	 * Create the tag family.
@@ -40,7 +40,7 @@ public interface TagFamilyDao extends DaoGlobal<TagFamily>, DaoTransformable<Tag
 	 *            Creator of the tag family
 	 * @return
 	 */
-	TagFamily create(Project project, String name, User user);
+	HibTagFamily create(HibProject project, String name, HibUser user);
 
 	/**
 	 * Create the tag family
@@ -50,7 +50,7 @@ public interface TagFamilyDao extends DaoGlobal<TagFamily>, DaoTransformable<Tag
 	 * @param uuid uuid of the tag family
 	 * @return
 	 */
-	TagFamily create(Project project, String name, User user, String uuid);
+	HibTagFamily create(HibProject project, String name, HibUser user, String uuid);
 
 	/**
 	 * Return a page of tags.
@@ -60,5 +60,5 @@ public interface TagFamilyDao extends DaoGlobal<TagFamily>, DaoTransformable<Tag
 	 * @param pagingInfo
 	 * @return
 	 */
-	Page<? extends Tag> getTags(TagFamily tagFamily, User user, PagingParameters pagingInfo);
+	Page<? extends HibTag> getTags(HibTagFamily tagFamily, HibUser user, PagingParameters pagingInfo);
 }

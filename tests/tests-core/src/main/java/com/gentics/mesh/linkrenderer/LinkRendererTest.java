@@ -1,6 +1,6 @@
 package com.gentics.mesh.linkrenderer;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.AWSTestMode.MINIO;
 import static org.junit.Assert.assertEquals;
@@ -17,13 +17,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -48,7 +48,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeOff() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -62,7 +62,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeShort() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -76,7 +76,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeMedium() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -90,7 +90,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkReplacerTypeFull() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -104,7 +104,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkAtStart() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} postfix";
 			InternalActionContext ac = mockActionContext();
@@ -118,7 +118,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkAtEnd() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -132,7 +132,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testLinkInMiddle() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
 			InternalActionContext ac = mockActionContext();
@@ -146,7 +146,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testAdjacentLinks() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -161,7 +161,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNonAdjacentLinks() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} in between {{mesh.link('" + uuid + "')}}";
 			InternalActionContext ac = mockActionContext();
@@ -177,7 +177,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testInvalidLinks() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}";
 			InternalActionContext ac = mockActionContext();
@@ -191,7 +191,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNoQuote() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(" + uuid + ")}}\"'";
 			InternalActionContext ac = mockActionContext();
@@ -205,7 +205,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testNoQuoteGerman() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(" + uuid + ", de)}}\"'";
 
@@ -220,7 +220,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testSingleQuote() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
 
@@ -235,7 +235,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testDoubleQuote() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
 
@@ -250,7 +250,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testGerman() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
 
@@ -265,7 +265,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testEnglish() {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
 			InternalActionContext ac = mockActionContext();
@@ -282,21 +282,21 @@ public class LinkRendererTest extends AbstractMeshTest {
 			NodeDao nodeDao = tx.nodeDao();
 			String german = german();
 			String english = english();
-			Node parentNode = folder("2015");
+			HibNode parentNode = folder("2015");
 
-			SchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
+			HibSchemaVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			schemaVersion.getSchema()
 					.addField(new StringFieldSchemaImpl().setName("displayName"))
 					.addField(new StringFieldSchemaImpl().setName("name"));
 			actions().updateSchemaVersion(schemaVersion);
 			// Create some dummy content
-			Node content = nodeDao.create(parentNode, user(), schemaVersion, project());
-			NodeFieldContainer germanContainer = tx.contentDao().createFieldContainer(content, german, content.getProject().getLatestBranch(), user());
+			HibNode content = nodeDao.create(parentNode, user(), schemaVersion, project());
+			HibNodeFieldContainer germanContainer = tx.contentDao().createFieldContainer(content, german, content.getProject().getLatestBranch(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
-			Node content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
-			NodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
+			HibNode content2 = nodeDao.create(parentNode, user(), schemaContainer("content").getLatestVersion(), project());
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(content2, english, content2.getProject().getLatestBranch(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
@@ -309,7 +309,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	public void testBinaryFieldLinkResolving() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = content("news overview");
+			HibNode node = content("news overview");
 			String uuid = node.getUuid();
 
 			// Transform the node into a node with a binary field.
@@ -319,7 +319,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
-			Binary binary = tx.binaries().create("bogus", 1L).runInExistingTx(tx);
+			HibBinary binary = tx.binaries().create("bogus", 1L).runInExistingTx(tx);
 			contentDao.getLatestDraftFieldContainer(node, english()).createBinary("binary", binary).setFileName(fileName);
 
 			// Render the link
@@ -338,7 +338,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = content("news overview");
+			HibNode node = content("news overview");
 			String uuid = node.getUuid();
 
 			// Transform the node into a node with a S3 binary field.
@@ -348,9 +348,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 			actions().updateSchemaVersion(node.getSchemaContainer().getLatestVersion());
 
-			S3Binary binary = tx.s3binaries().create(UUIDUtil.randomUUID(), s3Bucket, fileName).runInExistingTx(tx);
-			NodeFieldContainer original = contentDao.getLatestDraftFieldContainer(node, english());
-			NodeFieldContainer newBinary = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
+			S3HibBinary binary = tx.s3binaries().create(UUIDUtil.randomUUID(), s3Bucket, fileName).runInExistingTx(tx);
+			HibNodeFieldContainer original = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer newBinary = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
 			newBinary.createS3Binary("s3binary", binary).setFileName(fileName);
 
 			// uploading
@@ -371,7 +371,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 	@Test
 	public void testResolving() throws InterruptedException, ExecutionException {
 		try (Tx tx = tx()) {
-			Node newsNode = content("news overview");
+			HibNode newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "some bla START<a href=\"{{mesh.link('" + uuid + "','en')}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
 					+ "\")}}\">Test</a>DEN";

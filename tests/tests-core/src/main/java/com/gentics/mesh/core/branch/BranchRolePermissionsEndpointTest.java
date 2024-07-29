@@ -3,7 +3,7 @@ package com.gentics.mesh.core.branch;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -18,7 +18,7 @@ import com.gentics.mesh.test.context.ClientHandler;
 public class BranchRolePermissionsEndpointTest extends AbstractRolePermissionEndpointTest {
 
 	@Override
-	protected BaseElement getTestedElement() {
+	protected HibBaseElement getTestedElement() {
 		return project().getInitialBranch();
 	}
 

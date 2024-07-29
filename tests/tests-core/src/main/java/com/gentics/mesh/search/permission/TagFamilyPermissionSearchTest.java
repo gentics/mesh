@@ -11,8 +11,8 @@ import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -32,9 +32,9 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 			UserDao userDao = tx.userDao();
 			RoleDao roleDao = tx.roleDao();
 
-			TagFamily tagFamily = tx.tagFamilyDao().findByUuid(project(), response.getUuid());
+			HibTagFamily tagFamily = tx.tagFamilyDao().findByUuid(project(), response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
-			for (Role role : userDao.getRoles(user())) {
+			for (HibRole role : userDao.getRoles(user())) {
 				roleDao.revokePermissions(role, tagFamily, InternalPermission.READ_PERM);
 			}
 			tx.success();
@@ -53,9 +53,9 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 
-			TagFamily tagFamily = tagFamilyDao.findByUuid(project(), response.getUuid());
+			HibTagFamily tagFamily = tagFamilyDao.findByUuid(project(), response.getUuid());
 			System.out.println("TagFamily Uuid:" + response.getUuid());
-			for (Role role : userDao.getRoles(user())) {
+			for (HibRole role : userDao.getRoles(user())) {
 				roleDao.grantPermissions(role, tagFamily, InternalPermission.READ_PERM);
 			}
 			tx.success();

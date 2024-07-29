@@ -12,9 +12,9 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.search.index.AbstractTransformer;
@@ -26,7 +26,7 @@ import io.vertx.core.json.JsonObject;
  * Transformer for user search index documents.
  */
 @Singleton
-public class UserTransformer extends AbstractTransformer<User> {
+public class UserTransformer extends AbstractTransformer<HibUser> {
 
 	public static final String EMAIL_KEY = "emailaddress";
 	public static final String USERNAME_KEY = "username";
@@ -40,15 +40,15 @@ public class UserTransformer extends AbstractTransformer<User> {
 	}
 
 	@Override
-	public String generateVersion(User user) {
+	public String generateVersion(HibUser user) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(user.getElementVersion());
 		builder.append("|");
-		for (Group group : Tx.get().userDao().getGroups(user)) {
+		for (HibGroup group : Tx.get().userDao().getGroups(user)) {
 			builder.append(group.getElementVersion());
 			builder.append("|");
 		}
-		Node referencedNode = user.getReferencedNode();
+		HibNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			builder.append(referencedNode.getElementVersion());
 			builder.append("|");
@@ -67,7 +67,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(User user) {
+	public JsonObject toDocument(HibUser user) {
 		JsonObject document = new JsonObject();
 		addBasicReferences(document, user);
 		document.put(USERNAME_KEY, user.getUsername());
@@ -77,7 +77,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 		addGroups(document, Tx.get().userDao().getGroups(user));
 		addPermissionInfo(document, user);
 		// TODO add disabled / enabled flag
-		Node referencedNode = user.getReferencedNode();
+		HibNode referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());
 		}
@@ -93,10 +93,10 @@ public class UserTransformer extends AbstractTransformer<User> {
 	 * @param document
 	 * @param groups
 	 */
-	private void addGroups(JsonObject document, Result<? extends Group> groups) {
+	private void addGroups(JsonObject document, Result<? extends HibGroup> groups) {
 		List<String> groupUuids = new ArrayList<>();
 		List<String> groupNames = new ArrayList<>();
-		for (Group group : groups) {
+		for (HibGroup group : groups) {
 			groupUuids.add(group.getUuid());
 			groupNames.add(group.getName());
 		}

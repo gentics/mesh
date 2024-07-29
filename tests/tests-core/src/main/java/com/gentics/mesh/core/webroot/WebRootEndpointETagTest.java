@@ -9,8 +9,8 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
@@ -19,8 +19,8 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
@@ -37,7 +37,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testResizeImage() throws IOException {
 		String path = "/News/2015/blume.jpg";
-		Node node;
+		HibNode node;
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			node = content("news_2015");
@@ -64,7 +64,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		Node node = content("news_2015");
+		HibNode node = content("news_2015");
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
@@ -99,10 +99,10 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 		tx((tx) -> {
 			ContentDao contentDao = tx.contentDao();
-			Node node = content("news_2015");
+			HibNode node = content("news_2015");
 			// Inject the reference node field
-			NodeFieldContainer original = contentDao.getFieldContainer(node, "en");
-			SchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(original);
+			HibNodeFieldContainer original = contentDao.getFieldContainer(node, "en");
+			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(original);
 			SchemaVersionModel schema = schemaVersion.getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			schemaVersion.setSchema(schema);
@@ -123,7 +123,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			NodeDao nodeDao = tx.nodeDao();
-			Node node = content("news_2015");
+			HibNode node = content("news_2015");
 			String etag = nodeDao.getETag(node, mockActionContext());
 			assertEquals(etag, responseTag);
 

@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
  *
  */
 @Singleton
-public class TagFamilyNameCacheImpl extends AbstractNameCache<TagFamily> implements TagFamilyNameCache {
+public class TagFamilyNameCacheImpl extends AbstractNameCache<HibTagFamily> implements TagFamilyNameCache {
 
 	@Inject
 	public TagFamilyNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {

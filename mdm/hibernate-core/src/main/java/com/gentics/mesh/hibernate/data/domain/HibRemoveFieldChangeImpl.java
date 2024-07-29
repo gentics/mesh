@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.io.Serializable;
 
-import com.gentics.mesh.core.data.schema.RemoveFieldChange;
+import com.gentics.mesh.core.data.schema.HibRemoveFieldChange;
 
 import jakarta.persistence.Entity;
 
@@ -13,7 +13,7 @@ import jakarta.persistence.Entity;
  *
  */
 @Entity(name = "removefieldchangechange")
-public class HibRemoveFieldChangeImpl extends AbstractHibSchemaFieldChange implements RemoveFieldChange, Serializable {
+public class HibRemoveFieldChangeImpl extends AbstractHibSchemaFieldChange implements HibRemoveFieldChange, Serializable {
 
 	private static final long serialVersionUID = 4677044847648166198L;
 

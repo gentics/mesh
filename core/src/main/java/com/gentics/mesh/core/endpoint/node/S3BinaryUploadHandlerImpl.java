@@ -17,18 +17,18 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.s3binary.S3Binaries;
-import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Database;
@@ -128,13 +128,13 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 		return db.singleTxWriteLock(
 			(batch, tx) -> {
 				ContentDao contentDao = tx.contentDao();
-				Project project = tx.getProject(ac);
-				Branch branch = tx.getBranch(ac);
+				HibProject project = tx.getProject(ac);
+				HibBranch branch = tx.getBranch(ac);
 				NodeDao nodeDao = tx.nodeDao();
-				Node node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
+				HibNode node = nodeDao.loadObjectByUuid(project, ac, nodeUuid, UPDATE_PERM);
 
 				// Load the current latest draft
-				NodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
+				HibNodeFieldContainer latestDraftVersion = contentDao.getFieldContainer(node, languageTag, branch, ContainerType.DRAFT);
 
 				if (latestDraftVersion == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -152,7 +152,7 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 				}
 
 				// We need to check whether someone else has stored the s3 binary in the meanwhile
-				S3Binary s3HibBinary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
+				S3HibBinary s3HibBinary = s3binaries.findByS3ObjectKey(s3ObjectKey).runInExistingTx(tx);
 				if (s3HibBinary == null) {
 					BinaryCheckStatus checkStatus = StringUtils.isNotBlank(((S3BinaryFieldSchema) fieldSchema).getCheckServiceUrl())
 							? BinaryCheckStatus.POSTPONED
@@ -160,13 +160,13 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 					s3HibBinary = s3binaries.create(s3binaryUuid, s3ObjectKey, fileName, checkStatus).runInExistingTx(tx);
 				}
 
-				Language language = tx.languageDao().findByLanguageTag(project, languageTag);
+				HibLanguage language = tx.languageDao().findByLanguageTag(project, languageTag);
 				if (language == null) {
 					throw error(NOT_FOUND, "error_language_not_found", languageTag);
 				}
 
 				// Load the base version field container in order to create the diff
-				NodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
+				HibNodeFieldContainer baseVersionContainer = contentDao.findVersion(node, languageTag, branch.getUuid(), nodeVersion);
 				if (baseVersionContainer == null) {
 					throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
 				}
@@ -194,11 +194,11 @@ public class S3BinaryUploadHandlerImpl extends AbstractBinaryUploadHandler imple
 				}
 
 				// Create a new node version field container to store the upload
-				NodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
+				HibNodeFieldContainer newDraftVersion = contentDao.createFieldContainer(node, languageTag, branch, ac.getUser(),
 					latestDraftVersion,
 					true);
 				// Create the new field
-				S3BinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
+				S3HibBinaryField field = newDraftVersion.createS3Binary(fieldName, s3HibBinary);
 
 				// Now get rid of the old field
 				// If the s3 binary field is the segment field, we need to update the webroot info in the node
