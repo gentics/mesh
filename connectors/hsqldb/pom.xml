@@ -148,17 +148,12 @@
 						<dependency>com.gentics.mesh:tests-mesh-changelog-system</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
-						<dependency>
-							com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
-						<dependency>
-							com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
-						<dependency>
-							com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-aws-s3-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-image-imgscalr</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
-						<dependency>
-							com.gentics.mesh:tests-mesh-service-local-storage</dependency>
-						<dependency>
-							com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
 						<dependency>com.gentics.mesh:mesh-database-tests-common</dependency>
 					</dependenciesToScan>
