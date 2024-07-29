@@ -1,6 +1,6 @@
 package com.gentics.mesh.hibernate.data.node.field.impl;
 
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.hibernate.data.domain.HibBinaryFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibImageDataFieldBase;
 
@@ -10,7 +10,7 @@ import com.gentics.mesh.hibernate.data.domain.HibImageDataFieldBase;
  * @author plyhun
  *
  */
-public interface HibBinaryFieldBase extends BinaryField, HibImageDataFieldBase {
+public interface HibBinaryFieldBase extends HibBinaryField, HibImageDataFieldBase {
 
 	/**
 	 * Get the persisted edge of this field.

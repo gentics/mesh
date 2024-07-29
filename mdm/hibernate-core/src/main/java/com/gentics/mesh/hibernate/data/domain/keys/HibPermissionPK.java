@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 
 /**
  * Private key for the permission entity. 
@@ -17,12 +17,12 @@ public class HibPermissionPK implements Serializable {
 	private static final long serialVersionUID = 3933032028249172278L;
 	
 	private UUID element;
-	private Role role;
+	private HibRole role;
 
 	public HibPermissionPK() {
 	}
 
-	public HibPermissionPK(UUID element, Role role) {
+	public HibPermissionPK(UUID element, HibRole role) {
 		this.element = element;
 		this.role = role;
 	}

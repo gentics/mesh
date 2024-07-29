@@ -25,19 +25,19 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.event.EventCauseInfoModel;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.ListableFieldModel;
+import com.gentics.mesh.core.rest.node.field.ListableField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -101,7 +101,7 @@ public final class JsonUtil {
 		module.addSerializer(StringFieldImpl.class, new BasicFieldSerializer<StringFieldImpl>());
 		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
-		module.addSerializer(FieldListModel.class, new FieldListSerializer());
+		module.addSerializer(FieldList.class, new FieldListSerializer());
 		module.addSerializer(JsonObject.class, new JsonObjectSerializer());
 		module.addSerializer(JsonArray.class, new JsonArraySerializer());
 
@@ -116,9 +116,9 @@ public final class JsonUtil {
 		module.addDeserializer(JsonArray.class, new JsonArrayDeserializer());
 		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
 		module.addDeserializer(ExpandableNode.class, new UserNodeReferenceDeserializer());
-		module.addDeserializer(ListableFieldModel.class, new FieldDeserializer<ListableFieldModel>());
+		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
 		module.addDeserializer(FieldSchema.class, new FieldSchemaDeserializer<FieldSchema>());
-		module.addDeserializer(EventCauseInfoModel.class, new EventCauseInfoDeserializer());
+		module.addDeserializer(EventCauseInfo.class, new EventCauseInfoDeserializer());
 		module.addDeserializer(PermissionChangedEventModel.class, new PermissionChangedEventModelDeserializer());
 
 		defaultMapper.registerModule(module);

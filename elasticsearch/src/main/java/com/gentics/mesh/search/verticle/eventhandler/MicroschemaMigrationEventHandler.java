@@ -21,9 +21,9 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.DropIndexRequest;
 import com.gentics.mesh.core.data.search.request.ReIndexRequest;
@@ -98,9 +98,9 @@ public class MicroschemaMigrationEventHandler implements EventHandler {
 	private Flowable<? extends SearchRequest> migrationStart(BranchMicroschemaAssignModel model) {
 		// get all schemas "using" the microschema (in the project/branch) and create schema create requests
 		Pair<Map<String, Optional<IndexInfo>>, List<Triple<String, String, JsonObject>>> info = helper.getDb().transactional(tx -> {
-			Project project = tx.projectDao().findByUuid(model.getProject().getUuid());
-			Branch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
-			Microschema microschema = tx.microschemaDao().findByUuid(model.getSchema().getUuid());
+			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
+			HibMicroschema microschema = tx.microschemaDao().findByUuid(model.getSchema().getUuid());
 			Map<String, Optional<IndexInfo>> indexMap = branch.findAllSchemaVersions().stream().filter(version -> version.usesMicroschema(microschema))
 					.map(version -> nodeIndexHandler.getIndices(project, branch, version).runInExistingTx(tx))
 					.collect(HashMap::new, HashMap::putAll, HashMap::putAll);
@@ -129,9 +129,9 @@ public class MicroschemaMigrationEventHandler implements EventHandler {
 	private Flowable<DropIndexRequest> migrationEnd(MicroschemaMigrationMeshEventModel model) {
 		// create drop index requests for the old schemas
 		return helper.getDb().transactional(tx -> {
-			Project project = tx.projectDao().findByUuid(model.getProject().getUuid());
-			Branch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
-			Microschema microschema = tx.microschemaDao().findByUuid(model.getFromVersion().getUuid());
+			HibProject project = tx.projectDao().findByUuid(model.getProject().getUuid());
+			HibBranch branch = tx.branchDao().findByUuid(project, model.getBranch().getUuid());
+			HibMicroschema microschema = tx.microschemaDao().findByUuid(model.getFromVersion().getUuid());
 
 			// prepare the replacement map, which will replace the microschema version with the old microschema version, because we
 			// need to find the names of the old indices (which used the old microschema version)

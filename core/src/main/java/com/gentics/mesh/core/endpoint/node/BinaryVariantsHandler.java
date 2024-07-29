@@ -21,14 +21,14 @@ import javax.inject.Singleton;
 import org.apache.commons.lang.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.ImageVariant;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -90,9 +90,9 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 */
 	public void handleUpsertBinaryFieldVariants(InternalActionContext ac, String nodeUuid, String fieldName) {
 		wrapVariantsCall(ac, nodeUuid, fieldName, binaryField -> {
-			Binary binary = binaryField.getBinary();
+			HibBinary binary = binaryField.getBinary();
 			ImageManipulationRequest request = ac.fromJson(ImageManipulationRequest.class);
-			Result<? extends ImageVariant> result = imageVariantDao.createVariants(binaryField, request.getVariants(), ac, request.isDeleteOther());
+			Result<? extends HibImageVariant> result = imageVariantDao.createVariants(binaryField, request.getVariants(), ac, request.isDeleteOther());
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
@@ -116,7 +116,7 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 */
 	public void handleListBinaryFieldVariants(InternalActionContext ac, String uuid, String fieldName) {
 		wrapVariantsCall(ac, uuid, fieldName, binaryField -> {
-			Result<? extends ImageVariant> result = binaryField.getImageVariants();
+			Result<? extends HibImageVariant> result = binaryField.getImageVariants();
 			ImageManipulationRetrievalParameters retrievalParams = ac.getImageManipulationRetrievalParameters();
 			int level = retrievalParams.retrieveFilesize() ? 1 : 0;
 			List<ImageVariantResponse> variants = result.stream().map(variant -> imageVariantDao.transformToRestSync(variant, ac, level)).collect(Collectors.toList());
@@ -139,13 +139,13 @@ public class BinaryVariantsHandler extends AbstractHandler {
 	 * @param fieldName
 	 * @param consumer
 	 */
-	protected void wrapVariantsCall(InternalActionContext ac, String nodeUuid, String fieldName, Consumer<BinaryField> consumer) {
+	protected void wrapVariantsCall(InternalActionContext ac, String nodeUuid, String fieldName, Consumer<HibBinaryField> consumer) {
 		db.tx(tx -> {
 			ContainerType version = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-			Project project = tx.getProject(ac);
-			Node node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, version == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
-			Branch branch = tx.getBranch(ac, node.getProject());
-			NodeFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
+			HibProject project = tx.getProject(ac);
+			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, nodeUuid, version == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM);
+			HibBranch branch = tx.getBranch(ac, node.getProject());
+			HibNodeFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
 				branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
@@ -156,7 +156,7 @@ public class BinaryVariantsHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
 			if ((fieldSchema instanceof BinaryFieldSchema)) {
-				BinaryField field = fieldContainer.getBinary(fieldName);
+				HibBinaryField field = fieldContainer.getBinary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}

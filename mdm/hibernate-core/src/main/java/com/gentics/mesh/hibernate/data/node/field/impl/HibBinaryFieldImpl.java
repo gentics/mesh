@@ -3,14 +3,14 @@ package com.gentics.mesh.hibernate.data.node.field.impl;
 import java.util.Map;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.ImageVariant;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.database.HibernateTx;
@@ -35,8 +35,8 @@ public class HibBinaryFieldImpl extends AbstractDeletableHibField<HibBinaryField
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
-		BinaryField binary = container.createBinary(getFieldKey(), getBinary());
+	public HibField cloneTo(HibFieldContainer container) {
+		HibBinaryField binary = container.createBinary(getFieldKey(), getBinary());
 		return copyTo(binary);
 	}
 
@@ -46,13 +46,13 @@ public class HibBinaryFieldImpl extends AbstractDeletableHibField<HibBinaryField
 	}
 
 	@Override
-	public BinaryField setFileName(String fileName) {
+	public HibBinaryField setFileName(String fileName) {
 		getReferencedEdge().setFileName(fileName);
 		return this;
 	}
 
 	@Override
-	public BinaryField copyTo(BinaryField targetField) {
+	public HibBinaryField copyTo(HibBinaryField targetField) {
 		return getReferencedEdge().copyTo(targetField);
 	}
 
@@ -62,7 +62,7 @@ public class HibBinaryFieldImpl extends AbstractDeletableHibField<HibBinaryField
 	}
 
 	@Override
-	public BinaryField setMimeType(String mimeType) {
+	public HibBinaryField setMimeType(String mimeType) {
 		getReferencedEdge().setMimeType(mimeType);
 		return this;
 	}
@@ -73,27 +73,27 @@ public class HibBinaryFieldImpl extends AbstractDeletableHibField<HibBinaryField
 	}
 
 	@Override
-	public BinaryField setImageDominantColor(String dominantColor) {
+	public HibBinaryField setImageDominantColor(String dominantColor) {
 		getReferencedEdge().setImageDominantColor(dominantColor);
 		return this;
 	}
 
 	@Override
-	public FocalPointModel getImageFocalPoint() {
+	public FocalPoint getImageFocalPoint() {
 		return getReferencedEdge().getImageFocalPoint();
 	}
 
 	@Override
-	public BinaryField setImageFocalPoint(FocalPointModel point) {
-		return (BinaryField) getReferencedEdge().setImageFocalPoint(point);
+	public HibBinaryField setImageFocalPoint(FocalPoint point) {
+		return (HibBinaryField) getReferencedEdge().setImageFocalPoint(point);
 	}
 
 	@Override
-	public Binary getBinary() {
+	public HibBinary getBinary() {
 		return getReferencedEdge().getBinary();
 	}
 
-	public void setBinary(Binary binary) {
+	public void setBinary(HibBinary binary) {
 		getReferencedEdge().setBinary(binary);
 	}
 
@@ -168,13 +168,13 @@ public class HibBinaryFieldImpl extends AbstractDeletableHibField<HibBinaryField
 	}
 
 	@Override
-	public Result<? extends ImageVariant> getImageVariants() {
+	public Result<? extends HibImageVariant> getImageVariants() {
 		return new TraversalResult<>(HibernateTx.get().entityManager().createNamedQuery("imagevariant_find_all_by_field", HibImageVariantImpl.class).setParameter("field", getReferencedEdge()).getResultList());
 	}
 
 	@Override
-	public NodeFieldContainer getParentContainer() {
-		return (NodeFieldContainer) getContainer();
+	public HibNodeFieldContainer getParentContainer() {
+		return (HibNodeFieldContainer) getContainer();
 	}
 
 	@Override

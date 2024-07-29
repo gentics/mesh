@@ -19,7 +19,7 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -44,7 +44,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRestClient() throws Exception {
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			String username = user.getUsername();
 			String uuid = user.getUuid();
 
@@ -119,7 +119,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 		assertEquals("OK", loginResponse.getMessage());
 
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			user.disable();
 			tx.success();
 		}
@@ -130,7 +130,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAutomaticTokenRefresh() throws InterruptedException {
 		try (Tx tx = tx()) {
-			User user = user();
+			HibUser user = user();
 			String username = user.getUsername();
 
 			MeshRestClient client = MeshRestClient.create("localhost", port(), false);

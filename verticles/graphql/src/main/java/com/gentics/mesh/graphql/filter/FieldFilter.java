@@ -16,13 +16,13 @@ import com.gentics.graphqlfilter.filter.FilterField;
 import com.gentics.graphqlfilter.filter.MainFilter;
 import com.gentics.graphqlfilter.filter.NumberFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.node.field.BooleanField;
-import com.gentics.mesh.core.data.node.field.DateField;
-import com.gentics.mesh.core.data.node.field.HtmlField;
-import com.gentics.mesh.core.data.node.field.StringField;
-import com.gentics.mesh.core.data.node.field.list.ListField;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -32,7 +32,7 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 /**
  * Filters by the fields of a (micro)node with a certain schema.
  */
-public class FieldFilter extends MainFilter<FieldContainer> {
+public class FieldFilter extends MainFilter<HibFieldContainer> {
 	private static final String NAME_PREFIX = "FieldFilter.";
 
 	/**
@@ -43,7 +43,7 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 	 * @param container
 	 *            The schema model to create the filter for
 	 */
-	public static FieldFilter filter(GraphQLContext context, FieldSchemaVersionElement<?,?,?,?,?> container) {
+	public static FieldFilter filter(GraphQLContext context, HibFieldSchemaVersionElement<?,?,?,?,?> container) {
 		return context.getOrStore(NAME_PREFIX + container.getClass().getSimpleName() + "." + container.getName(), () -> new FieldFilter(container, context));
 	}
 
@@ -51,7 +51,7 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 	private final String schemaUuid;
 	private final GraphQLContext context;
 
-	private FieldFilter(FieldSchemaVersionElement<?,?,?,?,?> schemaVersion, GraphQLContext context) {
+	private FieldFilter(HibFieldSchemaVersionElement<?,?,?,?,?> schemaVersion, GraphQLContext context) {
 		super(schemaVersion.getName() + "FieldFilter", "Filters by fields", Optional.empty());
 		this.schema = schemaVersion.getSchema();
 		this.schemaUuid = schemaVersion.getSchemaContainer().getUuid();
@@ -59,7 +59,7 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 	}
 
 	@Override
-	protected List<FilterField<FieldContainer, ?>> getFilters() {
+	protected List<FilterField<HibFieldContainer, ?>> getFilters() {
 		return schema.getFields().stream()
 			.map(this::createFieldFilter)
 			.collect(Collectors.toList());
@@ -71,23 +71,23 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 	 * @param fieldSchema
 	 *            The field schema to create the filter for
 	 */
-	private FilterField<FieldContainer, ?> createFieldFilter(FieldSchema fieldSchema) {
+	private FilterField<HibFieldContainer, ?> createFieldFilter(FieldSchema fieldSchema) {
 		String name = fieldSchema.getName();
 		String description = "Filters by the field " + name;
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		switch (type) {
 		case STRING:
 			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getString(name), StringField::getString), schema);
+				node -> node == null ? null : getOrNull(node.getString(name), HibStringField::getString), schema);
 		case HTML:
 			return new FieldMappedFilter<>(type, name, description, StringFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getHtml(name), HtmlField::getHTML), schema);
+				node -> node == null ? null : getOrNull(node.getHtml(name), HibHtmlField::getHTML), schema);
 		case DATE:
 			return new FieldMappedFilter<>(type, name, description, DateFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getDate(name), DateField::getDate), schema);
+				node -> node == null ? null : getOrNull(node.getDate(name), HibDateField::getDate), schema);
 		case BOOLEAN:
 			return new FieldMappedFilter<>(type, name, description, BooleanFilter.filter(),
-				node -> node == null ? null : getOrNull(node.getBoolean(name), BooleanField::getBoolean), schema);
+				node -> node == null ? null : getOrNull(node.getBoolean(name), HibBooleanField::getBoolean), schema);
 		case NUMBER:
 			return new FieldMappedFilter<>(type, name, description, NumberFilter.filter(),
 				node -> node == null ? null : getOrNull(node.getNumber(name), val -> new BigDecimal(val.getNumber().toString())), schema);
@@ -98,7 +98,7 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 			return new FieldMappedFilter<>(type, name, description, EntityReferenceFilter.nodeFieldFilter(context, "NODEFIELD"),
 				node -> node == null ? null : getOrNull(node.getNode(name), Function.identity()), schema);
 		case LIST:
-			Pair<Filter<Collection<?>, ?>, Function<FieldContainer, Collection<?>>> listReferenceMap = listReferenceMapper(name, fieldSchema);
+			Pair<Filter<Collection<?>, ?>, Function<HibFieldContainer, Collection<?>>> listReferenceMap = listReferenceMapper(name, fieldSchema);
 			return new FieldMappedFilter<>(type, name, description, listReferenceMap.getLeft(), 
 					listReferenceMap.getRight(), schema, fieldSchema.maybeGetListField().map(ListFieldSchema::getListType).map(FieldTypes::valueByName));
 		case BINARY:
@@ -113,12 +113,12 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Pair<Filter<Collection<?>, ?>, Function<FieldContainer, Collection<?>>> listReferenceMapper(String name, FieldSchema fieldSchema) {
+	private Pair<Filter<Collection<?>, ?>, Function<HibFieldContainer, Collection<?>>> listReferenceMapper(String name, FieldSchema fieldSchema) {
 		ListFieldSchema listFieldSchema = fieldSchema.maybeGetListField().get();
 		FieldTypes listType = FieldTypes.valueByName(listFieldSchema.getListType());
 		
 		ListFilter listFilter;
-		Function<FieldContainer, ListField<?,?,?>> listFieldGetter;
+		Function<HibFieldContainer, HibListField<?,?,?>> listFieldGetter;
 		switch (listType) {
 		case BOOLEAN:
 			listFilter = ListFilter.booleanListFilter();
@@ -154,7 +154,7 @@ public class FieldFilter extends MainFilter<FieldContainer> {
 		default:
 			throw new RuntimeException("Unexpected list type " + listType);
 		}
-		return Pair.of(listFilter, node -> node == null ? null : getOrNull(listFieldGetter.apply(node), ListField::getValues));
+		return Pair.of(listFilter, node -> node == null ? null : getOrNull(listFieldGetter.apply(node), HibListField::getValues));
 	}
 
 	@Override

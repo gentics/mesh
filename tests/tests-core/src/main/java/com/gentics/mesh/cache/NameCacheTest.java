@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NamedElement;
+import com.gentics.mesh.core.data.HibNamedElement;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -91,7 +91,7 @@ public class NameCacheTest extends AbstractMeshTest {
 				(name, tx) -> tx.microschemaDao().findByName(name));
 	}
 
-	protected <E extends NamedElement> void testCreation(String entityName, BiFunction<String, Tx, E> creator, BiFunction<String, Tx, E> lookup) {
+	protected <E extends HibNamedElement> void testCreation(String entityName, BiFunction<String, Tx, E> creator, BiFunction<String, Tx, E> lookup) {
 		String name = entityName + "_" + Long.toHexString(System.currentTimeMillis());
 
 		tx(tx -> {

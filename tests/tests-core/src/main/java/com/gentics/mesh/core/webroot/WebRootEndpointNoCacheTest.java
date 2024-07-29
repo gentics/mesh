@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -29,7 +29,7 @@ public class WebRootEndpointNoCacheTest extends AbstractMeshTest {
 			MeshWebrootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setLanguages("en", "de")));
 			try (Tx tx = tx()) {
-				Node node = content("news_2015");
+				HibNode node = content("news_2015");
 				assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
 			}
 		}

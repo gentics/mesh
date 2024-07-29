@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 
 import jakarta.persistence.criteria.JoinType;
 
@@ -26,7 +26,7 @@ public class NativeJoin {
 	private final Map<String, Object> parameters = new HashMap<>();
 	private final Map<String, Pair<String, NativeFilterJoin>> joins = new HashMap<>();
 	private Set<String> whereClauses = new HashSet<>();
-	private Optional<FieldSchemaVersionElement<?,?,?,?,?>> maybeVersion = Optional.empty();
+	private Optional<HibFieldSchemaVersionElement<?,?,?,?,?>> maybeVersion = Optional.empty();
 
 	public Map<String, Object> getParameters() {
 		return parameters;
@@ -67,12 +67,12 @@ public class NativeJoin {
 		return this;
 	}
 
-	public NativeJoin appendVersion(FieldSchemaVersionElement<?,?,?,?,?> version) {
+	public NativeJoin appendVersion(HibFieldSchemaVersionElement<?,?,?,?,?> version) {
 		this.maybeVersion = Optional.ofNullable(version);
 		return this;
 	}
 
-	public Optional<FieldSchemaVersionElement<?, ?, ?, ?, ?>> getMaybeVersion() {
+	public Optional<HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> getMaybeVersion() {
 		return maybeVersion;
 	}
 

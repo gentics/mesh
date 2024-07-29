@@ -10,10 +10,10 @@ import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.StringFilter;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.Element;
-import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.data.user.UserTracking;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.HibNamedElement;
+import com.gentics.mesh.core.data.user.HibUserTracking;
 
 import graphql.util.Pair;
 
@@ -29,8 +29,8 @@ public final class CommonFields {
 	 * @deprecated Use {@link #hibUuidFilter()} instead.
 	 */
 	@Deprecated
-	public static <T extends Element> FilterField<T, Map<String, ?>> uuidFilter(String owner) {
-		return new MappedFilter<>(owner, "uuid", "Filters by uuid", StringFilter.filter(), Element::getUuid);
+	public static <T extends HibElement> FilterField<T, Map<String, ?>> uuidFilter(String owner) {
+		return new MappedFilter<>(owner, "uuid", "Filters by uuid", StringFilter.filter(), HibElement::getUuid);
 	}
 
 	/**
@@ -39,23 +39,23 @@ public final class CommonFields {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T extends BaseElement> FilterField<T, Map<String, ?>> hibUuidFilter(String owner) {
-		return new MappedFilter<>(owner, "uuid", "Filters by uuid", StringFilter.filter(), BaseElement::getUuid);
+	public static <T extends HibBaseElement> FilterField<T, Map<String, ?>> hibUuidFilter(String owner) {
+		return new MappedFilter<>(owner, "uuid", "Filters by uuid", StringFilter.filter(), HibBaseElement::getUuid);
 	}
 
 	/**
 	 * Filters by name
 	 */
 	@Deprecated
-	public static <T extends NamedElement> FilterField<T, Map<String, ?>> nameFilter(String owner) {
-		return new MappedFilter<>(owner, "name", "Filters by name", StringFilter.filter(), NamedElement::getName);
+	public static <T extends HibNamedElement> FilterField<T, Map<String, ?>> nameFilter(String owner) {
+		return new MappedFilter<>(owner, "name", "Filters by name", StringFilter.filter(), HibNamedElement::getName);
 	}
 
 	/**
 	 * Filters by name
 	 */
-	public static <T extends NamedElement> FilterField<T, Map<String, ?>> hibNameFilter(String owner) {
-		return new MappedFilter<>(owner, "name", "Filters by name", StringFilter.filter(), NamedElement::getName);
+	public static <T extends HibNamedElement> FilterField<T, Map<String, ?>> hibNameFilter(String owner) {
+		return new MappedFilter<>(owner, "name", "Filters by name", StringFilter.filter(), HibNamedElement::getName);
 	}
 
 	/**
@@ -63,14 +63,14 @@ public final class CommonFields {
 	 * @deprecated Use {@link #hibUserTrackingFilter()}
 	 */
 	@Deprecated
-	public static <T extends UserTracking> List<FilterField<T, Map<String, ?>>> userTrackingFilter(String owner) {
+	public static <T extends HibUserTracking> List<FilterField<T, Map<String, ?>>> userTrackingFilter(String owner) {
 		return userTrackingFilter(owner, UserFilter.filter());
 	}
 
 	/**
 	 * Filters by created time, creator, edited time and editor.
 	 */
-	public static <T extends UserTracking> List<FilterField<T, Map<String, ?>>> hibUserTrackingFilter(String owner) {
+	public static <T extends HibUserTracking> List<FilterField<T, Map<String, ?>>> hibUserTrackingFilter(String owner) {
 		return hibUserTrackingFilter(owner, UserFilter.filter());
 	}
 
@@ -81,7 +81,7 @@ public final class CommonFields {
 	 *            The user filter to use for creator and editor
 	 */
 	@Deprecated
-	public static <T extends UserTracking> List<FilterField<T, Map<String, ?>>> userTrackingFilter(String owner, UserFilter userFilter) {
+	public static <T extends HibUserTracking> List<FilterField<T, Map<String, ?>>> userTrackingFilter(String owner, UserFilter userFilter) {
 		return hibUserTrackingFilter(owner, userFilter);
 	}
 
@@ -91,11 +91,11 @@ public final class CommonFields {
 	 * @param userFilter
 	 *            The user filter to use for creator and editor
 	 */
-	public static <T extends UserTracking> List<FilterField<T, Map<String, ?>>> hibUserTrackingFilter(String owner, UserFilter userFilter) {
+	public static <T extends HibUserTracking> List<FilterField<T, Map<String, ?>>> hibUserTrackingFilter(String owner, UserFilter userFilter) {
 		return Arrays.asList(
-			new MappedFilter<>(owner, "created", "Filters by creation timestamp", DateFilter.filter(), UserTracking::getCreationTimestamp),
-			new MappedFilter<>(owner, "edited", "Filters by update timestamp", DateFilter.filter(), UserTracking::getLastEditedTimestamp),
-			new MappedFilter<>(owner, "creator", "Filters by creator", userFilter, UserTracking::getCreator, Pair.pair("creator", new JoinPart(ElementType.USER.name(), "uuid"))),
-			new MappedFilter<>(owner, "editor", "Filters by editor", userFilter, UserTracking::getEditor, Pair.pair("editor", new JoinPart(ElementType.USER.name(), "uuid"))));
+			new MappedFilter<>(owner, "created", "Filters by creation timestamp", DateFilter.filter(), HibUserTracking::getCreationTimestamp),
+			new MappedFilter<>(owner, "edited", "Filters by update timestamp", DateFilter.filter(), HibUserTracking::getLastEditedTimestamp),
+			new MappedFilter<>(owner, "creator", "Filters by creator", userFilter, HibUserTracking::getCreator, Pair.pair("creator", new JoinPart(ElementType.USER.name(), "uuid"))),
+			new MappedFilter<>(owner, "editor", "Filters by editor", userFilter, HibUserTracking::getEditor, Pair.pair("editor", new JoinPart(ElementType.USER.name(), "uuid"))));
 	}
 }

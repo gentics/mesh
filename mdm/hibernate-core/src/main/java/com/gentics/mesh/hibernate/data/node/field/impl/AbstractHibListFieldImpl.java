@@ -15,12 +15,12 @@ import org.slf4j.Logger;
 import com.gentics.mesh.cache.ListableFieldCache;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.ListField;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.ListableField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibListableField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.AbstractHibListFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
@@ -43,8 +43,8 @@ import jakarta.persistence.Query;
  */
 public abstract class AbstractHibListFieldImpl<
 				T extends AbstractHibListFieldEdgeImpl<V>, 
-				LF extends ListableField, RM extends FieldModel, U, V
-			> extends AbstractBasicHibField<UUID> implements ListField<LF, RM, U> {
+				LF extends HibListableField, RM extends Field, U, V
+			> extends AbstractBasicHibField<UUID> implements HibListField<LF, RM, U> {
 
 	public static final Logger log = getLogger(AbstractHibListFieldImpl.class);
 
@@ -134,8 +134,8 @@ public abstract class AbstractHibListFieldImpl<
 
 	/**
 	 * This is a backwards compatible override, to prevent duplicates 
-	 * for the cases a field has just been added with {@link NodeFieldList#createNode(int, Node)}.
-	 * Avoid using it with the fields created with {@link NodeFieldList#createNode(int, Node)}
+	 * for the cases a field has just been added with {@link HibNodeFieldList#createNode(int, HibNode)}.
+	 * Avoid using it with the fields created with {@link HibNodeFieldList#createNode(int, HibNode)}
 	 */
 	@Override
 	@Deprecated

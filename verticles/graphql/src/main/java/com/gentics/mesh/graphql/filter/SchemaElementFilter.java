@@ -14,9 +14,9 @@ import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FieldOperand;
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.RootDao;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.FieldSchemaElement;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -42,8 +42,8 @@ public abstract class SchemaElementFilter<
 			R extends FieldSchemaContainer, 
 			RM extends FieldSchemaContainerVersion, 
 			RE extends NameUuidReference<RE>, 
-			SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
-			SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>
+			SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+			SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>
 		> extends EntityFilter<SC> {
 
 	protected final GraphQLContext context;
@@ -56,8 +56,8 @@ public abstract class SchemaElementFilter<
 	private Optional<GraphQLEnumType> schemaElementEnum() {
 		String elementName = getSchemaElementName();
 		Tx tx = Tx.get();
-		RootDao<Project, SC> dao = getSchemaElementDao();
-		Project project = tx.getProject(context);
+		RootDao<HibProject, SC> dao = getSchemaElementDao();
+		HibProject project = tx.getProject(context);
 		List<GraphQLEnumValueDefinition> values = dao.findAll(project).stream()
 			.map(schema -> {
 				String name = schema.getName();
@@ -104,5 +104,5 @@ public abstract class SchemaElementFilter<
 
 	protected abstract Class<? extends RM> getSchemaModelVersionClass();
 
-	protected abstract RootDao<Project, SC> getSchemaElementDao();
+	protected abstract RootDao<HibProject, SC> getSchemaElementDao();
 }

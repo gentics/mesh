@@ -10,7 +10,7 @@ import jakarta.persistence.Entity;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
@@ -35,8 +35,8 @@ import io.vertx.core.Vertx;
  * @param <DR> root entity implementation
  */
 public abstract class AbstractHibRootDao<
-			L extends CoreElement<RM>, RM extends RestModel, DL extends L, 
-			R extends CoreElement<? extends RestModel>, DR extends R
+			L extends HibCoreElement<RM>, RM extends RestModel, DL extends L, 
+			R extends HibCoreElement<? extends RestModel>, DR extends R
 		> extends AbstractHibCoreDao<L, RM, DL> implements PersistingRootDao<R, L> {
 	
 	protected final RootDaoHelper<L, DL, R, DR> rootDaoHelper;

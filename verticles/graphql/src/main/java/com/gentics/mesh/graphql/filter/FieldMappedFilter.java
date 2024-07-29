@@ -11,14 +11,14 @@ import com.gentics.graphqlfilter.filter.MappedFilter;
 import com.gentics.graphqlfilter.filter.operation.Join;
 import com.gentics.graphqlfilter.filter.operation.JoinPart;
 import com.gentics.graphqlfilter.util.FilterUtil;
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 
 /**
  * Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
  */
-public class FieldMappedFilter<T, Q> extends MappedFilter<FieldContainer, T, Q> {
+public class FieldMappedFilter<T, Q> extends MappedFilter<HibFieldContainer, T, Q> {
 	private final String schemaName;
 	private final FieldTypes fieldType;
 	private final Optional<FieldTypes> maybeItemType;
@@ -26,7 +26,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<FieldContainer, T, Q> 
 	/**
 	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema.
 	 */
-	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<FieldContainer, T> mapper, FieldSchemaContainerVersion schemaVersion) {
+	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, FieldSchemaContainerVersion schemaVersion) {
 		this(fieldType, name, description, delegate, mapper, schemaVersion, Optional.empty());
 	}
 
@@ -34,7 +34,7 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<FieldContainer, T, Q> 
 	 * Creates a new FieldMappedFilter. Same as {@link MappedFilter}, but additionally tests if the input node is of the provided schema. 
 	 * If a filter points to the list field, a list item type is provided.
 	 */
-	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<FieldContainer, T> mapper, FieldSchemaContainerVersion schemaVersion, Optional<FieldTypes> maybeItemType) {
+	public FieldMappedFilter(FieldTypes fieldType, String name, String description, Filter<T, Q> delegate, Function<HibFieldContainer, T> mapper, FieldSchemaContainerVersion schemaVersion, Optional<FieldTypes> maybeItemType) {
 		super(schemaVersion.isMicroschema() ? "MICROCONTENT" : "CONTENT", name, description, delegate, mapper);
 		this.schemaName = schemaVersion.getName();
 		this.fieldType = fieldType;
@@ -42,10 +42,10 @@ public class FieldMappedFilter<T, Q> extends MappedFilter<FieldContainer, T, Q> 
 	}
 
 	@Override
-	public Predicate<FieldContainer> createPredicate(Q query) {
+	public Predicate<HibFieldContainer> createPredicate(Q query) {
 		// Return always true if the node is not of the provided schema.
-		Predicate<FieldContainer> schemaCheck = node -> node != null && !node.getSchemaContainerVersion().getName().equals(schemaName);
-		Predicate<FieldContainer> predicate = super.createPredicate(query);
+		Predicate<HibFieldContainer> schemaCheck = node -> node != null && !node.getSchemaContainerVersion().getName().equals(schemaName);
+		Predicate<HibFieldContainer> predicate = super.createPredicate(query);
 		return schemaCheck.or(predicate);
 	}
 

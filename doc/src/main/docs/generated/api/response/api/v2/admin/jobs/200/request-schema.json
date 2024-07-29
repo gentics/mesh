@@ -17,7 +17,7 @@
           },
           "creator" : {
             "type" : "object",
-            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReferenceModel",
+            "id" : "urn:jsonschema:com:gentics:mesh:core:rest:user:UserReference",
             "required" : true,
             "description" : "User reference of the creator of the element.",
             "properties" : {
@@ -93,7 +93,7 @@
             "description" : "List of warnings which were encoutered while executing the job.",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:job:warning:JobWarningModel",
+              "id" : "urn:jsonschema:com:gentics:mesh:core:rest:job:warning:JobWarning",
               "properties" : {
                 "type" : {
                   "type" : "string"

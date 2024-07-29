@@ -12,14 +12,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobStatus;
 import com.gentics.mesh.core.rest.job.JobType;
-import com.gentics.mesh.core.rest.job.JobWarningListModel;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.json.JsonUtil;
 import org.hibernate.annotations.Cache;
@@ -35,24 +35,24 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Entity(name = "job")
 @ElementTypeKey(ElementType.JOB)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> implements Job, Serializable {
+public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> implements HibJob, Serializable {
 
 	private static final long serialVersionUID = -1745332735121737689L;
 
 	@ManyToOne(targetEntity = HibSchemaVersionImpl.class)
-	private SchemaVersion toSchemaVersion;
+	private HibSchemaVersion toSchemaVersion;
 
 	@ManyToOne(targetEntity = HibSchemaVersionImpl.class)
-	private SchemaVersion fromSchemaVersion;
+	private HibSchemaVersion fromSchemaVersion;
 
 	@ManyToOne(targetEntity = HibMicroschemaVersionImpl.class)
-	private MicroschemaVersion toMicroschemaVersion;
+	private HibMicroschemaVersion toMicroschemaVersion;
 
 	@ManyToOne(targetEntity = HibMicroschemaVersionImpl.class)
-	private MicroschemaVersion fromMicroschemaVersion;
+	private HibMicroschemaVersion fromMicroschemaVersion;
 
 	@OneToOne(targetEntity = HibBranchImpl.class)
-	private Branch branch;
+	private HibBranch branch;
 
 	@Enumerated(EnumType.STRING)
 	private JobType jobType;
@@ -77,12 +77,12 @@ public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> imple
 	private String errorDetail;
 
 	@Override
-	public Branch getBranch() {
+	public HibBranch getBranch() {
 		return branch;
 	}
 
 	@Override
-	public void setBranch(Branch branch) {
+	public void setBranch(HibBranch branch) {
 		this.branch = branch;
 	}
 
@@ -127,42 +127,42 @@ public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> imple
 	}
 
 	@Override
-	public SchemaVersion getFromSchemaVersion() {
+	public HibSchemaVersion getFromSchemaVersion() {
 		return fromSchemaVersion;
 	}
 
 	@Override
-	public void setFromSchemaVersion(SchemaVersion version) {
+	public void setFromSchemaVersion(HibSchemaVersion version) {
 		fromSchemaVersion = version;
 	}
 
 	@Override
-	public SchemaVersion getToSchemaVersion() {
+	public HibSchemaVersion getToSchemaVersion() {
 		return toSchemaVersion;
 	}
 
 	@Override
-	public void setToSchemaVersion(SchemaVersion version) {
+	public void setToSchemaVersion(HibSchemaVersion version) {
 		toSchemaVersion = version;
 	}
 
 	@Override
-	public MicroschemaVersion getFromMicroschemaVersion() {
+	public HibMicroschemaVersion getFromMicroschemaVersion() {
 		return fromMicroschemaVersion;
 	}
 
 	@Override
-	public void setFromMicroschemaVersion(MicroschemaVersion fromVersion) {
+	public void setFromMicroschemaVersion(HibMicroschemaVersion fromVersion) {
 		fromMicroschemaVersion = fromVersion;
 	}
 
 	@Override
-	public MicroschemaVersion getToMicroschemaVersion() {
+	public HibMicroschemaVersion getToMicroschemaVersion() {
 		return toMicroschemaVersion;
 	}
 
 	@Override
-	public void setToMicroschemaVersion(MicroschemaVersion toVersion) {
+	public void setToMicroschemaVersion(HibMicroschemaVersion toVersion) {
 		toMicroschemaVersion = toVersion;
 	}
 
@@ -207,16 +207,16 @@ public class HibJobImpl extends AbstractHibUserTrackedElement<JobResponse> imple
 	}
 
 	@Override
-	public JobWarningListModel getWarnings() {
+	public JobWarningList getWarnings() {
 		if (warnings == null) {
-			return new JobWarningListModel();
+			return new JobWarningList();
 		} else {
-			return JsonUtil.readValue(warnings, JobWarningListModel.class);
+			return JsonUtil.readValue(warnings, JobWarningList.class);
 		}
 	}
 
 	@Override
-	public void setWarnings(JobWarningListModel warnings) {
+	public void setWarnings(JobWarningList warnings) {
 		this.warnings = warnings.toJson();
 	}
 }

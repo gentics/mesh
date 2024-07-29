@@ -14,13 +14,13 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractWebrootHandler;
@@ -83,11 +83,11 @@ public class WebRootHandler extends AbstractWebrootHandler {
 			Path nodePath = findNodePathByProjectPath(ac, path);
 			PathSegment lastSegment = nodePath.getLast();
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			Node node = findNodeByPath(ac, rc, nodePath, path);
+			HibNode node = findNodeByPath(ac, rc, nodePath, path);
 
-			Field field = graphSegment.getPathField();
-			if (field instanceof BinaryField) {
-				BinaryField binaryField = (BinaryField) field;
+			HibField field = graphSegment.getPathField();
+			if (field instanceof HibBinaryField) {
+				HibBinaryField binaryField = (HibBinaryField) field;
 				String sha512sum = binaryField.getBinary().getSHA512Sum();
 
 				// Check the etag
@@ -102,8 +102,8 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				}
 				binaryFieldResponseHandler.handle(rc, binaryField);
 				return null;
-			} else if (field instanceof S3BinaryField) {
-				S3BinaryField s3binaryField = (S3BinaryField) field;
+			} else if (field instanceof S3HibBinaryField) {
+				S3HibBinaryField s3binaryField = (S3HibBinaryField) field;
 				String s3ObjectKey = s3binaryField.getBinary().getS3ObjectKey();
 				//String version = s3binaryField.getElementVersion();
 
@@ -169,7 +169,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 				// Update Node
 				if (nodePath.isFullyResolved()) {
 					PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-					NodeFieldContainer container = graphSegment.getContainer();
+					HibNodeFieldContainer container = graphSegment.getContainer();
 					NodeUpdateRequest request = ac.fromJson(NodeUpdateRequest.class);
 					// We can deduce a missing the language via the path
 					if (request.getLanguage() == null) {
@@ -191,7 +191,7 @@ public class WebRootHandler extends AbstractWebrootHandler {
 
 					// Deduce parent node
 					if (request.getParentNode() == null || request.getParentNode().getUuid() == null) {
-						Node parentNode = null;
+						HibNode parentNode = null;
 						if (segments.size() == 0) {
 							parentNode = tx.getProject(ac).getBaseNode();
 						} else {

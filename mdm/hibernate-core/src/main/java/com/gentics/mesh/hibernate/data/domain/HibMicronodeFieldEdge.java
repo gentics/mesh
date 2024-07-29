@@ -1,7 +1,7 @@
 package com.gentics.mesh.hibernate.data.domain;
 
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 
 /**
  * Some common state-independent functionality for micronode field edges.
@@ -9,7 +9,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaVersion;
  * @author plyhun
  *
  */
-public interface HibMicronodeFieldEdge extends MicronodeField, HibFieldEdge {
+public interface HibMicronodeFieldEdge extends HibMicronodeField, HibFieldEdge {
 
 	@Override
 	default String getFieldKey() {
@@ -27,5 +27,5 @@ public interface HibMicronodeFieldEdge extends MicronodeField, HibFieldEdge {
 	 * Get the microschema version of this edge.
 	 * @return
 	 */
-	MicroschemaVersion getMicroschemaVersion();
+	HibMicroschemaVersion getMicroschemaVersion();
 }

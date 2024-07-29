@@ -51,10 +51,10 @@ import org.hibernate.type.spi.TypeConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.ReferenceType;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -95,7 +95,7 @@ public class ContentNoCacheStorage {
 		this.databaseConnector = databaseConnector;
 	}
 
-	private SimpleSelect buildSelect(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, List<ContentColumn> columns, String where) {
+	private SimpleSelect buildSelect(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, List<ContentColumn> columns, String where) {
 		Select select = new Select(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		streamContentSelectClause(HibernateTx.get().data().getDatabaseConnector(), columns, Optional.empty(), false).forEach(select::addColumn);;
 		select.setTableName(from(version));
@@ -116,7 +116,7 @@ public class ContentNoCacheStorage {
 		return select;
 	}
 
-	private String from(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	private String from(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		return databaseConnector.getPhysicalTableName(version) + " " + DEFAULT_ALIAS;
 	}
 
@@ -136,7 +136,7 @@ public class ContentNoCacheStorage {
 	}
 
 	@SuppressWarnings("unchecked")
-	<T> T findColumn(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid, ContentColumn contentColumn) {
+	<T> T findColumn(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, UUID contentUuid, ContentColumn contentColumn) {
 		SimpleSelect select = buildSelect(version, Collections.singletonList(contentColumn), whereDbUuid());
 
 		EntityManager em = HibernateTx.get().entityManager();
@@ -152,7 +152,7 @@ public class ContentNoCacheStorage {
 		}
 	}
 
-	<T> List<T> findColumnValues(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, ContentColumn contentColumn) {
+	<T> List<T> findColumnValues(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, ContentColumn contentColumn) {
 		List<ContentColumn> columns = Collections.singletonList(contentColumn);
 		SimpleSelect select = buildSelect(version, columns, "");
 		select.setOrderBy("order by " + databaseConnector.renderColumn(contentColumn));
@@ -167,7 +167,7 @@ public class ContentNoCacheStorage {
 	 * @param container container
 	 * @param version schema version
 	 */
-	void insert(HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	void insert(HibUnmanagedFieldContainer<?, ?, ?, ?, ?> container, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		Insert insert = new Insert(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		insert.setTableName(databaseConnector.getPhysicalTableName(version));
 
@@ -186,7 +186,7 @@ public class ContentNoCacheStorage {
 		}
 	}
 
-	void delete(UUID dbUuid, FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	void delete(UUID dbUuid, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		Delete delete = new Delete(databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor());
 		delete.setTableName(databaseConnector.getPhysicalTableName(version));
 		delete.addColumnRestriction(databaseConnector.renderColumn(DB_UUID));
@@ -216,7 +216,7 @@ public class ContentNoCacheStorage {
 		return deletedCount;
 	}
 
-	void dropTable(FieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
+	void dropTable(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version) {
 		String dropContentTable = databaseConnector.getHibernateDialect().getDropTableString(databaseConnector.getPhysicalTableName(version));
 		HibernateTx.get().defer(tx -> {
 			tx.entityManager().createNativeQuery(dropContentTable).executeUpdate();
@@ -235,7 +235,7 @@ public class ContentNoCacheStorage {
 				.longValue());
 	}
 
-	void addColumnIfNotExists(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, DynamicContentColumn column) {
+	void addColumnIfNotExists(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, DynamicContentColumn column) {
 		EntityManager em = HibernateTx.get().entityManager();
 		Session session = (Session) em.getDelegate();
 		session.doWork(connection -> {
@@ -277,7 +277,7 @@ public class ContentNoCacheStorage {
 	 * @param uuidTypeName the name of the sql type used for uuids
 	 * @return SQL statement
 	 */
-	public String getCreateTableSql(SchemaVersion version, String uuidTypeName) {
+	public String getCreateTableSql(HibSchemaVersion version, String uuidTypeName) {
 		TypeConfiguration typeConfig = databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor().getTypeConfiguration();
 		StringBuffer tableString = commonTablePrefix(version, uuidTypeName).append(",\n");
 		Dialect dialect = databaseConnector.getHibernateDialect();
@@ -305,14 +305,14 @@ public class ContentNoCacheStorage {
 		return tableString.append(")").toString();
 	}
 
-	void createTable(SchemaVersion version) {
+	void createTable(HibSchemaVersion version) {
 		HibernateTx.get().defer(tx -> {
 			String uuidTypeName = databaseConnector.getUUIDTypeName();
 			tx.entityManager().createNativeQuery(getCreateTableSql(version, uuidTypeName)).executeUpdate();
 		});
 	}
 
-	void createIndex(SchemaVersion version, CommonContentColumn column, boolean unique) {
+	void createIndex(HibSchemaVersion version, CommonContentColumn column, boolean unique) {
 		HibernateTx.get().defer(tx -> {
 			String createIndexSql = getCreateIndexSql(version, column, unique);
 			tx.entityManager().createNativeQuery(createIndexSql).executeUpdate();
@@ -326,7 +326,7 @@ public class ContentNoCacheStorage {
 	 * @param unique whether the index is unique
 	 * @return
 	 */
-	public String getCreateIndexSql(SchemaVersion version, CommonContentColumn column, boolean unique) {
+	public String getCreateIndexSql(HibSchemaVersion version, CommonContentColumn column, boolean unique) {
 		String tableName = databaseConnector.getPhysicalTableName(version);
 		Dialect dialect = databaseConnector.getHibernateDialect();
 		String index_name = "idx_" + tableName + "_" + column.getLabel();
@@ -348,17 +348,17 @@ public class ContentNoCacheStorage {
 	 * @param microVersion microschema version
 	 * @return SQL statement
 	 */
-	public String getCreateMicronodeTableSql(MicroschemaVersion microVersion, String uuidTypeName) {
+	public String getCreateMicronodeTableSql(HibMicroschemaVersion microVersion, String uuidTypeName) {
 		return commonTablePrefix(microVersion, uuidTypeName).append(")").toString();
 	}
 
-	void createMicronodeTable(MicroschemaVersion microVersion) {
+	void createMicronodeTable(HibMicroschemaVersion microVersion) {
 		HibernateTx.get().defer(tx -> {
 			tx.entityManager().createNativeQuery(getCreateMicronodeTableSql(microVersion, databaseConnector.getUUIDTypeName())).executeUpdate();
 		});
 	}
 
-	private StringBuffer commonTablePrefix(FieldSchemaVersionElement<?,?,?,?,?> version, String uuidTypeName) {
+	private StringBuffer commonTablePrefix(HibFieldSchemaVersionElement<?,?,?,?,?> version, String uuidTypeName) {
 		Dialect dialect = databaseConnector.getHibernateDialect();
 		TypeConfiguration typeConfig = databaseConnector.getSessionMetadataIntegrator().getSessionFactoryImplementor().getTypeConfiguration();
 		StringBuffer tableString = new StringBuffer();
@@ -417,7 +417,7 @@ public class ContentNoCacheStorage {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> List<T> doList(String statementString, FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Consumer<NativeQuery<?>> beforeQuery) {
+	private <T> List<T> doList(String statementString, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, Consumer<NativeQuery<?>> beforeQuery) {
 		EntityManager em = HibernateTx.get().entityManager();
 		NativeQuery<?> query = em.createNativeQuery(statementString).unwrap(NativeQuery.class);
 		try {
@@ -429,7 +429,7 @@ public class ContentNoCacheStorage {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> Stream<T> doStream(String statementString, FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Consumer<NativeQuery<?>> beforeQuery) {
+	private <T> Stream<T> doStream(String statementString, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, Consumer<NativeQuery<?>> beforeQuery) {
 		EntityManager em = HibernateTx.get().entityManager();
 		NativeQuery<T> query = em.createNativeQuery(statementString).unwrap(NativeQuery.class);
 		try {
@@ -463,7 +463,7 @@ public class ContentNoCacheStorage {
 	HibUnmanagedFieldContainer<?, ?, ?, ?, ?> findOne(ContentKey key) {
 		HibernateTx tx = HibernateTx.get();
 		EntityManager em = tx.entityManager();
-		FieldSchemaVersionElement<?, ?, ?, ?, ?> version;
+		HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version;
 		if (ReferenceType.FIELD.equals(key.getType())) {
 			version = em.find(HibSchemaVersionImpl.class, key.getSchemaVersionUuid());
 		} else {
@@ -502,7 +502,7 @@ public class ContentNoCacheStorage {
 			UUID schemaVersionUuid = entry.getKey();
 			ReferenceType type = entry.getValue().get(0).getType(); // we are sure there is at least one element
 
-			FieldSchemaVersionElement<?, ?, ?, ?, ?> version;
+			HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version;
 			if (ReferenceType.FIELD.equals(type)) {
 				version = em.find(HibSchemaVersionImpl.class, schemaVersionUuid);
 			} else {
@@ -519,7 +519,7 @@ public class ContentNoCacheStorage {
 		return result;
 	}
 
-	private <T extends HibUnmanagedFieldContainer<?, ?, ?, ?, ?>, R extends Comparable<R>> void executeQuery(Map<ContentKey, T> result, Triple<ContentColumn, R, R> columnBetween, FieldSchemaVersionElement<?, ?, ?, ?, ?> version, List<UUID> keys) {
+	private <T extends HibUnmanagedFieldContainer<?, ?, ?, ?, ?>, R extends Comparable<R>> void executeQuery(Map<ContentKey, T> result, Triple<ContentColumn, R, R> columnBetween, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, List<UUID> keys) {
 		SplittingUtils.splitAndConsume(keys, HibernateUtil.inQueriesLimitForSplitting(columnBetween != null ? 2 : 0), (keysParams) -> {
 			List<ContentColumn> columns = collectVersionColumns(version);
 			Map<String, ContentColumn> columnsByAlias = collectVersionColumnsByAlias(columns);
@@ -530,7 +530,7 @@ public class ContentNoCacheStorage {
 
 			SimpleSelect select = buildSelect(version, columns, where);
 
-			Supplier<HibUnmanagedFieldContainer<?, ?, ?, ?, ?>> constructor = version instanceof SchemaVersion ? HibNodeFieldContainerImpl::new : HibMicronodeContainerImpl::new;
+			Supplier<HibUnmanagedFieldContainer<?, ?, ?, ?, ?>> constructor = version instanceof HibSchemaVersion ? HibNodeFieldContainerImpl::new : HibMicronodeContainerImpl::new;
 
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			Stream<T> resultStream = doStream(select.toStatementString(), version, (query) -> {
@@ -573,7 +573,7 @@ public class ContentNoCacheStorage {
 	 * @param version
 	 * @param project
 	 */
-	public long delete(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Project project) {
+	public long delete(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, HibProject project) {
 		String tableName = databaseConnector.getPhysicalTableName(version);
 		String deleteStatement = String.format("delete from %1$s where exists (select 1 from mesh_node node where %1$s.%2$s = node.dbuuid and node.project_dbuuid = :projectUuid)", tableName, databaseConnector.renderColumn(NODE));
 
@@ -588,7 +588,7 @@ public class ContentNoCacheStorage {
 	 * @param nodes
 	 * @return
 	 */
-	public long delete(SchemaVersion version, Set<HibNodeImpl> nodes) {
+	public long delete(HibSchemaVersion version, Set<HibNodeImpl> nodes) {
 		String tableName = databaseConnector.getPhysicalTableName(version);
 		String deleteStatement = String.format("delete from %s where %s in :nodesUuid", tableName, databaseConnector.renderColumn(NODE));
 
@@ -604,7 +604,7 @@ public class ContentNoCacheStorage {
 	 * @param version
 	 * @return
 	 */
-	public long deleteUnreferencedMicronodes(MicroschemaVersion version) {
+	public long deleteUnreferencedMicronodes(HibMicroschemaVersion version) {
 		String tableName = databaseConnector.getPhysicalTableName(version);
 		String deleteStatement = String.format("delete from %1$s where not exists (select 1 from mesh_micronodefieldref micronode where %1$s.%2$s = micronode.valueoruuid) " +
 				" and not exists (select 1 from mesh_micronodelistitem item where %1$s.%2$s = item.valueoruuid)", tableName, databaseConnector.renderColumn(DB_UUID));
@@ -615,7 +615,7 @@ public class ContentNoCacheStorage {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<ContentKey> findByNodes(SchemaVersion version, Set<HibNodeImpl> nodes) {
+	public List<ContentKey> findByNodes(HibSchemaVersion version, Set<HibNodeImpl> nodes) {
 		EntityManager em = HibernateTx.get().entityManager();
 		String tableName = databaseConnector.getPhysicalTableName(version);
 		String selectStatement = String.format("select %s from %s where %s in :nodesUuid", databaseConnector.renderColumn(DB_UUID), tableName, databaseConnector.renderColumn(NODE));

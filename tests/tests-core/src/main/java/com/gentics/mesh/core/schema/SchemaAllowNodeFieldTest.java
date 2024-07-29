@@ -3,7 +3,7 @@ package com.gentics.mesh.core.schema;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -47,7 +47,7 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
         client().assignSchemaToProject(PROJECT_NAME, response.getUuid()).blockingAwait();
     }
 
-    private void createNode(FieldModel field) {
+    private void createNode(Field field) {
         NodeCreateRequest req = new NodeCreateRequest();
         req.setLanguage("en");
         req.setSchemaName("test");
@@ -69,7 +69,7 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
         testNodeUuid = createdNode.getUuid();
     }
     
-    private void createNodeAndExpectFailure(FieldModel field) {
+    private void createNodeAndExpectFailure(Field field) {
         NodeCreateRequest req = new NodeCreateRequest();
         req.setLanguage("en");
         req.setSchemaName("test");
@@ -81,11 +81,11 @@ public class SchemaAllowNodeFieldTest extends AbstractMeshTest {
         call(() -> client().createNode(PROJECT_NAME, req), BAD_REQUEST,"node_error_invalid_schema_field_value","testField","test","[test2]");
     }
 
-    private void runTest(FieldModel nodeField) {
+    private void runTest(Field nodeField) {
         createNode(nodeField);
     }
 
-    private void runTestAndExpectFailure(FieldModel nodeField) {
+    private void runTestAndExpectFailure(Field nodeField) {
         createNodeAndExpectFailure(nodeField);
     }
 

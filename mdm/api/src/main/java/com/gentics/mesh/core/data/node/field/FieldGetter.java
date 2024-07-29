@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 /**
@@ -17,5 +17,5 @@ public interface FieldGetter {
 	 * @param schema
 	 * @return
 	 */
-	Field get(FieldContainer container, FieldSchema schema);
+	HibField get(HibFieldContainer container, FieldSchema schema);
 }

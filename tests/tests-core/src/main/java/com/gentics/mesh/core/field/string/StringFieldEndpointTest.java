@@ -13,15 +13,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.StringField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibStringField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -66,7 +66,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(null, (FieldModel) null);
+		NodeResponse response = createNode(null, (Field) null);
 		StringFieldImpl stringField = response.getFields().getStringField(FIELD_NAME);
 		assertNull(stringField);
 	}
@@ -111,8 +111,8 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = folder("2015");
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNode node = folder("2015");
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getString(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getString(FIELD_NAME)).isNotNull();
@@ -131,7 +131,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	// We should not tell apart the empty and null strings
 	public void testUpdateSetEmpty() {
 		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-		StringFieldModel emptyField = new StringFieldImpl();
+		StringField emptyField = new StringFieldImpl();
 		emptyField.setString("");
 		String oldVersion = firstResponse.getVersion();
 		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
@@ -152,8 +152,8 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return string value (may be null)
 	 */
-	protected String getStringValue(NodeFieldContainer container, String fieldName) {
-		StringField field = container.getString(fieldName);
+	protected String getStringValue(HibNodeFieldContainer container, String fieldName) {
+		HibStringField field = container.getString(fieldName);
 		return field != null ? field.getString() : null;
 	}
 
@@ -169,13 +169,13 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testReadNodeWithExistingField() {
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			ContentDao contentDao = tx.contentDao();
 
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
-			StringField stringField = container.createString(FIELD_NAME);
+			HibStringField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
 			tx.success();
 		}

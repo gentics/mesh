@@ -3,7 +3,7 @@ package com.gentics.mesh.search.verticle.eventhandler;
 import static com.gentics.mesh.ElementType.PROJECT;
 
 import com.gentics.mesh.core.rest.event.EventCauseAction;
-import com.gentics.mesh.core.rest.event.EventCauseInfoModel;
+import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.event.MeshEventModel;
 
 /**
@@ -22,7 +22,7 @@ public final class EventCauseHelper {
 	 * @return
 	 */
 	public static boolean isProjectDeleteCause(MeshEventModel message) {
-		EventCauseInfoModel cause = message.getCause();
+		EventCauseInfo cause = message.getCause();
 		return cause != null && cause.getAction() == EventCauseAction.DELETE && cause.getType() == PROJECT;
 	}
 

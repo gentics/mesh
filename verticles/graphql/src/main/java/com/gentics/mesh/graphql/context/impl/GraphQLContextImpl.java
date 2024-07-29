@@ -5,8 +5,8 @@ import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 import java.util.Optional;
 
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.CoreElement;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -33,7 +33,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 	}
 
 	@Override
-	public <T extends CoreElement<?>> T requiresPerm(T element, InternalPermission... permission) {
+	public <T extends HibCoreElement<?>> T requiresPerm(T element, InternalPermission... permission) {
 		UserDao userDao = Tx.get().userDao();
 		for (InternalPermission perm : permission) {
 			if (userDao.hasPermission(getUser(), element, perm)) {
@@ -45,7 +45,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 
 	@Override
 	public boolean hasReadPerm(NodeContent content, ContainerType type) {
-		NodeFieldContainer container = content.getContainer();
+		HibNodeFieldContainer container = content.getContainer();
 		if (container != null) {
 			return hasReadPerm(container, type);
 		} else {
@@ -53,13 +53,13 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 		}
 	}
 
-	public boolean hasReadPerm(NodeFieldContainer container, ContainerType type) {
+	public boolean hasReadPerm(HibNodeFieldContainer container, ContainerType type) {
 		Tx tx = Tx.get();
 		return tx.userDao().hasReadPermission(getUser(), container, tx.getBranch(this).getUuid(), type.getHumanCode());
 	}
 
 	@Override
-	public Optional<GraphQLError> requiresReadPermSoft(NodeFieldContainer container, DataFetchingEnvironment env, ContainerType type) {
+	public Optional<GraphQLError> requiresReadPermSoft(HibNodeFieldContainer container, DataFetchingEnvironment env, ContainerType type) {
 		if (container == null || hasReadPerm(container, type)) {
 			return Optional.empty();
 		} else {

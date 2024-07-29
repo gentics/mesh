@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -23,9 +23,9 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 /**
- * DAO for {@link Role}.
+ * DAO for {@link HibRole}.
  */
-public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleResponse> {
+public interface RoleDao extends DaoGlobal<HibRole>, DaoTransformable<HibRole, RoleResponse> {
 
 	/**
 	 * Create a new role with the given name.
@@ -36,7 +36,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 *            User that is being used to set the reference fields
 	 * @return Created role
 	 */
-	default Role create(String name, User creator) {
+	default HibRole create(String name, HibUser creator) {
 		return create(name, creator, null);
 	}
 
@@ -51,7 +51,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 *            Optional uuid
 	 * @return Created role
 	 */
-	Role create(String name, User creator, String uuid);
+	HibRole create(String name, HibUser creator, String uuid);
 
 	/**
 	 * Create a new role
@@ -62,7 +62,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 *            Uuid of the role
 	 * @return
 	 */
-	Role create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibRole create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Grant the given permissions on the given role.
@@ -72,7 +72,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissions
 	 * @return
 	 */
-	boolean grantPermissions(Role role, BaseElement element, InternalPermission... permissions);
+	boolean grantPermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Grant the given permissions on the element to the set of roles
@@ -83,7 +83,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissions permissions to grant
 	 * @return true, iff permissions were effectively changed
 	 */
-	boolean grantPermissions(Set<Role> roles, BaseElement element, boolean exclusive, InternalPermission... permissions);
+	boolean grantPermissions(Set<HibRole> roles, HibBaseElement element, boolean exclusive, InternalPermission... permissions);
 
 	/**
 	 * Grant the given permissions on the element to the set of roles (identified by their uuids)
@@ -94,7 +94,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissions permissions to grant
 	 * @return true, iff permissions where effectively changed
 	 */
-	boolean grantPermissionsWithUuids(Set<String> roleUuids, BaseElement element, boolean exclusive, InternalPermission... permissions);
+	boolean grantPermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, boolean exclusive, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the given role.
@@ -104,7 +104,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissions
 	 * @return
 	 */
-	boolean revokePermissions(Role role, BaseElement element, InternalPermission... permissions);
+	boolean revokePermissions(HibRole role, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the element from the given roles.
@@ -114,7 +114,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissions permissions to revoke
 	 * @return true, iff permissions were effectively changed
 	 */
-	boolean revokePermissions(Set<Role> roles, BaseElement element, InternalPermission... permissions);
+	boolean revokePermissions(Set<HibRole> roles, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Revoke the given permissions on the element from the given roles (identified by their uuids)
@@ -124,7 +124,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissions permissions to revoke
 	 * @return true, iff permissions were effectively changed
 	 */
-	boolean revokePermissionsWithUuids(Set<String> roleUuids, BaseElement element, InternalPermission... permissions);
+	boolean revokePermissionsWithUuids(Set<String> roleUuids, HibBaseElement element, InternalPermission... permissions);
 
 	/**
 	 * Return a set of permissions which the role is granting to the given element.
@@ -133,7 +133,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param element
 	 * @return Set of permissions of the element
 	 */
-	Set<InternalPermission> getPermissions(Role role, BaseElement element);
+	Set<InternalPermission> getPermissions(HibRole role, HibBaseElement element);
 
 	/**
 	 * Return the sets of granted permissions to the given set of roles on the given element
@@ -142,7 +142,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param element element
 	 * @return map of permission sets per role
 	 */
-	Map<Role, Set<InternalPermission>> getPermissions(Set<Role> roles, BaseElement element);
+	Map<HibRole, Set<InternalPermission>> getPermissions(Set<HibRole> roles, HibBaseElement element);
 
 	/**
 	 * Add the given role to this role.
@@ -150,7 +150,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param role
 	 *            HibRoleto be added
 	 */
-	void addRole(Role role);
+	void addRole(HibRole role);
 
 	/**
 	 * Remove the given role from this role.
@@ -158,7 +158,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param role
 	 *            HibRoleto be removed
 	 */
-	void removeRole(Role role);
+	void removeRole(HibRole role);
 
 	/**
 	 * Return all groups for the given role.
@@ -166,7 +166,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param role
 	 * @return
 	 */
-	Result<? extends Group> getGroups(Role role);
+	Result<? extends HibGroup> getGroups(HibRole role);
 
 	/**
 	 * Return a page of groups to which this role was assigned.
@@ -176,7 +176,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param params
 	 * @return Loaded page
 	 */
-	Page<? extends Group> getGroups(Role role, User user, PagingParameters params);
+	Page<? extends HibGroup> getGroups(HibRole role, HibUser user, PagingParameters params);
 
 	/**
 	 * Check whether the role grants the given permission on the given element.
@@ -186,7 +186,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param element
 	 * @return
 	 */
-	boolean hasPermission(Role role, InternalPermission permission, BaseElement element);
+	boolean hasPermission(HibRole role, InternalPermission permission, HibBaseElement element);
 
 	/**
 	 * Apply the permissions for the given element.
@@ -199,7 +199,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permissionsToGrant
 	 * @param permissionsToRevoke
 	 */
-	void applyPermissions(MeshAuthUser authUser, BaseElement element, EventQueueBatch batch, Role role, boolean recursive, Set<InternalPermission> permissionsToGrant,
+	void applyPermissions(MeshAuthUser authUser, HibBaseElement element, EventQueueBatch batch, HibRole role, boolean recursive, Set<InternalPermission> permissionsToGrant,
 						  Set<InternalPermission> permissionsToRevoke);
 
 	/**
@@ -209,7 +209,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param permission
 	 * @return
 	 */
-	Set<String> getRoleUuidsForPerm(BaseElement element, InternalPermission permission);
+	Set<String> getRoleUuidsForPerm(HibBaseElement element, InternalPermission permission);
 
 	/**
 	 * Return the roles which grant the given permission on the element.
@@ -218,7 +218,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param perm
 	 * @return
 	 */
-	Result<? extends Role> getRolesWithPerm(BaseElement element, InternalPermission perm);
+	Result<? extends HibRole> getRolesWithPerm(HibBaseElement element, InternalPermission perm);
 
 	/**
 	 * Return the permission info for the given element and role.
@@ -228,7 +228,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param roleUuid
 	 * @return
 	 */
-	PermissionInfo getRolePermissions(BaseElement element, InternalActionContext ac, String roleUuid);
+	PermissionInfo getRolePermissions(HibBaseElement element, InternalActionContext ac, String roleUuid);
 
 	/**
 	 * Set the role permission for the given element.
@@ -237,7 +237,7 @@ public interface RoleDao extends DaoGlobal<Role>, DaoTransformable<Role, RoleRes
 	 * @param ac
 	 * @param model
 	 */
-	void setRolePermissions(BaseElement element, InternalActionContext ac, GenericRestResponse model);
+	void setRolePermissions(HibBaseElement element, InternalActionContext ac, GenericRestResponse model);
 
 	/**
 	 * Find all existing roles, the current user is allowed to see. Return as list of triples (uuid, name, internal ID)

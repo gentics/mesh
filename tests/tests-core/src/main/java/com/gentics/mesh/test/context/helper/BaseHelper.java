@@ -4,12 +4,12 @@ import java.util.function.Consumer;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.storage.LocalBinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -54,7 +54,7 @@ public interface BaseHelper {
 		return getTestContext().getData();
 	}
 
-	default User user() {
+	default HibUser user() {
 		return data().user();
 	}
 
@@ -77,7 +77,7 @@ public interface BaseHelper {
 	 * 
 	 * @return
 	 */
-	default Project project() {
+	default HibProject project() {
 		return data().getProject();
 	}
 
@@ -184,10 +184,10 @@ public interface BaseHelper {
 	 * to make sure that the changes will be visible in different transactions.
 	 * @param modifier
 	 */
-	private void modifyUser(Consumer<User> modifier) {
+	private void modifyUser(Consumer<HibUser> modifier) {
 		Consumer<Tx> modifyAction = tx -> {
 			PersistingUserDao userDao = tx.<CommonTx>unwrap().userDao();
-			User user = userDao.findByUuid(user().getUuid());
+			HibUser user = userDao.findByUuid(user().getUuid());
 			modifier.accept(user);
 			userDao.mergeIntoPersisted(user);
 		};
@@ -202,7 +202,7 @@ public interface BaseHelper {
 		}
 	}
 
-	default Branch reloadBranch(Branch branch) {
+	default HibBranch reloadBranch(HibBranch branch) {
 		return Tx.get().branchDao().findByUuid(branch.getProject(), branch.getUuid());
 	}
 }

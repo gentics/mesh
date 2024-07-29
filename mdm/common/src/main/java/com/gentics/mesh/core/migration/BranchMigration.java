@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.BranchMigrationContext;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import io.reactivex.Completable;
 
 public interface BranchMigration {
@@ -23,7 +23,7 @@ public interface BranchMigration {
 	 * @param nodes
 	 * @return
 	 */
-	default List<? extends Node> beforeBatchMigration(List<? extends Node> nodes) {
+	default List<? extends HibNode> beforeBatchMigration(List<? extends HibNode> nodes) {
 		return nodes;
 	}
 

@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionRevokeRequest;
@@ -22,7 +22,7 @@ import com.gentics.mesh.test.context.ClientHandler;
 @MeshTestSetting(testSize = PROJECT_AND_NODE, startServer = true)
 public class NodeUpdateWithRolePermissionsEndpointTest extends AbstractRolePermissionEndpointTest  {
 	@Override
-	protected BaseElement getTestedElement() {
+	protected HibBaseElement getTestedElement() {
 		return folder("2015");
 	}
 

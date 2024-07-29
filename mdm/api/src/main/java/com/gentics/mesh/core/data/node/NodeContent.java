@@ -3,8 +3,8 @@ package com.gentics.mesh.core.data.node;
 import java.util.Collections;
 import java.util.List;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.NodeFieldContainerEdge;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainerEdge;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -14,8 +14,8 @@ import com.gentics.mesh.core.rest.common.ContainerType;
  */
 public class NodeContent {
 
-	private Node node;
-	private NodeFieldContainer container;
+	private HibNode node;
+	private HibNodeFieldContainer container;
 	private List<String> languageFallback;
 	private ContainerType type;
 
@@ -27,7 +27,7 @@ public class NodeContent {
 	 * @param languageFallback
 	 *            Language fallback list which was used to load the content
 	 */
-	public NodeContent(Node node, NodeFieldContainer container, List<String> languageFallback, ContainerType type) {
+	public NodeContent(HibNode node, HibNodeFieldContainer container, List<String> languageFallback, ContainerType type) {
 		this.node = node;
 		this.container = container;
 		this.languageFallback = languageFallback;
@@ -40,7 +40,7 @@ public class NodeContent {
 	 * @param node
 	 * @param edge
 	 */
-	public NodeContent(Node node, NodeFieldContainerEdge edge) {
+	public NodeContent(HibNode node, HibNodeFieldContainerEdge edge) {
 		this.node = node;
 		this.container = edge.getNodeContainer();
 		this.languageFallback = Collections.singletonList(edge.getLanguageTag());
@@ -52,7 +52,7 @@ public class NodeContent {
 	 * 
 	 * @return
 	 */
-	public Node getNode() {
+	public HibNode getNode() {
 		ContentDao contentDao = Tx.get().contentDao();
 		if (node == null && container != null) {
 			node = contentDao.getNode(container);
@@ -60,7 +60,7 @@ public class NodeContent {
 		return node;
 	}
 
-	public NodeFieldContainer getContainer() {
+	public HibNodeFieldContainer getContainer() {
 		return container;
 	}
 

@@ -10,9 +10,9 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class ClusterStatusResponse implements RestModel {
 
-	private List<ClusterInstanceInfoModel> instances = new ArrayList<>();
+	private List<ClusterInstanceInfo> instances = new ArrayList<>();
 
-	public List<ClusterInstanceInfoModel> getInstances() {
+	public List<ClusterInstanceInfo> getInstances() {
 		return instances;
 	}
 

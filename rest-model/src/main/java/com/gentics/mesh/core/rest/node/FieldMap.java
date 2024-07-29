@@ -8,17 +8,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
-import com.gentics.mesh.core.rest.node.field.NodeFieldModel;
-import com.gentics.mesh.core.rest.node.field.S3BinaryFieldModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.NodeField;
+import com.gentics.mesh.core.rest.node.field.S3BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldListModel;
-import com.gentics.mesh.core.rest.node.field.list.NodeFieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
+import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -39,14 +39,14 @@ public interface FieldMap extends RestModel {
 	 * @param field
 	 * @return
 	 */
-	FieldModel put(String fieldKey, FieldModel field);
+	Field put(String fieldKey, Field field);
 
 	/**
 	 * Add or update the field in the given entry.
 	 * @param entry
 	 * @return
 	 */
-	default FieldModel put(Map.Entry<String, FieldModel> entry) {
+	default Field put(Map.Entry<String, Field> entry) {
 		return put(entry.getKey(), entry.getValue());
 	}
 
@@ -56,7 +56,7 @@ public interface FieldMap extends RestModel {
 	 * @param string
 	 * @return
 	 */
-	default FieldModel putString(String fieldKey, String string) {
+	default Field putString(String fieldKey, String string) {
 		return put(fieldKey, new StringFieldImpl().setString(string));
 	}
 
@@ -66,7 +66,7 @@ public interface FieldMap extends RestModel {
 	 * @param fieldMap
 	 * @return
 	 */
-	FieldMap putAll(Map<String, FieldModel> fieldMap);
+	FieldMap putAll(Map<String, Field> fieldMap);
 
 	/**
 	 * Return the size of the field map.
@@ -128,7 +128,7 @@ public interface FieldMap extends RestModel {
 	 * @param fieldKey
 	 * @return
 	 */
-	BinaryFieldModel getBinaryField(String fieldKey);
+	BinaryField getBinaryField(String fieldKey);
 
 	/**
 	 * Return the s3 binary field with the given key.
@@ -136,7 +136,7 @@ public interface FieldMap extends RestModel {
 	 * @param fieldKey
 	 * @return
 	 */
-	S3BinaryFieldModel getS3BinaryField(String fieldKey);
+	S3BinaryField getS3BinaryField(String fieldKey);
 
 	/**
 	 * Return the boolean field with the given key.
@@ -176,7 +176,7 @@ public interface FieldMap extends RestModel {
 	 * @param fieldKey
 	 * @return
 	 */
-	NodeFieldModel getNodeField(String fieldKey);
+	NodeField getNodeField(String fieldKey);
 
 	/**
 	 * Return the node field with the given key in expanded form.
@@ -216,7 +216,7 @@ public interface FieldMap extends RestModel {
 	 * @param fieldKey
 	 * @return
 	 */
-	MicronodeFieldListModel getMicronodeFieldList(String fieldKey);
+	MicronodeFieldList getMicronodeFieldList(String fieldKey);
 
 	/**
 	 * Return the node list field for the given key.
@@ -224,7 +224,7 @@ public interface FieldMap extends RestModel {
 	 * @param fieldKey
 	 * @return
 	 */
-	NodeFieldListModel getNodeFieldList(String fieldKey);
+	NodeFieldList getNodeFieldList(String fieldKey);
 
 	/**
 	 * Check whether the field map is empty.
@@ -249,7 +249,7 @@ public interface FieldMap extends RestModel {
 	 * @return
 	 */
 	// TODO why do we need to specifiy the field key? the field schema contains the key (name)
-	FieldModel getField(String fieldKey, FieldSchema fieldSchema);
+	Field getField(String fieldKey, FieldSchema fieldSchema);
 
 	/**
 	 * Return the deserialize field.
@@ -263,7 +263,7 @@ public interface FieldMap extends RestModel {
 	 * @param expand
 	 *            The field will be expanded (if possible) when set to true
 	 */
-	<T extends FieldModel> T getField(String fieldKey, FieldTypes type, String listType, boolean expand);
+	<T extends Field> T getField(String fieldKey, FieldTypes type, String listType, boolean expand);
 
 	/**
 	 * Remove the a field with the given fieldKey from the fieldmap.
@@ -294,7 +294,7 @@ public interface FieldMap extends RestModel {
 	 * @param field
 	 * @return
 	 */
-	static FieldMap of(String key, FieldModel field) {
+	static FieldMap of(String key, Field field) {
 		FieldMap map = new FieldMapImpl();
 		map.put(key, field);
 		return map;
@@ -306,7 +306,7 @@ public interface FieldMap extends RestModel {
 	 * @param field
 	 * @return
 	 */
-	static FieldMap of(String key, FieldModel field, String key2, FieldModel field2) {
+	static FieldMap of(String key, Field field, String key2, Field field2) {
 		FieldMap map = new FieldMapImpl();
 		map.put(key, field);
 		map.put(key2, field2);
@@ -319,7 +319,7 @@ public interface FieldMap extends RestModel {
 	 * @param field
 	 * @return
 	 */
-	static FieldMap of(String key, FieldModel field, String key2, FieldModel field2, String key3, FieldModel field3) {
+	static FieldMap of(String key, Field field, String key2, Field field2, String key3, Field field3) {
 		FieldMap map = new FieldMapImpl();
 		map.put(key, field);
 		map.put(key2, field2);

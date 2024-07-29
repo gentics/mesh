@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.ElementType;
 
 /**
- * @see EventCauseInfoModel
+ * @see EventCauseInfo
  */
-public class EventCauseInfoImpl implements EventCauseInfoModel {
+public class EventCauseInfoImpl implements EventCauseInfo {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Type of the element that is referenced by the cause.")

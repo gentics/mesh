@@ -11,9 +11,9 @@ import javax.inject.Inject;
 import com.gentics.mesh.auth.MeshAuthChainImpl;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.admin.LocalConfigApi;
@@ -81,7 +81,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 		}, NodeListResponse.class, nodeSearchHandler, nodeExamples.getNodeListResponse(), true);
 
 		registerSearchHandler("tags", uuid -> {
-			Tag tag = Tx.get().tagDao().findByUuid(uuid);
+			HibTag tag = Tx.get().tagDao().findByUuid(uuid);
 			return tag;
 		}, TagListResponse.class, tagSearchHandler, tagExamples.createTagListResponse(), false);
 
@@ -107,7 +107,7 @@ public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implement
 	 * @param filterByLanguage
 	 *            Whether to append the language filter
 	 */
-	private <T extends CoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
+	private <T extends HibCoreElement<?>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
 		Function<String, T> elementLoader, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse, boolean filterByLanguage) {
 		InternalEndpointRoute endpoint = createRoute();
 		endpoint.path("/" + typeName);

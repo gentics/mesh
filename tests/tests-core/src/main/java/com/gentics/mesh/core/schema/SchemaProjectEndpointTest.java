@@ -18,8 +18,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.dao.ProjectDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectSchemaEventModel;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -53,7 +53,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	public void testAddSchemaToExtraProject() {
 		final String name = "test12345";
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("content");
+			HibSchema schema = schemaContainer("content");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchema(new SchemaReferenceImpl().setName("folder"));
@@ -81,9 +81,9 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			ProjectDao projectDao = tx.projectDao();
 
-			Project extraProject = projectDao.findByUuid(created.getUuid());
+			HibProject extraProject = projectDao.findByUuid(created.getUuid());
 			// Add only read perms
-			Schema schema = schemaContainer("content");
+			HibSchema schema = schemaContainer("content");
 			roleDao.grantPermissions(role(), schema, READ_PERM);
 			roleDao.grantPermissions(role(), extraProject, UPDATE_PERM);
 			tx.success();
@@ -107,7 +107,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			ProjectDao projectRoot = tx.projectDao();
-			Project extraProject = projectRoot.findByUuid(created.getUuid());
+			HibProject extraProject = projectRoot.findByUuid(created.getUuid());
 			assertNotNull("The schema should be added to the extra project", schemaDao.findByUuid(extraProject, schemaUuid));
 		}
 	}
@@ -122,11 +122,11 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		ProjectResponse response = call(() -> client().createProject(request));
 		String projectUuid = response.getUuid();
 
-		Project extraProject = tx((tx) -> {
+		HibProject extraProject = tx((tx) -> {
 			RoleDao roleDao = tx.roleDao();
 			ProjectDao projectDao = tx.projectDao();
 			// Revoke Update perm on project
-			Project p = projectDao.findByUuid(projectUuid);
+			HibProject p = projectDao.findByUuid(projectUuid);
 			roleDao.revokePermissions(role(), p, UPDATE_PERM);
 			return p;
 		});
@@ -137,7 +137,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			// Reload the schema and check for expected changes
-			Schema schema = schemaContainer("content");
+			HibSchema schema = schemaContainer("content");
 			assertFalse("The schema should not have been added to the extra project but it was",
 				schemaDao.contains(extraProject, schema));
 		}
@@ -147,8 +147,8 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 	// Schema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveSchemaFromProjectWithPerm() throws Exception {
-		Project project = project();
-		Schema schema = schemaContainer("content");
+		HibProject project = project();
+		HibSchema schema = schemaContainer("content");
 		String schemaUuid = tx(() -> schema.getUuid());
 
 		try (Tx tx = tx()) {
@@ -184,7 +184,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveSchemaFromProjectWithoutPerm() throws Exception {
-		Schema schema = schemaContainer("content");
+		HibSchema schema = schemaContainer("content");
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 			SchemaDao schemaDao = tx.schemaDao();

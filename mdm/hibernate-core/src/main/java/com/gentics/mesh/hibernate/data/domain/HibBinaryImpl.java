@@ -14,8 +14,8 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 
 /**
  * Binary implementation for Gentics Mesh.
@@ -53,13 +53,13 @@ import com.gentics.mesh.core.data.binary.ImageVariant;
 		@Index(name = "idx_check_status", columnList = "checkStatus")
 	}
 )
-public class HibBinaryImpl extends AbstractBinaryImpl implements Binary, Serializable {
+public class HibBinaryImpl extends AbstractBinaryImpl implements HibBinary, Serializable {
 
 	private static final long serialVersionUID = 3320676473079382929L;
 	private String SHA512Sum;
 
 	@OneToMany(mappedBy = "binary", cascade = CascadeType.REMOVE, targetEntity = HibImageVariantImpl.class)
-	protected Set<ImageVariant> variants;
+	protected Set<HibImageVariant> variants;
 
 	@Override
 	public String getSHA512Sum() {
@@ -67,16 +67,16 @@ public class HibBinaryImpl extends AbstractBinaryImpl implements Binary, Seriali
 	}
 
 	@Override
-	public Binary setSHA512Sum(String sha512sum) {
+	public HibBinary setSHA512Sum(String sha512sum) {
 		SHA512Sum = sha512sum;
 		return this;
 	}
 
-	public Set<ImageVariant> getVariants() {
+	public Set<HibImageVariant> getVariants() {
 		return variants;
 	}
 
-	public void setVariants(Set<ImageVariant> variants) {
+	public void setVariants(Set<HibImageVariant> variants) {
 		this.variants = variants;
 	}
 }

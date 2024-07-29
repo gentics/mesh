@@ -8,7 +8,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-import com.gentics.mesh.core.data.node.field.DateField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
 import com.gentics.mesh.database.HibernateTx;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -30,7 +30,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 		@Index(columnList = "listUuid")
 })
 public class HibDateListFieldEdgeImpl 
-		extends AbstractHibPrimitiveListFieldEdgeImpl<DateField, Long> implements DateField, Serializable {
+		extends AbstractHibPrimitiveListFieldEdgeImpl<HibDateField, Long> implements HibDateField, Serializable {
 
 	private static final long serialVersionUID = -6554262711404820079L;
 

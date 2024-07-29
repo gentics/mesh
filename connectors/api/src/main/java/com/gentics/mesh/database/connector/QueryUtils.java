@@ -15,9 +15,9 @@ import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 import org.hibernate.query.Query;
 
 import com.gentics.mesh.contentoperation.ContentColumn;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.hibernate.data.node.field.HibListFieldEdge;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -144,7 +144,7 @@ public interface QueryUtils {
 	 * Get the name of the table as per SQL DB engine dialect.
 	 * @return
 	 */
-	String getPhysicalTableName(FieldSchemaVersionElement<?, ?, ?, ?, ?> version,
+	String getPhysicalTableName(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version,
 			PhysicalNamingStrategy physicalTableNameStrategy, JdbcEnvironment jdbcEnvironment, Dialect dialect);
 
 	/**
@@ -166,7 +166,7 @@ public interface QueryUtils {
 	 * @param version
 	 * @return
 	 */
-	String getPhysicalTableName(FieldSchemaVersionElement<?, ?, ?, ?, ?> version);
+	String getPhysicalTableName(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version);
 
 	/**
 	 * Create an identifier for the given label
@@ -261,7 +261,7 @@ public interface QueryUtils {
 	 * @param em
 	 * @return
 	 */
-	long deleteContentEdgesByProject(EntityManager em, Project project);
+	long deleteContentEdgesByProject(EntityManager em, HibProject project);
 
 	/**
 	 * Delete selected content edges by UUIDs.
@@ -280,7 +280,7 @@ public interface QueryUtils {
 	 * @param branch
 	 * @return
 	 */
-	long deleteContentEdgesByBranchUuids(EntityManager em, Branch branch, Collection<UUID> uuids);
+	long deleteContentEdgesByBranchUuids(EntityManager em, HibBranch branch, Collection<UUID> uuids);
 
 	/**
 	 * Check if the JPA-unmanaged table exists for the (micro)schema container version.

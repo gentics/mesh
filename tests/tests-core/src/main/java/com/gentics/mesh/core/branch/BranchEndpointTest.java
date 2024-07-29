@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.branch;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.perm.InternalPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.perm.InternalPermission.READ_PERM;
@@ -47,10 +47,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
@@ -58,8 +58,8 @@ import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchReference;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -135,7 +135,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateMultithreaded() throws Exception {
 		String branchName = "Branch V";
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			int nJobs = 100;
 
 			Set<BranchResponse> responseFutures = new HashSet<>();
@@ -155,8 +155,8 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 			// All branches must form a chain
 			Set<String> foundBranches = new HashSet<>();
-			Branch previousBranch = null;
-			Branch branch = project.getInitialBranch();
+			HibBranch previousBranch = null;
+			HibBranch branch = project.getInitialBranch();
 
 			do {
 				assertThat(branch).as("Branch").isNotNull().hasPrevious(previousBranch);
@@ -232,7 +232,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
 
-			Project project = project();
+			HibProject project = project();
 			roleDao.grantPermissions(role(), project, READ_PERM);
 			roleDao.revokePermissions(role(), project, UPDATE_PERM);
 			tx.success();
@@ -267,7 +267,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateWithDuplicateUuid() throws Exception {
 		String branchName = "Branch V1";
 		try (Tx tx = tx()) {
-			Project project = project();
+			HibProject project = project();
 			String uuid = user().getUuid();
 
 			BranchUpdateRequest request = new BranchUpdateRequest();
@@ -427,11 +427,11 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithoutBaseBranch() {
-		Branch latest = createBranch("Latest", true);
+		HibBranch latest = createBranch("Latest", true);
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
-		Branch created = createBranch(request);
+		HibBranch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(reloadBranch(created)).as("New Branch").isNotNull().hasPrevious(latest);
@@ -441,14 +441,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testCreateWithBaseBranchByUuid() {
 		createBranch("Latest", true);
-		Branch base = createBranch("Base", false);
+		HibBranch base = createBranch("Base", false);
 		String baseUuid = tx(() -> base.getUuid());
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setUuid(baseUuid));
 		grantAdmin();
-		Branch created = createBranch(request);
+		HibBranch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(reloadBranch(created)).as("New Branch").isNotNull().hasPrevious(base);
@@ -458,14 +458,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testCreateWithBaseBranchByName() {
 		createBranch("Latest", true);
-		Branch base = createBranch("Base", false);
+		HibBranch base = createBranch("Base", false);
 		String baseName = tx(() -> base.getName());
 
 		BranchCreateRequest request = new BranchCreateRequest();
 		request.setName("New Branch");
 		request.setBaseBranch(new BranchReference().setName(baseName));
 		grantAdmin();
-		Branch created = createBranch(request);
+		HibBranch created = createBranch(request);
 
 		tx(() -> {
 			assertThat(reloadBranch(created)).as("New Branch").isNotNull().hasPrevious(base);
@@ -474,7 +474,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testCreateWithNoPermBaseBranch() {
-		Branch latest = createBranch("Latest", true);
+		HibBranch latest = createBranch("Latest", true);
 		String latestUuid = tx(() -> latest.getUuid());
 		tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
@@ -514,17 +514,17 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		try (Tx tx = tx()) {
 			BranchDao branchDao = tx.branchDao();
-			Project project = project();
-			Branch initialBranch = project.getInitialBranch();
+			HibProject project = project();
+			HibBranch initialBranch = project.getInitialBranch();
 			branchInfo.add(Pair.of(initialBranch.getUuid(), initialBranch.getName()));
 
-			Branch firstBranch = branchDao.create(project, "One", user(), batch);
+			HibBranch firstBranch = branchDao.create(project, "One", user(), batch);
 			branchInfo.add(Pair.of(firstBranch.getUuid(), firstBranch.getName()));
 
-			Branch secondBranch = branchDao.create(project, "Two", user(), batch);
+			HibBranch secondBranch = branchDao.create(project, "Two", user(), batch);
 			branchInfo.add(Pair.of(secondBranch.getUuid(), secondBranch.getName()));
 
-			Branch thirdBranch = branchDao.create(project, "Three", user(), batch);
+			HibBranch thirdBranch = branchDao.create(project, "Three", user(), batch);
 			branchInfo.add(Pair.of(thirdBranch.getUuid(), thirdBranch.getName()));
 
 			tx.success();
@@ -575,14 +575,14 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadMultiple() throws Exception {
 		EventQueueBatch batch = createBatch();
-		Branch initialBranch;
-		Branch firstBranch;
-		Branch thirdBranch;
-		Branch secondBranch;
+		HibBranch initialBranch;
+		HibBranch firstBranch;
+		HibBranch thirdBranch;
+		HibBranch secondBranch;
 
 		try (Tx tx = tx()) {
 			BranchDao branchDao = tx.branchDao();
-			Project project = project();
+			HibProject project = project();
 			initialBranch = project.getInitialBranch();
 			firstBranch = branchDao.create(project, "One", user(), batch);
 			secondBranch = branchDao.create(project, "Two", user(), batch);
@@ -631,15 +631,15 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
 		EventQueueBatch batch = createBatch();
-		Branch initialBranch = tx(() -> initialBranch());
+		HibBranch initialBranch = tx(() -> initialBranch());
 
-		Branch firstBranch;
-		Branch secondBranch;
-		Branch thirdBranch;
+		HibBranch firstBranch;
+		HibBranch secondBranch;
+		HibBranch thirdBranch;
 
 		try (Tx tx = tx()) {
 			BranchDao branchDao = tx.branchDao();
-			Project project = tx.projectDao().findByUuid(projectUuid());
+			HibProject project = tx.projectDao().findByUuid(projectUuid());
 			firstBranch = branchDao.create(project, "One", user(), batch);
 			secondBranch = branchDao.create(project, "Two", user(), batch);
 			thirdBranch = branchDao.create(project, "Three", user(), batch);
@@ -887,7 +887,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	public void testReadSchemaVersions() throws Exception {
 		try (Tx tx = tx()) {
-			BranchInfoSchemaListModel list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+			BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 			BranchSchemaInfo content = new BranchSchemaInfo(schemaContainer("content").getLatestVersion().transformToReference());
 			BranchSchemaInfo folder = new BranchSchemaInfo(schemaContainer("folder").getLatestVersion().transformToReference());
 			BranchSchemaInfo binaryContent = new BranchSchemaInfo(schemaContainer("binary_content").getLatestVersion().transformToReference());
@@ -911,7 +911,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}, COMPLETED, 1);
 
 		// Assert that version 2 is assigned to branch
-		BranchInfoSchemaListModel infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoSchemaList infoList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
@@ -991,7 +991,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		awaitEvents();
 
 		// check that version 1 is assigned to branch
-		BranchInfoSchemaListModel list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchSchemaInfo().setName("schemaname").setUuid(schema.getUuid()).setVersion("1.0"));
 
@@ -1013,7 +1013,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		});
 		expect(SCHEMA_MIGRATION_FINISHED).one();
 		expect(SCHEMA_MIGRATION_START).one();
-		BranchInfoSchemaListModel info = new BranchInfoSchemaListModel();
+		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.getSchemas().add(new BranchSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
 		waitForJobs(() -> {
 			call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), info));
@@ -1023,7 +1023,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		JobListResponse jobList = adminCall(() -> client().findJobs());
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
 
-		BranchInfoSchemaListModel schemaList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoSchemaList schemaList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 		BranchSchemaInfo schemaInfo = schemaList.getSchemas().stream().filter(s -> s.getUuid().equals(schema.getUuid())).findFirst().get();
 		assertEquals(COMPLETED, schemaInfo.getMigrationStatus());
 		assertEquals(job.getUuid(), schemaInfo.getJobUuid());
@@ -1088,7 +1088,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		revokeAdmin();
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Project project = project();
+			HibProject project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -1117,12 +1117,12 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 
 		// check that version 1 is assigned to branch
-		BranchInfoSchemaListModel list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoSchemaList list = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchSchemaInfo().setName("schemaname").setUuid(schemaUuid).setVersion("1.0"));
 
 		// assign latest version to the branch
-		BranchInfoSchemaListModel info = new BranchInfoSchemaListModel();
+		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.getSchemas().add(new BranchSchemaInfo().setUuid(schemaUuid));
 		call(() -> client().assignBranchSchemaVersions(PROJECT_NAME, initialBranchUuid(), info));
 
@@ -1141,7 +1141,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 			.transformToReference()));
 		BranchMicroschemaInfo captionedImage = new BranchMicroschemaInfo(db().tx(() -> microschemaContainer("captionedImage").getLatestVersion()
 			.transformToReference()));
-		BranchInfoMicroschemaListModel list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getMicroschemas()).as("branch microschema versions").usingElementComparatorOnFields("name", "uuid", "version").containsOnly(
 			vcard, captionedImage);
 	}
@@ -1161,12 +1161,12 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false));
 
 		// check that version 1 is assigned to branch
-		BranchInfoMicroschemaListModel list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("microschemaname").setUuid(microschema.getUuid()).setVersion(
 				"1.0")));
 
-		BranchInfoMicroschemaListModel info = new BranchInfoMicroschemaListModel();
+		BranchInfoMicroschemaList info = new BranchInfoMicroschemaList();
 		info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
 		expect(MICROSCHEMA_BRANCH_ASSIGN).match(1, BranchMicroschemaAssignModel.class, event -> {
@@ -1214,7 +1214,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}, COMPLETED, 1);
 
 		// check that version 3 is assigned to branch
-		BranchInfoMicroschemaListModel list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewmicroschemaname").setUuid(microschema.getUuid())
 				.setVersion("3.0")));
@@ -1272,7 +1272,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		revokeAdmin();
 		try (Tx tx = tx()) {
 			RoleDao roleDao = tx.roleDao();
-			Project project = project();
+			HibProject project = project();
 			roleDao.revokePermissions(role(), project.getInitialBranch(), UPDATE_PERM);
 			tx.success();
 		}
@@ -1308,7 +1308,7 @@ public class BranchEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}, COMPLETED, 1);
 
 		// Assert that version 2 is assigned to branch
-		BranchInfoMicroschemaListModel list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
+		BranchInfoMicroschemaList list = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, initialBranchUuid()));
 		assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 			new BranchMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(
 				"2.0")));

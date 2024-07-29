@@ -13,13 +13,13 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.AntivirableBinaryElement;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BinaryField;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractHandler;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
@@ -60,15 +60,15 @@ public class BinaryDownloadHandler extends AbstractHandler {
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.tx(tx -> {
-			Project project = tx.getProject(ac);
-			Node node = tx.nodeDao().loadObjectByUuid(project, ac, uuid, READ_PUBLISHED_PERM);
+			HibProject project = tx.getProject(ac);
+			HibNode node = tx.nodeDao().loadObjectByUuid(project, ac, uuid, READ_PUBLISHED_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			// if (language == null) {
 			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			// }
 
-			Branch branch = tx.getBranch(ac, node.getProject());
-			NodeFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
+			HibBranch branch = tx.getBranch(ac, node.getProject());
+			HibNodeFieldContainer fieldContainer = tx.contentDao().findVersion(node, ac.getNodeParameters().getLanguageList(options),
 				branch.getUuid(),
 				ac.getVersioningParameters().getVersion());
 			if (fieldContainer == null) {
@@ -79,11 +79,11 @@ public class BinaryDownloadHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
 
-			Predicate<AntivirableBinaryElement> notAccepted = binary -> binary.getCheckStatus() != BinaryCheckStatus.ACCEPTED
+			Predicate<HibAntivirableBinaryElement> notAccepted = binary -> binary.getCheckStatus() != BinaryCheckStatus.ACCEPTED
 				&& !Objects.equals(binary.getCheckSecret(), rc.queryParams().get("secret"));
 
 			if ((fieldSchema instanceof BinaryFieldSchema)) {
-				BinaryField field = fieldContainer.getBinary(fieldName);
+				HibBinaryField field = fieldContainer.getBinary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 				}
@@ -96,7 +96,7 @@ public class BinaryDownloadHandler extends AbstractHandler {
 
 				binaryFieldResponseHandler.handle(rc, field);
 			} else if ((fieldSchema instanceof S3BinaryFieldSchema)) {
-				S3BinaryField field = fieldContainer.getS3Binary(fieldName);
+				S3HibBinaryField field = fieldContainer.getS3Binary(fieldName);
 				if (field == null) {
 					throw error(NOT_FOUND, "error_s3binaryfield_not_found_with_name", fieldName);
 				}

@@ -4,7 +4,7 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.firstOrNull;
 
 import jakarta.persistence.EntityManager;
 
-import com.gentics.mesh.core.data.MeshVersion;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.hibernate.data.domain.MeshVersionEntityImpl;
 
 /**
@@ -13,7 +13,7 @@ import com.gentics.mesh.hibernate.data.domain.MeshVersionEntityImpl;
  * @author plyhun
  *
  */
-public class MeshVersionImpl implements MeshVersion {
+public class MeshVersionImpl implements HibMeshVersion {
 	private final EntityManager em;
 
 	private MeshVersionEntityImpl instance;

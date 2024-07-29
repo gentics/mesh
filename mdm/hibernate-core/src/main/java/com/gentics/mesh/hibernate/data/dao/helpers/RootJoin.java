@@ -4,13 +4,13 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.metamodel.EntityType;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.query.NativeJoin;
 
 /**
  * Entity-to-root connection definition.
  */
-public interface RootJoin<CHILDIMPL extends BaseElement, ROOTIMPL extends BaseElement> {
+public interface RootJoin<CHILDIMPL extends HibBaseElement, ROOTIMPL extends HibBaseElement> {
 
 	/**
 	 * Make native SQL to the root entity,

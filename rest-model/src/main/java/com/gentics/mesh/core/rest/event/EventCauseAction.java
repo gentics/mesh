@@ -22,7 +22,7 @@ public enum EventCauseAction {
 	 */
 	private final Class modelClass;
 
-	<T extends EventCauseInfoModel> EventCauseAction(Class<T> modelClass) {
+	<T extends EventCauseInfo> EventCauseAction(Class<T> modelClass) {
 		this.modelClass = modelClass;
 	}
 
@@ -32,7 +32,7 @@ public enum EventCauseAction {
 	 * @param <T>
 	 * @return
 	 */
-	public <T extends EventCauseInfoModel> Class<T> getModelClass() {
+	public <T extends EventCauseInfo> Class<T> getModelClass() {
 		return modelClass;
 	}
 }

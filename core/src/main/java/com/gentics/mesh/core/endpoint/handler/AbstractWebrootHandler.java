@@ -9,13 +9,13 @@ import static io.vertx.core.http.HttpHeaders.CACHE_CONTROL;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.node.NodeCrudHandler;
@@ -93,9 +93,9 @@ public abstract class AbstractWebrootHandler {
 	 * @param ac action context
 	 * @param rc routing context
 	 * @param projectPath path without the project segment
-	 * @return found {@link Node}
+	 * @return found {@link HibNode}
 	 */
-	protected Node findNodeByPath(InternalActionContext ac, RoutingContext rc, String projectPath) {
+	protected HibNode findNodeByPath(InternalActionContext ac, RoutingContext rc, String projectPath) {
 		Path nodePath = findNodePathByProjectPath(ac, projectPath);
 		return findNodeByPath(ac, rc, nodePath, projectPath);
 	}
@@ -107,10 +107,10 @@ public abstract class AbstractWebrootHandler {
 	 * @param rc routing context
 	 * @param nodePath node {@link Path}
 	 * @param projectPath original path without the project segment, used in the error logging
-	 * @return found {@link Node}
+	 * @return found {@link HibNode}
 	 */
-	protected Node findNodeByPath(InternalActionContext ac, RoutingContext rc, Path nodePath, String projectPath) {
-		User requestUser = ac.getUser();
+	protected HibNode findNodeByPath(InternalActionContext ac, RoutingContext rc, Path nodePath, String projectPath) {
+		HibUser requestUser = ac.getUser();
 		Tx tx = Tx.get();
 		UserDao userDao = tx.userDao();
 		
@@ -126,13 +126,13 @@ public abstract class AbstractWebrootHandler {
 			throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(projectPath));
 		}
 		PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-		NodeFieldContainer container = graphSegment.getContainer();
+		HibNodeFieldContainer container = graphSegment.getContainer();
 		if (container == null) {
 			throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(projectPath));
 		}
 
 		String version = ac.getVersioningParameters().getVersion();
-		Node node = tx.contentDao().getNode(container);
+		HibNode node = tx.contentDao().getNode(container);
 		addCacheControl(rc, node, version);
 		userDao.failOnNoReadPermission(requestUser, container, branchUuid, version);
 
@@ -149,7 +149,7 @@ public abstract class AbstractWebrootHandler {
 	 * @param node
 	 * @param version
 	 */
-	private void addCacheControl(RoutingContext rc, Node node, String version) {
+	private void addCacheControl(RoutingContext rc, HibNode node, String version) {
 		if (isPublic(node, version)) {
 			rc.response().putHeader(CACHE_CONTROL, "public");
 		} else {
@@ -166,10 +166,10 @@ public abstract class AbstractWebrootHandler {
 	 * @return
 	 */
 
-	private boolean isPublic(Node node, String version) {
+	private boolean isPublic(HibNode node, String version) {
 		RoleDao roleDao = Tx.get().roleDao();
 
-		Role anonymousRole = boot.anonymousRole();
+		HibRole anonymousRole = boot.anonymousRole();
 		AuthenticationOptions authOptions = options.getAuthenticationOptions();
 		if (anonymousRole != null && authOptions != null && authOptions.isEnableAnonymousAccess()) {
 			if (roleDao.hasPermission(anonymousRole, READ_PERM, node)) {

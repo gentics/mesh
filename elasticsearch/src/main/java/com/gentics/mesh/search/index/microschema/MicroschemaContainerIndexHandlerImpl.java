@@ -15,8 +15,8 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.BucketableElement;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.HibBucketableElement;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
@@ -34,7 +34,7 @@ import io.reactivex.Flowable;
  * Handler for the elastic search microschema index.
  */
 @Singleton
-public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<Microschema> implements MicroschemaIndexHandler {
+public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<HibMicroschema> implements MicroschemaIndexHandler {
 
 	protected final MicroschemaTransformer transformer;
 
@@ -57,8 +57,8 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<M
 	}
 
 	@Override
-	public Class<? extends BucketableElement> getElementClass() {
-		return Microschema.class;
+	public Class<? extends HibBucketableElement> getElementClass() {
+		return HibMicroschema.class;
 	}
 
 	@Override
@@ -80,37 +80,37 @@ public class MicroschemaContainerIndexHandlerImpl extends AbstractIndexHandler<M
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Microschema.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibMicroschema.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Microschema.composeIndexName());
+		return filterIndicesByType(indices, HibMicroschema.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Microschema.composeIndexName());
+		return Collections.singleton(HibMicroschema.composeIndexName());
 	}
 
 	@Override
-	public Function<String, Microschema> elementLoader() {
+	public Function<String, HibMicroschema> elementLoader() {
 		return (uuid) -> Tx.get().microschemaDao().findByUuid(uuid);
 	}
 
 	@Override
-	public Function<Collection<String>, Stream<Pair<String, Microschema>>> elementsLoader() {
+	public Function<Collection<String>, Stream<Pair<String, HibMicroschema>>> elementsLoader() {
 		return (uuids) -> Tx.get().microschemaDao().findByUuids(uuids);
 	}
 
 	@Override
-	public Stream<? extends Microschema> loadAllElements() {
+	public Stream<? extends HibMicroschema> loadAllElements() {
 		return Tx.get().microschemaDao().findAll().stream();
 	}
 
 	@Override
 	public Map<String, Optional<IndexInfo>> getIndices() {
-		String indexName = Microschema.composeIndexName();
+		String indexName = HibMicroschema.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "microschema");
 		return Collections.singletonMap(indexName, Optional.of(info));
 	}

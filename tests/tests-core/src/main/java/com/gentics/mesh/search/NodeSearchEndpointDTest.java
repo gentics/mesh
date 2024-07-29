@@ -21,8 +21,8 @@ import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -118,8 +118,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		String schemaUuid;
 		SchemaUpdateRequest schema;
 		try (Tx tx = tx()) {
-			Node concorde = content("concorde");
-			SchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
+			HibNode concorde = content("concorde");
+			HibSchemaVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
 			schema.addField(FieldUtil.createStringFieldSchema("extraField"));
 			schemaUuid = concorde.getSchemaContainer().getUuid();
@@ -160,7 +160,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		NodeReference parentNode = tx(tx -> {
 			return tx.nodeDao().getParentNode(content("concorde"), branchUuid).transformToMinimalReference();
 		});
-		SchemaVersion schemaVersion = tx(() -> content("concorde").getSchemaContainer().getLatestVersion());
+		HibSchemaVersion schemaVersion = tx(() -> content("concorde").getSchemaContainer().getLatestVersion());
 		NodeResponse request = call(() -> client().findNodeByUuid(projectName(), content("concorde").getUuid()));
 		for (int i = 0; i < numAdditionalNodes; i++) {
 			NodeCreateRequest createRequest = new NodeCreateRequest();
@@ -199,7 +199,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testTagCount() throws Exception {
 		recreateIndices();
 
-		Node node = tx(() -> content("concorde"));
+		HibNode node = tx(() -> content("concorde"));
 
 		long previousTagCount = tx(tx -> {
 			TagDao tagDao = tx.tagDao();

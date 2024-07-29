@@ -13,12 +13,12 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.MicronodeMigrationContext;
 import com.gentics.mesh.context.impl.MicronodeMigrationContextImpl;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.branch.BranchMicroschemaVersion;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchMicroschemaVersion;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -55,19 +55,19 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 	 * @param status
 	 * @return
 	 */
-	private MicroschemaMigrationMeshEventModel createEvent(Job job, Tx tx, MeshEvent event, JobStatus status) {
+	private MicroschemaMigrationMeshEventModel createEvent(HibJob job, Tx tx, MeshEvent event, JobStatus status) {
 		MicroschemaMigrationMeshEventModel model = new MicroschemaMigrationMeshEventModel();
 		model.setEvent(event);
 
-		MicroschemaVersion toVersion = job.getToMicroschemaVersion();
+		HibMicroschemaVersion toVersion = job.getToMicroschemaVersion();
 		model.setToVersion(toVersion.transformToReference());
 
-		MicroschemaVersion fromVersion = job.getFromMicroschemaVersion();
+		HibMicroschemaVersion fromVersion = job.getFromMicroschemaVersion();
 		model.setFromVersion(fromVersion.transformToReference());
 
-		Branch branch = job.getBranch();
+		HibBranch branch = job.getBranch();
 		if (branch != null) {
-			Project project = branch.getProject();
+			HibProject project = branch.getProject();
 			model.setProject(project.transformToReference());
 			model.setBranch(branch.transformToReference());
 		}
@@ -77,7 +77,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 		return model;
 	}
 
-	private MicronodeMigrationContext prepareContext(Job job) {
+	private MicronodeMigrationContext prepareContext(HibJob job) {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(job.getUuid());
 		try {
 			return db.tx(tx -> {
@@ -86,26 +86,26 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 
 				tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_START, STARTING)).dispatch();
 
-				Branch branch = job.getBranch();
+				HibBranch branch = job.getBranch();
 				if (branch == null) {
 					throw error(BAD_REQUEST, "Branch for job {" + job.getUuid() + "} not found");
 				}
 				context.setBranch(branch);
 
-				MicroschemaVersion fromContainerVersion = job.getFromMicroschemaVersion();
+				HibMicroschemaVersion fromContainerVersion = job.getFromMicroschemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source version of microschema for job {" + job.getUuid() + "} could not be found.");
 				}
 				context.setFromVersion(fromContainerVersion);
 
-				MicroschemaVersion toContainerVersion = job.getToMicroschemaVersion();
+				HibMicroschemaVersion toContainerVersion = job.getToMicroschemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target version of microschema for job {" + job.getUuid() + "} could not be found.");
 				}
 				context.setToVersion(toContainerVersion);
 
-				Microschema schemaContainer = fromContainerVersion.getSchemaContainer();
-				BranchMicroschemaVersion branchVersionEdge = Tx.get().branchDao().findBranchMicroschemaEdge(branch, toContainerVersion);
+				HibMicroschema schemaContainer = fromContainerVersion.getSchemaContainer();
+				HibBranchMicroschemaVersion branchVersionEdge = Tx.get().branchDao().findBranchMicroschemaEdge(branch, toContainerVersion);
 				context.getStatus().setVersionEdge(branchVersionEdge);
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
@@ -133,7 +133,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 	}
 
 	@Override
-	public Completable process(Job job) {
+	public Completable process(HibJob job) {
 		MicronodeMigration handler = db.tx(tx -> {
 			return tx.<CommonTx>unwrap().data().mesh().micronodeMigrationHandler();
 		});
@@ -154,7 +154,7 @@ public class MicronodeJobProcessor implements SingleJobProcessor {
 		});
 	}
 
-	private void finalizeMigration(Job job, MicronodeMigrationContext context) {
+	private void finalizeMigration(HibJob job, MicronodeMigrationContext context) {
 		db.tx(tx -> {
 			tx.createBatch().add(createEvent(job, tx, MICROSCHEMA_MIGRATION_FINISHED, COMPLETED)).dispatch();
 		});

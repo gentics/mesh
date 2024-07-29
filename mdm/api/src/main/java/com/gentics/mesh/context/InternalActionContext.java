@@ -2,7 +2,7 @@ package com.gentics.mesh.context;
 
 import java.util.List;
 
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.etc.config.HttpServerConfig;
@@ -36,7 +36,7 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * 
 	 * @return
 	 */
-	User getUser();
+	HibUser getUser();
 
 	/**
 	 * Return the mesh auth user.

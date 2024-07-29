@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
  *
  */
 @Singleton
-public class UserNameCacheImpl extends AbstractNameCache<User> implements UserNameCache {
+public class UserNameCacheImpl extends AbstractNameCache<HibUser> implements UserNameCache {
 
 	@Inject
 	public UserNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {

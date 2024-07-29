@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerImpl;
@@ -29,7 +29,7 @@ public interface ContentStorage {
 	 * @param contentUuid mandatory content id
 	 * @return the field container if found, otherwise null
 	 */
-	HibNodeFieldContainerImpl findOne(FieldSchemaVersionElement<?,?,?,?,?> version, UUID contentUuid);
+	HibNodeFieldContainerImpl findOne(HibFieldSchemaVersionElement<?,?,?,?,?> version, UUID contentUuid);
 
 	/**
 	 * Find one field container for the given {@link ContentKey}.
@@ -45,7 +45,7 @@ public interface ContentStorage {
 	 * @param contentUuid mandatory content id
 	 * @return the micro field container if found, otherwise null
 	 */
-	HibMicronodeContainerImpl findOneMicronode(FieldSchemaVersionElement<?,?,?,?,?> version, UUID contentUuid);
+	HibMicronodeContainerImpl findOneMicronode(HibFieldSchemaVersionElement<?,?,?,?,?> version, UUID contentUuid);
 
 	/**
 	 * Find all containers with the provided version.
@@ -53,7 +53,7 @@ public interface ContentStorage {
 	 * @param version mandatory version of the node field containers
 	 * @return a list of field containers
 	 */
-	List<HibNodeFieldContainerImpl> findMany(FieldSchemaVersionElement<?,?,?,?,?> version);
+	List<HibNodeFieldContainerImpl> findMany(HibFieldSchemaVersionElement<?,?,?,?,?> version);
 
 	/**
 	 * Find all containers with the provided version.
@@ -61,7 +61,7 @@ public interface ContentStorage {
 	 * @param version mandatory version of the micronode field containers
 	 * @return a list of field containers
 	 */
-	List<HibMicronodeContainerImpl> findManyMicronodes(FieldSchemaVersionElement<?,?,?,?,?> version);
+	List<HibMicronodeContainerImpl> findManyMicronodes(HibFieldSchemaVersionElement<?,?,?,?,?> version);
 
 	/**
 	 * Find many field containers for the given edges having columns between the provided parameters.
@@ -102,35 +102,35 @@ public interface ContentStorage {
 	 * @param <T>
 	 * @return
 	 */
-	<T> T findColumn(FieldSchemaVersionElement<?,?,?,?,?> version, UUID contentUuid, ContentColumn contentColumn);
+	<T> T findColumn(HibFieldSchemaVersionElement<?,?,?,?,?> version, UUID contentUuid, ContentColumn contentColumn);
 
 	/**
 	 * Insert the container into the content table
 	 * @param container container to insert
 	 * @param schemaVersion schema version
 	 */
-	void insert(HibNodeFieldContainerImpl container, SchemaVersion schemaVersion);
+	void insert(HibNodeFieldContainerImpl container, HibSchemaVersion schemaVersion);
 
 	/**
 	 * Insert the micronode container into the content table
 	 * @param container micronode container to insert
 	 * @param microschemaVersion schema version
 	 */
-	void insert(HibMicronodeContainerImpl container, MicroschemaVersion microschemaVersion);
+	void insert(HibMicronodeContainerImpl container, HibMicroschemaVersion microschemaVersion);
 
 	/**
 	 * Deletes the (micro)node field container with the provided id and version
 	 * @param id mandatory id
 	 * @param version mandatory version
 	 */
-	void delete(UUID id, FieldSchemaVersionElement<?, ?, ?, ?, ?> version);
+	void delete(UUID id, HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version);
 
 	/**
 	 * Deletes the (micro)node field containers for the given version and project.
 	 * @param version mandatory version
 	 * @param project mandatory project
 	 */
-	long delete(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, Project project);
+	long delete(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, HibProject project);
 
 	/**
 	 * Deletes the micronodes for the given version related to one of the provided nodes
@@ -138,7 +138,7 @@ public interface ContentStorage {
 	 * @param nodes
 	 * @return
 	 */
-	long delete(SchemaVersion version, Set<HibNodeImpl> nodes);
+	long delete(HibSchemaVersion version, Set<HibNodeImpl> nodes);
 
 	/**
 	 * Delete all the containers that are referenced by the provided keys.
@@ -151,7 +151,7 @@ public interface ContentStorage {
 	 * @param version mandatory version
 	 *
 	 */
-	long deleteUnreferencedMicronodes(MicroschemaVersion version);
+	long deleteUnreferencedMicronodes(HibMicroschemaVersion version);
 
 	/**
 	 * Deletes all the node field containers
@@ -163,7 +163,7 @@ public interface ContentStorage {
 	 * Drop the content table for the version. This is added to the current HibernateTx to be done before the transaction is closed.
 	 * @param version mandatory  version
 	 */
-	void dropTable(FieldSchemaVersionElement<?, ?, ?, ?, ?> version);
+	void dropTable(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version);
 
 	/**
 	 * Return the count of all NodeFieldContainers
@@ -177,14 +177,14 @@ public interface ContentStorage {
 	 * @param version the version used to identify the table
 	 * @param column the column to add
 	 */
-	void addColumnIfNotExists(FieldSchemaVersionElement<?, ?, ?, ?, ?> version, DynamicContentColumn column);
+	void addColumnIfNotExists(HibFieldSchemaVersionElement<?, ?, ?, ?, ?> version, DynamicContentColumn column);
 
 	/**
 	 * Create a node field container table. The table creation will be done at the end of the current transaction,
 	 * since DDL operations might commit pending DML operations, depending on the database
 	 * @param version
 	 */
-	void createTable(SchemaVersion version);
+	void createTable(HibSchemaVersion version);
 
 	/**
 	 * Create an index on the nodes field container table for the version. The index will be added at the end of the transaction
@@ -192,14 +192,14 @@ public interface ContentStorage {
 	 * @param column
 	 * @param unique
 	 */
-	void createIndex(SchemaVersion version, CommonContentColumn column, boolean unique);
+	void createIndex(HibSchemaVersion version, CommonContentColumn column, boolean unique);
 
 	/**
 	 * Create a micronode field container table. The table creation will be done at the end of the current transaction,
 	 * since DDL operations might commit pending DML operations, depending on the database
 	 * @param microVersion
 	 */
-	void createMicronodeTable(MicroschemaVersion microVersion);
+	void createMicronodeTable(HibMicroschemaVersion microVersion);
 
 	/**
 	 * Return the content keys of the field containers for the given versions related to one of the provided nodes.
@@ -207,5 +207,5 @@ public interface ContentStorage {
 	 * @param nodes
 	 * @return
 	 */
-	List<ContentKey> findByNodes(SchemaVersion version, Set<HibNodeImpl> nodes);
+	List<ContentKey> findByNodes(HibSchemaVersion version, Set<HibNodeImpl> nodes);
 }

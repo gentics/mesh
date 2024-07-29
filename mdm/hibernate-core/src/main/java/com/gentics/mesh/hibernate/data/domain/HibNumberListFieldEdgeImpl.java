@@ -11,7 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
-import com.gentics.mesh.core.data.node.field.NumberField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
 import com.gentics.mesh.database.HibernateTx;
 
 /**
@@ -30,8 +30,8 @@ import com.gentics.mesh.database.HibernateTx;
 }, indexes = {
 		@Index(columnList = "listUuid")
 })
-public class HibNumberListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<NumberField, Double>
-		implements NumberField, Serializable {
+public class HibNumberListFieldEdgeImpl extends AbstractHibPrimitiveListFieldEdgeImpl<HibNumberField, Double>
+		implements HibNumberField, Serializable {
 
 	private static final long serialVersionUID = -4517639730172057696L;
 

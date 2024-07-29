@@ -27,36 +27,36 @@ import java.util.List;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibLanguage;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BooleanField;
-import com.gentics.mesh.core.data.node.field.DateField;
-import com.gentics.mesh.core.data.node.field.HtmlField;
-import com.gentics.mesh.core.data.node.field.NumberField;
-import com.gentics.mesh.core.data.node.field.StringField;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
+import com.gentics.mesh.core.data.node.field.HibDateField;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.HibNumberField;
+import com.gentics.mesh.core.data.node.field.HibStringField;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.SchemaVersionModel;
@@ -77,8 +77,8 @@ public final class TestMocks {
 
 	}
 
-	public static Project mockProject(User user) {
-		Project project = mock(Project.class);
+	public static HibProject mockProject(HibUser user) {
+		HibProject project = mock(HibProject.class);
 		when(project.getUuid()).thenReturn(PROJECT_DEMO2_UUID);
 		when(project.getName()).thenReturn("dummyProject");
 		when(project.getCreator()).thenReturn(user);
@@ -89,47 +89,47 @@ public final class TestMocks {
 		return project;
 	}
 
-	public static Language mockLanguage(String code) {
-		Language language = mock(Language.class);
+	public static HibLanguage mockLanguage(String code) {
+		HibLanguage language = mock(HibLanguage.class);
 		when(language.getUuid()).thenReturn(LANGUAGE_UUID);
 		when(language.getLanguageTag()).thenReturn("de");
 		when(language.getElementVersion()).thenReturn(UUID_2);
 		return language;
 	}
 
-	public static Node mockNodeBasic(String schemaType, User user) {
-		Node node = mock(Node.class);
+	public static HibNode mockNodeBasic(String schemaType, HibUser user) {
+		HibNode node = mock(HibNode.class);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
-		Schema schemaContainer = mockSchemaContainer(schemaType, user);
+		HibSchema schemaContainer = mockSchemaContainer(schemaType, user);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		return node;
 	}
 
-	public static Micronode mockMicronode(String microschemaName, User user) {
-		Micronode micronode = mock(Micronode.class);
+	public static HibMicronode mockMicronode(String microschemaName, HibUser user) {
+		HibMicronode micronode = mock(HibMicronode.class);
 		when(micronode.getUuid()).thenReturn(UUID_1);
-		Microschema microschemaContainer = mockMicroschemaContainer(microschemaName, user);
-		MicroschemaVersion latestVersion = microschemaContainer.getLatestVersion();
+		HibMicroschema microschemaContainer = mockMicroschemaContainer(microschemaName, user);
+		HibMicroschemaVersion latestVersion = microschemaContainer.getLatestVersion();
 		// TODO find a away to convert this correctly
 		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
 		MicroschemaVersionModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
-		NumberField longitudeField = mock(NumberField.class);
+		HibNumberField longitudeField = mock(HibNumberField.class);
 		when(longitudeField.getNumber()).thenReturn(16.373063840833);
 		when(micronode.getNumber("longitude")).thenReturn(longitudeField);
 
 		// latitude field
-		NumberField latitudeField = mock(NumberField.class);
+		HibNumberField latitudeField = mock(HibNumberField.class);
 		when(latitudeField.getNumber()).thenReturn(16.373063840833);
 		when(micronode.getNumber("latitude")).thenReturn(latitudeField);
 		when(micronode.getElementVersion()).thenReturn(UUID_3);
 		return micronode;
 	}
 
-	public static Role mockRole(String roleName, User creator) {
-		Role role = mock(Role.class);
+	public static HibRole mockRole(String roleName, HibUser creator) {
+		HibRole role = mock(HibRole.class);
 		when(role.getCreator()).thenReturn(creator);
 		when(role.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(role.getEditor()).thenReturn(creator);
@@ -140,8 +140,8 @@ public final class TestMocks {
 		return role;
 	}
 
-	public static Group mockGroup(String groupName, User creator) {
-		Group group = mock(Group.class);
+	public static HibGroup mockGroup(String groupName, HibUser creator) {
+		HibGroup group = mock(HibGroup.class);
 		when(group.getCreator()).thenReturn(creator);
 		when(group.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(group.getEditor()).thenReturn(creator);
@@ -153,12 +153,12 @@ public final class TestMocks {
 		return group;
 	}
 
-	public static User mockUser(String username, String firstname, String lastname) {
+	public static HibUser mockUser(String username, String firstname, String lastname) {
 		return mockUser(username, firstname, lastname, null);
 	}
 
-	public static User mockUser(String username, String firstname, String lastname, User creator) {
-		User user = mock(User.class);
+	public static HibUser mockUser(String username, String firstname, String lastname, HibUser creator) {
+		HibUser user = mock(HibUser.class);
 		when(user.getUsername()).thenReturn(username);
 		when(user.getFirstname()).thenReturn(firstname);
 		when(user.getLastname()).thenReturn(lastname);
@@ -174,8 +174,8 @@ public final class TestMocks {
 		return user;
 	}
 
-	public static TagFamily mockTagFamily(String name, User user, Project project) {
-		TagFamily tagFamily = mock(TagFamily.class);
+	public static HibTagFamily mockTagFamily(String name, HibUser user, HibProject project) {
+		HibTagFamily tagFamily = mock(HibTagFamily.class);
 		when(tagFamily.getCreator()).thenReturn(user);
 		when(tagFamily.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(tagFamily.getEditor()).thenReturn(user);
@@ -187,8 +187,8 @@ public final class TestMocks {
 		return tagFamily;
 	}
 
-	public static Tag mockTag(String name, User user, TagFamily tagFamily, Project project) {
-		Tag tag = mock(Tag.class);
+	public static HibTag mockTag(String name, HibUser user, HibTagFamily tagFamily, HibProject project) {
+		HibTag tag = mock(HibTag.class);
 		when(tag.getCreator()).thenReturn(user);
 		when(tag.getCreationTimestamp()).thenReturn(TIMESTAMP_OLD);
 		when(tag.getEditor()).thenReturn(user);
@@ -205,11 +205,11 @@ public final class TestMocks {
 		return new TraversalResult<>(Collections.emptyList());
 	}
 
-	public static Schema mockSchemaContainer(String name, User user) {
-		Schema container = mock(Schema.class);
+	public static HibSchema mockSchemaContainer(String name, HibUser user) {
+		HibSchema container = mock(HibSchema.class);
 		when(container.getName()).thenReturn(name);
 		when(container.getUuid()).thenReturn(SCHEMA_VEHICLE_UUID);
-		SchemaVersion latestVersion = mock(SchemaVersion.class);
+		HibSchemaVersion latestVersion = mock(HibSchemaVersion.class);
 		when(latestVersion.getSchemaContainer()).thenReturn(container);
 		when(latestVersion.getSchema()).thenReturn(mockContentSchema());
 		when(latestVersion.getName()).thenReturn(name);
@@ -222,11 +222,11 @@ public final class TestMocks {
 		return container;
 	}
 
-	public static Microschema mockMicroschemaContainer(String name, User user) {
-		Microschema schema = mock(Microschema.class);
+	public static HibMicroschema mockMicroschemaContainer(String name, HibUser user) {
+		HibMicroschema schema = mock(HibMicroschema.class);
 		when(schema.getName()).thenReturn(name);
 		when(schema.getUuid()).thenReturn(MICROSCHEMA_UUID);
-		MicroschemaVersion latestVersion = mock(MicroschemaVersion.class);
+		HibMicroschemaVersion latestVersion = mock(HibMicroschemaVersion.class);
 		when(latestVersion.getSchema()).thenReturn(mockGeolocationMicroschema());
 
 		when(schema.getLatestVersion()).thenReturn(latestVersion);
@@ -276,23 +276,23 @@ public final class TestMocks {
 		return microschema;
 	}
 
-	public static Node mockNode(NodeDao nodeDao, ContentDao contentDao, TagDao tagDao, Node parent, Project project, User user, String languageTag, Tag tagA, Tag tagB) {
-		Node node = mock(Node.class);
+	public static HibNode mockNode(NodeDao nodeDao, ContentDao contentDao, TagDao tagDao, HibNode parent, HibProject project, HibUser user, String languageTag, HibTag tagA, HibTag tagB) {
+		HibNode node = mock(HibNode.class);
 
 		when(node.getProject()).thenReturn(project);
 		when(nodeDao.getParentNode(same(node), Mockito.any())).thenReturn(parent);
 
-		TraversalResult<Tag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
+		TraversalResult<HibTag> tagResult = new TraversalResult<>(Arrays.asList(tagA, tagB));
 		when(tagDao.getTags(same(node), Mockito.any())).thenReturn(tagResult);
 
-		Schema schemaContainer = mockSchemaContainer("content", user);
-		SchemaVersion latestVersion = schemaContainer.getLatestVersion();
+		HibSchema schemaContainer = mockSchemaContainer("content", user);
+		HibSchemaVersion latestVersion = schemaContainer.getLatestVersion();
 		when(latestVersion.getUuid()).thenReturn(UUID_2);
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(NODE_DELOREAN_UUID);
 		
-		NodeFieldContainer container = mockContainer(languageTag, user);
+		HibNodeFieldContainer container = mockContainer(languageTag, user);
 		when(contentDao.getSchemaContainerVersion(container)).thenReturn(latestVersion);
 		when(contentDao.getNode(container)).thenReturn(node);
 		when(container.getNode()).thenReturn(node);
@@ -304,78 +304,78 @@ public final class TestMocks {
 		return node;
 	}
 
-	public static NodeFieldContainer mockContainer(String languageTag, User user) {
-		NodeFieldContainer container = mock(NodeFieldContainer.class);
+	public static HibNodeFieldContainer mockContainer(String languageTag, HibUser user) {
+		HibNodeFieldContainer container = mock(HibNodeFieldContainer.class);
 		when(container.getLanguageTag()).thenReturn(languageTag);
 
 		when(container.getEditor()).thenReturn(user);
 
 		// String field
-		StringField stringField = mock(StringField.class);
+		HibStringField stringField = mock(HibStringField.class);
 		when(stringField.getString()).thenReturn("The name value");
 		when(container.getString("string")).thenReturn(stringField);
 
 		// Number field
-		NumberField numberField = mock(NumberField.class);
+		HibNumberField numberField = mock(HibNumberField.class);
 		when(numberField.getNumber()).thenReturn(0.146f);
 		when(container.getNumber("number")).thenReturn(numberField);
 
 		// Date field
-		DateField dateField = mock(DateField.class);
+		HibDateField dateField = mock(HibDateField.class);
 		when(dateField.getDate()).thenReturn(TIMESTAMP_NEW / 1000);
 		when(container.getDate("date")).thenReturn(dateField);
 
 		// Boolean field
-		BooleanField booleanField = mock(BooleanField.class);
+		HibBooleanField booleanField = mock(HibBooleanField.class);
 		when(booleanField.getBoolean()).thenReturn(true);
 		when(container.getBoolean("boolean")).thenReturn(booleanField);
 
 		// Node field
-		NodeField nodeField = mock(NodeField.class);
-		Node nodeRef = mockNodeBasic("folder", user);
+		HibNodeField nodeField = mock(HibNodeField.class);
+		HibNode nodeRef = mockNodeBasic("folder", user);
 		when(nodeField.getNode()).thenReturn(nodeRef);
 		when(container.getNode("node")).thenReturn(nodeField);
 
 		// Html field
-		HtmlField htmlField = mock(HtmlField.class);
+		HibHtmlField htmlField = mock(HibHtmlField.class);
 		when(htmlField.getHTML()).thenReturn("some<b>html");
 		when(container.getHtml("html")).thenReturn(htmlField);
 
 		// micronode field
-		MicronodeField micronodeField = mock(MicronodeField.class);
-		Micronode micronode = mockMicronode("geolocation", user);
+		HibMicronodeField micronodeField = mock(HibMicronodeField.class);
+		HibMicronode micronode = mockMicronode("geolocation", user);
 		when(micronodeField.getMicronode()).thenReturn(micronode);
 		when(container.getMicronode("micronode")).thenReturn(micronodeField);
 
 		// Node List Field
-		NodeFieldList nodeListField = mock(NodeFieldList.class);
-		Mockito.<List<? extends NodeField>> when(nodeListField.getList()).thenReturn(Arrays.asList(nodeField, nodeField, nodeField));
+		HibNodeFieldList nodeListField = mock(HibNodeFieldList.class);
+		Mockito.<List<? extends HibNodeField>> when(nodeListField.getList()).thenReturn(Arrays.asList(nodeField, nodeField, nodeField));
 		when(container.getNodeList("nodeList")).thenReturn(nodeListField);
 
 		// String List Field
-		StringFieldList stringListField = mock(StringFieldList.class);
-		Mockito.<List<? extends StringField>> when(stringListField.getList()).thenReturn(Arrays.asList(stringField, stringField, stringField));
+		HibStringFieldList stringListField = mock(HibStringFieldList.class);
+		Mockito.<List<? extends HibStringField>> when(stringListField.getList()).thenReturn(Arrays.asList(stringField, stringField, stringField));
 		when(container.getStringList("stringList")).thenReturn(stringListField);
 
 		// Boolean List Field
-		BooleanFieldList booleanListField = mock(BooleanFieldList.class);
-		Mockito.<List<? extends BooleanField>> when(booleanListField.getList())
+		HibBooleanFieldList booleanListField = mock(HibBooleanFieldList.class);
+		Mockito.<List<? extends HibBooleanField>> when(booleanListField.getList())
 				.thenReturn(Arrays.asList(booleanField, booleanField, booleanField));
 		when(container.getBooleanList("booleanList")).thenReturn(booleanListField);
 
 		// Date List Field
-		DateFieldList dateListField = mock(DateFieldList.class);
-		Mockito.<List<? extends DateField>> when(dateListField.getList()).thenReturn(Arrays.asList(dateField, dateField, dateField));
+		HibDateFieldList dateListField = mock(HibDateFieldList.class);
+		Mockito.<List<? extends HibDateField>> when(dateListField.getList()).thenReturn(Arrays.asList(dateField, dateField, dateField));
 		when(container.getDateList("dateList")).thenReturn(dateListField);
 
 		// Number List Field
-		NumberFieldList numberListField = mock(NumberFieldList.class);
-		Mockito.<List<? extends NumberField>> when(numberListField.getList()).thenReturn(Arrays.asList(numberField, numberField, numberField));
+		HibNumberFieldList numberListField = mock(HibNumberFieldList.class);
+		Mockito.<List<? extends HibNumberField>> when(numberListField.getList()).thenReturn(Arrays.asList(numberField, numberField, numberField));
 		when(container.getNumberList("numberList")).thenReturn(numberListField);
 
 		// Html List Field
-		HtmlFieldList htmlListField = mock(HtmlFieldList.class);
-		Mockito.<List<? extends HtmlField>> when(htmlListField.getList()).thenReturn(Arrays.asList(htmlField, htmlField, htmlField));
+		HibHtmlFieldList htmlListField = mock(HibHtmlFieldList.class);
+		Mockito.<List<? extends HibHtmlField>> when(htmlListField.getList()).thenReturn(Arrays.asList(htmlField, htmlField, htmlField));
 		when(container.getHTMLList("htmlList")).thenReturn(htmlListField);
 
 		// TODO currently, this mock is only used for the search document example, where we want to omit

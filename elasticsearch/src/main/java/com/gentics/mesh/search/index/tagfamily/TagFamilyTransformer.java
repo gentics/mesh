@@ -6,8 +6,8 @@ import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.search.index.AbstractTransformer;
 import com.gentics.mesh.search.index.MappingHelper;
@@ -19,15 +19,15 @@ import io.vertx.core.json.JsonObject;
  * Transformer for tagfamily search index documents.
  */
 @Singleton
-public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
+public class TagFamilyTransformer extends AbstractTransformer<HibTagFamily> {
 
 	@Inject
 	public TagFamilyTransformer() {
 	}
 
 	@Override
-	public String generateVersion(TagFamily tagFamily) {
-		Project project = tagFamily.getProject();
+	public String generateVersion(HibTagFamily tagFamily) {
+		HibProject project = tagFamily.getProject();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(tagFamily.getElementVersion());
@@ -47,7 +47,7 @@ public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 	 * @return
 	 */
 	@Override
-	public JsonObject toDocument(TagFamily tagFamily) {
+	public JsonObject toDocument(HibTagFamily tagFamily) {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tagFamily.getName());
 		addBasicReferences(document, tagFamily);

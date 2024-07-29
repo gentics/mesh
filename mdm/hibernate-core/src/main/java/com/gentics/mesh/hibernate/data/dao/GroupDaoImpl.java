@@ -21,10 +21,10 @@ import jakarta.persistence.criteria.Root;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.core.data.dao.PersistingGroupDao;
-import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -51,41 +51,41 @@ import io.vertx.core.Vertx;
  *
  */
 @Singleton
-public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, HibGroupImpl> implements PersistingGroupDao {
+public class GroupDaoImpl extends AbstractHibDaoGlobal<HibGroup, GroupResponse, HibGroupImpl> implements PersistingGroupDao {
 	
 	@Inject
-	public GroupDaoImpl(CurrentTransaction currentTransaction, DaoHelper<Group, HibGroupImpl> daoHelper, 
+	public GroupDaoImpl(CurrentTransaction currentTransaction, DaoHelper<HibGroup, HibGroupImpl> daoHelper, 
 			CommonDaoHelper commonDaoHelper, HibPermissionRoots permissionRoots, EventFactory eventFactory, Lazy<Vertx> vertx) {
 		super(daoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 	}
 
 	@Override
-	public void addUserPersisting(Group group, User user) {
+	public void addUserPersisting(HibGroup group, HibUser user) {
 		((HibGroupImpl) group).addUser(user);
 	}
 
 	@Override
-	public void removeUserPersisting(Group group, User user) {
+	public void removeUserPersisting(HibGroup group, HibUser user) {
 		((HibGroupImpl) group).removeUser(user);
 	}
 
 	@Override
-	public void addRolePersisting(Group group, Role role) {
+	public void addRolePersisting(HibGroup group, HibRole role) {
 		((HibRoleImpl) role).addGroup(group);
 	}
 
 	@Override
-	public void removeRolePersisting(Group group, Role role) {
+	public void removeRolePersisting(HibGroup group, HibRole role) {
 		((HibGroupImpl) group).removeRole(role);
 	}
 
 	@Override
-	public Result<? extends User> getUsers(Group group) {
+	public Result<? extends HibUser> getUsers(HibGroup group) {
 		return new TraversalResult<>(((HibGroupImpl) group).getUsers());
 	}
 
 	@Override
-	public Result<? extends Role> getRoles(Group group) {
+	public Result<? extends HibRole> getRoles(HibGroup group) {
 		return new TraversalResult<>(
 				em().createQuery("select r from group g inner join g.roles r where g.dbUuid = :groupUuid", HibRoleImpl.class)
 				.setParameter("groupUuid", group.getId())
@@ -93,10 +93,10 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, Hib
 	}
 
 	@Override
-	public Map<Group, Collection<? extends Role>> getRoles(Collection<Group> groups) {
-		List<UUID> groupsUuids = groups.stream().map(Group::getId).map(UUID.class::cast).collect(Collectors.toList());
+	public Map<HibGroup, Collection<? extends HibRole>> getRoles(Collection<HibGroup> groups) {
+		List<UUID> groupsUuids = groups.stream().map(HibGroup::getId).map(UUID.class::cast).collect(Collectors.toList());
 
-		Map<Group, Collection<? extends Role>> result = new HashMap<>();
+		Map<HibGroup, Collection<? extends HibRole>> result = new HashMap<>();
 		result.putAll(SplittingUtils.splitAndMergeInMapOfLists(groupsUuids, inQueriesLimitForSplitting(1), (uuids) -> {
 			@SuppressWarnings("unchecked")
 			List<Object[]> resultList = em().createNamedQuery("group.findrolesforgroups")
@@ -104,14 +104,14 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, Hib
 					.getResultList();
 
 			return resultList.stream()
-					.map(tuples -> Pair.of((Group)tuples[0], (Role)tuples[1]))
+					.map(tuples -> Pair.of((HibGroup)tuples[0], (HibRole)tuples[1]))
 					.collect(Collectors.groupingBy(Pair::getKey, Collectors.mapping(Pair::getValue, Collectors.toList())));
 		}));
 		return CollectionUtil.addFallbackValueForMissingKeys(result, groups, new ArrayList<>());
 	}
 
 	@Override
-	public boolean hasUser(Group group, User user) {
+	public boolean hasUser(HibGroup group, HibUser user) {
 		return em().createQuery("select u from group g inner join g.users u where u.dbUuid = :userUuid and g.dbUuid = :groupUuid")
 				.setParameter("userUuid", user.getId())
 				.setParameter("groupUuid", group.getId())
@@ -120,12 +120,12 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, Hib
 	}
 
 	@Override
-	public boolean hasRole(Group group, Role role) {
+	public boolean hasRole(HibGroup group, HibRole role) {
 		return ((HibGroupImpl) group).getRoles().anyMatch(r -> r.getId().equals(role.getId()));
 	}
 
 	@Override
-	public Page<? extends Role> getRoles(Group group, User requestUser, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> getRoles(HibGroup group, HibUser requestUser, PagingParameters pagingInfo) {
 		CriteriaBuilder cb = cb();
 		CriteriaQuery<HibRoleImpl> query = cb.createQuery(HibRoleImpl.class);
 		Root<HibRoleImpl> root = query.from(HibRoleImpl.class);
@@ -135,7 +135,7 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, Hib
 	}
 
 	@Override
-	public Page<? extends User> getVisibleUsers(Group group, User requestUser, PagingParameters pagingInfo) {
+	public Page<? extends HibUser> getVisibleUsers(HibGroup group, HibUser requestUser, PagingParameters pagingInfo) {
 		CriteriaBuilder cb = cb();
 		CriteriaQuery<HibUserImpl> query = cb.createQuery(HibUserImpl.class);
 		Root<HibUserImpl> root = query.from(HibUserImpl.class);
@@ -146,7 +146,7 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, Hib
 	}
 
 	@Override
-	public Group beforeDeletedFromDatabase(Group element) {
+	public HibGroup beforeDeletedFromDatabase(HibGroup element) {
 		HibGroupImpl group = (HibGroupImpl) element;
 		group.removeRoles();
 		group.removeUsers();
@@ -154,16 +154,16 @@ public class GroupDaoImpl extends AbstractHibDaoGlobal<Group, GroupResponse, Hib
 	}
 
 	@Override
-	public Group findByName(String name) {
+	public HibGroup findByName(String name) {
 		return HibernateTx.get().data().mesh().groupNameCache().get(name, gName -> {
 			return super.findByName(gName);
 		});
 	}
 
 	@Override
-	public Stream<Pair<String, Group>> findByNames(Collection<String> names) {
+	public Stream<Pair<String, HibGroup>> findByNames(Collection<String> names) {
 		return SplittingUtils.splitAndMergeInList(names, HibernateUtil.inQueriesLimitForSplitting(1), slice -> {
-			return em().createQuery("select g from group g where g.name in :names", Group.class)
+			return em().createQuery("select g from group g where g.name in :names", HibGroup.class)
 				.setParameter("names", slice)
 				.getResultStream()
 				.map(t -> Pair.of(t.getName(), t))

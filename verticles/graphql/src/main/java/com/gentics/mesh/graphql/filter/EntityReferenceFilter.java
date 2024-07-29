@@ -21,13 +21,13 @@ import com.gentics.graphqlfilter.filter.operation.FilterOperand;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.FilterQuery;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
-import com.gentics.mesh.core.data.Element;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.HibElement;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.node.field.nesting.MicronodeField;
-import com.gentics.mesh.core.data.node.field.nesting.NodeField;
-import com.gentics.mesh.core.data.node.field.nesting.ReferenceField;
+import com.gentics.mesh.core.data.node.field.nesting.HibMicronodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibNodeField;
+import com.gentics.mesh.core.data.node.field.nesting.HibReferenceField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -43,10 +43,10 @@ import com.gentics.mesh.graphql.filter.operation.EntityReferenceOperationOperand
  * @param <T> target filtered type
  * @param <Q> query type
  */
-public class EntityReferenceFilter<E extends Element, T extends ReferenceField<E>, Q> extends MainFilter<T> {
+public class EntityReferenceFilter<E extends HibElement, T extends HibReferenceField<E>, Q> extends MainFilter<T> {
 
-	private static Map<String, EntityReferenceFilter<Node, NodeField, ?>> nodeFieldFilterInstances = Collections.synchronizedMap(new HashMap<>());
-	private static Map<String, EntityReferenceFilter<Micronode, MicronodeField, ?>> micronodeFieldFilterInstances = Collections.synchronizedMap(new HashMap<>());
+	private static Map<String, EntityReferenceFilter<HibNode, HibNodeField, ?>> nodeFieldFilterInstances = Collections.synchronizedMap(new HashMap<>());
+	private static Map<String, EntityReferenceFilter<HibMicronode, HibMicronodeField, ?>> micronodeFieldFilterInstances = Collections.synchronizedMap(new HashMap<>());
 
 	private final Filter<E, Q> referenceFilter;
 	private final String referenceType;
@@ -115,7 +115,7 @@ public class EntityReferenceFilter<E extends Element, T extends ReferenceField<E
 		return wrapReferencingEdgeFilter(referenceType, query, referenceFilter);
 	}
 
-	public static final EntityReferenceFilter<Node, NodeField, ?> nodeFieldFilter(GraphQLContext context, String owner) {	
+	public static final EntityReferenceFilter<HibNode, HibNodeField, ?> nodeFieldFilter(GraphQLContext context, String owner) {	
 		ContainerType version = ContainerType.forVersion(context.getVersioningParameters().getVersion());
 		return nodeFieldFilterInstances.computeIfAbsent(owner, o -> new EntityReferenceFilter<>("NodeFieldBaseFilter", "Filters node field", "node", new MappedFilter<>("NODE", "content", "Filters over field node content", 
 				NodeFilter.filter(context), fieldNode -> {
@@ -129,7 +129,7 @@ public class EntityReferenceFilter<E extends Element, T extends ReferenceField<E
 					}}), Optional.of(o)));
 	}
 
-	public static final EntityReferenceFilter<Micronode, MicronodeField, ?> micronodeFieldFilter(GraphQLContext context, String owner) {
+	public static final EntityReferenceFilter<HibMicronode, HibMicronodeField, ?> micronodeFieldFilter(GraphQLContext context, String owner) {
 		return micronodeFieldFilterInstances.computeIfAbsent(owner, o -> new EntityReferenceFilter<>("MicronodeFieldBaseFilter", "Filters micronode field", "micronode", MicronodeFilter.filter(context), Optional.of(o)));
 	}
 }

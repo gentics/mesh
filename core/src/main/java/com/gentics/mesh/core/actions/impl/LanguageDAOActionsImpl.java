@@ -14,7 +14,7 @@ import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.LanguageDAOActions;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.db.Tx;
@@ -30,13 +30,13 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 	}
 
 	@Override
-	public Language create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	public HibLanguage create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		throw error(METHOD_NOT_ALLOWED, "error_language_creation_forbidden");
 	}
 
 	@Override
-	public Language loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
-		Language language = ctx.tx().languageDao().findByUuid(uuid);
+	public HibLanguage loadByUuid(DAOActionContext ctx, String uuid, InternalPermission perm, boolean errorIfNotFound) {
+		HibLanguage language = ctx.tx().languageDao().findByUuid(uuid);
 		if (language == null && errorIfNotFound) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid); 
 		}
@@ -44,8 +44,8 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 	}
 
 	@Override
-	public Language loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
-		Language language = ctx.tx().languageDao().findByName(name);
+	public HibLanguage loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+		HibLanguage language = ctx.tx().languageDao().findByName(name);
 		if (language == null && errorIfNotFound) {
 			throw error(NOT_FOUND, "object_not_found_for_name", name); 
 		}
@@ -53,50 +53,50 @@ public class LanguageDAOActionsImpl implements LanguageDAOActions {
 	}
 
 	@Override
-	public Page<? extends Language> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
-			Predicate<Language> extraFilter) {
+	public Page<? extends HibLanguage> loadAll(DAOActionContext ctx, PagingParameters pagingInfo,
+			Predicate<HibLanguage> extraFilter) {
 		return ctx.tx().languageDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
-	public boolean update(Tx tx, Language element, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibLanguage element, InternalActionContext ac, EventQueueBatch batch) {
 		return tx.languageDao().update(element, ac, batch);
 	}
 
 	@Override
-	public void delete(Tx tx, Language element, BulkActionContext bac) {
+	public void delete(Tx tx, HibLanguage element, BulkActionContext bac) {
 		// Unassign languages should cause a batch process that removes the FieldContainers for the given language.
 		tx.languageDao().delete(element, bac);
 	}
 
 	@Override
-	public LanguageResponse transformToRestSync(Tx tx, Language element, InternalActionContext ac, int level,
+	public LanguageResponse transformToRestSync(Tx tx, HibLanguage element, InternalActionContext ac, int level,
 			String... languageTags) {
 		return tx.languageDao().transformToRestSync(element, ac, level, languageTags);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, Language element) {
+	public String getETag(Tx tx, InternalActionContext ac, HibLanguage element) {
 		return tx.languageDao().getETag(element, ac);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, Language element) {
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibLanguage element) {
 		return tx.languageDao().getAPIPath(element, ac);
 	}
 
 	@Override
-	public Page<? extends Language> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibLanguage> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		return ctx.tx().languageDao().findAll(ctx.ac(), pagingInfo);
 	}
 
 	@Override
-	public Page<? extends Language> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+	public Page<? extends HibLanguage> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().languageDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 
 	@Override
-	public Language loadByTag(DAOActionContext ctx, String languageTag) {
+	public HibLanguage loadByTag(DAOActionContext ctx, String languageTag) {
 		return ctx.tx().languageDao().findByLanguageTag(languageTag);
 	}
 }

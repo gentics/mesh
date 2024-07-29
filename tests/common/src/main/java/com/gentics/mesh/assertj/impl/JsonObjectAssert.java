@@ -1,6 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.MeshVersions.CURRENT_API_BASE_PATH;
+import static com.gentics.mesh.MeshVersion.CURRENT_API_BASE_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

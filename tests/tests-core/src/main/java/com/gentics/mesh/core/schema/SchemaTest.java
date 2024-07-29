@@ -23,19 +23,19 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.impl.BranchMigrationContextImpl;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -62,7 +62,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testTransformToReference() throws Exception {
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("folder");
+			HibSchema schema = schemaContainer("folder");
 			SchemaReference reference = schema.getLatestVersion().transformToReference();
 			assertNotNull(reference);
 			assertEquals(schema.getUuid(), reference.getUuid());
@@ -74,12 +74,12 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Test
 	public void testGetContentFromSchemaVersion() {
 		Bucket bucket = new Bucket(0, Integer.MAX_VALUE / 2, 0, 1);
-		NodeFieldContainer content = tx(tx -> {
+		HibNodeFieldContainer content = tx(tx -> {
 			return tx.contentDao().getLatestDraftFieldContainer(content(), "en");
 		});
-		SchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
+		HibSchemaVersion version = tx(() -> schemaContainer("content").getLatestVersion());
 
-		NodeFieldContainer bucketMax = tx(tx -> {
+		HibNodeFieldContainer bucketMax = tx(tx -> {
 			return createContentWithBuckedId(content, Integer.MAX_VALUE);
 		});
 
@@ -90,7 +90,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		// Now create a new container
-		NodeFieldContainer bucket100 = tx(tx -> {
+		HibNodeFieldContainer bucket100 = tx(tx -> {
 			return createContentWithBuckedId(bucketMax, 100);
 		});
 
@@ -101,7 +101,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		});
 
 		// Now set the bucketId on the end of the bucket to ensure we include the last element in the range
-		NodeFieldContainer bucketEnd = tx(tx -> {
+		HibNodeFieldContainer bucketEnd = tx(tx -> {
 			return createContentWithBuckedId(bucket100, bucket.end());
 		});
 
@@ -124,8 +124,8 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 	}
 
-	private NodeFieldContainer createContentWithBuckedId(NodeFieldContainer container, int bucketId) {
-		NodeFieldContainer newContainer = Tx.get().contentDao().createFieldContainer(container.getNode(), english(), project().getLatestBranch(), user(), container, true);
+	private HibNodeFieldContainer createContentWithBuckedId(HibNodeFieldContainer container, int bucketId) {
+		HibNodeFieldContainer newContainer = Tx.get().contentDao().createFieldContainer(container.getNode(), english(), project().getLatestBranch(), user(), container, true);
 		newContainer.setBucketId(bucketId);
 
 		return newContainer;
@@ -136,7 +136,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testFindByName() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			Schema schemaContainer = schemaDao.findByName("content");
+			HibSchema schemaContainer = schemaDao.findByName("content");
 			assertNotNull(schemaContainer);
 			assertEquals("content", schemaContainer.getLatestVersion().getSchema().getName());
 			assertNull(schemaDao.findByName("content1235"));
@@ -179,7 +179,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends Schema> page = tx.schemaDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
+			Page<? extends HibSchema> page = tx.schemaDao().findAll(mockActionContext(), new PagingParametersImpl(1, 25L));
 			assertNotNull(page);
 		}
 	}
@@ -211,8 +211,8 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
 			NodeDao nodeDao = tx.nodeDao();
-			Schema schema = tx.schemaDao().findByUuid(uuid);
-			for (Node node : schemaDao.getNodes(schema)) {
+			HibSchema schema = tx.schemaDao().findByUuid(uuid);
+			for (HibNode node : schemaDao.getNodes(schema)) {
 				nodeDao.delete(node, context, false, true);
 			}
 		});
@@ -220,7 +220,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDao schemaDao = tx.schemaDao();
 			BulkActionContext context = createBulkContext();
 			String uuid = getSchemaContainer().getUuid();
-			Schema schema = tx.schemaDao().findByUuid(uuid);
+			HibSchema schema = tx.schemaDao().findByUuid(uuid);
 			schemaDao.delete(schema, context);
 			assertNull("The schema should have been deleted", tx.schemaDao().findByUuid(uuid));
 		});
@@ -230,7 +230,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	@Override
 	public void testTransformation() throws IOException {
 		try (Tx tx = tx()) {
-			Schema container = getSchemaContainer();
+			HibSchema container = getSchemaContainer();
 			SchemaVersionModel schema = container.getLatestVersion().getSchema();
 			assertNotNull(schema);
 			String json = schema.toJson();
@@ -247,7 +247,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDao schemaDao = tx.schemaDao();
 
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
-			Schema newContainer = schemaDao.create(schema, user());
+			HibSchema newContainer = schemaDao.create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
 			schemaDao.delete(newContainer, createBulkContext());
@@ -264,7 +264,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 			SchemaDao schemaDao = tx.schemaDao();
 
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
-			Schema newContainer = schemaDao.create(schema, user());
+			HibSchema newContainer = schemaDao.create(schema, user());
 			assertFalse(roleDao.hasPermission(role(), InternalPermission.CREATE_PERM, newContainer));
 			userDao.inheritRolePermissions(getRequestUser(), tx.data().permissionRoots().schema(), newContainer);
 			assertTrue("The addCRUDPermissionOnRole method should add the needed permissions on the new schema container.",
@@ -296,8 +296,8 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 	public void testUpdate() throws IOException {
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
-			Schema schemaContainer = schemaDao.findByName("content");
-			SchemaVersion currentVersion = schemaContainer.getLatestVersion();
+			HibSchema schemaContainer = schemaDao.findByName("content");
+			HibSchemaVersion currentVersion = schemaContainer.getLatestVersion();
 			SchemaVersionModel schema = currentVersion.getSchema();
 			schema.setName("changed");
 			currentVersion.setSchema(schema);
@@ -329,7 +329,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
-			Schema newContainer = schemaDao.create(schema, user());
+			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.READ_PERM, newContainer);
 		}
 	}
@@ -340,7 +340,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
-			Schema newContainer = schemaDao.create(schema, user());
+			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.DELETE_PERM, newContainer);
 		}
 	}
@@ -351,7 +351,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
-			Schema newContainer = schemaDao.create(schema, user());
+			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.UPDATE_PERM, newContainer);
 		}
 	}
@@ -362,13 +362,13 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		try (Tx tx = tx()) {
 			SchemaDao schemaDao = tx.schemaDao();
 			SchemaVersionModel schema = FieldUtil.createMinimalValidSchema();
-			Schema newContainer = schemaDao.create(schema, user());
+			HibSchema newContainer = schemaDao.create(schema, user());
 			testPermission(InternalPermission.CREATE_PERM, newContainer);
 		}
 	}
 
 	/**
-	 * Test implementation of {@link SchemaDao#findNodes(SchemaVersion, String, User, ContainerType)}.
+	 * Test implementation of {@link SchemaDao#findNodes(HibSchemaVersion, String, HibUser, ContainerType)}.
 	 * Check whether
 	 * <ol>
 	 * <li>Project base node is returned</li>
@@ -390,7 +390,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		// revoke permission to read folder("news")
 		String news = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
-			Node newsFolder = data().getFolder("news");
+			HibNode newsFolder = data().getFolder("news");
 			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PERM);
 			return getDisplayName(newsFolder, initialBranchUuid);
 		});
@@ -398,7 +398,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		// revoke permission to read published  folder("deals")
 		tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
-			Node newsFolder = data().getFolder("deals");
+			HibNode newsFolder = data().getFolder("deals");
 			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PUBLISHED_PERM);
 			return newsFolder.getUuid();
 		});
@@ -406,7 +406,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		// revoke all read permission from folder("products")
 		String product = tx(tx -> {
 			RoleDao roleDao = tx.roleDao();
-			Node newsFolder = data().getFolder("products");
+			HibNode newsFolder = data().getFolder("products");
 			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PERM);
 			roleDao.revokePermissions(role(), newsFolder, InternalPermission.READ_PUBLISHED_PERM);
 			return getDisplayName(newsFolder, initialBranchUuid);
@@ -414,7 +414,7 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 		folders.remove(product);
 
 		String newBranchUuid = tx(() -> {
-			Branch newBranch = createBranch("newbranch");
+			HibBranch newBranch = createBranch("newbranch");
 
 			BranchMigrationContextImpl context = new BranchMigrationContextImpl();
 			context.setNewBranch(newBranch);
@@ -459,9 +459,9 @@ public class SchemaTest extends AbstractMeshTest implements BasicObjectTestcases
 
 			try (Tx tx = tx()) {
 				SchemaDao schemaDao = tx.schemaDao();
-				User user = user();
-				SchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
-				List<? extends Node> nodes = schemaDao.findNodes(folderSchema, testCase.getLeft(), user, testCase.getMiddle()).list();
+				HibUser user = user();
+				HibSchemaVersion folderSchema = schemaContainer("folder").getLatestVersion();
+				List<? extends HibNode> nodes = schemaDao.findNodes(folderSchema, testCase.getLeft(), user, testCase.getMiddle()).list();
 				List<String> nodeUuids = nodes.stream().map(node -> getDisplayName(node, testCase.getLeft())).collect(Collectors.toList());
 				assertThat(nodeUuids).doesNotHaveDuplicates().containsOnlyElementsOf(expected);
 			}

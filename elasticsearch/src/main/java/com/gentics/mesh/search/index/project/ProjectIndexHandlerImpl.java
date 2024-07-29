@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
@@ -34,7 +34,7 @@ import io.reactivex.Flowable;
  * Handler for the project specific search index.
  */
 @Singleton
-public class ProjectIndexHandlerImpl extends AbstractIndexHandler<Project> implements ProjectIndexHandler {
+public class ProjectIndexHandlerImpl extends AbstractIndexHandler<HibProject> implements ProjectIndexHandler {
 
 	protected final ProjectTransformer transformer;
 
@@ -54,8 +54,8 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<Project> imple
 	}
 
 	@Override
-	public Class<Project> getElementClass() {
-		return Project.class;
+	public Class<HibProject> getElementClass() {
+		return HibProject.class;
 	}
 
 	@Override
@@ -77,40 +77,40 @@ public class ProjectIndexHandlerImpl extends AbstractIndexHandler<Project> imple
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Project.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibProject.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
 		return indices.stream()
 			.filter(i -> i.startsWith(getType()))
-			.filter(i -> !i.equals(Project.composeIndexName()))
+			.filter(i -> !i.equals(HibProject.composeIndexName()))
 			.collect(Collectors.toSet());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Project.composeIndexName());
+		return Collections.singleton(HibProject.composeIndexName());
 	}
 
 	@Override
-	public Function<String, Project> elementLoader() {
+	public Function<String, HibProject> elementLoader() {
 		return (uuid) -> Tx.get().projectDao().findByUuid(uuid);
 	}
 
 	@Override
-	public Function<Collection<String>, Stream<Pair<String, Project>>> elementsLoader() {
+	public Function<Collection<String>, Stream<Pair<String, HibProject>>> elementsLoader() {
 		return (uuids) -> Tx.get().projectDao().findByUuids(uuids);
 	}
 
 	@Override
-	public Stream<? extends Project> loadAllElements() {
+	public Stream<? extends HibProject> loadAllElements() {
 		return Tx.get().projectDao().findAll().stream();
 	}
 
 	@Override
 	public Map<String, Optional<IndexInfo>> getIndices() {
-		String indexName = Project.composeIndexName();
+		String indexName = HibProject.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "project");
 		return Collections.singletonMap(indexName, Optional.of(info));
 	}

@@ -21,8 +21,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.ElementType;
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.group.Group;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.group.HibGroup;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -70,13 +70,13 @@ import com.gentics.mesh.hibernate.util.HibernateUtil;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @Entity(name = "role")
 @ElementTypeKey(ElementType.ROLE)
-public class HibRoleImpl extends AbstractHibUserTrackedElement<RoleResponse> implements Role, Serializable {
+public class HibRoleImpl extends AbstractHibUserTrackedElement<RoleResponse> implements HibRole, Serializable {
 
 	private static final long serialVersionUID = -5790764419841421849L;
 
 	@ManyToMany(targetEntity = HibGroupImpl.class)
 	@JoinTable(name = "group_role", joinColumns = {@JoinColumn(name = "roles_dbUuid")}, inverseJoinColumns = {@JoinColumn(name = "groups_dbUuid")})
-	private Set<Group> groups = new HashSet<>();
+	private Set<HibGroup> groups = new HashSet<>();
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.REMOVE)
 	private Set<HibPermissionImpl> permissions = new HashSet<>();
@@ -114,7 +114,7 @@ public class HibRoleImpl extends AbstractHibUserTrackedElement<RoleResponse> imp
 	}
 
 	@Override
-	public Result<? extends Group> getGroups() {
+	public Result<? extends HibGroup> getGroups() {
 		return new TraversalResult<>(groups.iterator());
 	}
 
@@ -128,7 +128,7 @@ public class HibRoleImpl extends AbstractHibUserTrackedElement<RoleResponse> imp
 		HibernateUtil.dropGroupRoleConnection(HibernateTx.get().entityManager(), this, hibGroup);
 	}
 
-	public void addGroup(Group group) {
+	public void addGroup(HibGroup group) {
 		groups.stream().filter(g -> g.getId().equals(group.getId())).findAny().ifPresentOrElse(u -> {}, () -> {
 			groups.add(group);
 		});

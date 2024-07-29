@@ -11,7 +11,7 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
-import com.gentics.mesh.core.data.s3binary.S3Binary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 
 /**
  * Amazon S3 Binary entity implementation for Enterprise Mesh.
@@ -41,7 +41,7 @@ import com.gentics.mesh.core.data.s3binary.S3Binary;
 		@Index(name = "idx_s3_check_status", columnList = "checkStatus")
 	}
 )
-public class HibS3BinaryImpl extends AbstractBinaryImpl implements S3Binary, Serializable {
+public class HibS3BinaryImpl extends AbstractBinaryImpl implements S3HibBinary, Serializable {
 
 	private static final long serialVersionUID = -6878480194464684318L;
 
@@ -55,7 +55,7 @@ public class HibS3BinaryImpl extends AbstractBinaryImpl implements S3Binary, Ser
 	}
 
 	@Override
-	public S3Binary setMimeType(String mimeType) {
+	public S3HibBinary setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 		return this;
 	}
@@ -66,7 +66,7 @@ public class HibS3BinaryImpl extends AbstractBinaryImpl implements S3Binary, Ser
 	}
 
 	@Override
-	public S3Binary setS3ObjectKey(String s3ObjectKey) {
+	public S3HibBinary setS3ObjectKey(String s3ObjectKey) {
 		this.s3ObjectKey = s3ObjectKey;
 		return this;
 	}
@@ -77,7 +77,7 @@ public class HibS3BinaryImpl extends AbstractBinaryImpl implements S3Binary, Ser
 	}
 
 	@Override
-	public S3Binary setFileName(String fileName) {
+	public S3HibBinary setFileName(String fileName) {
 		this.fileName = fileName;
 		return this;
 	}

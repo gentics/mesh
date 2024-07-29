@@ -24,10 +24,10 @@ import com.gentics.mesh.core.db.CommonTx;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.BranchDao;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -196,7 +196,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testHandlingOfFailedJobs() {
 
 		String jobUuid = tx(tx -> {
-			Job job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -237,19 +237,19 @@ public class JobEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadJob() {
 		String jobUuid = tx(tx -> {
-			Job job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
 		tx(tx -> {
-			Schema schema = schemaContainer("content");
-			Job job = tx.jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibSchema schema = schemaContainer("content");
+			HibJob job = tx.jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
 		String job3Uuid = tx(tx -> {
-			Schema schema = schemaContainer("folder");
-			Job job = tx.jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
+			HibSchema schema = schemaContainer("folder");
+			HibJob job = tx.jobDao().enqueueSchemaMigration(user(), initialBranch(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();
 		});
 
@@ -257,7 +257,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
 		try (Tx tx = tx()) {
-			Schema schema = schemaContainer("folder");
+			HibSchema schema = schemaContainer("folder");
 			assertEquals(initialBranchUuid(), jobResponse.getProperties().get("branchUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));
@@ -273,7 +273,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 	public void testRetryJob() {
 
 		String jobUuid = tx(tx -> {
-			Job job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
+			HibJob job = tx.jobDao().enqueueBranchMigration(user(), initialBranch());
 			return job.getUuid();
 		});
 
@@ -294,7 +294,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testProcessJob() {
-		Job job = tx(tx -> { return tx.jobDao().enqueueBranchMigration(user(), initialBranch()); });
+		HibJob job = tx(tx -> { return tx.jobDao().enqueueBranchMigration(user(), initialBranch()); });
 		String jobUuid = tx(() -> job.getUuid());
 
 		call(() -> client().processJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
@@ -311,8 +311,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 		// Change the job so that it will no longer fail
 		tx(tx -> {
 			BranchDao branchDao = tx.branchDao();
-			Branch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
-			Job toUpdate = tx.jobDao().findByUuid(job.getUuid());
+			HibBranch branch = branchDao.create(project(), "testBranch", user(), null, true, initialBranch(), createBatch());
+			HibJob toUpdate = tx.jobDao().findByUuid(job.getUuid());
 			toUpdate.setBranch(branch);
 			CommonTx.get().jobDao().mergeIntoPersisted(toUpdate);
 		});

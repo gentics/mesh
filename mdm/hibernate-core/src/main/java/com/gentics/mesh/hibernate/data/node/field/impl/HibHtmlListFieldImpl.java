@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.node.field.HtmlField;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.node.field.HibHtmlField;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.database.HibernateTx;
@@ -21,8 +21,8 @@ import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
  *
  */
 public class HibHtmlListFieldImpl
-		extends AbstractHibHomogenicPrimitiveListFieldImpl<HibHtmlListFieldEdgeImpl, HtmlField, HtmlFieldListImpl, String>
-		implements HtmlFieldList {
+		extends AbstractHibHomogenicPrimitiveListFieldImpl<HibHtmlListFieldEdgeImpl, HibHtmlField, HtmlFieldListImpl, String>
+		implements HibHtmlFieldList {
 
 	protected HibHtmlListFieldImpl(HibernateTx tx, String fieldKey, HibUnmanagedFieldContainer<?, ?, ?, ?, ?> parent) {
 		super(tx, fieldKey, parent, HibHtmlListFieldEdgeImpl.class);
@@ -33,7 +33,7 @@ public class HibHtmlListFieldImpl
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
+	public HibField cloneTo(HibFieldContainer container) {
 		HibernateTx tx = HibernateTx.get();
 		HibUnmanagedFieldContainer<?, ?, ?, ?, ?> unmanagedBase = (HibUnmanagedFieldContainer<?, ?, ?, ?, ?>) container;
 		unmanagedBase.ensureColumnExists(getFieldKey(), FieldTypes.LIST);
@@ -42,7 +42,7 @@ public class HibHtmlListFieldImpl
 	}
 
 	@Override
-	public HtmlField createHTML(String value) {
+	public HibHtmlField createHTML(String value) {
 		return createItem(value);
 	}
 
@@ -52,7 +52,7 @@ public class HibHtmlListFieldImpl
 	}
 
 	@Override
-	public HtmlField getHTML(int index) {
+	public HibHtmlField getHTML(int index) {
 		return get(index);
 	}
 
@@ -75,7 +75,7 @@ public class HibHtmlListFieldImpl
 	}
 
 	@Override
-	protected String getValue(HtmlField field) {
+	protected String getValue(HibHtmlField field) {
 		return field.getHTML();
 	}
 

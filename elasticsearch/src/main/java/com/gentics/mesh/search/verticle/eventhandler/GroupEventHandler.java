@@ -14,7 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.dao.GroupDao;
-import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -54,7 +54,7 @@ public class GroupEventHandler implements EventHandler {
 			if (event == GROUP_CREATED || event == GROUP_UPDATED) {
 				return helper.getDb().tx(tx -> {
 					// We also need to update all users of the group
-					Optional<Group> groupOptional = entities.group.getElement(model);
+					Optional<HibGroup> groupOptional = entities.group.getElement(model);
 					GroupDao groupDao = tx.groupDao();
 
 					return Stream.concat(
@@ -65,7 +65,7 @@ public class GroupEventHandler implements EventHandler {
 			} else if (event == GROUP_DELETED) {
 				// TODO Update users that were part of that group.
 				// At the moment we cannot look up users that were in the group if the group is already deleted.
-				return Flowable.just(helper.deleteDocumentRequest(Group.composeIndexName(), model.getUuid(), complianceMode));
+				return Flowable.just(helper.deleteDocumentRequest(HibGroup.composeIndexName(), model.getUuid(), complianceMode));
 			} else {
 				throw new RuntimeException("Unexpected event " + event.address);
 			}

@@ -4,10 +4,10 @@ import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
@@ -18,7 +18,7 @@ import com.gentics.mesh.parameter.value.FieldsSet;
 /**
  * Create mocked user for node migrations.
  */
-public class NodeMigrationUser implements User {
+public class NodeMigrationUser implements HibUser {
 
 	@Override
 	public UserReference transformToReference() {
@@ -41,7 +41,7 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public Node getReferencedNode() {
+	public HibNode getReferencedNode() {
 		return null;
 	}
 
@@ -76,12 +76,12 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return null;
 	}
 
 	@Override
-	public User getEditor() {
+	public HibUser getEditor() {
 		return null;
 	}
 
@@ -96,7 +96,7 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public User setForcedPasswordChange(boolean force) {
+	public HibUser setForcedPasswordChange(boolean force) {
 		return null;
 	}
 
@@ -106,7 +106,7 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public User setResetTokenIssueTimestamp(Long timestamp) {
+	public HibUser setResetTokenIssueTimestamp(Long timestamp) {
 		return null;
 	}
 
@@ -116,12 +116,12 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public User setAPITokenId(String code) {
+	public HibUser setAPITokenId(String code) {
 		return null;
 	}
 
 	@Override
-	public User setAPITokenIssueTimestamp() {
+	public HibUser setAPITokenIssueTimestamp() {
 		return null;
 	}
 
@@ -141,43 +141,43 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public User setUsername(String string) {
+	public HibUser setUsername(String string) {
 		return this;
 	}
 
 	@Override
-	public User setLastname(String lastname) {
+	public HibUser setLastname(String lastname) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public User setFirstname(String firstname) {
+	public HibUser setFirstname(String firstname) {
 		return this;
 	}
 
 	@Override
-	public User setEmailAddress(String email) {
+	public HibUser setEmailAddress(String email) {
 		return this;
 	}
 
 	@Override
-	public User disable() {
+	public HibUser disable() {
 		return this;
 	}
 
 	@Override
-	public User enable() {
+	public HibUser enable() {
 		return this;
 	}
 
 	@Override
-	public User invalidateResetToken() {
+	public HibUser invalidateResetToken() {
 		return this;
 	}
 
 	@Override
-	public User setPasswordHash(String hash) {
+	public HibUser setPasswordHash(String hash) {
 		return this;
 	}
 
@@ -192,17 +192,17 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public User setResetToken(String token) {
+	public HibUser setResetToken(String token) {
 		return this;
 	}
 
 	@Override
-	public User setReferencedNode(Node node) {
+	public HibUser setReferencedNode(HibNode node) {
 		return this;
 	}
 
 	@Override
-	public void setEditor(User user) {
+	public void setEditor(HibUser user) {
 
 	}
 
@@ -227,12 +227,12 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public void setCreator(User user) {
+	public void setCreator(HibUser user) {
 
 	}
 
 	@Override
-	public void setCreated(User creator) {
+	public void setCreated(HibUser creator) {
 
 	}
 
@@ -285,7 +285,7 @@ public class NodeMigrationUser implements User {
 	}
 
 	@Override
-	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, Role role, boolean recursive,
+	public boolean applyPermissions(MeshAuthUser authUser, EventQueueBatch batch, HibRole role, boolean recursive,
                                     Set<InternalPermission> permissionsToGrant, Set<InternalPermission> permissionsToRevoke) {
 		return false;
 	}

@@ -12,15 +12,15 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.ImageDataElement;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.binary.ImageVariant;
+import com.gentics.mesh.core.data.HibImageDataElement;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.binary.HibImageVariant;
 import com.gentics.mesh.core.data.dao.PersistingBinaryDao;
 import com.gentics.mesh.core.data.dao.PersistingImageVariantDao;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.image.ImageManipulator;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -38,7 +38,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
 
 /**
- * Handler which will accept {@link BinaryField} elements and return the binary data using the given context.
+ * Handler which will accept {@link HibBinaryField} elements and return the binary data using the given context.
  */
 @Singleton
 public class BinaryFieldResponseHandler {
@@ -68,7 +68,7 @@ public class BinaryFieldResponseHandler {
 	 * @param rc
 	 * @param binaryField
 	 */
-	public void handle(RoutingContext rc, BinaryField binaryField) {
+	public void handle(RoutingContext rc, HibBinaryField binaryField) {
 		rc.response().putHeader(HttpHeaders.ACCEPT_RANGES, "bytes");
 		if (checkETag(rc, binaryField)) {
 			return;
@@ -82,7 +82,7 @@ public class BinaryFieldResponseHandler {
 		}
 	}
 
-	private boolean checkETag(RoutingContext rc, BinaryField binaryField) {
+	private boolean checkETag(RoutingContext rc, HibBinaryField binaryField) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String sha512sum = binaryField.getBinary().getSHA512Sum();
 		String etagKey = sha512sum;
@@ -101,7 +101,7 @@ public class BinaryFieldResponseHandler {
 		return false;
 	}
 
-	private void respond(RoutingContext rc, ImageDataElement binary, String fileName, String contentType) {
+	private void respond(RoutingContext rc, HibImageDataElement binary, String fileName, String contentType) {
 		HttpServerResponse response = rc.response();
 
 		// Try to guess the contenttype via the filename
@@ -130,15 +130,15 @@ public class BinaryFieldResponseHandler {
 		}
 	}
 
-	private void respond(RoutingContext rc, BinaryField binaryField) {
-		Binary binary = binaryField.getBinary();
+	private void respond(RoutingContext rc, HibBinaryField binaryField) {
+		HibBinary binary = binaryField.getBinary();
 		String fileName = binaryField.getFileName();
 		String contentType = binaryField.getMimeType();
 
 		respond(rc, binary, fileName, contentType);
 	}
 
-	private void resizeAndRespond(RoutingContext rc, BinaryField binaryField, ImageManipulationParameters imageParams) {
+	private void resizeAndRespond(RoutingContext rc, HibBinaryField binaryField, ImageManipulationParameters imageParams) {
 		HttpServerResponse response = rc.response();
 		// We can maybe enhance the parameters using stored parameters.
 		String fileName = binaryField.getFileName();
@@ -165,8 +165,8 @@ public class BinaryFieldResponseHandler {
 				.subscribe(ignore -> {}, rc::fail);
 			break;
 		case MANUAL:
-			Binary binary = binaryField.getBinary();
-			ImageVariant variant = imageVariantDao.getVariant(binary, imageParams, new InternalRoutingActionContextImpl(rc));
+			HibBinary binary = binaryField.getBinary();
+			HibImageVariant variant = imageVariantDao.getVariant(binary, imageParams, new InternalRoutingActionContextImpl(rc));
 			if (variant == null) {
 				throw error(NOT_FOUND, "node_error_binary_data_not_found");
 			}

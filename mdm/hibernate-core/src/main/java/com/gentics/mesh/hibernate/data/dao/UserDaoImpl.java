@@ -21,14 +21,14 @@ import jakarta.persistence.metamodel.Metamodel;
 import org.hibernate.annotations.QueryHints;
 
 import com.gentics.mesh.cache.PermissionCache;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PersistingUserDao;
-import com.gentics.mesh.core.data.group.Group;
+import com.gentics.mesh.core.data.group.HibGroup;
 import com.gentics.mesh.core.data.impl.MeshAuthUserImpl;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.role.Role;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.role.HibRole;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.data.user.MeshAuthUser;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -60,11 +60,11 @@ import io.vertx.core.Vertx;
  *
  */
 @Singleton
-public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUserImpl> implements PersistingUserDao {
+public class UserDaoImpl extends AbstractHibDaoGlobal<HibUser, UserResponse, HibUserImpl> implements PersistingUserDao {
 	private final Database db;
 	
 	@Inject
-	public UserDaoImpl(DaoHelper<User, HibUserImpl> daoHelper, HibPermissionRoots permissionRoots, CommonDaoHelper commonDaoHelper, 
+	public UserDaoImpl(DaoHelper<HibUser, HibUserImpl> daoHelper, HibPermissionRoots permissionRoots, CommonDaoHelper commonDaoHelper, 
 			CurrentTransaction currentTransaction, EventFactory eventFactory, Database db, 
 			Lazy<PermissionCache> permissionCache, Lazy<Vertx> vertx) {
 		super(daoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
@@ -80,18 +80,18 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public User inheritRolePermissions(User user, BaseElement source, BaseElement target) {
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, HibBaseElement target) {
 		return inheritRolePermissions(user, source, Collections.singleton(target));
 	}
 
 	@Override
-	public User inheritRolePermissions(User user, BaseElement source, Collection<? extends BaseElement> targets) {
+	public HibUser inheritRolePermissions(HibUser user, HibBaseElement source, Collection<? extends HibBaseElement> targets) {
 		List<HibPermissionImpl> sourcePermissions = em().createQuery("from permission" +
 								" where element = :source",
 						HibPermissionImpl.class)
 				.setParameter("source", source.getId()).getResultList();
 
-		for (BaseElement target : targets) {
+		for (HibBaseElement target : targets) {
 			UUID targetUuid = ((HibDatabaseElement) target).getDbUuid();
 			for (HibPermissionImpl sourcePerm : sourcePermissions) {
 				HibPermissionImpl newPerm = em().find(HibPermissionImpl.class, new HibPermissionPK(targetUuid, sourcePerm.getRole()));
@@ -117,7 +117,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public User findByUsername(String username) {
+	public HibUser findByUsername(String username) {
 		return HibernateTx.get().data().mesh().userNameCache().get(username, name -> {
 			return firstOrNull(currentTransaction.getEntityManager().createQuery("from user where name = :name", HibUserImpl.class).setHint(QueryHints.CACHEABLE, true)
 					.setParameter("name", username)
@@ -136,13 +136,13 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public User addGroup(User user, Group group) {
+	public HibUser addGroup(HibUser user, HibGroup group) {
 		((HibGroupImpl) group).addUser(user);
 		return user;
 	}
 
 	@Override
-	public Iterable<? extends Role> getRoles(User user) {
+	public Iterable<? extends HibRole> getRoles(HibUser user) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return em.createQuery("select distinct r" +
 					" from user u" +
@@ -156,7 +156,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public Result<? extends Group> getGroups(User user) {
+	public Result<? extends HibGroup> getGroups(HibUser user) {
 		EntityManager em = currentTransaction.getEntityManager();
 		return new TraversalResult<>(
 				em.createQuery("select g" +
@@ -169,7 +169,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public Page<? extends Role> getRolesViaShortcut(User fromUser, User authUser, PagingParameters pagingInfo) {
+	public Page<? extends HibRole> getRolesViaShortcut(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		EntityManager em = currentTransaction.getEntityManager();
 		
 		CriteriaQuery<HibRoleImpl> query = em.getCriteriaBuilder().createQuery(HibRoleImpl.class);
@@ -190,7 +190,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(User fromUser, User authUser, PagingParameters pagingInfo) {
+	public Page<? extends HibGroup> getGroups(HibUser fromUser, HibUser authUser, PagingParameters pagingInfo) {
 		CriteriaQuery<HibGroupImpl> query = cb().createQuery(HibGroupImpl.class);
 		Metamodel metamodel = em().getMetamodel();
 		EntityType<HibUserImpl> rootMetamodel = metamodel.entity(HibUserImpl.class);
@@ -203,7 +203,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 		return daoHelper.getResultPage(query, pagingInfo);
 	}
 
-	private MeshAuthUser toMeshAuthUser(User user) {
+	private MeshAuthUser toMeshAuthUser(HibUser user) {
 		return MeshAuthUserImpl.create(
 			db,
 			user
@@ -211,7 +211,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public EnumSet<InternalPermission> getPermissionsForElementId(User user, Object elementId) {
+	public EnumSet<InternalPermission> getPermissionsForElementId(HibUser user, Object elementId) {
 		EnumSet<InternalPermission> permissions = EnumSet.noneOf(InternalPermission.class);
 		currentTransaction.getEntityManager().createQuery(
 				"select p from permission p join p.role r join r.groups g join g.users u where u = :user and p.element = :element",
@@ -228,7 +228,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public void preparePermissionsForElementIds(User user, Collection<Object> elementIds) {
+	public void preparePermissionsForElementIds(HibUser user, Collection<Object> elementIds) {
 		PermissionCache permissionCache = Tx.get().permissionCache();
 
 		elementIds.stream().forEach(elementId -> {
@@ -255,7 +255,7 @@ public class UserDaoImpl extends AbstractHibDaoGlobal<User, UserResponse, HibUse
 	}
 
 	@Override
-	public User beforeDeletedFromDatabase(User element) {
+	public HibUser beforeDeletedFromDatabase(HibUser element) {
 		HibUserImpl user = (HibUserImpl) element;
 		user.removeGroups();
 		return user;

@@ -37,7 +37,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
@@ -321,7 +321,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<String> handleResize(Binary binary, ImageManipulation parameters) {
+	public Single<String> handleResize(HibBinary binary, ImageManipulation parameters) {
 		ImageManipulationMode mode = options.getMode();
 
 		if (ImageManipulationMode.OFF == mode) {

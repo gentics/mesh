@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -65,7 +65,7 @@ public class GraphQLPermissionQueryTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenPermissionsFromDifferentRoles() throws IOException {
-		Project project = project();
+		HibProject project = project();
 		String baseNodeUuid = tx(() -> project.getBaseNode().getUuid());
 
 		String userUuid = tx(() -> user().getUuid());

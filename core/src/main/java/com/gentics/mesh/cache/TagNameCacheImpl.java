@@ -13,7 +13,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.impl.EventAwareCacheFactory;
-import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.MeshEvent;
 
 /**
@@ -23,7 +23,7 @@ import com.gentics.mesh.core.rest.MeshEvent;
  *
  */
 @Singleton
-public class TagNameCacheImpl extends AbstractNameCache<Tag> implements TagNameCache {
+public class TagNameCacheImpl extends AbstractNameCache<HibTag> implements TagNameCache {
 
 	@Inject
 	public TagNameCacheImpl(EventAwareCacheFactory factory, CacheRegistry registry) {

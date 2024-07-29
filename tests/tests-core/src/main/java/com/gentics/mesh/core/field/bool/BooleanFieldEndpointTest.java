@@ -14,14 +14,14 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.BooleanField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.HibBooleanField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -50,14 +50,14 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = folder("2015");
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(),
+			HibNode node = folder("2015");
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(),
 					node.getProject().getLatestBranch(), user(),
 					contentDao.getLatestDraftFieldContainer(node, english()), true);
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		NodeResponse response = readNode(node);
 		BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);
 		assertNotNull(deserializedBooleanField);
@@ -69,7 +69,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 		for (int i = 0; i < 20; i++) {
 			boolean flag = false;
 			VersionNumber oldVersion = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en").getVersion(); });
@@ -111,8 +111,8 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = folder("2015");
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNode node = folder("2015");
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBoolean(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBoolean(FIELD_NAME)).isNotNull();
@@ -141,15 +141,15 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	 *            field name
 	 * @return value
 	 */
-	protected Boolean getBooleanValue(NodeFieldContainer container, String fieldName) {
-		BooleanField field = container.getBoolean(fieldName);
+	protected Boolean getBooleanValue(HibNodeFieldContainer container, String fieldName) {
+		HibBooleanField field = container.getBoolean(fieldName);
 		return field != null ? field.getBoolean() : null;
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 		assertNull(field);
 	}

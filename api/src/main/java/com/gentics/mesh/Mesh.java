@@ -129,7 +129,7 @@ public interface Mesh {
 	MeshStatus getStatus();
 
 	static String getPlainVersion() {
-		return MeshVersions.getPlainVersion();
+		return MeshVersion.getPlainVersion();
 	}
 
 	/**

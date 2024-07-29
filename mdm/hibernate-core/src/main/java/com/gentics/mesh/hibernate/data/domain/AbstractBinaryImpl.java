@@ -5,11 +5,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.AntivirableBinaryElement;
+import com.gentics.mesh.core.data.HibAntivirableBinaryElement;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 
 @MappedSuperclass
-public abstract class AbstractBinaryImpl extends AbstractImageDataImpl implements AntivirableBinaryElement {
+public abstract class AbstractBinaryImpl extends AbstractImageDataImpl implements HibAntivirableBinaryElement {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)

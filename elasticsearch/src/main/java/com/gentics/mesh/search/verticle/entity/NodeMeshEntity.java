@@ -4,8 +4,8 @@ import static com.gentics.mesh.search.verticle.eventhandler.Util.requireType;
 
 import java.util.Optional;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.event.MeshElementEventModel;
 import com.gentics.mesh.core.rest.event.node.NodeMeshEventModel;
 import com.gentics.mesh.core.rest.event.role.PermissionChangedEventModelImpl;
@@ -20,12 +20,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Dedicated entity definition for nodes. This class provides methods to transform database entities to documents and also to generate the partial update requests.
  */
-public class NodeMeshEntity extends MeshEntity<NodeFieldContainer> {
+public class NodeMeshEntity extends MeshEntity<HibNodeFieldContainer> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMeshEntity.class);
 
-	public NodeMeshEntity(Transformer<NodeFieldContainer> transformer, EventVertexMapper<NodeFieldContainer> eventVertexMapper) {
-		super(transformer, Node.TYPE_INFO, eventVertexMapper);
+	public NodeMeshEntity(Transformer<HibNodeFieldContainer> transformer, EventVertexMapper<HibNodeFieldContainer> eventVertexMapper) {
+		super(transformer, HibNode.TYPE_INFO, eventVertexMapper);
 	}
 
 	@Override

@@ -5,21 +5,21 @@ import java.util.function.Predicate;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
- * DAO for {@link Job}.
+ * DAO for {@link HibJob}.
  */
-public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobResponse> {
+public interface JobDao extends DaoGlobal<HibJob>, DaoTransformable<HibJob, JobResponse> {
 	
 	/**
 	 * Find all elements and return a paged result. No permission check will be performed.
@@ -30,7 +30,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 *            Paging information object that contains page options
 	 * @return
 	 */
-	default Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+	default Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return findAllNoPerm(ac, pagingInfo, null);
 	}
 
@@ -45,7 +45,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 *            Additional filter to be applied
 	 * @return
 	 */
-	Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter);
+	Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter);
 
 	/**
 	 * Enqueue the microschema/micronode migration.
@@ -56,7 +56,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaVersion fromVersion, MicroschemaVersion toVersion);
+	HibJob enqueueMicroschemaMigration(HibUser creator, HibBranch branch, HibMicroschemaVersion fromVersion, HibMicroschemaVersion toVersion);
 
 	/**
 	 * Enqueue the branch migration.
@@ -67,7 +67,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueBranchMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
+	HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion);
 
 	/**
 	 * Enqueue the schema/node migration.
@@ -78,7 +78,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param toVersion
 	 * @return
 	 */
-	Job enqueueSchemaMigration(User creator, Branch branch, SchemaVersion fromVersion, SchemaVersion toVersion);
+	HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion, HibSchemaVersion toVersion);
 
 	/**
 	 * Enqueue the branch migration.
@@ -87,7 +87,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param branch
 	 * @return
 	 */
-	Job enqueueBranchMigration(User creator, Branch branch);
+	HibJob enqueueBranchMigration(HibUser creator, HibBranch branch);
 
 	/**
 	 * Update the job.
@@ -97,7 +97,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param batch
 	 * @return
 	 */
-	boolean update(Job job, InternalActionContext ac, EventQueueBatch batch);
+	boolean update(HibJob job, InternalActionContext ac, EventQueueBatch batch);
 
 	/**
 	 * Delete the job.
@@ -105,7 +105,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param job
 	 * @param bac
 	 */
-	void delete(Job job, BulkActionContext bac);
+	void delete(HibJob job, BulkActionContext bac);
 
 	/**
 	 * Create a new job.
@@ -115,7 +115,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param uuid
 	 * @return
 	 */
-	Job create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibJob create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Enqueue a project version purge job that is limited to the given date.
@@ -125,7 +125,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param before
 	 * @return
 	 */
-	Job enqueueVersionPurge(User user, Project project, ZonedDateTime before);
+	HibJob enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before);
 
 	/**
 	 * Enqueue a project version purge job.
@@ -133,7 +133,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param project
 	 * @return
 	 */
-	Job enqueueVersionPurge(User user, Project project);
+	HibJob enqueueVersionPurge(HibUser user, HibProject project);
 
 	/**
 	 * Enqueue a consistency check job.
@@ -141,7 +141,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * @param repair true to repair consistencies
 	 * @return enqueued job
 	 */
-	Job enqueueConsistencyCheck(User user, boolean repair);
+	HibJob enqueueConsistencyCheck(HibUser user, boolean repair);
 
 	/**
 	 * Purge all failed jobs from the job root.
@@ -152,7 +152,7 @@ public interface JobDao extends DaoGlobal<Job>, DaoTransformable<Job, JobRespons
 	 * Delete the jobs referencing the project.
 	 * @param project
 	 */
-	void deleteByProject(Project project);
+	void deleteByProject(HibProject project);
 
 	/**
 	 * Delete all jobs.

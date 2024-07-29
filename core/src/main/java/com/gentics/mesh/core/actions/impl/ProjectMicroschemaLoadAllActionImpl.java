@@ -7,21 +7,21 @@ import com.gentics.mesh.core.action.DAOActionContext;
 import com.gentics.mesh.core.action.LoadAllAction;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.schema.Microschema;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Load action for microschemas.
  */
 @Singleton
-public class ProjectMicroschemaLoadAllActionImpl implements LoadAllAction<Microschema> {
+public class ProjectMicroschemaLoadAllActionImpl implements LoadAllAction<HibMicroschema> {
 
 	@Inject
 	public ProjectMicroschemaLoadAllActionImpl() {
 	}
 
 	@Override
-	public Page<? extends Microschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+	public Page<? extends HibMicroschema> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
 		MicroschemaDao microschemaDao = ctx.tx().microschemaDao();
 		return microschemaDao.findAll(ctx.project(), ctx.ac(), pagingInfo);
 	}

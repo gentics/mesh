@@ -16,14 +16,14 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BranchMigrationContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingContentDao;
 import com.gentics.mesh.core.data.dao.TagDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
@@ -61,8 +61,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	public Completable migrateBranch(BranchMigrationContext context) {
 		context.validate();
 		return Completable.defer(() -> {
-			Branch oldBranch = context.getOldBranch();
-			Branch newBranch = context.getNewBranch();
+			HibBranch oldBranch = context.getOldBranch();
+			HibBranch newBranch = context.getNewBranch();
 			BranchMigrationCause cause = context.getCause();
 			MigrationStatusHandler status = context.getStatus();
 
@@ -73,8 +73,8 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				}
 			});
 
-			Queue<? extends Node> nodes = db.tx(tx -> {
-				Project project = oldBranch.getProject();
+			Queue<? extends HibNode> nodes = db.tx(tx -> {
+				HibProject project = oldBranch.getProject();
 				return new ArrayDeque<>(tx.nodeDao().findAll(project).list());
 			});
 
@@ -85,10 +85,10 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				NodeDao nodeDao = Tx.get().nodeDao();
 
 				// prepare nodes for the migration
-				List<? extends Node> preparedNodes = beforeBatchMigration(nodeList);
+				List<? extends HibNode> preparedNodes = beforeBatchMigration(nodeList);
 
 				// skip already migrated nodes
-				List<? extends Node> nodesToMigrate = preparedNodes.stream()
+				List<? extends HibNode> nodesToMigrate = preparedNodes.stream()
 						// Check whether the node already has an initial container and thus was already migrated
 						.filter(node -> !contentDao.getFieldContainers(node, newBranch, INITIAL).hasNext())
 						.collect(Collectors.toList());
@@ -97,7 +97,7 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 				nodeDao.migrateParentNodes(nodesToMigrate, oldBranch, newBranch);
 
 				// perform rest of the migration
-				for (Node node : nodesToMigrate) {
+				for (HibNode node : nodesToMigrate) {
 					migrateNode(node, batch, oldBranch, newBranch, errorsDetected);
 				}
 			});
@@ -133,15 +133,15 @@ public class BranchMigrationImpl extends AbstractMigrationHandler implements Bra
 	 * @param newBranch
 	 * @param errorsDetected
 	 */
-	private void migrateNode(Node node, EventQueueBatch batch, Branch oldBranch, Branch newBranch, List<Exception> errorsDetected) {
+	private void migrateNode(HibNode node, EventQueueBatch batch, HibBranch oldBranch, HibBranch newBranch, List<Exception> errorsDetected) {
 		try {
 			Tx tx = Tx.get();
 			TagDao tagDao = tx.tagDao();
 			PersistingContentDao contentDao = tx.<CommonTx>unwrap().contentDao();
-			Branch branchToMigrateTo = tx.branchDao().findByUuid(newBranch.getProject(), newBranch.getUuid());
+			HibBranch branchToMigrateTo = tx.branchDao().findByUuid(newBranch.getProject(), newBranch.getUuid());
 
-			Result<NodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
-			Result<NodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
+			Result<HibNodeFieldContainer> drafts = contentDao.getFieldContainers(node, oldBranch, DRAFT);
+			Result<HibNodeFieldContainer> published = contentDao.getFieldContainers(node, oldBranch, PUBLISHED);
 
 			// 1. Migrate draft containers first
 			drafts.forEach(container -> {

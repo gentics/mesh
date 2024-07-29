@@ -23,7 +23,7 @@ import org.junit.runners.Parameterized.Parameters;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
@@ -391,7 +391,7 @@ public class NodeReadPermissionTest extends AbstractMeshTest {
 		tx(tx -> {
 			NodeDao nodeDao = tx.nodeDao();
 			RoleDao roleDao = tx.roleDao();
-			Node n = nodeDao.findByUuid(project(), node.getUuid());
+			HibNode n = nodeDao.findByUuid(project(), node.getUuid());
 			roleDao.revokePermissions(role(), n, READ_PERM, READ_PUBLISHED_PERM);
 			if (perm != null) {
 				roleDao.grantPermissions(role(), n, perm);

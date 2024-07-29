@@ -5,14 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadataModel;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 
 /**
- * @see BinaryFieldModel
+ * @see BinaryField
  */
-public class BinaryFieldImpl implements BinaryFieldModel {
+public class BinaryFieldImpl implements BinaryField {
 
 	@JsonIgnore
 	@Override
@@ -54,11 +54,11 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The focal point of the image. The point can be used in combination with the focal point cropping in order to keep the focused area in the center of the cropped image.")
-	private FocalPointModel focalPoint;
+	private FocalPoint focalPoint;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Metadata of the upload. This object may contain exif data of images or meta data from PDF files.")
-	private BinaryMetadataModel metadata;
+	private BinaryMetadata metadata;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Plain text content of the upload. This can be the text content of a word or PDF document.")
@@ -77,7 +77,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setBinaryUuid(String uuid) {
+	public BinaryField setBinaryUuid(String uuid) {
 		this.binaryUuid = uuid;
 		return this;
 	}
@@ -88,7 +88,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setFileSize(long fileSize) {
+	public BinaryField setFileSize(long fileSize) {
 		this.fileSize = fileSize;
 		return this;
 	}
@@ -99,7 +99,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setHeight(Integer height) {
+	public BinaryField setHeight(Integer height) {
 		this.height = height;
 		return this;
 	}
@@ -110,7 +110,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setWidth(Integer width) {
+	public BinaryField setWidth(Integer width) {
 		this.width = width;
 		return this;
 	}
@@ -121,7 +121,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setMimeType(String mimeType) {
+	public BinaryField setMimeType(String mimeType) {
 		this.mimeType = mimeType;
 		return this;
 	}
@@ -132,7 +132,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setSha512sum(String sha512sum) {
+	public BinaryField setSha512sum(String sha512sum) {
 		this.sha512sum = sha512sum;
 		return this;
 	}
@@ -143,7 +143,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setFileName(String fileName) {
+	public BinaryField setFileName(String fileName) {
 		this.fileName = fileName;
 		return this;
 	}
@@ -154,29 +154,29 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setDominantColor(String dominantColor) {
+	public BinaryField setDominantColor(String dominantColor) {
 		this.dominantColor = dominantColor;
 		return this;
 	}
 
 	@Override
-	public FocalPointModel getFocalPoint() {
+	public FocalPoint getFocalPoint() {
 		return focalPoint;
 	}
 
 	@Override
-	public BinaryFieldModel setFocalPoint(FocalPointModel point) {
+	public BinaryField setFocalPoint(FocalPoint point) {
 		this.focalPoint = point;
 		return this;
 	}
 
 	@Override
-	public BinaryMetadataModel getMetadata() {
+	public BinaryMetadata getMetadata() {
 		return metadata;
 	}
 
 	@Override
-	public BinaryFieldModel setMetadata(BinaryMetadataModel metadata) {
+	public BinaryField setMetadata(BinaryMetadata metadata) {
 		this.metadata = metadata;
 		return this;
 	}
@@ -187,7 +187,7 @@ public class BinaryFieldImpl implements BinaryFieldModel {
 	}
 
 	@Override
-	public BinaryFieldModel setPlainText(String text) {
+	public BinaryField setPlainText(String text) {
 		this.plainText = text;
 		return this;
 	}

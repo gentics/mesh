@@ -7,7 +7,7 @@
       "description" : "List of server configurations.",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterServerConfigModel",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterServerConfig",
         "properties" : {
           "name" : {
             "type" : "string",

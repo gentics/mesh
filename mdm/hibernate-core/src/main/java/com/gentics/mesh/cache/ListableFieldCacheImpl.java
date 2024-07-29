@@ -124,7 +124,7 @@ public class ListableFieldCacheImpl extends AbstractMeshCache<UUID, List<? exten
 
 	@Override
 	public Flowable<DebugInfoEntry> debugInfoEntries(InternalActionContext ac) {
-		CacheStatusModel status = getStatus();
+		CacheStatus status = getStatus();
 		return Flowable.just(DebugInfoBufferEntry.fromString(name() + ".json", status.toJson()));
 	}
 
@@ -133,8 +133,8 @@ public class ListableFieldCacheImpl extends AbstractMeshCache<UUID, List<? exten
 	 * 
 	 * @return
 	 */
-	public CacheStatusModel getStatus() {
-		return new CacheStatusModel(name(), cache.used(), cache.capacity(), config.getListFieldCacheSize());
+	public CacheStatus getStatus() {
+		return new CacheStatus(name(), cache.used(), cache.capacity(), config.getListFieldCacheSize());
 	}
 
 	private static final Pair<Long, Boolean> getCacheSize(HibernateCacheConfig config) {

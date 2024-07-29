@@ -13,9 +13,9 @@ import com.gentics.mesh.contentoperation.CommonContentColumn;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.DummyBulkActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.node.BinaryUploadHandlerImpl;
 import com.gentics.mesh.core.migration.impl.NodeMigrationImpl;
@@ -51,11 +51,11 @@ public class HibNodeMigration extends NodeMigrationImpl {
 	@Override
 	public void afterContextPrepared(NodeMigrationActionContextImpl context) {
 		// initialize all lazy loaded fields that will be called during the migration
-		context.getFromVersion().getChanges().forEach(SchemaChange::getRestProperties);
+		context.getFromVersion().getChanges().forEach(HibSchemaChange::getRestProperties);
 	}
 
 	@Override
-	public void beforeBatchMigration(List<? extends NodeFieldContainer> containerList, InternalActionContext ac) {
+	public void beforeBatchMigration(List<? extends HibNodeFieldContainer> containerList, InternalActionContext ac) {
 		// preload all nodes (and their edges) in the persistence context with one query
 		// so that during the migration we don't need to fetch it again
 		List<UUID> nodeUuids = containerList.stream()
@@ -64,7 +64,7 @@ public class HibNodeMigration extends NodeMigrationImpl {
 				.collect(Collectors.toList());
 
 		NodeDaoImpl nodeDao = HibernateTx.get().nodeDao();
-		List<? extends Node> nodes = nodeDao.loadNodesWithEdges(nodeUuids);
+		List<? extends HibNode> nodes = nodeDao.loadNodesWithEdges(nodeUuids);
 
 		// preload binary fields from the containers
 		BinaryDaoImpl binaryDao = HibernateTx.get().binaryDao();
@@ -85,7 +85,7 @@ public class HibNodeMigration extends NodeMigrationImpl {
 	}
 
 	@Override
-	public void bulkPurge(List<NodeFieldContainer> toPurge) {
+	public void bulkPurge(List<HibNodeFieldContainer> toPurge) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 
 		contentDao.purge(toPurge, new DummyBulkActionContext());

@@ -16,7 +16,7 @@ public interface S3Binaries {
 	 * @param s3ObjectKey
 	 * @return
 	 */
-	Transactional<S3Binary> findByS3ObjectKey(String s3ObjectKey);
+	Transactional<S3HibBinary> findByS3ObjectKey(String s3ObjectKey);
 
 	/**
 	 * Create a new S3 binary with the given virus check status.
@@ -29,14 +29,14 @@ public interface S3Binaries {
 	 *            fileName
 	 * @return
 	 */
-	Transactional<S3Binary> create(String uuid, String objectKey, String fileName, BinaryCheckStatus checkStatus);
+	Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName, BinaryCheckStatus checkStatus);
 
 	/**
 	 * Return a transactional stream of all S3 binaries.
 	 * 
 	 * @return
 	 */
-	Transactional<Stream<S3Binary>> findAll();
+	Transactional<Stream<S3HibBinary>> findAll();
 
 	/**
 	 * Create a new S3 binary.
@@ -49,7 +49,7 @@ public interface S3Binaries {
 	 *            fileName
 	 * @return
 	 */
-	default Transactional<S3Binary> create(String uuid, String objectKey, String fileName) {
+	default Transactional<S3HibBinary> create(String uuid, String objectKey, String fileName) {
 		return create(uuid, objectKey, fileName, BinaryCheckStatus.ACCEPTED);
 	}
 }

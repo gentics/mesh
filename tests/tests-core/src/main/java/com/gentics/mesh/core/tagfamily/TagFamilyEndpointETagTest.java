@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -32,7 +32,7 @@ public class TagFamilyEndpointETagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
 
-			TagFamily tagfamily = tagFamily("colors");
+			HibTagFamily tagfamily = tagFamily("colors");
 
 			String actualEtag = callETag(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid()));
 			String etag = tagFamilyDao.getETag(tagfamily, mockActionContext());

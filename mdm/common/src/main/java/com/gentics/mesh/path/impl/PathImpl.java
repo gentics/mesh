@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -102,8 +102,8 @@ public class PathImpl implements Path {
 		for (PathSegment segment : segments) {
 			try {
 				PathSegmentImpl graphSegment = (PathSegmentImpl) segment;
-				NodeFieldContainer container = graphSegment.getContainer();
-				if (container == null || ((container instanceof NodeFieldContainer) && !((NodeFieldContainer) container).isValid())) {
+				HibNodeFieldContainer container = graphSegment.getContainer();
+				if (container == null || ((container instanceof HibNodeFieldContainer) && !((HibNodeFieldContainer) container).isValid())) {
 					log.debug("Container or element of container is null. Segment is invalid.");
 					return false;
 				}

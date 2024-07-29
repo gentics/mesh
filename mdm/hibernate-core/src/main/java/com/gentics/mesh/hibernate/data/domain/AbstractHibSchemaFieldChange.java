@@ -4,9 +4,9 @@ import java.util.Map;
 
 import jakarta.persistence.MappedSuperclass;
 
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.SchemaChange;
-import com.gentics.mesh.core.data.schema.SchemaFieldChange;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
+import com.gentics.mesh.core.data.schema.HibSchemaFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
@@ -17,17 +17,17 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
  *
  */
 @MappedSuperclass
-public abstract class AbstractHibSchemaFieldChange extends HibSchemaChangeImpl implements SchemaFieldChange {
+public abstract class AbstractHibSchemaFieldChange extends HibSchemaChangeImpl implements HibSchemaFieldChange {
 
 	private static final long serialVersionUID = -3171193342367657790L;
 
 	@Override
-	public SchemaChange<?> getNextChange() {
+	public HibSchemaChange<?> getNextChange() {
 		return nextChange == null ? null : nextChange.intoSchemaChange();
 	}
 
 	@Override
-	public SchemaChange<FieldSchemaContainer> setNextChange(SchemaChange<?> change) {
+	public HibSchemaChange<FieldSchemaContainer> setNextChange(HibSchemaChange<?> change) {
 		nextChange = HibSchemaChangeImpl.intoEntity(change);
 		if (nextChange != null) {
 			nextChange.previousChange = this;
@@ -36,12 +36,12 @@ public abstract class AbstractHibSchemaFieldChange extends HibSchemaChangeImpl i
 	}
 
 	@Override
-	public SchemaChange<?> getPreviousChange() {
+	public HibSchemaChange<?> getPreviousChange() {
 		return previousChange == null ? null : previousChange.intoSchemaChange();
 	}
 
 	@Override
-	public SchemaChange<FieldSchemaContainer> setPreviousChange(SchemaChange<?> change) {
+	public HibSchemaChange<FieldSchemaContainer> setPreviousChange(HibSchemaChange<?> change) {
 		previousChange = HibSchemaChangeImpl.intoEntity(change);
 		if (previousChange != null) {
 			previousChange.nextChange = this;
@@ -50,18 +50,18 @@ public abstract class AbstractHibSchemaFieldChange extends HibSchemaChangeImpl i
 	}
 
 	@Override
-	public <R extends FieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getNextContainerVersion() {
 		return super.getNextContainerVersion();
 	}
 
 	@Override
-	public <R extends FieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
+	public <R extends HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> R getPreviousContainerVersion() {
 		return super.getPreviousContainerVersion();
 	}
 
 	@Override
-	public SchemaChange<FieldSchemaContainer> setPreviousContainerVersion(
-			FieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
+	public HibSchemaChange<FieldSchemaContainer> setPreviousContainerVersion(
+			HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		super.setPreviousContainerVersionInner(containerVersion);
 		if (containerVersion != null) {
 			containerVersion.setNextChange(this);
@@ -70,8 +70,8 @@ public abstract class AbstractHibSchemaFieldChange extends HibSchemaChangeImpl i
 	}
 
 	@Override
-	public SchemaChange<FieldSchemaContainer> setNextSchemaContainerVersion(
-			FieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
+	public HibSchemaChange<FieldSchemaContainer> setNextSchemaContainerVersion(
+			HibFieldSchemaVersionElement<?, ?, ?, ?, ?> containerVersion) {
 		super.setNextSchemaContainerVersionInner(containerVersion);
 		if (containerVersion != null) {
 			containerVersion.setPreviousChange(this);

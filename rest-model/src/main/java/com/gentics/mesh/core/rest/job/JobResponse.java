@@ -8,7 +8,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
-import com.gentics.mesh.core.rest.job.warning.JobWarningModel;
+import com.gentics.mesh.core.rest.job.warning.JobWarning;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
@@ -62,7 +62,7 @@ public class JobResponse extends AbstractResponse {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("List of warnings which were encoutered while executing the job.")
-	private List<JobWarningModel> warnings = new ArrayList<>();
+	private List<JobWarning> warnings = new ArrayList<>();
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
@@ -224,7 +224,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @return
 	 */
-	public List<JobWarningModel> getWarnings() {
+	public List<JobWarning> getWarnings() {
 		return warnings;
 	}
 
@@ -233,7 +233,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @param warning
 	 */
-	public void addWarning(JobWarningModel warning) {
+	public void addWarning(JobWarning warning) {
 		this.warnings.add(warning);
 	}
 
@@ -242,7 +242,7 @@ public class JobResponse extends AbstractResponse {
 	 * 
 	 * @param warnings
 	 */
-	public void setWarnings(List<JobWarningModel> warnings) {
+	public void setWarnings(List<JobWarning> warnings) {
 		this.warnings = warnings;
 	}
 }

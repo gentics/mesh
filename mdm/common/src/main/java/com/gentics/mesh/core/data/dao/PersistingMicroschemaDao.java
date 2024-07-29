@@ -16,16 +16,16 @@ import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibMicronode;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.event.project.ProjectMicroschemaEventModel;
@@ -48,7 +48,7 @@ import com.gentics.mesh.json.JsonUtil;
  */
 public interface PersistingMicroschemaDao 
 		extends MicroschemaDao, 
-			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion, MicroschemaModel>, PersistingNamedEntityDao<Microschema> {
+			PersistingContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, PersistingNamedEntityDao<HibMicroschema> {
 
 	/**
 	 * Find all micronodes belonging to this microschema version
@@ -56,7 +56,7 @@ public interface PersistingMicroschemaDao
 	 * @param version
 	 * @return
 	 */
-	Result<? extends Micronode> findMicronodes(MicroschemaVersion version);
+	Result<? extends HibMicronode> findMicronodes(HibMicroschemaVersion version);
 
 	/**
 	 * Create a new microschema container.
@@ -67,7 +67,7 @@ public interface PersistingMicroschemaDao
 	 * @param batch
 	 * @return
 	 */
-	default Microschema create(MicroschemaVersionModel microschema, User user, EventQueueBatch batch) {
+	default HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, EventQueueBatch batch) {
 		return create(microschema, user, null, batch);
 	}
 
@@ -77,7 +77,7 @@ public interface PersistingMicroschemaDao
 	 * @param reference
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(MicroschemaReference reference) {
+	default HibMicroschemaVersion fromReference(MicroschemaReference reference) {
 		return fromReference(null, reference);
 	}
 
@@ -88,7 +88,7 @@ public interface PersistingMicroschemaDao
 	 *            reference
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(Project project, MicroschemaReference reference) {
+	default HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference) {
 		return fromReference(project, reference, null);
 	}
 
@@ -98,7 +98,7 @@ public interface PersistingMicroschemaDao
 	 * @param schema
 	 * @return
 	 */
-	default Result<Project> findLinkedProjects(Microschema schema) {
+	default Result<HibProject> findLinkedProjects(HibMicroschema schema) {
 		return new TraversalResult<>(Tx.get().projectDao()
 				.findAll().stream().filter(project -> isLinkedToProject(schema, project)));
 	}
@@ -112,7 +112,7 @@ public interface PersistingMicroschemaDao
 	 * @param batch
 	 */
 	@Override
-	default void assign(Microschema microschemaContainer, Project project, User user, EventQueueBatch batch) {
+	default void assign(HibMicroschema microschemaContainer, HibProject project, HibUser user, EventQueueBatch batch) {
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -120,14 +120,14 @@ public interface PersistingMicroschemaDao
 				.filter(branch -> branch.contains(microschemaContainer))
 				.findAny()
 				.ifPresentOrElse(existing -> {
-					Microschema.log.warn("Microschema { " + microschemaContainer.getName() + " } is already assigned to the project { " + project.getName() + " }");
+					HibMicroschema.log.warn("Microschema { " + microschemaContainer.getName() + " } is already assigned to the project { " + project.getName() + " }");
 				}, () -> {
 					// Adding new microschema
 					batch.add(projectDao.onMicroschemaAssignEvent(project, microschemaContainer, ASSIGNED));
 					addItem(project, microschemaContainer);
 
 					// Assign the latest microschema version to all branches of the project
-					for (Branch branch : branchDao.findAll(project)) {
+					for (HibBranch branch : branchDao.findAll(project)) {
 						branchDao.assignMicroschemaVersion(branch, user, microschemaContainer.getLatestVersion(), batch);
 					}
 				});
@@ -141,7 +141,7 @@ public interface PersistingMicroschemaDao
 	 * @param batch
 	 */
 	@Override
-	default void unassign(Microschema microschema, Project project, EventQueueBatch batch) {
+	default void unassign(HibMicroschema microschema, HibProject project, EventQueueBatch batch) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		BranchDao branchDao = Tx.get().branchDao();
 
@@ -149,14 +149,14 @@ public interface PersistingMicroschemaDao
 		removeItem(project, microschema);
 
 		// unassign the microschema from all branches
-		for (Branch branch : branchDao.findAll(project)) {
+		for (HibBranch branch : branchDao.findAll(project)) {
 			branch.unassignMicroschema(microschema);
 		}
 	}
 
 	@Override
-	default Microschema create(Project root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
-		Microschema microschema = create(ac, batch, uuid);
+	default HibMicroschema create(HibProject root, InternalActionContext ac, EventQueueBatch batch, String uuid) {
+		HibMicroschema microschema = create(ac, batch, uuid);
 		assign(microschema, root, ac.getUser(), batch);
 		PersistingProjectDao projectDao = CommonTx.get().projectDao();
 		projectDao.mergeIntoPersisted(root);
@@ -171,18 +171,18 @@ public interface PersistingMicroschemaDao
 	 * @param uuid
 	 * @return
 	 */
-	default Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
+	default HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid) {
 		UserDao userRoot = Tx.get().userDao();
-		BaseElement microschemaRoot = CommonTx.get().data().permissionRoots().microschema();
+		HibBaseElement microschemaRoot = CommonTx.get().data().permissionRoots().microschema();
 
-		User requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		MicroschemaVersionModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!userRoot.hasPermission(requestUser, microschemaRoot, InternalPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", microschemaRoot.getUuid(),
 				CREATE_PERM.getRestPerm().getName());
 		}
-		Microschema container = create(microschema, requestUser, uuid, batch);
+		HibMicroschema container = create(microschema, requestUser, uuid, batch);
 		userRoot.inheritRolePermissions(requestUser, microschemaRoot, container);
 		mergeIntoPersisted(container);
 		return container;
@@ -199,28 +199,28 @@ public interface PersistingMicroschemaDao
 	 * @param batch
 	 * @return
 	 */
-	default Microschema create(MicroschemaVersionModel microschema, User user, String uuid,
+	default HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid,
 		EventQueueBatch batch) {
 		microschema.validate();
 
 		SchemaDao schemaDao = Tx.get().schemaDao();
 
 		String name = microschema.getName();
-		Microschema conflictingMicroSchema = findByName(name);
+		HibMicroschema conflictingMicroSchema = findByName(name);
 		if (conflictingMicroSchema != null) {
 			throw conflict(conflictingMicroSchema.getUuid(), name, "microschema_conflicting_name", name);
 		}
 
-		Schema conflictingSchema = schemaDao.findByName(name);
+		HibSchema conflictingSchema = schemaDao.findByName(name);
 		if (conflictingSchema != null) {
 			throw conflict(conflictingSchema.getUuid(), name, "schema_conflicting_name", name);
 		}
 
-		Microschema container = createPersisted(uuid, m -> {
+		HibMicroschema container = createPersisted(uuid, m -> {
 			m.setCreated(user);
 			m.setName(microschema.getName());
 		});
-		MicroschemaVersion version = createPersistedVersion(container, v -> {
+		HibMicroschemaVersion version = createPersistedVersion(container, v -> {
 			// set the initial version
 			microschema.setVersion("1.0");
 			v.setName(microschema.getName());
@@ -246,11 +246,11 @@ public interface PersistingMicroschemaDao
 	 *            branch
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(Project project, MicroschemaReference reference, Branch branch) {
+	default HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
 		String version = branch == null ? reference.getVersion() : null;
-		Microschema container = null;
+		HibMicroschema container = null;
 		if (!isEmpty(microschemaName)) {
 			if (project != null) {
 				container = findByName(project, microschemaName);
@@ -271,7 +271,7 @@ public interface PersistingMicroschemaDao
 				version == null ? "-" : version.toString());
 		}
 
-		MicroschemaVersion foundVersion = null;
+		HibMicroschemaVersion foundVersion = null;
 
 		if (branch != null) {
 			foundVersion = branch.findLatestMicroschemaVersion(container);
@@ -294,7 +294,7 @@ public interface PersistingMicroschemaDao
 	 * 
 	 * @return
 	 */
-	default Stream<ProjectMicroschemaEventModel> assignEvents(Microschema microschema, Assignment assigned) {
+	default Stream<ProjectMicroschemaEventModel> assignEvents(HibMicroschema microschema, Assignment assigned) {
 		ProjectDao projectDao = Tx.get().projectDao();
 		return findLinkedProjects(microschema)
 			.stream()
@@ -302,8 +302,8 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default void delete(Microschema microschema, BulkActionContext bac) {
-		for (MicroschemaVersion version : findAllVersions(microschema)) {
+	default void delete(HibMicroschema microschema, BulkActionContext bac) {
+		for (HibMicroschemaVersion version : findAllVersions(microschema)) {
 			if (findMicronodes(version).hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", microschema.getUuid());
 			}
@@ -314,13 +314,13 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default MicroschemaResponse transformToRestSync(Microschema element, InternalActionContext ac, int level,
+	default MicroschemaResponse transformToRestSync(HibMicroschema element, InternalActionContext ac, int level,
 			String... languageTags) {
 		return element.transformToRestSync(ac, level, languageTags);
 	}
 
 	@Override
-	default void delete(Project root, Microschema element, BulkActionContext bac) {
+	default void delete(HibProject root, HibMicroschema element, BulkActionContext bac) {
 		unassign(element, root, bac.batch());
 		assignEvents(element, UNASSIGNED).forEach(bac::add);
 		// TODO should we delete the schema completely?
@@ -328,12 +328,12 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default boolean update(Microschema element, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		throw new NotImplementedException("Updating is not directly supported for microschemas. Please start a microschema migration");
 	}
 
 	@Override
-	default boolean update(Project project, Microschema element, InternalActionContext ac, EventQueueBatch batch) {
+	default boolean update(HibProject project, HibMicroschema element, InternalActionContext ac, EventQueueBatch batch) {
 		// Don't update the item, if it does not belong to the requested root.
 		if (project.getMicroschemas().stream().noneMatch(schema -> element.getUuid().equals(schema.getUuid()))) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", element.getUuid());
@@ -342,7 +342,7 @@ public interface PersistingMicroschemaDao
 	}
 
 	@Override
-	default boolean isLinkedToProject(Microschema microschema, Project project) {
+	default boolean isLinkedToProject(HibMicroschema microschema, HibProject project) {
 		return contains(project, microschema);
 	}
 

@@ -1,6 +1,6 @@
 package com.gentics.mesh.path;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 
 /**
  * Resolved path segments for a {@link Path} object.
@@ -26,5 +26,5 @@ public interface PathSegment {
 	 * 
 	 * @return
 	 */
-	NodeFieldContainer getContainer();
+	HibNodeFieldContainer getContainer();
 }

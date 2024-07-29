@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.action;
 
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
-public interface LanguageDAOActions extends DAOActions<Language, LanguageResponse> {
+public interface LanguageDAOActions extends DAOActions<HibLanguage, LanguageResponse> {
 
-	Language loadByTag(DAOActionContext ctx, String languageTag);
+	HibLanguage loadByTag(DAOActionContext ctx, String languageTag);
 }

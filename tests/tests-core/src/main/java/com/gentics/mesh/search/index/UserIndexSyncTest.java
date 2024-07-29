@@ -14,7 +14,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.dao.RoleDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.EntityMetrics;
@@ -59,7 +59,7 @@ public class UserIndexSyncTest extends AbstractMeshTest {
 			UserDao userDao = tx.userDao();
 			RoleDao roleDao = tx.roleDao();
 
-			User user = userDao.create(newUsername, user());
+			HibUser user = userDao.create(newUsername, user());
 			roleDao.grantPermissions(role(), user, InternalPermission.values());
 			return user.getUuid();
 		});

@@ -1,6 +1,6 @@
 package com.gentics.mesh.image.focalpoint;
 
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import org.junit.Test;
@@ -91,11 +91,11 @@ public class FocalPointModifierCropTest {
 
 		private Point imageSize;
 		private Point targetSize;
-		private FocalPointModel focalPoint;
+		private FocalPoint focalPoint;
 		private Point expectedStart;
 
 		public Parameter setFocalPoint(float x, float y) {
-			this.focalPoint = new FocalPointModel(x, y);
+			this.focalPoint = new FocalPoint(x, y);
 			return this;
 		}
 
@@ -114,7 +114,7 @@ public class FocalPointModifierCropTest {
 			return this;
 		}
 
-		public FocalPointModel getFocalPoint() {
+		public FocalPoint getFocalPoint() {
 			return focalPoint;
 		}
 

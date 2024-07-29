@@ -2,7 +2,7 @@ package com.gentics.mesh.hibernate.data.domain;
 
 import java.io.Serializable;
 
-import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
+import com.gentics.mesh.core.data.schema.HibUpdateSchemaChange;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 import jakarta.persistence.Entity;
@@ -14,7 +14,7 @@ import jakarta.persistence.Entity;
  *
  */
 @Entity(name = "updateschemachange")
-public class HibUpdateSchemaChangeImpl extends AbstractHibFieldSchemaContainerUpdateChange<SchemaModel> implements UpdateSchemaChange, Serializable {
+public class HibUpdateSchemaChangeImpl extends AbstractHibFieldSchemaContainerUpdateChange<SchemaModel> implements HibUpdateSchemaChange, Serializable {
 
 	private static final long serialVersionUID = 3852962439530321185L;
 

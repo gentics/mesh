@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.parameter.LinkType;
 
@@ -72,7 +72,7 @@ public interface WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags);
+	String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, HibNode node, LinkType type, String... languageTags);
 
 	/**
 	 * Resolve the link to the given node.
@@ -93,7 +93,7 @@ public interface WebRootLinkReplacer {
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, Node node, LinkType type, boolean forceAbsolute,
+	String resolve(InternalActionContext ac, String branchNameOrUuid, ContainerType edgeType, HibNode node, LinkType type, boolean forceAbsolute,
 		String... languageTags);
 
 	/**

@@ -15,8 +15,8 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.node.Micronode;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
+import com.gentics.mesh.core.data.node.HibMicronode;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
 import com.gentics.mesh.database.HibernateTx;
 
 /**
@@ -66,17 +66,17 @@ public class HibMicronodeListFieldEdgeImpl
 	private static final long serialVersionUID = 7725041530839333052L;
 
 	@ManyToOne(targetEntity = HibMicroschemaVersionImpl.class, optional = false)
-	private MicroschemaVersion microschemaVersion;
+	private HibMicroschemaVersion microschemaVersion;
 
 	public HibMicronodeListFieldEdgeImpl() {
 	}
 
-	public HibMicronodeListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, Micronode micronode,
+	public HibMicronodeListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, HibMicronode micronode,
 			HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		this(tx, listUuid, index, fieldKey, (UUID) micronode.getId(), micronode.getSchemaContainerVersion(), parentFieldContainer);
 	}
 
-	public HibMicronodeListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, UUID micronodeUuid, MicroschemaVersion version,
+	public HibMicronodeListFieldEdgeImpl(HibernateTx tx, UUID listUuid, int index, String fieldKey, UUID micronodeUuid, HibMicroschemaVersion version,
 			HibUnmanagedFieldContainer<?,?,?,?,?> parentFieldContainer) {
 		super(tx, listUuid, index, fieldKey, micronodeUuid, parentFieldContainer);
 		this.microschemaVersion = version;
@@ -84,7 +84,7 @@ public class HibMicronodeListFieldEdgeImpl
 
 	@Override
 	public void onEdgeDeleted(HibernateTx tx, BulkActionContext bac) {
-		Micronode micronode = getMicronode();
+		HibMicronode micronode = getMicronode();
 		tx.contentDao().tryDelete(micronode, this, bac);
 	}
 
@@ -108,7 +108,7 @@ public class HibMicronodeListFieldEdgeImpl
 		return HibMicronodeFieldEdge.super.getFieldKey();
 	}
 
-	public MicroschemaVersion getMicroschemaVersion() {
+	public HibMicroschemaVersion getMicroschemaVersion() {
 		return microschemaVersion;
 	}
 }

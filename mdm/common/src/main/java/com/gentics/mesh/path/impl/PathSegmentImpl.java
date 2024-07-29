@@ -1,7 +1,7 @@
 package com.gentics.mesh.path.impl;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.path.PathSegment;
 
 /**
@@ -10,8 +10,8 @@ import com.gentics.mesh.path.PathSegment;
  */
 public class PathSegmentImpl implements PathSegment {
 
-	private NodeFieldContainer container;
-	private Field pathField;
+	private HibNodeFieldContainer container;
+	private HibField pathField;
 	private String languageTag;
 	private String segment;
 
@@ -25,7 +25,7 @@ public class PathSegmentImpl implements PathSegment {
 	 * @param languageTag
 	 *            Language of the segment field
 	 */
-	public PathSegmentImpl(NodeFieldContainer container, Field pathField, String languageTag, String segment) {
+	public PathSegmentImpl(HibNodeFieldContainer container, HibField pathField, String languageTag, String segment) {
 		this.container = container;
 		this.pathField = pathField;
 		this.languageTag = languageTag;
@@ -33,7 +33,7 @@ public class PathSegmentImpl implements PathSegment {
 	}
 
 	@Override
-	public NodeFieldContainer getContainer() {
+	public HibNodeFieldContainer getContainer() {
 		return container;
 	}
 
@@ -42,7 +42,7 @@ public class PathSegmentImpl implements PathSegment {
 	 * 
 	 * @return
 	 */
-	public Field getPathField() {
+	public HibField getPathField() {
 		return pathField;
 	}
 

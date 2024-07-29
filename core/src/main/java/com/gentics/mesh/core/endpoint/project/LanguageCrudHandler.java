@@ -12,13 +12,13 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.action.LanguageDAOActions;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.LanguageDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.PageTransformer;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformableStreamPageImpl;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.endpoint.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
@@ -32,7 +32,7 @@ import com.gentics.mesh.util.ValidationUtil;
 /**
  * Language CRUD actions handler
  */
-public class LanguageCrudHandler extends AbstractCrudHandler<Language, LanguageResponse> {
+public class LanguageCrudHandler extends AbstractCrudHandler<HibLanguage, LanguageResponse> {
 
 	private final PageTransformer pageTransformer;
 
@@ -48,8 +48,8 @@ public class LanguageCrudHandler extends AbstractCrudHandler<Language, LanguageR
 		ValidationUtil.validate(pagingInfo);
 
 		utils.syncTx(ac, tx -> {
-			Project project = tx.getProject(ac);
-			Page<? extends Language> page;
+			HibProject project = tx.getProject(ac);
+			Page<? extends HibLanguage> page;
 			if (project != null) {
 				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
@@ -76,8 +76,8 @@ public class LanguageCrudHandler extends AbstractCrudHandler<Language, LanguageR
 		validateParameter(uuid, "languageUuid");
 
 		utils.syncTx(ac, tx -> {
-			Project project = tx.getProject(ac);
-			Language element;
+			HibProject project = tx.getProject(ac);
+			HibLanguage element;
 			if (project != null) {
 				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
@@ -112,8 +112,8 @@ public class LanguageCrudHandler extends AbstractCrudHandler<Language, LanguageR
 		validateParameter(tag, "languageTag");
 
 		utils.syncTx(ac, tx -> {
-			Project project = tx.getProject(ac);
-			Language element;
+			HibProject project = tx.getProject(ac);
+			HibLanguage element;
 			if (project != null) {
 				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.READ_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", project.getUuid(), READ_PERM.getRestPerm().getName());
@@ -145,12 +145,12 @@ public class LanguageCrudHandler extends AbstractCrudHandler<Language, LanguageR
 			utils.syncTx(ac, (batch, tx) -> {
 				LanguageDao languageDao = tx.languageDao();
 
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
 				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				Language language;
+				HibLanguage language;
 				if (UUIDUtil.isUUID(languageUuidOrTag)) {
 					language = actions.loadByUuid(context(tx, ac, null), languageUuidOrTag, READ_PERM, true);
 				} else {
@@ -173,12 +173,12 @@ public class LanguageCrudHandler extends AbstractCrudHandler<Language, LanguageR
 			utils.syncTx(ac, (batch, tx) -> {
 				LanguageDao languageDao = tx.languageDao();
 
-				Project project = tx.getProject(ac);
+				HibProject project = tx.getProject(ac);
 				String projectUuid = project.getUuid();
 				if (!tx.userDao().hasPermission(ac.getUser(), project, InternalPermission.UPDATE_PERM)) {
 					throw error(FORBIDDEN, "error_missing_perm", projectUuid, UPDATE_PERM.getRestPerm().getName());
 				}
-				Language language;
+				HibLanguage language;
 				if (UUIDUtil.isUUID(languageUuidOrTag)) {
 					language = actions.loadByUuid(context(tx, ac, null), languageUuidOrTag, READ_PERM, true);
 				} else {

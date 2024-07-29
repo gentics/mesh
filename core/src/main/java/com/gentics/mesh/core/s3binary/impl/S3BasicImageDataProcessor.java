@@ -5,8 +5,8 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessor;
 import com.gentics.mesh.core.s3binary.S3BinaryDataProcessorContext;
@@ -38,13 +38,13 @@ public class S3BasicImageDataProcessor implements S3BinaryDataProcessor {
 	}
 
 	@Override
-	public Maybe<Consumer<S3BinaryField>> process(S3BinaryDataProcessorContext ctx) {
+	public Maybe<Consumer<S3HibBinaryField>> process(S3BinaryDataProcessorContext ctx) {
 		FileUpload upload = ctx.getUpload();
 		return imageManipulator.readImageInfo(upload.uploadedFileName()).map(info -> {
-			Consumer<S3BinaryField> consumer = field -> {
-				log.debug("Setting info to binary field {} - {}", field.getFieldKey(), info);
+			Consumer<S3HibBinaryField> consumer = field -> {
+				log.debug("Setting info to binary field " + field.getFieldKey() + " - " + info);
 				field.setImageDominantColor(info.getDominantColor());
-				S3Binary binary = field.getBinary();
+				S3HibBinary binary = field.getBinary();
 				binary.setImageHeight(info.getHeight());
 				binary.setImageWidth(info.getWidth());
 			};

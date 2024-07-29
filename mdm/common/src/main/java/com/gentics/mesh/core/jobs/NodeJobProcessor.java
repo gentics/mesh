@@ -8,15 +8,15 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.branch.BranchSchemaVersion;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.branch.HibBranchSchemaVersion;
+import com.gentics.mesh.core.data.job.HibJob;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.migration.NodeMigration;
-import com.gentics.mesh.core.rest.job.JobWarningListModel;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 import com.gentics.mesh.core.rest.job.warning.ConflictWarning;
 import io.reactivex.Completable;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 	}
 
 	@Override
-	public Completable process(Job job) {
+	public Completable process(HibJob job) {
 		NodeMigration handler = db.tx(tx -> {
 			return tx.<CommonTx>unwrap().data().mesh().nodeMigrationHandler();
 		});
@@ -46,7 +46,7 @@ public class NodeJobProcessor implements SingleJobProcessor {
 			return handler.migrateNodes(context)
 					.doOnComplete(() -> {
 						db.tx(() -> {
-							JobWarningListModel warnings = new JobWarningListModel();
+							JobWarningList warnings = new JobWarningList();
 							if (!context.getConflicts().isEmpty()) {
 								for (ConflictWarning conflict : context.getConflicts()) {
 									log.info("Encountered conflict for node {" + conflict.getNodeUuid() + "} which was automatically resolved.");
@@ -66,12 +66,12 @@ public class NodeJobProcessor implements SingleJobProcessor {
 		});
 	}
 
-	private void finalizeMigration(NodeMigration handler, Job job, NodeMigrationActionContext context) {
+	private void finalizeMigration(NodeMigration handler, HibJob job, NodeMigrationActionContext context) {
 		// Deactivate edge
 		db.tx(() -> {
-			Branch branch = context.getBranch();
-			SchemaVersion fromContainerVersion = context.getFromVersion();
-			BranchSchemaVersion assignment =  Tx.get().branchDao().findBranchSchemaEdge(branch, fromContainerVersion);
+			HibBranch branch = context.getBranch();
+			HibSchemaVersion fromContainerVersion = context.getFromVersion();
+			HibBranchSchemaVersion assignment =  Tx.get().branchDao().findBranchSchemaEdge(branch, fromContainerVersion);
 			if (assignment != null) {
 				assignment.setActive(false);
 			}

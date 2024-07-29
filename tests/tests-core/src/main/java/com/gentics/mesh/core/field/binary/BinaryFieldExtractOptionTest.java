@@ -13,8 +13,8 @@ import org.junit.After;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
-import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadataModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
+import com.gentics.mesh.core.rest.node.field.binary.BinaryMetadata;
 import com.gentics.mesh.core.rest.schema.BinaryExtractOptions;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -29,8 +29,8 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(testSize = FULL, startServer = true, elasticsearch = ElasticsearchTestMode.TRACKING)
 public class BinaryFieldExtractOptionTest extends AbstractMeshTest {
 	private NodeResponse nodeResponse;
-	private BinaryFieldModel binaryField;
-	private BinaryMetadataModel metadata;
+	private BinaryField binaryField;
+	private BinaryMetadata metadata;
 	private JsonObject document;
 	private String plainText;
 

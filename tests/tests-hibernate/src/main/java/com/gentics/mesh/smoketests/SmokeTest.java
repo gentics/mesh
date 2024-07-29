@@ -10,19 +10,19 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.BooleanFieldList;
-import com.gentics.mesh.core.data.node.field.list.DateFieldList;
-import com.gentics.mesh.core.data.node.field.list.HtmlFieldList;
-import com.gentics.mesh.core.data.node.field.list.NodeFieldList;
-import com.gentics.mesh.core.data.node.field.list.NumberFieldList;
-import com.gentics.mesh.core.data.node.field.list.StringFieldList;
-import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.list.HibBooleanFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibDateFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibHtmlFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNodeFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibNumberFieldList;
+import com.gentics.mesh.core.data.node.field.list.HibStringFieldList;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -64,18 +64,18 @@ public class SmokeTest extends AbstractMeshTest {
 
     private void setup() {
         tx(tx -> {
-            Node node = folder("2015");
-            Node folder = folder("news");
+            HibNode node = folder("2015");
+            HibNode folder = folder("news");
             tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
             tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(folder, "de"), initialBranchUuid(), null);
 
-            Node node2 = content();
+            HibNode node2 = content();
             tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(node2, "en"), initialBranchUuid(), null);
             tx.contentDao().updateWebrootPathInfo(tx.contentDao().getFieldContainer(node2, "de"), initialBranchUuid(), null);
-            Node node3 = folder("2014");
+            HibNode node3 = folder("2014");
 
             // Update the folder schema to contain all fields
-            Schema schemaContainer = schemaContainer("folder");
+            HibSchema schemaContainer = schemaContainer("folder");
             SchemaVersionModel schema = schemaContainer.getLatestVersion().getSchema();
             schema.setUrlFields("niceUrl");
             schema.setAutoPurge(true);
@@ -170,7 +170,7 @@ public class SmokeTest extends AbstractMeshTest {
             actions().updateSchemaVersion(schemaContainer("folder").getLatestVersion());
 
             // Setup some test data
-            NodeFieldContainer container = tx.contentDao().createFieldContainer(node, "en", initialBranch(), user());
+            HibNodeFieldContainer container = tx.contentDao().createFieldContainer(node, "en", initialBranch(), user());
 
             // node
             container.createNode("nodeRef", node2);
@@ -201,49 +201,49 @@ public class SmokeTest extends AbstractMeshTest {
             container.createBoolean("boolean").setBoolean(true);
 
             // binary
-            Binary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
+            HibBinary binary = tx.binaries().create("hashsumvalue", 1L).runInExistingTx(tx);
             binary.setImageHeight(10).setImageWidth(20).setSize(2048);
             container.createBinary("binary", binary).setImageDominantColor("00FF00")
-                    .setImageFocalPoint(new FocalPointModel(0.2f, 0.3f)).setMimeType("image/jpeg");
+                    .setImageFocalPoint(new FocalPoint(0.2f, 0.3f)).setMimeType("image/jpeg");
 
             // s3binary
-            S3Binary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
+            S3HibBinary s3binary = tx.s3binaries().create(UUIDUtil.randomUUID(), node.getUuid() + "/s3", "test.jpg").runInExistingTx(tx);
             container.createS3Binary("s3Binary", s3binary);
 
             // stringList
-            StringFieldList stringList = container.createStringList("stringList");
+            HibStringFieldList stringList = container.createStringList("stringList");
             stringList.createString("A");
             stringList.createString("B");
             stringList.createString("C");
             stringList.createString("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
             // htmlList
-            HtmlFieldList htmlList = container.createHTMLList("htmlList");
+            HibHtmlFieldList htmlList = container.createHTMLList("htmlList");
             htmlList.createHTML("A");
             htmlList.createHTML("B");
             htmlList.createHTML("C");
             htmlList.createHTML("D Link: {{mesh.link(\"" + CONTENT_UUID + "\", \"en\")}}");
 
             // dateList
-            DateFieldList dateList = container.createDateList("dateList");
+            HibDateFieldList dateList = container.createDateList("dateList");
             dateList.createDate(dateToMilis("2012-07-11 10:55:21"));
             dateList.createDate(dateToMilis("2014-07-11 10:55:30"));
             dateList.createDate(dateToMilis("2000-07-11 10:55:00"));
 
             // numberList
-            NumberFieldList numberList = container.createNumberList("numberList");
+            HibNumberFieldList numberList = container.createNumberList("numberList");
             numberList.createNumber(42L);
             numberList.createNumber(1337);
             numberList.createNumber(0.314f);
 
             // booleanList
-            BooleanFieldList booleanList = container.createBooleanList("booleanList");
+            HibBooleanFieldList booleanList = container.createBooleanList("booleanList");
             booleanList.createBoolean(true);
             booleanList.createBoolean(null);
             booleanList.createBoolean(false);
 
             // nodeList
-            NodeFieldList nodeList = container.createNodeList("nodeList");
+            HibNodeFieldList nodeList = container.createNodeList("nodeList");
             nodeList.createNode(0, node2);
             nodeList.createNode(1, node3);
         });

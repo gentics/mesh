@@ -28,8 +28,8 @@ import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.branch.info.BranchMicroschemaInfo;
 import com.gentics.mesh.core.rest.branch.info.BranchSchemaInfo;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -676,7 +676,7 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 		 */
 		public TestSchemaInfo(String schemaName) throws Exception {
 			// get the uuid of the schema version, which is assigned to the branch
-			BranchInfoSchemaListModel schemaList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, branchUuid));
+			BranchInfoSchemaList schemaList = call(() -> client().getBranchSchemaVersions(PROJECT_NAME, branchUuid));
 			BranchSchemaInfo schemaInfo = schemaList.getSchemas().stream()
 					.filter(branchSchemaInfo -> StringUtils.equals(schemaName, branchSchemaInfo.getName()))
 					.findFirst()
@@ -707,7 +707,7 @@ public class MicronodeIndexSyncTest extends AbstractMeshTest {
 			}
 
 			// get the uuid of the microschema version, which is assigned to the branch
-			BranchInfoMicroschemaListModel microschemaList = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, branchUuid));
+			BranchInfoMicroschemaList microschemaList = call(() -> client().getBranchMicroschemaVersions(PROJECT_NAME, branchUuid));
 
 			Set<String> microschemaUuids = new TreeSet<>();
 			for (String microschema : microschemaNames) {

@@ -3,9 +3,9 @@ package com.gentics.mesh.core.data.dao;
 import java.io.InputStream;
 import java.util.stream.Stream;
 
-import com.gentics.mesh.core.data.BinaryDataElement;
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.HibBinaryDataElement;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Supplier;
 import com.gentics.mesh.core.db.Transactional;
 import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
@@ -16,37 +16,37 @@ import io.reactivex.Flowable;
 import io.vertx.core.buffer.Buffer;
 
 /**
- * DAO for {@link Binary}.
+ * DAO for {@link HibBinary}.
  */
-public interface BinaryDao extends Dao<Binary> {
+public interface BinaryDao extends Dao<HibBinary> {
 
 	/**
 	 * Return the binary data stream.
 	 *
 	 * @return
 	 */
-	Flowable<Buffer> getStream(BinaryDataElement binary);
+	Flowable<Buffer> getStream(HibBinaryDataElement binary);
 
 	/**
 	 * Return the data as base 64 encoded string in the same thread blockingly.
 	 *
 	 * @return
 	 */
-	String getBase64ContentSync(Binary binary);
+	String getBase64ContentSync(HibBinary binary);
 
 	/**
 	 * Find all binary fields which make use of this binary.
 	 *
 	 * @return
 	 */
-	Result<? extends BinaryField> findFields(Binary binary);
+	Result<? extends HibBinaryField> findFields(HibBinary binary);
 
 	/**
 	 * Opens a blocking {@link InputStream} to the binary file. This should only be used for some other blocking APIs (i.e. ImageIO)
 	 *
 	 * @return
 	 */
-	Supplier<InputStream> openBlockingStream(Binary binary);
+	Supplier<InputStream> openBlockingStream(HibBinary binary);
 
 	/**
 	 * Find the binary with the given hashsum.
@@ -54,7 +54,7 @@ public interface BinaryDao extends Dao<Binary> {
 	 * @param hash
 	 * @return
 	 */
-	Transactional<? extends Binary> findByHash(String hash);
+	Transactional<? extends HibBinary> findByHash(String hash);
 
 	/**
 	 * Find the binaries with the specified check status.
@@ -62,7 +62,7 @@ public interface BinaryDao extends Dao<Binary> {
 	 * @param checkStatus The check status to filter for.
 	 * @return A stream of matching binaries.
 	 */
-	Transactional<Stream<? extends Binary>> findByCheckStatus(BinaryCheckStatus checkStatus);
+	Transactional<Stream<? extends HibBinary>> findByCheckStatus(BinaryCheckStatus checkStatus);
 
 	/**
 	 * Create a new binary.
@@ -75,7 +75,7 @@ public interface BinaryDao extends Dao<Binary> {
 	 *            Size in bytes
 	 * @return
 	 */
-	Transactional<? extends Binary> create(String uuid, String hash, Long size, BinaryCheckStatus checkStatus);
+	Transactional<? extends HibBinary> create(String uuid, String hash, Long size, BinaryCheckStatus checkStatus);
 
 	/**
 	 * Create a new binary.
@@ -84,7 +84,7 @@ public interface BinaryDao extends Dao<Binary> {
 	 * @param size
 	 * @return
 	 */
-	default Transactional<? extends Binary> create(String hash, long size, BinaryCheckStatus checkStatus) {
+	default Transactional<? extends HibBinary> create(String hash, long size, BinaryCheckStatus checkStatus) {
 		return create(UUIDUtil.randomUUID(), hash, size, checkStatus);
 	}
 
@@ -93,5 +93,5 @@ public interface BinaryDao extends Dao<Binary> {
 	 *
 	 * @return
 	 */
-	Transactional<Stream<Binary>> findAll();
+	Transactional<Stream<HibBinary>> findAll();
 }

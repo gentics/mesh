@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.binary;
 
-import com.gentics.mesh.core.data.binary.Binary;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.binary.HibBinary;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
@@ -30,14 +30,14 @@ public interface BinaryFieldTestHelper {
 	final DataProvider FILL_BASIC = (container, name) -> {
 		Buffer buffer = Buffer.buffer(FILECONTENTS);
 		String sha512Sum = FileUtils.hash(buffer).blockingGet();
-		Binary binary = Tx.get().binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
+		HibBinary binary = Tx.get().binaries().create(sha512Sum, Long.valueOf(buffer.length())).runInExistingTx(Tx.get());
 
 		String tmpId = UUIDUtil.randomUUID();
 		BinaryStorage storage = CommonTx.get().data().mesh().binaryStorage();
 		storage.storeInTemp(Flowable.just(buffer), tmpId).blockingAwait();
 		storage.moveInPlace(binary.getUuid(), tmpId).blockingAwait();
 
-		BinaryField field = container.createBinary(name, binary);
+		HibBinaryField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
 	};

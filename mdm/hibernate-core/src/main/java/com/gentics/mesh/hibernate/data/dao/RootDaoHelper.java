@@ -18,7 +18,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
@@ -36,8 +36,8 @@ import com.google.auto.factory.AutoFactory;
  * @param <ROOTIMPL>
  */
 @AutoFactory
-public class RootDaoHelper<CHILD extends BaseElement, CHILDIMPL extends CHILD,
-		                   ROOT extends BaseElement, ROOTIMPL extends ROOT> {
+public class RootDaoHelper<CHILD extends HibBaseElement, CHILDIMPL extends CHILD,
+		                   ROOT extends HibBaseElement, ROOTIMPL extends ROOT> {
 
 	private final DaoHelper<CHILD, CHILDIMPL> daoHelper;
 	private final RootJoin<CHILDIMPL, ROOTIMPL> rootJoin;

@@ -4,14 +4,14 @@ import java.util.Map;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.FieldSchemaElement;
-import com.gentics.mesh.core.data.schema.FieldSchemaVersionElement;
-import com.gentics.mesh.core.data.schema.SchemaChange;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaElement;
+import com.gentics.mesh.core.data.schema.HibFieldSchemaVersionElement;
+import com.gentics.mesh.core.data.schema.HibSchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerComparator;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
@@ -35,8 +35,8 @@ public interface ContainerDao<
 		R extends FieldSchemaContainer, 
 		RM extends FieldSchemaContainerVersion, 
 		RE extends NameUuidReference<RE>, 
-		SC extends FieldSchemaElement<R, RM, RE, SC, SCV>, 
-		SCV extends FieldSchemaVersionElement<R, RM, RE, SC, SCV>,
+		SC extends HibFieldSchemaElement<R, RM, RE, SC, SCV>, 
+		SCV extends HibFieldSchemaVersionElement<R, RM, RE, SC, SCV>,
 		M extends FieldSchemaContainer
 	> extends DaoGlobal<SC>, DaoTransformable<SC, R> {
 
@@ -46,7 +46,7 @@ public interface ContainerDao<
 	 * @param version
 	 * @return Found branches of this version
 	 */
-	Result<? extends Branch> getBranches(SCV version);
+	Result<? extends HibBranch> getBranches(SCV version);
 
 	/**
 	 * Delete the schema version, notifying context if necessary.
@@ -97,7 +97,7 @@ public interface ContainerDao<
 	 * @param branch
 	 * @return
 	 */
-	Result<SCV> findActiveSchemaVersions(Branch branch);
+	Result<SCV> findActiveSchemaVersions(HibBranch branch);
 
 	/**
 	 * Load the contents that use the given schema version for the given branch.
@@ -106,7 +106,7 @@ public interface ContainerDao<
 	 * @param branchUuid
 	 * @return
 	 */
-	Result<? extends NodeFieldContainer> findDraftFieldContainers(SCV version, String branchUuid);
+	Result<? extends HibNodeFieldContainer> findDraftFieldContainers(SCV version, String branchUuid);
 
 	/**
 	 * Find all versions for the given schema.
@@ -122,7 +122,7 @@ public interface ContainerDao<
 	 * @param schema
 	 * @return
 	 */
-	Map<Branch, SCV> findReferencedBranches(SC schema);
+	Map<HibBranch, SCV> findReferencedBranches(SC schema);
 
 	/**
 	 * Check whether the schema is linked to the project.
@@ -131,7 +131,7 @@ public interface ContainerDao<
 	 * @param project
 	 * @return
 	 */
-	boolean isLinkedToProject(SC schema, Project project);
+	boolean isLinkedToProject(SC schema, HibProject project);
 
 	/**
 	 * Apply changes to the schema.
@@ -152,7 +152,7 @@ public interface ContainerDao<
 	 * @param restChange
 	 * @return
 	 */
-	SchemaChange<?> createChange(SCV version, SchemaChangeModel restChange);
+	HibSchemaChange<?> createChange(SCV version, SchemaChangeModel restChange);
 
 	/**
 	 * Apply changes to the schema version.
@@ -171,7 +171,7 @@ public interface ContainerDao<
 	 * @param change
 	 * @param bac
 	 */
-	void deleteChange(SchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bc);
+	void deleteChange(HibSchemaChange<? extends FieldSchemaContainer> change, BulkActionContext bc);
 
 	/**
 	 * Assign the schema to the project.
@@ -181,7 +181,7 @@ public interface ContainerDao<
 	 * @param user
 	 * @param batch
 	 */
-	void assign(SC schemaContainer, Project project, User user, EventQueueBatch batch);
+	void assign(SC schemaContainer, HibProject project, HibUser user, EventQueueBatch batch);
 
 	/**
 	 * Remove the schema from the project.
@@ -190,5 +190,5 @@ public interface ContainerDao<
 	 * @param project
 	 * @param batch
 	 */
-	void unassign(SC schema, Project project, EventQueueBatch batch);
+	void unassign(SC schema, HibProject project, EventQueueBatch batch);
 }

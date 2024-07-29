@@ -17,7 +17,7 @@ import org.hibernate.Transaction;
 
 import com.gentics.mesh.contentoperation.ContentStorage;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibMicronodeContainerImpl;
 import com.gentics.mesh.hibernate.data.domain.HibNodeFieldContainerImpl;
@@ -175,7 +175,7 @@ public class ContentInterceptor implements Interceptor, Serializable {
 	 * @param ac the action context
 	 * @param dataloaders the loaders to initialize
 	 */
-	public DataLoaders initializeDataLoaders(Collection<? extends Node> nodes, InternalActionContext ac, List<DataLoaders.Loader> dataloaders) {
+	public DataLoaders initializeDataLoaders(Collection<? extends HibNode> nodes, InternalActionContext ac, List<DataLoaders.Loader> dataloaders) {
 		HibernateTx tx = HibernateTx.get();
 		EntityTransaction entityTx = tx.entityTransaction();
 		// TODO check if dataloaders wrapper already exists, and if yes, merge

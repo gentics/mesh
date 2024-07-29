@@ -22,12 +22,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import com.gentics.mesh.ElementType;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
@@ -140,7 +140,7 @@ import com.gentics.mesh.util.UUIDUtil;
 						"where n.dbUuid in :nodeUuids")
 
 })
-public class HibNodeImpl extends AbstractHibBucketableElement implements Node, Serializable {
+public class HibNodeImpl extends AbstractHibBucketableElement implements HibNode, Serializable {
 
 	private static final long serialVersionUID = -7505762081933808577L;
 
@@ -156,19 +156,19 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements Node, S
 	public static final String DEFAULT_PERM_CHECK = " and ((perm.readPerm = true) or (edge.type = 'PUBLISHED'  and perm.readPublishedPerm = true))";
 
 	@ManyToOne(targetEntity = HibUserImpl.class, fetch = FetchType.LAZY)
-	private User creator;
+	private HibUser creator;
 
 	private Instant created;
 
 	@ManyToOne(targetEntity = HibProjectImpl.class, fetch = FetchType.LAZY)
-	private Project project;
+	private HibProject project;
 
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	@OneToMany(mappedBy = "node", targetEntity = HibNodeTag.class, cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<HibNodeTag> tags = new HashSet<>();
 
 	@ManyToOne(targetEntity = HibSchemaImpl.class, fetch = FetchType.LAZY)
-	private Schema schemaContainer;
+	private HibSchema schemaContainer;
 
 	@OneToMany(mappedBy = "node", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -187,17 +187,17 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements Node, S
 	}
 
 	@Override
-	public User getCreator() {
+	public HibUser getCreator() {
 		return creator;
 	}
 
 	@Override
-	public void setCreator(User user) {
+	public void setCreator(HibUser user) {
 		this.creator = user;
 	}
 
 	@Override
-	public void setCreated(User creator) {
+	public void setCreated(HibUser creator) {
 		Instant now = Instant.now();
 		setCreator(creator);
 		created = now;
@@ -219,32 +219,32 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements Node, S
 	}
 
 	@Override
-	public Project getProject() {
+	public HibProject getProject() {
 		return project;
 	}
 
-	public void setProject(Project project) {
+	public void setProject(HibProject project) {
 		this.project = project;
 	}
 
 	@Override
-	public Schema getSchemaContainer() {
+	public HibSchema getSchemaContainer() {
 		return schemaContainer;
 	}
 
 	@Override
-	public void setSchemaContainer(Schema container) {
+	public void setSchemaContainer(HibSchema container) {
 		schemaContainer = container;
 	}
 
 	@Override
-	public void addTag(Tag tag, Branch branch) {
+	public void addTag(HibTag tag, HibBranch branch) {
 		HibNodeTag newTag = new HibNodeTag(this, (HibTagImpl) tag, (HibBranchImpl) branch);
 		tags.add(newTag);
 	}
 
 	@Override
-	public void removeTag(Tag tag, Branch branch) {
+	public void removeTag(HibTag tag, HibBranch branch) {
 		Optional<HibNodeTag> tagToRemove = tags.stream()
 				.filter(t -> t.getId().getTagUUID().equals(UUIDUtil.toJavaUuid(tag.getUuid())) && t.getId().getBranchUUID().equals(UUIDUtil.toJavaUuid(branch.getUuid())))
 				.findFirst();
@@ -253,12 +253,12 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements Node, S
 	}
 
 	@Override
-	public void removeAllTags(Branch branch) {
+	public void removeAllTags(HibBranch branch) {
 		tags.removeIf(tag -> tag.getBranch().getUuid().equals(branch.getUuid()));
 	}
 
 	@Override
-	public Result<Tag> getTags(Branch branch) {
+	public Result<HibTag> getTags(HibBranch branch) {
 		return new TraversalResult<>(tags.stream()
 				.filter(t -> t.getId().getBranchUUID().equals(((HibBranchImpl)branch).getDbUuid()))
 				.map(HibNodeTag::getTag));
@@ -269,7 +269,7 @@ public class HibNodeImpl extends AbstractHibBucketableElement implements Node, S
 	}
 
 	@Override
-	public Node getParentNode(String branchUuid) {
+	public HibNode getParentNode(String branchUuid) {
 		return Tx.get().nodeDao().getParentNode(this, branchUuid);
 	}
 

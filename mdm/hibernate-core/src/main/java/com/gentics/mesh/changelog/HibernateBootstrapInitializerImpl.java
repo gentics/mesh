@@ -27,10 +27,10 @@ import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.PostProcessFlags;
 import com.gentics.mesh.contentoperation.ContentCachedStorage;
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 import com.gentics.mesh.core.data.changelog.HighLevelChange;
 import com.gentics.mesh.core.data.dao.ChangelogDao;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.root.RootResolver;
 import com.gentics.mesh.core.data.service.ServerSchemaStorageImpl;
 import com.gentics.mesh.core.db.Database;
@@ -209,17 +209,17 @@ public class HibernateBootstrapInitializerImpl extends AbstractBootstrapInitiali
 		db.tx(tx -> {
 			HibernateTx htx = tx.unwrap();
 			RoleDaoImpl roleDao = htx.roleDao();
-			Role adminRole = roleDao.findByName("admin");
+			HibRole adminRole = roleDao.findByName("admin");
 
 			Arrays.asList(
-					htx.loadAll(htx.projectDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.nodeDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.tagDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.schemaDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.microschemaDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.userDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.groupDao().getPersistenceClass()).map(BaseElement.class::cast),
-					htx.loadAll(htx.roleDao().getPersistenceClass()).map(BaseElement.class::cast)
+					htx.loadAll(htx.projectDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.nodeDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.tagDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.schemaDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.microschemaDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.userDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.groupDao().getPersistenceClass()).map(HibBaseElement.class::cast),
+					htx.loadAll(htx.roleDao().getPersistenceClass()).map(HibBaseElement.class::cast)
 				).stream()
 			.flatMap(Function.identity())
 			.forEach(element -> {

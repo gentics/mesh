@@ -6,7 +6,7 @@
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterInstanceInfoModel",
+        "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:ClusterInstanceInfo",
         "properties" : {
           "address" : {
             "type" : "string"

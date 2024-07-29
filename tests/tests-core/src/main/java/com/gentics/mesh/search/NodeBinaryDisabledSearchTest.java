@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -81,7 +81,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
+			HibNode nodeA = content("concorde");
 			String schemaVersionUuid = nodeA.getSchemaContainer().getLatestVersion().getUuid();
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				schemaVersionUuid, ContainerType.DRAFT, null, nodeA.getSchemaContainer().getLatestVersion().getMicroschemaVersionHash(initialBranch()));
@@ -129,7 +129,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 		waitForSearchIdleEvent();
 
 		try (Tx tx = tx()) {
-			Node nodeA = content("concorde");
+			HibNode nodeA = content("concorde");
 			String indexName = ContentDao.composeIndexName(projectUuid(), initialBranchUuid(),
 				nodeA.getSchemaContainer().getLatestVersion().getUuid(), ContainerType.DRAFT, null, null);
 			String id = ContentDao.composeDocumentId(nodeUuid, "en");
@@ -154,7 +154,7 @@ public class NodeBinaryDisabledSearchTest extends AbstractNodeSearchEndpointTest
 	@Test
 	public void testImageSearch() throws IOException {
 		grantAdmin();
-		Node nodeA = content("concorde");
+		HibNode nodeA = content("concorde");
 		String nodeUuid = tx(() -> nodeA.getUuid());
 		String contentSchemaUuid = tx(() -> schemaContainer("content").getUuid());
 

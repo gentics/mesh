@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -65,7 +65,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		assertThat(response.getFields().getHtmlFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 	}
 
@@ -117,12 +117,12 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
 			Arrays.asList("X", "Y"), Arrays.asList("C"));
 
-		NodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
+		HibNodeFieldContainer container = tx(tx -> { return tx.contentDao().getFieldContainer(node, "en"); });
 		for (int i = 0; i < 20; i++) {
 			List<String> oldValue;
 			List<String> newValue;
@@ -146,7 +146,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 				// Assert the update within the graph
-				NodeFieldContainer updatedContainer = contentDao.getNextVersions(container).iterator().next();
+				HibNodeFieldContainer updatedContainer = contentDao.getNextVersions(container).iterator().next();
 				assertEquals("The container version number did not match up with the response version number.",
 					updatedContainer.getVersion().toString(), response.getVersion());
 				assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,
@@ -162,7 +162,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Override
 	public void testUpdateSetNull() {
 		disableAutoPurge();
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		HtmlFieldListImpl list = new HtmlFieldListImpl();
 		list.add("A");
@@ -175,7 +175,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHTMLList(FIELD_NAME)).isNotNull();

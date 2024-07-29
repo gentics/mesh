@@ -17,7 +17,7 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Some events will be caused by another action. This object contains information about the cause of the event.")
-	private EventCauseInfoModel cause;
+	private EventCauseInfo cause;
 
 	@JsonIgnore
 	private MeshEvent event;
@@ -41,12 +41,12 @@ public abstract class AbstractMeshEventModel implements MeshEventModel {
 	}
 
 	@Override
-	public EventCauseInfoModel getCause() {
+	public EventCauseInfo getCause() {
 		return cause;
 	}
 
 	@Override
-	public void setCause(EventCauseInfoModel cause) {
+	public void setCause(EventCauseInfo cause) {
 		this.cause = cause;
 	}
 }

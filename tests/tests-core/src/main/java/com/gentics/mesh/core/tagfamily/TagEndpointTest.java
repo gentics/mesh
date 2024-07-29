@@ -20,9 +20,9 @@ import com.gentics.mesh.core.data.dao.PersistingTagFamilyDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
 import com.gentics.mesh.core.data.dao.UserDao;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -41,7 +41,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testTransformToReference() throws Exception {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			TagFamilyReference reference = tagFamily.transformToReference();
 			assertNotNull(reference);
 			assertEquals(tagFamily.getUuid(), reference.getUuid());
@@ -52,7 +52,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	public void testTagFamilyProject() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getProject());
 			assertEquals(project(), tagFamily.getProject());
 		}
@@ -73,11 +73,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			CommonTx ctx = tx.unwrap();
 			PersistingTagFamilyDao tagFamilyDao = ctx.tagFamilyDao();
 
-			List<? extends TagFamily> families = tagFamilyDao.findAll().list();
+			List<? extends HibTagFamily> families = tagFamilyDao.findAll().list();
 			assertNotNull(families);
 			assertEquals(2, families.size());
 
-			TagFamily projectTagFamily = tagFamilyDao.findByName(project(), "colors");
+			HibTagFamily projectTagFamily = tagFamilyDao.findByName(project(), "colors");
 			assertNotNull(projectTagFamily);
 
 			assertNotNull(tagFamilyDao.create(project(), "bogus", user()));
@@ -114,9 +114,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testFindByUUID() throws Exception {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 
-			TagFamily foundTagFamily = tagFamilyDao.findByUuid(tagFamily.getUuid());
+			HibTagFamily foundTagFamily = tagFamilyDao.findByUuid(tagFamily.getUuid());
 			assertNotNull(foundTagFamily);
 		}
 	}
@@ -125,7 +125,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testRead() throws IOException {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getName());
 			assertEquals("colors", tagFamily.getName());
 			assertNotNull(tagFamily.getEditor());
@@ -138,8 +138,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testCreate() throws IOException {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily family = tagFamilyDao.create(project(), "test", user());
-			TagFamily family2 = tagFamilyDao.findByName(project(), family.getName());
+			HibTagFamily family = tagFamilyDao.create(project(), "test", user());
+			HibTagFamily family2 = tagFamilyDao.findByName(project(), family.getName());
 			assertNotNull(family2);
 			assertEquals("test", family2.getName());
 			assertEquals(family.getUuid(), family2.getUuid());
@@ -152,7 +152,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 		BulkActionContext context = createBulkContext();
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			tagFamilyDao.delete(tagFamily, context);
 			tx.success();
 		}
@@ -164,7 +164,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testUpdate() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			tagFamily.setName("new Name");
 			assertEquals("new Name", tagFamily.getName());
 		}
@@ -174,7 +174,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.READ_PERM, tagFamily);
 		}
 	}
@@ -183,7 +183,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.DELETE_PERM, tagFamily);
 		}
 	}
@@ -192,7 +192,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.UPDATE_PERM, tagFamily);
 		}
 	}
@@ -201,7 +201,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
+			HibTagFamily tagFamily = tx.tagFamilyDao().create(project(), "newProject", user());
 			testPermission(InternalPermission.CREATE_PERM, tagFamily);
 		}
 	}
@@ -211,7 +211,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testTransformation() throws Exception {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamily("colors");
+			HibTagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			TagFamilyResponse response = tagFamilyDao.transformToRestSync(tagFamily, ac, 0);
@@ -226,15 +226,15 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
+			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertNotNull(tagFamily);
 			String uuid = tagFamily.getUuid();
-			TagFamily foundTagFamily = tagFamilyDao.findByUuid(uuid);
+			HibTagFamily foundTagFamily = tagFamilyDao.findByUuid(uuid);
 			assertNotNull(foundTagFamily);
 			BulkActionContext bac = createBulkContext();
 			tagFamilyDao.delete(tagFamily, bac);
 			// TODO check for attached nodes
-			Project project = tx.projectDao().findByUuid(uuid);
+			HibProject project = tx.projectDao().findByUuid(uuid);
 			assertNull(project);
 		}
 
@@ -246,7 +246,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 		try (Tx tx = tx()) {
 			UserDao userDao = tx.userDao();
 			TagFamilyDao tagFamilyDao = tx.tagFamilyDao();
-			TagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
+			HibTagFamily tagFamily = tagFamilyDao.create(project(), "test123", user());
 			assertFalse(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));
 			userDao.inheritRolePermissions(user(), project().getTagFamilyPermissionRoot(), tagFamily);
 			assertTrue(userDao.hasPermission(user(), tagFamily, InternalPermission.CREATE_PERM));

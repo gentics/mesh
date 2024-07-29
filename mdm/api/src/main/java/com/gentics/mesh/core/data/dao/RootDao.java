@@ -14,10 +14,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.CoreElement;
+import com.gentics.mesh.core.data.HibCoreElement;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.result.Result;
@@ -33,7 +33,7 @@ import com.gentics.mesh.parameter.PagingParameters;
  * @param <R> root entity type
  * @param <L> leaf entity type
  */
-public interface RootDao<R extends CoreElement<? extends RestModel>, L extends CoreElement<? extends RestModel>> extends Dao<L> {
+public interface RootDao<R extends HibCoreElement<? extends RestModel>, L extends HibCoreElement<? extends RestModel>> extends Dao<L> {
 
 	/**
 	 * Return a of all elements. Only use this method if you know that the root->leaf relation only yields a specific kind of item.
@@ -129,7 +129,7 @@ public interface RootDao<R extends CoreElement<? extends RestModel>, L extends C
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
 		}
 
-		User requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 		String elementUuid = element.getUuid();
 		UserDao userDao = Tx.get().userDao();
 		if (requestUser != null && userDao.hasPermission(requestUser, element, perm)) {

@@ -10,14 +10,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.ContentDao;
 import com.gentics.mesh.core.data.dao.NodeDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -147,22 +147,22 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		try (Tx tx = tx()) {
-			Node node = content();
+			HibNode node = content();
 			ContentDao contentDao = tx.contentDao();
 			// Inject the reference node field
-			NodeFieldContainer original = contentDao.getFieldContainer(node, "en");
-			SchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(original);
+			HibNodeFieldContainer original = contentDao.getFieldContainer(node, "en");
+			HibSchemaVersion schemaVersion = contentDao.getSchemaContainerVersion(original);
 			SchemaVersionModel schema = schemaVersion.getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			schemaVersion.setSchema(schema);
 			actions().updateSchemaVersion(schemaVersion);
-			NodeFieldContainer container = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
+			HibNodeFieldContainer container = contentDao.createFieldContainer(node, english(), project().getLatestBranch(), user(), original, true);
 			container.createNode("reference", folder("2015"));
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			Node node = content();
+			HibNode node = content();
 			NodeDao nodeDao = tx.nodeDao();
 			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 			String etag = nodeDao.getETag(node, mockActionContext());

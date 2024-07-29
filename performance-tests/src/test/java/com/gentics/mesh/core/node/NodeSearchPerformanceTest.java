@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.RoleDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -62,7 +62,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 			RoleDao roleDao = tx.roleDao();
 			NodeDao nodeDao = tx.nodeDao();
 
-			for (Node node : nodeDao.findAll(project())) {
+			for (HibNode node : nodeDao.findAll(project())) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					roleDao.revokePermissions(role(), node, READ_PERM);
 				}

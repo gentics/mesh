@@ -11,14 +11,14 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.PersistingJobDao;
-import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.HibJob;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.job.JobType;
 import com.gentics.mesh.data.dao.util.CommonDaoHelper;
@@ -42,25 +42,25 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Singleton
-public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImpl> implements PersistingJobDao {
+public class JobDaoImpl extends AbstractHibDaoGlobal<HibJob, JobResponse, HibJobImpl> implements PersistingJobDao {
 	private static final Logger log = LoggerFactory.getLogger(JobDaoImpl.class);
 	
 	@Inject
-	public JobDaoImpl(DaoHelper<Job, HibJobImpl> daoHelper, HibPermissionRoots permissionRoots,
+	public JobDaoImpl(DaoHelper<HibJob, HibJobImpl> daoHelper, HibPermissionRoots permissionRoots,
 			CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory,
 			Lazy<Vertx> vertx) {
 		super(daoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 	}
 
 	@Override
-	public Page<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<Job> extraFilter) {
+	public Page<? extends HibJob> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo, Predicate<HibJob> extraFilter) {
 		return daoHelper.findAll(ac, pagingInfo, extraFilter, true);
 	}
 
 	@Override
-	public Job enqueueBranchMigration(User creator, Branch branch, SchemaVersion fromVersion,
-			SchemaVersion toVersion) {
-		Job job = createPersisted(null, j -> {
+	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion,
+			HibSchemaVersion toVersion) {
+		HibJob job = createPersisted(null, j -> {
 			j.setType(JobType.branch);
 			j.setCreationTimestamp();
 			j.setBranch(branch);
@@ -76,8 +76,8 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	}
 
 	@Override
-	public Job enqueueBranchMigration(User creator, Branch branch) {
-		Job job = createPersisted(null, j -> {
+	public HibJob enqueueBranchMigration(HibUser creator, HibBranch branch) {
+		HibJob job = createPersisted(null, j -> {
 			j.setType(JobType.branch);
 			j.setCreationTimestamp();
 			j.setStatus(QUEUED);
@@ -91,9 +91,9 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	}
 
 	@Override
-	public Job enqueueMicroschemaMigration(User creator, Branch branch, MicroschemaVersion fromVersion,
-											  MicroschemaVersion toVersion) {
-		Job job = createPersisted(null, j -> {
+	public HibJob enqueueMicroschemaMigration(HibUser creator, HibBranch branch, HibMicroschemaVersion fromVersion,
+											  HibMicroschemaVersion toVersion) {
+		HibJob job = createPersisted(null, j -> {
 			j.setType(JobType.microschema);
 			j.setCreationTimestamp();
 			j.setBranch(branch);
@@ -109,9 +109,9 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	}
 
 	@Override
-	public Job enqueueSchemaMigration(User creator, Branch branch, SchemaVersion fromVersion,
-			SchemaVersion toVersion) {
-		Job job = createPersisted(null, j -> {
+	public HibJob enqueueSchemaMigration(HibUser creator, HibBranch branch, HibSchemaVersion fromVersion,
+			HibSchemaVersion toVersion) {
+		HibJob job = createPersisted(null, j -> {
 			j.setType(JobType.schema);
 			j.setCreationTimestamp();
 			j.setBranch(branch);
@@ -127,7 +127,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	}
 
 	@Override
-	public Job enqueueVersionPurge(User user, Project project, ZonedDateTime before) {
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project, ZonedDateTime before) {
 		HibVersionPurgeJobImpl job = HibernateTx.get().create(HibVersionPurgeJobImpl.class);
 		job.setCreationTimestamp();
 		job.setType(JobType.versionpurge);
@@ -142,13 +142,13 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	}
 
 	@Override
-	public Job enqueueVersionPurge(User user, Project project) {
+	public HibJob enqueueVersionPurge(HibUser user, HibProject project) {
 		return enqueueVersionPurge(user, project, null);
 	}
 
 	@Override
-	public Job enqueueConsistencyCheck(User user, boolean repair) {
-		Job job = createPersisted(null, j -> {
+	public HibJob enqueueConsistencyCheck(HibUser user, boolean repair) {
+		HibJob job = createPersisted(null, j -> {
 			j.setType(repair ? JobType.consistencyrepair : JobType.consistencycheck);
 			j.setCreationTimestamp();
 			j.setStatus(QUEUED);
@@ -158,7 +158,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	}
 
 	@Override
-	public void delete(Job job, BulkActionContext bac) {
+	public void delete(HibJob job, BulkActionContext bac) {
 		em().remove(job);
 	}
 
@@ -166,7 +166,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 	 * Delete the jobs referencing the provided project.
 	 * @param project
 	 */
-	public void deleteByProject(Project project) {
+	public void deleteByProject(HibProject project) {
 		em().createQuery("delete from job where project = :project")
 				.setParameter("project", project)
 				.executeUpdate();
@@ -178,7 +178,7 @@ public class JobDaoImpl extends AbstractHibDaoGlobal<Job, JobResponse, HibJobImp
 		List<HibJobImpl> failedJobs = em().createQuery("from job where errorMessage is not null", HibJobImpl.class)
 				.getResultList();
 		long count = 0;
-		for (Job job : failedJobs) {
+		for (HibJob job : failedJobs) {
 			delete(job, null);
 			count++;
 		}

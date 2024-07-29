@@ -31,10 +31,10 @@ import com.gentics.graphqlfilter.filter.operation.Comparison;
 import com.gentics.graphqlfilter.filter.operation.FilterOperation;
 import com.gentics.graphqlfilter.filter.operation.UnformalizableQuery;
 import com.gentics.mesh.core.action.DAOActions;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.CoreElement;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibCoreElement;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.PersistingRootDao;
 import com.gentics.mesh.core.data.dao.UserDao;
@@ -42,9 +42,9 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -172,7 +172,7 @@ public abstract class AbstractTypeProvider {
 	 * @param source
 	 * @return
 	 */
-	public List<String> getLanguageArgument(DataFetchingEnvironment env, FieldContainer source) {
+	public List<String> getLanguageArgument(DataFetchingEnvironment env, HibFieldContainer source) {
 		return getLanguageArgument(env, Arrays.asList(source.getLanguageTag()));
 	}
 
@@ -374,9 +374,9 @@ public abstract class AbstractTypeProvider {
 	 * @param root
 	 * @return
 	 */
-	protected CoreElement<?> handleUuidNameArgs(DataFetchingEnvironment env, Object parent, DAOActions<?, ?> actions) {
+	protected HibCoreElement<?> handleUuidNameArgs(DataFetchingEnvironment env, Object parent, DAOActions<?, ?> actions) {
 		GraphQLContext gc = env.getContext();
-		CoreElement<?> element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc, parent), uuid, null, false),
+		HibCoreElement<?> element = handleUuidNameArgsNoPerm(env, uuid -> actions.loadByUuid(context(Tx.get(), gc, parent), uuid, null, false),
 			name -> actions.loadByName(context(Tx.get(), gc), name, null, false));
 		if (element == null) {
 			return null;
@@ -393,10 +393,10 @@ public abstract class AbstractTypeProvider {
 	 * @param nameFetcher
 	 * @return
 	 */
-	protected CoreElement<?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, CoreElement<?>> uuidFetcher,
-		Function<String, CoreElement<?>> nameFetcher) {
+	protected HibCoreElement<?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, HibCoreElement<?>> uuidFetcher,
+		Function<String, HibCoreElement<?>> nameFetcher) {
 		String uuid = env.getArgument("uuid");
-		CoreElement<?> element = null;
+		HibCoreElement<?> element = null;
 		if (uuid != null) {
 			element = uuidFetcher.apply(uuid);
 		}
@@ -411,26 +411,26 @@ public abstract class AbstractTypeProvider {
 		return element;
 	}
 
-	protected BaseElement handleBranchSchema(DataFetchingEnvironment env) {
+	protected HibBaseElement handleBranchSchema(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch branch = env.getSource();
-		Stream<? extends SchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
+		HibBranch branch = env.getSource();
+		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false);
 		UserDao userDao = Tx.get().userDao();
 
 		// We need to handle permissions here since we check the schema container perm and not the schema container version perm.
 		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
-			Schema container = schema.getSchemaContainer();
+			HibSchema container = schema.getSchemaContainer();
 			return container.getUuid().equals(uuid) && userDao.hasPermission(gc.getUser(), container, READ_PERM);
 		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && userDao.hasPermission(gc.getUser(), schema
 			.getSchemaContainer(), READ_PERM)).findFirst().get());
 	}
 
-	protected Page<SchemaVersion> handleBranchSchemas(DataFetchingEnvironment env) {
+	protected Page<HibSchemaVersion> handleBranchSchemas(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
-		Branch branch = env.getSource();
+		HibBranch branch = env.getSource();
 		UserDao userDao = Tx.get().userDao();
 
-		Stream<? extends SchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
+		Stream<? extends HibSchemaVersion> schemas = StreamSupport.stream(branch.findActiveSchemaVersions().spliterator(), false).filter(
 			schema -> userDao.hasPermission(gc.getUser(), schema.getSchemaContainer(), READ_PERM));
 		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
@@ -451,7 +451,7 @@ public abstract class AbstractTypeProvider {
 	 * @param filterProvider
 	 * @return
 	 */
-	protected <T extends CoreElement<?>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
+	protected <T extends HibCoreElement<?>> GraphQLFieldDefinition newPagingSearchField(String name, String description,
 		DAOActions<T, ?> actions,
 		String pageTypeName, SearchHandler<?, ?> searchHandler, EntityFilter<T> filterProvider) {
 		Builder fieldDefBuilder = newFieldDefinition()
@@ -635,7 +635,7 @@ public abstract class AbstractTypeProvider {
 		Tx tx = Tx.get();
 		NodeDao nodeDao = tx.nodeDao();
 		GraphQLContext gc = env.getContext();
-		Project project = tx.getProject(gc);
+		HibProject project = tx.getProject(gc);
 
 		List<String> languageTags = getLanguageArgument(env);
 		ContainerType type = getNodeVersion(env);

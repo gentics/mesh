@@ -1,6 +1,6 @@
 {
   "type" : "object",
-  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchInfoSchemaListModel",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:branch:info:BranchInfoSchemaList",
   "properties" : {
     "schemas" : {
       "type" : "array",

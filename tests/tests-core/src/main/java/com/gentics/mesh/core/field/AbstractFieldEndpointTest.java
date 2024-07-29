@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.field.list.ListField;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.node.field.list.HibListField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -30,18 +30,18 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public abstract class AbstractFieldEndpointTest extends AbstractMeshTest implements FieldEndpointTestcases {
 
-	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
+	protected NodeResponse readNode(HibNode node, String... expandedFieldNames) {
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
 		return call(() -> client().findNodeByUuid(PROJECT_NAME, tx(() -> node.getUuid()), parameters, new VersioningParametersImpl().draft()));
 	}
 
-	protected void createNodeAndExpectFailure(String fieldKey, FieldModel field, HttpResponseStatus status, String bodyMessageI18nKey,
+	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
 		String... i18nParams) {
 		if (field != null) {
 			try (Tx tx = tx()) {
-				Node node = folder("2015");
+				HibNode node = folder("2015");
 				prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true);
 				tx.success();
 			} catch (IOException e) {
@@ -66,7 +66,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 * @param field
 	 * @return
 	 */
-	protected NodeResponse updateNode(String fieldKey, FieldModel field) {
+	protected NodeResponse updateNode(String fieldKey, Field field) {
 		return updateNode(fieldKey, field, false);
 	}
 
@@ -78,7 +78,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 * @param expandAll
 	 * @return
 	 */
-	protected NodeResponse updateNode(String fieldKey, FieldModel field, boolean expandAll) {
+	protected NodeResponse updateNode(String fieldKey, Field field, boolean expandAll) {
 		tx(tx -> {
 			prepareTypedSchema(schemaContainer("folder"), Optional.ofNullable(field).stream()
 				.map(TestHelper::fieldIntoSchema)
@@ -90,7 +90,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
-			Node node = folder("2015");
+			HibNode node = folder("2015");
 			nodeUpdateRequest.setVersion(contentDao.getLatestDraftFieldContainer(node, english()).getVersion().toString());
 			tx.success();
 		}
@@ -101,8 +101,8 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		return response;
 	}
 
-	protected void updateNodeFailure(String fieldKey, FieldModel field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
-		Node node = folder("2015");
+	protected void updateNodeFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+		HibNode node = folder("2015");
 		tx(tx -> { 
 			prepareTypedSchema(node, TestHelper.fieldIntoSchema(field).setName(fieldKey), true); 
 			tx.success();
@@ -128,7 +128,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 *            field name
 	 * @return values or null
 	 */
-	protected <U, T extends ListField<?, ?, U>> List<U> getListValues(Function<String, T> getter, String fieldKey) {
+	protected <U, T extends HibListField<?, ?, U>> List<U> getListValues(Function<String, T> getter, String fieldKey) {
 		T field = getter.apply(fieldKey);
 		return field != null ? field.getValues() : null;
 	}

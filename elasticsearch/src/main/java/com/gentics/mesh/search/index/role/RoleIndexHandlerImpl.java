@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.role.Role;
+import com.gentics.mesh.core.data.role.HibRole;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
 import com.gentics.mesh.core.db.Database;
@@ -34,7 +34,7 @@ import io.reactivex.Flowable;
  * Handler for the elasticsearch role index.
  */
 @Singleton
-public class RoleIndexHandlerImpl extends AbstractIndexHandler<Role>  implements RoleIndexHandler {
+public class RoleIndexHandlerImpl extends AbstractIndexHandler<HibRole>  implements RoleIndexHandler {
 
 	protected final RoleTransformer transformer;
 
@@ -54,8 +54,8 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<Role>  implements
 	}
 
 	@Override
-	public Class<Role> getElementClass() {
-		return Role.class;
+	public Class<HibRole> getElementClass() {
+		return HibRole.class;
 	}
 
 	@Override
@@ -77,38 +77,38 @@ public class RoleIndexHandlerImpl extends AbstractIndexHandler<Role>  implements
 
 	@Override
 	public Map<String, Optional<IndexInfo>> getIndices() {
-		String indexName = Role.composeIndexName();
+		String indexName = HibRole.composeIndexName();
 		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping(), "role");
 		return Collections.singletonMap(indexName, Optional.of(info));
 	}
 
 	@Override
 	public Flowable<SearchRequest> syncIndices(Optional<Pattern> indexPattern) {
-		return diffAndSync(Role.composeIndexName(), null, indexPattern);
+		return diffAndSync(HibRole.composeIndexName(), null, indexPattern);
 	}
 
 	@Override
 	public Set<String> filterUnknownIndices(Set<String> indices) {
-		return filterIndicesByType(indices, Role.composeIndexName());
+		return filterIndicesByType(indices, HibRole.composeIndexName());
 	}
 
 	@Override
 	public Set<String> getIndicesForSearch(InternalActionContext ac) {
-		return Collections.singleton(Role.composeIndexName());
+		return Collections.singleton(HibRole.composeIndexName());
 	}
 
 	@Override
-	public Function<String, Role> elementLoader() {
+	public Function<String, HibRole> elementLoader() {
 		return (uuid) -> Tx.get().roleDao().findByUuid(uuid);
 	}
 
 	@Override
-	public Function<Collection<String>, Stream<Pair<String, Role>>> elementsLoader() {
+	public Function<Collection<String>, Stream<Pair<String, HibRole>>> elementsLoader() {
 		return (uuids) -> Tx.get().roleDao().findByUuids(uuids);
 	}
 
 	@Override
-	public Stream<? extends Role> loadAllElements() {
+	public Stream<? extends HibRole> loadAllElements() {
 		return Tx.get().roleDao().findAll().stream();
 	}
 

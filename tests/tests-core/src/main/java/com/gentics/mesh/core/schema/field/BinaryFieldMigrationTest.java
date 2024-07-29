@@ -24,9 +24,9 @@ import com.gentics.mesh.core.rest.node.field.BinaryCheckStatus;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.binary.Binaries;
-import com.gentics.mesh.core.data.binary.Binary;
+import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.dao.BinaryDao;
-import com.gentics.mesh.core.data.node.field.BinaryField;
+import com.gentics.mesh.core.data.node.field.HibBinaryField;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
@@ -53,7 +53,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		Binaries binaries = Tx.get().binaries();
 
 		// Check whether the binary could already be found
-		Binary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
+		HibBinary binary = binaries.findByHash(hash).runInExistingTx(Tx.get());
 		boolean store = false;
 		if (binary == null) {
 			binary = binaries.create(hash, 1L).runInExistingTx(Tx.get());
@@ -62,7 +62,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 
 		binary.setCheckStatus(BinaryCheckStatus.ACCEPTED);
 
-		BinaryField field = container.createBinary(name, binary);
+		HibBinaryField field = container.createBinary(name, binary);
 		field.setFileName(FILENAME);
 		field.setMimeType(MIMETYPE);
 
@@ -81,7 +81,7 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	final DataProvider FILL_WITH_STATUS_POSTPONED = (container, name) -> {
 		FILL.set(container, name);
 
-		Binary binary = Tx.get().binaries().findByHash(hash).runInExistingTx(Tx.get());
+		HibBinary binary = Tx.get().binaries().findByHash(hash).runInExistingTx(Tx.get());
 
 		binary.setCheckStatus(BinaryCheckStatus.POSTPONED);
 	};

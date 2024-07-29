@@ -11,12 +11,12 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.NodeDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.path.Path;
@@ -48,7 +48,7 @@ public class NavRootHandler {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		String path = rc.request().path().substring(
 			rc.mountPoint().length());
-		User requestUser = ac.getUser();
+		HibUser requestUser = ac.getUser();
 
 		utils.syncTx(ac, tx -> {
 			ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
@@ -61,11 +61,11 @@ public class NavRootHandler {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
 			PathSegmentImpl graphSegment = (PathSegmentImpl) lastSegment;
-			NodeFieldContainer container = graphSegment.getContainer();
+			HibNodeFieldContainer container = graphSegment.getContainer();
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodeSegment(path));
 			}
-			Node node = tx.contentDao().getNode(container);
+			HibNode node = tx.contentDao().getNode(container);
 			if (!userDao.hasPermission(requestUser, node, READ_PUBLISHED_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid(), READ_PUBLISHED_PERM.getRestPerm().getName());
 			}

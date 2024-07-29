@@ -11,13 +11,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
@@ -73,7 +73,7 @@ public class CrossProjectLinkRendererTest extends AbstractMeshTest {
 			String linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, nodeResponse.getUuid(), LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 
-			Node node = tx.nodeDao().findByUuid(tx.projectDao().findByName(OTHER_PROJECT_NAME), nodeResponse.getUuid());
+			HibNode node = tx.nodeDao().findByUuid(tx.projectDao().findByName(OTHER_PROJECT_NAME), nodeResponse.getUuid());
 			linkToNode = replacer.resolve(ac, initialBranchUuid(), ContainerType.DRAFT, node, LinkType.SHORT, "en");
 			assertEquals("Check rendered content", "https://dummy.io/new-page.html", linkToNode);
 		}
@@ -81,7 +81,7 @@ public class CrossProjectLinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeContentRendering() {
-		NodeResponse createResponse = createNode("name", StringFieldModel.of("{{mesh.link('" + nodeResponse.getUuid() + "')}}"));
+		NodeResponse createResponse = createNode("name", StringField.of("{{mesh.link('" + nodeResponse.getUuid() + "')}}"));
 		NodeResponse nodeResponse = client().findNodeByUuid(PROJECT_NAME, createResponse.getUuid(), new NodeParametersImpl().setResolveLinks(LinkType.SHORT)).blockingGet();
 		assertThat(nodeResponse).hasStringField("name", "https://dummy.io/new-page.html");
 	}

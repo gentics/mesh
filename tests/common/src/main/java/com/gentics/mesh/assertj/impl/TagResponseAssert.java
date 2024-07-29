@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
-import com.gentics.mesh.core.data.tag.Tag;
+import com.gentics.mesh.core.data.tag.HibTag;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 
 public class TagResponseAssert extends AbstractMeshAssert<TagResponseAssert, TagResponse> {
@@ -13,7 +13,7 @@ public class TagResponseAssert extends AbstractMeshAssert<TagResponseAssert, Tag
 		super(actual, TagResponseAssert.class);
 	}
 
-	public TagResponseAssert matches(Tag tag) {
+	public TagResponseAssert matches(HibTag tag) {
 		assertGenericNode(tag, actual);
 		assertEquals(tag.getUuid(), actual.getUuid());
 		return this;

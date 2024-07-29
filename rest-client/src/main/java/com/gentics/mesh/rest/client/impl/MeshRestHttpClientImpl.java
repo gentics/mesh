@@ -34,8 +34,8 @@ import com.gentics.mesh.core.rest.branch.BranchCreateRequest;
 import com.gentics.mesh.core.rest.branch.BranchListResponse;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.branch.BranchUpdateRequest;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaListModel;
-import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaListModel;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoMicroschemaList;
+import com.gentics.mesh.core.rest.branch.info.BranchInfoSchemaList;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.ObjectPermissionGrantRequest;
 import com.gentics.mesh.core.rest.common.ObjectPermissionResponse;
@@ -1396,57 +1396,57 @@ public abstract class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient 
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaListModel> getBranchSchemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoSchemaList> getBranchSchemaVersions(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaListModel.class);
+		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid,
-		BranchInfoSchemaListModel schemaVersionReferences) {
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
+		BranchInfoSchemaList schemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaListModel.class,
+		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/schemas", BranchInfoSchemaList.class,
 			schemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoSchemaListModel> assignBranchSchemaVersions(String projectName, String branchUuid,
+	public MeshRequest<BranchInfoSchemaList> assignBranchSchemaVersions(String projectName, String branchUuid,
 		SchemaReference... schemaVersionReferences) {
-		BranchInfoSchemaListModel info = new BranchInfoSchemaListModel();
+		BranchInfoSchemaList info = new BranchInfoSchemaList();
 		info.add(schemaVersionReferences);
 		return assignBranchSchemaVersions(projectName, branchUuid, info);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaListModel> getBranchMicroschemaVersions(String projectName, String branchUuid) {
+	public MeshRequest<BranchInfoMicroschemaList> getBranchMicroschemaVersions(String projectName, String branchUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
 		return prepareRequest(GET, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
-			BranchInfoMicroschemaListModel.class);
+			BranchInfoMicroschemaList.class);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
-		BranchInfoMicroschemaListModel microschemaVersionReferences) {
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+		BranchInfoMicroschemaList microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
 		return prepareRequest(POST, "/" + encodeSegment(projectName) + "/branches/" + branchUuid + "/microschemas",
-			BranchInfoMicroschemaListModel.class, microschemaVersionReferences);
+			BranchInfoMicroschemaList.class, microschemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<BranchInfoMicroschemaListModel> assignBranchMicroschemaVersions(String projectName, String branchUuid,
+	public MeshRequest<BranchInfoMicroschemaList> assignBranchMicroschemaVersions(String projectName, String branchUuid,
 		MicroschemaReference... microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(branchUuid, "branchUuid must not be null");
 
-		BranchInfoMicroschemaListModel list = new BranchInfoMicroschemaListModel();
+		BranchInfoMicroschemaList list = new BranchInfoMicroschemaList();
 		list.add(microschemaVersionReferences);
 		return assignBranchMicroschemaVersions(projectName, branchUuid, list);
 	}

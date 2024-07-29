@@ -12,36 +12,36 @@ import com.gentics.mesh.core.rest.schema.impl.*;
  */
 public enum FieldTypes {
 
-	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringFieldModel.class, StringFieldImpl.class),
+	STRING(StringFieldSchema.class, StringFieldSchemaImpl.class, StringField.class, StringFieldImpl.class),
 
-	HTML(HtmlFieldSchema.class, HtmlFieldSchemaImpl.class, HtmlFieldModel.class, HtmlFieldImpl.class),
+	HTML(HtmlFieldSchema.class, HtmlFieldSchemaImpl.class, HtmlField.class, HtmlFieldImpl.class),
 
-	NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class, NumberFieldModel.class, NumberFieldImpl.class),
+	NUMBER(NumberFieldSchema.class, NumberFieldSchemaImpl.class, NumberField.class, NumberFieldImpl.class),
 
-	DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateFieldModel.class, DateFieldImpl.class),
+	DATE(DateFieldSchema.class, DateFieldSchemaImpl.class, DateField.class, DateFieldImpl.class),
 
-	BOOLEAN(BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanFieldModel.class, BooleanFieldImpl.class),
+	BOOLEAN(BooleanFieldSchema.class, BooleanFieldSchemaImpl.class, BooleanField.class, BooleanFieldImpl.class),
 
-	NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class, NodeFieldModel.class, NodeFieldImpl.class),
+	NODE(NodeFieldSchema.class, NodeFieldSchemaImpl.class, NodeField.class, NodeFieldImpl.class),
 
-	LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListFieldModel.class, ListFieldModel.class),
+	LIST(ListFieldSchema.class, ListFieldSchemaImpl.class, ListField.class, ListField.class),
 
-	BINARY(BinaryFieldSchema.class, BinaryFieldSchemaImpl.class, BinaryFieldModel.class, BinaryFieldImpl.class),
+	BINARY(BinaryFieldSchema.class, BinaryFieldSchemaImpl.class, BinaryField.class, BinaryFieldImpl.class),
 
-	S3BINARY(S3BinaryFieldSchema.class, S3BinaryFieldSchemaImpl.class, S3BinaryFieldModel.class, S3BinaryFieldImpl.class),
+	S3BINARY(S3BinaryFieldSchema.class, S3BinaryFieldSchemaImpl.class, S3BinaryField.class, S3BinaryFieldImpl.class),
 
-	MICRONODE(MicronodeFieldSchema.class, MicronodeFieldSchemaImpl.class, MicronodeFieldModel.class, MicronodeResponse.class);
+	MICRONODE(MicronodeFieldSchema.class, MicronodeFieldSchemaImpl.class, MicronodeField.class, MicronodeResponse.class);
 
 	private Class<? extends FieldSchema> schemaInterfaceClazz;
 
 	private Class<? extends FieldSchema> schemaImplementationClazz;
 
-	private Class<? extends FieldModel> fieldInterfaceClass;
+	private Class<? extends Field> fieldInterfaceClass;
 
-	private Class<? extends FieldModel> fieldImplementationClass;
+	private Class<? extends Field> fieldImplementationClass;
 
 	private FieldTypes(Class<? extends FieldSchema> schemaInterfaceClazz, Class<? extends FieldSchema> schemaImplementationClazz,
-		Class<? extends FieldModel> fieldInterfaceClass, Class<? extends FieldModel> fieldImplementationClass) {
+		Class<? extends Field> fieldInterfaceClass, Class<? extends Field> fieldImplementationClass) {
 		this.schemaInterfaceClazz = schemaInterfaceClazz;
 		this.schemaImplementationClazz = schemaImplementationClazz;
 		this.fieldImplementationClass = fieldImplementationClass;
@@ -56,11 +56,11 @@ public enum FieldTypes {
 		return schemaInterfaceClazz;
 	}
 
-	public Class<? extends FieldModel> getFieldImplementationClass() {
+	public Class<? extends Field> getFieldImplementationClass() {
 		return fieldImplementationClass;
 	}
 
-	public Class<? extends FieldModel> getFieldInterfaceClass() {
+	public Class<? extends Field> getFieldInterfaceClass() {
 		return fieldInterfaceClass;
 	}
 

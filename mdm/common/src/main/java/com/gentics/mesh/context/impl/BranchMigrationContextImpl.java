@@ -3,7 +3,7 @@ package com.gentics.mesh.context.impl;
 import java.util.Objects;
 
 import com.gentics.mesh.context.BranchMigrationContext;
-import com.gentics.mesh.core.data.branch.Branch;
+import com.gentics.mesh.core.data.branch.HibBranch;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.rest.event.node.BranchMigrationCause;
 
@@ -14,11 +14,11 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 
 	private BranchMigrationCause cause;
 
-	private Branch newBranch;
+	private HibBranch newBranch;
 
 	private MigrationStatusHandler status;
 
-	private Branch oldBranch;
+	private HibBranch oldBranch;
 
 	public BranchMigrationContextImpl() {
 	}
@@ -33,11 +33,11 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 	}
 
 	@Override
-	public Branch getNewBranch() {
+	public HibBranch getNewBranch() {
 		return newBranch;
 	}
 
-	public void setNewBranch(Branch newBranch) {
+	public void setNewBranch(HibBranch newBranch) {
 		this.newBranch = newBranch;
 	}
 
@@ -51,11 +51,11 @@ public class BranchMigrationContextImpl implements BranchMigrationContext {
 	}
 
 	@Override
-	public Branch getOldBranch() {
+	public HibBranch getOldBranch() {
 		return oldBranch;
 	}
 
-	public void setOldBranch(Branch oldBranch) {
+	public void setOldBranch(HibBranch oldBranch) {
 		this.oldBranch = oldBranch;
 	}
 

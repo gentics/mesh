@@ -9,18 +9,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.BulkActionContext;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.Language;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibLanguage;
 import com.gentics.mesh.core.data.dao.BranchDao;
 import com.gentics.mesh.core.data.dao.MicroschemaDao;
 import com.gentics.mesh.core.data.dao.PermissionRoots;
 import com.gentics.mesh.core.data.dao.PersistingProjectDao;
 import com.gentics.mesh.core.data.dao.SchemaDao;
 import com.gentics.mesh.core.data.dao.TagFamilyDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.Schema;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibSchema;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.result.Result;
@@ -45,49 +45,49 @@ import org.slf4j.LoggerFactory;
  *
  */
 @Singleton
-public class ProjectDaoImpl extends AbstractHibDaoGlobal<Project, ProjectResponse, HibProjectImpl> implements PersistingProjectDao {
+public class ProjectDaoImpl extends AbstractHibDaoGlobal<HibProject, ProjectResponse, HibProjectImpl> implements PersistingProjectDao {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectDaoImpl.class);
 
 	@Inject
-	public ProjectDaoImpl(DaoHelper<Project, HibProjectImpl> daoHelper, HibPermissionRoots permissionRoots,
+	public ProjectDaoImpl(DaoHelper<HibProject, HibProjectImpl> daoHelper, HibPermissionRoots permissionRoots,
 			CommonDaoHelper commonDaoHelper, CurrentTransaction currentTransaction, EventFactory eventFactory,
 			Lazy<Vertx> vertx) {
 		super(daoHelper, permissionRoots, commonDaoHelper, currentTransaction, eventFactory, vertx);
 	}
 
 	@Override
-	public Result<? extends Node> findNodes(Project project) {
+	public Result<? extends HibNode> findNodes(HibProject project) {
 		return HibernateTx.get().nodeDao().findAll(project);
 	}
 
 	@Override
-	public BaseElement getTagFamilyPermissionRoot(Project project) {
+	public HibBaseElement getTagFamilyPermissionRoot(HibProject project) {
 		return permissionRoots.buildPermissionRootWithParent(project, PermissionType.TAG_FAMILY);
 	}
 
 	@Override
-	public BaseElement getSchemaContainerPermissionRoot(Project project) {
+	public HibBaseElement getSchemaContainerPermissionRoot(HibProject project) {
 		return permissionRoots.buildPermissionRootWithParent(project, PermissionType.SCHEMA);
 	}
 
 	@Override
-	public BaseElement getMicroschemaContainerPermissionRoot(Project project) {
+	public HibBaseElement getMicroschemaContainerPermissionRoot(HibProject project) {
 		return permissionRoots.buildPermissionRootWithParent(project, PermissionType.MICROSCHEMA);
 	}
 
 	@Override
-	public BaseElement getBranchPermissionRoot(Project project) {
+	public HibBaseElement getBranchPermissionRoot(HibProject project) {
 		return permissionRoots.buildPermissionRootWithParent(project, PermissionType.BRANCH);
 	}
 
 	@Override
-	public BaseElement getNodePermissionRoot(Project project) {
+	public HibBaseElement getNodePermissionRoot(HibProject project) {
 		return permissionRoots.buildPermissionRootWithParent(project, PermissionType.NODE);
 	}
 
 	@Override
-	public void delete(Project project, BulkActionContext bac) {
+	public void delete(HibProject project, BulkActionContext bac) {
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting project {" + project.getName() + "}");
 		}
@@ -114,12 +114,12 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<Project, ProjectRespons
 		project = em().merge(project);
 
 		// Unassign the schemas from the container
-		for (Schema container : project.getSchemas().list()) {
+		for (HibSchema container : project.getSchemas().list()) {
 			schemaDao.unassign(container, project, bac.batch());
 		}
 
 		// Unassign the microschemas from the container
-		for (Microschema container : project.getMicroschemas().list()) {
+		for (HibMicroschema container : project.getMicroschemas().list()) {
 			microschemaDao.unassign(container, project, bac.batch());
 		}
 
@@ -142,14 +142,14 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<Project, ProjectRespons
 	}
 
 	@Override
-	public BaseElement resolveToElement(BaseElement permissionRoot, BaseElement root, Stack<String> stack) {
+	public HibBaseElement resolveToElement(HibBaseElement permissionRoot, HibBaseElement root, Stack<String> stack) {
 		if (stack.isEmpty()) {
 			return permissionRoot;
 		} else {
 			String uuidOrNameSegment = stack.pop();
 
 			// Try to locate the project by name first.
-			Project project = findByUuid(uuidOrNameSegment);
+			HibProject project = findByUuid(uuidOrNameSegment);
 			if (project == null) {
 				// Fallback to locate the project by name instead
 				project = findByName(uuidOrNameSegment);
@@ -162,7 +162,7 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<Project, ProjectRespons
 				return project;
 			} else {
 				String nestedRootNode = stack.pop();
-				BaseElement projectSpecificPermissionRoot = permissionRoots.buildPermissionRootWithParent(project, nestedRootNode);
+				HibBaseElement projectSpecificPermissionRoot = permissionRoots.buildPermissionRootWithParent(project, nestedRootNode);
 				switch (nestedRootNode) {
 				case PermissionRoots.BRANCHES:
 					return currentTransaction.getTx().branchDao().resolveToElement(projectSpecificPermissionRoot, project, stack);
@@ -182,14 +182,14 @@ public class ProjectDaoImpl extends AbstractHibDaoGlobal<Project, ProjectRespons
 	}
 
 	@Override
-	public Project findByName(String name) {
+	public HibProject findByName(String name) {
 		return HibernateTx.get().data().mesh().projectNameCache().get(name, pName -> {
 			return super.findByName(pName);
 		});
 	}
 
 	@Override
-	public Result<? extends Language> findLanguages(Project project) {
+	public Result<? extends HibLanguage> findLanguages(HibProject project) {
 		return project.getLanguages();
 	}
 }

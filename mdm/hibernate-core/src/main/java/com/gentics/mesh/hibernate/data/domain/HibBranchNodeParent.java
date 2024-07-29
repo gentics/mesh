@@ -6,8 +6,8 @@ import java.util.Objects;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.jpa.AvailableHints;
 
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.node.HibNode;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -172,7 +172,7 @@ public class HibBranchNodeParent implements Serializable {
 
     public HibBranchNodeParent() {}
 
-    public HibBranchNodeParent(Node node, Node parent, Branch branch, int distance) {
+    public HibBranchNodeParent(HibNode node, HibNode parent, HibBranch branch, int distance) {
         child = (HibNodeImpl) node;
         nodeParent = (HibNodeImpl) parent;
         branchParent = (HibBranchImpl) branch;
@@ -188,27 +188,27 @@ public class HibBranchNodeParent implements Serializable {
         this.id = id;
     }
 
-    public Node getChild() {
+    public HibNode getChild() {
         return child;
     }
 
-    public void setChild(Node child) {
+    public void setChild(HibNode child) {
         this.child = (HibNodeImpl) child;
     }
 
-    public Node getNodeParent() {
+    public HibNode getNodeParent() {
         return nodeParent;
     }
 
-    public void setNodeParent(Node nodeParent) {
+    public void setNodeParent(HibNode nodeParent) {
         this.nodeParent = (HibNodeImpl) nodeParent;
     }
 
-    public Branch getBranchParent() {
+    public HibBranch getBranchParent() {
         return branchParent;
     }
 
-    public void setBranchParent(Branch branchParent) {
+    public void setBranchParent(HibBranch branchParent) {
         this.branchParent = (HibBranchImpl) branchParent;
     }
 

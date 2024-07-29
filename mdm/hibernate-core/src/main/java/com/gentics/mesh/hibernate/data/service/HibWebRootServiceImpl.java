@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cache.WebrootPathCache;
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.service.AbstractWebRootService;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.core.rest.common.ContainerType;
@@ -25,7 +25,7 @@ public class HibWebRootServiceImpl extends AbstractWebRootService {
 	}
 
 	@Override
-	public NodeFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
+	public HibNodeFieldContainer findByUrlFieldPath(String branchUuid, String path, ContainerType type) {
 		ContentDaoImpl contentDao = HibernateTx.get().contentDao();
 		return contentDao.streamEdgesOfWebrootField(path, branchUuid, type)
 				.map(contentDao::getFieldContainerOfEdge)

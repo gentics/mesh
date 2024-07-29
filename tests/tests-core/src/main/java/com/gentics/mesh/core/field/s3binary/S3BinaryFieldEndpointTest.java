@@ -24,8 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.schema.Schema;
-import com.gentics.mesh.core.data.schema.SchemaVersion;
+import com.gentics.mesh.core.data.schema.HibSchema;
+import com.gentics.mesh.core.data.schema.HibSchemaVersion;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -63,9 +63,9 @@ public class S3BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
      */
     @Before
     public void updateSchema() throws IOException {
-    	Schema schemaContainer = schemaContainer("content");
+    	HibSchema schemaContainer = schemaContainer("content");
 		String schemaUuid = tx(() -> schemaContainer.getUuid());
-		SchemaVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
+		HibSchemaVersion currentVersion = tx(() -> schemaContainer.getLatestVersion());
 		assertNull("The schema should not yet have any changes", tx(() -> currentVersion.getNextChange()));
 
 		// 1. Setup changes

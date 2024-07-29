@@ -9,8 +9,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.context.ContextDataRegistry;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.shared.SharedKeys;
 
@@ -26,7 +26,7 @@ public class ContextDataRegistryImpl implements ContextDataRegistry {
 	}
 
 	@Override
-	public Project getProject(InternalActionContext ac) {
+	public HibProject getProject(InternalActionContext ac) {
 		if (ac instanceof NodeMigrationActionContext) {
 			return ((NodeMigrationActionContext) ac).getProject();
 		}
@@ -34,12 +34,12 @@ public class ContextDataRegistryImpl implements ContextDataRegistry {
 	}
 
 	@Override
-	public void setProject(InternalActionContext ac, Project project) {
+	public void setProject(InternalActionContext ac, HibProject project) {
 		ac.put(SharedKeys.PROJECT_CONTEXT_KEY, project);
 	}
 
 	@Override
-	public Branch getBranch(InternalActionContext ac, Project project) {
+	public HibBranch getBranch(InternalActionContext ac, HibProject project) {
 		if (ac instanceof NodeMigrationActionContext) {
 			return ((NodeMigrationActionContext) ac).getBranch();
 		}

@@ -13,8 +13,8 @@ import com.gentics.mesh.core.action.TagDAOActions;
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.perm.InternalPermission;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.PathParameters;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -32,9 +32,9 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Tag loadByUuid(DAOActionContext ctx, String tagUuid, InternalPermission perm, boolean errorIfNotFound) {
+	public HibTag loadByUuid(DAOActionContext ctx, String tagUuid, InternalPermission perm, boolean errorIfNotFound) {
 		TagDao tagDao = ctx.tx().tagDao();
-		TagFamily tagFamily = ctx.parent();
+		HibTagFamily tagFamily = ctx.parent();
 		if (perm == null) {
 			return tagDao.findByUuid(tagFamily, tagUuid);
 		} else {
@@ -43,9 +43,9 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Tag loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
+	public HibTag loadByName(DAOActionContext ctx, String name, InternalPermission perm, boolean errorIfNotFound) {
 		TagDao tagDao = ctx.tx().tagDao();
-		TagFamily tagFamily = ctx.parent();
+		HibTagFamily tagFamily = ctx.parent();
 		if (perm == null) {
 			if (tagFamily == null) {
 				return tagDao.findByName(name);
@@ -58,8 +58,8 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Page<? extends Tag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
-		TagFamily hibTagFamily = ctx.parent();
+	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo) {
+		HibTagFamily hibTagFamily = ctx.parent();
 		TagDao tagDao = Tx.get().tagDao();
 		if (hibTagFamily != null) {
 			return tagDao.findAll(hibTagFamily, ctx.ac(), pagingInfo);
@@ -69,8 +69,8 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public Page<? extends Tag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<Tag> extraFilter) {
-		TagFamily hibTagFamily = ctx.parent();
+	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, Predicate<HibTag> extraFilter) {
+		HibTagFamily hibTagFamily = ctx.parent();
 		TagDao tagDao = Tx.get().tagDao();
 		if (hibTagFamily != null) {
 			return ctx.tx().tagDao().findAll(hibTagFamily, ctx.ac(), pagingInfo, extraFilter);
@@ -80,17 +80,17 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public boolean update(Tx tx, Tag element, InternalActionContext ac, EventQueueBatch batch) {
+	public boolean update(Tx tx, HibTag element, InternalActionContext ac, EventQueueBatch batch) {
 		TagDao tagDao = tx.tagDao();
 		return tagDao.update(element, ac, batch);
 	}
 
 	@Override
-	public Tag create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String tagUuid) {
+	public HibTag create(Tx tx, InternalActionContext ac, EventQueueBatch batch, String tagUuid) {
 		// TODO add parent uuid parameter and utilize it instead of extracting it from ac
 		TagDao tagDao = tx.tagDao();
 		String tagFamilyUuid = PathParameters.getTagFamilyUuid(ac);
-		TagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
+		HibTagFamily tagFamily = getTagFamily(tx, ac, tagFamilyUuid);
 		if (tagUuid == null) {
 			return tagDao.create(tagFamily, ac, batch);
 		} else {
@@ -99,35 +99,35 @@ public class TagDAOActionsImpl implements TagDAOActions {
 	}
 
 	@Override
-	public void delete(Tx tx, Tag tag, BulkActionContext bac) {
+	public void delete(Tx tx, HibTag tag, BulkActionContext bac) {
 		TagDao tagDao = tx.tagDao();
 		tagDao.delete(tag, bac);
 	}
 
 	@Override
-	public TagResponse transformToRestSync(Tx tx, Tag tag, InternalActionContext ac, int level, String... languageTags) {
+	public TagResponse transformToRestSync(Tx tx, HibTag tag, InternalActionContext ac, int level, String... languageTags) {
 		TagDao tagDao = tx.tagDao();
 		return tagDao.transformToRestSync(tag, ac, level, languageTags);
 	}
 
 	@Override
-	public String getAPIPath(Tx tx, InternalActionContext ac, Tag tag) {
+	public String getAPIPath(Tx tx, InternalActionContext ac, HibTag tag) {
 		TagDao tagDao = tx.tagDao();
 		return tagDao.getAPIPath(tag, ac);
 	}
 
 	@Override
-	public String getETag(Tx tx, InternalActionContext ac, Tag tag) {
+	public String getETag(Tx tx, InternalActionContext ac, HibTag tag) {
 		TagDao tagDao = tx.tagDao();
 		return tagDao.getETag(tag, ac);
 	}
 
-	private TagFamily getTagFamily(Tx tx, InternalActionContext ac, String tagFamilyUuid) {
+	private HibTagFamily getTagFamily(Tx tx, InternalActionContext ac, String tagFamilyUuid) {
 		return tx.tagFamilyDao().findByUuid(tx.getProject(ac), tagFamilyUuid);
 	}
 
 	@Override
-	public Page<? extends Tag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
+	public Page<? extends HibTag> loadAll(DAOActionContext ctx, PagingParameters pagingInfo, FilterOperation<?> extraFilter) {
 		return ctx.tx().tagDao().findAll(ctx.ac(), pagingInfo, extraFilter);
 	}
 }

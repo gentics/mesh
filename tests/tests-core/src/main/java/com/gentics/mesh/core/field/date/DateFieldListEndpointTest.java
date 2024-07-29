@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.NodeFieldContainer;
+import com.gentics.mesh.core.data.HibNodeFieldContainer;
 import com.gentics.mesh.core.data.dao.ContentDao;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.HibNode;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
+import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
@@ -73,7 +73,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		NodeResponse response = createNode(FIELD_NAME, (FieldModel) null);
+		NodeResponse response = createNode(FIELD_NAME, (Field) null);
 		assertThat(response.getFields().getDateFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 	}
 
@@ -112,7 +112,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testUpdateNodeFieldWithField() throws IOException {
 		disableAutoPurge();
 
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
 			Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
@@ -120,7 +120,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		for (int i = 0; i < 20; i++) {
 			DateFieldListImpl list = new DateFieldListImpl();
-			NodeFieldContainer container;
+			HibNodeFieldContainer container;
 			List<Long> oldValue;
 			try (Tx tx = tx()) {
 				container = tx.contentDao().getFieldContainer(node, "en");
@@ -149,7 +149,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		disableAutoPurge();
 
 		NodeResponse secondResponse;
-		Node node = folder("2015");
+		HibNode node = folder("2015");
 
 		DateFieldListImpl list = new DateFieldListImpl();
 		String dateA = toISO8601(42000L);
@@ -167,7 +167,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		try (Tx tx = tx()) {
 			ContentDao contentDao = tx.contentDao();
 			// Assert that the old version was not modified
-			NodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
+			HibNodeFieldContainer latest = contentDao.getLatestDraftFieldContainer(node, english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDateList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDateList(FIELD_NAME)).isNotNull();

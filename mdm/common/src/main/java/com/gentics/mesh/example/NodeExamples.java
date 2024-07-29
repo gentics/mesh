@@ -37,7 +37,7 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.FormParameter;
 
-import com.gentics.mesh.MeshVersions;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -48,10 +48,10 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
-import com.gentics.mesh.core.rest.node.field.FieldModel;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.ImageManipulationRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantRequest;
 import com.gentics.mesh.core.rest.node.field.image.ImageVariantResponse;
@@ -82,7 +82,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setEdited(createNewTimestamp());
 		nodeResponse.setCreator(createUserReference());
 		nodeResponse.setTags(Arrays.asList(new TagReference().setName("red").setUuid(TAG_RED_UUID).setTagFamily("colors")));
-		nodeResponse.setPath(MeshVersions.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
+		nodeResponse.setPath(MeshVersion.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
 		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
 
 		languageInfo.put("de", new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createOldTimestamp()).setPublisher(
@@ -92,8 +92,8 @@ public class NodeExamples extends AbstractExamples {
 
 		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
-		languagePaths.put("en", MeshVersions.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
-		languagePaths.put("de", MeshVersions.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
+		languagePaths.put("en", MeshVersion.CURRENT_API_BASE_PATH + "/yourProject/webroot/Images");
+		languagePaths.put("de", MeshVersion.CURRENT_API_BASE_PATH + "/yourProject/webroot/Bilder");
 		nodeResponse.setLanguagePaths(languagePaths);
 		nodeResponse.setChildrenInfo(new HashMap<>());
 		nodeResponse.getChildrenInfo().put("blogpost", new NodeChildrenInfo().setCount(1).setSchemaUuid(UUID_2));
@@ -141,8 +141,8 @@ public class NodeExamples extends AbstractExamples {
 		return nodeResponse;
 	}
 
-	public static FieldModel createBinaryField() {
-		BinaryFieldModel binaryField = new BinaryFieldImpl();
+	public static Field createBinaryField() {
+		BinaryField binaryField = new BinaryFieldImpl();
 		binaryField.setFileName("flower.jpg");
 		binaryField.setDominantColor("#22a7f0");
 		binaryField.setFocalPoint(0.1f, 0.2f);
@@ -274,7 +274,7 @@ public class NodeExamples extends AbstractExamples {
 		request.setCropRect(50, 20, 150, 170);
 		request.setLanguage("en");
 		request.setVersion("1.0");
-		request.setFocalPoint(new FocalPointModel(0.3f,0.6f));
+		request.setFocalPoint(new FocalPoint(0.3f,0.6f));
 		return request;
 	}
 

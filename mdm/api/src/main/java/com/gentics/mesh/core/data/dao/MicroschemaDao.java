@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.data.dao;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.branch.Branch;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.schema.Microschema;
-import com.gentics.mesh.core.data.schema.MicroschemaVersion;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.branch.HibBranch;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.schema.HibMicroschema;
+import com.gentics.mesh.core.data.schema.HibMicroschemaVersion;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.rest.microschema.MicroschemaVersionModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaModel;
@@ -15,7 +15,7 @@ import com.gentics.mesh.event.EventQueueBatch;
 /**
  * DAO for microschema operations.
  */
-public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, Microschema, MicroschemaVersion, MicroschemaModel>, RootDao<Project, Microschema> {
+public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, MicroschemaVersionModel, MicroschemaReference, HibMicroschema, HibMicroschemaVersion, MicroschemaModel>, RootDao<HibProject, HibMicroschema> {
 
 	/**
 	 * Create a new microschema container.
@@ -26,7 +26,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param batch
 	 * @return
 	 */
-	default Microschema create(MicroschemaVersionModel microschema, User user, EventQueueBatch batch) {
+	default HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, EventQueueBatch batch) {
 		return create(microschema, user, null, batch);
 	}
 
@@ -41,7 +41,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param batch
 	 * @return
 	 */
-	Microschema create(MicroschemaVersionModel microschema, User user, String uuid, EventQueueBatch batch);
+	HibMicroschema create(MicroschemaVersionModel microschema, HibUser user, String uuid, EventQueueBatch batch);
 
 	/**
 	 * Create a new microschema.
@@ -51,7 +51,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param uuid
 	 * @return
 	 */
-	Microschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
+	HibMicroschema create(InternalActionContext ac, EventQueueBatch batch, String uuid);
 
 	/**
 	 * Load the microschema version via the given reference.
@@ -59,7 +59,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 * @param reference
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(MicroschemaReference reference) {
+	default HibMicroschemaVersion fromReference(MicroschemaReference reference) {
 		return fromReference(null, reference);
 	}
 
@@ -70,7 +70,7 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 *            reference
 	 * @return
 	 */
-	default MicroschemaVersion fromReference(Project project, MicroschemaReference reference) {
+	default HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference) {
 		return fromReference(project, reference, null);
 	}
 
@@ -85,5 +85,5 @@ public interface MicroschemaDao extends ContainerDao<MicroschemaResponse, Micros
 	 *            branch
 	 * @return
 	 */
-	MicroschemaVersion fromReference(Project project, MicroschemaReference reference, Branch branch);
+	HibMicroschemaVersion fromReference(HibProject project, MicroschemaReference reference, HibBranch branch);
 }

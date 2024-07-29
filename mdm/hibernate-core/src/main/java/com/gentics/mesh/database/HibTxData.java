@@ -6,7 +6,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.cache.ListableFieldCache;
 import com.gentics.mesh.contentoperation.ContentStorage;
-import com.gentics.mesh.core.data.MeshVersion;
+import com.gentics.mesh.core.data.HibMeshVersion;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
@@ -65,7 +65,7 @@ public class HibTxData implements CommonTxData {
 	}
 
 	@Override
-	public MeshVersion meshVersion() {
+	public HibMeshVersion meshVersion() {
 		return new MeshVersionImpl(HibernateTx.get().entityManager());
 	}
 

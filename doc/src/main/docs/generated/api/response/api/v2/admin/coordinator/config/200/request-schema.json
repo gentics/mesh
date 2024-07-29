@@ -1,6 +1,6 @@
 {
   "type" : "object",
-  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorConfigModel",
+  "id" : "urn:jsonschema:com:gentics:mesh:core:rest:admin:cluster:coordinator:CoordinatorConfig",
   "properties" : {
     "mode" : {
       "type" : "string",

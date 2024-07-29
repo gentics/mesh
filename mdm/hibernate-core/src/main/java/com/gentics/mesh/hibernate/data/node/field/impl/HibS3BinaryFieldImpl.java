@@ -3,12 +3,12 @@ package com.gentics.mesh.hibernate.data.node.field.impl;
 import java.util.Map;
 import java.util.UUID;
 
-import com.gentics.mesh.core.data.Field;
-import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.data.s3binary.S3Binary;
-import com.gentics.mesh.core.data.s3binary.S3BinaryField;
+import com.gentics.mesh.core.data.HibField;
+import com.gentics.mesh.core.data.HibFieldContainer;
+import com.gentics.mesh.core.data.s3binary.S3HibBinary;
+import com.gentics.mesh.core.data.s3binary.S3HibBinaryField;
 import com.gentics.mesh.core.rest.common.FieldTypes;
-import com.gentics.mesh.core.rest.node.field.image.FocalPointModel;
+import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.domain.HibS3BinaryFieldEdgeImpl;
 import com.gentics.mesh.hibernate.data.domain.HibUnmanagedFieldContainer;
@@ -30,22 +30,22 @@ public class HibS3BinaryFieldImpl extends AbstractDeletableHibField<HibS3BinaryF
 	}
 
 	@Override
-	public Field cloneTo(FieldContainer container) {
-		S3BinaryField binary = container.createS3Binary(getFieldKey(), getBinary());
+	public HibField cloneTo(HibFieldContainer container) {
+		S3HibBinaryField binary = container.createS3Binary(getFieldKey(), getBinary());
 		return copyTo(binary);
 	}
 
 	@Override
-	public S3BinaryField copyTo(S3BinaryField field) {
+	public S3HibBinaryField copyTo(S3HibBinaryField field) {
 		return getReferencedEdge().copyTo(field);
 	}
 
 	@Override
-	public S3Binary getBinary() {
+	public S3HibBinary getBinary() {
 		return getReferencedEdge().getBinary();
 	}
 
-	public void setS3Binary(S3Binary s3Binary) {
+	public void setS3Binary(S3HibBinary s3Binary) {
 		getReferencedEdge().setBinary(s3Binary);
 	}
 
@@ -55,7 +55,7 @@ public class HibS3BinaryFieldImpl extends AbstractDeletableHibField<HibS3BinaryF
 	}
 
 	@Override
-	public S3BinaryField setFileName(String fileName) {
+	public S3HibBinaryField setFileName(String fileName) {
 		getReferencedEdge().setFileName(fileName);
 		return this;
 	}
@@ -66,7 +66,7 @@ public class HibS3BinaryFieldImpl extends AbstractDeletableHibField<HibS3BinaryF
 	}
 
 	@Override
-	public S3BinaryField setMimeType(String mimeType) {
+	public S3HibBinaryField setMimeType(String mimeType) {
 		getReferencedEdge().setMimeType(mimeType);
 		return this;
 	}
@@ -77,19 +77,19 @@ public class HibS3BinaryFieldImpl extends AbstractDeletableHibField<HibS3BinaryF
 	}
 
 	@Override
-	public S3BinaryField setImageDominantColor(String imageDominantColor) {
+	public S3HibBinaryField setImageDominantColor(String imageDominantColor) {
 		getReferencedEdge().setImageDominantColor(imageDominantColor);
 		return this;
 	}
 
 	@Override
-	public FocalPointModel getImageFocalPoint() {
+	public FocalPoint getImageFocalPoint() {
 		return getReferencedEdge().getImageFocalPoint();
 	}
 
 	@Override
-	public S3BinaryField setImageFocalPoint(FocalPointModel point) {
-		return (S3BinaryField) getReferencedEdge().setImageFocalPoint(point);
+	public S3HibBinaryField setImageFocalPoint(FocalPoint point) {
+		return (S3HibBinaryField) getReferencedEdge().setImageFocalPoint(point);
 	}
 
 	@Override

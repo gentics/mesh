@@ -21,11 +21,11 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.dao.TagDao;
 import com.gentics.mesh.core.data.dao.UserDao;
-import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.project.Project;
-import com.gentics.mesh.core.data.tag.Tag;
-import com.gentics.mesh.core.data.tagfamily.TagFamily;
-import com.gentics.mesh.core.data.user.User;
+import com.gentics.mesh.core.data.node.HibNode;
+import com.gentics.mesh.core.data.project.HibProject;
+import com.gentics.mesh.core.data.tag.HibTag;
+import com.gentics.mesh.core.data.tagfamily.HibTagFamily;
+import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.CommonTx;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.test.MeshTestSetting;
@@ -81,7 +81,7 @@ public class TxTest extends AbstractMeshTest {
 	public void testMultiThreadedModifications() throws InterruptedException {
 		Runnable task2 = () -> {
 			try (Tx tx = tx()) {
-				User user = tx.userDao().findByUuid(userUuid());
+				HibUser user = tx.userDao().findByUuid(userUuid());
 				user.setUsername("test2");
 				assertNotNull(tx.userDao().findByUsername("test2"));
 				tx.success();
@@ -89,7 +89,7 @@ public class TxTest extends AbstractMeshTest {
 
 			Runnable task = () -> {
 				try (Tx tx = tx()) {
-					User user = tx.userDao().findByUuid(userUuid());
+					HibUser user = tx.userDao().findByUuid(userUuid());
 					user.setUsername("test3");
 					assertNotNull(tx.userDao().findByUsername("test3"));
 					tx.failure();
@@ -157,11 +157,11 @@ public class TxTest extends AbstractMeshTest {
 			// TraversalHelper.printDebugVertices();
 			CyclicBarrier barrierA = new CyclicBarrier(nThreads);
 			CyclicBarrier barrierB = new CyclicBarrier(nThreads);
-			Node node = content();
-			TagFamily tagFamily = tagFamily("colors");
+			HibNode node = content();
+			HibTagFamily tagFamily = tagFamily("colors");
 			List<Thread> threads = new ArrayList<>();
-			Project project = project();
-			User user = user();
+			HibProject project = project();
+			HibUser user = user();
 
 			for (int i = 0; i < nThreads; i++) {
 				final int threadNo = i;
@@ -184,12 +184,12 @@ public class TxTest extends AbstractMeshTest {
 									}
 								}
 								// Load used elements
-								TagFamily reloadedTagFamily = ctx.load(tagFamily.getId(), ctx.tagFamilyDao().getPersistenceClass(project()));
-								Node reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
-								User reloadedUser = ctx.load(user.getId(), ctx.userDao().getPersistenceClass());
-								Project reloadedProject = ctx.load(project.getId(), ctx.projectDao().getPersistenceClass());
+								HibTagFamily reloadedTagFamily = ctx.load(tagFamily.getId(), ctx.tagFamilyDao().getPersistenceClass(project()));
+								HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
+								HibUser reloadedUser = ctx.load(user.getId(), ctx.userDao().getPersistenceClass());
+								HibProject reloadedProject = ctx.load(project.getId(), ctx.projectDao().getPersistenceClass());
 
-								Tag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
+								HibTag tag = tagDao.create(reloadedTagFamily, "bogus_" + threadNo + "_" + currentRun, project(), reloadedUser);
 								// Reload the node
 								tagDao.addTag(reloadedNode, tag, reloadedProject.getLatestBranch());
 								tx.success();
@@ -227,7 +227,7 @@ public class TxTest extends AbstractMeshTest {
 				TagDao tagDao = tx.tagDao();
 
 				int expect = nThreads * (r + 1);
-				Node reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
+				HibNode reloadedNode = ctx.load(node.getId(), ctx.nodeDao().getPersistenceClass(project));
 				// node.reload();
 				assertEquals("Expected {" + expect + "} tags since this is run {" + r + "}.", expect,
 						tagDao.getTags(reloadedNode, project().getLatestBranch()).count());

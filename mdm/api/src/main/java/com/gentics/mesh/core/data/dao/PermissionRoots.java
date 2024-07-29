@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.dao;
 
-import com.gentics.mesh.core.data.BaseElement;
+import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
  * Contains global roots of every element type where permissions can be assigned to.
@@ -24,47 +24,47 @@ public interface PermissionRoots {
 	 * 
 	 * @return
 	 */
-	BaseElement project();
+	HibBaseElement project();
 
 	/**
 	 * Return the root for users.
 	 * 
 	 * @return
 	 */
-	BaseElement user();
+	HibBaseElement user();
 
 	/**
 	 * Return the root for groups.
 	 * 
 	 * @return
 	 */
-	BaseElement group();
+	HibBaseElement group();
 
 	/**
 	 * Return the root for roles.
 	 * 
 	 * @return
 	 */
-	BaseElement role();
+	HibBaseElement role();
 
 	/**
 	 * Return the root for microschemas.
 	 * 
 	 * @return
 	 */
-	BaseElement microschema();
+	HibBaseElement microschema();
 
 	/**
 	 * Return the root for schemas.
 	 * 
 	 * @return
 	 */
-	BaseElement schema();
+	HibBaseElement schema();
 
 	/**
 	 * Return the topmost permission level element.
 	 * 
 	 * @return
 	 */
-	BaseElement mesh();
+	HibBaseElement mesh();
 }

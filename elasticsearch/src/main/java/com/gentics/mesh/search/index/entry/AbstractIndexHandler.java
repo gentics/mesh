@@ -15,8 +15,8 @@ import com.gentics.elasticsearch.client.ElasticsearchClient;
 import com.gentics.elasticsearch.client.HttpErrorException;
 import com.gentics.elasticsearch.client.okhttp.RequestBuilder;
 import com.gentics.mesh.core.data.Bucket;
-import com.gentics.mesh.core.data.BaseElement;
-import com.gentics.mesh.core.data.BucketableElement;
+import com.gentics.mesh.core.data.HibBaseElement;
+import com.gentics.mesh.core.data.HibBucketableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.request.CreateDocumentRequest;
 import com.gentics.mesh.core.data.search.request.SearchRequest;
@@ -51,7 +51,7 @@ import io.vertx.core.json.JsonObject;
  * @param <T>
  *            Type of the elements which are handled by the index handler
  */
-public abstract class AbstractIndexHandler<T extends BaseElement> implements IndexHandler<T> {
+public abstract class AbstractIndexHandler<T extends HibBaseElement> implements IndexHandler<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
@@ -190,10 +190,10 @@ public abstract class AbstractIndexHandler<T extends BaseElement> implements Ind
 		return db.tx(tx -> {
 			return loadAllElements()
 				.filter(element -> {
-					return bucket.filter().test((BucketableElement) element);
+					return bucket.filter().test((HibBucketableElement) element);
 				})
 				.collect(Collectors.toMap(
-					BaseElement::getUuid,
+					HibBaseElement::getUuid,
 					this::generateVersion));
 		});
 	}
