@@ -18,9 +18,9 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.BinaryFieldModel;
+import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
@@ -74,8 +74,8 @@ public class FileElement extends FormElement {
 	}
 
 	@Override
-	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
-		BinaryFieldModel field = container.getFields().getBinaryField(getName());
+	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
+		BinaryField field = container.getFields().getBinaryField(getName());
 		if (field != null) {
 			object.put(key.apply(this), field.getFileName());
 		}
@@ -106,7 +106,7 @@ public class FileElement extends FormElement {
 		if (fileUpload == null) {
 			if (isMandatory()) {
 				if (formDataNode != null) {
-					BinaryFieldModel field = formDataNode.getFields().getBinaryField(getName());
+					BinaryField field = formDataNode.getFields().getBinaryField(getName());
 					if (field != null && field.hasValues()) {
 						return null;
 					}
@@ -153,7 +153,7 @@ public class FileElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainerModel container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
 	}
 
 	@Override

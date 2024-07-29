@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -351,7 +351,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true if validation errors were detected
 	 */
-	public void addField(FieldContainerModel container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
 		if (skipElement(postedData)) {
 			return;
 		}
@@ -407,7 +407,7 @@ public abstract class FormElement implements RestModel {
 	 * @param results The {@code JsonObject} to gather results into
 	 * @param formData The form data node to get values from
 	 */
-	public void addPollData(JsonObject results, FieldContainerModel formData) {
+	public void addPollData(JsonObject results, FieldContainer formData) {
 		if (!results.containsKey("type")) {
 			results.put("type", getType());
 		}
@@ -433,7 +433,7 @@ public abstract class FormElement implements RestModel {
 	 * @param container field container
 	 * @param key key function
 	 */
-	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
+	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
 		if (isMultivalue()) {
 			StringFieldListImpl field = container.getFields().getStringFieldList(getName());
 			if (field != null) {

@@ -14,9 +14,9 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
@@ -126,7 +126,7 @@ public class ValueListElement extends FormElement {
 	}
 
 	@Override
-	public void addPollData(JsonObject results, FieldContainerModel formData) {
+	public void addPollData(JsonObject results, FieldContainer formData) {
 		super.addPollData(results, formData);
 
 		results.put(
@@ -155,7 +155,7 @@ public class ValueListElement extends FormElement {
 		} else {
 			Optional<String> value = Optional.ofNullable(fields)
 				.map(f -> f.getStringField(fieldName))
-				.map(StringFieldModel::getString);
+				.map(StringField::getString);
 
 			if (value.isPresent()) {
 				inc(values, value.get());

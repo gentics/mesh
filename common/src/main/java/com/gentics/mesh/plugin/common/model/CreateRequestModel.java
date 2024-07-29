@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.node.field.list.FieldListModel;
+import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
@@ -107,7 +107,7 @@ public abstract class CreateRequestModel implements RestModel {
 			}
 
 			requestField.setAccessible(true);
-			com.gentics.mesh.core.rest.node.field.FieldModel field = toMeshField(requestField, annotation);
+			com.gentics.mesh.core.rest.node.field.Field field = toMeshField(requestField, annotation);
 
 			if (field != null) {
 				fieldMap.put(requestField.getName(), field);
@@ -125,7 +125,7 @@ public abstract class CreateRequestModel implements RestModel {
 	 * @param annotation The {@code @RequestField} annotation of the field
 	 * @return The correct {@code Field} implementation for this member
 	 */
-	private com.gentics.mesh.core.rest.node.field.FieldModel toMeshField(Field field, RequestField annotation) {
+	private com.gentics.mesh.core.rest.node.field.Field toMeshField(Field field, RequestField annotation) {
 		Object value;
 
 		try {
@@ -170,7 +170,7 @@ public abstract class CreateRequestModel implements RestModel {
 	}
 
 	/**
-	 * Determine the correct {@link FieldListModel} for the given values.
+	 * Determine the correct {@link FieldList} for the given values.
 	 *
 	 * @param type The type of the field
 	 * @param annotation The members annotation
@@ -179,7 +179,7 @@ public abstract class CreateRequestModel implements RestModel {
 	 * @return The correct {@code FieldList} for the given values
 	 */
 	@SuppressWarnings("unchecked")
-	private FieldListModel<?> getListField(ParameterizedType type, RequestField annotation, List<?> values) {
+	private FieldList<?> getListField(ParameterizedType type, RequestField annotation, List<?> values) {
 		Type typeArgument = type.getActualTypeArguments()[0];
 
 		if (JsonObject.class.equals(typeArgument)) {
@@ -211,7 +211,7 @@ public abstract class CreateRequestModel implements RestModel {
 	 * @param values The list of values
 	 * @return The correct {@code FieldList} for the given values
 	 */
-	private FieldListModel<String> getStringFieldList(RequestField annotation, List<?> values) {
+	private FieldList<String> getStringFieldList(RequestField annotation, List<?> values) {
 		List<String> strings = values.stream()
 			.map(o -> o == null ? (String) null : o.toString())
 			.collect(Collectors.toList());

@@ -5,7 +5,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
@@ -70,7 +70,7 @@ public class SelectgroupElement extends CombiElement {
 	 * @param container field container
 	 * @param key       key function
 	 */
-	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
+	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
 		super.addFormData(object, container, key);
 
 		List<String> options = getOptions().stream().map(ValueListItem::getKey).collect(Collectors.toList());

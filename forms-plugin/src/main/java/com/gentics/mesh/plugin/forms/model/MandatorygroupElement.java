@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
@@ -32,11 +32,11 @@ public class MandatorygroupElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainerModel container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
 	}
 
 	@Override
-	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
+	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
 	}
 
 	@Override

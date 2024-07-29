@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpsertRequest;
-import com.gentics.mesh.core.rest.node.field.NumberFieldModel;
+import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.BooleanFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
@@ -689,7 +689,7 @@ public class FormService {
 	public Single<JsonObject> getFormSchemaWithCmsId(String projectName, String formUuid) {
 		Single<Optional<SchemaResponse>> schema = schemaService.loadSchemaByName(getSchemaName(formUuid), true);
 		return Single.zip(schema, load(projectName, formUuid), (formSchemaResponse, formNodeResponse) -> {
-			NumberFieldModel cmsIdField = formNodeResponse.getFields().getNumberField("cms_id");
+			NumberField cmsIdField = formNodeResponse.getFields().getNumberField("cms_id");
 			JsonObject formSchema = new JsonObject(formSchemaResponse.get().toJson());
 			return formSchema.put("cms_id", cmsIdField != null ? cmsIdField.getNumber() : null);
 		});
