@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.gentics.mesh.core.data.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.common.RestModel;
