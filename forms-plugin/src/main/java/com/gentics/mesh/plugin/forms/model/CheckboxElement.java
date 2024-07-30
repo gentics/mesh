@@ -3,7 +3,7 @@ package com.gentics.mesh.plugin.forms.model;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
 
@@ -36,7 +36,7 @@ public class CheckboxElement extends FormElement {
 	}
 
 	@Override
-	public void addPollData(JsonObject results, FieldContainerModel formData) {
+	public void addPollData(JsonObject results, FieldContainer formData) {
 		super.addPollData(results, formData);
 
 		JsonObject values = results.getJsonObject(FormDataService.POLL_VALUES_NAME);

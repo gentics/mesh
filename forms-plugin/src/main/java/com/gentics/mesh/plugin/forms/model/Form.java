@@ -27,7 +27,7 @@ import org.jsoup.Jsoup;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.gentics.mesh.core.data.FieldContainer;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
@@ -383,7 +383,7 @@ public class Form implements RestModel {
 	 * @param postedData posted data
 	 * @param errors true, if validation errors were detected
 	 */
-	public void addFields(FieldContainerModel container, MultiMap postedData, boolean errors) {
+	public void addFields(FieldContainer container, MultiMap postedData, boolean errors) {
 		flattened().filter(FormElement::isActive).forEach(elem -> {
 			elem.addField(container, postedData, errors);
 		});
@@ -556,7 +556,7 @@ public class Form implements RestModel {
 	 * @param container form data node
 	 * @return form data json
 	 */
-	public JsonObject getFormDataJson(FieldContainerModel container) {
+	public JsonObject getFormDataJson(FieldContainer container) {
 		String errorsJson = container.getFields().getStringField(ERRORS_FIELD_NAME).getString();
 		JsonObject errors = (errorsJson != null && !"".equals(errorsJson)) ? new JsonObject(errorsJson) : new JsonObject();
 
@@ -583,7 +583,7 @@ public class Form implements RestModel {
 	 * @param formData The form data node containing
 	 * @return The {@code results} object for fluent API.
 	 */
-	public JsonObject gatherPollResults(JsonObject results, FieldContainerModel formData) {
+	public JsonObject gatherPollResults(JsonObject results, FieldContainer formData) {
 		flattened().forEach(elem -> {
 			String name = elem.getName();
 
@@ -604,7 +604,7 @@ public class Form implements RestModel {
 	 * @param container form data node
 	 * @return form data json
 	 */
-	public JsonArray getReportableFormData(FieldContainerModel container) {
+	public JsonArray getReportableFormData(FieldContainer container) {
 		return getReportableFormData(container, ignored -> true);
 	}
 
@@ -614,7 +614,7 @@ public class Form implements RestModel {
 	 * @param filter additional filter for form elements
 	 * @return form data json
 	 */
-	public JsonArray getReportableFormData(FieldContainerModel container, Predicate<FormElement> filter) {
+	public JsonArray getReportableFormData(FieldContainer container, Predicate<FormElement> filter) {
 		JsonArray array = new JsonArray();
 
 		flattened()

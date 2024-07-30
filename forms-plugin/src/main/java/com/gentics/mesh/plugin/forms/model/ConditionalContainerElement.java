@@ -9,9 +9,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainerModel;
+import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.field.StringFieldModel;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 
@@ -86,7 +86,7 @@ public class ConditionalContainerElement extends FormElement {
 		}
 
 		try {
-			StringFieldModel elementToCheckField = formData.getFields().getStringField(elementToCheck);
+			StringField elementToCheckField = formData.getFields().getStringField(elementToCheck);
 
 			return !Optional.ofNullable(elementToCheckField.getString())
 				.map(String::trim)
@@ -107,11 +107,11 @@ public class ConditionalContainerElement extends FormElement {
 	}
 
 	@Override
-	public void addField(FieldContainerModel container, MultiMap postedData, boolean errors) {
+	public void addField(FieldContainer container, MultiMap postedData, boolean errors) {
 	}
 
 	@Override
-	public void addFormData(JsonObject object, FieldContainerModel container, Function<FormElement, String> key) {
+	public void addFormData(JsonObject object, FieldContainer container, Function<FormElement, String> key) {
 	}
 
 	@Override
