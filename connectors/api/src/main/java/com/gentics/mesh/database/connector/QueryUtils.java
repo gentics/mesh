@@ -57,11 +57,12 @@ public interface QueryUtils {
 	 * Install paging parameters, if applicable.
 	 * 
 	 * @param <Q>
+	 * @param sqlQuery
 	 * @param query
 	 * @param pagingInfo
 	 * @return
 	 */
-	<T, Q extends Query<T>> Q installPagingArguments(Q query, PagingParameters pagingInfo);
+	<T, Q extends Query<T>> Q installPagingArguments(String sqlQuery, Q query, PagingParameters pagingInfo);
 
 	/**
 	 * Install content column of a List derived type.

@@ -168,15 +168,14 @@ public abstract class AbstractDatabaseConnector implements DatabaseConnector {
 		query = limitHandler.processSql(query, limit, new QueryOptionsImpl());
 
 		if (limitHandler instanceof AbstractLimitHandler && ((AbstractLimitHandler)limitHandler).bindLimitParametersInReverseOrder()) {
-			return query.replaceFirst("\\?", " :limit ").replaceFirst("\\?", " :offset ");
+			return query.replaceFirst("\\?", " :" + getPagingLimitParamName() + " ").replaceFirst("\\?", " :" + getPagingOffsetParamName() + " ");
 		} else {
-			return query.replaceFirst("\\?", " :offset ").replaceFirst("\\?", " :limit ");
+			return query.replaceFirst("\\?", " :" + getPagingOffsetParamName() + " ").replaceFirst("\\?", " :" + getPagingLimitParamName() + " ");
 		}
 	}
 
 	@Override
-	public <T, Q extends Query<T>> Q installPagingArguments(Q query, PagingParameters pagingInfo) {
-		String sqlQuery = query.getQueryString();
+	public <T, Q extends Query<T>> Q installPagingArguments(String sqlQuery, Q query, PagingParameters pagingInfo) {
 		if (sqlQuery.contains(" :" + getPagingLimitParamName() + " ")) {
 			if (sqlQuery.contains(" :" + getPagingOffsetParamName() + " ")) {
 				query.setParameter(getPagingOffsetParamName(), pagingInfo.getActualPage() * pagingInfo.getPerPage().intValue());
