@@ -699,16 +699,7 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 
 		// Fill paging params, if applicable
 		if (!countOnly && PersistingRootDao.shouldPage(paging)) {
-			if (sqlQuery.contains(" :limit ")) {
-				if (sqlQuery.contains(" :offset ")) {
-					query.setParameter("offset", paging.getActualPage() * paging.getPerPage().intValue());
-				}
-				query.setParameter("limit", paging.getPerPage());
-			} else {
-				if (sqlQuery.contains(" :offset ")) {
-					query.setParameter("offset", paging.getPerPage());
-				}
-			}
+			databaseConnector.installPagingArguments(sqlQuery, query, paging);
 		}
 
 		if (countOnly) {
