@@ -255,6 +255,9 @@ stage("Setup Build Environment") {
 				if (env.BUILD_SKIPPED != "true" && Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeployTesting)) {
+							echo "Setup of GPG"
+							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
+							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,bom' clean deploy"
 							}
