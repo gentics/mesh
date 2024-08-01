@@ -9,6 +9,7 @@ import static com.gentics.mesh.hibernate.util.HibernateUtil.inQueriesLimitForSpl
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeAlias;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.makeParamName;
 import static com.gentics.mesh.hibernate.util.HibernateUtil.streamContentSelectClause;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.hibernate.jpa.QueryHints;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
+import org.slf4j.Logger;
 
 import com.gentics.graphqlfilter.filter.operation.Combiner;
 import com.gentics.graphqlfilter.filter.operation.Comparison;
@@ -134,6 +136,8 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 	private final ContentStorage contentStorage;
 	private final NodeDeleteDaoImpl nodeDeleteDao;
 	private final DatabaseConnector databaseConnector;
+
+	private static final Logger log = getLogger(NodeDaoImpl.class);
 
 	@Inject
 	public NodeDaoImpl(RootDaoHelper<HibNode, HibNodeImpl, HibProject, HibProjectImpl> rootDaoHelper,
@@ -702,34 +706,39 @@ public class NodeDaoImpl extends AbstractHibRootDao<HibNode, NodeResponse, HibNo
 			databaseConnector.installPagingArguments(sqlQuery, query, paging);
 		}
 
-		if (countOnly) {
-			return Pair.of(Stream.empty(), daoHelper.getOrFetchTotal(query));
-		} else {
-			// Los geht's
-			return Pair.of(query.getResultStream().map(o -> {
-				// This clumsy construction is required for Hibernate, that's not being currently able to mix managed and unmanaged entities even with a help of result transformer.
-				if (o.getClass().isArray() && ((Object[]) o).length > 1) {
-					Object[] oo = (Object[]) o;
-					// Check if node responded (normally under index 0)
-					HibNode node = Arrays.stream(oo).filter(HibNode.class::isInstance).map(HibNode.class::cast).findAny().orElse(null);
-					// Check if branch parent edge responded
-					HibBranchNodeParent parentEdge = Arrays.stream(oo).filter(HibBranchNodeParent.class::isInstance).map(HibBranchNodeParent.class::cast).findAny().orElse(null);
-					// Check if container edge responded
-					HibNodeFieldContainerEdge container = Arrays.stream(oo).filter(HibNodeFieldContainerEdge.class::isInstance).map(HibNodeFieldContainerEdge.class::cast).findAny().orElse(null);
-					// Check if content fields responded
-					HibNodeFieldContainer content = maybeContentColumns.map(contentColumns -> {
-						int contentIndex = (node != null ? 1 : 0) + (parentEdge != null ? 1 : 0) + (container != null ? 1 : 0);
-						HibNodeFieldContainerImpl fc = new HibNodeFieldContainerImpl();
-						for (int i = 0; i < contentColumns.size(); i++) {
-							fc.put(contentColumns.get(i), oo[i + contentIndex]);
-						}
-						return fc;
-					}).orElse(null);
-					return new NodeData(node, parentEdge, container, content);
-				} else {
-					return new NodeData((HibNode) o, null, null, null);
-				}
-			}), 0L);
+		try {
+			if (countOnly) {
+				return Pair.of(Stream.empty(), daoHelper.getOrFetchTotal(query));
+			} else {
+				// Los geht's
+				return Pair.of(query.getResultStream().map(o -> {
+					// This clumsy construction is required for Hibernate, that's not being currently able to mix managed and unmanaged entities even with a help of result transformer.
+					if (o.getClass().isArray() && ((Object[]) o).length > 1) {
+						Object[] oo = (Object[]) o;
+						// Check if node responded (normally under index 0)
+						HibNode node = Arrays.stream(oo).filter(HibNode.class::isInstance).map(HibNode.class::cast).findAny().orElse(null);
+						// Check if branch parent edge responded
+						HibBranchNodeParent parentEdge = Arrays.stream(oo).filter(HibBranchNodeParent.class::isInstance).map(HibBranchNodeParent.class::cast).findAny().orElse(null);
+						// Check if container edge responded
+						HibNodeFieldContainerEdge container = Arrays.stream(oo).filter(HibNodeFieldContainerEdge.class::isInstance).map(HibNodeFieldContainerEdge.class::cast).findAny().orElse(null);
+						// Check if content fields responded
+						HibNodeFieldContainer content = maybeContentColumns.map(contentColumns -> {
+							int contentIndex = (node != null ? 1 : 0) + (parentEdge != null ? 1 : 0) + (container != null ? 1 : 0);
+							HibNodeFieldContainerImpl fc = new HibNodeFieldContainerImpl();
+							for (int i = 0; i < contentColumns.size(); i++) {
+								fc.put(contentColumns.get(i), oo[i + contentIndex]);
+							}
+							return fc;
+						}).orElse(null);
+						return new NodeData(node, parentEdge, container, content);
+					} else {
+						return new NodeData((HibNode) o, null, null, null);
+					}
+				}), 0L);
+			}
+		} catch (Throwable e) {
+			log.error("Failure at query: " + sqlQuery);
+			throw e;
 		}
 	}
 

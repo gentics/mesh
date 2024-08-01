@@ -505,10 +505,15 @@ public class DaoHelper<T extends HibBaseElement, D extends T> {
 		if (!countOnly && PersistingRootDao.shouldPage(pagingInfo)) {
 			databaseConnector.installPagingArguments(sqlQuery, query, pagingInfo);
 		}
-		if (countOnly) {
-			return Pair.of(Stream.empty(), getOrFetchTotal(query));
-		} else {
-			return Pair.of(query.getResultStream(), 0L);
+		try {
+			if (countOnly) {
+				return Pair.of(Stream.empty(), getOrFetchTotal(query));
+			} else {
+				return Pair.of(query.getResultStream(), 0L);
+			}
+		} catch (Throwable e) {
+			log.error("Failure at query: " + sqlQuery);
+			throw e;
 		}
 	}
 

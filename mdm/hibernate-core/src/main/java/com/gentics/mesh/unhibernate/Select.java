@@ -39,7 +39,9 @@ public class Select extends SimpleSelect {
 
 	@Override
 	public SimpleSelect addRestriction(String predicate) {
-		restrictions.add((predicate.contains(" ") || predicate.contains("?")) ? new CompleteRestriction(predicate) : new ComparisonRestriction(predicate));
+		if (StringUtils.isNotBlank(predicate)) {
+			restrictions.add((predicate.contains(" ") || predicate.contains("?")) ? new CompleteRestriction(predicate) : new ComparisonRestriction(predicate));
+		}
 		return this;
 	}
 
