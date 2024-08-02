@@ -48,6 +48,12 @@ public class EyepinElement extends FormElement {
 	@JsonProperty
 	private String customerId;
 
+	@JsonProperty
+	private String listId;
+
+	@JsonProperty
+	private String topicId;
+
 	public EyepinElement() {
 	}
 
@@ -56,6 +62,8 @@ public class EyepinElement extends FormElement {
 
 		this.value = other.value;
 		this.customerId = other.customerId;
+		this.listId = other.listId;
+		this.topicId = other.topicId;
 	}
 
 	public String getCustomerId() {
@@ -64,6 +72,22 @@ public class EyepinElement extends FormElement {
 
 	public void setCustomerId(String customerId) {
 		this.customerId = customerId;
+	}
+
+	public String getListId() {
+		return listId;
+	}
+
+	public void setListId(String listId) {
+		this.listId = listId;
+	}
+
+	public String getTopicId() {
+		return topicId;
+	}
+
+	public void setTopicId(String topicId) {
+		this.topicId = topicId;
 	}
 
 	public String getValue() {
@@ -168,8 +192,10 @@ public class EyepinElement extends FormElement {
 			String apiUrl = eyepinOptions.getApiUrl();
 
 			String customerId = this.getCustomerId();
+			String listId = this.getListId();
+			String topicId = this.getTopicId();
 
-			log.debug("Eyepin customer id: " + customerId);
+			log.debug("Eyepin customer id: " + customerId + " listId: " + listId + " topicId: " + topicId);
 			if (!StringUtils.isBlank(customerId)) {
 
 				// TODO: Reuse created OkHttp clients, maybe add a respective provider in the
@@ -206,11 +232,19 @@ public class EyepinElement extends FormElement {
 				// prepare request
 				MediaType mediaType = MediaType.parse("application/xml");
 				String credential = Credentials.basic(username, password);
-
+				String additionalInfo = "";
+				if(topicId != ""){
+					additionalInfo += "\n\t<topicids merge=\"1\">\"" + topicId + "\"</topicids>";
+				}
+				if(listId != ""){
+					additionalInfo += "\n\t<lists merge=\"1\">\n\t<list id=\"" + listId +"\" />\n\t</lists>";
+				}
 				RequestBody body = RequestBody.create(mediaType,
 						"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<addressinsert key=\"Email\" save-empty-fields=\"0\" overrule-blacklist=\"0\" customerid=\""
 								+ customerId + "\">\n\t<email>" + userMail
-								+ "</email>\n\t<status>1</status>\n  <handleoptin>1</handleoptin>\n</addressinsert>");
+								+ "</email>"
+								+ additionalInfo
+								+ "\n\t<status>1</status>\n  <handleoptin>1</handleoptin>\n</addressinsert>");
 				Request request = new Request.Builder().url(apiUrl).post(body).addHeader("Content-Type", "text/xml")
 						.addHeader("Authorization", credential).build();
 
