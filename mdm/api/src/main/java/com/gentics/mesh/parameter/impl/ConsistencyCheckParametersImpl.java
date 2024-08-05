@@ -35,7 +35,7 @@ public class ConsistencyCheckParametersImpl extends AbstractParameters implement
 		// async
 		QueryParameter asyncParameter = new QueryParameter();
 		asyncParameter.setDefaultValue("false");
-		asyncParameter.setDescription("Specifiy whether the consistency check should be executed asynchronously (as job).");
+		asyncParameter.setDescription("Specifiy whether the consistency check should be executed asynchronously (as job). *Please not that some checks do require this flag set!*");
 		asyncParameter.setExample("true");
 		asyncParameter.setRequired(false);
 		asyncParameter.setType(ParamType.BOOLEAN);

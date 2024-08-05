@@ -220,7 +220,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
 		endpoint.description(
-			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned.");
+			"Invokes a consistency check of the graph database without attempting to repairing the found issues. A list of found issues will be returned. "
+					+ "When an `async=true` query parameter is used, a new consistency check Job is queued, and the check results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]."
+					+ "Please note that some checks do require an `async` flag set.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(false), "Consistency check report");
 		endpoint.addQueryParameters(ConsistencyCheckParametersImpl.class);
@@ -232,7 +234,9 @@ public class AdminEndpoint extends AbstractInternalEndpoint {
 		repairEndpoint.path("/consistency/repair");
 		repairEndpoint.method(POST);
 		repairEndpoint
-			.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state.");
+			.description("Invokes a consistency check and repair of the graph database and returns a list of found issues and their state. "
+					+ "When an `async=true` query parameter is used, a new consistency repair Job is queued, and the repair results should be obtained with the call to the link:#admin_jobs__jobUuid__get[corresponding job]. "
+					+ "Please note that some repairs do require an `async` flag set.");
 		repairEndpoint.produces(APPLICATION_JSON);
 		repairEndpoint.exampleResponse(OK, adminExamples.createConsistencyCheckResponse(true), "Consistency check and repair report");
 		repairEndpoint.events(REPAIR_START, REPAIR_FINISHED);
