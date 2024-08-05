@@ -71,6 +71,7 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>0-unpack-test-resources</id>
 						<phase>generate-test-resources</phase>
 						<goals>
 							<goal>unpack</goal>
@@ -87,12 +88,13 @@
 									<includes>**/*</includes>
 									<overWrite>true</overWrite>
 								</artifactItem>
+								
 							</artifactItems>
 						</configuration>
 					</execution>
 					<execution>
 						<?m2e ignore?>
-						<id>copy-sharedlib-dependencies</id>
+						<id>1-copy-sharedlib-dependencies-no-mesh</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
@@ -104,6 +106,21 @@
 							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<?m2e ignore?>
+						<id>2-copy-sharedlib-dependencies-with-mesh-database-common</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<excludeScope>test</excludeScope>
+							<includeScope>runtime</includeScope>
+							<includeGroupIds>com.gentics.mesh</includeGroupIds>
+							<includeArtifactIds>mesh-database-connector-common</includeArtifactIds>
+							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -111,24 +128,60 @@
 				<artifactId>maven-shade-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>1-shade-none-but-mesh-core-and-driver</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>
 						</goals>
 						<configuration>
 							<filters>
-			                    <filter>
-			                        <artifact>*:*</artifact>
-			                        <excludes>
-			                            <exclude>META-INF/*.SF</exclude>
-			                            <exclude>META-INF/*.DSA</exclude>
-			                            <exclude>META-INF/*.RSA</exclude>
-			                        </excludes>
-			                    </filter>
-			                </filters>
-			                <transformers>
-				                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-			                </transformers>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+							</transformers>
+							<artifactSet>
+								<excludes>
+									<exclude>com.gentics.mesh:*</exclude>
+									<exclude>org.hibernate:*</exclude>
+								</excludes>
+							</artifactSet>
+						</configuration>
+					</execution>
+					<execution>
+						<id>2-shade-none-but-mesh-database-common</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+							</transformers>
+							<artifactSet>
+								<includes>
+									<include>com.gentics.mesh:mesh-database-connector-common</include>
+								</includes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
