@@ -10,6 +10,6 @@
 | async
 | boolean  (default: false) 
 | false
-| Specifiy whether the consistency check should be executed asynchronously (as job).
+| Specifiy whether the consistency check should be executed asynchronously (as job). *Please note that some checks do require this flag set!*
 
 |======

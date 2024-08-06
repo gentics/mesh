@@ -25,6 +25,6 @@
 | logPattern
 | false
 | string
-| The pattern used for each log line.
+| The pattern used for each log line. For the detailed pattern format description please refer to the link:https://logback.qos.ch/manual/layouts.html#conversionWord[Logback documentation]. Default value is: %d{HH:mm:ss.SSS} [%meshName] %-5level [%thread] [%file:%line] - %msg%n
 
 |======
