@@ -33,7 +33,7 @@ public class DebugInfoOptions implements Option {
 	private boolean logEnabled = true;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The pattern used for each log line.")
+	@JsonPropertyDescription("The pattern used for each log line. For the detailed pattern format description please refer to the link:https://logback.qos.ch/manual/layouts.html#conversionWord[Logback documentation]. Default value is: " + DEFAULT_LOG_PATTERN)
 	@EnvironmentVariable(name = "MESH_DEBUGINFO_LOG_PATTERN", description = "Override the log pattern")
 	private String logPattern = DEFAULT_LOG_PATTERN;
 
