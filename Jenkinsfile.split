@@ -10,7 +10,8 @@ properties([
 		booleanParam(name: 'checkGitCommit',      defaultValue: false, description: 'If set to true, the current git revision is compared with the git revision of the last successful build. If they are equal, the build is skipped and env.BUILD_SKIPPED is set to true'),
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
 		booleanParam(name: 'splitTests',          defaultValue: true,  description: "Whether to split tests across chunks and databases"),
-		booleanParam(name: 'testMaria',           defaultValue: true,  description: "Whether to test MariaDB context"),
+		booleanParam(name: 'testHsqlm',           defaultValue: true , description: "Whether to test HSQLDB In-Memory context"),
+		booleanParam(name: 'testMaria',           defaultValue: false, description: "Whether to test MariaDB context"),
 		booleanParam(name: 'skipSearchTests',     defaultValue: false, description: "Whether to skip search tests or not"),
 		booleanParam(name: 'runSonar',            defaultValue: false, description: "Whether to run the sonarqube checks"),
 		booleanParam(name: 'runSmokeTests',       defaultValue: false, description: "Whether to run smoke tests for the selected databases"),
@@ -53,22 +54,30 @@ final def testPart(partName, current, branches) {
 					try {
 						def jacoco = Boolean.valueOf(params.runSonar);
 						def noMariadb = true
+						def noHsqldb = true
 						if (Boolean.valueOf(params.testMaria)) {
 							noMariadb = false
+						}
+						if (Boolean.valueOf(params.testHsqlm)) {
+							noHsqldb = false
 						}
 						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 							try {
 								// prior to starting the tests, start the docker containers with the db and the testdb-manager
 								sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
+								if (Boolean.valueOf(params.testMaria)) {
 								sh "mvn -pl :mesh-database-connector-mariadb docker:start -Dskip.mariadb.tests=${noMariadb} "
+								}
 								// run the tests
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
 									sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} ${partName} ${partId}"
 								}
 							} finally {
 								// finally stop the docker containers
+								if (Boolean.valueOf(params.testMaria)) {
 								sh "mvn -pl :mesh-database-connector-mariadb docker:stop -Dskip.mariadb.tests=${noMariadb} "
 							}
+						}
 						}
 						stash name: "jacoco" + current, includes: "**/jacoco-partial.exec", allowEmpty: true
 					} finally {
@@ -173,7 +182,12 @@ stage("Setup Build Environment") {
 							} else {
 								echo "MariaDB split skipped.."
 										}
-													}
+							if (Boolean.valueOf(params.testHsqlm)) {
+								testPart("hsqlm", current, branches)
+							} else {
+								echo "MariaDB split skipped.."
+							}
+						}
 						try {
 							parallel branches
 						} catch (err) {
@@ -183,15 +197,21 @@ stage("Setup Build Environment") {
 					} else {
 						sshagent(["git"]) {
 							def noMariadb = true
+							def noHsqldb = true
 							if (Boolean.valueOf(params.testMaria)) {
 								noMariadb = false
 							} else {
 								echo "MariaDB skipped.."
 							}
+							if (Boolean.valueOf(params.testHsqlm)) {
+								noHsqldb = false
+							} else {
+								echo "HSQLDB skipped.."
+							}
 							try {
 								withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 									withEnv(["TESTCONTAINERS_RYUK_DISABLED=true", "MESH_CONSISTENCY_CHECKS=" + (Boolean.valueOf(params.consistencyChecks) ? "true" : "false")]) {
-										sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -Dskip.mariadb.tests=${noMariadb} -B -U -e test"
+										sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -Dskip.mariadb.tests=${noMariadb} -Dskip.hsqlmemory.tests=${noHsqldb} -B -U -e test"
 								}
 								}
 							} finally {
@@ -327,7 +347,9 @@ stage("Setup Build Environment") {
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
-					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
+					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . ; cd .. "
+					sh "cd .docker ; cp ../connectors/hsqldb/target/mesh-database-connector-hsqldb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-hsqldb:latest -t " + registryHost + "/gentics/mesh-hsqldb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
+					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
 				} else {
 					echo "Docker build skipped.."
 				}
@@ -372,9 +394,13 @@ stage("Setup Build Environment") {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 							if (Boolean.valueOf(params.runDeploy)) {
 								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-hsqldb:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-mariadb:latest'
 							}
 
 							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-hsqldb:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-mariadb:' + version
 						}
 					}
 				} else {
