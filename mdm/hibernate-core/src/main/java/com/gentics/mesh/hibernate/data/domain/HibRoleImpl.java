@@ -35,7 +35,7 @@ import com.gentics.mesh.hibernate.data.dao.RoleDaoImpl;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
 /**
- * Role entity implementation for Enterprise Mesh.
+ * Role entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

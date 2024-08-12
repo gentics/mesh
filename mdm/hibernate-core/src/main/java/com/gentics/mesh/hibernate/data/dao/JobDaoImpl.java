@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Job DAO implementation for Enterprise Mesh.
+ * Job DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

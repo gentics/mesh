@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Project DAO implementation for Enterprise Mesh.
+ * Project DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

@@ -54,7 +54,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * User DAO implementation for Enterprise Mesh.
+ * User DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

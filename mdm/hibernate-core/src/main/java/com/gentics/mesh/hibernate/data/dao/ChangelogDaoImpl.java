@@ -13,7 +13,7 @@ import com.gentics.mesh.hibernate.data.domain.HibChangeMarkerImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
- * High level Changelog DAO implementation for Enterprise Mesh.
+ * High level Changelog DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

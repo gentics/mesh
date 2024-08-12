@@ -5,7 +5,7 @@ import jakarta.persistence.MappedSuperclass;
 import com.gentics.mesh.core.data.HibBaseElement;
 
 /**
- * An ancestor of Mesh entity and Hibernate database element, common for all Enterprise Mesh entity implementation.
+ * An ancestor of Mesh entity and Hibernate database element, common for all Gentics Mesh entity implementation.
  * 
  * @author plyhun
  *

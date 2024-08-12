@@ -35,7 +35,7 @@ import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
- * Node entity implementation for Enterprise Mesh.
+ * Node entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

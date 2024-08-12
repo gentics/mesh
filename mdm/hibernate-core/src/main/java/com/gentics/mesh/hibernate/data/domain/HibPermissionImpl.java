@@ -24,7 +24,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cache;
 
 /**
- * Permission entity implementation for Enterprise Mesh. This implementation considers a single common permission entity for all Mesh entities being subject to the permissioned access.
+ * Permission entity implementation for Gentics Mesh. This implementation considers a single common permission entity for all Mesh entities being subject to the permissioned access.
  * 
  * @author plyhun
  *

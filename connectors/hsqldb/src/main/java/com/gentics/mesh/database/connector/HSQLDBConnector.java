@@ -1,4 +1,4 @@
-package com.gentics.mesh.enterprise.database.connector;
+package com.gentics.mesh.database.connector;
 
 import java.util.Map;
 

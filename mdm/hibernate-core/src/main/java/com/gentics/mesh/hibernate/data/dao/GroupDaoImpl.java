@@ -45,7 +45,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * Group DAO implementation for Enterprise Mesh.
+ * Group DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

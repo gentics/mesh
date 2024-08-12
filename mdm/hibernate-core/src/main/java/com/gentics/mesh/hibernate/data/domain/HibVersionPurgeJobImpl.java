@@ -13,7 +13,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
 
 /**
- * Version purge job entity implementation for Enterprise Mesh.
+ * Version purge job entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

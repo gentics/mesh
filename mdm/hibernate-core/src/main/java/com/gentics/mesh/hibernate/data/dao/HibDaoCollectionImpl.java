@@ -30,7 +30,7 @@ import com.gentics.mesh.hibernate.data.domain.HibS3BinaryImpl;
 import com.gentics.mesh.hibernate.util.TypeInfoUtil;
 
 /**
- * DAO and entity actions collection implementation for Enterprise Mesh.
+ * DAO and entity actions collection implementation for Gentics Mesh.
  */
 @Singleton
 public class HibDaoCollectionImpl implements DaoCollection {

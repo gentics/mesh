@@ -1,1 +1,1 @@
-com.gentics.mesh.enterprise.database.connector.service.HSQLDBService
+com.gentics.mesh.database.connector.service.HSQLDBService

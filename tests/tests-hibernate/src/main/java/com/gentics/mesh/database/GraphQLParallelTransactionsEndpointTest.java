@@ -28,7 +28,7 @@ import com.gentics.mesh.test.TestSize;
 /**
  * Test cases which count the number of executed GraphQL request queries.
  */
-@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateJmxExposure.class, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = false)
 @RunWith(Parameterized.class)
 public class GraphQLParallelTransactionsEndpointTest extends AbstractGraphQLChildrenQueryCountingTest {
 

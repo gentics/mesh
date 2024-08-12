@@ -21,7 +21,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
 /**
- * Tag family entity implementation for Enterprise Mesh.
+ * Tag family entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

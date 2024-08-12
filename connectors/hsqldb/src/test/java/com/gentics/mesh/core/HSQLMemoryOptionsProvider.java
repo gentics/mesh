@@ -1,9 +1,9 @@
-package com.gentics.mesh.enterprise.core;
+package com.gentics.mesh.core;
 
 import com.gentics.mesh.core.HibernateMeshOptionsProvider;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
-public interface HSQLMemoryEnterpriseOptionsProvider extends HibernateMeshOptionsProvider {
+public interface HSQLMemoryOptionsProvider extends HibernateMeshOptionsProvider {
 
 	@Override
 	default void fillMeshOptions(HibernateMeshOptions meshOptions) {		

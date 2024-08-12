@@ -32,7 +32,7 @@ import com.gentics.mesh.hibernate.data.dao.UserDaoImpl;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
 /**
- * User entity implementation for Enterprise Mesh.
+ * User entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

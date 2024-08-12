@@ -26,7 +26,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * Amazon S3 Binary DAO implementation for Enterprise Mesh.
+ * Amazon S3 Binary DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

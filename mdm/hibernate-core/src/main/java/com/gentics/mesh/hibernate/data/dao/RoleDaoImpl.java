@@ -59,7 +59,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * Role DAO implementation for Enterprise Mesh.
+ * Role DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

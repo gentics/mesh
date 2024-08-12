@@ -25,7 +25,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
 /**
- * Container schema version entity implementation for Enterprise Mesh.
+ * Container schema version entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

@@ -124,7 +124,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 
 /**
- * Content DAO implementation for Enterprise Mesh. Please pay attention, that Content entity is not JPA-backed.
+ * Content DAO implementation for Gentics Mesh. Please pay attention, that Content entity is not JPA-backed.
  *
  * @author plyhun
  *

@@ -30,7 +30,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * Project entity implementation for Enterprise Mesh.
+ * Project entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

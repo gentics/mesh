@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
 /**
- * Container schema entity implementation for Enterprise Mesh.
+ * Container schema entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

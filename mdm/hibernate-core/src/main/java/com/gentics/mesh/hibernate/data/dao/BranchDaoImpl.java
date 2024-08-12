@@ -49,7 +49,7 @@ import io.vertx.core.Vertx;
 import jakarta.persistence.TypedQuery;
 
 /**
- * Branch DAO implementation for Enterprise Mesh.
+ * Branch DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *
