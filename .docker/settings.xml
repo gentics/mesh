@@ -1,0 +1,68 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<localRepository />
+	<interactiveMode />
+	<offline />
+	<pluginGroups />
+	<servers>
+		<server>
+			<id>lan.internal</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>lan.mirror</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>lan.releases</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>lan.thirdparty</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>lan.snapshots</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+		<server>
+			<id>gtx-commercial</id>
+			<username>${env.GENTICS_REPO_USER}</username>
+			<password>${env.GENTICS_REPO_PASS}</password>
+		</server>
+	</servers>
+	<mirrors>
+		<mirror>
+			<id>lan.migration.snapshots</id>
+			<name>Migration Entry for snapshots repo</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-snapshots</url>
+			<mirrorOf>lan.snapshots</mirrorOf>
+		</mirror>
+
+		<mirror>
+			<id>lan.migration.releases</id>
+			<name>Migration Entry for releases repo</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-releases</url>
+			<mirrorOf>lan.releases</mirrorOf>
+		</mirror>
+
+		<mirror>
+			<id>lan.mirror</id>
+			<name>Gentics LAN Mirror Repository</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-mirror</url>
+			<mirrorOf>central,maven2,maven2-repository,oss.sonatype.org,jboss-repository,maven-repository.dev.java.net</mirrorOf>
+		</mirror>
+
+		<mirror>
+			<id>lan.internal</id>
+			<name>Gentics LAN Mirror Repository</name>
+			<url>https://repo.apa-it.at/artifactory/gtx-maven-internal</url>
+			<mirrorOf>maven.gentics.com</mirrorOf>
+		</mirror>
+	</mirrors>
+</settings>
