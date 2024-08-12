@@ -106,9 +106,58 @@
 									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 							</transformers>
 							<artifactSet>
+							<!-- Keep in sync with mesh-bom/pom.xml! -->
 								<excludes>
 									<exclude>com.gentics.mesh:*</exclude>
+									<exclude>org.hibernate.*:*</exclude>
+									<exclude>org.slf4j:*</exclude>
+									<exclude>org.apache.*:*</exclude>
+									<exclude>ch.qos.logback:*</exclude>
+									<exclude>com.google.dagger:*</exclude>
+									<exclude>commons-*:*</exclude>
+									<exclude>com.squareup.okhttp3:*</exclude>
+									<exclude>org.bouncycastle:*</exclude>
+									<exclude>software.amazon.awssdk:*</exclude>
+									<exclude>org.raml:*</exclude>
+									<exclude>com.google.*:*</exclude>
+									<exclude>org.springframework.security:*</exclude>
+									<exclude>com.fasterxml.*:*</exclude>
+									<exclude>com.hazelcast:*</exclude>
+									<exclude>io.vertx:*</exclude>
+									<exclude>io.reactivex:*</exclude>
+									<exclude>io.micrometer:*</exclude>
+									<exclude>com.github.*:*</exclude>
+									<exclude>io.netty:*</exclude>
+									<exclude>net.lingala.zip4j:*</exclude>
+									<exclude>com.gentics.elasticsearch:*</exclude>
+									<exclude>org.jsoup:*</exclude>
+									<exclude>com.graphql-java:*</exclude>
+									<exclude>com.gentics.graphqlfilter:*</exclude>
+									<exclude>org.openjdk.nashorn:*</exclude>
+									<exclude>com.sksamuel.scrimage:*</exclude>
+									<exclude>com.zaxxer:*</exclude>
+									<exclude>jakarta.*:*</exclude>
+									<exclude>com.squareup.inject:*</exclude>
 									<exclude>org.hibernate:*</exclude>
+									<exclude>org.liquibase:*</exclude>
+									<exclude>org.ehcache:*</exclude>
+									<exclude>net.bytebuddy:*</exclude>
+									<exclude>javax.*:*</exclude>
+									<exclude>net.sf.jopt-simple:*</exclude>
+									<exclude>org.hdrhistogram:*</exclude>
+									<exclude>org.latencyutils:*</exclude>
+									<exclude>org.antlr:*</exclude>
+									<exclude>org.assertj:*</exclude>
+									<exclude>org.checkerframework:*</exclude>
+									<exclude>org.codehaus.jettison:*</exclude>
+									<exclude>org.glassfish.jaxb:*</exclude>
+									<exclude>org.codehaus.jettison:*</exclude>
+									<exclude>org.jboss:*</exclude>
+									<exclude>joda-time:*</exclude>
+									<exclude>org.mozilla:*</exclude>
+									<exclude>org.reactivestreams:*</exclude>
+									<exclude>org.yaml:snakeyaml</exclude>
+									<exclude>org.codehaus.jettison:*</exclude>
 								</excludes>
 							</artifactSet>
 						</configuration>
