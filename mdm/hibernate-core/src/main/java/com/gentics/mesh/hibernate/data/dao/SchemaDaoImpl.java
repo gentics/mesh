@@ -51,7 +51,7 @@ import io.vertx.core.Vertx;
 import jakarta.persistence.TypedQuery;
 
 /**
- * Schema DAO implementation for Enterprise Mesh.
+ * Schema DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

@@ -18,7 +18,7 @@ import com.gentics.mesh.test.MeshTestSetting;
 
 /**
  * {@link AutoCloseable} implementation which will count the number of queries executed by Hibernate between construction of the instance and {@link #close()}.
- * This will only work when hibernate is configured to expose data via JMX and to generate statistics. Both can be achieved by setting the {@link MeshTestSetting#customOptionChanger()} to the class {@link EnableHibernateJmxExposure}.
+ * This will only work when hibernate is configured to generate statistics. This can be achieved by setting the {@link MeshTestSetting#customOptionChanger()} to the class {@link EnableHibernateStatistics}.
  */
 public class QueryCounter implements AutoCloseable {
 
@@ -169,11 +169,11 @@ public class QueryCounter implements AutoCloseable {
 	 * Implementation of {@link MeshOptionChanger} which will let hibernate expose its data via JMX and generate statistics.
 	 * Also the migration trigger interval is set to 0, so that no running background job might execute additional queries
 	 */
-	public static class EnableHibernateJmxExposure implements MeshOptionChanger {
+	public static class EnableHibernateStatistics implements MeshOptionChanger {
 		@Override
 		public void change(MeshOptions options) {
-			HibernateMeshOptions enterpriseOptions = (HibernateMeshOptions) options;
-			enterpriseOptions.getStorageOptions().setGenerateStatistics(true);
+			HibernateMeshOptions hibernateOptions = (HibernateMeshOptions) options;
+			hibernateOptions.getStorageOptions().setGenerateStatistics(true);
 			options.setMigrationTriggerInterval(0);
 		}
 	}

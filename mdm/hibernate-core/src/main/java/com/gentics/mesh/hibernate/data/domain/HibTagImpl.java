@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
 /**
- * Tag entity implementation for Enterprise Mesh.
+ * Tag entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

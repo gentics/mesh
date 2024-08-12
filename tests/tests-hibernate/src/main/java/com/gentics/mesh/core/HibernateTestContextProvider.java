@@ -42,7 +42,7 @@ public abstract class HibernateTestContextProvider extends AbstractHibernateOpti
 
 	@Override
 	public void initMeshData(MeshTestSetting settings, MeshComponent meshDagger) {
-		// since some tests setup branches without migrating the root of the project to it, the EnterpriseBranchCheck will fail on them.
+		// since some tests setup branches without migrating the root of the project to it, the HibernateBranchCheck will fail on them.
 		// therefore we exclude this consistency check for now
 		List<ConsistencyCheck> checks = meshDagger.consistencyChecks();
 		checks.removeIf(check -> check instanceof HibernateBranchCheck);

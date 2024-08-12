@@ -126,7 +126,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 
 /**
- * Node DAO implementation for Enterprise Mesh.
+ * Node DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

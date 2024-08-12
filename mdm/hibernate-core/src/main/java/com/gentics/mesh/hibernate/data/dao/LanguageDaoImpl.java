@@ -31,7 +31,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * Language DAO implementation for Enterprise Mesh.
+ * Language DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

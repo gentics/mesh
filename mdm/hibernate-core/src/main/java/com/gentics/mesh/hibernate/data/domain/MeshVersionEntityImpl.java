@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 /**
- * Application version entity implementation for Enterprise Mesh.
+ * Application version entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

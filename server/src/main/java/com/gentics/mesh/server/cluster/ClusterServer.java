@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An enterprise server that can be run in a cluster
+ * A server that can be run in a cluster.
  */
 public abstract class ClusterServer {
 

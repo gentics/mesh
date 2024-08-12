@@ -32,7 +32,7 @@ import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 
 /**
- * Group entity implementation for Enterprise Mesh.
+ * Group entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

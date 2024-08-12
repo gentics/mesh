@@ -15,7 +15,7 @@ import com.gentics.mesh.hibernate.data.domain.HibBinaryImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
- * Binary storage implementation for Enterprise Mesh.
+ * Binary storage implementation for Gentics Mesh.
  *
  * @author plyhun
  *

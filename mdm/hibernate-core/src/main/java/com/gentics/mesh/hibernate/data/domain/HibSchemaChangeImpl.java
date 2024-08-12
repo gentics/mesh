@@ -27,7 +27,7 @@ import com.gentics.mesh.hibernate.data.dao.SchemaDaoImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
- * Schema change entity implementation for Enterprise Mesh. 
+ * Schema change entity implementation for Gentics Mesh. 
  * 
  * @author plyhun
  *

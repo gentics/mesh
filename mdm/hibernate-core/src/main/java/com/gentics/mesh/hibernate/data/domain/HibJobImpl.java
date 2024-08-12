@@ -26,7 +26,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * Job entity implementation for Enterprise Mesh.
+ * Job entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

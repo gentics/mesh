@@ -13,7 +13,7 @@ import com.gentics.mesh.test.context.ClientHandler;
 /**
  * Test cases which count the number of executed queries (and assert that the number does not exceed a given limit). Please parameterize the implementors, as shown below!
  */
-@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateJmxExposure.class, resetBetweenTests = false)
+@MeshTestSetting(testSize = TestSize.PROJECT, monitoring = true, startServer = true, customOptionChanger = QueryCounter.EnableHibernateStatistics.class, resetBetweenTests = false)
 public abstract class AbstractCountingTest extends AbstractMeshTest {
 
 	/**

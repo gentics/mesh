@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import com.gentics.mesh.core.data.s3binary.S3HibBinary;
 
 /**
- * Amazon S3 Binary entity implementation for Enterprise Mesh.
+ * Amazon S3 Binary entity implementation for Gentics Mesh.
  *
  * @author plyhun
  *

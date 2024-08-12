@@ -26,7 +26,7 @@ import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
 /**
- * Microschema version entity implementation for Enterprise Mesh.
+ * Microschema version entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

@@ -45,7 +45,7 @@ import io.vertx.core.Vertx;
 import jakarta.persistence.EntityGraph;
 
 /**
- * Binary DAO implementation for Enterprise Mesh.
+ * Binary DAO implementation for Gentics Mesh.
  *
  * @author plyhun
  *

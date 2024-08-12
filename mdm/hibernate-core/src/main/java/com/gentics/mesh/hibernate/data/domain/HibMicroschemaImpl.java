@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.dagger.annotations.ElementTypeKey;
 
 /**
- * Microschema entity implementation for Enterprise Mesh.
+ * Microschema entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

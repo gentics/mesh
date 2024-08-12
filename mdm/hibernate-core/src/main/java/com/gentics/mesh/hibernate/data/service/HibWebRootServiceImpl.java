@@ -12,7 +12,7 @@ import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.data.dao.ContentDaoImpl;
 
 /**
- * Webroot service implementation for Enterprise Mesh.
+ * Webroot service implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

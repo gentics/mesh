@@ -1,4 +1,4 @@
-package com.gentics.mesh.enterprise.core;
+package com.gentics.mesh.core;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,8 +7,6 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.gentics.mesh.core.HibernateTestContextProvider;
-import com.gentics.mesh.core.HibernateTestUtils;
 import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.database.HibernateTx;
 import com.gentics.mesh.hibernate.MeshTablePrefixStrategy;
@@ -20,7 +18,7 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import jakarta.persistence.EntityManager;
 
-public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider implements MeshTestContextProvider, HSQLMemoryEnterpriseOptionsProvider {
+public class HSQLMemoryTestContextProvider extends HibernateTestContextProvider implements MeshTestContextProvider, HSQLMemoryOptionsProvider {
 	
 	private static InMemoryDatabase server;
 

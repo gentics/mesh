@@ -55,7 +55,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * Tag DAO implementation for Enterprise Mesh.
+ * Tag DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

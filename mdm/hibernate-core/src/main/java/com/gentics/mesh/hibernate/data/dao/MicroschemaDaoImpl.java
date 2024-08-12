@@ -51,7 +51,7 @@ import dagger.Lazy;
 import io.vertx.core.Vertx;
 
 /**
- * Microschema DAO implementation for Enterprise Mesh.
+ * Microschema DAO implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

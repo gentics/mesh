@@ -13,7 +13,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * Language entity implementation for Enterprise Mesh.
+ * Language entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *

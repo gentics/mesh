@@ -51,7 +51,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * Branch entity implementation for Enterprise Mesh.
+ * Branch entity implementation for Gentics Mesh.
  * 
  * @author plyhun
  *
