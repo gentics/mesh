@@ -36,7 +36,6 @@
 
 	<modules>
 		<module>common-enterprise</module>
-		<module>hsqldb</module>
 		<module>mssql</module>
 		<module>postgres</module>
 		<module>oracle</module>
