@@ -31,5 +31,6 @@
 		<module>api</module>
 		<module>common</module>
 		<module>mariadb</module>
+		<module>hsqldb</module>
 	</modules>
 </project>
