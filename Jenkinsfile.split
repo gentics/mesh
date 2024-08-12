@@ -281,7 +281,7 @@ stage("Setup Build Environment") {
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,bom' clean deploy"
+								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,bom' clean deploy"
 							}
 						} else if (Boolean.valueOf(params.runDeploy)) {
 							echo "Setup of GPG"
@@ -343,13 +343,13 @@ stage("Setup Build Environment") {
 						version = branchName;
 						registryHost = registryHostTest;
 					}
-
 					// server
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . ; cd .. "
-					sh "cd .docker ; cp ../connectors/hsqldb/target/mesh-database-connector-hsqldb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-hsqldb:latest -t " + registryHost + "/gentics/mesh-hsqldb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
-					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
+					// connectors
+					sh "cd .docker ; cp ../connectors/hsqldb/target/mesh-database-connector-hsqldb-" + version + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-hsqldb:latest -t " + registryHost + "/gentics/mesh-hsqldb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
+					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + version + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
 				} else {
 					echo "Docker build skipped.."
 				}
@@ -394,13 +394,12 @@ stage("Setup Build Environment") {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 							if (Boolean.valueOf(params.runDeploy)) {
 								sh 'docker push ' + registryHost + '/gentics/mesh:latest'
-								sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-hsqldb:latest'
-								sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-mariadb:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh-hsqldb:latest'
+								sh 'docker push ' + registryHost + '/gentics/mesh-mariadb:latest'
 							}
-
 							sh 'docker push ' + registryHost + '/gentics/mesh:' + version
-							sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-hsqldb:' + version
-							sh 'docker push ' + registryHost + '/gentics/mesh-enterprise-mariadb:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh-hsqldb:' + version
+							sh 'docker push ' + registryHost + '/gentics/mesh-mariadb:' + version
 						}
 					}
 				} else {
