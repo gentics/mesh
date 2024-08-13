@@ -66,7 +66,7 @@
 				<executions>
 					<execution>
 						<?m2e ignore?>
-						<id>copy-sharedlib-dependencies-no-mesh</id>
+						<id>1-copy-sharedlib-dependencies-no-mesh</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
@@ -75,6 +75,21 @@
 							<excludeScope>test</excludeScope>
 							<includeScope>runtime</includeScope>
 							<excludeGroupIds>com.gentics.mesh</excludeGroupIds>
+							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
+						</configuration>
+					</execution>
+					<execution>
+						<?m2e ignore?>
+						<id>2-copy-sharedlib-dependencies-with-mesh-database-common</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<excludeScope>test</excludeScope>
+							<includeScope>runtime</includeScope>
+							<includeGroupIds>com.gentics.mesh</includeGroupIds>
+							<includeArtifactIds>mesh-database-connector-common</includeArtifactIds>
 							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>
@@ -108,7 +123,18 @@
 							<artifactSet>
 							<!-- Keep in sync with mesh-bom/pom.xml! -->
 								<excludes>
-									<exclude>com.gentics.mesh:*</exclude>
+									<exclude>com.gentics.mesh:mesh-api</exclude>
+									<exclude>com.gentics.mesh:mesh-common*</exclude>
+									<exclude>com.gentics.mesh:mesh-core</exclude>
+									<exclude>com.gentics.mesh:mesh-distributed*</exclude>
+									<exclude>com.gentics.mesh:mesh-mdm*</exclude>
+									<exclude>com.gentics.mesh:mesh-elasticseatch</exclude>
+									<exclude>com.gentics.mesh:mesh-graphql</exclude>
+									<exclude>com.gentics.mesh:mesh-plugin*</exclude>
+									<exclude>com.gentics.mesh:mesh-rest*</exclude>
+									<exclude>com.gentics.mesh:mesh-server</exclude>
+									<exclude>com.gentics.mesh:mesh-service*</exclude>
+									<exclude>com.gentics.mesh:mesh-tests*</exclude>
 									<exclude>org.hibernate.*:*</exclude>
 									<exclude>org.slf4j:*</exclude>
 									<exclude>org.apache.*:*</exclude>
@@ -203,7 +229,6 @@
 						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-server</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-changelog-system</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>

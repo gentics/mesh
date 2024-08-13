@@ -77,7 +77,7 @@
 				<executions>
 					<execution>
 						<?m2e ignore?>
-						<id>copy-sharedlib-dependencies</id>
+						<id>0-copy-sharedlib-dependencies-no-mesh</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
@@ -91,7 +91,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -120,7 +119,18 @@
 							<artifactSet>
 							<!-- Keep in sync with mesh-bom/pom.xml! -->
 								<excludes>
-									<exclude>com.gentics.mesh:*</exclude>
+									<exclude>com.gentics.mesh:mesh-api</exclude>
+									<exclude>com.gentics.mesh:mesh-common*</exclude>
+									<exclude>com.gentics.mesh:mesh-core</exclude>
+									<exclude>com.gentics.mesh:mesh-distributed*</exclude>
+									<exclude>com.gentics.mesh:mesh-mdm*</exclude>
+									<exclude>com.gentics.mesh:mesh-elasticseatch</exclude>
+									<exclude>com.gentics.mesh:mesh-graphql</exclude>
+									<exclude>com.gentics.mesh:mesh-plugin*</exclude>
+									<exclude>com.gentics.mesh:mesh-rest*</exclude>
+									<exclude>com.gentics.mesh:mesh-server</exclude>
+									<exclude>com.gentics.mesh:mesh-service*</exclude>
+									<exclude>com.gentics.mesh:mesh-tests*</exclude>
 									<exclude>org.hibernate.*:*</exclude>
 									<exclude>org.slf4j:*</exclude>
 									<exclude>org.apache.*:*</exclude>
@@ -174,40 +184,11 @@
 							</artifactSet>
 						</configuration>
 					</execution>
-					<execution>
-						<id>2-shade-none-but-mesh-database-common</id>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-							</transformers>
-							<artifactSet>
-								<includes>
-									<include>com.gentics.mesh:mesh-database-connector-common</include>
-								</includes>
-							</artifactSet>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M5</version>
 				<configuration>
 					<dependenciesToScan>
 						<dependency>com.gentics.mesh:tests-mesh-api</dependency>
@@ -225,6 +206,7 @@
 						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
 						<dependency>com.gentics.mesh:mesh-tests</dependency>
+						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
 						<dependency>com.gentics.mesh:mesh-database-tests-common</dependency>
 					</dependenciesToScan>
 					<skip>${skip.mariadb.tests}</skip>
