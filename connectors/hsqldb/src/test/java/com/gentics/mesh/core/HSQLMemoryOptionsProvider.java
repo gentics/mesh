@@ -1,6 +1,5 @@
 package com.gentics.mesh.core;
 
-import com.gentics.mesh.core.HibernateMeshOptionsProvider;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 public interface HSQLMemoryOptionsProvider extends HibernateMeshOptionsProvider {

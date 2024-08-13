@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.dialect.HSQLDialect;
 import org.hsqldb.jdbcDriver;
 
-import com.gentics.mesh.database.connector.AbstractDatabaseConnector;
 import com.gentics.mesh.etc.config.HibernateMeshOptions;
 
 /**
