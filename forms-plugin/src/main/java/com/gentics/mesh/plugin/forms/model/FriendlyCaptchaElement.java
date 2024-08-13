@@ -1,12 +1,11 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.plugin.forms.config.ProxyOptions;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.FileUpload;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -18,17 +17,23 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.ProxyAuthenticationStrategy;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.plugin.forms.config.ProxyOptions;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Captcha Element. Implementation uses FriendlyCaptcha
@@ -67,24 +72,22 @@ public class FriendlyCaptchaElement extends FormElement {
 	}
 
 	@Override
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
 		String solution = postedData.get(this.getConfiguration().getFriendlyCaptcha().getSolutionKey());
 
-		if (isValid(solution)) {
-			return null;
-		} else {
-			return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY))
-					.setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY));
-		}
+		return isValid(solution).toMaybe()
+				.flatMap(valid -> valid 
+						? Maybe.empty() 
+						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY))));
 	}
 
 	/**
 	 * Check validity of the captcha response
 	 *
 	 * @param captchaSolution captcha response
-	 * @return true iff the captcha response is valid
+	 * @return async true iff the captcha response is valid
 	 */
-	protected boolean isValid(String captchaSolution) {
+	protected Single<Boolean> isValid(String captchaSolution) {
 		log.debug("Trying to validate captchaResponse: {}", captchaSolution);
 		List<String> fastFailerSolutions = new ArrayList<String>() {{
 			add(".FETCHING");
@@ -94,15 +97,15 @@ public class FriendlyCaptchaElement extends FormElement {
 
 		if (StringUtils.isBlank(captchaSolution)) {
 			log.debug("Solution is empty");
-			return false;
+			return Single.just(false);
 		} else if(fastFailerSolutions.contains(captchaSolution)) {
 			// Values that are per definition false and so we don't need to ask the endpoint
 			log.debug("Solution is a fast failer!");
-			return false;
+			return Single.just(false);
 		} else {
 			ProxyOptions proxyOptions = getConfiguration().getProxyOptions();
 
-			HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+			HttpAsyncClientBuilder clientBuilder = HttpAsyncClientBuilder.create();
 			clientBuilder.useSystemProperties();
 
 			if (proxyOptions != null && proxyOptions.isActive()) {
@@ -119,10 +122,8 @@ public class FriendlyCaptchaElement extends FormElement {
 					clientBuilder.setDefaultCredentialsProvider(credsProvider);
 					clientBuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
 				}
-
 			}
-
-			try (CloseableHttpClient client = clientBuilder.build()) {
+			try (CloseableHttpAsyncClient client = clientBuilder.build()) {
 				HttpPost request = new HttpPost(this.getConfiguration().getFriendlyCaptcha().getVerificationUrl());
 
 				List<NameValuePair> form = new ArrayList<>();
@@ -134,8 +135,7 @@ public class FriendlyCaptchaElement extends FormElement {
 				if (log.isDebugEnabled()) {
 					log.debug("Sending request: {}\n{}", request, request.getEntity());
 				}
-
-				return client.execute(request, response -> {
+				return Single.fromFuture(client.execute(request, null)).map(response -> {
 					int status = response.getStatusLine().getStatusCode();
 
 					log.debug("Response status: {}", status);
@@ -165,7 +165,7 @@ public class FriendlyCaptchaElement extends FormElement {
 				});
 			} catch (IOException e) {
 				log.error("Error while verifying " + this.getConfiguration().getFriendlyCaptcha().getSolutionKey(), e);
-				return false;
+				return Single.just(false);
 			}
 		}
 	}

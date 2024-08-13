@@ -36,6 +36,8 @@ import javax.inject.Singleton;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,6 +82,7 @@ import com.gentics.mesh.rest.client.MeshBinaryResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.EmptyResponse;
+import com.gentics.mesh.util.StreamUtil;
 import com.gentics.mesh.util.UUIDUtil;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -92,8 +95,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.reactivex.core.Vertx;
@@ -1025,18 +1026,29 @@ public class FormDataService {
 	private Single<PostDataResponse> savePostedData(FormDataSaveContext ctx) {
 		Form form = ctx.getForm();
 		MultiMap postedData = ctx.getPostedData();
-		Map<String, ValidationError> errors = form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode());
-
-		errors.putAll(form.preventInjection(postedData, configuration.getSecurityOptions()));
+		Single<Map<String, ValidationError>> errorSingle = Single.zip(
+				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
+				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx), 
+				(a,b) -> {
+					HashMap<String, ValidationError> errors = new HashMap<>();
+					errors.putAll(a);
+					errors.putAll(b);
+					return errors;
+				});
 
 		String projectName = ctx.getProjectName();
 		NodeResponse formNode = ctx.getFormNode();
 		Single<String> dataFolderUuidSingle = getFormDataFolderUuid(projectName, formNode.getUuid(),
 				ParameterUtil.getLanguages(ctx.getContext()));
 
-		return dataFolderUuidSingle.flatMap(dataFolderUuid -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors))
-			.flatMap(savedFormDataNode -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNode, postedData, ctx.getFileUploads()))
-			.flatMap(savedFileUploads -> {
+		return errorSingle.zipWith(
+				dataFolderUuidSingle, 
+				(errors, dataFolderUuid) -> saveFormData(projectName, formNode, dataFolderUuid, ctx.getFormDataNode(), form, postedData, errors).map(formData -> Pair.of(formData, errors)))
+			.flatMap(single -> single)
+			.flatMap(savedFormDataNodePlusErrors -> saveFileUploads(ctx.getProjectName(), form, savedFormDataNodePlusErrors.getKey(), postedData, ctx.getFileUploads()).map(uploads -> Pair.of(uploads, savedFormDataNodePlusErrors.getValue())))
+			.flatMap(savedFileUploadsPlusErrors -> {
+				NodeResponse savedFileUploads = savedFileUploadsPlusErrors.getKey();
+				Map<String, ValidationError> errors = savedFileUploadsPlusErrors.getValue();
 				if (ctx.isPublish() && errors.isEmpty() && form.isCompleted(savedFileUploads)) {
 					return publishFormData(ctx, savedFileUploads, errors);
 				} else {
@@ -1183,7 +1195,7 @@ public class FormDataService {
 	 * @return single
 	 */
 	private Single<PostDataResponse> publishFormData(FormDataSaveContext ctx, NodeResponse savedFileUploads, Map<String, ValidationError> errors) {
-		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().map(publishStatus -> {
+		return adminClient.publishNode(ctx.getProjectName(), savedFileUploads.getUuid()).toSingle().flatMap(publishStatus -> {
 			PluginContext meshContext = ctx.getContext();
 			Form form = ctx.getForm();
 			MultiMap postedData = ctx.getPostedData();
@@ -1192,38 +1204,40 @@ public class FormDataService {
 			mailService.sendMails(ctx.getProjectName(), ctx.getForm(), savedFileUploads, meshContext);
 
 			// perform actions
-			ctx.getForm().flattened().forEach(e -> e.performSubmit(ctx.getForm(), postedData));
+			return Single.zip(
+					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData).toSingleDefault(1))), 
+					allSubmitted -> {
+						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
 
-			boolean isPoll = ctx.getForm().getType() == FormType.POLL;
+						// remove the data cookie
+						if (ctx.handleCookies()) {
+							meshContext.removeCookie(COOKIE_NAME_DATA);
+							Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
+							cookie.setPath(getPath(ctx.getReferer()));
+							cookie.setHttpOnly(true);
+							cookie.setMaxAge(0);
+							meshContext.addCookie(cookie);
 
-			// remove the data cookie
-			if (ctx.handleCookies()) {
-				meshContext.removeCookie(COOKIE_NAME_DATA);
-				Cookie cookie = Cookie.cookie(COOKIE_NAME_DATA, "");
-				cookie.setPath(getPath(ctx.getReferer()));
-				cookie.setHttpOnly(true);
-				cookie.setMaxAge(0);
-				meshContext.addCookie(cookie);
+							if (isPoll) {
+								addPollCookie(ctx);
+							}
+						}
 
-				if (isPoll) {
-					addPollCookie(ctx);
-				}
-			}
+						PostDataResponse response = new PostDataResponse();
+						response.setDataUuid(savedFileUploads.getUuid());
+						response.setCreated(savedFileUploads.getCreated());
+						response.setErrors(errors);
+						response.setFinished(true);
+						if (form.getSuccessurl() != null) {
+							response.setRedirectUrl(form.getSuccessurl());
+						} else if (isPoll) {
+							response.setRedirectUrl(ctx.getReferer());
+						} else {
+							response.setRedirectUrl("");
+						}
 
-			PostDataResponse response = new PostDataResponse();
-			response.setDataUuid(savedFileUploads.getUuid());
-			response.setCreated(savedFileUploads.getCreated());
-			response.setErrors(errors);
-			response.setFinished(true);
-			if (form.getSuccessurl() != null) {
-				response.setRedirectUrl(form.getSuccessurl());
-			} else if (isPoll) {
-				response.setRedirectUrl(ctx.getReferer());
-			} else {
-				response.setRedirectUrl("");
-			}
-
-			return response;
+						return response;
+					});			
 		});
 	}
 

@@ -17,9 +17,9 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.ProxyAuthenticationStrategy;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
@@ -31,9 +31,12 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
 
+import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * Captcha Element. Implementation uses ReCaptcha
@@ -80,19 +83,17 @@ public class ReCaptchaElement extends FormElement {
 	}
 
 	@Override
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
 		String captchaResponse = postedData.get(RESPONSE_KEY);
 
 		if (StringUtils.isEmpty(captchaResponse)) {
 			captchaResponse = postedData.get(getName());
 		}
 
-		if (isValid(captchaResponse)) {
-			return null;
-		} else {
-			return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY))
-				.setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY));
-		}
+		return isValid(captchaResponse).toMaybe()
+				.flatMap(valid -> valid 
+						? Maybe.empty() 
+						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY))));
 	}
 
 	/**
@@ -102,16 +103,16 @@ public class ReCaptchaElement extends FormElement {
 	 *            captcha response
 	 * @return true iff the captcha response is valid
 	 */
-	protected boolean isValid(String captchaResponse) {
+	protected Single<Boolean> isValid(String captchaResponse) {
 		log.debug("Trying to validate captchaResponse: {}", captchaResponse);
 
 		if (StringUtils.isBlank(captchaResponse)) {
-			return false;
+			return Single.just(false);
 		} else {
 
 			ProxyOptions proxyOptions = getConfiguration().getProxyOptions();
 
-			HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+			HttpAsyncClientBuilder clientBuilder = HttpAsyncClientBuilder.create();
 			clientBuilder.useSystemProperties();
 
 			if (proxyOptions != null && proxyOptions.isActive()) {
@@ -127,12 +128,10 @@ public class ReCaptchaElement extends FormElement {
 
 					clientBuilder.setDefaultCredentialsProvider(credsProvider);
 					clientBuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
-
 				}
-
 			}
 
-			try (CloseableHttpClient client = clientBuilder.build()) {
+			try (CloseableHttpAsyncClient client = clientBuilder.build()) {
 				String url = getConfiguration().getReCaptcha().getVerificationUrl();
 				if (StringUtils.isBlank(url)) {
 					url = VERIFICATION_URL;
@@ -148,7 +147,7 @@ public class ReCaptchaElement extends FormElement {
 					log.debug("Sending request: {}\n{}", request, request.getEntity());
 				}
 
-				return client.execute(request, response -> {
+				return Single.fromFuture(client.execute(request, null)).map(response -> {
 					int status = response.getStatusLine().getStatusCode();
 
 					log.debug("Response status: {}", status);
@@ -206,7 +205,7 @@ public class ReCaptchaElement extends FormElement {
 				});
 			} catch (IOException e) {
 				log.error("Error while verifying " + RESPONSE_KEY, e);
-				return false;
+				return Single.just(false);
 			}
 		}
 	}

@@ -3,8 +3,12 @@ package com.gentics.mesh.plugin.forms.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+
+import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
@@ -80,8 +84,8 @@ public class UsermailElement extends FormElement {
 	}
 
 	@Override
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
-		ValidationError error = super.validate(postedData, fileUploads, formDataNode);
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
+		Maybe<ValidationError> error = super.validate(postedData, fileUploads, formDataNode, rxVertx);
 		if (error == null) {
 			String value = getSingleFormData(postedData);
 			if (StringUtils.isNotBlank(value)) {

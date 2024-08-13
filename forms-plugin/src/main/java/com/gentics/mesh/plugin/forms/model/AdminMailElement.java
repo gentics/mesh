@@ -1,14 +1,14 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import io.vertx.ext.web.RoutingContext;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 
 /**
  * Combi element to select which admin email addresses should receive mail

@@ -1,24 +1,5 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.plugin.forms.config.EyepinOptions;
-import com.gentics.mesh.plugin.forms.config.ProxyOptions;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-
-import io.vertx.core.MultiMap;
-import io.vertx.ext.web.FileUpload;
-import okhttp3.Authenticator;
-import okhttp3.Credentials;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okhttp3.Route;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
@@ -28,13 +9,37 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.plugin.forms.config.EyepinOptions;
+import com.gentics.mesh.plugin.forms.config.ProxyOptions;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.util.StreamUtil;
+
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
+import io.vertx.core.MultiMap;
+import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.Authenticator;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Credentials;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.Route;
 
 /**
  * Eyepin newsletter registration element
@@ -80,7 +85,7 @@ public class EyepinElement extends FormElement {
 	}
 
 	@Override
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
 		String value = getSingleFormData(postedData);
 
 		ValidationError error = new ValidationError();
@@ -96,7 +101,7 @@ public class EyepinElement extends FormElement {
 
 				log.debug("Form has no usermail element thus eyepin element cannot be used.");
 
-				return error;
+				return Maybe.just(error);
 			} else {
 				postedData.forEach(e -> {
 					if (e.getKey().startsWith("usermail")) {
@@ -114,9 +119,9 @@ public class EyepinElement extends FormElement {
 		}
 
 		if (StringUtils.isBlank(error.getName())) {
-			return null;
+			return Maybe.empty();
 		} else {
-			return error;
+			return Maybe.just(error);
 		}
 	}
 
@@ -124,7 +129,7 @@ public class EyepinElement extends FormElement {
 	 * Performs submit action
 	 */
 	@JsonIgnore
-	public void performSubmit(Form form, MultiMap postedData) {
+	public Completable performSubmit(Form form, MultiMap postedData) {
 		log.debug("Form submitted: Contains eyepin element.");
 
 		String value = getSingleFormData(postedData);
@@ -132,20 +137,25 @@ public class EyepinElement extends FormElement {
 		if (StringUtils.isNotBlank(value)) {
 
 			// insert each user mail to eyepin addresses
-			form.flattened().filter(e -> e instanceof UsermailElement).map(e -> (UsermailElement) e)
-					.forEach(element -> {
-						String userMail = element.getSingleFormData(postedData);
-
-						if (StringUtils.isBlank(userMail)) {
-							// TODO: return Warning
-							log.debug("User mail is empty. Skip inserting address to eyepin.");
-							return;
-						}
-						// add user mail to Eyepin addresses
-						insertAddressToEyepin(userMail);
-					});
+			return Single.zip(
+					StreamUtil.toIterable(form.flattened().filter(e -> e instanceof UsermailElement).map(e -> (UsermailElement) e)
+						.map(element -> {
+							String userMail = element.getSingleFormData(postedData);
+	
+							if (StringUtils.isBlank(userMail)) {
+								// TODO: return Warning
+								log.debug("User mail is empty. Skip inserting address to eyepin.");
+								return Completable.complete();
+							}
+							// add user mail to Eyepin addresses
+							return insertAddressToEyepin(userMail);
+						// Map to some random value, only the event is what we need
+						}).map(c -> c.toSingleDefault(1))),
+					// Collecting all the completed events, send a new one
+					allProcessed -> Completable.complete())
+				.flatMapCompletable(c -> c);
 		}
-
+		return Completable.complete();
 	}
 
 	/**
@@ -155,8 +165,9 @@ public class EyepinElement extends FormElement {
 	 * https://docs.eyepin.com/api/address#address-insert
 	 * 
 	 * @param userMail user mail that should be added to addresses in eyepin
+	 * @return 
 	 */
-	public void insertAddressToEyepin(String userMail) {
+	public Completable insertAddressToEyepin(String userMail) {
 		if (StringUtils.isBlank(userMail)) {
 			log.debug("User mail is empty.");
 		} else {
@@ -214,10 +225,30 @@ public class EyepinElement extends FormElement {
 				Request request = new Request.Builder().url(apiUrl).post(body).addHeader("Content-Type", "text/xml")
 						.addHeader("Authorization", credential).build();
 
-				try {
-					// send request
-					// TODO: rewrite to be a single (rxjava)
-					Response response = client.newCall(request).execute();
+				// send request
+				Call call = client.newCall(request);
+				return Single.<Response>create(sub -> {
+					call.enqueue(new Callback() {
+						@Override
+						public void onFailure(Call call, IOException e) {
+							if (!sub.isDisposed()) {
+								// TODO FIXME shouldn't this be actually thrown through Rx?
+								//sub.onError(new IOException(String.format("I/O Error in %s %s : %s (%s)", HttpMethod.POST, apiUrl, e.getClass().getSimpleName(), e.getLocalizedMessage()), e));
+								log.error("OkHttp POST to eyepin failed.", e);
+								sub.onSuccess(new Response.Builder().code(500).message(e.getMessage()).build());
+							}
+						}
+
+						@Override
+						public void onResponse(Call call, Response response) throws IOException {
+							if (!sub.isDisposed()) {
+								sub.onSuccess(response);
+							} else {
+								response.close();
+							}
+						}
+					});
+				}).flatMapCompletable(response -> {
 					int responseCode = response.code();
 
 					if (responseCode == 200) {
@@ -225,13 +256,13 @@ public class EyepinElement extends FormElement {
 					} else {
 						log.error("OkHttp POST to eyepin failed with code " + responseCode + ": " + response.message());
 					}
-				} catch (IOException e) {
-					log.error("OkHttp POST to eyepin failed.", e);
-				}
+					return Completable.complete();
+				});
 			} else {
 				log.warn("Eyepin element has no customer id set. Address not inserted.");
-			}
+			}			
 		}
+		return Completable.complete();
 	}
 
 	/**

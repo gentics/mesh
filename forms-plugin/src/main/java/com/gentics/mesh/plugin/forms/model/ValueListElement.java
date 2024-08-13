@@ -1,17 +1,5 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-import com.gentics.mesh.plugin.forms.service.FormDataService;
-
-import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang.StringUtils;
-import org.apache.tinkerpop.gremlin.process.computer.GraphFilter;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +8,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+
+import org.apache.commons.lang.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.gentics.mesh.core.rest.common.FieldContainer;
+import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.service.FormDataService;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Base for elements which offer a predefined selection of possible values like radio buttons or dropdown fields.

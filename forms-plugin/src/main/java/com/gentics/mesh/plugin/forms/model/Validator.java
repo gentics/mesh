@@ -14,6 +14,8 @@ import org.apache.commons.validator.routines.EmailValidator;
 
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 
+import io.reactivex.Maybe;
+
 /**
  * Enumeration of input validators
  */
@@ -165,7 +167,7 @@ public enum Validator {
 	 * @param values values to validate
 	 * @return ValidationError or null
 	 */
-	public ValidationError validate(String name, List<String> values) {
+	public Maybe<ValidationError> validate(String name, List<String> values) {
 		String invalidValue = values.stream()
 			.filter(Objects::nonNull)
 			.filter(predicate.negate())
@@ -175,10 +177,10 @@ public enum Validator {
 		if (invalidValue != null) {
 			String titleKey = String.format("error.validation.%s.title", name());
 			String messageKey = String.format("error.validation.%s", name());
-			return new ValidationError().setName(name).setTitle(I18nHelper.get(Locale.GERMAN, titleKey))
-					.setMessage(I18nHelper.get(Locale.GERMAN, messageKey, invalidValue));
+			return Maybe.just(new ValidationError().setName(name).setTitle(I18nHelper.get(Locale.GERMAN, titleKey))
+					.setMessage(I18nHelper.get(Locale.GERMAN, messageKey, invalidValue)));
 		} else {
-			return null;
+			return Maybe.empty();
 		}
 	}
 }
