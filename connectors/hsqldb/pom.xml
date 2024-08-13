@@ -66,7 +66,7 @@
 				<executions>
 					<execution>
 						<?m2e ignore?>
-						<id>1-copy-sharedlib-dependencies-no-mesh</id>
+						<id>0-copy-sharedlib-dependencies-no-mesh</id>
 						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
@@ -75,21 +75,6 @@
 							<excludeScope>test</excludeScope>
 							<includeScope>runtime</includeScope>
 							<excludeGroupIds>com.gentics.mesh</excludeGroupIds>
-							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<?m2e ignore?>
-						<id>2-copy-sharedlib-dependencies-with-mesh-database-common</id>
-						<phase>package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<excludeScope>test</excludeScope>
-							<includeScope>runtime</includeScope>
-							<includeGroupIds>com.gentics.mesh</includeGroupIds>
-							<includeArtifactIds>mesh-database-connector-common</includeArtifactIds>
 							<outputDirectory>${project.build.directory}/mavendependencies-sharedlibs</outputDirectory>
 						</configuration>
 					</execution>
@@ -188,34 +173,6 @@
 							</artifactSet>
 						</configuration>
 					</execution>
-					<execution>
-						<id>2-shade-none-but-mesh-database-common</id>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-							</transformers>
-							<artifactSet>
-								<includes>
-									<include>com.gentics.mesh:mesh-database-connector-common</include>
-								</includes>
-							</artifactSet>
-						</configuration>
-					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -237,6 +194,7 @@
 						<dependency>com.gentics.mesh:tests-mesh-service-jwt-auth</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-local-storage</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-service-metrics-prometheus</dependency>
+						<dependency>com.gentics.mesh:mesh-tests</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
 						<dependency>com.gentics.mesh:mesh-database-tests-common</dependency>
 					</dependenciesToScan>
