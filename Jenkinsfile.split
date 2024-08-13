@@ -348,8 +348,9 @@ stage("Setup Build Environment") {
 					sh "rm server/target/*javadoc.jar || true"
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . ; cd .. "
 					// connectors
-					sh "cd .docker ; cp ../connectors/hsqldb/target/mesh-database-connector-hsqldb-" + version + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-hsqldb:latest -t " + registryHost + "/gentics/mesh-hsqldb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
-					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + version + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
+					def mavenVersion = MavenHelper.getVersion()
+					sh "cd .docker ; cp ../connectors/hsqldb/target/mesh-database-connector-hsqldb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-hsqldb:latest -t " + registryHost + "/gentics/mesh-hsqldb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
+					sh "cd .docker ; cp ../connectors/mariadb/target/mesh-database-connector-mariadb-" + mavenVersion + ".jar ./mesh-connector.jar ; docker build --network=host -t " + registryHost + "/gentics/mesh-mariadb:latest -t " + registryHost + "/gentics/mesh-mariadb:" + version + " --build-arg MESH_VERSION=" + version + " --build-arg MESH_REGISTRY_HOST=" + registryHost + " . ; rm -f mesh-connector.jar ; cd .."
 				} else {
 					echo "Docker build skipped.."
 				}
