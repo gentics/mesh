@@ -11,42 +11,28 @@ import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.streams.ReadStream;
 
+/**
+ * A mapping of async {@link ReadStream} onto sync {@link InputStream}. 
+ */
 public class ReadInputStream extends InputStream {
-
     private static final Buffer END_BUFFER = Buffer.buffer(0);
     private static final Buffer EMPTY_BUFFER = Buffer.buffer(0);
     private static final Buffer ERROR_BUFFER = Buffer.buffer(0);
 
     private static final Logger LOG = LoggerFactory.getLogger(ReadInputStream.class);
 
-    private int availableBytes = 0;
-
-    private long bytesRead = 0;
-
-    /**
-     * Flag to indicate that the stream is closed.
-     */
-    private boolean closed = false;
-
-    private Buffer currentBuffer;
-
-    private IOException exceptionToThrow = null;
-
     private int pos;
-
+    private int availableBytes = 0;
+    private long bytesRead = 0;
+    private boolean closed = false;
+    private Buffer currentBuffer;
+    private IOException exceptionToThrow = null;
     private final BlockingQueue<Buffer> queue = new LinkedBlockingQueue<>();
-
-    /**
-     * Constructs ReadInputStream without any associated handlers
-     * configured on a ReadStream.
-     */
-    public ReadInputStream() {
-    }
 
     public ReadInputStream(final ReadStream<Buffer> readStream) {
         readStream
             .handler(this::populate)
-            .endHandler(aVoid -> end());
+            .endHandler(unused -> end());
 
     }
 
@@ -60,19 +46,18 @@ public class ReadInputStream extends InputStream {
         closed = true;
     }
 
-    public void end() {
+    protected void end() {
         queue.add(END_BUFFER);
     }
 
     /**
-     * End the buffer because of an error.
-     *
+     * Force an error to this stream.
+     * 
      * @param e
      */
     public void error(final Throwable e) {
         exceptionToThrow = new IOException(e);
         queue.add(ERROR_BUFFER);
-
     }
 
     @Override
@@ -80,7 +65,7 @@ public class ReadInputStream extends InputStream {
         return false;
     }
 
-    public void populate(final Buffer buffer) {
+    protected void populate(final Buffer buffer) {
         queue.add(buffer);
         availableBytes += buffer.length();
     }
