@@ -2,6 +2,7 @@ package com.gentics.mesh.plugin.forms.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -43,8 +44,8 @@ import io.vertx.reactivex.core.Vertx;
  */
 public class FriendlyCaptchaElement extends FormElement {
 	protected final static String TITLE_KEY = "error.validation.captcha.title";
-
 	protected final static String MESSAGE_KEY = "error.validation.captcha";
+	protected final static List<String> FAST_FAILER_SOLUTIONS = Arrays.asList(".FETCHING", ".UNSTARTED", ".UNFINISHED");
 
 	public FriendlyCaptchaElement() {
 	}
@@ -90,16 +91,11 @@ public class FriendlyCaptchaElement extends FormElement {
 	 */
 	protected Single<Boolean> isValid(String captchaSolution) {
 		log.debug("Trying to validate captchaResponse: {}", captchaSolution);
-		List<String> fastFailerSolutions = new ArrayList<String>() {{
-			add(".FETCHING");
-			add(".UNSTARTED");
-			add(".UNFINISHED");
-		}};
 
 		if (StringUtils.isBlank(captchaSolution)) {
 			log.debug("Solution is empty");
 			return Single.just(false);
-		} else if(fastFailerSolutions.contains(captchaSolution)) {
+		} else if(FAST_FAILER_SOLUTIONS.contains(captchaSolution)) {
 			// Values that are per definition false and so we don't need to ask the endpoint
 			log.debug("Solution is a fast failer!");
 			return Single.just(false);
