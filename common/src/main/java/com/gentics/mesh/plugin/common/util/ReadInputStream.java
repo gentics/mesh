@@ -15,7 +15,7 @@ public class ReadInputStream extends InputStream {
 
     private static final Buffer END_BUFFER = Buffer.buffer(0);
     private static final Buffer EMPTY_BUFFER = Buffer.buffer(0);
-    private static final Buffer END_BUFFER_WITH_ERROR = Buffer.buffer(0);
+    private static final Buffer ERROR_BUFFER = Buffer.buffer(0);
 
     private static final Logger LOG = LoggerFactory.getLogger(ReadInputStream.class);
 
@@ -71,7 +71,7 @@ public class ReadInputStream extends InputStream {
      */
     public void error(final Throwable e) {
         exceptionToThrow = new IOException(e);
-        queue.add(END_BUFFER_WITH_ERROR);
+        queue.add(ERROR_BUFFER);
 
     }
 
@@ -105,7 +105,7 @@ public class ReadInputStream extends InputStream {
         }
         if (currentBuffer == null) {
             throw new IOException("Obtained a null buffer from the queue");
-        } else if (currentBuffer == END_BUFFER_WITH_ERROR) {
+        } else if (currentBuffer == ERROR_BUFFER) {
             throw exceptionToThrow;
         } else if (currentBuffer == END_BUFFER) {
             return -1;
