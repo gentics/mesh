@@ -121,7 +121,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -228,6 +227,7 @@
 							<artifactSet>
 								<includes>
 									<include>com.gentics.mesh:mesh-database-connector-common</include>
+									<include>javax.servlet:servlet-api</include>
 								</includes>
 							</artifactSet>
 						</configuration>
@@ -245,7 +245,6 @@
 						<dependency>com.gentics.mesh:tests-mesh-rest-client</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-plugin-api</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-server</dependency>
-						<dependency>com.gentics.mesh:tests-mesh-changelog-system</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-elasticsearch</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed</dependency>
 						<dependency>com.gentics.mesh:tests-mesh-distributed-coordinator</dependency>

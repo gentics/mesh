@@ -230,6 +230,7 @@
 							<artifactSet>
 								<includes>
 									<include>com.gentics.mesh:mesh-database-connector-common</include>
+									<include>javax.servlet:servlet-api</include>
 								</includes>
 							</artifactSet>
 						</configuration>
