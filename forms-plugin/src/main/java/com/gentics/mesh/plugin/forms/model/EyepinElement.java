@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.forms.config.EyepinOptions;
 import com.gentics.mesh.plugin.forms.config.ProxyOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.util.StreamUtil;
 
 import io.reactivex.Completable;
@@ -90,7 +91,6 @@ public class EyepinElement extends FormElement {
 
 		ValidationError error = new ValidationError();
 		if (StringUtils.isNotBlank(value)) {
-
 			// eyepin element was checked, thus user mail must exist and have a value too
 			boolean containsUserMail = postedData.entries().stream().anyMatch(v -> v.getKey().startsWith("usermail"));
 
@@ -117,12 +117,7 @@ public class EyepinElement extends FormElement {
 				});
 			}
 		}
-
-		if (StringUtils.isBlank(error.getName())) {
-			return Maybe.empty();
-		} else {
-			return Maybe.just(error);
-		}
+		return RxUtil.fromCallableIf(() -> StringUtils.isNotBlank(error.getName()), () -> error);
 	}
 
 	/**
@@ -135,7 +130,6 @@ public class EyepinElement extends FormElement {
 		String value = getSingleFormData(postedData);
 
 		if (StringUtils.isNotBlank(value)) {
-
 			// insert each user mail to eyepin addresses
 			return Single.zip(
 					StreamUtil.toIterable(form.flattened().filter(e -> e instanceof UsermailElement).map(e -> (UsermailElement) e)

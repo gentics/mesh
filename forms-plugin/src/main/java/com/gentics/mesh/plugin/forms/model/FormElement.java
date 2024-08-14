@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -316,7 +317,7 @@ public abstract class FormElement implements RestModel {
 	 */
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
 		if (skipElement(postedData)) {
-			return Maybe.empty();
+			return RxUtil.emptyMaybe();
 		}
 
 		List<String> values = new ArrayList<>();
@@ -344,7 +345,7 @@ public abstract class FormElement implements RestModel {
 		if (validator != null) {
 			return validator.validate(getName(), values);
 		}
-		return Maybe.empty();
+		return RxUtil.emptyMaybe();
 	}
 
 	/**

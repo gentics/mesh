@@ -26,6 +26,7 @@ import com.gentics.mesh.plugin.common.util.ReadInputStream;
 import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -102,7 +103,7 @@ public class FileElement extends FormElement {
 	@Override
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
 		if (skipElement(postedData)) {
-			return Maybe.empty();
+			return RxUtil.emptyMaybe();
 		}
 
 		FileUpload fileUpload = getFileUpload(fileUploads);
@@ -111,13 +112,13 @@ public class FileElement extends FormElement {
 				if (formDataNode != null) {
 					BinaryField field = formDataNode.getFields().getBinaryField(getName());
 					if (field != null && field.hasValues()) {
-						return null;
+						return RxUtil.emptyMaybe();
 					}
 				}
 				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled.title"))
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled", getLabel())));
 			} else {
-				return Maybe.empty();
+				return RxUtil.emptyMaybe();
 			}
 		}
 
@@ -135,12 +136,13 @@ public class FileElement extends FormElement {
 			Collection<String> localAllowedTypes = allowedTypes;
 			return fileHasAllowedContentType(fileUpload, allowedTypes, rxVertx).flatMapMaybe(allowedContentType -> {
 				if (!allowedContentType && !fileHasAllowedName(fileUpload, localAllowedTypes)) {
+					fileUploads.remove(fileUpload);
 					return Maybe.just(new ValidationError()
 						.setName(getName())
 						.setTitle(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.title"))
 						.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.check", fileUpload.fileName())));
 				} else {
-					return Maybe.empty();
+					return RxUtil.emptyMaybe();
 				}
 			}).onErrorResumeNext(e -> {
 				log.error("Could not check file type of uploaded file " + fileUpload.fileName() + " (" + fileUpload.contentType() + ")", e);
@@ -150,7 +152,7 @@ public class FileElement extends FormElement {
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.validation.file.type.check", fileUpload.fileName())));
 			});
 		}
-		return Maybe.empty();
+		return RxUtil.emptyMaybe();
 	}
 
 	@Override
@@ -205,7 +207,8 @@ public class FileElement extends FormElement {
 						? false
 						: allowedContentTypes.stream()
 							.filter(Objects::nonNull)
-							.filter(pattern -> mimeType.matches(pattern)).findFirst().isPresent());
+							.filter(pattern -> mimeType.matches(pattern))
+							.findFirst().isPresent());
 	}
 
 	/**
@@ -221,7 +224,7 @@ public class FileElement extends FormElement {
 
 		return rxVertx.fileSystem().rxOpen(uploadedFileName, new io.vertx.core.file.OpenOptions().setRead(true))				
 				.map(file -> {
-					try (ReadInputStream inputStream = ReadInputStream.make(file); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
+					try (ReadInputStream inputStream = new ReadInputStream(file); TikaInputStream tikaInputStream = TikaInputStream.get(inputStream)) {
 						Metadata metadata = new Metadata();
 						metadata.add(Metadata.RESOURCE_NAME_KEY, providedFileName);
 						String mimeType = detector.detect(tikaInputStream, metadata).toString();

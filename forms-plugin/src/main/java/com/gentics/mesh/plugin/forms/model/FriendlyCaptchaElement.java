@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.config.ProxyOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
 import io.reactivex.Single;
@@ -77,7 +78,7 @@ public class FriendlyCaptchaElement extends FormElement {
 
 		return isValid(solution).toMaybe()
 				.flatMap(valid -> valid 
-						? Maybe.empty() 
+						? RxUtil.emptyMaybe()
 						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY))));
 	}
 

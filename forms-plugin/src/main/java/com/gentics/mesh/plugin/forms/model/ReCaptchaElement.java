@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.config.ProxyOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
@@ -89,10 +90,9 @@ public class ReCaptchaElement extends FormElement {
 		if (StringUtils.isEmpty(captchaResponse)) {
 			captchaResponse = postedData.get(getName());
 		}
-
 		return isValid(captchaResponse).toMaybe()
 				.flatMap(valid -> valid 
-						? Maybe.empty() 
+						? RxUtil.emptyMaybe()
 						: Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, TITLE_KEY)).setMessage(I18nHelper.get(Locale.GERMAN, MESSAGE_KEY))));
 	}
 

@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.validator.routines.EmailValidator;
 
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
 
@@ -180,7 +181,7 @@ public enum Validator {
 			return Maybe.just(new ValidationError().setName(name).setTitle(I18nHelper.get(Locale.GERMAN, titleKey))
 					.setMessage(I18nHelper.get(Locale.GERMAN, messageKey, invalidValue)));
 		} else {
-			return Maybe.empty();
+			return RxUtil.emptyMaybe();
 		}
 	}
 }

@@ -2,141 +2,138 @@ package com.gentics.mesh.plugin.common.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.streams.ReadStream;
 
 public class ReadInputStream extends InputStream {
-	private AtomicBoolean finished;
-	private AtomicBoolean paused;
 
-	private static final int MAX_QUEUE = 32768;
+    private static final Buffer END_BUFFER = Buffer.buffer(0);
+    private static final Buffer EMPTY_BUFFER = Buffer.buffer(0);
+    private static final Buffer END_BUFFER_WITH_ERROR = Buffer.buffer(0);
 
-	private BlockingDeque<Byte> queue;
-	private BlockingDeque<Byte> stoppedBuffer;
+    private static final Logger LOG = LoggerFactory.getLogger(ReadInputStream.class);
 
-	private ReadStream<Buffer> inputStream;
+    private int availableBytes = 0;
 
-	public static ReadInputStream make(ReadStream<Buffer> inputStream) {
-		return InnderReadInputStream.make(inputStream);
-	}
+    private long bytesRead = 0;
 
-	private ReadInputStream(ReadStream<Buffer> inputStream) {
-		this.paused = new AtomicBoolean(true);
-		this.finished = new AtomicBoolean(false);
+    /**
+     * Flag to indicate that the stream is closed.
+     */
+    private boolean closed = false;
 
-		this.queue = new LinkedBlockingDeque<Byte>(MAX_QUEUE);
-		this.stoppedBuffer = new LinkedBlockingDeque<Byte>();
-		this.inputStream = inputStream;
+    private Buffer currentBuffer;
 
-		this.inputStream.handler(handleBuffer -> {
-			int index = 0;
-			while (index < handleBuffer.length()) {
-				if (queue.remainingCapacity() == 0) {
-					stoppedBuffer.offerFirst(handleBuffer.getByte(index));
-					stop();
-				} else {
-					queue.offerFirst(handleBuffer.getByte(index));
-				}
-				index++;
+    private IOException exceptionToThrow = null;
 
-			}
-		});
-		this.inputStream.endHandler(endHandle -> {
-			finished.set(true);
-		});
-	}
+    private int pos;
 
-	public ReadInputStream start() {
-		this.inputStream.resume();
-		this.paused.set(false);
-		return this;
-	}
+    private final BlockingQueue<Buffer> queue = new LinkedBlockingQueue<>();
 
-	public ReadInputStream stop() {
-		this.inputStream.pause();
-		this.paused.set(true);
-		return this;
-	}
+    /**
+     * Constructs ReadInputStream without any associated handlers
+     * configured on a ReadStream.
+     */
+    public ReadInputStream() {
+    }
 
-	private int readInt() throws IOException, InterruptedException {
-		Byte b = null;
-		if (finished.get()) {
-			if (stoppedBuffer.isEmpty() && queue.isEmpty()) {
-				b = null;
-			} else {
-				if (stoppedBuffer.isEmpty()) {
-					b = queue.pollLast(5000, TimeUnit.MILLISECONDS);
-				} else {
-					b = stoppedBuffer.pollLast();
-				}
-			}
-		} else {
-			if (paused.get()) {
-				if (queue.isEmpty()) {
-					if (stoppedBuffer.isEmpty()) {
-						start();
-						b = queue.takeLast();
-					} else {
-						b = stoppedBuffer.pollLast();
-					}
-				} else {
-					b = queue.pollLast(5000, TimeUnit.MILLISECONDS);
+    public ReadInputStream(final ReadStream<Buffer> readStream) {
+        readStream
+            .handler(this::populate)
+            .endHandler(aVoid -> end());
 
-				}
-			} else {
-				if (queue.isEmpty()) {
-					if (stoppedBuffer.isEmpty()) {
-						start();
-						b = queue.takeLast();
+    }
 
-					} else {
-						b = stoppedBuffer.pollLast();
-					}
-				} else {
-					b = queue.pollLast(5000, TimeUnit.MILLISECONDS);
-				}
-			}
-		}
-		return b == null ? -1 : Byte.toUnsignedInt(b);
+    @Override
+    public int available() throws IOException {
+        return availableBytes;
+    }
 
-	}
+    @Override
+    public void close() throws IOException {
+        closed = true;
+    }
 
-	@Override
-	public int read() throws IOException {
+    public void end() {
+        queue.add(END_BUFFER);
+    }
 
-		int result = 0;
-		try {
-			result = readInt();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
+    /**
+     * End the buffer because of an error.
+     *
+     * @param e
+     */
+    public void error(final Throwable e) {
+        exceptionToThrow = new IOException(e);
+        queue.add(END_BUFFER_WITH_ERROR);
 
-	@Override
-	public void close() throws IOException {
-		stop();
-		super.close();
-	}
+    }
 
-	@Override
-	public int available() throws IOException {
-		return 0;
-	}
+    @Override
+    public boolean markSupported() {
+        return false;
+    }
 
-	private static class InnderReadInputStream {
-		static ReadInputStream INSTANCE;
+    public void populate(final Buffer buffer) {
+        queue.add(buffer);
+        availableBytes += buffer.length();
+    }
 
-		public static ReadInputStream make(ReadStream<Buffer> inputstream) {
-			if (INSTANCE == null) {
-				INSTANCE = new ReadInputStream(inputstream);
-			}
-			return INSTANCE;
-		}
-	}
+    @Override
+    public int read() throws IOException {
+        if (closed) {
+            throw new IOException("Stream is closed");
+        }
+        if (currentBuffer == null) {
+            try {
+                if (queue.isEmpty()) {
+                	currentBuffer = EMPTY_BUFFER;
+                } else {
+                	currentBuffer = queue.take();
+                }
+                pos = 0;
+            } catch (final InterruptedException e) {
+                LOG.error("Interrupted while waiting for next buffer", e);
+                Thread.currentThread().interrupt();
+            }
+        }
+        if (currentBuffer == null) {
+            throw new IOException("Obtained a null buffer from the queue");
+        } else if (currentBuffer == END_BUFFER_WITH_ERROR) {
+            throw exceptionToThrow;
+        } else if (currentBuffer == END_BUFFER) {
+            return -1;
+        } else if (currentBuffer == EMPTY_BUFFER) {
+        	return 0;
+        } else {
+            // Convert to unsigned byte
+            final int b = currentBuffer.getByte(pos++) & 0xFF;
+            --availableBytes;
+            ++bytesRead;
+            if (pos == currentBuffer.length()) {
+                currentBuffer = null;
+            }
+            return b;
+        }
+    }
+
+    @Override
+    public synchronized void reset() throws IOException {
+        throw new IOException("reset not supported");
+    }
+
+    /**
+     * Gets a count of how much bytes have been read from this input stream.
+     *
+     * @return total bytes read
+     */
+    public long totalBytesRead() {
+        return bytesRead;
+    }
 }

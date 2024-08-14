@@ -10,6 +10,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
+import com.gentics.mesh.plugin.forms.util.RxUtil;
 
 import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
@@ -59,7 +60,7 @@ public class MandatorygroupElement extends FormElement {
 	@Override
 	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
 		if (skipElement(postedData)) {
-			return Maybe.empty();
+			return RxUtil.emptyMaybe();
 		}
 
 		if (!getElements().stream().filter(element -> {
@@ -73,7 +74,7 @@ public class MandatorygroupElement extends FormElement {
 			return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_group_not_filled.title"))
 					.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_group_not_filled")));
 		}
-		return Maybe.empty();
+		return RxUtil.emptyMaybe();
 	}
 
 	@Override
