@@ -54,6 +54,7 @@ public class Form implements RestModel {
 
 	public final static String ERROR_FIELD_NAME = "error";
 	public static final String FIELD_VALUE = "value";
+	private static final ValidationError NO_ERROR = new ValidationError();
 
 	private String uuid;
 
@@ -413,7 +414,8 @@ public class Form implements RestModel {
 						.filter(FormElement::isActive)
 						.filter(filter)
 						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx)
-								.filter(Objects::nonNull)
+								.defaultIfEmpty(NO_ERROR)
+								.filter(error -> error != null && error != NO_ERROR)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle())), 
 					errors -> Arrays.stream(errors)
