@@ -2,8 +2,6 @@ package com.gentics.mesh.plugin.forms.model;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.util.Locale;
 import java.util.Set;
 
@@ -19,7 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.plugin.forms.config.EyepinOptions;
-import com.gentics.mesh.plugin.forms.config.ProxyOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 import com.gentics.mesh.util.StreamUtil;
@@ -30,7 +27,6 @@ import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
-import okhttp3.Authenticator;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Credentials;
@@ -40,7 +36,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.Route;
 
 /**
  * Eyepin newsletter registration element
@@ -86,7 +81,7 @@ public class EyepinElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		String value = getSingleFormData(postedData);
 
 		ValidationError error = new ValidationError();
@@ -124,7 +119,7 @@ public class EyepinElement extends FormElement {
 	 * Performs submit action
 	 */
 	@JsonIgnore
-	public Completable performSubmit(Form form, MultiMap postedData) {
+	public Completable performSubmit(Form form, MultiMap postedData, Vertx rxVertx, OkHttpClient httpClient) {
 		log.debug("Form submitted: Contains eyepin element.");
 
 		String value = getSingleFormData(postedData);
@@ -142,7 +137,7 @@ public class EyepinElement extends FormElement {
 								return Completable.complete();
 							}
 							// add user mail to Eyepin addresses
-							return insertAddressToEyepin(userMail);
+							return insertAddressToEyepin(userMail, httpClient);
 						// Map to some random value, only the event is what we need
 						}).map(c -> c.toSingleDefault(1))),
 					// Collecting all the completed events, send a new one
@@ -161,7 +156,7 @@ public class EyepinElement extends FormElement {
 	 * @param userMail user mail that should be added to addresses in eyepin
 	 * @return 
 	 */
-	public Completable insertAddressToEyepin(String userMail) {
+	public Completable insertAddressToEyepin(String userMail, OkHttpClient httpClient) {
 		if (StringUtils.isBlank(userMail)) {
 			log.debug("User mail is empty.");
 		} else {
@@ -176,38 +171,7 @@ public class EyepinElement extends FormElement {
 
 			log.debug("Eyepin customer id: " + customerId);
 			if (!StringUtils.isBlank(customerId)) {
-
-				// TODO: Reuse created OkHttp clients, maybe add a respective provider in the
-				// plugin commons.
-				OkHttpClient client = new OkHttpClient();
-
-				ProxyOptions proxyOptions = getConfiguration().getProxyOptions();
-
-				// set proxy options
-				if (proxyOptions != null && proxyOptions.isActive()) {
-					log.debug("Using proxy:\n{}", proxyOptions);
-					int proxyPort = Integer.parseInt(proxyOptions.getPort());
-					String proxyHost = proxyOptions.getHost();
-
-					String proxyPassword = proxyOptions.getPassword();
-					String proxyUsername = proxyOptions.getUser();
-
-					Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
-					client = client.newBuilder().proxy(proxy).build();
-
-					if (!StringUtils.isBlank(proxyUsername) && !StringUtils.isBlank(proxyPassword)) {
-						Authenticator proxyAuthenticator = new Authenticator() {
-							@Override
-							public Request authenticate(Route route, Response response) throws IOException {
-								String credential = Credentials.basic(proxyUsername, proxyPassword);
-								return response.request().newBuilder().header("Proxy-Authorization", credential)
-										.build();
-							}
-						};
-						client = client.newBuilder().proxyAuthenticator(proxyAuthenticator).build();
-					}
-				}
-
+				
 				// prepare request
 				MediaType mediaType = MediaType.parse("application/xml");
 				String credential = Credentials.basic(username, password);
@@ -220,7 +184,7 @@ public class EyepinElement extends FormElement {
 						.addHeader("Authorization", credential).build();
 
 				// send request
-				Call call = client.newCall(request);
+				Call call = httpClient.newCall(request);
 				return Single.<Response>create(sub -> {
 					call.enqueue(new Callback() {
 						@Override

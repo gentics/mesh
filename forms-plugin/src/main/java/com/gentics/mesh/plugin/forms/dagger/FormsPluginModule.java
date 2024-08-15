@@ -15,6 +15,7 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.helper.FormHelper;
 import com.gentics.mesh.plugin.forms.model.FormElement;
 import com.gentics.mesh.plugin.forms.model.FormElementDeserializer;
+import com.gentics.mesh.plugin.forms.service.OkHttpClientService;
 import com.gentics.mesh.plugin.common.service.RenderService;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
@@ -42,7 +43,6 @@ public class FormsPluginModule {
 		objectMapper.registerModule(module);
 		return objectMapper;
 	}
-
 
 	/**
 	 * Render service
@@ -74,5 +74,11 @@ public class FormsPluginModule {
 	@Provides
 	public MeshPluginService meshPluginService(io.vertx.reactivex.core.Vertx vertx, @AdminClient MeshRestClient adminClient, @StorageDir File storageDir) {
 		return new MeshPluginService(vertx, adminClient, storageDir);
+	}
+
+	@Singleton
+	@Provides
+	public OkHttpClientService okHttpClientService(FormsConfig formsConfig) {
+		return new OkHttpClientService(formsConfig);
 	}
 }

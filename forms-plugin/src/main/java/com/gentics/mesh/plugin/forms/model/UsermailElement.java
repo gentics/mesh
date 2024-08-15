@@ -15,6 +15,7 @@ import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Usermail element
@@ -86,7 +87,7 @@ public class UsermailElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		Callable<Maybe<ValidationError>> ifSuperIsEmpty = () -> {
 			String value = getSingleFormData(postedData);
 			if (StringUtils.isNotBlank(value)) {
@@ -95,7 +96,7 @@ public class UsermailElement extends FormElement {
 				return RxUtil.emptyMaybe();
 			}
 		};
-		return super.validate(postedData, fileUploads, formDataNode, rxVertx)
+		return super.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
 				.switchIfEmpty(Maybe.fromCallable(ifSuperIsEmpty).flatMap(x -> x));
 	}
 

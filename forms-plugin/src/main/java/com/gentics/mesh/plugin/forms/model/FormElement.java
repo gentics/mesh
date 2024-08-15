@@ -42,6 +42,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Abstract form element
@@ -313,9 +314,10 @@ public abstract class FormElement implements RestModel {
 	 * @param fileUploads fileuploads
 	 * @param formDataNode form data node (may be null)
 	 * @param rxVertx Vert.x instance for the utility tasks
+	 * @param httpClient a HTTP client for possible external validation calls
 	 * @return validation error or null if posted data is valid
 	 */
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		if (skipElement(postedData)) {
 			return RxUtil.emptyMaybe();
 		}
@@ -549,7 +551,7 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData
 	 */
 	@JsonIgnore
-	public Completable performSubmit(Form form, MultiMap postedData) {
+	public Completable performSubmit(Form form, MultiMap postedData, Vertx rxVertx, OkHttpClient httpClient) {
 		return Completable.complete();
 	}
 

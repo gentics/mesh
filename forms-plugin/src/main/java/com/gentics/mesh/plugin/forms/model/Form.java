@@ -42,6 +42,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Form
@@ -397,9 +398,10 @@ public class Form implements RestModel {
 	 * @param fileUploads fileuploads
 	 * @param formDataNode form data node (null if the form data are not yet saved)
 	 * @param rxVertx vert.x instance for the utility tasks
+	 * @param httpClient a HTTP client for an external validation
 	 * @return list containing error messages (empty if data is valid)
 	 */
-	public Single<Map<String, ValidationError>> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
+	public Single<Map<String, ValidationError>> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		// only filter out the elements, which have not been POSTed, if the form contains multiple pages
 		Predicate<FormElement> filter = null;
 		if (isMultipage()) {
@@ -412,7 +414,7 @@ public class Form implements RestModel {
 					flattened()
 						.filter(FormElement::isActive)
 						.filter(filter)
-						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx)
+						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
 								.map(error -> Pair.of(elem.getName(), error))
 								.toSingle(Pair.of(null, null)))), 
 					errors -> Arrays.stream(errors)

@@ -34,6 +34,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
 
 /**
  * Element for file uploads
@@ -101,7 +102,7 @@ public class FileElement extends FormElement {
 	}
 
 	@Override
-	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		if (skipElement(postedData)) {
 			return RxUtil.emptyMaybe();
 		}

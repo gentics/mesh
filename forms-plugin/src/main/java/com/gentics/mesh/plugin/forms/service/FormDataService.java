@@ -154,6 +154,8 @@ public class FormDataService {
 
 	private final StatusService statusService;
 
+	private final OkHttpClientService okHttpClientService;
+
 	private final File storageDir;
 
 	private final String loadFormDataToMigrateGraphQl;
@@ -170,6 +172,7 @@ public class FormDataService {
 			MailService mailService,
 			RenderService renderService,
 			StatusService statusService,
+			OkHttpClientService okHttpClientService,
 			PluginManifest manifest,
 			@StorageDir File storageDir) {
 		this.adminClient = adminClient;
@@ -182,6 +185,7 @@ public class FormDataService {
 		this.mailService = mailService;
 		this.renderService = renderService;
 		this.statusService = statusService;
+		this.okHttpClientService = okHttpClientService;
 		this.storageDir = storageDir;
 
 		try {
@@ -1028,7 +1032,7 @@ public class FormDataService {
 		MultiMap postedData = ctx.getPostedData();
 		Single<Map<String, ValidationError>> errorSingle = Single.zip(
 				Single.just(form.preventInjection(postedData, configuration.getSecurityOptions())), 
-				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx), 
+				form.validate(postedData, ctx.getFileUploads(), ctx.getFormDataNode(), rxVertx, okHttpClientService.getClient()), 
 				(a,b) -> {
 					HashMap<String, ValidationError> errors = new HashMap<>();
 					errors.putAll(a);
@@ -1205,7 +1209,7 @@ public class FormDataService {
 
 			// perform actions
 			return Single.zip(
-					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData).toSingleDefault(1))), 
+					StreamUtil.toIterable(ctx.getForm().flattened().map(e -> e.performSubmit(ctx.getForm(), postedData, rxVertx, okHttpClientService.getClient()).toSingleDefault(1))), 
 					allSubmitted -> {
 						boolean isPoll = ctx.getForm().getType() == FormType.POLL;
 
