@@ -1,5 +1,20 @@
 package com.gentics.mesh.plugin.common.service;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.branch.BranchResponse;
 import com.gentics.mesh.core.rest.event.migration.SchemaMigrationMeshEventModel;
@@ -17,35 +32,22 @@ import com.gentics.mesh.parameter.client.GenericParametersImpl;
 import com.gentics.mesh.plugin.MeshPlugin;
 import com.gentics.mesh.plugin.common.model.SchemaCreateOrUpdateResponse;
 import com.gentics.mesh.plugin.common.util.MiscUtil;
+import com.gentics.mesh.plugin.common.util.ReadInputStream;
 import com.gentics.mesh.plugin.common.util.RxUtil;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.google.common.collect.Sets;
+
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.functions.Predicate;
+import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.eventbus.EventBus;
 import io.vertx.reactivex.core.eventbus.Message;
 import io.vertx.reactivex.core.eventbus.MessageConsumer;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * This utility service provides methods commonly used by Mesh plugins,
@@ -297,9 +299,7 @@ public class MeshPluginService {
 	 * @return A single with an <code>InputStream</code> containing the loaded data
 	 */
 	public Single<InputStream> loadFromStorage(String path) {
-		return vertx.fileSystem().rxReadFile(storageDirPath + path)
-			.map(Buffer::getBytes)
-			.map(ByteArrayInputStream::new);
+		return vertx.fileSystem().rxOpen(storageDirPath + path, new OpenOptions().setRead(true)).map(ReadInputStream::new);
 	}
 
 	/**
