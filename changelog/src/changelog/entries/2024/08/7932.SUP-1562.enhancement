@@ -1,0 +1,1 @@
+Now external HTTP (captchas etc) calls, as well as file readers, are made in an asynchronous way, providing more responsive usage experience.
