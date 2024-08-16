@@ -7,17 +7,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.ProxyAuthenticationStrategy;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-import com.gentics.mesh.plugin.forms.config.ProxyOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
 
@@ -99,27 +91,6 @@ public class FriendlyCaptchaElement extends FormElement {
 			log.debug("Solution is a fast failer!");
 			return Single.just(false);
 		} else {
-			ProxyOptions proxyOptions = getConfiguration().getProxyOptions();
-
-			HttpAsyncClientBuilder clientBuilder = HttpAsyncClientBuilder.create();
-			clientBuilder.useSystemProperties();
-
-			if (proxyOptions != null && proxyOptions.isActive()) {
-				log.debug("Using proxy:\n{}", proxyOptions);
-
-				clientBuilder.setProxy(new HttpHost(proxyOptions.getHost(), Integer.parseInt(proxyOptions.getPort())));
-
-				if (!StringUtils.isBlank(proxyOptions.getUser()) && !StringUtils.isBlank(proxyOptions.getPassword())) {
-					CredentialsProvider credsProvider = new BasicCredentialsProvider();
-					credsProvider.setCredentials(
-							new AuthScope(proxyOptions.getHost(), Integer.parseInt(proxyOptions.getPort())),
-							new UsernamePasswordCredentials(proxyOptions.getUser(), proxyOptions.getPassword()));
-
-					clientBuilder.setDefaultCredentialsProvider(credsProvider);
-					clientBuilder.setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy());
-				}
-			}
-
 			// prepare request
 			FormBody formBody = new FormBody.Builder()
 					.addEncoded("secret", this.getConfiguration().getFriendlyCaptcha().getSecretKey())
