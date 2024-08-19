@@ -234,10 +234,8 @@ public class EyepinElement extends FormElement {
 				String credential = Credentials.basic(username, password);
 				String additionalInfo = "";
 				if(topicIds != "" && topicIds != null){
-					String[] topicIdsArray = topicIds.split(",");
-					for(int i = 0; i < topicIdsArray.length; i++){
-						additionalInfo += "\n\t<topicids merge=\"1\">\"" + topicIdsArray[i] + "\"</topicids>";
-					}
+					additionalInfo += "\n\t<topicids merge=\"1\">\"" + topicIds + "\"</topicids>";
+
 				}
 				if(listIds != "" && listIds != null){
 					String[] listIdsArray = listIds.split(",");
@@ -254,7 +252,7 @@ public class EyepinElement extends FormElement {
 				Request request = new Request.Builder().url(apiUrl).post(body).addHeader("Content-Type", "text/xml")
 						.addHeader("Authorization", credential).build();
 				log.debug("Body");
-				log.debug(body);
+				log.debug(body.toString());
 				try {
 					// send request
 					// TODO: rewrite to be a single (rxjava)
