@@ -49,10 +49,10 @@ public class EyepinElement extends FormElement {
 	private String customerId;
 
 	@JsonProperty
-	private String listId;
+	private String listIds;
 
 	@JsonProperty
-	private String topicId;
+	private String topicIds;
 
 	public EyepinElement() {
 	}
@@ -62,8 +62,8 @@ public class EyepinElement extends FormElement {
 
 		this.value = other.value;
 		this.customerId = other.customerId;
-		this.listId = other.listId;
-		this.topicId = other.topicId;
+		this.listIds = other.listIds;
+		this.topicIds = other.topicIds;
 	}
 
 	public String getCustomerId() {
@@ -74,20 +74,20 @@ public class EyepinElement extends FormElement {
 		this.customerId = customerId;
 	}
 
-	public String getListId() {
-		return listId;
+	public String getListIds() {
+		return listIds;
 	}
 
-	public void setListId(String listId) {
-		this.listId = listId;
+	public void setListIds(String listIds) {
+		this.listIds = listIds;
 	}
 
-	public String getTopicId() {
-		return topicId;
+	public String getTopicIds() {
+		return topicIds;
 	}
 
-	public void setTopicId(String topicId) {
-		this.topicId = topicId;
+	public void setTopicIds(String topicIds) {
+		this.topicIds = topicIds;
 	}
 
 	public String getValue() {
@@ -192,10 +192,10 @@ public class EyepinElement extends FormElement {
 			String apiUrl = eyepinOptions.getApiUrl();
 
 			String customerId = this.getCustomerId();
-			String listId = this.getListId();
-			String topicId = this.getTopicId();
+			String listIds = this.getListIds();
+			String topicIds = this.getTopicIds();
 
-			log.debug("Eyepin customer id: " + customerId + " listId: " + listId + " topicId: " + topicId);
+			log.debug("Eyepin customer id: " + customerId + " listIds: " + listIds + " topicIds: " + topicIds);
 			if (!StringUtils.isBlank(customerId)) {
 
 				// TODO: Reuse created OkHttp clients, maybe add a respective provider in the
@@ -233,11 +233,17 @@ public class EyepinElement extends FormElement {
 				MediaType mediaType = MediaType.parse("application/xml");
 				String credential = Credentials.basic(username, password);
 				String additionalInfo = "";
-				if(topicId != ""){
-					additionalInfo += "\n\t<topicids merge=\"1\">\"" + topicId + "\"</topicids>";
+				if(topicIds != "" && topicIds != null){
+					String[] topicIdsArray = topicIds.split(",");
+					for(int i = 0; i < topicIdsArray.length; i++){
+						additionalInfo += "\n\t<topicids merge=\"1\">\"" + topicIdsArray[i] + "\"</topicids>";
+					}
 				}
-				if(listId != ""){
-					additionalInfo += "\n\t<lists merge=\"1\">\n\t<list id=\"" + listId +"\" />\n\t</lists>";
+				if(listIds != "" && listIds != null){
+					String[] listIdsArray = listIds.split(",");
+					for(int i = 0; i < listIdsArray.length; i++){
+						additionalInfo += "\n\t<lists merge=\"1\">\"" + listIdsArray[i] + "\"</lists>";
+					}
 				}
 				RequestBody body = RequestBody.create(mediaType,
 						"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<addressinsert key=\"Email\" save-empty-fields=\"0\" overrule-blacklist=\"0\" customerid=\""
@@ -247,7 +253,8 @@ public class EyepinElement extends FormElement {
 								+ "\n\t<status>1</status>\n  <handleoptin>1</handleoptin>\n</addressinsert>");
 				Request request = new Request.Builder().url(apiUrl).post(body).addHeader("Content-Type", "text/xml")
 						.addHeader("Authorization", credential).build();
-
+				log.debug("Body");
+				log.debug(body);
 				try {
 					// send request
 					// TODO: rewrite to be a single (rxjava)
