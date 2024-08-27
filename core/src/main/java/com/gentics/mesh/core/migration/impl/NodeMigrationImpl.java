@@ -172,7 +172,8 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 					do {
 						prepareMigration(reloadVersion(currentVersion), touchedFields);
 						currentVersion = currentVersion.getNextVersion();
-					} while (currentVersion != toVersion || currentVersion == null);
+					} while (currentVersion != toVersion && currentVersion != null);
+
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();
