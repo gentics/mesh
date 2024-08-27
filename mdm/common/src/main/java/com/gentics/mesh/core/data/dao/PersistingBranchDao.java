@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.perm.InternalPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.job.JobStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.job.JobStatus.FAILED;
 import static com.gentics.mesh.core.rest.job.JobStatus.QUEUED;
 import static com.gentics.mesh.event.Assignment.ASSIGNED;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -13,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -370,30 +368,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			// Enqueue the schema migration for each found schema version
 			edge.setActive(true);
 			if (currentVersion != null) {
-				ArrayList<HibSchemaVersion> versionChain = new ArrayList<>(2);
-				versionChain.add(currentVersion);
-				versionChain.add(schemaVersion);
-				if (!schemaVersion.equals(currentVersion.getNextVersion())) {
-					do {
-						HibSchemaVersion nextVersion = currentVersion.getNextVersion();
-						if (nextVersion == null) {
-							// No connection between two versions of the same schema. This should never happen.
-							log.error("No connection between v{} and v{} of the schema `{}`, branch {}. Migration is impossible!", 
-									versionChain.get(0), versionChain.get(versionChain.size()-1), schemaVersion.getSchemaContainer().getName(), branch.getName());
-							edge.setMigrationStatus(FAILED);
-							return job;
-						} else if (!schemaVersion.equals(nextVersion)) {
-							versionChain.add(versionChain.size()-1, nextVersion);
-						}
-						currentVersion = nextVersion;
-					}
-					while (schemaVersion.equals(currentVersion.getNextVersion()));
-				}
-				log.info("Triggering migration chain for the schema `{}`, branch `{}`: [{}]", 
-						schemaVersion.getSchemaContainer().getName(), branch.getName(), versionChain.stream().map(HibSchemaVersion::getVersion).collect(Collectors.joining(" -> ")));
-				for (int i = 0; i < (versionChain.size() - 1); i++) {
-					job = jobDao.enqueueSchemaMigration(user, branch, versionChain.get(i), versionChain.get(i+1));
-				}				
+				job = jobDao.enqueueSchemaMigration(user, branch, currentVersion, schemaVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {
@@ -417,30 +392,7 @@ public interface PersistingBranchDao extends BranchDao, PersistingRootDao<HibPro
 			// Enqueue the job so that the worker can process it later on
 			edge.setActive(true);
 			if (currentVersion != null) {
-				ArrayList<HibMicroschemaVersion> versionChain = new ArrayList<>(2);
-				versionChain.add(currentVersion);
-				versionChain.add(microschemaVersion);
-				if (!microschemaVersion.equals(currentVersion.getNextVersion())) {
-					do {
-						HibMicroschemaVersion nextVersion = currentVersion.getNextVersion();
-						if (nextVersion == null) {
-							// No connection between two versions of the same microschema. This should never happen.
-							log.error("No connection between v{} and v{} of the microschema `{}`, branch {}. Migration is impossible!", 
-									versionChain.get(0), versionChain.get(versionChain.size()-1), microschemaVersion.getSchemaContainer().getName(), branch.getName());
-							edge.setMigrationStatus(FAILED);
-							return job;
-						} else if (!microschemaVersion.equals(nextVersion)) {
-							versionChain.add(versionChain.size()-1, nextVersion);
-						}
-						currentVersion = nextVersion;
-					}
-					while (microschemaVersion.equals(currentVersion.getNextVersion()));
-				}
-				log.info("Triggering migration chain for the microschema `{}`, branch `{}`: [{}]", 
-						microschemaVersion.getSchemaContainer().getName(), branch.getName(), versionChain.stream().map(HibMicroschemaVersion::getVersion).collect(Collectors.joining(" -> ")));
-				for (int i = 0; i < (versionChain.size() - 1); i++) {
-					job = jobDao.enqueueMicroschemaMigration(user, branch, versionChain.get(i), versionChain.get(i+1));
-				}				
+				job = jobDao.enqueueMicroschemaMigration(user, branch, currentVersion, microschemaVersion);
 				edge.setMigrationStatus(QUEUED);
 				edge.setJobUuid(job.getUuid());
 			} else {

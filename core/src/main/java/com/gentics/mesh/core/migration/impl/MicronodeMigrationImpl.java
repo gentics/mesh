@@ -47,6 +47,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
+
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
@@ -85,7 +86,11 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					prepareMigration(reloadVersion(fromVersion), touchedFields);
+					HibMicroschemaVersion currentVersion = fromVersion;
+					do {
+						prepareMigration(reloadVersion(currentVersion), touchedFields);
+						currentVersion = currentVersion.getNextVersion();
+					} while (currentVersion != toVersion && currentVersion != null);
 					ac.setProject(branch.getProject());
 					ac.setBranch(branch);
 

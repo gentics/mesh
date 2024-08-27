@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
 import com.gentics.mesh.core.data.HibNodeFieldContainer;
@@ -112,10 +114,18 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 */
 	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
 						   HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion) throws Exception {
+		ArrayList<HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> versionChain = new ArrayList<>(1);
+		do {
+			versionChain.add(fromVersion);
+			fromVersion = fromVersion.getNextVersion();
+		} while (!newContainer.getSchemaContainerVersion().equals(fromVersion) && fromVersion != null);
+
 		FieldMap fields = new FieldMapImpl();
-		Map<String, Field> newFields = fromVersion.getChanges()
-			.filter(change -> !(change instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
-			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
+
+		Map<String, Field> newFields = versionChain.stream()
+			.flatMap(version -> version.getChanges().map(change -> Pair.of(change, version)))
+			.filter(pair -> !(pair.getKey() instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
+			.map(pair -> pair.getKey().createFields(pair.getValue().getSchema(), newContent))
 			.collect(StreamUtil.mergeMaps());
 
 		fields.putAll(newFields);

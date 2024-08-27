@@ -25,6 +25,8 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.HibField;
@@ -61,7 +63,6 @@ import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Handler for node migrations after schema updates.
@@ -155,18 +156,23 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 		context.validate();
 		return Completable.defer(() -> {
 			HibSchemaVersion fromVersion = context.getFromVersion();
+			HibSchemaVersion toVersion = context.getToVersion();
 			SchemaMigrationCause cause = context.getCause();
 			HibBranch branch = context.getBranch();
 			MigrationStatusHandler status = context.getStatus();
 			String branchUuid = db.tx(() -> branch.getUuid());
 			String fromUuud = db.tx(() -> fromVersion.getUuid());
-			String toUuid = db.tx(() -> context.getToVersion().getUuid());
+			String toUuid = db.tx(() -> toVersion.getUuid());
 
 			// Prepare the migration - Collect the migration scripts
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					prepareMigration(reloadVersion(fromVersion), touchedFields);
+					HibSchemaVersion currentVersion = fromVersion;
+					do {
+						prepareMigration(reloadVersion(currentVersion), touchedFields);
+						currentVersion = currentVersion.getNextVersion();
+					} while (currentVersion != toVersion || currentVersion == null);
 					if (status != null) {
 						status.setStatus(RUNNING);
 						status.commit();

@@ -20,7 +20,7 @@ All fixes and changes in LTS releases will be released the next minor release. C
 [[v1.10.33]]
 == 1.10.33 (TBD)
 
-icon:check[] Core: It is not anymore possible to trigger the (micro)node migration over the non-adjacent schema versions. If the chain of versions between the requested ones can be built, a distinct migration job per each version pair in the chain is triggered.
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
 
 [[v1.10.32]]
 == 1.10.32 (07.08.2024)
