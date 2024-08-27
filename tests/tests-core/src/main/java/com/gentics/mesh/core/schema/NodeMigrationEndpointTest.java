@@ -635,13 +635,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		grantAdmin();
 		// 1. Drop random fields
 		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(),
 			SchemaUpdateRequest.class));
 		List<FieldSchema> someFields = IntStream.range(0, request.getFields().size()).filter(i -> i % 2 == 0).mapToObj(i -> request.getFields().get(i)).collect(Collectors.toList());
 		request.getFields().removeAll(someFields);
-		call(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+		adminCall(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
 		// 2. Add random fields
 		IntStream.range(0, someFields.size()).forEach(i -> {
@@ -650,8 +649,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			}
 		});
 		request.getFields().addAll(someFields);
-		call(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
-		revokeAdmin();
+		adminCall(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
 
 		try (Tx tx = tx()) {
 			container = tx.schemaDao().findByUuid(schemaUuid);
