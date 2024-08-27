@@ -2,7 +2,6 @@ package com.gentics.mesh.core.migration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -36,13 +35,11 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.CollectionUtil;
-import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -120,17 +117,15 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 			fromVersion = fromVersion.getNextVersion();
 		} while (!newContainer.getSchemaContainerVersion().equals(fromVersion) && fromVersion != null);
 
-		FieldMap fields = new FieldMapImpl();
-
-		Map<String, Field> newFields = versionChain.stream()
+		versionChain.stream()
 			.flatMap(version -> version.getChanges().map(change -> Pair.of(change, version)))
 			.filter(pair -> !(pair.getKey() instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
-			.map(pair -> pair.getKey().createFields(pair.getValue().getSchema(), newContent))
-			.collect(StreamUtil.mergeMaps());
-
-		fields.putAll(newFields);
-
-		newContainer.updateFieldsFromRest(ac, fields);
+			.map(pair -> Pair.of(pair.getValue(), pair.getKey().createFields(pair.getValue().getSchema(), newContent)))
+			.forEach(pair -> {
+				FieldMap fm = new FieldMapImpl();
+				fm.putAll(pair.getValue());
+				newContainer.updateFieldsFromRest(ac, fm, pair.getKey().getNextVersion().getSchema());
+			});
 	}
 
 	/**

@@ -47,7 +47,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 public interface HibFieldContainer extends HibBasicFieldContainer {
 
@@ -222,7 +221,18 @@ public interface HibFieldContainer extends HibBasicFieldContainer {
 	 * @param ac
 	 * @param restFields
 	 */
-	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields);
+	default void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
+		updateFieldsFromRest(ac, restFields, getSchemaContainerVersion().getSchema());
+	}
+
+	/**
+	 * Use the given map of rest fields to set the data from the map to this container, against the given schema.
+	 * 
+	 * @param ac
+	 * @param restFields
+	 * @param schema target schema
+	 */
+	void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields, FieldSchemaContainer schema);
 
 	/**
 	 * Use the given map of rest fields to set the data from the map to this container.
