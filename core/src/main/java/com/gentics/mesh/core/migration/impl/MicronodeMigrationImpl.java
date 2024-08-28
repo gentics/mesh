@@ -47,6 +47,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.VersionNumber;
+
 import io.reactivex.Completable;
 import io.reactivex.exceptions.CompositeException;
 import io.vertx.core.logging.Logger;
@@ -79,6 +80,7 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			HibMicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
 			MicroschemaMigrationCause cause = context.getCause();
+			String toUuid = db.tx(() -> toVersion.getUuid());
 
 			// Collect the migration scripts
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
@@ -86,7 +88,11 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			try {
 				db.tx(tx -> {
 					ac.setHttpServerConfig(tx.data().options().getHttpServerOptions());
-					prepareMigration(reloadVersion(fromVersion), touchedFields);
+					HibMicroschemaVersion currentVersion = reloadVersion(fromVersion);
+					do {
+						prepareMigration(currentVersion, touchedFields);
+						currentVersion = currentVersion.getNextVersion();
+					} while (currentVersion != null && !currentVersion.getUuid().equals(toUuid));
 					ac.setProject(branch.getProject());
 					ac.setBranch(branch);
 
