@@ -116,7 +116,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		do {
 			versionChain.add(fromVersion);
 			fromVersion = fromVersion.getNextVersion();
-		} while (!newContainer.getSchemaContainerVersion().equals(fromVersion) && fromVersion != null);
+		} while (fromVersion != null && !newContainer.getSchemaContainerVersion().getVersion().equals(fromVersion.getVersion()));
 
 		versionChain.stream()
 			.flatMap(version -> version.getChanges().map(change -> Pair.of(change, version)))
