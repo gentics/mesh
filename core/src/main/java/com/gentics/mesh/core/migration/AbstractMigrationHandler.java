@@ -129,7 +129,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				// If a migration has been started over non-adjacent from/to versions, the intermediate changes need no actual storage, but a validation..
 				FieldSchemaContainerVersion schema = pair.getKey().getNextVersion().getSchema();
 				if (schema instanceof FieldSchemaContainerVersion && !((FieldSchemaContainerVersion)schema).getVersion().equals(newContainer.getSchemaContainerVersion().getVersion())) {
-					log.info("Update skipped for container [{}] of schema version [{}] from the intermediate version [{}]", newContainer.getUuid(), newContainer.getSchemaContainerVersion().getVersion(), ((FieldSchemaContainerVersion)schema).getVersion());
+					log.info("Update skipped for container [{}] of schema [{}] version [{}] from the intermediate version [{}]", newContainer.getUuid(), newContainer.getSchemaContainerVersion().getSchema().getName(), newContainer.getSchemaContainerVersion().getVersion(), ((FieldSchemaContainerVersion)schema).getVersion());
 					schema.assertForUnhandledFields(fm);
 				} else {
 					newContainer.updateFieldsFromRest(ac, fm);
