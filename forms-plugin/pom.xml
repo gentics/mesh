@@ -86,13 +86,7 @@
 			<version>1.6</version>
 		</dependency>
 
-		<!-- HttpClient -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.14</version>
-		</dependency>
-
+		<!-- Misc -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

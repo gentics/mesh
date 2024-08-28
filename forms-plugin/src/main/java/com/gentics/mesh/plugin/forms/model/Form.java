@@ -1,29 +1,5 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jsoup.Jsoup;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.gentics.mesh.core.rest.common.FieldContainer;
@@ -34,11 +10,26 @@ import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.config.InjectionPreventionMode;
 import com.gentics.mesh.plugin.forms.config.SecurityOptions;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
-
+import com.gentics.mesh.util.StreamUtil;
+import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jsoup.Jsoup;
+
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Form
@@ -393,11 +384,11 @@ public class Form implements RestModel {
 	 * @param postedData posted data
 	 * @param fileUploads fileuploads
 	 * @param formDataNode form data node (null if the form data are not yet saved)
+	 * @param rxVertx vert.x instance for the utility tasks
+	 * @param httpClient a HTTP client for an external validation
 	 * @return list containing error messages (empty if data is valid)
 	 */
-	public Map<String, ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
-		Map<String, ValidationError> errors = new HashMap<>();
-
+	public Single<Map<String, ValidationError>> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		// only filter out the elements, which have not been POSTed, if the form contains multiple pages
 		Predicate<FormElement> filter = null;
 		if (isMultipage()) {
@@ -405,14 +396,21 @@ public class Form implements RestModel {
 		} else {
 			filter = elem -> true;
 		}
-
-		flattened().filter(FormElement::isActive).filter(filter).forEach(elem -> {
-			ValidationError elemError = elem.validate(postedData, fileUploads, formDataNode);
-			if (elemError != null) {
-				errors.put(elem.getName(), elemError);
-			}
-		});
-		return errors;
+		return Single.zip(
+				StreamUtil.toIterable(
+					flattened()
+						.filter(FormElement::isActive)
+						.filter(filter)
+						.map(elem -> elem.validate(postedData, fileUploads, formDataNode, rxVertx, httpClient)
+								.map(error -> Pair.of(elem.getName(), error))
+								.toSingle(Pair.of(null, null)))),
+					errors -> Arrays.stream(errors)
+						.map(Pair.class::cast)
+						.filter(pair -> pair.getKey() != null && pair.getValue() != null)
+						.collect(Collectors.toMap(
+								pair -> (String) pair.getKey(),
+								pair -> (ValidationError) pair.getValue()))
+				);
 	}
 
 	/**

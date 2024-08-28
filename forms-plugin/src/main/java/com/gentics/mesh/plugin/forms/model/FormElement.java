@@ -1,23 +1,5 @@
 package com.gentics.mesh.plugin.forms.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,11 +15,24 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
-
+import com.gentics.mesh.plugin.forms.util.RxUtil;
+import io.reactivex.Completable;
+import io.reactivex.Maybe;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.reactivex.core.Vertx;
+import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Abstract form element
@@ -308,11 +303,13 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData posted data
 	 * @param fileUploads fileuploads
 	 * @param formDataNode form data node (may be null)
+	 * @param rxVertx Vert.x instance for the utility tasks
+	 * @param httpClient a HTTP client for possible external validation calls
 	 * @return validation error or null if posted data is valid
 	 */
-	public ValidationError validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode) {
+	public Maybe<ValidationError> validate(MultiMap postedData, Set<FileUpload> fileUploads, NodeResponse formDataNode, Vertx rxVertx, OkHttpClient httpClient) {
 		if (skipElement(postedData)) {
-			return null;
+			return RxUtil.emptyMaybe();
 		}
 
 		List<String> values = new ArrayList<>();
@@ -331,8 +328,8 @@ public abstract class FormElement implements RestModel {
 		// check mandatory fields, that are not filled
 		if (mandatory) {
 			if (values.stream().noneMatch(v -> v != null && !"".equals(v))) {
-				return new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled.title"))
-						.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled", getLabel()));
+				return Maybe.just(new ValidationError().setName(getName()).setTitle(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled.title"))
+						.setMessage(I18nHelper.get(Locale.GERMAN, "error.mandatory_field_not_filled", getLabel())));
 			}
 		}
 
@@ -340,8 +337,7 @@ public abstract class FormElement implements RestModel {
 		if (validator != null) {
 			return validator.validate(getName(), values);
 		}
-
-		return null;
+		return RxUtil.emptyMaybe();
 	}
 
 	/**
@@ -545,7 +541,8 @@ public abstract class FormElement implements RestModel {
 	 * @param postedData
 	 */
 	@JsonIgnore
-	public void performSubmit(Form form, MultiMap postedData) {
+	public Completable performSubmit(Form form, MultiMap postedData, Vertx rxVertx, OkHttpClient httpClient) {
+		return Completable.complete();
 	}
 
 	/**

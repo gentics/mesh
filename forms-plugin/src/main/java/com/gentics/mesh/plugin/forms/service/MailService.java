@@ -140,7 +140,7 @@ public class MailService {
 	}
 
 	/**
-	 * Send a mail
+	 * Send a mail asynchronously
 	 *
 	 * @param projectName
 	 *            The project name
