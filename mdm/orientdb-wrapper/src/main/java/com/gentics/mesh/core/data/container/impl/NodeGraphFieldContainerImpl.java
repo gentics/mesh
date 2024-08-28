@@ -61,6 +61,7 @@ import com.gentics.mesh.core.data.user.HibUser;
 import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.rest.common.ContainerType;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.result.Result;
 import com.gentics.mesh.core.result.TraversalResult;
 import com.gentics.mesh.util.Tuple;
@@ -189,9 +190,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
+		updateFieldsFromRest(ac, restFields, getSchemaContainerVersion().getSchema());
+	}
+
+	@Override
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap, FieldSchemaContainer schema) {
 		Tx tx = Tx.get();
 		ContentDao contentDao = tx.contentDao();
-		super.updateFieldsFromRest(ac, restFields);
+		super.updateFieldsFromRest(ac, fieldMap, schema);
 		String branchUuid = tx.getBranch(ac).getUuid();
 
 		contentDao.updateWebrootPathInfo(this, ac, branchUuid, "node_conflicting_segmentfield_update");
