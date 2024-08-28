@@ -168,11 +168,11 @@ public class NodeMigrationImpl extends AbstractMigrationHandler implements NodeM
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					HibSchemaVersion currentVersion = fromVersion;
+					HibSchemaVersion currentVersion = reloadVersion(fromVersion);
 					do {
-						prepareMigration(reloadVersion(currentVersion), touchedFields);
+						prepareMigration(currentVersion, touchedFields);
 						currentVersion = currentVersion.getNextVersion();
-					} while (currentVersion != toVersion && currentVersion != null);
+					} while (currentVersion != null && !currentVersion.getUuid().equals(toUuid));
 
 					if (status != null) {
 						status.setStatus(RUNNING);

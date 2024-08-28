@@ -80,17 +80,18 @@ public class MicronodeMigrationImpl extends AbstractMigrationHandler implements 
 			HibMicroschemaVersion toVersion = context.getToVersion();
 			MigrationStatusHandler status = context.getStatus();
 			MicroschemaMigrationCause cause = context.getCause();
+			String toUuid = db.tx(() -> toVersion.getUuid());
 
 			// Collect the migration scripts
 			NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 			Set<String> touchedFields = new HashSet<>();
 			try {
 				db.tx(() -> {
-					HibMicroschemaVersion currentVersion = fromVersion;
+					HibMicroschemaVersion currentVersion = reloadVersion(fromVersion);
 					do {
-						prepareMigration(reloadVersion(currentVersion), touchedFields);
+						prepareMigration(currentVersion, touchedFields);
 						currentVersion = currentVersion.getNextVersion();
-					} while (currentVersion != toVersion && currentVersion != null);
+					} while (currentVersion != null && !currentVersion.getUuid().equals(toUuid));
 					ac.setProject(branch.getProject());
 					ac.setBranch(branch);
 
