@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.5]]
+== 2.1.5 (28.08.2024)
+
+icon:check[] Core: A crash has been fixed on an attempt of (micro)node migration over non-adjacent (micro)schema versions.
+
 [[v2.1.4]]
 == 2.1.4 (07.08.2024)
 
