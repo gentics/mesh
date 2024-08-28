@@ -33,12 +33,6 @@
 			<artifactId>mesh-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.gentics</groupId>
-			<artifactId>license-checker</artifactId>
-			<version>${license.checker.version}</version>
-			<scope>compile</scope>
-		</dependency>
 	</dependencies>
 
 	<build>

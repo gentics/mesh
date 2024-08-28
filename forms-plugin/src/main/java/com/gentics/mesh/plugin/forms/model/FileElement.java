@@ -10,6 +10,7 @@ import com.gentics.mesh.plugin.forms.config.FileUploadOptions;
 import com.gentics.mesh.plugin.forms.config.FormsConfig;
 import com.gentics.mesh.plugin.forms.i18n.I18nHelper;
 import com.gentics.mesh.plugin.forms.util.RxUtil;
+import com.gentics.mesh.plugin.common.util.ReadInputStream;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.core.MultiMap;
