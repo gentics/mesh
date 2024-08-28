@@ -400,7 +400,8 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap, FieldSchemaContainer schema) {
+	public void updateFieldsFromRest(InternalActionContext ac, FieldMap fieldMap) {
+		FieldSchemaContainer schema = getSchemaContainerVersion().getSchema();
 		schema.assertForUnhandledFields(fieldMap);
 
 		// TODO: This should return an observable

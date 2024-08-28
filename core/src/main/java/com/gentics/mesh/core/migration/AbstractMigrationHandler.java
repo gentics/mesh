@@ -35,6 +35,7 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
@@ -124,7 +125,15 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 			.forEach(pair -> {
 				FieldMap fm = new FieldMapImpl();
 				fm.putAll(pair.getValue());
-				newContainer.updateFieldsFromRest(ac, fm, pair.getKey().getNextVersion().getSchema());
+				
+				// If a migration has been started over non-adjacent from/to versions, the intermediate changes need no actual storage, but a validation..
+				FieldSchemaContainerVersion schema = pair.getKey().getNextVersion().getSchema();
+				if (schema instanceof FieldSchemaContainerVersion && !((FieldSchemaContainerVersion)schema).getVersion().equals(newContainer.getSchemaContainerVersion().getVersion())) {
+					log.info("Update skipped for container [{}] of schema version [{}] from the intermediate version [{}]", newContainer.getUuid(), newContainer.getSchemaContainerVersion().getVersion(), ((FieldSchemaContainerVersion)schema).getVersion());
+					schema.assertForUnhandledFields(fm);
+				} else {
+					newContainer.updateFieldsFromRest(ac, fm);
+				}
 			});
 	}
 

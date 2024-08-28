@@ -164,8 +164,7 @@ public enum GraphFieldTypes {
 	 *            Field schema to be used to identify the type of the field
 	 * @param schema
 	 */
-	public void updateField(HibFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey,
-		FieldSchema fieldSchema, FieldSchemaContainer schema) {
+	public void updateField(HibFieldContainer container, InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 		updater.update(container, ac, fieldMap, fieldKey, fieldSchema, schema);
 	}
 
