@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.migration;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
@@ -112,16 +114,18 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 */
 	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
 						   HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion) throws Exception {
-		ArrayList<HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> versionChain = new ArrayList<>(1);
+		LinkedList<HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> versionChain = new LinkedList<>();
 		do {
 			versionChain.add(fromVersion);
 			fromVersion = fromVersion.getNextVersion();
 		} while (fromVersion != null && !newContainer.getSchemaContainerVersion().getVersion().equals(fromVersion.getVersion()));
 
+		AtomicReference<FieldContainer> currentContent = new AtomicReference<FieldContainer>(newContent);
+
 		versionChain.stream()
 			.flatMap(version -> version.getChanges().map(change -> Pair.of(change, version)))
 			.filter(pair -> !(pair.getKey() instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
-			.map(pair -> Pair.of(pair.getValue(), pair.getKey().createFields(pair.getValue().getSchema(), newContent)))
+			.map(pair -> Pair.of(pair.getValue(), pair.getKey().createFields(pair.getValue().getSchema(), currentContent.get())))
 			.forEach(pair -> {
 				FieldMap fm = new FieldMapImpl();
 				fm.putAll(pair.getValue());
@@ -134,6 +138,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				} else {
 					newContainer.updateFieldsFromRest(ac, fm);
 				}
+				currentContent.updateAndGet(oldContent -> () -> oldContent.getFields().putAll(pair.getValue()));
 			});
 	}
 
