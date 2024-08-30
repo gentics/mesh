@@ -58,15 +58,16 @@ NOTE: You need to manually set the `Working directory` in your `Run/Debug Config
 
 You can build Gentics Mesh locally using link:https://maven.apache.org/[Apache Maven].
 
-NOTE: Running all test locally is *not* recommended since the execution time is *very high*. Some tests also require a docker environment to run integration components.+
+NOTE: Running all test locally is *not* recommended since the execution time is *very high*. Most tests require a so-called __test context provider__ to run against, which includes a docker environment to run a test database and some other integration components.+
 
-```
+[source,bash]
+----
 git clone git@github.com:gentics/mesh.git
 cd mesh
 git checkout master
 export JAVA_HOME=<PATH-TO-YOUR-JAVA11>
 mvn clean package -DskipTests -Dskip.unit.tests -Dskip.performance.tests -Dskip.cluster.tests
-```
+----
 
 The master branch should be used as the branch to be build since the dev branch can be unstable.
 
@@ -87,7 +88,6 @@ The main components which are used to build Gentics Mesh are:
 Since you are most likely already familiar with the Gentics Mesh link:/docs/api[REST API] I assume it is best to start there.
 
 We'll start on how the REST API is setup and continue how requests are handled. 
-After that I will explain how data is being handled by the graph database and how the graph is structured.
 
 == REST API Setup
 
@@ -128,7 +128,7 @@ GET {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
 
 Each class for REST Endpoint  (e.g. NodeEndpoint) also usually has a dedicated CRUDHandler which provides the actual code which processes the request.
 For the NodeEndpoint this would be the `NodeCrudHandler`. The `NodeCrudHandler#handleRead` method accepts the request and processes it.
-The CRUDHandler loads the graph vertex which is used to aggregate the elements. 
+The CRUDHandler loads the data object which is used to aggregate the elements. 
 
 In order to load nodes the `RootVertex` would be the `NodeRoot` which is connected to the `Project` vertex which has been loaded before within the ProjectRouter.
 
@@ -145,7 +145,7 @@ The graph has a root element which is used as an entry point for Gentics Mesh.
 During startup this vertex will be loaded and all further interacts will use this vertex to load more and more of the graph.
 References to some of these vertices will be kept in memory to speed things up.
 
-The graph database structure is documented within this interactive https://portal.graphgist.org/graph_gists/6c8712b8-d741-45f9-beb4-84ebca278bfa[graph gist].
+The graph structure is documented within this interactive https://portal.graphgist.org/graph_gists/6c8712b8-d741-45f9-beb4-84ebca278bfa[graph gist].
 
 NOTE: The gist may be a bit outdated in some places but the general structure is still valid.
 
@@ -162,14 +162,15 @@ The single remote database is used for both single instance and clustered modes.
 |======
 | Name                        | Description
 | mesh-api                    | Contains API classes like Configuration POJOs and constants.
-| mesh-core                   | Contains the Graph model and the main codebase
+| mesh-core                   | Contains the data model and the main codebase
+| mesh-database-connectors    | Contains the database connectors code
 | mesh-demo                   | Contains the Gentics Demo which can be run via the `DemoRunner` main class.
 | mesh-rest-client            | Contains the Vert.x based REST client.
 | mesh-rest-model             | Contains the POJOs for the REST API models.
 | mesh-doc                    | Contains sources for the getmesh.io documentation and tools to generate tables and examples from sources.             
 | mesh-server                 | Contains the Gentics Mesh server which can be run via `ServerRunner` main class.
-| mesh-mdm                  | Contains an abstraction over multi-database management API (aka Multi Database Mesh).
-| mesh-mdm-hibernate               | Contains the ORM related abstractions, in separate API and implementation submodules.
+| mesh-mdm                    | Contains an abstraction over multi-database management API (aka Multi Database Mesh).
+| mesh-mdm-hibernate          | Contains the ORM related abstractions, in separate API and implementation submodules.
 | mesh-distributed            | Contains code which take care of event handling and event processing in an cluster environment.
 | mesh-service-local-storage  | Contains code for the binary storage system which stores data locally on disk.
 | mesh-graphql                | Contains code for the GraphQL endpoint and GraphQL types.
@@ -193,7 +194,7 @@ Understanding the startup sequence of Gentics Mesh helps also to get an idea of 
 | `Mesh#mesh()`                            | Use the Mesh factory to get the `MeshImpl` singleton.
 | `MeshImpl#run()`                         | Initialize dagger context via `MeshInternal#create()` and invoke `BootstrapInitializer#init()`.
 | `MeshInternal#create()`                  | Setup the dagger context using the `MeshModule` module.
-| `BootstrapInitializer#init()`            | Initialize the graph database, setup mandatory (admin role, user, group) data.
+| `BootstrapInitializer#init()`            | Initialize the database, setup mandatory (admin role, user, group) data.
 | `BootstrapInitializer#handleLocalData()` | Setup routes for project endpoints and invoke `CoreVerticleLoader#loadVerticles()`
 | `CoreVerticleLoader#loadVerticles()`     | Load verticles (e.g. `RestAPIVerticle`)
 |======
@@ -209,7 +210,7 @@ The node search model document contains also tags for the node.
 It is mandatory to update the node document when one of the referenced tags is renamed, removed or even when a new tag is added. 
 This pattern applies to various elements and actions within mesh.
 Every CRUD operation may also provide a search queue batch (SQB) which contains the information what ES documents need to be updated, removed or added.
-The SQB is persisted within the graph and is only stored when the same transaction that is updating the element succeeds.
+The SQB is persisted within the transaction and is only stored when it succeeds.
 
 The SQB is directly processed after the modifying transaction has been committed.
 
@@ -235,7 +236,6 @@ Transactions can be started using the currently registered Database provider cla
 [options="header"]
 |======
 | Method                         | Description
-| asyncNoTrx()                   | Autocommit async transaction. This method should only be used for read only operations. (Non blocking)
 | noTrx(TrxHandler<T> txHandler) | Autocommit transaction. This method should only be used for read only operations. (Blocking)
 | asyncTrx()                     | Regular async transaction. (non-blocking)
 | trx(TrxHandler<T> txHandler)   | Regular transaction. (blocking)
@@ -245,7 +245,21 @@ NOTE: Transactions should not be nested. Nesting transactions will just result i
 
 == Testing
 
-Each of the endpoints has one or more `JUnit` test classes which test the routes. (e.g. NodeEndpointTest, UserEndpointTest).
+Each of the endpoints has one or more `JUnit` test classes which test the routes. (e.g. NodeEndpointTest, UserEndpointTest). The run on the tests almost always requires a __test context provides__, which contains the corresponding database connector, and a Docker instruction set for the dedicated database. One has to set the `JAVA_HOME` environment up correctly as well, since it is used in the internal tooling.
+
+An example of running a distinct GraphQL endpoint test against the HSQL database:
+
+[source,bash]
+----
+mvn -fae -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!doc,!performance-tests' test -Dtest=com.gentics.mesh.core.graphql.GraphQLEndpointTest -DfailIfNoTests=false -Djacoco.skip=true -Dskip.hsqlmemory.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 
+----
+
+Same for the MariaDB. Please note that neither the Mesh Database Connector not the database itself should be set up in advance, everything is done by the test context provider:
+
+[source,bash]
+----
+mvn -fae -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!doc,!performance-tests' test -Dtest=com.gentics.mesh.core.graphql.GraphQLEndpointTest -DfailIfNoTests=false -Djacoco.skip=true -Dskip.mariadb.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 
+----
 
 NOTE: Avoid wrapping transactions in your tests around code which invokes REST calls. 
       Otherwise you may not be able assert the changes made by REST calls since the transaction still references the old data.
@@ -255,18 +269,15 @@ NOTE: Avoid wrapping transactions in your tests around code which invokes REST c
 Additional to `Mockito` and `JUnit` the `AssertJ` tool is used to create fluent readable custom assertions. 
 The `MeshAssertions`` class should be used to add new custom assertions.
 
+== Miscellaneous
+
+Currently most of the dagger dependencies can be accessed via `MeshInternal().get()`
+
 == TL;DR
 
 The short form for the inpatient:
 
 * `RestAPIVerticle` contains all EndpointRouters
 * `NodeEndpoint` contains the routes for `{apiLatest}/:projectName/nodes`
-* Elements in Mesh have each dedicated classes which directly represent the graph data (e.g. `NodeImpl`, `UserImpl`)
+* Elements in Mesh have each dedicated classes which directly represent the data (e.g. `HibNodeImpl`, `HibUserImpl`)
 * Endpoint classes like `NodeEndpoint` also have a CRUD class (e.g. `NodeCrudHandler`)
-
-== The good the bad and the ugly
-
-Graph elements which Ferma instantiates can not request dependencies via dagger. 
-It is not possible to inject dependencies inside of such objects because of this reason.
-
-Currently most of the dagger dependencies can be accessed via `MeshInternal().get()`

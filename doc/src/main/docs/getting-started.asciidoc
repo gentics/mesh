@@ -27,21 +27,70 @@ If you don't have much time:
 
 * Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
 
+== Run with Docker
+=== Run empty demo container
 
-=== Run with docker
-
-The easiest way to run Gentics Mesh is using docker.
+The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any content. It, however, requires a tuning of a database storage, accessible from the image. In order to simplify things at the jumpstart, we have prepared a set of Docker images containing supported RDBMS drivers, among which is the one perfectly suitable for the demonstration purposes: https://hub.docker.com/r/gentics/mesh-hsqldb/[mesh-sqldb], which contains a self-hosted, in-memory based HSQL database to play around with.
 
 [source,bash]
 ----
-docker run -p 8080:8080 gentics/mesh-demo
+docker run -p 8080:8080 gentics/mesh-hsqldb
+or
+docker run \
+ -v mesh-uploads:/uploads \
+ -p 8080:8080 \
+ gentics/mesh-hsqldb
 ----
 
-=== Or download the jar
+=== Use MariaDB-connected container
 
-. Download Gentics Mesh from https://getmesh.io/download into an *empty* folder
-. Start the JAR-file by executing ```java -jar mesh-demo-X.X.X.jar```
-. Point your browser to http://localhost:8080/mesh-ui/ to reach the Gentics Mesh user interface (use ```admin/admin``` or see <<credentials,demo credentials>>)
+Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector [official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
+
+First, initialize an empty database in your MariaDB, as well as its user:
+
+[source,sql]
+----
+CREATE DATABASE mesh CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+GRANT ALL PRIVILEGES ON mesh.* TO '<your database user>'@'%';
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+----
+
+Include the following `mesh` container into your `docker-compose.yml`:
+
+[source,yaml]
+----
+  mesh:
+    image: gentics/mesh-mariadb
+    volumes:
+      - mesh-uploads:/uploads
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a MariaDB. For instance, if the name of MariaDB container is `mariadb`, the content here will be `mariadb:3306`>
+      MESH_JDBC_CONNECTION_USERNAME: <your database user>
+      MESH_JDBC_CONNECTION_PASSWORD: <password of your database user>
+      MESH_INITIAL_ADMIN_PASSWORD: "admin"
+      MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET: "false"
+      MESH_BINARY_DIR: "/uploads"
+----
+
+== Run with JAR File
+
+There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file]. An example of starting Mesh along with the HSQL in-memory mode database, assuming having both downloaded JARs in the same folder, looks as following:
+
+=== For Unix/Linux/MacOS
+
+[source,bash]
+----
+java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
+
+=== For Windows
+
+[source,bash]
+----
+java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
 
 [[tldr]]
 == TL;DR
@@ -80,28 +129,3 @@ __Features:__
 //* References /List
 //* Versioning
 //* Content Branches
-
-== Startup
-
-Run Gentics Mesh by executing ```java -jar mesh-demo-X.X.X.jar```. All necessary configuration files and directories will
-be created and an AngularJS demo project is deployed automatically.
-
-Once the demo setup is completed you will be able to access the following urls
-
-* Mesh API ```http://localhost:8080{apiLatest}/```
-* Mesh UI on ```http://localhost:8080/mesh-ui/```
-* Demo App on ```http://localhost:8080/demo/```
-
-[[credentials]]
-*Demo Credentials*
-
-* Admin: ```admin/admin```
-* Editor: ```editor/editor```
-* Webclient: ```webclient/webclient```
-
-== Demo
-
-Once the Mesh setup is complete, a demo application will be automatically deployed to the install location under the ```demo``` folder. This demo app is accessible at ```http://localhost:8080/demo/```, and is intended as a simple example of how Mesh can be used.
-
-The app is composed of static files and can therefore be edited in place. The two JavaScript files which make up the app contain in-line documentation to help you get started.
-

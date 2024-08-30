@@ -1982,7 +1982,7 @@ NOTE: Versions are language specific. This means that each language of a node ha
 [[auto-purge]]
 === Auto Purge
 
-The auto purge mechanism can be used to control the versioning mechanism. The mechanism will automatically purge the previously used version when a new version gets created. This way the version history of a node can be kept small. This will reduce disk usage and reduce the complexity of the Graph that stores the versions. Actions such as _update node_, _upload binary_, _publish node_, _take node offline_ create versions. The auto purge feature can be controlled by a global default setting which can be fine tuned on a per-schema level.
+The auto purge mechanism can be used to control the versioning mechanism. The mechanism will automatically purge the previously used version when a new version gets created. This way the version history of a node can be kept small. This will (depending on a chosen RDBMS) reduce database usage and boosts performance. Actions such as _update node_, _upload binary_, _publish node_, _take node offline_ create versions. The auto purge feature can be controlled by a global default setting which can be fine tuned on a per-schema level.
 
 [caption=]
 .Auto Purge settings

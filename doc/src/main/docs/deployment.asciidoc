@@ -17,18 +17,15 @@ It is possible to deploy Gentics Mesh in AWS using the Elastic Container Service
 heroku container:login
 docker login --username=_ --password=$(heroku auth:token) registry.heroku.com
 
-docker pull gentics/mesh-demo:0.27.0
-docker tag gentics/mesh-demo:0.27.0 registry.heroku.com/mesh-test/worker
+docker pull gentics/mesh:0.27.0
+docker tag gentics/mesh:0.27.0 registry.heroku.com/mesh-test/worker
 docker push registry.heroku.com/mesh-test/worker
 ```
 ////
 
-
 == Kubernetes
 
-
 We provide a https://getmesh.io/premium-features/helm-chart/[Helm Chart for Gentics Mesh] as a premium feature.
-
 
 == Linux (via systemd)
 
@@ -36,7 +33,7 @@ Gentics Mesh can quickly be installed on a Linux by registering a systemd servic
 
 First you need to install Java 11 on your server. After that step you can link:/download[download the Gentics Mesh] server jar to your installation folder.
 
-Store the service file in the same folder.
+Store the service file in the same folder. Please don't forget to set up the database and its corresponding Database Connector, either in the `mesh.yml` or in the environment variables!
 
 .mesh-server.service
 [source,bash]
@@ -102,11 +99,14 @@ link:https://github.com/gentics/mesh-compose/tree/master[Full example on GitHub]
 ----
 version: "3"
 services:
-
   mesh:
     image: gentics/mesh:0.31.0
     container_name: mesh-server
     environment:
+      - MESH_DB_CONNECTOR_CLASSPATH=/connector
+      - MESH_DATABASE_ADDRESS=mariadb:3306
+      - MESH_JDBC_CONNECTION_USERNAME=admin
+      - MESH_JDBC_CONNECTION_PASSWORD=admin
       - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
       - MESH_ELASTICSEARCH_START_EMBEDDED=false
       - MESH_AUTH_KEYSTORE_PASS=changeme
@@ -116,9 +116,9 @@ services:
       - '8080:8080'
       - '127.0.0.1:8081:8081'
     volumes:
-      - mesh-data:/graphdb
       - mesh-uploads:/uploads
       - mesh-keystore:/keystore
+      - ./connector:/connector
     ulimits:
       nofile:
         soft: 20000

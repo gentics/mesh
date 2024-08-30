@@ -5,7 +5,7 @@ title: GraphQL
 include::content/docs/variables.adoc-include[]
 
 Gentics Mesh is also able to process http://graphql.org/[GraphQL] queries. You can use GraphQL to directly specify what fields should be retrieved and retrieve deeply nested data sets.
-Internally, Gentics Mesh will resolve your query and traverse your content graph to fetch only the data you specified.
+Internally, Gentics Mesh will resolve your query and traverse your content to fetch only the data you specified.
 
 The GraphQL API can thus be used to prepare a single request which returns all data needed to render a specific page. 
 

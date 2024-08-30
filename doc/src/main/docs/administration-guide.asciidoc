@@ -357,13 +357,6 @@ Query name: `consistencyCheck`
 
 Performs a link:{{< relref "administration-guide.asciidoc" >}}#_database_consistency[consistency check] and includes the result.
 
-=== Database Backup
-Query name: `backup`
-
-WARNING: Including this will cause the database to be in read only mode for the duration of the backup.
-
-Performs a link:{{< relref "administration-guide.asciidoc" >}}#_backup_recovery[Graph database backup] and includes the files.
-
 === Entities
 Query name: `entities`
 
@@ -449,9 +442,7 @@ by the version which is being started. You can check your current database revis
 [[database-revisions]]
 === Database Revisions
 
-This list contains an overview over Gentics Mesh releases and the their database revisions.
-The database revision is different if the used Graph Database version was updated or if the database
-structure was altered due to an automatic change.
+The database revisions are automatically controlled by Liquibase. No user managed functionality is available.
 
 include::content/docs/examples/tables/mesh-db-revs.adoc-include[]
 

@@ -252,23 +252,6 @@ ul.doc-toc h2 {
                             </li>
                         </ul>
                     </li>
-                    <li class="section">
-                        <h2><a href="user-interface">User Interface</a></h2>
-                        <ul>
-                            <li>
-                                <a href="user-interface#_creating_and_managing_content">Creating and Managing Content</a>
-                            </li>
-                            <li>
-                                <a href="user-interface#_searching">Searching</a>
-                            </li>
-                            <li>
-                                <a href="user-interface#_administrative_functions">Administrative Functions</a>
-                            </li>
-                            <li>
-                                <a href="user-interface#_configuration">Configuration</a>
-                            </li>
-                        </ul>
-                    </li>
 
                     <li class="section">
                         <h2><a href="deployment">Deployment</a></h2>
