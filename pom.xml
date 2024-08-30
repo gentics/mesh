@@ -43,6 +43,7 @@
 
 		<!-- Database tests -->
 		<skip.mariadb.tests>true</skip.mariadb.tests>
+		<skip.hsqlmemory.tests>true</skip.hsqlmemory.tests>
 	</properties>
 
 	<scm>

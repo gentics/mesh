@@ -198,7 +198,7 @@
 						<dependency>com.gentics.mesh:tests-mesh-hibernate</dependency>
 						<dependency>com.gentics.mesh:mesh-database-tests-common</dependency>
 					</dependenciesToScan>
-					<skip>${skip.hsqldb.tests}</skip>
+					<skip>${skip.hsqlmemory.tests}</skip>
 					<jvm>${env.JAVA_HOME}/bin/java</jvm>
 					<argLine>-Xms128m -Xmx256m -XX:MaxDirectMemorySize=128m
 						--add-opens=java.base/java.util=ALL-UNNAMED

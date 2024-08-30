@@ -28,7 +28,7 @@ We use the rolling release model and thus release new features in regular one mo
 
 Bugfix and security patches will be included in patch level releases. We plan to support these releases for one year after a major release.
 
-Fixes and minor updates will currently be published in a one to two week interval.
+Fixes and minor updates are currently published in two week interval.
 
 == Community Support
 
@@ -38,6 +38,6 @@ Issues can be reported via link:https://github.com/gentics/mesh/issues[Github].
 
 == Unsupported releases
 
-We are currently no longer supporting releases below version 0.22.0.
+We are currently no longer supporting releases below version 2.1.0.
 
 Manually build versions (e.g. SNAPSHOT builds) or patches versions are not supported.

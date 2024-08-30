@@ -6,10 +6,7 @@ include::content/docs/variables.adoc-include[]
 
 == Basics
 
-CAUTION: This section is irrelevant, if link:/premium-features/sql-db/#docs[SQL RDBMS storage premium feature] is used. Please refer to the feature documentation, as well as the clustering documentation for the chosen RDBMS.
-
-It is possible to run Gentics Mesh in a cluster mode. 
-When done so all changes to your data with one exception are automatically being distributed to other instances. 
+It is possible to run Gentics Mesh in a cluster mode. This means the data will be served through load-balanced set of Mesh instances. 
 Binary data (uploads) are currently not being handled by our cluster implementation and need dedicated handling.
 
 At its core Gentics Mesh makes use of the Hazelcast cluster manager, which allows run multiple instances in a master-master mode.
@@ -212,27 +209,7 @@ A running migration on one instance will cause the other instances of the cluste
 
 == Upgrading a cluster
 
-There are two types of upgrades. An upgrade can either be handled online of offline. 
-
-=== Online Upgrade
-
-Online upgrades can happen without any downtime. First you stop a single instance within your cluster. Next you start the instance up again using the new Gentics Mesh version.
-The instance will directly join the cluster and receive the changes from other instances. This is possible since the newly started Gentics Mesh version uses the same
-link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[database revision] as the older version.
-
-*Rollback*:
-You can rollback by stopping the Gentics Mesh version and starting the older version.
-
-=== Offline Upgrade
-
-Offline upgrades are required when database changes need to be applied. These changes could negatively impact other (older) instances in the cluster and thus an offline upgrade will 
-only occur locally and not directly propagate throughout the cluster. Gentics Mesh will not join the cluster in such situations.
-The cluster will only form in-between versions which use the same database revision. You can check the list of link:{{< relref "administration-guide.asciidoc" >}}#database-revisions[Database revisions] in 
-order to determine whether an online or offline upgrade can be done.
-
-Data which has been written to other instances in the cluster __can't__ be merged back to the now upgraded instance. Instead the upgraded instance will act as a new source of truth. 
-Other instances in the cluster need to be stopped one by one and restarted with the new version. The database from the initially migrated instance will be replicated to these instances and replace their older database.
-The old database will be moved in a backup location and can later be deleted. You could alternatively also just start new instances which replicate the data and afterwards drop the now outdated cluster.
+Since the single database is the only data synchronization point, and no data is dedicated to the distinct cluster node, upgrading a cluster is transparent to the user and administrator.
 
 *Rollback*:
 You can rollback as long as you still have instances which have not yet been migrated by just starting older Gentics Mesh instances. These instances will automatically join the corresponding cluster with the same database revision.
@@ -244,7 +221,6 @@ There is currently no built-in support for these platforms.
 == Scaling
 
 When dynamic discovery via multicast is enabled it is possible to just start additional Gentics Mesh instances in order to scale horizontally.
-The newly start instances must not have any data within the graph storage directory. The needed data will automatically be replicated when joining the cluster.
 
 == FAQ
 
@@ -256,7 +232,7 @@ Can I add new instances at any time?::
 Yes. New instances can be added at any time.
 
 Are my changes directly visible on other instances?::
-The replication handles this as fast as the network allows it. Some minor lag, utilizing clearing the caches, is possible.
+Yes, since there is the only database in the cluster. Some lag may happen due to the local caches reset.
 
 What happens if the network between my instances fails?::
 The instances will continue to operate normally but will no longer be able to see each other's changes.
@@ -266,7 +242,7 @@ I want to use a load balancer to distribute load across my instances. Do I need 
 Gentics Mesh does not use sessions. Instead a stateless JWT mechanism is used. This means you can direct your traffic to any of clustered instances. No need to setup something special.
 
 Can I use sharding to split up my data across multiple data centers?::
-No. Sharding is not supported but you are still able to span a cluster across multiple datacenters.
+Theoretically yes. Please refer to the documentation of the database you have chosen..
 
 Can I split a single cluster into one or more clusters?::
 Yes. This can be done by starting a new cluster using a different `cluster.clusterName` setting within the `mesh.yml` file.

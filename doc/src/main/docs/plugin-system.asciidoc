@@ -149,9 +149,9 @@ See link:{{< relref "plugin-development" >}}[Plugin Development]
 
 == FAQ
 
-* Can I access the Gentics Mesh Graph in order to add custom elements to it?
+* Can I access the Gentics Mesh Database directly in order to add custom elements to it?
 
-No this is not possible. Using the Graph API could potentially alter the Graph structure and cause data inconsistencies.
+No this is not possible. This could potentially cause data inconsistencies.
 
 * Using a REST client to interact with the Mesh Server seems inefficient. Is there maybe a direct way to interact with Gentics Mesh?
 
