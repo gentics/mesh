@@ -17,19 +17,50 @@ include::content/docs/variables.adoc-include[]
 |======
 
 == Run with Docker
+=== Run empty demo container
 
-[source,bash]
-
-The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
+The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any content. It, however, requires a tuning of a database storage, accessible from the image. In order to simplify things at the jumpstart, we have prepared a set of Docker images containing supported RDBMS drivers, among which is the one perfectly suitable for the demonstration purposes: https://hub.docker.com/r/gentics/mesh-hsqldb/[mesh-sqldb], which contains a self-hosted, in-memory based HSQL database to play around with.
 
 [source,bash]
 ----
-docker run -p 8080:8080 gentics/mesh
+docker run -p 8080:8080 gentics/mesh-hsqldb
 or
 docker run \
  -v mesh-uploads:/uploads \
  -p 8080:8080 \
- gentics/mesh
+ gentics/mesh-hsqldb
+----
+
+=== Use MariaDB-connected container
+
+Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector [official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
+
+First, initialize an empty database in your MariaDB, as well as its user:
+
+[source,sql]
+----
+CREATE DATABASE mesh CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+GRANT ALL PRIVILEGES ON mesh.* TO '<your database user>'@'%';
+SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+----
+
+Include the following `mesh` container into your `docker-compose.yml`:
+
+[source,yaml]
+----
+  mesh:
+    image: gentics/mesh-mariadb
+    volumes:
+      - mesh-uploads:/uploads
+    ports:
+      - '8080:8080'
+    environment:
+      MESH_DATABASE_ADDRESS: <host:port of a MariaDB. For instance, if the name of MariaDB container is `mariadb`, the content here will be `mariadb:3306`>
+      MESH_JDBC_CONNECTION_USERNAME: <your database user>
+      MESH_JDBC_CONNECTION_PASSWORD: <password of your database user>
+      MESH_INITIAL_ADMIN_PASSWORD: "admin"
+      MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET: "false"
+      MESH_BINARY_DIR: "/uploads"
 ----
 
 === Volumes / Locations
@@ -59,20 +90,26 @@ Multi node clustering setup:
 
 == Run with JAR File
 
-Good news: there is no dedicated installation procedure for Gentics Mesh!
+There is no dedicated installation procedure for Gentics Mesh. However, you will need to download https://github.com/gentics/mesh/releases[a Gentics Mesh JAR and a database connector JAR file]. An example of starting Mesh along with the HSQL in-memory mode database, assuming having both downloaded JARs in the same folder, looks as following:
 
-All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
+=== For Unix/Linux/MacOS
 
 [source,bash]
 ----
-java -jar mesh-demo-X.X.X.jar
+java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
 
-There are no external dependencies besides Java Runtime 17.
-On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
+=== For Windows
+
+[source,bash]
+----
+java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+----
+
+On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the `mesh.yml` configuration file. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
 [[cli]]
-=== Command Line Arguments
+== Command Line Arguments
 
 Various command line arguments can be used to override or supplement previously configured settings.
 
@@ -88,19 +125,16 @@ On first startup, Gentics Mesh will create all files and folders.
  data
     binaryFiles                # Folder for uploads
     binaryImageCache           # Folder for resized and cached images
-    graphdb                    # Main Graph Database storage which contains all contents
     tmp                        # Temporary directory
  config
     mesh.yml                   # Main Gentics Mesh configuration
     hazelcast.xml              # Hazelcast cluster configuration
     keystore.jceks             # Gentics Mesh keystore used to generate and validate JWT's
     logback.xml                # Logging configuration file
-    mesh-ui-config.js          # Configuration of the Mesh UI
 
 Gentics Mesh ships with two configuration files:
 
 . The main configuration file ```mesh.yml``` contains all settings for configuring the Gentics Mesh server. All settings are explained in the <<conf,Configuration & Settings>> section.
-. User interface related settings can be changed in  ```mesh-ui-config.js```.
 
 All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
 
@@ -139,8 +173,7 @@ include::content/docs/examples/tables/mesh-env.adoc-include[]
 [[conf]]
 == Configuration & Settings
 
-All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the graph database, and file upload.
-The settings for the Gentics Mesh user interface can be found in ```mesh-ui-config.js```.
+All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the database connection and configuration, and file upload.
 
 Both files are located directly in the <<installdir, installation directory>>.
 
@@ -162,8 +195,6 @@ By default Gentics Mesh already contains all link:https://en.wikipedia.org/wiki/
 include::content/docs/examples/example-languages.json[]
 ----
 
-NOTE: Please note that the `contentLanguages` property in the `mesh-ui2-config.js` file also needs to be updated in order to show the language in the UI.
-
 TIP: The link:https://github.com/gentics/mesh-compose/tree/extra-language[mesh-compose] project contains a full example configuration which shows how to add a custom language.
 
 
@@ -183,7 +214,7 @@ include::content/docs/generated/tables/ClusterOptions.adoc-include[]
 
 By default all specified directories are relative to the installation directory.
 
-include::content/docs/generated/tables/GraphStorageOptions.adoc-include[]
+include::content/docs/generated/tables/HibernateStorageOptions.adoc-include[]
 
 ==== Disk Quota Check Options
 
@@ -231,6 +262,12 @@ include::content/docs/generated/tables/DebugInfoOptions.adoc-include[]
 === GraphQL Options
 
 include::content/docs/generated/tables/GraphQLOptions.adoc-include[]
+
+=== S3 Storage Options
+
+include::content/docs/generated/tables/S3Options.adoc-include[]
+
+include::content/docs/generated/tables/S3CacheOptions.adoc-include[]
 
 === Memory Settings
 
