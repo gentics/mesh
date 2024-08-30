@@ -35,13 +35,35 @@ docker run \
 
 Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector [official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
 
-First, initialize an empty database in your MariaDB, as well as its user:
+First, initialize an empty database in your MariaDB, as well as its user. Example setup:
+
+[source,bash]
+----
+export MYSQL_DATABASE=mymeshdb
+export MYSQL_USER=meshdbuser
+export MYSQL_PASSWORD=no_one_can_guess
+----
+
+Install the isolation level for the database on start with the startup parameter.
+
+[source,bash]
+----
+--transaction-isolation=READ-COMMITTED
+----
+
+Alternatively, this can be done via SQL:
 
 [source,sql]
 ----
-CREATE DATABASE mesh CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
-GRANT ALL PRIVILEGES ON mesh.* TO '<your database user>'@'%';
 SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;
+----
+
+Set the database and access permissions up.
+
+[source,sql]
+----
+CREATE DATABASE mymeshdb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+GRANT ALL PRIVILEGES ON mymeshdb.* TO 'meshdbuser'@'%';
 ----
 
 Include the following `mesh` container into your `docker-compose.yml`:
@@ -56,11 +78,41 @@ Include the following `mesh` container into your `docker-compose.yml`:
       - '8080:8080'
     environment:
       MESH_DATABASE_ADDRESS: <host:port of a MariaDB. For instance, if the name of MariaDB container is `mariadb`, the content here will be `mariadb:3306`>
-      MESH_JDBC_CONNECTION_USERNAME: <your database user>
-      MESH_JDBC_CONNECTION_PASSWORD: <password of your database user>
+      MESH_JDBC_DATABASE_NAME: mymeshdb
+      MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
+      MESH_JDBC_CONNECTION_PASSWORD: "no_one_can_guess"
       MESH_INITIAL_ADMIN_PASSWORD: "admin"
       MESH_INITIAL_ADMIN_PASSWORD_FORCE_RESET: "false"
       MESH_BINARY_DIR: "/uploads"
+----
+
+Alternatively, the database configuration can be provided via `mesh.yml` config file.
+
+[source,yaml]
+----
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "mariadb:3306"
+  databaseName: "mymeshdb"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "meshdbuser"
+  connectionPassword: "no_one_can_guess"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
 ----
 
 === Volumes / Locations
@@ -71,7 +123,6 @@ Include the following `mesh` container into your `docker-compose.yml`:
 | `/uploads`       | Location for fileuploads             | `MESH_BINARY_DIR=/uploads`
 | `/config`        | Location for configuration files     | -
 | `/keystore`      | Location for the main keystore file which contains the cryptographic keys which are used to sign the JWT. | `MESH_AUTH_KEYSTORE_PATH=/keystore/keystore.jks`
-| `/backups`       | Backup data location | `MESH_GRAPH_BACKUP_DIRECTORY=/backups`
 | `/plugins`       | Plugin data and configuration location | `MESH_PLUGIN_DIR=/plugins`
 | `/mesh/data`     | Remaining data files (e.g. temp dirs, caches) | -
 |======
