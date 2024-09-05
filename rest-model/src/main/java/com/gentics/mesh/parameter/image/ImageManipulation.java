@@ -6,7 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.rest.node.field.image.FocalPoint;
 import com.gentics.mesh.core.rest.node.field.image.Point;
-import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.util.NumberUtils;
 
 /**
@@ -242,24 +241,6 @@ public interface ImageManipulation {
 	 * @return Fluent API
 	 */
 	ImageManipulation validateFocalPointParameter();
-
-	/**
-	 * Check whether all required crop parameters have been set.
-	 *
-	 * @param options
-	 * @return Fluent API
-	 */
-	default ImageManipulation validateLimits(ImageManipulatorOptions options) {
-		int width = NumberUtils.toInt(getWidth(), 0);
-		int height = NumberUtils.toInt(getHeight(), 0);
-		if (getWidth() != null && options.getMaxWidth() != null && options.getMaxWidth() > 0 && width > options.getMaxWidth()) {
-			throw error(BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(getWidth()));
-		}
-		if (getHeight() != null && options.getMaxHeight() != null && options.getMaxHeight() > 0 && height > options.getMaxHeight()) {
-			throw error(BAD_REQUEST, "image_error_height_limit_exceeded", String.valueOf(options.getMaxHeight()), String.valueOf(getHeight()));
-		}
-		return this;
-	}
 
 	/**
 	 * Check whether any resize or crop param has been set.

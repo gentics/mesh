@@ -37,11 +37,14 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
+import com.gentics.mesh.core.data.HibImageDataElement;
 import com.gentics.mesh.core.data.binary.HibBinary;
 import com.gentics.mesh.core.data.storage.BinaryStorage;
 import com.gentics.mesh.core.data.storage.S3BinaryStorage;
 import com.gentics.mesh.core.db.Supplier;
+import com.gentics.mesh.core.image.ImageManipulator;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
+import com.gentics.mesh.core.rest.node.field.image.Point;
 import com.gentics.mesh.etc.config.ImageManipulationMode;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -124,13 +127,16 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	 * @return Resized image or original image if no resize operation was requested
 	 */
 	protected BufferedImage resizeIfRequested(BufferedImage originalImage, ImageManipulation parameters) {
+		Point original = new Point(originalImage.getWidth(), originalImage.getHeight());
+		Point calculated = calculateNewSize(new Point(NumberUtils.toInt(parameters.getWidth(), 0), NumberUtils.toInt(parameters.getHeight(), 0)),
+				new Point(originalImage.getWidth(), originalImage.getHeight()), parameters.getResizeMode());
+
 		int originalHeight = originalImage.getHeight();
 		int originalWidth = originalImage.getWidth();
-		double aspectRatio = (double) originalWidth / (double) originalHeight;
 
 		// Resize if required and calculate missing parameters if needed
-		Integer pHeight = NumberUtils.toInt(parameters.getHeight(), 0);
-		Integer pWidth = NumberUtils.toInt(parameters.getWidth(), 0);
+		int pHeight = calculated.getY();
+		int pWidth = calculated.getX();
 
 		// Resizing is only needed when one of the parameters has been specified
 		if (pHeight != 0 || pWidth != 0) {
@@ -150,26 +156,14 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				return originalImage;
 			}
 			ResizeMode resizeMode = parameters.getResizeMode();
-			// if the mode used is smart, and one of the dimensions is auto then set this
-			// dimension to the original Value
-			if (resizeMode == ResizeMode.SMART) {
-				if (parameters.getWidth() != null && parameters.getWidth().equals("auto")) {
-					pWidth = originalWidth;
-				}
-				if (parameters.getHeight() != null && parameters.getHeight().equals("auto")) {
-					pHeight = originalHeight;
-				}
-			}
-			int width = pWidth == 0 ? (int) (pHeight * aspectRatio) : pWidth;
-			int height = pHeight == 0 ? (int) (width / aspectRatio) : pHeight;
 
 			// if we want to use smart resizing we need to crop the original image to the
 			// correct format before resizing to avoid distortion
 			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.SMART) {
 
 				double pAspectRatio = (double) pWidth / (double) pHeight;
-				if (aspectRatio != pAspectRatio) {
-					if (aspectRatio < pAspectRatio) {
+				if (original.getRatio() != pAspectRatio) {
+					if (original.getRatio() < pAspectRatio) {
 						// crop height (top & bottom)
 						int resizeHeight = Math.max(1, (int) (originalWidth / pAspectRatio));
 						int startY = (int) (originalHeight * 0.5 - resizeHeight * 0.5);
@@ -186,27 +180,16 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			// if we want to use proportional resizing we need to make sure the destination
 			// dimension fits inside the provided dimensions
 			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.PROP) {
-				double pAspectRatio = (double) pWidth / (double) pHeight;
-				if (aspectRatio < pAspectRatio) {
-					// scale to pHeight
-					width = Math.max(1, (int) (pHeight * aspectRatio));
-					height = Math.max(1, pHeight);
-				} else {
-					// scale to pWidth
-					width = Math.max(1, pWidth);
-					height = Math.max(1, (int) (pWidth / aspectRatio));
-				}
-
 				// Should the resulting format be the same as the original image we do not need
 				// to resize
-				if (width == originalWidth && height == originalHeight) {
+				if (calculated.getX() == originalWidth && calculated.getY() == originalHeight) {
 					return originalImage;
 				}
 			}
 
 			try {
 				BufferedImage image = Scalr.apply(originalImage,
-						new ResampleOp(width, height, options.getResampleFilter().getFilter()));
+						new ResampleOp(calculated.getX(), calculated.getY(), options.getResampleFilter().getFilter()));
 				originalImage.flush();
 				return image;
 			} catch (IllegalArgumentException e) {
@@ -322,6 +305,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	@Override
 	public Single<String> handleResize(HibBinary binary, ImageManipulation parameters) {
+		ImageManipulator.applyDefaultManipulation(parameters, binary);
 		ImageManipulationMode mode = options.getMode();
 
 		if (ImageManipulationMode.OFF == mode) {
@@ -329,7 +313,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 		// Validate the resize parameters
 		parameters.validateManipulation();
-		parameters.validateLimits(options);
+		validateLimits(parameters, binary, options);
 
 		String binaryUuid = binary.getUuid();
 
@@ -359,11 +343,11 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename,
+	public Single<File> handleS3Resize(String bucketName, String s3ObjectKey, String filename, HibImageDataElement image,
 			ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		parameters.validateManipulation();
-		parameters.validateLimits(options);
+		validateLimits(parameters, image, options);
 
 		return s3BinaryStorage.read(bucketName, s3ObjectKey)
 				.flatMapSingle(originalFile -> workerPool.<File>rxExecuteBlocking(bh -> {
@@ -386,10 +370,10 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 	@Override
 	public Completable handleS3CacheResize(String bucketName, String cacheBucketName, String s3ObjectKey,
-			String cacheS3ObjectKey, String filename, ImageManipulationParameters parameters) {
+			String cacheS3ObjectKey, String filename, HibImageDataElement image, ImageManipulationParameters parameters) {
 		// Validate the resize parameters
 		parameters.validate();
-		parameters.validateLimits(options);
+		validateLimits(parameters, image, options);
 
 		return s3BinaryStorage.exists(cacheBucketName, cacheS3ObjectKey)
 				// read from aws and return buffer with data
@@ -453,6 +437,62 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		return pixel.getData().getPixel(0, 0, (int[]) null);
 	}
 
+	protected Point calculateNewSize(Point requested, Point original, ResizeMode resizeMode) {
+		int originalHeight = original.getY();
+		int originalWidth = original.getX();
+		double aspectRatio = (double) originalWidth / (double) originalHeight;
+
+		// Resize if required and calculate missing parameters if needed
+		int pHeight = requested.getY();
+		int pWidth = requested.getX();
+
+		// Resizing is only needed when one of the parameters has been specified
+		if (pHeight != 0 || pWidth != 0) {
+
+			// No operation needed when width is the same and no height was set
+			if (pHeight == 0 && pWidth == originalWidth) {
+				return requested;
+			}
+
+			// No operation needed when height is the same and no width was set
+			if (pWidth == 0 && pHeight == originalHeight) {
+				return requested;
+			}
+
+			// No operation needed when width and height match original image
+			if (pWidth != 0 && pWidth == originalWidth && pHeight != 0 && pHeight == originalHeight) {
+				return requested;
+			}
+
+			int width = pWidth == 0 ? (int) (pHeight * aspectRatio) : pWidth;
+			int height = pHeight == 0 ? (int) (width / aspectRatio) : pHeight;
+
+			// if we want to use proportional resizing we need to make sure the destination
+			// dimension fits inside the provided dimensions
+			if (pWidth != 0 && pHeight != 0 && resizeMode == ResizeMode.PROP) {
+				double pAspectRatio = (double) pWidth / (double) pHeight;
+				if (aspectRatio < pAspectRatio) {
+					// scale to pHeight
+					width = Math.max(1, (int) (pHeight * aspectRatio));
+					height = Math.max(1, pHeight);
+				} else {
+					// scale to pWidth
+					width = Math.max(1, pWidth);
+					height = Math.max(1, (int) (pWidth / aspectRatio));
+				}
+
+				// Should the resulting format be the same as the original image we do not need
+				// to resize
+				if (width == originalWidth && height == originalHeight) {
+					return requested;
+				}
+			}
+			return new Point(width, height);
+		} else {
+			return requested;
+		}
+	}
+
 	@Override
 	public Single<Map<String, String>> getMetadata(InputStream ins) {
 		return Single.create(sub -> {
@@ -488,6 +528,29 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 			}
 		}
 		return bufferedImage;
+	}
+
+	/**
+	 * Check whether the resized image will be within the allowed limits
+	 *
+	 * @param parameters
+	 * @param original
+	 * @param options
+	 * @return Fluent API
+	 */
+	protected void validateLimits(ImageManipulation parameters, HibImageDataElement original, ImageManipulatorOptions options) {
+		Point newSize = calculateNewSize(
+				new Point(NumberUtils.toInt(parameters.getWidth(), 0), NumberUtils.toInt(parameters.getHeight(), 0)),
+				new Point(original.getImageWidth(), original.getImageHeight()), parameters.getResizeMode());
+
+		int width = newSize.getX();
+		int height = newSize.getY();
+		if (options.getMaxWidth() != null && options.getMaxWidth() > 0 && width > options.getMaxWidth()) {
+			throw error(BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(width));
+		}
+		if (options.getMaxHeight() != null && options.getMaxHeight() > 0 && height > options.getMaxHeight()) {
+			throw error(BAD_REQUEST, "image_error_height_limit_exceeded", String.valueOf(options.getMaxHeight()), String.valueOf(height));
+		}
 	}
 
 	/**
