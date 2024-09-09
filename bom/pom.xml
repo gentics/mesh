@@ -30,7 +30,7 @@
 		<jackson.version>2.13.2</jackson.version>
 		<jackson-databind.version>2.13.2</jackson-databind.version>
 		<netty.version>4.1.78.Final</netty.version>
-		<tika.version>1.26</tika.version>
+		<tika.version>2.9.2</tika.version>
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<testcontainers.version>1.19.4</testcontainers.version>
@@ -155,7 +155,17 @@
 			<!-- Tika -->
 			<dependency>
 				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parsers</artifactId>
+				<artifactId>tika-parsers-standard-package</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-core</artifactId>
+				<version>${tika.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tika</groupId>
+				<artifactId>tika-parser-scientific-package</artifactId>
 				<version>${tika.version}</version>
 			</dependency>
 
