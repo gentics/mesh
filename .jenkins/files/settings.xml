@@ -19,6 +19,11 @@
 			<password>${env.repoPassword}</password>
 		</server>
 		<server>
+			<id>gentics.nexus.releases</id>
+			<username>${env.repoUsername}</username>
+			<password>${env.repoPassword}</password>
+		</server>
+		<server>
 			<id>gentics.nexus.snapshots</id>
 			<username>${env.repoUsername}</username>
 			<password>${env.repoPassword}</password>
