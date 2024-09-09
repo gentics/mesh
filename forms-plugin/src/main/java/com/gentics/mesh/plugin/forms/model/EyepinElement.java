@@ -247,10 +247,12 @@ public class EyepinElement extends FormElement {
 
                 }
                 if (listIds != "" && listIds != null) {
+                    sb.append("\n\t<lists merge=\"1\">");
                     String[] listIdsArray = listIds.split(",");
                     for (int i = 0; i < listIdsArray.length; i++) {
-                        sb.append("\n\t<lists merge=\"1\">\"" + listIdsArray[i] + "\"</lists>");
+                        sb.append("\n\t<lists id=\""+ listIdsArray[i] + "\"/>");
                     }
+                    sb.append("\"</lists>");
                 }
                 String additionalInfo = sb.toString();
                 RequestBody body = RequestBody.create(mediaType,
