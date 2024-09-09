@@ -704,6 +704,30 @@ Use this example configuration for the Gentics CMS form-editor.json [here](https
             }
         },
         {
+            "name": "listIds",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "List IDs in Eyepin (comma-separated values)",
+                "de": "List IDs in Eyepin (kommagetrennte Werte)"
+            },
+            "description_i18n_ui": {
+                "en": "List IDs in eyepin",
+                "de": "List IDs in Eyepin."
+            }
+        },
+        {
+            "name": "topicIds",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "Topic IDs in Eyepin (comma-separated values)",
+                "de": "Topic IDs in Eyepin (kommagetrennte Werte)"
+            },
+            "description_i18n_ui": {
+                "en": "Topic IDs in eyepin",
+                "de": "Topic IDs in Eyepin."
+            }
+        },
+        {
             "name": "value",
             "type": "STRING",
             "label_i18n_ui": {
