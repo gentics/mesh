@@ -1,14 +1,11 @@
 // The GIT repository for this pipeline lib is defined in the global Jenkins setting
-@Library('jenkins-pipeline-library')
+@Library('jenkins-pipeline-library@nexus')
 import com.gentics.*
 
 // Make the helpers aware of this jobs environment
 JobContext.set(this)
 
-final def dockerRegistry       = "gentics-docker-jenkinsbuilds.docker.apa-it.at"
-final def dockerImageName      = dockerRegistry + "/gentics/jenkinsbuilds/mesh-slave-openjdk8"
-
-final def imagePrefix		   = "gtx-docker-releases-staging-mesh.docker.apa-it.at/"
+final def imagePrefix		   = "push.docker.gentics.com/docker-products/"
 
 properties([
 	parameters([
@@ -110,7 +107,7 @@ stage("Setup Build Environment") {
 				if (Boolean.valueOf(params.runMavenBuild)) {
 					sshagent(["git"]) {
 						if (Boolean.valueOf(params.runDeploy)) {
-							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 								sh "mvn -U -B -Dgpg.skip=false -DskipTests clean deploy"
 							}
 						} else {
@@ -196,7 +193,7 @@ stage("Setup Build Environment") {
 
 			stage("Deploy") {
 				if (Boolean.valueOf(params.runDeploy)) {
-					withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 						sh 'cd js'
 
 						// Install dependencies
@@ -216,8 +213,8 @@ stage("Setup Build Environment") {
 					}
 
 					if (Boolean.valueOf(params.runDocker)) {
-						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-							sh 'docker login -u $repoUsername -p $repoPassword gtx-docker-releases-staging-mesh.docker.apa-it.at'
+						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+							sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
 							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:latest'
 							sh 'docker push ' + imagePrefix + 'gentics/mesh-demo:' + version
 							sh 'docker push ' + imagePrefix + 'gentics/mesh:latest'

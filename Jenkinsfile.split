@@ -1,5 +1,5 @@
 // The GIT repository for this pipeline lib is defined in the global Jenkins setting
-@Library('jenkins-pipeline-library')
+@Library('jenkins-pipeline-library@nexus')
 import com.gentics.*
 
 // Make the helpers aware of this jobs environment
@@ -28,8 +28,8 @@ properties([
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 final def splits = 20;
 final def runs = 20;
-final def registryHostStaging	   = "gtx-docker-releases-staging-mesh.docker.apa-it.at";
-final def registryHostTest	   = "gtx-docker-releases-test-system.docker.apa-it.at";
+final def registryHostStaging	   = "push.docker.gentics.com/docker-products";
+final def registryHostTest	   = "push.docker.gentics.com/docker-snapshots";
 
 def registryHost = registryHostStaging;
 
@@ -80,7 +80,7 @@ stage("Setup Build Environment") {
 					echo "Setup of GPG"
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 					sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-					withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),
 					                 usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 						sh "mvn -ff -B -U -Dmaven.javadoc.skip=true -Dskip.test-plugins=false -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dgpg.skip=false -DskipTests ${extraFlags} clean install"
 					}
@@ -115,8 +115,8 @@ stage("Setup Build Environment") {
 										sshagent(["git"]) {
 											try {
 												def jacoco = Boolean.valueOf(params.runSonar);
-												withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-													sh 'docker login -u $repoUsername -p $repoPassword docker.apa-it.at'
+												withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+													sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
 													withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
 														sh ".jenkins/run-splits.sh includes-${postfix} ${jacoco} split${current}"
 													}
@@ -141,7 +141,7 @@ stage("Setup Build Environment") {
 						sshagent(["git"]) {
 							try {
 								withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-									sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -U -e -pl '!ferma,!doc,!performance-tests' clean install"
+									sh "mvn -fae -Dsurefire.excludedGroups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.ClusterTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -U -e -pl '!ferma,!doc,!performance-tests' clean install"
 								}
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -158,7 +158,7 @@ stage("Setup Build Environment") {
 					sshagent(["git"]) {
 						try {
 							withEnv(["TESTCONTAINERS_RYUK_DISABLED=true"]) {
-								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!ferma,!doc,!performance-tests' test -DfailIfNoTests=false"
+								sh "mvn -fae -Dsurefire.groups=com.gentics.mesh.test.category.FailingTests,com.gentics.mesh.test.category.NativeGraphQLFilterTests -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!ferma,!doc,!performance-tests' test -DfailIfNoTests=false"
 							}
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
@@ -180,7 +180,7 @@ stage("Setup Build Environment") {
 							echo "Setup of GPG"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
-							withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
 							}
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
@@ -219,7 +219,7 @@ stage("Setup Build Environment") {
 						try {
 							unstash 'project'
 							sh "mvn -B -DskipTests clean install -pl '!doc'"
-							sh "mvn -B -Dsurefire.groups=com.gentics.mesh.test.category.ClusterTests -DfailIfNoTests=false -Dmesh.container.image.prefix=docker.apa-it.at/ test"
+							sh "mvn -B -Dsurefire.groups=com.gentics.mesh.test.category.ClusterTests -DfailIfNoTests=false -Dmesh.container.image.prefix=docker.gentics.com/ test"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
 							deleteDir()
@@ -252,7 +252,7 @@ stage("Setup Build Environment") {
 					node("mesh-performance-worker-17") {
 						try {
 							unstash 'project'
-							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/"
+							sh "mvn -B -U clean package -pl '!doc,!server' -Dskip.unit.tests=true -Dskip.cluster.tests=true -Dskip.vertx-hazelcast=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/"
 						} finally {
 							step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 							deleteDir()
@@ -280,7 +280,7 @@ stage("Setup Build Environment") {
 							version = branchName;
 							registryHost = registryHostTest;
 						}
-						withCredentials([usernamePassword(credentialsId: 'repo.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 							sh 'docker login -u $repoUsername -p $repoPassword ' + registryHost
 
 							if (Boolean.valueOf(params.runDeploy)) {
