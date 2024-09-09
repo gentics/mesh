@@ -1,0 +1,6 @@
+FROM docker.gentics.com/jenkinsbuilds/mesh-slave:java11-1.1
+USER root
+
+ADD ./files/settings.xml /opt/maven/conf/settings.xml
+
+USER jenkins
