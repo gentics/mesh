@@ -44,6 +44,14 @@
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP-java7</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl-over-slf4j</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -54,15 +62,13 @@
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP-java7</artifactId>
 				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tika</groupId>
-			<artifactId>tika-parser-scientific-package</artifactId>
-			<exclusions>
 				<exclusion>
-					<groupId>com.zaxxer</groupId>
-					<artifactId>HikariCP-java7</artifactId>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl-over-slf4j</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

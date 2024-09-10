@@ -34,6 +34,7 @@
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<testcontainers.version>1.19.4</testcontainers.version>
+		<log4j.version>2.17.1</log4j.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -157,16 +158,31 @@
 				<groupId>org.apache.tika</groupId>
 				<artifactId>tika-parsers-standard-package</artifactId>
 				<version>${tika.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>jcl-over-slf4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.tika</groupId>
 				<artifactId>tika-core</artifactId>
 				<version>${tika.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tika</groupId>
-				<artifactId>tika-parser-scientific-package</artifactId>
-				<version>${tika.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>slf4j-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+  						<artifactId>jcl-over-slf4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<!-- Spring - bcrypt -->

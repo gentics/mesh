@@ -10,24 +10,19 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
-import org.apache.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.db.Tx;
-import com.gentics.mesh.core.rest.MeshEvent;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.etc.config.search.ElasticSearchOptions;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-import com.gentics.mesh.test.helper.ExpectedEvent;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerOptions;
@@ -149,7 +144,7 @@ public class ElasticSearchProviderTimeoutTest extends AbstractMeshTest {
 	@Test
 	public void testResumeQueriesAfterGatewayTimeout() throws IOException, InterruptedException {
 		timeout = false;
-		maybeCustomStatus = Optional.of(HttpStatus.SC_GATEWAY_TIMEOUT);
+		maybeCustomStatus = Optional.of(504 /*SC_GATEWAY_TIMEOUT*/);
 		String json = getESText("userWildcard.es");
 		call(() -> client().searchUsers(json), INTERNAL_SERVER_ERROR);
 		// reset
