@@ -6,6 +6,11 @@ If you want to add changelog entries, create a new file in changelog/src/changel
 mvn -pl changelog install
 ////
 
+[[v2.1.6]]
+== 2.1.6 (11.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
 [[v2.1.5]]
 == 2.1.5 (28.08.2024)
 
