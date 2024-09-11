@@ -292,6 +292,12 @@
 				<groupId>io.vertx</groupId>
 				<artifactId>vertx-web-templ-handlebars</artifactId>
 				<version>${vertx.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.github.jknack</groupId>
+						<artifactId>handlebars</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>io.vertx</groupId>
@@ -695,8 +701,13 @@
 				<version>2.0.0</version>
 			</dependency>
 
+			<!-- Library replacements -->
+			<dependency>
+					<groupId>com.github.jknack</groupId>
+					<artifactId>handlebars</artifactId>
+					<version>4.3.1</version>
+			</dependency>
 		</dependencies>
-
 	</dependencyManagement>
 
 </project>
