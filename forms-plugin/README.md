@@ -901,28 +901,39 @@ For extending the forms-plugin, a new maven project must be created, that uses t
     </plugins>
   </build>
   <repositories>
-        <repository>
-            <id>maven.gentics.com</id>
-            <name>Gentics Maven Repository</name>
-            <url>https://maven.gentics.com/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gtx-commercial</id>
-            <name>Gentics Maven Commercial Repository</name>
-            <url>https://repo.apa-it.at/artifactory/gtx-maven-releases-commerical/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+      <repository>
+        <id>gentics.nexus.releases-oss</id>
+        <name>Gentics Nexus OSS Maven Repository</name>
+        <url>https://repo.gentics.com/repository/maven-releases-oss/</url>
+        <releases>
+          <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+      <repository>
+        <id>gentics.nexus.releases</id>
+        <name>Gentics Nexus Maven Repository</name>
+        <url>https://repo.gentics.com/repository/maven-releases/</url>
+        <releases>
+          <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+      <repository>
+        <id>gentics.nexus.snapshots</id>
+        <name>Gentics Snapshots Repository</name>
+        <url>https://repo.gentics.com/repository/maven-snapshots/</url>
+        <releases>
+          <enabled>false</enabled>
+        </releases>
+        <snapshots>
+          <enabled>true</enabled>
+        </snapshots>
+      </repository>
     </repositories>
 </project>
 ```
