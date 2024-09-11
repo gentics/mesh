@@ -15,12 +15,14 @@ import com.gentics.mesh.etc.config.env.Option;
 @GenerateDocumentation
 public class ImageManipulatorOptions implements Option {
 
+	public static final String MESH_IMAGE_CACHE_SPLIT_SIZE_ENV = "MESH_IMAGE_CACHE_SPLIT_SIZE";
 	public static final String MESH_IMAGE_MAX_WIDTH_ENV = "MESH_IMAGE_MAX_WIDTH";
 	public static final String MESH_IMAGE_MAX_HEIGHT_ENV = "MESH_IMAGE_MAX_HEIGHT";
 	public static final String MESH_IMAGE_JPEG_QUALITY_ENV = "MESH_IMAGE_JPEG_QUALITY";
 	public static final String MESH_IMAGE_RESAMPLE_FILTER_ENV = "MESH_IMAGE_RESAMPLE_FILTER";
 	public static final String MESH_IMAGE_CACHE_DIRECTORY_ENV = "MESH_IMAGE_CACHE_DIRECTORY";
 
+	public static final int DEFAULT_CACHE_SPLIT_SIZE = 16; 
 	public static final int DEFAULT_MAX_WIDTH = 2048;
 	public static final int DEFAULT_MAX_HEIGHT = 2048;
 	public static final float DEFAULT_JPEG_QUALITY = 0.95f;
@@ -32,6 +34,11 @@ public class ImageManipulatorOptions implements Option {
 	@JsonPropertyDescription("Configure the path for image cache directory. Default: data/binaryImageCache")
 	@EnvironmentVariable(name = MESH_IMAGE_CACHE_DIRECTORY_ENV, description = "Override the path for image cache directory.")
 	private String imageCacheDirectory = DEFAULT_IMAGE_CACHE_DIRECTORY;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the image cache folder depth, which is produced by splitting the image's SHA512 hash into the number of fractions, defined here. Values accepted: 1-128. Default: 16")
+	@EnvironmentVariable(name = MESH_IMAGE_CACHE_SPLIT_SIZE_ENV, description = "Override the image cache folder depth.")
+	private Integer cacheSplitSize = DEFAULT_CACHE_SPLIT_SIZE;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues. Default: "
@@ -106,9 +113,23 @@ public class ImageManipulatorOptions implements Option {
 		return this;
 	}
 
+	public Integer getCacheSplitSize() {
+		return cacheSplitSize;
+	}
+
+	@Setter
+	public ImageManipulatorOptions setCacheSplitSize(Integer cacheSplitSize) {
+		this.cacheSplitSize = cacheSplitSize;
+		return this;
+	}
+
+
 	/**
 	 * Validate the options.
 	 */
 	public void validate(MeshOptions meshOptions) {
+		if (null == cacheSplitSize || cacheSplitSize < 1 || cacheSplitSize > 128) {
+			throw new IllegalArgumentException("The `cacheSplitSize` expects a value in the range [1-128], but `" + cacheSplitSize + "` was provided.");
+		}
 	}
 }

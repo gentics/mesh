@@ -40,7 +40,11 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	public Single<CacheFileInfo> getCacheFilePath(String sha512sum, ImageManipulationParameters parameters) {
 		FileSystem fs = vertx.fileSystem();
 
-		String[] parts = sha512sum.split("(?<=\\G.{8})");
+		Integer cacheSplitSize = options.getCacheSplitSize();
+		if (cacheSplitSize == null || cacheSplitSize < 1 || cacheSplitSize > 128) {
+			cacheSplitSize = ImageManipulatorOptions.DEFAULT_CACHE_SPLIT_SIZE;
+		}
+		String[] parts = sha512sum.split(String.format("(?<=\\G.{%d})", 512 / 4 / cacheSplitSize));
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(File.separator);
 		for (String part : parts) {
