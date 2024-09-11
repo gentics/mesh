@@ -297,6 +297,12 @@
 				<groupId>io.vertx</groupId>
 				<artifactId>vertx-web-templ-handlebars</artifactId>
 				<version>${vertx.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.github.jknack</groupId>
+						<artifactId>handlebars</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>io.vertx</groupId>
@@ -769,6 +775,13 @@
 				<groupId>com.sksamuel.scrimage</groupId>
 				<artifactId>scrimage-webp</artifactId>
 				<version>${scrimage.webp.version}</version>
+			</dependency>
+
+			<!-- Library replacements -->
+			<dependency>
+					<groupId>com.github.jknack</groupId>
+					<artifactId>handlebars</artifactId>
+					<version>4.3.1</version>
 			</dependency>
 		</dependencies>
 

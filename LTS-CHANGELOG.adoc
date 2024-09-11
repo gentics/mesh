@@ -17,6 +17,11 @@ include::content/docs/variables.adoc-include[]
 The LTS changelog lists releases which are only accessible via a commercial subscription.
 All fixes and changes in LTS releases will be released the next minor release. Changes from LTS 1.4.x will be included in release 1.5.0.
 
+[[v1.10.34]]
+== 1.10.34 (11.09.2024)
+
+icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
+
 [[v1.10.33]]
 == 1.10.33 (28.08.2024)
 
