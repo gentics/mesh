@@ -41,10 +41,6 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-templ-handlebars</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.github.jknack</groupId>
-			<artifactId>handlebars</artifactId>
-		</dependency>
 
 		<!-- Required by SearchModelGenerator -->
 		<dependency>

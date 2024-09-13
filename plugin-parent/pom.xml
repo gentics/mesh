@@ -226,11 +226,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.jknack</groupId>
-			<artifactId>handlebars</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-common</artifactId>
 			<scope>provided</scope>
