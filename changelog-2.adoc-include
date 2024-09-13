@@ -7,7 +7,7 @@ mvn -pl changelog install
 ////
 
 [[v2.1.6]]
-== 2.1.6 (11.09.2024)
+== 2.1.6 (13.09.2024)
 
 icon:check[] Core: The Vert.x Handlebars engine dependency has been patched, to replace the vulnerable Apache `commons-text` dependency, targeting `CVE-2022-42889`.
 
