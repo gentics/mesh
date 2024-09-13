@@ -34,7 +34,7 @@ Or via `mvn`:
 
 ```bash
 mvn dependency:get -Dartifact=com.gentics.mesh.plugin.commercial:mesh-keycloak-plugin:1.3.5 \
- -DremoteRepositories=gentics.nexus.snapshots::default::https://repo.gentics.com/repository/maven-releases/ \
+ -DremoteRepositories=gentics.nexus.releases::default::https://repo.gentics.com/repository/maven-releases/ \
  -Ddest=keycloak-plugin.jar -Dtransitive=false
 ```
 
