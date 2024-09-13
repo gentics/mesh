@@ -19,7 +19,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -75,6 +78,7 @@ import com.gentics.mesh.etc.config.search.ComplianceMode;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.MeshTestSetting;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -596,6 +600,76 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		JobListResponse status = adminCall(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(2);
 		assertThat(status).containsJobs(jobAUuid);
+	}
+
+	@Test
+	public void testMigrateSkippingVersions() throws Throwable {
+		String oldFieldName = "oldname";
+		String fieldName = "changedfield";
+		HibSchema container;
+		HibSchemaVersion versionA;
+		HibSchemaVersion versionB;
+		HibNode node;
+		String schemaUuid;
+
+		try (Tx tx = tx()) {
+			NodeDao nodeDao = tx.nodeDao();
+			BranchDao branchDao = tx.branchDao();
+			container = createDummySchemaWithChanges(oldFieldName, fieldName, false);
+			versionB = container.getLatestVersion();
+			versionA = versionB.getPreviousVersion();
+			schemaUuid = container.getUuid();
+
+			EventQueueBatch batch = createBatch();
+			branchDao.assignSchemaVersion(project().getLatestBranch(), user(), versionA, batch);
+			Tx.get().commit();
+
+			// create a node and publish
+			node = nodeDao.create(folder("2015"), user(), versionA, project());
+			HibNodeFieldContainer englishContainer = tx.contentDao().createFieldContainer(node, english(), project().getLatestBranch(),
+				user());
+			englishContainer.createString(oldFieldName).setString("content");
+			englishContainer.createString("name").setString("someName");
+			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
+			nodeDao.publish(node, ac, createBulkContext(), "en");
+			tx.success();
+		}
+
+		// 1. Drop random fields
+		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(),
+			SchemaUpdateRequest.class));
+		List<FieldSchema> someFields = IntStream.range(0, request.getFields().size()).filter(i -> i % 2 == 0).mapToObj(i -> request.getFields().get(i)).collect(Collectors.toList());
+		request.getFields().removeAll(someFields);
+		adminCall(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+
+		// 2. Add random fields
+		IntStream.range(0, someFields.size()).forEach(i -> {
+			if (i % 2 == 0) {
+				someFields.get(i).setName("bogus_" + i);
+			}
+		});
+		request.getFields().addAll(someFields);
+		adminCall(() -> client().updateSchema(schemaUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedBranches(false)));
+
+		try (Tx tx = tx()) {
+			container = tx.schemaDao().findByUuid(schemaUuid);
+			versionB = container.getLatestVersion();
+			EventQueueBatch batch = createBatch();
+			tx.branchDao().assignSchemaVersion(project().getLatestBranch(), user(), versionB, batch);
+			tx.success();
+		}
+		doSchemaMigration(versionA, versionB);
+
+		try (Tx tx = tx()) {
+			ContentDao contentDao = tx.contentDao();
+			assertThat(tx.contentDao().getFieldContainer(node, "en")).as("Migrated skipping draft").isOf(versionB).hasVersion("2.0");
+			assertThat(contentDao.getFieldContainer(node, "en", project().getLatestBranch().getUuid(), ContainerType.PUBLISHED))
+				.as("Migrated skipping published")
+				.isOf(versionB).hasVersion("2.0");
+		}
+
+		JobListResponse status = adminCall(() -> client().findJobs());
+		assertThat(status).listsAll(COMPLETED);
 	}
 
 	@Test

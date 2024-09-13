@@ -31,7 +31,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 	}
 
 	public ElasticsearchContainer(String version) {
-		super("docker.apa-it.at/elasticsearch/elasticsearch-oss:" + version);
+		super("docker.gentics.com/elasticsearch/elasticsearch-oss:" + version);
 	}
 
 	@Override

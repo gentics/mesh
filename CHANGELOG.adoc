@@ -21,16 +21,15 @@ include::content/docs/variables.adoc-include[]
 Starting with version 2.0.0 clustering with OrientDB is no longer part of the professional support by Gentics. For high availability setups, it is recommended to use
 link:https://getmesh.io/premium-features/sql-db/[Gentics Mesh SQL].
 
-////
-Note: Do not add changelog entries for versions 2.x here, but create the entries as files
-in changelog/src/changelog/entries/...
+[[v2.1.x]]
+== 2.1.x Changelog
 
-Running
-mvn -pl changelog install
-will then create the new inclusion file changelog-2.adoc-include
-////
+Mesh 2.1.x is part of the Gentics Content Management Platform 8.1: link:https://www.gentics.com/cmp/changelog/8.1.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
 
-include::content/docs/changelog-2.adoc-include[]
+[[v2.0.x]]
+== 2.0.x Changelog
+
+Mesh 2.0.x is part of the Gentics Content Management Platform 8.0: link:https://www.gentics.com/cmp/changelog/8.0.0/merged_changelog.html?show=mesh,meshplugins[Changelog]
 
 [[v1.10.10]]
 == 1.10.10 (28.06.2023)

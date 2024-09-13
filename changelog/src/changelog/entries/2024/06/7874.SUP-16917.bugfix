@@ -1,0 +1,1 @@
+Elasticsearch: An Elasticsearch Java Client has been updated to the version 1.1.2, containing the corrections to the connection failure processing mechanism. The Elasticsearch activity idle checking has been improved to be more proof of the unstable connections.

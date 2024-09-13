@@ -18,8 +18,8 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
-
 import com.gentics.mesh.core.rest.job.JobWarningList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,9 +126,11 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 			setStatus(FAILED);
 			log.error("Error handling migration", error);
 
+			if (job != null) {
 			job.setStopTimestamp();
 			job.setError(error);
 			commit(job);
+		}
 		}
 		return this;
 	}

@@ -223,7 +223,11 @@ public class ElasticsearchProcessVerticle extends AbstractVerticle {
 				// To make sure the subscription stays alive
 				.onErrorResumeNext(Flowable.empty()), 1)
 			// To make sure the subscription stays alive
-			.doOnError(err -> log.error("Error at end of ES process chain", err))
+			.doOnError(err -> {
+				log.info("Error at end of ES process chain", err);
+				idleChecker.reset();
+				startSync();
+			})
 			.retry()
 			.subscribe();
 	}
