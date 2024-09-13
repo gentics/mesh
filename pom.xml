@@ -277,23 +277,23 @@
 
 	<repositories>
 		<repository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -305,14 +305,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>lan.releases</id>
-			<name>Gentics Releases Repository</name>
-			<url>https://repo.apa-it.at/artifactory/gtx-maven-releases-staging-mesh</url>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
 		</repository>
 		<snapshotRepository>
-			<id>lan.snapshots</id>
+			<id>gentics.nexus.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>https://repo.apa-it.at/artifactory/gtx-maven-snapshots-mesh</url>
+			<url>https://repo.gentics.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
