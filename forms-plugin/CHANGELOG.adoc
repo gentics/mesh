@@ -10,6 +10,11 @@
 
 = Mesh Forms Plugin
 
+[[v1.10.17]]
+== 1.10.17 (2024-08-19)
+
+icon:check[] Forms: Added ListIds and TopicIds to the Eyepin Element.
+
 [[v1.10.15]]
 == 1.10.15 (2024-06-26)
 

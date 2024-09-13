@@ -724,6 +724,30 @@ Use this example configuration for the Gentics CMS form-editor.json [here](https
             }
         },
         {
+            "name": "listIds",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "List IDs in Eyepin (comma-separated values)",
+                "de": "List IDs in Eyepin (kommagetrennte Werte)"
+            },
+            "description_i18n_ui": {
+                "en": "List IDs in eyepin",
+                "de": "List IDs in Eyepin."
+            }
+        },
+        {
+            "name": "topicIds",
+            "type": "STRING",
+            "label_i18n_ui": {
+                "en": "Topic IDs in Eyepin (comma-separated values)",
+                "de": "Topic IDs in Eyepin (kommagetrennte Werte)"
+            },
+            "description_i18n_ui": {
+                "en": "Topic IDs in eyepin",
+                "de": "Topic IDs in Eyepin."
+            }
+        },
+        {
             "name": "value",
             "type": "STRING",
             "label_i18n_ui": {
@@ -889,28 +913,39 @@ For extending the forms-plugin, a new maven project must be created, that uses t
     </plugins>
   </build>
   <repositories>
-        <repository>
-            <id>maven.gentics.com</id>
-            <name>Gentics Maven Repository</name>
-            <url>https://maven.gentics.com/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>gtx-commercial</id>
-            <name>Gentics Maven Commercial Repository</name>
-            <url>https://repo.apa-it.at/artifactory/gtx-maven-releases-commerical/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+      <repository>
+        <id>gentics.nexus.releases-oss</id>
+        <name>Gentics Nexus OSS Maven Repository</name>
+        <url>https://repo.gentics.com/repository/maven-releases-oss/</url>
+        <releases>
+          <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+      <repository>
+        <id>gentics.nexus.releases</id>
+        <name>Gentics Nexus Maven Repository</name>
+        <url>https://repo.gentics.com/repository/maven-releases/</url>
+        <releases>
+          <enabled>true</enabled>
+        </releases>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+      <repository>
+        <id>gentics.nexus.snapshots</id>
+        <name>Gentics Snapshots Repository</name>
+        <url>https://repo.gentics.com/repository/maven-snapshots/</url>
+        <releases>
+          <enabled>false</enabled>
+        </releases>
+        <snapshots>
+          <enabled>true</enabled>
+        </snapshots>
+      </repository>
     </repositories>
 </project>
 ```

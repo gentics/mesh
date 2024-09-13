@@ -1,4 +1,4 @@
-@Library('jenkins-pipeline-library') import com.gentics.*
+@Library('jenkins-pipeline-library@nexus') import com.gentics.*
 JobContext.set(this)
 
 javaPipelineWithImage imageName: "worker-java-17", sonarProjectKey: "mesh-commercial-plugins"
