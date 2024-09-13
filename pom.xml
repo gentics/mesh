@@ -209,6 +209,20 @@
 		</plugins>
 	</build>
 
+	<pluginRepositories>
+		<pluginRepository>
+			<id>gentics.nexus.releases-oss</id>
+			<name>Gentics Nexus OSS Maven Repository</name>
+			<url>https://repo.gentics.com/repository/maven-releases-oss/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<repositories>
 		<repository>
 			<id>gentics.nexus.releases-oss</id>
