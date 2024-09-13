@@ -2,12 +2,13 @@ package com.gentics.mesh.core.migration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.inject.Provider;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.gentics.mesh.context.NodeMigrationActionContext;
 import com.gentics.mesh.core.data.HibFieldContainer;
@@ -34,13 +35,12 @@ import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.event.EventCauseInfo;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
-import com.gentics.mesh.core.rest.node.field.Field;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.distributed.RequestDelegator;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.EventQueueBatch;
 import com.gentics.mesh.metric.MetricsService;
 import com.gentics.mesh.util.CollectionUtil;
-import com.gentics.mesh.util.StreamUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -112,15 +112,29 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	 */
 	protected void migrate(NodeMigrationActionContext ac, HibFieldContainer newContainer, FieldContainer newContent,
 						   HibFieldSchemaVersionElement<?, ?, ?, ?, ?> fromVersion) throws Exception {
-		FieldMap fields = new FieldMapImpl();
-		Map<String, Field> newFields = fromVersion.getChanges()
-			.filter(change -> !(change instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
-			.map(change -> change.createFields(fromVersion.getSchema(), newContent))
-			.collect(StreamUtil.mergeMaps());
+		ArrayList<HibFieldSchemaVersionElement<?, ?, ?, ?, ?>> versionChain = new ArrayList<>(1);
+		do {
+			versionChain.add(fromVersion);
+			fromVersion = fromVersion.getNextVersion();
+		} while (fromVersion != null && !newContainer.getSchemaContainerVersion().getVersion().equals(fromVersion.getVersion()));
 
-		fields.putAll(newFields);
-
-		newContainer.updateFieldsFromRest(ac, fields);
+		versionChain.stream()
+			.flatMap(version -> version.getChanges().map(change -> Pair.of(change, version)))
+			.filter(pair -> !(pair.getKey() instanceof HibRemoveFieldChange)) // nothing to do for removed fields, they were never added
+			.map(pair -> Pair.of(pair.getValue(), pair.getKey().createFields(pair.getValue().getSchema(), newContent)))
+			.forEach(pair -> {
+				FieldMap fm = new FieldMapImpl();
+				fm.putAll(pair.getValue());
+				
+				// If a migration has been started over non-adjacent from/to versions, the intermediate changes need no actual storage, but a validation..
+				FieldSchemaContainerVersion schema = pair.getKey().getNextVersion().getSchema();
+				if (schema instanceof FieldSchemaContainerVersion && !((FieldSchemaContainerVersion)schema).getVersion().equals(newContainer.getSchemaContainerVersion().getVersion())) {
+					log.info("Update skipped for container [{}] of schema [{}] version [{}] from the intermediate version [{}]", newContainer.getUuid(), newContainer.getSchemaContainerVersion().getSchema().getName(), newContainer.getSchemaContainerVersion().getVersion(), ((FieldSchemaContainerVersion)schema).getVersion());
+					schema.assertForUnhandledFields(fm);
+				} else {
+					newContainer.updateFieldsFromRest(ac, fm);
+				}
+			});
 	}
 
 	/**
