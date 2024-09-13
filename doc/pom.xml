@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<skip.raml2html>false</skip.raml2html>
 	</properties>
 
 	<dependencyManagement>
@@ -59,7 +61,36 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/target/docs</directory>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 		<plugins>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/docs/docs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docs</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -75,8 +106,9 @@
 							<executable>${env.JAVA_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
-								<argument>com.gentics.mesh.generator.DocGeneratorRunner</argument>
+								<classpath />
+								<argument>
+									com.gentics.mesh.generator.DocGeneratorRunner</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -90,8 +122,37 @@
 							<executable>${env.JAVA_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
-								<classpath/>
-								<argument>com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
+								<classpath />
+								<argument>
+									com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Generate HTML from RAML</id>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<phase>process-resources</phase>
+						<configuration>
+							<!-- https://github.com/fabric8io/docker-maven-plugin/issues/299 -->
+							<executable>docker</executable>
+							<arguments>
+								<argument>run</argument>
+								<argument>--rm</argument>
+								<argument>-v</argument>
+								<argument>${basedir}/src/main/docs/nunjucks:/theme</argument>
+								<argument>-v</argument>
+								<argument>${basedir}/src/main/docs/generated/api:/raml</argument>
+								<argument>-v</argument>
+								<argument>${basedir}/target/docs/api:/html</argument>
+								<argument>mattjtodd/raml2html:3.0.1</argument>
+								<argument>-i</argument>
+								<argument>/raml/api-docs.raml</argument>
+								<argument>-o</argument>
+								<argument>/html/index.html</argument>
+								<argument>-t</argument>
+								<argument>/theme/template.nunjucks</argument>								
 							</arguments>
 						</configuration>
 					</execution>
@@ -125,7 +186,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -144,7 +205,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -157,7 +218,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
