@@ -34,6 +34,7 @@
 		<aws.sdk.version>2.16.83</aws.sdk.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<testcontainers.version>1.19.4</testcontainers.version>
+		<handlebars.version>4.3.1</handlebars.version>
 	</properties>
 
 	<!-- IMPORTANT: Always keep dependencies in-sync with mesh-plugin-parent pom in order to avoid duplicate libraries in shaded plugin jars -->
@@ -292,12 +293,6 @@
 				<groupId>io.vertx</groupId>
 				<artifactId>vertx-web-templ-handlebars</artifactId>
 				<version>${vertx.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>com.github.jknack</groupId>
-						<artifactId>handlebars</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>io.vertx</groupId>
@@ -703,9 +698,9 @@
 
 			<!-- Library replacements -->
 			<dependency>
-					<groupId>com.github.jknack</groupId>
-					<artifactId>handlebars</artifactId>
-					<version>4.3.1</version>
+				<groupId>com.github.jknack</groupId>
+				<artifactId>handlebars</artifactId>
+				<version>${handlebars.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
