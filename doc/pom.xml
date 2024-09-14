@@ -17,7 +17,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<skip.raml2html>false</skip.raml2html>
+		<skip.raml2html>true</skip.raml2html>
 	</properties>
 
 	<dependencyManagement>
@@ -130,29 +130,21 @@
 					</execution>
 					<execution>
 						<id>Generate HTML from RAML</id>
+						<!-- npm i -g raml2html@2.2 -->
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<!-- https://github.com/fabric8io/docker-maven-plugin/issues/299 -->
-							<executable>docker</executable>
+							<skip>${skip.raml2html}}</skip>
+							<executable>raml2html</executable>
 							<arguments>
-								<argument>run</argument>
-								<argument>--rm</argument>
-								<argument>-v</argument>
-								<argument>${basedir}/src/main/docs/nunjucks:/theme</argument>
-								<argument>-v</argument>
-								<argument>${basedir}/src/main/docs/generated/api:/raml</argument>
-								<argument>-v</argument>
-								<argument>${basedir}/target/docs/api:/html</argument>
-								<argument>mattjtodd/raml2html:3.0.1</argument>
 								<argument>-i</argument>
-								<argument>/raml/api-docs.raml</argument>
+								<argument>${basedir}/src/main/docs/generated/api/api-docs.raml</argument>
 								<argument>-o</argument>
-								<argument>/html/index.html</argument>
+								<argument>${basedir}/target/docs/api/index.html</argument>
 								<argument>-t</argument>
-								<argument>/theme/template.nunjucks</argument>								
+								<argument>${basedir}/src/main/docs/nunjucks/template.nunjucks</argument>								
 							</arguments>
 						</configuration>
 					</execution>
