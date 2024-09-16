@@ -281,7 +281,7 @@ stage("Setup Build Environment") {
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-public-key.asc"
 							sh "gpg --no-tty --batch --import /mnt/credentials/gpg/gpg-secret-key.asc"
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,bom' clean deploy"
+								sh "mvn -B -DskipTests -Dskip.unit.tests -am -pl 'server,:mesh-database-connector-mariadb,:mesh-database-connector-hsqldb,bom,plugin-bom,plugin-parent' clean deploy"
 							}
 						} else if (Boolean.valueOf(params.runDeploy)) {
 							echo "Setup of GPG"
