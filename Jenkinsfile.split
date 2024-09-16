@@ -188,6 +188,7 @@ stage("Setup Build Environment") {
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
 							sh "mvn -B -DskipTests -pl '!doc,!changelog' clean install"
 						} else {
+							sh "mvn -B -am -pl bom,plugin-bom install"
 							sh "mvn -B -DskipTests clean package"
 						}
 					}
