@@ -38,7 +38,7 @@ Download access is restricted and can be obtained via a link:/services/[Product 
 
 === Maven / Downloads
 
-The releases can be downloaded via the link:https://repo.gentics.com/maven2-commercial/com/gentics/mesh/mesh-server/[commercial maven repository]
+The releases can be downloaded via the link:https://repo.gentics.com/[commercial maven repository]
 
 === Docker Images
 

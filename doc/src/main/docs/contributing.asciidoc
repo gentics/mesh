@@ -251,14 +251,14 @@ An example of running a distinct GraphQL endpoint test against the HSQL database
 
 [source,bash]
 ----
-mvn -fae -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!doc,!performance-tests' test -Dtest=com.gentics.mesh.core.graphql.GraphQLEndpointTest -DfailIfNoTests=false -Djacoco.skip=true -Dskip.hsqlmemory.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 
+mvn -fae -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc,!performance-tests' test -Dtest=com.gentics.mesh.core.graphql.GraphQLEndpointTest -DfailIfNoTests=false -Djacoco.skip=true -Dskip.hsqlmemory.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 
 ----
 
 Same for the MariaDB. Please note that neither the Mesh Database Connector not the database itself should be set up in advance, everything is done by the test context provider:
 
 [source,bash]
 ----
-mvn -fae -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.apa-it.at/ -B -e -pl '!doc,!performance-tests' test -Dtest=com.gentics.mesh.core.graphql.GraphQLEndpointTest -DfailIfNoTests=false -Djacoco.skip=true -Dskip.mariadb.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 
+mvn -fae -U -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -Dmesh.container.image.prefix=docker.gentics.com/ -B -e -pl '!doc,!performance-tests' test -Dtest=com.gentics.mesh.core.graphql.GraphQLEndpointTest -DfailIfNoTests=false -Djacoco.skip=true -Dskip.mariadb.tests=false -Dmesh.testdb.manager.host=localhost -Dmesh.testdb.manager.port=8080 
 ----
 
 NOTE: Avoid wrapping transactions in your tests around code which invokes REST calls. 
