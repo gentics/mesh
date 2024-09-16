@@ -49,6 +49,12 @@ public class EyepinElement extends FormElement {
 	@JsonProperty
 	private String customerId;
 
+	@JsonProperty
+	private String listIds;
+
+	@JsonProperty
+	private String topicIds;
+
 	public EyepinElement() {
 	}
 
@@ -57,6 +63,8 @@ public class EyepinElement extends FormElement {
 
 		this.value = other.value;
 		this.customerId = other.customerId;
+		this.listIds = other.listIds;
+		this.topicIds = other.topicIds;
 	}
 
 	public String getCustomerId() {
@@ -65,6 +73,30 @@ public class EyepinElement extends FormElement {
 
 	public void setCustomerId(String customerId) {
 		this.customerId = customerId;
+	}
+
+	public String getListIds() {
+		if (listIds != null) {
+			return listIds;
+		} else {
+			return "";
+		}
+	}
+
+	public void setListIds(String listIds) {
+		this.listIds = listIds;
+	}
+
+	public String getTopicIds() {
+		if (topicIds != null) {
+			return topicIds;
+		} else {
+			return "";
+		}
+	}
+
+	public void setTopicIds(String topicIds) {
+		this.topicIds = topicIds;
 	}
 
 	public String getValue() {
@@ -150,13 +182,14 @@ public class EyepinElement extends FormElement {
 	/**
 	 * Send a request to eyepin to insert the user email to the address list of the
 	 * customer id(=Mandant) that is configured in the form element.
-	 * 
+	 * <p>
 	 * https://docs.eyepin.com/api/address#address-insert
 	 * 
 	 * @param userMail user mail that should be added to addresses in eyepin
 	 * @return 
 	 */
 	public Completable insertAddressToEyepin(String userMail, OkHttpClient httpClient) {
+		StringBuilder sb = new StringBuilder();
 		if (StringUtils.isBlank(userMail)) {
 			log.debug("User mail is empty.");
 		} else {
@@ -168,21 +201,46 @@ public class EyepinElement extends FormElement {
 			String apiUrl = eyepinOptions.getApiUrl();
 
 			String customerId = this.getCustomerId();
+			String listIds = this.getListIds();
+			String topicIds = this.getTopicIds();
+			if (log.isDebugEnabled()) {
+				log.debug("Eyepin customer id: " + customerId + " listIds: " + listIds + " topicIds: " + topicIds);
+			}
 
-			log.debug("Eyepin customer id: " + customerId);
 			if (!StringUtils.isBlank(customerId)) {
 				
 				// prepare request
 				MediaType mediaType = MediaType.parse("application/xml");
 				String credential = Credentials.basic(username, password);
 
+				if (topicIds != "" && topicIds != null) {
+					sb.append("\n\t<topicids merge=\"1\">\"").append(topicIds).append("\"</topicids>");
+
+				}
+				if (StringUtils.isNotEmpty(listIds)) {
+					sb.append("\n\t<lists merge=\"1\">");
+					String[] listIdsArray = listIds.split(",");
+					for (int i = 0; i < listIdsArray.length; i++) {
+						sb.append("\n\t<lists id=\"").append(listIdsArray[i]).append("\"/>");
+
+
+					}
+					sb.append("\"</lists>");
+				}
+				String additionalInfo = sb.toString();
 				RequestBody body = RequestBody.create(mediaType,
 						"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<addressinsert key=\"Email\" save-empty-fields=\"0\" overrule-blacklist=\"0\" customerid=\""
 								+ customerId + "\">\n\t<email>" + userMail
-								+ "</email>\n\t<status>1</status>\n  <handleoptin>1</handleoptin>\n</addressinsert>");
+								+ "</email>"
+								+ additionalInfo
+								+ "\n\t<status>1</status>\n  <handleoptin>1</handleoptin>\n</addressinsert>");
 				Request request = new Request.Builder().url(apiUrl).post(body).addHeader("Content-Type", "text/xml")
 						.addHeader("Authorization", credential).build();
 
+				if (log.isDebugEnabled()) {
+					log.debug("Body");
+					log.debug(body.toString());
+				}
 				// send request
 				Call call = httpClient.newCall(request);
 				return Single.<Response>create(sub -> {

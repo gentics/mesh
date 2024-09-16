@@ -10,7 +10,7 @@ import com.gentics.mesh.MeshVersion;
  */
 public final class MeshVersionUtil {
 
-	private static final String LTS_IMAGE = "docker.apa-it.at/gentics/mesh";
+	private static final String LTS_IMAGE = "docker.gentics.com/gentics/mesh";
 	private static final String OSS_IMAGE = "gentics/mesh";
 
 	private MeshVersionUtil() {
