@@ -125,7 +125,7 @@ public class ElasticsearchContainer extends GenericContainer<ElasticsearchContai
 	 * Create the full image name from the version number.
 	 *
 	 * <p>
-	 *     All versions use the docker.apa-it.at repository.
+	 *     All versions use the docker.gentics.com repository.
 	 * </p>
 	 *
 	 * <p>
