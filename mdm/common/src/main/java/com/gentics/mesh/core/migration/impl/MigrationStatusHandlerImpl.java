@@ -21,6 +21,7 @@ import com.gentics.mesh.core.db.Tx;
 import com.gentics.mesh.core.endpoint.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.migration.MigrationAbortedException;
 import com.gentics.mesh.core.rest.job.JobStatus;
+import com.gentics.mesh.core.rest.job.JobWarningList;
 
 /**
  * The migration status class keeps track of the status of a migration and manages also the errors and event handling.
