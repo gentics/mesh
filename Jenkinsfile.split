@@ -243,6 +243,12 @@ stage("Setup Build Environment") {
 					sh "rm server/target/*sources.jar || true"
 					sh "rm server/target/*javadoc.jar || true"
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
+
+					// scan image with trivy
+					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
+						sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
+						sh 'docker run docker.gentics.com/aquasec/trivy -q image ' + registryHost + "/gentics/mesh:" + version
+					}
 				} else {
 					echo "Docker build skipped.."
 				}
