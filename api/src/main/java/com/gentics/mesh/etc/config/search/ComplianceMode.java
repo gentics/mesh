@@ -13,5 +13,10 @@ public enum ComplianceMode {
 	/**
 	 * Enables the Elasticsearch 7 compliance mode. This will allow Gentics Mesh to work with ES 7 installations.
 	 */
-	ES_7
+	ES_7,
+
+	/**
+	 * Enables the Elasticsearch 8 compliance mode. This will allow Gentics Mesh to work with ES 8 installations.
+	 */
+	ES_8
 }

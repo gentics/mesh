@@ -39,6 +39,7 @@ public class DeleteDocumentRequest implements Bulkable {
 
 		switch (mode) {
 		case ES_7:
+		case ES_8:
 			break;
 		case ES_6:
 			settings.put("_type", SearchProvider.DEFAULT_TYPE);

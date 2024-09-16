@@ -28,6 +28,11 @@ public enum ElasticsearchTestMode {
 	CONTAINER_ES7,
 
 	/**
+	 * Run using an ES 8 docker container
+	 */
+	CONTAINER_ES8,
+
+	/**
 	 * Run using a toxified ES docker container
 	 */
 	CONTAINER_ES6_TOXIC,

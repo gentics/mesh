@@ -61,20 +61,20 @@ public class WaitSearchEndpointTest extends AbstractMultiESTest {
 	public void rawSearchWithWaitDisabled() {
 		ObjectNode result = rawSearch(false);
 
-		if (complianceMode() == ComplianceMode.ES_7) {
-			assertThat(result.get("responses").get(0).get("hits").get("total").get("value").asLong()).isEqualTo(0);
-		} else {
+		if (complianceMode() == ComplianceMode.ES_6) {
 			assertThat(result.get("responses").get(0).get("hits").get("total").asLong()).isEqualTo(0);
+		} else {
+			assertThat(result.get("responses").get(0).get("hits").get("total").get("value").asLong()).isEqualTo(0);
 		}
 	}
 
 	@Test
 	public void rawSearchWithWaitEnabled() {
 		ObjectNode result = rawSearch(true);
-		if (complianceMode() == ComplianceMode.ES_7) {
-			assertThat(result.get("responses").get(0).get("hits").get("total").get("value").asLong()).isEqualTo(1);
-		} else {
+		if (complianceMode() == ComplianceMode.ES_6) {
 			assertThat(result.get("responses").get(0).get("hits").get("total").asLong()).isEqualTo(1);
+		} else {
+			assertThat(result.get("responses").get(0).get("hits").get("total").get("value").asLong()).isEqualTo(1);
 		}
 	}
 }

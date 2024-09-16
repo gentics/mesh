@@ -122,7 +122,13 @@ public class ElasticSearchProvider implements SearchProvider {
 	public JsonObject getDefaultIndexSettings() {
 
 		JsonObject tokenizer = new JsonObject();
-		tokenizer.put("type", "nGram");
+
+		if (complianceMode == ComplianceMode.ES_8) {
+			tokenizer.put("type", "ngram");
+		} else {
+			tokenizer.put("type", "nGram");
+		}
+
 		tokenizer.put("min_gram", "3");
 		tokenizer.put("max_gram", "3");
 
@@ -697,6 +703,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		case ES_6:
 			return DEFAULT_TYPE;
 		case ES_7:
+		case ES_8:
 			return null;
 		default:
 			throw new RuntimeException("Unknown compliance mode {" + complianceMode + "}");
