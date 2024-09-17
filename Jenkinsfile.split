@@ -191,7 +191,7 @@ stage("Setup Build Environment") {
 							}
 						} else {
 							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
-								sh "mvn -B -am -pl bom,plugin-bom,plugin-parent install"
+								sh "mvn -B -DskipTests -am -pl bom,plugin-bom,plugin-parent install"
 								sh "mvn -B -DskipTests clean package"
 							}
 						}
