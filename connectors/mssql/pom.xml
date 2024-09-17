@@ -315,7 +315,7 @@
 						<!-- See https://git.gentics.com/psc/mesh/mesh-testdb-manager -->
 						<image>
 							<alias>testdb-manager</alias>
-							<name>docker.apa-it.at/gentics/apps/mesh-testdb-manager:latest</name>
+							<name>docker.gentics.com/gentics/apps/mesh-testdb-manager:latest</name>
 							<run>
 								<env>
 									<MESH_TESTDB_MANAGER_PORT>8080</MESH_TESTDB_MANAGER_PORT>
