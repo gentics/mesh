@@ -249,6 +249,8 @@ stage("Setup Build Environment") {
 					sh "rm server/target/*javadoc.jar || true"
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
 
+					scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1
+
 					// scan image with trivy
 					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
 						sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
