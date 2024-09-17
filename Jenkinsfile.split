@@ -186,10 +186,14 @@ stage("Setup Build Environment") {
 								sh "mvn -U -B -DskipTests -Dgpg.skip=false ${extraFlags} clean deploy"
 							}
 						} else if (Boolean.valueOf(params.setBranchAsVersion)) {
-							sh "mvn -B -DskipTests -pl '!doc,!changelog' clean install"
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -B -DskipTests -pl '!doc,!changelog' clean install"
+							}
 						} else {
-							sh "mvn -B -am -pl bom,plugin-bom,plugin-parent install"
-							sh "mvn -B -DskipTests clean package"
+							withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword'),usernamePassword(credentialsId: 'gentics.gpg', usernameVariable: 'gpgKeyName', passwordVariable: 'gpgKeyPass')]) {
+								sh "mvn -B -am -pl bom,plugin-bom,plugin-parent install"
+								sh "mvn -B -DskipTests clean package"
+							}
 						}
 					}
 				} else {
