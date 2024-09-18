@@ -250,13 +250,6 @@ stage("Setup Build Environment") {
 					sh "cd server ; docker build --network=host -t " + registryHost + "/gentics/mesh:latest -t " + registryHost + "/gentics/mesh:" + version + " . "
 
 					scanImage image: registryHost + "/gentics/mesh:" + version, exitCode: 1
-
-					// scan image with trivy
-					withCredentials([usernamePassword(credentialsId: 'docker.gentics.com', usernameVariable: 'repoUsername', passwordVariable: 'repoPassword')]) {
-						sh 'docker login -u $repoUsername -p $repoPassword docker.gentics.com'
-						sh 'docker save -o ./mesh_image.tar ' +registryHost + "/gentics/mesh:" + version + ' '
-						sh 'docker run -v ./mesh_image.tar:/tmp/mesh_image.tar docker.gentics.com/aquasec/trivy -q image --input /tmp/mesh_image.tar'
-					}
 				} else {
 					echo "Docker build skipped.."
 				}
