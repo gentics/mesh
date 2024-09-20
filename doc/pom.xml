@@ -137,12 +137,13 @@
 						<phase>process-resources</phase>
 						<configuration>
 							<skip>${skip.raml2html}</skip>
-							<executable>raml2html</executable>
+							<executable>npx</executable>
 							<arguments>
+								<argument>raml2html@2.2</argument>
 								<argument>-i</argument>
 								<argument>${basedir}/src/main/docs/generated/api/api-docs.raml</argument>
 								<argument>-o</argument>
-								<argument>${basedir}/target/docs/api/index.html</argument>
+								<argument>${basedir}/target/docs/docs/generated/api/index.html</argument>
 								<argument>-t</argument>
 								<argument>${basedir}/src/main/docs/nunjucks/template.nunjucks</argument>								
 							</arguments>
