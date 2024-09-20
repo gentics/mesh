@@ -136,7 +136,7 @@
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<skip>${skip.raml2html}}</skip>
+							<skip>${skip.raml2html}</skip>
 							<executable>raml2html</executable>
 							<arguments>
 								<argument>-i</argument>
