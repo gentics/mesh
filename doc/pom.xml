@@ -18,6 +18,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<skip.raml2html>true</skip.raml2html>
+		<skip.doc.assembly>true</skip.doc.assembly>
 	</properties>
 
 	<dependencyManagement>
@@ -74,7 +75,26 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-resources</id>
+						<id>copy-apidocs</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/docs/apidocs</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/docs</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>*.html</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-asciidocs</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>copy-resources</goal>
@@ -143,10 +163,31 @@
 								<argument>-i</argument>
 								<argument>${basedir}/src/main/docs/generated/api/api-docs.raml</argument>
 								<argument>-o</argument>
-								<argument>${basedir}/target/docs/docs/generated/api/index.html</argument>
+								<argument>${basedir}/target/docs/apidocs/index.html</argument>
 								<argument>-t</argument>
 								<argument>${basedir}/src/main/docs/nunjucks/template.nunjucks</argument>								
 							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>doc</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<skipAssembly>${skip.doc.assembly}</skipAssembly>
+							<attach>true</attach>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptors>
+								<descriptor>${project.basedir}/src/assembly/doc-package.xml</descriptor>
+							</descriptors>
 						</configuration>
 					</execution>
 				</executions>
