@@ -1,0 +1,176 @@
+---
+title: Use more SQL RDBMSs as a storage for Gentics Mesh
+---
+
+:icons: font
+:source-highlighter: prettify
+:toc:
+
+# Premium SQL database storage
+
+There is an enterprise feature available to use a wider variety of Relational Databases as storage for Gentics Mesh. The used Relational Database has to be provided and is not included or managed by Gentics Mesh.
+
+As of now the following RDBMSs are supported as a premium feature:
+
+* MSSQL 2019+
+* Oracle 19+
+* PostgreSQL 14.4+
+
+## Configuration
+
+## Mesh Database Connector.
+
+In order to have Gentics Mesh working with a particular database, a database connector module is required. The connector for MariaDB is freely distributed at our link:https://github.com/gentics/mesh/releases/[Github Releases].
+The connectors for Oracle, Microsoft SQL Server, PostgreSQL require a valid Gentics License. Please contact link:https://www.gentics.com/kontakt.html[Gentics Sales] to get one, and you wiil be provided a database connector JAR file.
+
+### Examples:
+
+#### PostgreSQL
+
+.JDBC Driver
+
+Download *postgresql-X.Y.Z.jar* from https://jdbc.postgresql.org/download.html , place it at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
+
+.DB configuration
+
+Define the database and Mesh user. This example uses environment variables.
+```
+export POSTGRES_DB=mesh
+export POSTGRES_USER=meshdbuser
+export POSTGRES_PASSWORD=admin
+```
+Create the dedicated schema.
+```
+CREATE SCHEMA mesh;
+```
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<postgres_database_host>:5432"
+  databaseName: "mesh"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "meshdbuser"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+
+#### MSSQL
+
+This example uses inbuilt "SA" user.
+
+.JDBC Driver
+
+Download *sqljdbc_X.Y.Z.W_enu.zip* from https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server?view=sql-server-ver16 , unpack mssql-jdbc-X.Y.Z.jre11.jar at the server into the folder, reachable by Gentics Mesh. Place the database connector JAR file in this folder as well.
+
+.DB configuration
+
+Define the "SA" user password. This example uses environment variables.
+```
+export SA_PASSWORD=admin
+```
+Create the dedicated database:
+```
+CREATE DATABASE mesh;
+```
+Alter the isolation level
+```
+ALTER DATABASE mesh SET READ_COMMITTED_SNAPSHOT ON;
+```
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<sql_server_host>:1433"
+  databaseName: "mesh"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "SA"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```
+
+#### Oracle XE
+
+.JDBC Driver
+
+Download *ojdbc11.jar* from https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html , place it at the server into the folder, reachable by Mesh.  Place the database connector JAR file in this folder as well.
+
+.DB configuration
+
+Define the database and Mesh user. This example uses environment variables.
+```
+export ORACLE_DATABASE=mesh
+```
+Create the dedicated database:
+```
+CREATE DATABASE mesh;
+```
+Alter the number of simultaneously open cursors
+```
+ALTER SYSTEM SET OPEN_CURSORS=4444 SID='*' SCOPE=BOTH;
+```
+Create the dedicated user
+```
+CREATE USER meshdbuser IDENTIFIED BY "admin";
+GRANT ALL PRIVILEGES TO meshdbuser;
+```
+
+.Mesh Configuration
+```yml
+storageOptions:
+  retryLimit: 10
+  retryDelayMillis: 2000
+  databaseAddress: "<oracle_host>:1521"
+  connectionUrlExtraParams: ""
+  databaseName: "mesh"
+  databaseConnectorClasspath: <path/to/downloaded/driver/and/connector>
+  connectionUsername: "meshdbuser"
+  connectionPassword: "admin"
+  showSql: false
+  formatSql: false
+  hikariOptions:
+    autocommit: false
+    connectionTimeout: 10000
+    idleTimeout: 600000
+    maxLifetime: 1800000
+    minimumIdleConnection: 10
+    maxPoolSize: 10
+    poolName: "MeshHikariCP"
+    registerMBeans: false
+    transactionIsolationLevel: null
+    leakDetectionThreshold: 0
+  synchronizeWrites: false
+  synchronizeWritesTimeout: 6000
+```

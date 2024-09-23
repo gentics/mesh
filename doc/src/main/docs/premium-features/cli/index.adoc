@@ -1,0 +1,50 @@
+---
+title: Gentics Mesh CLI
+image: noun_Keyboard_1063139.svg
+sort-key: 6
+teaser: Give your admins a performance boost with a commandline interface for Gentics Mesh.
+fineprint: The CLI will be shipped as a JAR file and thus requires a Java runtime environment on the machine where you want to execute it (this must not be the same machine that runs Gentics Mesh).
+status: details
+version: 1.0.2
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+Gentics Mesh has an API for all your administration tasks. But sometimes, having a command line tool at hand makes your life even easier - that's why we created the Mesh CLI!
+
+It gives a lovely user experience geared toward the command-line pro with over 30 commands and subcommands. Need a few examples?
+
+```bash
+$ mesh server backup
+Backup invoked. Backup will be written to server backup directory.
+```
+
+```bash
+$ mesh search sync
+The index sync process was started.
+```
+
+```bash
+$ mesh profile list
+┌───────────────────┬───────────────────┬───────────────────┬──────────────────┐
+│Name               │Project            │URL                │Active            │
+╞═══════════════════╪═══════════════════╪═══════════════════╪══════════════════╡
+│portal-php-referenc│Test               │http://localhost:80│                  │
+│e                  │                   │81/api/v2          │                  │
+├───────────────────┼───────────────────┼───────────────────┼──────────────────┤
+│Website            │Website            │http://localhost:80│Yes               │
+│                   │                   │80/api/v2          │                  │
+└───────────────────┴───────────────────┴───────────────────┴──────────────────┘
+```
+
+```bash
+$ mesh server readonly true
+┌──────────────────────────────────────────────────────────────────────────────┐
+│Read Only                                                                     │
+╞══════════════════════════════════════════════════════════════════════════════╡
+│true                                                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+We're sure that your admins will love it!

@@ -1,0 +1,24 @@
+---
+title: Gentics Mesh Like Plugin
+icon: far fa-thumbs-up
+image: noun_like_1013607.svg
+sort-key: 2
+teaser: This plugin allows logged-in users to like and rate content.
+fineprint: The plugin can be configured to only allow upvotes, allow up- or down-votes, or accept numeric ratings. Includes API to retrieve statistics.
+status: details
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+This plugin is an allrounder you will really _like_! It allows your website visitors to engage with your content in multiple ways:
+
+* in a Facebook-style thumbs-up way, where only upvotes are allowed
+* by allowing both up- and downvotes
+* giving numeric ratings, e.g. 1 to 5 stars.
+
+Here you can see this plugin in action:
+
+image::/assets/LikesDemo2.gif[Example of Like Plugin in action]
+
+Like what you see?

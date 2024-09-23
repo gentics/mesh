@@ -1,0 +1,19 @@
+---
+title: Gentics Mesh Search Plugin
+icon: fas fa-search
+image: noun_Search_1032262.svg
+sort-key: 999
+teaser: Adds high-level API endpoints to perform search, did-you-mean and autocompletion without having to deal with ElasticSearch queries in your application.
+fineprint: The plugin includes the required logic to create the query based on your search terms, and to render the resulting search hits.
+status: in-planning
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+Gentics Mesh already has great search capabilities - but this plugin gets you even further:
+It provides two ready-to-use endpoints that allows your frontend to use the `search` and `autocomplete` functionality without having to build your own Elasticsearch query.
+
+This plugin will accept a simple string as a query, and will perform the transformation to a full-featured elasticsearch query, taking care of languages, tag filtering and project scopes - so you don't have to deal with that in your frontend. If the user's query only returns few matching nodes, you can configure to receive "did you mean" results in addition.
+
+You can furthermore configure which fields you want to return for each search result. If you want, you can even extend the given functionality with custom Java code!

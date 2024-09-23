@@ -1,0 +1,126 @@
+---
+pageType: documentation
+---
+:plugin-base-name: mesh-favorite-plugin
+
+=== Functional Description
+
+* The plugin stores user-specific lists of strings (favorites) for types
+(favorite-type)
+* Anonymous calls are not allowed
+* The favorite-types are configured in the `+config.yml+` (cross
+project)
+* The names of the favorite-types can contain letters, numbers,
+underscores and dashes
+* The following REST calls are supported
+** Get all values for a favorite-type
+** Add single value to favorite-type
+** Remove single value from favorite-type
+** Overwrite all values for favorite-type
+
+=== REST API
+
+==== Get favorites
+
+[source,http]
+----
+GET /api/v1/[project]/plugins/favorite/[type]
+----
+
+Returns
+
+[source,json]
+----
+{
+    "favorites": [
+        "my_widget3",
+        "my_widget2"
+    ]
+}
+----
+
+==== Add value to favorites
+
+[source,http]
+----
+POST /api/v1/[project]/plugins/favorite/[type]/[value]
+----
+
+==== Remove value from favorites
+
+[source,http]
+----
+DELETE /api/v1/[project]/plugins/favorite/[type]/[value]
+----
+
+If duplicates are allowed, all occurrences of the value will be removed.
+
+==== Overwrite favorite values
+
+[source,http]
+----
+POST /api/v1/[project]/plugins/favorite/[type]
+{
+    "favorites": [
+        "my_widget3",
+        "my_widget2"
+    ]
+}
+----
+
+=== Installation
+
+include::content/premium-features/_plugin_install.adoc[]
+
+=== Configuration
+
+[source,yml]
+----
+projects:
+  - "project_1"
+  - "project_2"
+types:
+    widgets:
+        maxEntries: -1
+        allowDuplicates: false
+        reorderDuplicates: false
+        addToList: append
+    infobox:
+        maxEntries: -1
+        allowDuplicates: false
+        reorderDuplicates: false
+        addToList: append
+    ongoing_procedures:
+        maxEntries: 3
+        allowDuplicates: false
+        reorderDuplicates: true
+        addToList: append
+----
+
+[width="100%",cols="14%,15%,33%,38%",options="header",]
+|===
+|Key |Type |Description |Default value
+|projects |array of strings |Project names, for which the plugin is
+activated |REQUIRED
+
+|types |array of objects |Available types with their configuration
+|REQUIRED
+
+|maxEntries |integer |Maximum number of entries stored for the type. -1
+for unbounded |-1
+
+|allowDuplicates |boolean |Flag to allow duplicate values for the type
+|false
+
+|reorderDuplicates |boolean |Flag to specify behaviour for POSTed
+duplicates, if `+allowDuplicates+` is `+false+`. If set to `+false+`,
+duplicates will just be ignored, if `+true+` they will be reordered to
+the back of the list |false
+
+|addToList |`+append+` or `+prepend+` |POSTed values will be added at
+the end (`+append+`) or at the start (`+prepend+`) of the list
+|`+append+`
+|===
+
+Disclaimer: This plugin does not support parallel requests on the same
+favorite type!

@@ -1,0 +1,35 @@
+NOTE: Make sure to only use commercial plugins which match the *Major* and *Minor* version of the Gentics Mesh server.
+Plugins which do not match may not be compatible with the Gentics Mesh version.
+
+:plugin-version: pass:quotes[_$YOUR_MESH_VERSION_]
+
+Commercial plugins can be downloaded from
+link:https://maven.gentics.com/maven2-commercial/com/gentics/mesh/plugin/commercial/[our maven site].
+Alternatively you can also use `maven` to download the jar:
+[source,bash,subs="+quotes,+attributes"]
+----
+mvn dependency:get \
+  -Dartifact=com.gentics.mesh.plugin.commercial:{plugin-base-name}:{plugin-version} \
+  -DremoteRepositories=gtx-commercial::default::https://maven.gentics.com/maven2-commercial \
+  -Ddest={plugin-base-name}.jar -Dtransitive=false
+----
+
+If you get an "Unauthorized" error, please locate your maven settings
+(usually found in ~/.m2/settings.xml)
+and add our server to the servers list:
+
+.settings.xml
+[source,xml,subs="+quotes"]
+----
+<settings>
+ ...
+ <servers>
+    <server>
+      <id>gtx-commercial</id>
+      <username> _$YOUR_USER_ID_ </username>
+      <password> _$YOUR_API_KEY_ </password>
+    </server>
+ ...
+----
+
+Once downloaded, place the jar file, optionally together with a config file and other assets, in the configured plugins folder of your Mesh installation -- then the plugin(s) will automatically be deployed during server startup.

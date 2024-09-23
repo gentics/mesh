@@ -1,0 +1,30 @@
+---
+title: Gentics Mesh Keycloak Plugin
+icon: far fa-key
+image: noun_Key_1019935.svg
+sort-key: 3
+teaser: This plugin adds Keycloak / Red Hat SSO integration support to the Gentics Mesh API
+fineprint: This plugin will not add support to the Gentics Mesh UI. It adds API JWT handling.
+status: details
+licence: commercial
+author: Gentics
+pageType: feature
+---
+
+:icons: font
+:source-highlighter: prettify
+
+The keycloak plugin will enable Gentics Mesh to process JSON Web Tokens which were issued by Keycloak.
+A frontend App using code flow can thus use the issued access token to invoke requests on Gentics Mesh. No other authentication information is required.
+
+The plugin will process the access token and grant or reject access depending on your configuration. 
+
+It allows you to create a mapping between Keycloak and Gentics Mesh users.
+
+You can either create each user in Gentics Mesh or use one API user for each individual role set.
+
+A custom mapping configuration can be specified to create users, roles and groups and their relationships.
+
+The plugin will also automatically take care of configuring Keycloak support in Gentics Mesh using the provided Keycloak/Realm information.
+
+NOTE: This plugin will currently not add automatic SSO support for the Gentics Mesh UI.

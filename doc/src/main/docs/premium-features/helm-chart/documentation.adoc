@@ -1,0 +1,416 @@
+---
+pageType: documentation
+---
+
+==== Prerequisite
+
+* Helm 3
+
+=== Helm Repo
+
+The Gentics Mesh helm repository needs to be registered before it can be used.
+Please use the USERNAME and API_KEY which you have received to access the commercial repository.
+
+```bash
+helm repo add --username USERNAME --password API_KEY \
+  gentics https://repo.apa-it.at/artifactory/gtx-helm/
+helm repo update
+helm search repo
+```
+
+=== Setup
+
+First the initial master database needs to be setup. This will automatically be handled by the helm chart when `replicaCount=1` is set.
+
+```bash
+#!/bin/bash
+helm install --wait -f example-values.yaml \
+  --set "replicaCount=1,backup.enabled=false" \
+  gentics-mesh gentics/gentics-mesh
+```
+
+Once the database is setup you can start the full stack by running.
+
+```bash
+#!/bin/bash
+helm upgrade --wait -f example-values.yaml gentics-mesh gentics/gentics-mesh
+```
+
+=== Default Configuration
+
+By default various features are enabled / settings:
+
+* Server tokens will be omitted by default
+* No update check will be performed
+* Cluster write lock / sync writes is enabled. Thus write requests will be processed sequentially.
+* Backup is disabled
+* Request coordination is enabled. All requests will be redirected to the elected master.
+
+=== Example values
+
+[source,bash]
+----
+# Default values for Gentics Mesh.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Setting this higher than 1 will enable master clustering automatically
+# In this case, be sure you have correctly configured a network storage for the uploads
+replicaCount: 1
+
+image:
+  repository: gentics/mesh
+  tag: 1.5.1
+  pullPolicy: IfNotPresent
+
+# Please enter your secret if you use the LTS repository
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+
+  mesh:
+    port: 80
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+  meshSSL:
+    port: 443
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+  monitoring:
+    port: 8081
+    # nodePort is only available when using service type NodePort
+    # nodePort: 80
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 8m
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: mesh.local
+      paths:
+        - "/"
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# You should adjust this to your needs. This just defines the absolute minimum defaults.
+# The memory values should be set in conjunction with the Java Xmx plus other Java memory settings like Direct memory
+# See: https://getmesh.io/docs/administration-guide/#_memory_settings
+resources:
+  limits:
+    memory: 2Gi
+    cpu: 2000m
+  requests:
+    memory: 256Mi
+    cpu: 500m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Settings for clustering will be configured automatically
+extraEnv:
+- name: JAVA_TOOL_OPTIONS
+  value: "-Xms128m -Xmx128m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=512"
+# - name: MESH_ELASTICSEARCH_URL
+#   value: "http://elasticsearch:9200"
+
+# By default, a default configmap will be created
+# existingConfigmap: "mesh-custom-config"
+# All settings in mesh.yml are configurable with env vars (See: extraEnv)
+
+persistence:
+  enabled: true
+
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, the PVC must be created manually before volume will be bound
+  cluster:
+
+    # Volumes for cluster instances graphdb
+    graphdb:
+      # existingClaim is available when replicaCount > 1
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
+  backup:
+    ##  Storage for database snapshots
+    snapshots:
+      # Use existingClaim if you don't have a storage provisioner for your NFS
+      # existingClaim: ""
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteMany
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
+    # Volume for backup instance graphdb
+    graphdb:
+      # Claim for the db of the backup instance
+      # existingClaim:
+      annotations: {}
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        # storageClassName: ""
+        resources:
+          requests:
+            storage: 10Gi
+
+  # Volume for shared data (uploads, keystore)
+  # This volume will only be created when replicaCount > 1
+  # This volume should be a network volume (NFS) and will be shared across all instances
+  shared:
+    # Use existingClaim if you don't have a storage provisioner for your NFS
+    # existingClaim: ""
+    annotations: {}
+    spec:
+      accessModes:
+        - ReadWriteMany
+      # storageClassName: ""
+      resources:
+        requests:
+          storage: 10Gi
+
+livenessProbe:
+  httpGet:
+    path: /api/v2/health/live
+    port: http
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  failureThreshold: 20
+
+readinessProbe:
+  httpGet:
+    path: /api/v2/health/ready
+    port: http
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  failureThreshold: 20
+
+vertxOptions:
+  workerPoolSize: 20
+  eventLoopSize: 10
+  verticleCount: 10
+
+keystore:
+  # The name of an existing Kubernetes secret that contains the keystore
+  # The keystore will also be automatically generated and persisted when clustering is not enabled.
+  # The secret has to contain the following keys: "keystore.jceks", "password"
+  # secret: ""
+  # Change this password. This will be used if no custom keystore secret has been specified.
+  password: "secret"
+
+ssl:
+  # Controls the HTTPS server of Gentrics Mesh. Please note that this is not related to ingress SSL handling.
+  # Enabling SSL here will allow you to setup secured connections between Gentics Mesh PODs and other PODs which internally access Gentics Mesh API.
+  enabled: false
+  # Client Authentication mode can be: NONE, REQUEST or REQUIRE
+  # See https://getmesh.io/docs/references/#_client_certificate for details
+  clientAuthMode: "NONE"
+  serverKeyPath: "/certs/key.pem"
+  serverCertPath: "/certs/cert.pem"
+  #trustedCertPaths: ""
+  existingSecret: "mesh-ssl-secret"
+
+# Configure clustering related settings
+cluster:
+  enabled: true
+  coordinatorMode: "ALL"
+  coordinatorRegex: "gentics-mesh-[0-9]"
+  # Defines the initial write quorum for cluster setups
+  # Changing the quorum is not possible via helm once the cluster has been setup
+  writeQuorum: "\"majority\""
+  readQuorum: 1
+
+# Configure backup related settings
+backup:
+  enabled: false
+
+  cron:
+    # Daily at 22 pm
+    schedule: "0 22 * * *"
+    # Define the time limit for the backup in seconds
+    timeLimitSeconds: 3600
+
+    username: "admin"
+    password: "admin"
+    # Image for the CronJob which will invoke the backup
+    # and transfer the files to the storage volume
+    image:
+      repository: docker.apa-it.at/gentics/mesh/mesh-tools
+      tag: 1.0.2
+      pullPolicy: IfNotPresent
+      pullSecret: docker-apa-it-at
+
+  image:
+    repository: gentics/mesh
+    tag: 1.5.1
+    pullPolicy: IfNotPresent
+
+# Configure credentials
+credentials:
+  initialAdminPassword: ""
+  forcePasswordReset: false
+
+config:
+  publicKeys: ""
+
+# Monitoring related settings
+monitoring:
+  enabled: true
+
+# Elasticsearch settings
+elasticsearch:
+  ## ES integration disabled by default
+  url: "null"
+
+# Upload settings
+upload:
+  limit: "262144000" ## 260 MB
+
+setulimit:
+  # Enables the ulimit init container 
+  # (This feature won't be usable in OpenShift due to security constraints)
+  enabled: true
+----
+
+=== PVC's
+
+The following list contains an overview of the needed PVC's and their usage.
+
+[options="header",cols="7*"]
+|======
+
+| PV Name
+| Intended PVC
+| Access Mode
+| Typical Size
+| Storage Class
+| Reclaim Policy
+| Usage
+
+| pv-iscsi-1
+|	data-gentics-mesh-0
+|	RWO
+| 10Gi
+|	iSCSI
+|	retain
+|	Gentics Mesh instance 0: data
+
+| pv-iscsi-2
+|	data-gentics-mesh-1
+|	RWO
+|	10Gi
+|	iSCSI
+|	retain
+|	Gentics Mesh instance 1: data
+
+| pv-iscsi-3
+|	data-gentics-mesh-2
+|	RWO
+|	10Gi
+|	iSCSI
+|	retain
+|	Gentics Mesh instance 2: data
+
+| pv-iscsi-4
+|	gentics-mesh-backupdb
+|	RWO
+|	10Gi
+|	iSCSI
+|	retain
+|	Gentics Mesh backup instance: data
+
+| pv-nfs-1
+|	gentics-mesh-shared
+|	RWX
+|	10Gi
+|	NFS	
+| retain
+|	Gentics Mesh: shared uploads	
+
+| pv-nfs-2
+|	gentics-mesh-snapshots
+|	RWX
+|	10Gi
+|	NFS
+|	retain
+|	Gentics Mesh: backup snapshots
+
+|======
+
+=== Features
+
+==== Backup
+
+When enabled via `backup.enabled` an automatic backup cronjob will be created.
+This cronjob will create database and filesystem backups and store those in the `gentics-mesh-snapshots` PVC. 
+
+A dedicated backup instance is used to create the backups. This instance runs permanently as a dedicated deployment. It is part of the cluster but excluded from the ingress handling. It thus does not participate in regular request processing. The backup instance is run as a REPLICA.
+
+==== Clustering
+
+By default a master/master cluster will be setup. The current revision of the helm chart does not support master/replica topologies.
+
+==== Mesh Commercial Plugins
+
+:plugin-base-name: pass:quotes[_$YOUR_PLUGIN_]
+include::content/premium-features/_plugin_install.adoc[]
+
+This docker file shows how to include all plugin files into one customized docker image:
+
+.Example Dockerfile
+```bash
+ARG version
+FROM gentics/mesh:$version
+
+# Optionally: Add plugins to the image
+COPY plugins /plugins
+
+# Optionally: Add custom languages 
+ENV MESH_LANGUAGES_FILE_PATH=/languages.json
+COPY config/languages.json /languages.json
+
+# Optionally: Add Mesh CLI
+COPY mesh-cli-1.0.2.jar /mesh-cli.jar
+```
+
+Once the image has been deployed to your registry you may use it in the helm chart by setting the image and tag values:
+
+```
+image:
+  repository: acme/my-custom-mesh-image
+  tag: 1.5.1
+```
